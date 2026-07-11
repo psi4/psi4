@@ -108,3 +108,78 @@ def test_uks_vx_fd(func):
         fd = _richardson(lambda h: _fd_v(vpot, [Da + h * Xa, Db + h * Xb],
                                          [Da - h * Xa, Db - h * Xb], h, nbf, comp), 2e-4)
         assert np.allclose(ret[comp].to_array(), fd, atol=5e-7)
+
+
+@pytest.mark.parametrize("func", ["PBE", "TPSS"])
+def test_uks_rks_hessian_consistency(func):
+    """Closed shell through the UV path must reproduce the RV explicit
+    XC Hessian to machine precision."""
+    wfn = _scf(func, "rks", """
+        O  0.000  0.000  0.117
+        H  0.000  0.755 -0.469
+        H  0.000 -0.755 -0.469
+        symmetry c1
+        noreorient""")
+    vpot = wfn.V_potential()
+    vpot.set_D([wfn.Da()])
+    H_rv = vpot.compute_hessain().to_array()
+    sup_u = psi4.driver.dft.build_superfunctional(func, False)[0]
+    vpot_u = psi4.core.VBase.build(wfn.basisset(), sup_u, "UV")
+    vpot_u.initialize()
+    vpot_u.set_D([wfn.Da(), wfn.Da()])
+    nbf = wfn.nmo()
+    vpot_u.compute_V([psi4.core.Matrix(nbf, nbf), psi4.core.Matrix(nbf, nbf)])
+    H_uv = vpot_u.compute_hessain().to_array()
+    assert np.allclose(H_rv, H_uv, atol=1e-10)
+
+
+def test_uks_hessian_explicit_fd():
+    """The explicit UKS XC Hessian against mixed finite differences of
+    the quadrature energy with both spin densities frozen. The residual
+    is the fixed-grid convention (grid-motion + weight classes), a few
+    1e-4 at this grid; term bugs show up orders of magnitude larger."""
+    geom = """
+        0 2
+        N  0.000  0.000  0.142
+        H  0.000  0.802 -0.496
+        H  0.000 -0.802 -0.496
+        symmetry c1
+        noreorient"""
+    psi4.core.clean()
+    psi4.set_options({"basis": "6-31G", "reference": "uks", "scf_type": "pk",
+                      "dft_spherical_points": 590, "dft_radial_points": 99,
+                      "e_convergence": 1e-9, "d_convergence": 1e-8,
+                      "maxiter": 200})
+    mol = psi4.geometry(geom)
+    _, wfn = psi4.energy("TPSS", return_wfn=True, molecule=mol)
+    Da, Db = wfn.Da().to_array(), wfn.Db().to_array()
+    vpot = wfn.V_potential()
+    vpot.set_D([wfn.Da(), wfn.Db()])
+    Hx = vpot.compute_hessain().to_array()
+    coords0 = mol.geometry().to_array()
+
+    def exc_at(coords):
+        m = psi4.geometry(geom)
+        m.set_geometry(psi4.core.Matrix.from_array(coords))
+        m.update_geometry()
+        basis = psi4.core.BasisSet.build(m, "ORBITAL", "6-31G")
+        sup = psi4.driver.dft.build_superfunctional("TPSS", False)[0]
+        vp = psi4.core.VBase.build(basis, sup, "UV")
+        vp.initialize()
+        vp.set_D([_mat(Da), _mat(Db)])
+        nbf = basis.nbf()
+        vp.compute_V([psi4.core.Matrix(nbf, nbf), psi4.core.Matrix(nbf, nbf)])
+        return vp.quadrature_values()["FUNCTIONAL"]
+
+    h = 2e-3
+    for (A, x, B, y) in [(0, 2, 0, 2), (0, 2, 1, 1)]:
+        def E(sa, sb):
+            c = coords0.copy()
+            c[A, x] += sa * h
+            c[B, y] += sb * h
+            return exc_at(c)
+        if (A, x) == (B, y):
+            fd = (E(1, 0) - 2 * E(0, 0) + E(-1, 0)) / h**2
+        else:
+            fd = (E(1, 1) - E(1, -1) - E(-1, 1) + E(-1, -1)) / (4 * h**2)
+        assert abs(Hx[3 * A + x][3 * B + y] - fd) < 2e-3

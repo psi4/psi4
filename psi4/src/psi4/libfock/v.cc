@@ -5303,9 +5303,6 @@ SharedMatrix UV::compute_gradient() {
 }
 SharedMatrix UV::compute_hessian() {
     // => Validation <=
-    if (functional_->is_gga() || functional_->is_meta())
-        throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
-
     if ((D_AO_.size() != 2)) throw PSIEXCEPTION("V: UKS should have two D Matrices");
 
     if (functional_->needs_vv10()) {
@@ -5329,14 +5326,18 @@ SharedMatrix UV::compute_hessian() {
     int max_functions = grid_->max_functions();
     int max_points = grid_->max_points();
 
-    int derivlev = (functional_->is_gga() || functional_->is_meta()) ? 3 : 2;
-    functional_->set_deriv(derivlev);
+    // The same-atom seed terms need one more collocation derivative than
+    // the potential: third derivatives for GGA/meta. The functional itself
+    // is only needed through second derivatives.
+    int ansatz = functional_->ansatz();
+    int derivlev = (ansatz >= 1) ? 3 : 2;
+    functional_->set_deriv(2);
 
     // ==> Setup the pointers <==
     for (size_t i = 0; i < num_threads_; i++) {
         point_workers_[i]->set_pointers(D_AO_[0], D_AO_[1]);
         point_workers_[i]->set_deriv(derivlev);
-        functional_workers_[i]->set_deriv(derivlev);
+        functional_workers_[i]->set_deriv(2);
         functional_workers_[i]->allocate();
     }
 
@@ -5636,6 +5637,362 @@ SharedMatrix UV::compute_hessian() {
                 pHXZ[ml][nl] += pTx2a[ml][nl] * Da + pTx2b[ml][nl] * Db;
                 pHYZ[ml][nl] += pTy2a[ml][nl] * Da + pTy2b[ml][nl] * Db;
                 pHZZ[ml][nl] += pTz2a[ml][nl] * Da + pTz2b[ml][nl] * Db;
+            }
+        }
+
+        // ==> GGA and meta-GGA contributions <== //
+        //
+        // Everything below enters at FULL weight: the final
+        // hermitivitize() averages H and H^T, so symmetric terms appear
+        // identically on both sides and each transpose-pair member is
+        // assembled twice.
+        //
+        // Conventions are pure math per spin channel (Dap/Dbp are the
+        // actual spin density matrices); the generated regions come from
+        // the libxckernel spin geometric operator.
+        if (ansatz >= 1) {
+            bool is_meta = (ansatz >= 2);
+            double** phi_i[3] = {phi_x, phi_y, phi_z};
+            double** phi_hess[6] = {phi_xx, phi_xy, phi_xz, phi_yy, phi_yz, phi_zz};
+            int hess_addr[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
+            // packed third derivatives (xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz)
+            static const char* keys3[10] = {"PHI_XXX", "PHI_XXY", "PHI_XXZ", "PHI_XYY", "PHI_XYZ",
+                                            "PHI_XZZ", "PHI_YYY", "PHI_YYZ", "PHI_YZZ", "PHI_ZZZ"};
+            double** phi_3[10];
+            for (int k = 0; k < 10; k++) phi_3[k] = pworker->basis_value(keys3[k])->pointer();
+            static const int t3_addr[3][3][3] = {{{0, 1, 2}, {1, 3, 4}, {2, 4, 5}},
+                                                 {{1, 3, 4}, {3, 6, 7}, {4, 7, 8}},
+                                                 {{2, 4, 5}, {4, 7, 8}, {5, 8, 9}}};
+
+            double* rho_ag[3];
+            double* rho_bg[3];
+            rho_ag[0] = pworker->point_value("RHO_AX")->pointer();
+            rho_ag[1] = pworker->point_value("RHO_AY")->pointer();
+            rho_ag[2] = pworker->point_value("RHO_AZ")->pointer();
+            rho_bg[0] = pworker->point_value("RHO_BX")->pointer();
+            rho_bg[1] = pworker->point_value("RHO_BY")->pointer();
+            rho_bg[2] = pworker->point_value("RHO_BZ")->pointer();
+            auto v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
+            auto v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
+            auto v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
+            auto v2_rho_a_gamma_aa = vals["V_RHO_A_GAMMA_AA"]->pointer();
+            auto v2_rho_a_gamma_ab = vals["V_RHO_A_GAMMA_AB"]->pointer();
+            auto v2_rho_a_gamma_bb = vals["V_RHO_A_GAMMA_BB"]->pointer();
+            auto v2_rho_b_gamma_aa = vals["V_RHO_B_GAMMA_AA"]->pointer();
+            auto v2_rho_b_gamma_ab = vals["V_RHO_B_GAMMA_AB"]->pointer();
+            auto v2_rho_b_gamma_bb = vals["V_RHO_B_GAMMA_BB"]->pointer();
+            auto v2_gamma_aa_gamma_aa = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
+            auto v2_gamma_aa_gamma_ab = vals["V_GAMMA_AA_GAMMA_AB"]->pointer();
+            auto v2_gamma_aa_gamma_bb = vals["V_GAMMA_AA_GAMMA_BB"]->pointer();
+            auto v2_gamma_ab_gamma_ab = vals["V_GAMMA_AB_GAMMA_AB"]->pointer();
+            auto v2_gamma_ab_gamma_bb = vals["V_GAMMA_AB_GAMMA_BB"]->pointer();
+            auto v2_gamma_bb_gamma_bb = vals["V_GAMMA_BB_GAMMA_BB"]->pointer();
+            double* v_tau_a = nullptr;
+            double* v_tau_b = nullptr;
+            double* v2_rho_a_tau_a = nullptr;
+            double* v2_rho_a_tau_b = nullptr;
+            double* v2_rho_b_tau_a = nullptr;
+            double* v2_rho_b_tau_b = nullptr;
+            double* v2_gamma_aa_tau_a = nullptr;
+            double* v2_gamma_aa_tau_b = nullptr;
+            double* v2_gamma_ab_tau_a = nullptr;
+            double* v2_gamma_ab_tau_b = nullptr;
+            double* v2_gamma_bb_tau_a = nullptr;
+            double* v2_gamma_bb_tau_b = nullptr;
+            double* v2_tau_a_tau_a = nullptr;
+            double* v2_tau_a_tau_b = nullptr;
+            double* v2_tau_b_tau_b = nullptr;
+            if (is_meta) {
+                v_tau_a = vals["V_TAU_A"]->pointer();
+                v_tau_b = vals["V_TAU_B"]->pointer();
+                v2_rho_a_tau_a = vals["V_RHO_A_TAU_A"]->pointer();
+                v2_rho_a_tau_b = vals["V_RHO_A_TAU_B"]->pointer();
+                v2_rho_b_tau_a = vals["V_RHO_B_TAU_A"]->pointer();
+                v2_rho_b_tau_b = vals["V_RHO_B_TAU_B"]->pointer();
+                v2_gamma_aa_tau_a = vals["V_GAMMA_AA_TAU_A"]->pointer();
+                v2_gamma_aa_tau_b = vals["V_GAMMA_AA_TAU_B"]->pointer();
+                v2_gamma_ab_tau_a = vals["V_GAMMA_AB_TAU_A"]->pointer();
+                v2_gamma_ab_tau_b = vals["V_GAMMA_AB_TAU_B"]->pointer();
+                v2_gamma_bb_tau_a = vals["V_GAMMA_BB_TAU_A"]->pointer();
+                v2_gamma_bb_tau_b = vals["V_GAMMA_BB_TAU_B"]->pointer();
+                v2_tau_a_tau_a = vals["V_TAU_A_TAU_A"]->pointer();
+                v2_tau_a_tau_b = vals["V_TAU_A_TAU_B"]->pointer();
+                v2_tau_b_tau_b = vals["V_TAU_B_TAU_B"]->pointer();
+            }
+
+            // density-contracted collocations per spin
+            auto U0a_mat(Ua_local->clone());
+            auto U0b_mat(Ua_local->clone());
+            auto U0a = U0a_mat->pointer();
+            auto U0b = U0b_mat->pointer();
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dap[0], max_functions, 0.0, U0a[0],
+                    max_functions);
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dbp[0], max_functions, 0.0, U0b[0],
+                    max_functions);
+            std::vector<SharedMatrix> Ui_mat;
+            double** Uia[3];
+            double** Uib[3];
+            for (int i = 0; i < 3; i++) {
+                Ui_mat.push_back(Ua_local->clone());
+                Uia[i] = Ui_mat[2 * i]->pointer();
+                Ui_mat.push_back(Ua_local->clone());
+                Uib[i] = Ui_mat[2 * i + 1]->pointer();
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Dap[0], max_functions, 0.0,
+                        Uia[i][0], max_functions);
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Dbp[0], max_functions, 0.0,
+                        Uib[i][0], max_functions);
+            }
+
+            // per-function field-derivative rows and work arrays
+            std::vector<SharedMatrix> F_mat;
+            double **F_ra[3], **F_rb[3], **F_saa[3], **F_sab[3], **F_sbb[3], **F_ta[3], **F_tb[3];
+            for (int xd = 0; xd < 3; xd++) {
+                for (int j = 0; j < 7; j++) F_mat.push_back(Ua_local->clone());
+                F_ra[xd] = F_mat[7 * xd + 0]->pointer();
+                F_rb[xd] = F_mat[7 * xd + 1]->pointer();
+                F_saa[xd] = F_mat[7 * xd + 2]->pointer();
+                F_sab[xd] = F_mat[7 * xd + 3]->pointer();
+                F_sbb[xd] = F_mat[7 * xd + 4]->pointer();
+                F_ta[xd] = F_mat[7 * xd + 5]->pointer();
+                F_tb[xd] = F_mat[7 * xd + 6]->pointer();
+            }
+            std::vector<SharedMatrix> G_mat;
+            double **Ga[9], **Gb[9];
+            for (int k = 0; k < 9; k++) {
+                G_mat.push_back(Ua_local->clone());
+                Ga[k] = G_mat[k]->pointer();
+            }
+            for (int k = 0; k < 9; k++) {
+                G_mat.push_back(Ua_local->clone());
+                Gb[k] = G_mat[9 + k]->pointer();
+            }
+            auto WL_mat(Ua_local->clone());
+            auto WL = WL_mat->pointer();
+            auto WR_mat(Ua_local->clone());
+            auto WR = WR_mat->pointer();
+            auto WT_mat(pworker->D_scratch()[0]->clone());
+            auto WT = WT_mat->pointer();
+
+            for (int xd = 0; xd < 3; xd++) {
+                for (int P = 0; P < npoints; P++) {
+                    bool live = std::fabs(rho_a[P]) + std::fabs(rho_b[P]) > v2_rho_cutoff_;
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        // ==> BEGIN GENERATED CODE [xckernel psi4backend: geometric_hessian_spin(mgga_tau) rows] <==
+                        double f_ra = -2.0 * U0a[P][ml] * phi_i[xd][P][ml];
+                        double f_rb = -2.0 * U0b[P][ml] * phi_i[xd][P][ml];
+                        double f_saa = 0.0, f_sab = 0.0, f_sbb = 0.0;
+                        double f_ta = 0.0, f_tb = 0.0;
+                        for (int i = 0; i < 3; i++) {
+                            double g_a = -2.0 * U0a[P][ml] * phi_hess[hess_addr[xd][i]][P][ml] -2.0 * Uia[i][P][ml] * phi_i[xd][P][ml];
+                            double g_b = -2.0 * U0b[P][ml] * phi_hess[hess_addr[xd][i]][P][ml] -2.0 * Uib[i][P][ml] * phi_i[xd][P][ml];
+                            Ga[3 * xd + i][P][ml] = live ? g_a : 0.0;
+                            Gb[3 * xd + i][P][ml] = live ? g_b : 0.0;
+                            f_saa += 2.0 * g_a * rho_ag[i][P];
+                            f_sab += 1.0 * g_a * rho_bg[i][P] +1.0 * g_b * rho_ag[i][P];
+                            f_sbb += 2.0 * g_b * rho_bg[i][P];
+                            if (is_meta) f_ta += -1.0 * Uia[i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
+                            if (is_meta) f_tb += -1.0 * Uib[i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
+                        }
+                        F_ra[xd][P][ml] = live ? f_ra : 0.0;
+                        F_rb[xd][P][ml] = live ? f_rb : 0.0;
+                        F_saa[xd][P][ml] = live ? f_saa : 0.0;
+                        F_sab[xd][P][ml] = live ? f_sab : 0.0;
+                        F_sbb[xd][P][ml] = live ? f_sbb : 0.0;
+                        F_ta[xd][P][ml] = live ? f_ta : 0.0;
+                        F_tb[xd][P][ml] = live ? f_tb : 0.0;
+                    }
+                }
+            }
+
+            double** pH[3][3] = {{pHXX, pHXY, pHXZ}, {pHYX, pHYY, pHYZ}, {pHZX, pHZY, pHZZ}};
+
+            for (int xd = 0; xd < 3; xd++) {
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: geometric_hessian_spin(mgga_tau) class I] <==
+                // class I, right row F_ra
+                for (int P = 0; P < npoints; P++) {
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        double l = 0.0;
+                        if (ansatz >= 1) l += v2_rho_a_gamma_aa[P] * F_saa[xd][P][ml] + v2_rho_a_gamma_ab[P] * F_sab[xd][P][ml] + v2_rho_a_gamma_bb[P] * F_sbb[xd][P][ml];
+                        if (ansatz >= 2) l += 2.0 * v2_rho_a_tau_a[P] * F_ta[xd][P][ml] + 2.0 * v2_rho_a_tau_b[P] * F_tb[xd][P][ml];
+                        WL[P][ml] = w[P] * l;
+                    }
+                }
+                for (int yd = 0; yd < 3; yd++) {
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, F_ra[yd][0],
+                            max_functions, 1.0, pH[xd][yd][0], max_functions);
+                }
+                // class I, right row F_rb
+                for (int P = 0; P < npoints; P++) {
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        double l = 0.0;
+                        if (ansatz >= 1) l += v2_rho_b_gamma_aa[P] * F_saa[xd][P][ml] + v2_rho_b_gamma_ab[P] * F_sab[xd][P][ml] + v2_rho_b_gamma_bb[P] * F_sbb[xd][P][ml];
+                        if (ansatz >= 2) l += 2.0 * v2_rho_b_tau_a[P] * F_ta[xd][P][ml] + 2.0 * v2_rho_b_tau_b[P] * F_tb[xd][P][ml];
+                        WL[P][ml] = w[P] * l;
+                    }
+                }
+                for (int yd = 0; yd < 3; yd++) {
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, F_rb[yd][0],
+                            max_functions, 1.0, pH[xd][yd][0], max_functions);
+                }
+                // class I, right row F_saa
+                if (ansatz >= 1) {
+                    for (int P = 0; P < npoints; P++) {
+                        for (int ml = 0; ml < nlocal; ml++) {
+                            double l = v2_rho_a_gamma_aa[P] * F_ra[xd][P][ml] + v2_rho_b_gamma_aa[P] * F_rb[xd][P][ml] + v2_gamma_aa_gamma_aa[P] * F_saa[xd][P][ml] + v2_gamma_aa_gamma_ab[P] * F_sab[xd][P][ml] + v2_gamma_aa_gamma_bb[P] * F_sbb[xd][P][ml];
+                            if (ansatz >= 2) l += 2.0 * v2_gamma_aa_tau_a[P] * F_ta[xd][P][ml] + 2.0 * v2_gamma_aa_tau_b[P] * F_tb[xd][P][ml];
+                            WL[P][ml] = w[P] * l;
+                        }
+                    }
+                    for (int yd = 0; yd < 3; yd++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, F_saa[yd][0],
+                                max_functions, 1.0, pH[xd][yd][0], max_functions);
+                    }
+                }
+                // class I, right row F_sab
+                if (ansatz >= 1) {
+                    for (int P = 0; P < npoints; P++) {
+                        for (int ml = 0; ml < nlocal; ml++) {
+                            double l = v2_rho_a_gamma_ab[P] * F_ra[xd][P][ml] + v2_rho_b_gamma_ab[P] * F_rb[xd][P][ml] + v2_gamma_aa_gamma_ab[P] * F_saa[xd][P][ml] + v2_gamma_ab_gamma_ab[P] * F_sab[xd][P][ml] + v2_gamma_ab_gamma_bb[P] * F_sbb[xd][P][ml];
+                            if (ansatz >= 2) l += 2.0 * v2_gamma_ab_tau_a[P] * F_ta[xd][P][ml] + 2.0 * v2_gamma_ab_tau_b[P] * F_tb[xd][P][ml];
+                            WL[P][ml] = w[P] * l;
+                        }
+                    }
+                    for (int yd = 0; yd < 3; yd++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, F_sab[yd][0],
+                                max_functions, 1.0, pH[xd][yd][0], max_functions);
+                    }
+                }
+                // class I, right row F_sbb
+                if (ansatz >= 1) {
+                    for (int P = 0; P < npoints; P++) {
+                        for (int ml = 0; ml < nlocal; ml++) {
+                            double l = v2_rho_a_gamma_bb[P] * F_ra[xd][P][ml] + v2_rho_b_gamma_bb[P] * F_rb[xd][P][ml] + v2_gamma_aa_gamma_bb[P] * F_saa[xd][P][ml] + v2_gamma_ab_gamma_bb[P] * F_sab[xd][P][ml] + v2_gamma_bb_gamma_bb[P] * F_sbb[xd][P][ml];
+                            if (ansatz >= 2) l += 2.0 * v2_gamma_bb_tau_a[P] * F_ta[xd][P][ml] + 2.0 * v2_gamma_bb_tau_b[P] * F_tb[xd][P][ml];
+                            WL[P][ml] = w[P] * l;
+                        }
+                    }
+                    for (int yd = 0; yd < 3; yd++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, F_sbb[yd][0],
+                                max_functions, 1.0, pH[xd][yd][0], max_functions);
+                    }
+                }
+                // class I, right row F_ta
+                if (ansatz >= 2) {
+                    for (int P = 0; P < npoints; P++) {
+                        for (int ml = 0; ml < nlocal; ml++) {
+                            double l = 2.0 * v2_rho_a_tau_a[P] * F_ra[xd][P][ml] + 2.0 * v2_rho_b_tau_a[P] * F_rb[xd][P][ml] + 2.0 * v2_gamma_aa_tau_a[P] * F_saa[xd][P][ml] + 2.0 * v2_gamma_ab_tau_a[P] * F_sab[xd][P][ml] + 2.0 * v2_gamma_bb_tau_a[P] * F_sbb[xd][P][ml] + 4.0 * v2_tau_a_tau_a[P] * F_ta[xd][P][ml] + 4.0 * v2_tau_a_tau_b[P] * F_tb[xd][P][ml];
+                            WL[P][ml] = w[P] * l;
+                        }
+                    }
+                    for (int yd = 0; yd < 3; yd++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, F_ta[yd][0],
+                                max_functions, 1.0, pH[xd][yd][0], max_functions);
+                    }
+                }
+                // class I, right row F_tb
+                if (ansatz >= 2) {
+                    for (int P = 0; P < npoints; P++) {
+                        for (int ml = 0; ml < nlocal; ml++) {
+                            double l = 2.0 * v2_rho_a_tau_b[P] * F_ra[xd][P][ml] + 2.0 * v2_rho_b_tau_b[P] * F_rb[xd][P][ml] + 2.0 * v2_gamma_aa_tau_b[P] * F_saa[xd][P][ml] + 2.0 * v2_gamma_ab_tau_b[P] * F_sab[xd][P][ml] + 2.0 * v2_gamma_bb_tau_b[P] * F_sbb[xd][P][ml] + 4.0 * v2_tau_a_tau_b[P] * F_ta[xd][P][ml] + 4.0 * v2_tau_b_tau_b[P] * F_tb[xd][P][ml];
+                            WL[P][ml] = w[P] * l;
+                        }
+                    }
+                    for (int yd = 0; yd < 3; yd++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, F_tb[yd][0],
+                                max_functions, 1.0, pH[xd][yd][0], max_functions);
+                    }
+                }
+                // vsigma gradient cross, per right G channel
+                if (ansatz >= 1) {
+                    for (int i = 0; i < 3; i++) {
+                        for (int P = 0; P < npoints; P++) {
+                            for (int ml = 0; ml < nlocal; ml++) {
+                                WL[P][ml] = 2.0 * w[P] * Ga[3 * xd + i][P][ml] * v_gamma_aa[P] +1.0 * w[P] * Gb[3 * xd + i][P][ml] * v_gamma_ab[P];
+                                WR[P][ml] = 1.0 * w[P] * Ga[3 * xd + i][P][ml] * v_gamma_ab[P] +2.0 * w[P] * Gb[3 * xd + i][P][ml] * v_gamma_bb[P];
+                            }
+                        }
+                        for (int yd = 0; yd < 3; yd++) {
+                            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, Ga[3 * yd + i][0],
+                                    max_functions, 1.0, pH[xd][yd][0], max_functions);
+                            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WR[0], max_functions, Gb[3 * yd + i][0],
+                                    max_functions, 1.0, pH[xd][yd][0], max_functions);
+                        }
+                    }
+                }
+                // ==> END GENERATED CODE <==
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: geometric_hessian_spin(mgga_tau) class II] <==
+                if (ansatz >= 1) {
+                    for (int P = 0; P < npoints; P++) {
+                        bool live = std::fabs(rho_a[P]) + std::fabs(rho_b[P]) > v2_rho_cutoff_;
+                        for (int ml = 0; ml < nlocal; ml++) {
+                            double acc_a = 0.0, acc_b = 0.0;
+                            if (live) {
+                                for (int i = 0; i < 3; i++) {
+                                    acc_a += 8.0 * w[P] * phi_hess[hess_addr[xd][i]][P][ml] * rho_ag[i][P] * v_gamma_aa[P] +4.0 * w[P] * phi_hess[hess_addr[xd][i]][P][ml] * rho_bg[i][P] * v_gamma_ab[P];
+                                    acc_b += 4.0 * w[P] * phi_hess[hess_addr[xd][i]][P][ml] * rho_ag[i][P] * v_gamma_ab[P] +8.0 * w[P] * phi_hess[hess_addr[xd][i]][P][ml] * rho_bg[i][P] * v_gamma_bb[P];
+                                }
+                            }
+                            WL[P][ml] = acc_a;
+                            WR[P][ml] = acc_b;
+                        }
+                    }
+                    for (int yd = 0; yd < 3; yd++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, phi_i[yd][0], coll_funcs,
+                                0.0, WT[0], max_functions);
+                        for (int ml = 0; ml < nlocal; ml++)
+                            for (int nl = 0; nl < nlocal; nl++) pH[xd][yd][ml][nl] += WT[ml][nl] * Dap[ml][nl];
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WR[0], max_functions, phi_i[yd][0], coll_funcs,
+                                0.0, WT[0], max_functions);
+                        for (int ml = 0; ml < nlocal; ml++)
+                            for (int nl = 0; nl < nlocal; nl++) pH[xd][yd][ml][nl] += WT[ml][nl] * Dbp[ml][nl];
+                    }
+                }
+                // tau two-center seed (symmetric, full weight)
+                if (is_meta) {
+                    for (int i = 0; i < 3; i++) {
+                        for (int P = 0; P < npoints; P++) {
+                            bool live = std::fabs(rho_a[P]) + std::fabs(rho_b[P]) > v2_rho_cutoff_;
+                            for (int ml = 0; ml < nlocal; ml++) {
+                                WL[P][ml] = live ? 2.0 * w[P] * phi_hess[hess_addr[xd][i]][P][ml] * v_tau_a[P] : 0.0;
+                                WR[P][ml] = live ? 2.0 * w[P] * phi_hess[hess_addr[xd][i]][P][ml] * v_tau_b[P] : 0.0;
+                            }
+                        }
+                        for (int yd = 0; yd < 3; yd++) {
+                            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions,
+                                    phi_hess[hess_addr[yd][i]][0], coll_funcs, 0.0, WT[0], max_functions);
+                            for (int ml = 0; ml < nlocal; ml++)
+                                for (int nl = 0; nl < nlocal; nl++) pH[xd][yd][ml][nl] += WT[ml][nl] * Dap[ml][nl];
+                            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WR[0], max_functions,
+                                    phi_hess[hess_addr[yd][i]][0], coll_funcs, 0.0, WT[0], max_functions);
+                            for (int ml = 0; ml < nlocal; ml++)
+                                for (int nl = 0; nl < nlocal; nl++) pH[xd][yd][ml][nl] += WT[ml][nl] * Dbp[ml][nl];
+                        }
+                    }
+                }
+                // ==> END GENERATED CODE <==
+            }
+
+            // one-center seeds (both displacements on the same function),
+            // scattered to the (A, A) diagonal blocks
+            for (int xd = 0; xd < 3; xd++) {
+                for (int yd = xd; yd < 3; yd++) {
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        double t = 0.0;
+                        for (int P = 0; P < npoints; P++) {
+                            if (std::fabs(rho_a[P]) + std::fabs(rho_b[P]) <= v2_rho_cutoff_) continue;
+                            // ==> BEGIN GENERATED CODE [xckernel psi4backend: geometric_hessian_spin(mgga_tau) class III] <==
+                            for (int i = 0; i < 3; i++) {
+                                t += 4.0 * w[P] * U0a[P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml] * rho_ag[i][P] * v_gamma_aa[P] +2.0 * w[P] * U0a[P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml] * rho_bg[i][P] * v_gamma_ab[P] +4.0 * w[P] * Uia[i][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_ag[i][P] * v_gamma_aa[P] +2.0 * w[P] * Uia[i][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_bg[i][P] * v_gamma_ab[P];
+                                t += 2.0 * w[P] * U0b[P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml] * rho_ag[i][P] * v_gamma_ab[P] +4.0 * w[P] * U0b[P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml] * rho_bg[i][P] * v_gamma_bb[P] +2.0 * w[P] * Uib[i][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_ag[i][P] * v_gamma_ab[P] +4.0 * w[P] * Uib[i][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_bg[i][P] * v_gamma_bb[P];
+                                if (is_meta) t += 2.0 * w[P] * Uia[i][P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml] * v_tau_a[P] + 2.0 * w[P] * Uib[i][P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml] * v_tau_b[P];
+                            }
+                            // ==> END GENERATED CODE <==
+                        }
+                        int A = primary_->function_to_center(function_map[ml]);
+                        Hp[3 * A + xd][3 * A + yd] += t;
+                        if (yd != xd) Hp[3 * A + yd][3 * A + xd] += t;
+                    }
+                }
             }
         }
 
