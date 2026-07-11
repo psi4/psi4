@@ -3150,53 +3150,66 @@ SharedMatrix RV::compute_hessian() {
 
             for (int P = 0; P < npoints; P++) {
                 bool live = std::fabs(rho_a[P]) > v2_rho_cutoff_;
-                double vt = is_meta ? 2.0 * v_tau[P] : 0.0;
 
-                // spatial field derivatives at this point
-                double drho[3], dsig[3] = {0.0, 0.0, 0.0}, dtau[3] = {0.0, 0.0, 0.0};
+                // plumbing: raw spatial collocation dots (TRUE d rho and
+                // dd rho; dtau and ddtau are HALF the field derivatives,
+                // the tau-index convention the generated regions fold)
+                double drho[3], dtau[3] = {0.0, 0.0, 0.0};
                 double ddrho[6];
-                for (int k = 0; k < 6; k++) {
-                    static const int kx[6] = {0, 0, 0, 1, 1, 2};
-                    static const int ky[6] = {0, 1, 2, 1, 2, 2};
-                    ddrho[k] = 4.0 * (C_DDOT(nlocal, Uip[kx[k]][P], 1, phi_i[ky[k]][P], 1)
-                                      + C_DDOT(nlocal, U0[P], 1, phi_hess[k][P], 1));
+                static const int kx6[6] = {0, 0, 0, 1, 1, 2};
+                static const int ky6[6] = {0, 1, 2, 1, 2, 2};
+                for (int k2 = 0; k2 < 6; k2++) {
+                    ddrho[k2] = 4.0 * (C_DDOT(nlocal, Uip[kx6[k2]][P], 1, phi_i[ky6[k2]][P], 1)
+                                       + C_DDOT(nlocal, U0[P], 1, phi_hess[k2][P], 1));
                 }
                 if (ansatz >= 1) {
                     for (int d = 0; d < 3; d++) {
                         drho[d] = rho_g[d][P];
-                        for (int i = 0; i < 3; i++) {
-                            dsig[d] += 2.0 * rho_g[i][P] * ddrho[hess_addr[d][i]];
-                            if (is_meta) dtau[d] += 2.0 * C_DDOT(nlocal, Uip[i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
-                        }
+                        if (ansatz >= 2)
+                            for (int i = 0; i < 3; i++)
+                                dtau[d] += C_DDOT(nlocal, Uip[i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
                     }
                 } else {
                     for (int d = 0; d < 3; d++) drho[d] = 4.0 * C_DDOT(nlocal, U0[P], 1, phi_i[d][P], 1);
                 }
+
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_energy_gradient(mgga_tau), restricted] <==
                 double es[3];
                 for (int d = 0; d < 3; d++) {
-                    es[d] = v_rho[P] * drho[d];
-                    if (ansatz >= 1) es[d] += v_gamma[P] * dsig[d];
-                    if (is_meta) es[d] += vt * dtau[d];
+                    double de = 0.0;
+                    de += drho[d] * v_rho[P];
+                    if (ansatz >= 1) {
+                        de += 2 * ddrho[hess_addr[d][0]] * rho_g[0][P] * v_gamma[P];
+                        de += 2 * ddrho[hess_addr[d][1]] * rho_g[1][P] * v_gamma[P];
+                        de += 2 * ddrho[hess_addr[d][2]] * rho_g[2][P] * v_gamma[P];
+                    }
+                    if (ansatz >= 2) {
+                        de += 4 * dtau[d] * v_tau[P];
+                    }
+                    es[d] = de;
                 }
+                // ==> END GENERATED CODE <==
 
                 // basis derivative of e, scattered by center; de_tot column
-                for (int k = 0; k < 3 * natom; k++) DeT[k][P] = 0.0;
+                for (int k2 = 0; k2 < 3 * natom; k2++) DeT[k2][P] = 0.0;
                 if (live) {
                     for (int ml = 0; ml < nlocal; ml++) {
                         int C = primary_->function_to_center(function_map[ml]);
                         for (int xd = 0; xd < 3; xd++) {
-                            double frho = -4.0 * U0[P][ml] * phi_i[xd][P][ml];
-                            double val = v_rho[P] * frho;
-                            if (ansatz >= 1) {
-                                double fsig = 0.0, ftau = 0.0;
-                                for (int i = 0; i < 3; i++) {
-                                    double g = -4.0 * (U0[P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                       + Uip[i][P][ml] * phi_i[xd][P][ml]);
-                                    fsig += 2.0 * rho_g[i][P] * g;
-                                    if (is_meta) ftau += -2.0 * Uip[i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
-                                }
-                                val += v_gamma[P] * fsig + vt * ftau;
+                        // ==> BEGIN GENERATED CODE [xckernel psi4backend: basis rows of de: sum_k v_k F_k(mgga_tau), restricted] <==
+                        double val = 0.0;
+                        val += -4 * U0[P][ml] * phi_i[xd][P][ml] * v_rho[P];
+                        if (ansatz >= 1) {
+                            double fsig = 0.0, ftau = 0.0;
+                            for (int i = 0; i < 3; i++) {
+                                double g = -4.0 * U0[P][ml] * phi_hess[hess_addr[xd][i]][P][ml] -4.0 * Uip[i][P][ml] * phi_i[xd][P][ml];
+                                fsig += 2.0 * g * rho_g[i][P];
+                                if (ansatz >= 2) ftau += -2.0 * Uip[i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
                             }
+                            val += v_gamma[P] * fsig;
+                            if (ansatz >= 2) val += 2.0 * v_tau[P] * ftau;
+                        }
+                        // ==> END GENERATED CODE <==
                             DeT[3 * C + xd][P] += val;
                         }
                     }
@@ -3208,33 +3221,47 @@ SharedMatrix RV::compute_hessian() {
                 // MM: second spatial derivative of e on the parent diagonal
                 for (int xd = 0; xd < 3; xd++) {
                     for (int yd = xd; yd < 3; yd++) {
-                        double d2e = v2_rho2[P] * drho[xd] * drho[yd] + v_rho[P] * ddrho[hess_addr[xd][yd]];
+                        double d3r[3] = {0.0, 0.0, 0.0};
+                        double ddtau = 0.0;
                         if (ansatz >= 1) {
-                            d2e += v2_rho_gamma[P] * (drho[xd] * dsig[yd] + dsig[xd] * drho[yd])
-                                   + v2_gamma_gamma[P] * dsig[xd] * dsig[yd];
-                            double ddsig = 0.0;
                             for (int i = 0; i < 3; i++) {
-                                double d3r = 4.0 * (C_DDOT(nlocal, Uhess[hess_addr[xd][yd]][P], 1, phi_i[i][P], 1)
-                                                    + C_DDOT(nlocal, Uip[yd][P], 1, phi_hess[hess_addr[xd][i]][P], 1)
-                                                    + C_DDOT(nlocal, Uip[xd][P], 1, phi_hess[hess_addr[yd][i]][P], 1)
-                                                    + C_DDOT(nlocal, U0[P], 1, phi_3[t3_addr[xd][yd][i]][P], 1));
-                                ddsig += 2.0 * (ddrho[hess_addr[xd][i]] * ddrho[hess_addr[yd][i]]
-                                                + rho_g[i][P] * d3r);
-                            }
-                            d2e += v_gamma[P] * ddsig;
-                            if (is_meta) {
-                                d2e += 2.0 * v2_rho_tau[P] * (drho[xd] * dtau[yd] + dtau[xd] * drho[yd])
-                                       + 2.0 * v2_gamma_tau[P] * (dsig[xd] * dtau[yd] + dtau[xd] * dsig[yd])
-                                       + 4.0 * v2_tau_tau[P] * dtau[xd] * dtau[yd];
-                                double ddtau = 0.0;
-                                for (int i = 0; i < 3; i++) {
-                                    ddtau += 2.0 * (C_DDOT(nlocal, Uhess[hess_addr[xd][i]][P], 1,
-                                                           phi_hess[hess_addr[yd][i]][P], 1)
-                                                    + C_DDOT(nlocal, Uip[i][P], 1, phi_3[t3_addr[xd][yd][i]][P], 1));
-                                }
-                                d2e += vt * ddtau;
+                                d3r[i] = 4.0 * (C_DDOT(nlocal, Uhess[hess_addr[xd][yd]][P], 1, phi_i[i][P], 1)
+                                                + C_DDOT(nlocal, Uip[yd][P], 1, phi_hess[hess_addr[xd][i]][P], 1)
+                                                + C_DDOT(nlocal, Uip[xd][P], 1, phi_hess[hess_addr[yd][i]][P], 1)
+                                                + C_DDOT(nlocal, U0[P], 1, phi_3[t3_addr[xd][yd][i]][P], 1));
+                                if (ansatz >= 2)
+                                    ddtau += C_DDOT(nlocal, Uhess[hess_addr[xd][i]][P], 1,
+                                                    phi_hess[hess_addr[yd][i]][P], 1)
+                                             + C_DDOT(nlocal, Uip[i][P], 1, phi_3[t3_addr[xd][yd][i]][P], 1);
                             }
                         }
+                    // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_energy_hessian(mgga_tau), restricted] <==
+                    double dot_d2grad_rho_gh_grad_rho = 0.0;
+                    if (ansatz >= 1) dot_d2grad_rho_gh_grad_rho = d3r[0] * rho_g[0][P] + d3r[1] * rho_g[1][P] + d3r[2] * rho_g[2][P];
+                    const double dot_dgrad_rho_g_dgrad_rho_h = ddrho[hess_addr[xd][0]] * ddrho[hess_addr[yd][0]] + ddrho[hess_addr[xd][1]] * ddrho[hess_addr[yd][1]] + ddrho[hess_addr[xd][2]] * ddrho[hess_addr[yd][2]];
+                    double dot_dgrad_rho_g_grad_rho = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_g_grad_rho = ddrho[hess_addr[xd][0]] * rho_g[0][P] + ddrho[hess_addr[xd][1]] * rho_g[1][P] + ddrho[hess_addr[xd][2]] * rho_g[2][P];
+                    double dot_dgrad_rho_h_grad_rho = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_h_grad_rho = ddrho[hess_addr[yd][0]] * rho_g[0][P] + ddrho[hess_addr[yd][1]] * rho_g[1][P] + ddrho[hess_addr[yd][2]] * rho_g[2][P];
+                    double d2e = 0.0;
+                    d2e += ddrho[hess_addr[xd][yd]] * v_rho[P];
+                    d2e += drho[xd] * drho[yd] * v2_rho2[P];
+                    if (ansatz >= 1) {
+                        d2e += 2 * dot_d2grad_rho_gh_grad_rho * v_gamma[P];
+                        d2e += 2 * dot_dgrad_rho_g_dgrad_rho_h * v_gamma[P];
+                        d2e += 2 * dot_dgrad_rho_g_grad_rho * drho[yd] * v2_rho_gamma[P];
+                        d2e += 2 * dot_dgrad_rho_h_grad_rho * drho[xd] * v2_rho_gamma[P];
+                        d2e += 4 * dot_dgrad_rho_g_grad_rho * dot_dgrad_rho_h_grad_rho * v2_gamma_gamma[P];
+                    }
+                    if (ansatz >= 2) {
+                        d2e += 4 * ddtau * v_tau[P];
+                        d2e += 4 * drho[xd] * dtau[yd] * v2_rho_tau[P];
+                        d2e += 4 * drho[yd] * dtau[xd] * v2_rho_tau[P];
+                        d2e += 16 * dtau[xd] * dtau[yd] * v2_tau_tau[P];
+                        d2e += 8 * dot_dgrad_rho_g_grad_rho * dtau[yd] * v2_gamma_tau[P];
+                        d2e += 8 * dot_dgrad_rho_h_grad_rho * dtau[xd] * v2_gamma_tau[P];
+                    }
+                    // ==> END GENERATED CODE <==
                         double t = 0.5 * w[P] * d2e;
                         Hp[3 * Ag + xd][3 * Ag + yd] += t;
                         if (yd != xd) Hp[3 * Ag + yd][3 * Ag + xd] += t;
@@ -3242,56 +3269,75 @@ SharedMatrix RV::compute_hessian() {
                 }
 
                 // MB: w d_y(de_X^basis), one transpose member at full weight
-                // per-point second-derivative chain scalars against the rows
-                double frY[3], fsY[3] = {0.0, 0.0, 0.0}, ftY[3] = {0.0, 0.0, 0.0};
-                for (int yd = 0; yd < 3; yd++) {
-                    frY[yd] = v2_rho2[P] * drho[yd];
-                    if (ansatz >= 1) {
-                        frY[yd] += v2_rho_gamma[P] * dsig[yd];
-                        fsY[yd] = v2_rho_gamma[P] * drho[yd] + v2_gamma_gamma[P] * dsig[yd];
-                        if (is_meta) {
-                            frY[yd] += 2.0 * v2_rho_tau[P] * dtau[yd];
-                            fsY[yd] += 2.0 * v2_gamma_tau[P] * dtau[yd];
-                            ftY[yd] = 2.0 * v2_rho_tau[P] * drho[yd] + 2.0 * v2_gamma_tau[P] * dsig[yd]
-                                      + 4.0 * v2_tau_tau[P] * dtau[yd];
-                        }
-                    }
-                }
                 for (int ml = 0; ml < nlocal; ml++) {
                     int C = primary_->function_to_center(function_map[ml]);
                     for (int xd = 0; xd < 3; xd++) {
-                        double frho = -4.0 * U0[P][ml] * phi_i[xd][P][ml];
-                        double fsig = 0.0, ftau = 0.0;
-                        double Gx[3];
-                        if (ansatz >= 1) {
-                            for (int i = 0; i < 3; i++) {
-                                Gx[i] = -4.0 * (U0[P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                + Uip[i][P][ml] * phi_i[xd][P][ml]);
-                                fsig += 2.0 * rho_g[i][P] * Gx[i];
-                                if (is_meta) ftau += -2.0 * Uip[i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
-                            }
-                        }
                         for (int yd = 0; yd < 3; yd++) {
-                            double mb = frY[yd] * frho + fsY[yd] * fsig + ftY[yd] * ftau;
-                            // spatial derivatives of the rows themselves
-                            double dfrho = -4.0 * (Uip[yd][P][ml] * phi_i[xd][P][ml]
-                                                   + U0[P][ml] * phi_hess[hess_addr[xd][yd]][P][ml]);
-                            mb += v_rho[P] * dfrho;
-                            if (ansatz >= 1) {
-                                double dfsig = 0.0, dftau = 0.0;
-                                for (int i = 0; i < 3; i++) {
-                                    double dG = -4.0 * (Uip[yd][P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                        + U0[P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml]
-                                                        + Uhess[hess_addr[yd][i]][P][ml] * phi_i[xd][P][ml]
-                                                        + Uip[i][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml]);
-                                    dfsig += 2.0 * (ddrho[hess_addr[yd][i]] * Gx[i] + rho_g[i][P] * dG);
-                                    if (is_meta)
-                                        dftau += -2.0 * (Uhess[hess_addr[yd][i]][P][ml]
-                                                             * phi_hess[hess_addr[xd][i]][P][ml]
-                                                         + Uip[i][P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml]);
-                                }
-                                mb += v_gamma[P] * dfsig + vt * dftau;
-                            }
+                        // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_row_gradient(mgga_tau), restricted] <==
+                        double dot_dgrad_rho_h_grad_rho = 0.0;
+                        if (ansatz >= 1) dot_dgrad_rho_h_grad_rho = ddrho[hess_addr[yd][0]] * rho_g[0][P] + ddrho[hess_addr[yd][1]] * rho_g[1][P] + ddrho[hess_addr[yd][2]] * rho_g[2][P];
+                        double mb = 0.0;
+                        mb += -4 * U0[P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * v_rho[P];
+                        mb += -4 * Uip[yd][P][ml] * phi_i[xd][P][ml] * v_rho[P];
+                        mb += -4 * U0[P][ml] * drho[yd] * phi_i[xd][P][ml] * v2_rho2[P];
+                        if (ansatz >= 1) {
+                            mb += -8 * U0[P][ml] * ddrho[hess_addr[yd][0]] * phi_hess[hess_addr[xd][0]][P][ml] * v_gamma[P];
+                            mb += -8 * U0[P][ml] * ddrho[hess_addr[yd][1]] * phi_hess[hess_addr[xd][1]][P][ml] * v_gamma[P];
+                            mb += -8 * U0[P][ml] * ddrho[hess_addr[yd][2]] * phi_hess[hess_addr[xd][2]][P][ml] * v_gamma[P];
+                            mb += -8 * U0[P][ml] * phi_3[t3_addr[xd][yd][0]][P][ml] * rho_g[0][P] * v_gamma[P];
+                            mb += -8 * U0[P][ml] * phi_3[t3_addr[xd][yd][1]][P][ml] * rho_g[1][P] * v_gamma[P];
+                            mb += -8 * U0[P][ml] * phi_3[t3_addr[xd][yd][2]][P][ml] * rho_g[2][P] * v_gamma[P];
+                            mb += -8 * Uip[0][P][ml] * ddrho[hess_addr[yd][0]] * phi_i[xd][P][ml] * v_gamma[P];
+                            mb += -8 * Uip[0][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_g[0][P] * v_gamma[P];
+                            mb += -8 * Uip[1][P][ml] * ddrho[hess_addr[yd][1]] * phi_i[xd][P][ml] * v_gamma[P];
+                            mb += -8 * Uip[1][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_g[1][P] * v_gamma[P];
+                            mb += -8 * Uip[2][P][ml] * ddrho[hess_addr[yd][2]] * phi_i[xd][P][ml] * v_gamma[P];
+                            mb += -8 * Uip[2][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_g[2][P] * v_gamma[P];
+                            mb += -8 * Uip[yd][P][ml] * phi_hess[hess_addr[xd][0]][P][ml] * rho_g[0][P] * v_gamma[P];
+                            mb += -8 * Uip[yd][P][ml] * phi_hess[hess_addr[xd][1]][P][ml] * rho_g[1][P] * v_gamma[P];
+                            mb += -8 * Uip[yd][P][ml] * phi_hess[hess_addr[xd][2]][P][ml] * rho_g[2][P] * v_gamma[P];
+                            mb += -8 * Uhess[hess_addr[yd][0]][P][ml] * phi_i[xd][P][ml] * rho_g[0][P] * v_gamma[P];
+                            mb += -8 * Uhess[hess_addr[yd][1]][P][ml] * phi_i[xd][P][ml] * rho_g[1][P] * v_gamma[P];
+                            mb += -8 * Uhess[hess_addr[yd][2]][P][ml] * phi_i[xd][P][ml] * rho_g[2][P] * v_gamma[P];
+                            mb += -8 * U0[P][ml] * drho[yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_g[0][P] * v2_rho_gamma[P];
+                            mb += -8 * U0[P][ml] * drho[yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_g[1][P] * v2_rho_gamma[P];
+                            mb += -8 * U0[P][ml] * drho[yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_g[2][P] * v2_rho_gamma[P];
+                            mb += -8 * Uip[0][P][ml] * drho[yd] * phi_i[xd][P][ml] * rho_g[0][P] * v2_rho_gamma[P];
+                            mb += -8 * Uip[1][P][ml] * drho[yd] * phi_i[xd][P][ml] * rho_g[1][P] * v2_rho_gamma[P];
+                            mb += -8 * Uip[2][P][ml] * drho[yd] * phi_i[xd][P][ml] * rho_g[2][P] * v2_rho_gamma[P];
+                            mb += -8 * U0[P][ml] * dot_dgrad_rho_h_grad_rho * phi_i[xd][P][ml] * v2_rho_gamma[P];
+                            mb += -16 * U0[P][ml] * dot_dgrad_rho_h_grad_rho * phi_hess[hess_addr[xd][0]][P][ml] * rho_g[0][P] * v2_gamma_gamma[P];
+                            mb += -16 * U0[P][ml] * dot_dgrad_rho_h_grad_rho * phi_hess[hess_addr[xd][1]][P][ml] * rho_g[1][P] * v2_gamma_gamma[P];
+                            mb += -16 * U0[P][ml] * dot_dgrad_rho_h_grad_rho * phi_hess[hess_addr[xd][2]][P][ml] * rho_g[2][P] * v2_gamma_gamma[P];
+                            mb += -16 * Uip[0][P][ml] * dot_dgrad_rho_h_grad_rho * phi_i[xd][P][ml] * rho_g[0][P] * v2_gamma_gamma[P];
+                            mb += -16 * Uip[1][P][ml] * dot_dgrad_rho_h_grad_rho * phi_i[xd][P][ml] * rho_g[1][P] * v2_gamma_gamma[P];
+                            mb += -16 * Uip[2][P][ml] * dot_dgrad_rho_h_grad_rho * phi_i[xd][P][ml] * rho_g[2][P] * v2_gamma_gamma[P];
+                        }
+                        if (ansatz >= 2) {
+                            mb += -4 * Uip[0][P][ml] * phi_3[t3_addr[xd][yd][0]][P][ml] * v_tau[P];
+                            mb += -4 * Uip[1][P][ml] * phi_3[t3_addr[xd][yd][1]][P][ml] * v_tau[P];
+                            mb += -4 * Uip[2][P][ml] * phi_3[t3_addr[xd][yd][2]][P][ml] * v_tau[P];
+                            mb += -4 * Uhess[hess_addr[yd][0]][P][ml] * phi_hess[hess_addr[xd][0]][P][ml] * v_tau[P];
+                            mb += -4 * Uhess[hess_addr[yd][1]][P][ml] * phi_hess[hess_addr[xd][1]][P][ml] * v_tau[P];
+                            mb += -4 * Uhess[hess_addr[yd][2]][P][ml] * phi_hess[hess_addr[xd][2]][P][ml] * v_tau[P];
+                            mb += -4 * Uip[0][P][ml] * drho[yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_rho_tau[P];
+                            mb += -16 * Uip[0][P][ml] * dtau[yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_tau_tau[P];
+                            mb += -4 * Uip[1][P][ml] * drho[yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_rho_tau[P];
+                            mb += -16 * Uip[1][P][ml] * dtau[yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_tau_tau[P];
+                            mb += -4 * Uip[2][P][ml] * drho[yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_rho_tau[P];
+                            mb += -16 * Uip[2][P][ml] * dtau[yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_tau_tau[P];
+                            mb += -16 * U0[P][ml] * dtau[yd] * phi_i[xd][P][ml] * v2_rho_tau[P];
+                            mb += -32 * U0[P][ml] * dtau[yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_g[0][P] * v2_gamma_tau[P];
+                            mb += -32 * U0[P][ml] * dtau[yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_g[1][P] * v2_gamma_tau[P];
+                            mb += -32 * U0[P][ml] * dtau[yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_g[2][P] * v2_gamma_tau[P];
+                            mb += -32 * Uip[0][P][ml] * dtau[yd] * phi_i[xd][P][ml] * rho_g[0][P] * v2_gamma_tau[P];
+                            mb += -32 * Uip[1][P][ml] * dtau[yd] * phi_i[xd][P][ml] * rho_g[1][P] * v2_gamma_tau[P];
+                            mb += -32 * Uip[2][P][ml] * dtau[yd] * phi_i[xd][P][ml] * rho_g[2][P] * v2_gamma_tau[P];
+                            mb += -8 * Uip[0][P][ml] * dot_dgrad_rho_h_grad_rho * phi_hess[hess_addr[xd][0]][P][ml] * v2_gamma_tau[P];
+                            mb += -8 * Uip[1][P][ml] * dot_dgrad_rho_h_grad_rho * phi_hess[hess_addr[xd][1]][P][ml] * v2_gamma_tau[P];
+                            mb += -8 * Uip[2][P][ml] * dot_dgrad_rho_h_grad_rho * phi_hess[hess_addr[xd][2]][P][ml] * v2_gamma_tau[P];
+                        }
+                        // ==> END GENERATED CODE <==
                             Hp[3 * C + xd][3 * Ag + yd] += w[P] * mb;
                         }
                     }
