@@ -456,6 +456,26 @@ jobs:
         conda install conda-tree -c conda-forge
         conda-tree deptree
 
+    - name: dlopen -- Remove Addons
+      if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
+      run: conda remove qcmanybody --force -y
+
+    - name: dlopen -- Runtime Conda environment
+      if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
+      working-directory: ./objdir
+      run: |
+        conda info
+        conda list
+        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.__file__)"
+
+    - name: dlopen -- Test Addons with Pytest
+      if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
+      working-directory: ./objdir
+      run: |
+        export PYTHONPATH=stage/lib
+        pytest --cache-clear -v -rws --color yes -n auto -m qcmanybody stage/lib/psi4/tests/
+        pytest --cache-clear -v -rws --color yes -n auto stage/lib/psi4/tests/test_missing_qcmanybody.py‎
+
 # Notes
 # -----
 
