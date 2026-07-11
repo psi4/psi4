@@ -1839,9 +1839,10 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
             grid_->compute_weight_gradient(block, dw_mat);
             auto dwp = dw_mat->pointer();
 
-            // per-point spatial field derivatives (shared by both classes)
-            std::vector<double> drho(3 * npoints), dsig(3 * npoints, 0.0), dtau(3 * npoints, 0.0),
-                ddrho6(6 * npoints, 0.0);
+            // plumbing: per-point spatial field derivatives (TRUE total
+            // d rho / dd rho / d tau; the generated regions fold the
+            // Psi4 conventions)
+            std::vector<double> drho(3 * npoints), dtau(3 * npoints, 0.0), ddrho6(6 * npoints, 0.0);
             static const int kx6[6] = {0, 0, 0, 1, 1, 2};
             static const int ky6[6] = {0, 1, 2, 1, 2, 2};
             for (int P = 0; P < npoints; P++) {
@@ -1851,12 +1852,10 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
                                                    + C_DDOT(nlocal, U0p[P], 1, phi_hess[k][P], 1));
                     for (int d = 0; d < 3; d++) {
                         drho[3 * P + d] = rho_g[d][P];
-                        for (int i = 0; i < 3; i++) {
-                            dsig[3 * P + d] += 2.0 * rho_g[i][P] * ddrho6[6 * P + hess_addr[d][i]];
-                            if (ansatz >= 2)
+                        if (ansatz >= 2)
+                            for (int i = 0; i < 3; i++)
                                 dtau[3 * P + d] +=
                                     2.0 * C_DDOT(nlocal, Uip[i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
-                        }
                     }
                 } else {
                     for (int d = 0; d < 3; d++) drho[3 * P + d] = 4.0 * C_DDOT(nlocal, U0p[P], 1, phi_i[d][P], 1);
@@ -1878,52 +1877,56 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
 
             // ==> weight class <== //
             for (int X = 0; X < natom3; X++) {
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: fock(mgga_tau) weight class, restricted] <==
                 for (int P = 0; P < npoints; P++) {
                     std::fill(T0p[P], T0p[P] + nlocal, 0.0);
-                    if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
-                    double dwX = dwp[X][P];
-                    C_DAXPY(nlocal, 0.5 * dwX * v_rho_a[P], phi[P], 1, T0p[P], 1);
                     if (ansatz >= 1) {
-                        for (int i = 0; i < 3; i++)
-                            C_DAXPY(nlocal, 2.0 * dwX * v_gamma[P] * rho_g[i][P], phi_i[i][P], 1, T0p[P], 1);
+                        std::fill(Tip[0][P], Tip[0][P] + nlocal, 0.0);
+                        std::fill(Tip[1][P], Tip[1][P] + nlocal, 0.0);
+                        std::fill(Tip[2][P], Tip[2][P] + nlocal, 0.0);
                     }
-                }
-                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0p[0], max_functions, phi[0], coll_funcs, 0.0,
-                        Vx_localp[0], max_functions);
-                if (ansatz >= 2) {
-                    for (int i = 0; i < 3; i++) {
-                        for (int P = 0; P < npoints; P++) {
-                            std::fill(T0p[P], T0p[P] + nlocal, 0.0);
-                            if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
-                            C_DAXPY(nlocal, 0.5 * dwp[X][P] * v_tau[P], phi_i[i][P], 1, T0p[P], 1);
+                    if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
+                    double c;
+                    // (chi, chi) at half weight
+                    c = 0.0;
+                    c += 0.5 * dwp[X][P] * v_rho_a[P];
+                    C_DAXPY(nlocal, c, phi[P], 1, T0p[P], 1);
+                    // (dchi[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * dwp[X][P] * rho_g[0][P] * v_gamma[P];
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, T0p[P], 1);
+                    }
+                    // (dchi[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * dwp[X][P] * rho_g[1][P] * v_gamma[P];
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, T0p[P], 1);
+                    }
+                    // (dchi[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * dwp[X][P] * rho_g[2][P] * v_gamma[P];
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, T0p[P], 1);
+                    }
+                    if (ansatz >= 1) {
+                        // (dchi[0], dchi[0]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau[P];
+                            C_DAXPY(nlocal, c, phi_i[0][P], 1, Tip[0][P], 1);
                         }
-                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0p[0], max_functions, phi_i[i][0],
-                                coll_funcs, 1.0, Vx_localp[0], max_functions);
-                    }
-                }
-                scatter(X);
-            }
-
-            // ==> grid-motion class (parent atom only) <== //
-            for (int d = 0; d < 3; d++) {
-                for (int P = 0; P < npoints; P++) {
-                    std::fill(T0p[P], T0p[P] + nlocal, 0.0);
-                    if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
-                    // chained first-derivative arrays at this point
-                    double frY = v_rho_aa[P] * drho[3 * P + d];
-                    if (ansatz >= 1) frY += v2_rho_gamma[P] * dsig[3 * P + d];
-                    if (ansatz >= 2) frY += 2.0 * v2_rho_tau[P] * dtau[3 * P + d];
-                    C_DAXPY(nlocal, 0.5 * w[P] * frY, phi[P], 1, T0p[P], 1);
-                    C_DAXPY(nlocal, w[P] * v_rho_a[P], phi_i[d][P], 1, T0p[P], 1);
-                    if (ansatz >= 1) {
-                        double fsY = v2_rho_gamma[P] * drho[3 * P + d] + v2_gamma_gamma[P] * dsig[3 * P + d];
-                        if (ansatz >= 2) fsY += 2.0 * v2_gamma_tau[P] * dtau[3 * P + d];
-                        for (int i = 0; i < 3; i++) {
-                            C_DAXPY(nlocal,
-                                    w[P] * (2.0 * fsY * rho_g[i][P] + 2.0 * v_gamma[P] * ddrho6[6 * P + hess_addr[d][i]]),
-                                    phi_i[i][P], 1, T0p[P], 1);
-                            C_DAXPY(nlocal, w[P] * 2.0 * v_gamma[P] * rho_g[i][P], phi_hess[hess_addr[d][i]][P], 1,
-                                    T0p[P], 1);
+                        // (dchi[1], dchi[1]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau[P];
+                            C_DAXPY(nlocal, c, phi_i[1][P], 1, Tip[1][P], 1);
+                        }
+                        // (dchi[2], dchi[2]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau[P];
+                            C_DAXPY(nlocal, c, phi_i[2][P], 1, Tip[2][P], 1);
                         }
                     }
                 }
@@ -1931,22 +1934,159 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
                         Vx_localp[0], max_functions);
                 if (ansatz >= 1) {
                     for (int i = 0; i < 3; i++) {
-                        for (int P = 0; P < npoints; P++) {
-                            std::fill(T0p[P], T0p[P] + nlocal, 0.0);
-                            if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
-                            C_DAXPY(nlocal, w[P] * 2.0 * v_gamma[P] * rho_g[i][P], phi_i[d][P], 1, T0p[P], 1);
-                            if (ansatz >= 2) {
-                                double ftY = 2.0 * v2_rho_tau[P] * drho[3 * P + d]
-                                             + 2.0 * v2_gamma_tau[P] * dsig[3 * P + d]
-                                             + 4.0 * v2_tau_tau[P] * dtau[3 * P + d];
-                                C_DAXPY(nlocal, 0.25 * w[P] * ftY, phi_i[i][P], 1, T0p[P], 1);
-                                C_DAXPY(nlocal, w[P] * v_tau[P], phi_hess[hess_addr[d][i]][P], 1, T0p[P], 1);
-                            }
-                        }
-                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0p[0], max_functions, phi_i[i][0],
-                                coll_funcs, 1.0, Vx_localp[0], max_functions);
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tip[i][0], max_functions, phi_i[i][0], coll_funcs, 1.0,
+                                Vx_localp[0], max_functions);
                     }
                 }
+                // ==> END GENERATED CODE <==
+                scatter(X);
+            }
+
+            // ==> grid-motion class (parent atom only) <== //
+            for (int d = 0; d < 3; d++) {
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_gradient(fock(mgga_tau)), restricted] <==
+                for (int P = 0; P < npoints; P++) {
+                    std::fill(T0p[P], T0p[P] + nlocal, 0.0);
+                    if (ansatz >= 1) {
+                        std::fill(Tip[0][P], Tip[0][P] + nlocal, 0.0);
+                        std::fill(Tip[1][P], Tip[1][P] + nlocal, 0.0);
+                        std::fill(Tip[2][P], Tip[2][P] + nlocal, 0.0);
+                    }
+                    if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
+                    double dot_dgrad_rho_g_grad_rho = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_g_grad_rho = ddrho6[6 * P + hess_addr[d][0]] * rho_g[0][P] + ddrho6[6 * P + hess_addr[d][1]] * rho_g[1][P] + ddrho6[6 * P + hess_addr[d][2]] * rho_g[2][P];
+                    double c;
+                    // (chi, chi) at half weight
+                    c = 0.0;
+                    c += 0.5 * drho[3 * P + d] * v_rho_aa[P] * w[P];
+                    if (ansatz >= 1) {
+                        c += dot_dgrad_rho_g_grad_rho * v2_rho_gamma[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        c += dtau[3 * P + d] * v2_rho_tau[P] * w[P];
+                    }
+                    C_DAXPY(nlocal, c, phi[P], 1, T0p[P], 1);
+                    // (dchi[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * ddrho6[6 * P + hess_addr[d][0]] * v_gamma[P] * w[P];
+                        c += 2 * drho[3 * P + d] * rho_g[0][P] * v2_rho_gamma[P] * w[P];
+                        c += 4 * dot_dgrad_rho_g_grad_rho * rho_g[0][P] * v2_gamma_gamma[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 4 * dtau[3 * P + d] * rho_g[0][P] * v2_gamma_tau[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, T0p[P], 1);
+                    }
+                    // (dchi[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * ddrho6[6 * P + hess_addr[d][1]] * v_gamma[P] * w[P];
+                        c += 2 * drho[3 * P + d] * rho_g[1][P] * v2_rho_gamma[P] * w[P];
+                        c += 4 * dot_dgrad_rho_g_grad_rho * rho_g[1][P] * v2_gamma_gamma[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 4 * dtau[3 * P + d] * rho_g[1][P] * v2_gamma_tau[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, T0p[P], 1);
+                    }
+                    // (dchi[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * ddrho6[6 * P + hess_addr[d][2]] * v_gamma[P] * w[P];
+                        c += 2 * drho[3 * P + d] * rho_g[2][P] * v2_rho_gamma[P] * w[P];
+                        c += 4 * dot_dgrad_rho_g_grad_rho * rho_g[2][P] * v2_gamma_gamma[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 4 * dtau[3 * P + d] * rho_g[2][P] * v2_gamma_tau[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, T0p[P], 1);
+                    }
+                    // (dchi_g, chi)
+                    c = 0.0;
+                    c += v_rho_a[P] * w[P];
+                    C_DAXPY(nlocal, c, phi_i[d][P], 1, T0p[P], 1);
+                    // (ddchi_g[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * rho_g[0][P] * v_gamma[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr[d][0]][P], 1, T0p[P], 1);
+                    }
+                    // (ddchi_g[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * rho_g[1][P] * v_gamma[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr[d][1]][P], 1, T0p[P], 1);
+                    }
+                    // (ddchi_g[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += 2 * rho_g[2][P] * v_gamma[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr[d][2]][P], 1, T0p[P], 1);
+                    }
+                    if (ansatz >= 1) {
+                        // (dchi[0], dchi[0]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[3 * P + d] * v2_rho_tau[P] * w[P];
+                            c += dtau[3 * P + d] * v2_tau_tau[P] * w[P];
+                            c += dot_dgrad_rho_g_grad_rho * v2_gamma_tau[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[0][P], 1, Tip[0][P], 1);
+                        }
+                        // (dchi_g, dchi[0])
+                        c = 0.0;
+                        c += 2 * rho_g[0][P] * v_gamma[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tip[0][P], 1);
+                        // (ddchi_g[0], dchi[0])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr[d][0]][P], 1, Tip[0][P], 1);
+                        }
+                        // (dchi[1], dchi[1]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[3 * P + d] * v2_rho_tau[P] * w[P];
+                            c += dtau[3 * P + d] * v2_tau_tau[P] * w[P];
+                            c += dot_dgrad_rho_g_grad_rho * v2_gamma_tau[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[1][P], 1, Tip[1][P], 1);
+                        }
+                        // (dchi_g, dchi[1])
+                        c = 0.0;
+                        c += 2 * rho_g[1][P] * v_gamma[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tip[1][P], 1);
+                        // (ddchi_g[1], dchi[1])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr[d][1]][P], 1, Tip[1][P], 1);
+                        }
+                        // (dchi[2], dchi[2]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[3 * P + d] * v2_rho_tau[P] * w[P];
+                            c += dtau[3 * P + d] * v2_tau_tau[P] * w[P];
+                            c += dot_dgrad_rho_g_grad_rho * v2_gamma_tau[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[2][P], 1, Tip[2][P], 1);
+                        }
+                        // (dchi_g, dchi[2])
+                        c = 0.0;
+                        c += 2 * rho_g[2][P] * v_gamma[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tip[2][P], 1);
+                        // (ddchi_g[2], dchi[2])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr[d][2]][P], 1, Tip[2][P], 1);
+                        }
+                    }
+                }
+                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0p[0], max_functions, phi[0], coll_funcs, 0.0,
+                        Vx_localp[0], max_functions);
+                if (ansatz >= 1) {
+                    for (int i = 0; i < 3; i++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tip[i][0], max_functions, phi_i[i][0], coll_funcs, 1.0,
+                                Vx_localp[0], max_functions);
+                    }
+                }
+                // ==> END GENERATED CODE <==
                 scatter(3 * Ag + d);
             }
         }
@@ -4699,9 +4839,10 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
             grid_->compute_weight_gradient(block, dw_mat);
             auto dwp = dw_mat->pointer();
 
-            // per-point spatial field derivatives, per channel
-            std::vector<double> drho(6 * npoints), dsig(9 * npoints, 0.0), dtau(6 * npoints, 0.0),
-                ddrho(12 * npoints, 0.0);
+            // plumbing: per-point per-channel spatial field derivatives
+            // (TRUE d rho / dd rho / d tau per channel; the generated
+            // regions fold the Psi4 conventions)
+            std::vector<double> drho(6 * npoints), dtau(6 * npoints, 0.0), ddrho(12 * npoints, 0.0);
             static const int kx6[6] = {0, 0, 0, 1, 1, 2};
             static const int ky6[6] = {0, 1, 2, 1, 2, 2};
             int hess_addr_r[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
@@ -4725,19 +4866,6 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
                             }
                         }
                     }
-                    for (int d = 0; d < 3; d++) {
-                        double saa = 0.0, sab = 0.0, sbb = 0.0;
-                        for (int i = 0; i < 3; i++) {
-                            double dda = ddrho[12 * P + hess_addr_r[d][i]];
-                            double ddb = ddrho[12 * P + 6 + hess_addr_r[d][i]];
-                            saa += 2.0 * rho_ag[i][P] * dda;
-                            sbb += 2.0 * rho_bg[i][P] * ddb;
-                            sab += rho_ag[i][P] * ddb + rho_bg[i][P] * dda;
-                        }
-                        dsig[9 * P + 3 * 0 + d] = saa;
-                        dsig[9 * P + 3 * 1 + d] = sab;
-                        dsig[9 * P + 3 * 2 + d] = sbb;
-                    }
                 } else {
                     for (int sp = 0; sp < 2; sp++)
                         for (int d = 0; d < 3; d++)
@@ -4757,151 +4885,599 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
                     }
                 }
             };
-            double* v_rho_s[2] = {v_rho_a, v_rho_b};
-            double* v_tau_s[2] = {v_tau_a, v_tau_b};
-            double* v_g_ss[2] = {v_gamma_aa, v_gamma_bb};
-            double** T0s[2] = {T0ap, T0bp};
 
             // ==> weight class <== //
             for (int X = 0; X < natom3; X++) {
-                for (int sp = 0; sp < 2; sp++) {
-                    double** T0 = T0s[sp];
-                    int op = 1 - sp;
-                    for (int P = 0; P < npoints; P++) {
-                        std::fill(T0[P], T0[P] + nlocal, 0.0);
-                        if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
-                        double dwX = dwp[X][P];
-                        C_DAXPY(nlocal, 0.5 * dwX * v_rho_s[sp][P], phi[P], 1, T0[P], 1);
-                        if (ansatz >= 1) {
-                            for (int i = 0; i < 3; i++)
-                                C_DAXPY(nlocal,
-                                        dwX * (2.0 * v_g_ss[sp][P] * rho_sg[sp][i][P]
-                                               + v_gamma_ab[P] * rho_sg[op][i][P]),
-                                        phi_i[i][P], 1, T0[P], 1);
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: fock_spin(mgga_tau, a) weight class] <==
+                for (int P = 0; P < npoints; P++) {
+                    std::fill(T0ap[P], T0ap[P] + nlocal, 0.0);
+                    if (ansatz >= 1) {
+                        std::fill(Tiap[0][P], Tiap[0][P] + nlocal, 0.0);
+                        std::fill(Tiap[1][P], Tiap[1][P] + nlocal, 0.0);
+                        std::fill(Tiap[2][P], Tiap[2][P] + nlocal, 0.0);
+                    }
+                    if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
+                    double c;
+                    // (chi, chi) at half weight
+                    c = 0.0;
+                    c += 0.5 * dwp[X][P] * v_rho_a[P];
+                    C_DAXPY(nlocal, c, phi[P], 1, T0ap[P], 1);
+                    // (dchi[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += dwp[X][P] * rho_bg[0][P] * v_gamma_ab[P];
+                        c += 2 * dwp[X][P] * rho_ag[0][P] * v_gamma_aa[P];
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, T0ap[P], 1);
+                    }
+                    // (dchi[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += dwp[X][P] * rho_bg[1][P] * v_gamma_ab[P];
+                        c += 2 * dwp[X][P] * rho_ag[1][P] * v_gamma_aa[P];
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, T0ap[P], 1);
+                    }
+                    // (dchi[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += dwp[X][P] * rho_bg[2][P] * v_gamma_ab[P];
+                        c += 2 * dwp[X][P] * rho_ag[2][P] * v_gamma_aa[P];
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, T0ap[P], 1);
+                    }
+                    if (ansatz >= 1) {
+                        // (dchi[0], dchi[0]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau_a[P];
+                            C_DAXPY(nlocal, c, phi_i[0][P], 1, Tiap[0][P], 1);
+                        }
+                        // (dchi[1], dchi[1]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau_a[P];
+                            C_DAXPY(nlocal, c, phi_i[1][P], 1, Tiap[1][P], 1);
+                        }
+                        // (dchi[2], dchi[2]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau_a[P];
+                            C_DAXPY(nlocal, c, phi_i[2][P], 1, Tiap[2][P], 1);
                         }
                     }
-                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0[0], max_functions, phi[0], coll_funcs, 0.0,
-                            Vx_localp[0], max_functions);
-                    if (ansatz >= 2) {
-                        for (int i = 0; i < 3; i++) {
-                            for (int P = 0; P < npoints; P++) {
-                                std::fill(T0[P], T0[P] + nlocal, 0.0);
-                                if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
-                                C_DAXPY(nlocal, 0.5 * dwp[X][P] * v_tau_s[sp][P], phi_i[i][P], 1, T0[P], 1);
-                            }
-                            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0[0], max_functions, phi_i[i][0],
-                                    coll_funcs, 1.0, Vx_localp[0], max_functions);
-                        }
-                    }
-                    scatter(6 * (X / 3) + 2 * (X % 3) + sp);
                 }
+                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0ap[0], max_functions, phi[0], coll_funcs, 0.0,
+                        Vx_localp[0], max_functions);
+                if (ansatz >= 1) {
+                    for (int i = 0; i < 3; i++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tiap[i][0], max_functions, phi_i[i][0], coll_funcs, 1.0,
+                                Vx_localp[0], max_functions);
+                    }
+                }
+                // ==> END GENERATED CODE <==
+                scatter(6 * (X / 3) + 2 * (X % 3) + 0);
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: fock_spin(mgga_tau, b) weight class] <==
+                for (int P = 0; P < npoints; P++) {
+                    std::fill(T0bp[P], T0bp[P] + nlocal, 0.0);
+                    if (ansatz >= 1) {
+                        std::fill(Tibp[0][P], Tibp[0][P] + nlocal, 0.0);
+                        std::fill(Tibp[1][P], Tibp[1][P] + nlocal, 0.0);
+                        std::fill(Tibp[2][P], Tibp[2][P] + nlocal, 0.0);
+                    }
+                    if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
+                    double c;
+                    // (chi, chi) at half weight
+                    c = 0.0;
+                    c += 0.5 * dwp[X][P] * v_rho_b[P];
+                    C_DAXPY(nlocal, c, phi[P], 1, T0bp[P], 1);
+                    // (dchi[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += dwp[X][P] * rho_ag[0][P] * v_gamma_ab[P];
+                        c += 2 * dwp[X][P] * rho_bg[0][P] * v_gamma_bb[P];
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, T0bp[P], 1);
+                    }
+                    // (dchi[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += dwp[X][P] * rho_ag[1][P] * v_gamma_ab[P];
+                        c += 2 * dwp[X][P] * rho_bg[1][P] * v_gamma_bb[P];
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, T0bp[P], 1);
+                    }
+                    // (dchi[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += dwp[X][P] * rho_ag[2][P] * v_gamma_ab[P];
+                        c += 2 * dwp[X][P] * rho_bg[2][P] * v_gamma_bb[P];
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, T0bp[P], 1);
+                    }
+                    if (ansatz >= 1) {
+                        // (dchi[0], dchi[0]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau_b[P];
+                            C_DAXPY(nlocal, c, phi_i[0][P], 1, Tibp[0][P], 1);
+                        }
+                        // (dchi[1], dchi[1]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau_b[P];
+                            C_DAXPY(nlocal, c, phi_i[1][P], 1, Tibp[1][P], 1);
+                        }
+                        // (dchi[2], dchi[2]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * dwp[X][P] * v_tau_b[P];
+                            C_DAXPY(nlocal, c, phi_i[2][P], 1, Tibp[2][P], 1);
+                        }
+                    }
+                }
+                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0bp[0], max_functions, phi[0], coll_funcs, 0.0,
+                        Vx_localp[0], max_functions);
+                if (ansatz >= 1) {
+                    for (int i = 0; i < 3; i++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tibp[i][0], max_functions, phi_i[i][0], coll_funcs, 1.0,
+                                Vx_localp[0], max_functions);
+                    }
+                }
+                // ==> END GENERATED CODE <==
+                scatter(6 * (X / 3) + 2 * (X % 3) + 1);
             }
 
             // ==> grid-motion class (parent atom only) <== //
             for (int d = 0; d < 3; d++) {
-                for (int sp = 0; sp < 2; sp++) {
-                    double** T0 = T0s[sp];
-                    int op = 1 - sp;
-                    for (int P = 0; P < npoints; P++) {
-                        std::fill(T0[P], T0[P] + nlocal, 0.0);
-                        if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
-                        double dra = drho[6 * P + d], drb = drho[6 * P + 3 + d];
-                        double dsa = dsig[9 * P + d], dsm = dsig[9 * P + 3 + d], dsb = dsig[9 * P + 6 + d];
-                        double dta = dtau[6 * P + d], dtb = dtau[6 * P + 3 + d];
-                        // chained first-derivative arrays for this channel
-                        double frY, gYss, gYab, ftY = 0.0;
-                        if (sp == 0) {
-                            frY = v2_rho2_aa[P] * dra + v2_rho2_ab[P] * drb;
-                            if (ansatz >= 1)
-                                frY += v2_rho_a_gamma_aa[P] * dsa + v2_rho_a_gamma_ab[P] * dsm
-                                       + v2_rho_a_gamma_bb[P] * dsb;
-                            if (ansatz >= 2) frY += 2.0 * (v2_rho_a_tau_a[P] * dta + v2_rho_a_tau_b[P] * dtb);
-                        } else {
-                            frY = v2_rho2_bb[P] * drb + v2_rho2_ab[P] * dra;
-                            if (ansatz >= 1)
-                                frY += v2_rho_b_gamma_bb[P] * dsb + v2_rho_b_gamma_ab[P] * dsm
-                                       + v2_rho_b_gamma_aa[P] * dsa;
-                            if (ansatz >= 2) frY += 2.0 * (v2_rho_b_tau_b[P] * dtb + v2_rho_b_tau_a[P] * dta);
-                        }
-                        C_DAXPY(nlocal, 0.5 * w[P] * frY, phi[P], 1, T0[P], 1);
-                        C_DAXPY(nlocal, w[P] * v_rho_s[sp][P], phi_i[d][P], 1, T0[P], 1);
-                        if (ansatz >= 1) {
-                            if (sp == 0) {
-                                gYss = v2_rho_a_gamma_aa[P] * dra + v2_rho_b_gamma_aa[P] * drb
-                                       + v2_gamma_aa_gamma_aa[P] * dsa + v2_gamma_aa_gamma_ab[P] * dsm
-                                       + v2_gamma_aa_gamma_bb[P] * dsb;
-                                gYab = v2_rho_a_gamma_ab[P] * dra + v2_rho_b_gamma_ab[P] * drb
-                                       + v2_gamma_aa_gamma_ab[P] * dsa + v2_gamma_ab_gamma_ab[P] * dsm
-                                       + v2_gamma_ab_gamma_bb[P] * dsb;
-                                if (ansatz >= 2) {
-                                    gYss += 2.0 * (v2_gamma_aa_tau_a[P] * dta + v2_gamma_aa_tau_b[P] * dtb);
-                                    gYab += 2.0 * (v2_gamma_ab_tau_a[P] * dta + v2_gamma_ab_tau_b[P] * dtb);
-                                }
-                            } else {
-                                gYss = v2_rho_b_gamma_bb[P] * drb + v2_rho_a_gamma_bb[P] * dra
-                                       + v2_gamma_bb_gamma_bb[P] * dsb + v2_gamma_ab_gamma_bb[P] * dsm
-                                       + v2_gamma_aa_gamma_bb[P] * dsa;
-                                gYab = v2_rho_b_gamma_ab[P] * drb + v2_rho_a_gamma_ab[P] * dra
-                                       + v2_gamma_ab_gamma_bb[P] * dsb + v2_gamma_ab_gamma_ab[P] * dsm
-                                       + v2_gamma_aa_gamma_ab[P] * dsa;
-                                if (ansatz >= 2) {
-                                    gYss += 2.0 * (v2_gamma_bb_tau_a[P] * dta + v2_gamma_bb_tau_b[P] * dtb);
-                                    gYab += 2.0 * (v2_gamma_ab_tau_a[P] * dta + v2_gamma_ab_tau_b[P] * dtb);
-                                }
-                            }
-                            for (int i = 0; i < 3; i++) {
-                                double dds = ddrho[12 * P + 6 * sp + hess_addr_r[d][i]];
-                                double ddo = ddrho[12 * P + 6 * op + hess_addr_r[d][i]];
-                                C_DAXPY(nlocal,
-                                        w[P] * (2.0 * gYss * rho_sg[sp][i][P] + gYab * rho_sg[op][i][P]
-                                                + 2.0 * v_g_ss[sp][P] * dds + v_gamma_ab[P] * ddo),
-                                        phi_i[i][P], 1, T0[P], 1);
-                                C_DAXPY(nlocal,
-                                        w[P] * (2.0 * v_g_ss[sp][P] * rho_sg[sp][i][P]
-                                                + v_gamma_ab[P] * rho_sg[op][i][P]),
-                                        phi_hess[hess_addr_r[d][i]][P], 1, T0[P], 1);
-                            }
-                        }
-                    }
-                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0[0], max_functions, phi[0], coll_funcs, 0.0,
-                            Vx_localp[0], max_functions);
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_gradient_spin(mgga_tau, a)] <==
+                for (int P = 0; P < npoints; P++) {
+                    std::fill(T0ap[P], T0ap[P] + nlocal, 0.0);
                     if (ansatz >= 1) {
-                        for (int i = 0; i < 3; i++) {
-                            for (int P = 0; P < npoints; P++) {
-                                std::fill(T0[P], T0[P] + nlocal, 0.0);
-                                if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
-                                C_DAXPY(nlocal,
-                                        w[P] * (2.0 * v_g_ss[sp][P] * rho_sg[sp][i][P]
-                                                + v_gamma_ab[P] * rho_sg[op][i][P]),
-                                        phi_i[d][P], 1, T0[P], 1);
-                                if (ansatz >= 2) {
-                                    double dra = drho[6 * P + d], drb = drho[6 * P + 3 + d];
-                                    double dsa = dsig[9 * P + d], dsm = dsig[9 * P + 3 + d],
-                                           dsb = dsig[9 * P + 6 + d];
-                                    double dta = dtau[6 * P + d], dtb = dtau[6 * P + 3 + d];
-                                    double ftY;
-                                    if (sp == 0) {
-                                        ftY = 2.0 * (v2_rho_a_tau_a[P] * dra + v2_rho_b_tau_a[P] * drb
-                                                     + v2_gamma_aa_tau_a[P] * dsa + v2_gamma_ab_tau_a[P] * dsm
-                                                     + v2_gamma_bb_tau_a[P] * dsb)
-                                              + 4.0 * (v2_tau_a_tau_a[P] * dta + v2_tau_a_tau_b[P] * dtb);
-                                    } else {
-                                        ftY = 2.0 * (v2_rho_a_tau_b[P] * dra + v2_rho_b_tau_b[P] * drb
-                                                     + v2_gamma_aa_tau_b[P] * dsa + v2_gamma_ab_tau_b[P] * dsm
-                                                     + v2_gamma_bb_tau_b[P] * dsb)
-                                              + 4.0 * (v2_tau_a_tau_b[P] * dta + v2_tau_b_tau_b[P] * dtb);
-                                    }
-                                    C_DAXPY(nlocal, 0.25 * w[P] * ftY, phi_i[i][P], 1, T0[P], 1);
-                                    C_DAXPY(nlocal, w[P] * v_tau_s[sp][P], phi_hess[hess_addr_r[d][i]][P], 1,
-                                            T0[P], 1);
-                                }
-                            }
-                            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0[0], max_functions, phi_i[i][0],
-                                    coll_funcs, 1.0, Vx_localp[0], max_functions);
+                        std::fill(Tiap[0][P], Tiap[0][P] + nlocal, 0.0);
+                        std::fill(Tiap[1][P], Tiap[1][P] + nlocal, 0.0);
+                        std::fill(Tiap[2][P], Tiap[2][P] + nlocal, 0.0);
+                    }
+                    if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
+                    double dot_dgrad_rho_a_g_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_g_grad_rho_a = ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_ag[0][P] + ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_ag[1][P] + ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_ag[2][P];
+                    double dot_dgrad_rho_a_g_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_g_grad_rho_b = ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_bg[0][P] + ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_bg[1][P] + ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_bg[2][P];
+                    double dot_dgrad_rho_b_g_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_g_grad_rho_a = ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_ag[0][P] + ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_ag[1][P] + ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_ag[2][P];
+                    double dot_dgrad_rho_b_g_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_g_grad_rho_b = ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_bg[0][P] + ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_bg[1][P] + ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_bg[2][P];
+                    double c;
+                    // (chi, chi) at half weight
+                    c = 0.0;
+                    c += 0.5 * drho[6 * P + 0 + d] * v2_rho2_aa[P] * w[P];
+                    c += 0.5 * drho[6 * P + 3 + d] * v2_rho2_ab[P] * w[P];
+                    if (ansatz >= 1) {
+                        c += dot_dgrad_rho_a_g_grad_rho_a * v2_rho_a_gamma_aa[P] * w[P];
+                        c += 0.5 * dot_dgrad_rho_a_g_grad_rho_b * v2_rho_a_gamma_ab[P] * w[P];
+                        c += 0.5 * dot_dgrad_rho_b_g_grad_rho_a * v2_rho_a_gamma_ab[P] * w[P];
+                        c += dot_dgrad_rho_b_g_grad_rho_b * v2_rho_a_gamma_bb[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        c += dtau[6 * P + 0 + d] * v2_rho_a_tau_a[P] * w[P];
+                        c += dtau[6 * P + 3 + d] * v2_rho_a_tau_b[P] * w[P];
+                    }
+                    C_DAXPY(nlocal, c, phi[P], 1, T0ap[P], 1);
+                    // (dchi[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += ddrho[12 * P + 6 + hess_addr_r[d][0]] * v_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][0]] * v_gamma_aa[P] * w[P];
+                        c += drho[6 * P + 0 + d] * rho_bg[0][P] * v2_rho_a_gamma_ab[P] * w[P];
+                        c += drho[6 * P + 3 + d] * rho_bg[0][P] * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 2 * drho[6 * P + 0 + d] * rho_ag[0][P] * v2_rho_a_gamma_aa[P] * w[P];
+                        c += 2 * drho[6 * P + 3 + d] * rho_ag[0][P] * v2_rho_b_gamma_aa[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_ag[0][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_ag[1][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_ag[0][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_ag[2][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_ag[0][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_a_g_grad_rho_a * rho_ag[0][P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                        c += dot_dgrad_rho_a_g_grad_rho_b * rho_bg[0][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 2 * dot_dgrad_rho_b_g_grad_rho_a * rho_ag[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += dot_dgrad_rho_b_g_grad_rho_a * rho_bg[0][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 2 * dot_dgrad_rho_b_g_grad_rho_b * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 4 * dot_dgrad_rho_b_g_grad_rho_b * rho_ag[0][P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 2 * dtau[6 * P + 0 + d] * rho_bg[0][P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 2 * dtau[6 * P + 3 + d] * rho_bg[0][P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 4 * dtau[6 * P + 0 + d] * rho_ag[0][P] * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 4 * dtau[6 * P + 3 + d] * rho_ag[0][P] * v2_gamma_aa_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, T0ap[P], 1);
+                    }
+                    // (dchi[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += ddrho[12 * P + 6 + hess_addr_r[d][1]] * v_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][1]] * v_gamma_aa[P] * w[P];
+                        c += drho[6 * P + 0 + d] * rho_bg[1][P] * v2_rho_a_gamma_ab[P] * w[P];
+                        c += drho[6 * P + 3 + d] * rho_bg[1][P] * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 2 * drho[6 * P + 0 + d] * rho_ag[1][P] * v2_rho_a_gamma_aa[P] * w[P];
+                        c += 2 * drho[6 * P + 3 + d] * rho_ag[1][P] * v2_rho_b_gamma_aa[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_ag[0][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_ag[1][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_ag[1][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_ag[2][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_ag[1][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_a_g_grad_rho_a * rho_ag[1][P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                        c += dot_dgrad_rho_a_g_grad_rho_b * rho_bg[1][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 2 * dot_dgrad_rho_b_g_grad_rho_a * rho_ag[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += dot_dgrad_rho_b_g_grad_rho_a * rho_bg[1][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 2 * dot_dgrad_rho_b_g_grad_rho_b * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 4 * dot_dgrad_rho_b_g_grad_rho_b * rho_ag[1][P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 2 * dtau[6 * P + 0 + d] * rho_bg[1][P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 2 * dtau[6 * P + 3 + d] * rho_bg[1][P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 4 * dtau[6 * P + 0 + d] * rho_ag[1][P] * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 4 * dtau[6 * P + 3 + d] * rho_ag[1][P] * v2_gamma_aa_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, T0ap[P], 1);
+                    }
+                    // (dchi[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += ddrho[12 * P + 6 + hess_addr_r[d][2]] * v_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][2]] * v_gamma_aa[P] * w[P];
+                        c += drho[6 * P + 0 + d] * rho_bg[2][P] * v2_rho_a_gamma_ab[P] * w[P];
+                        c += drho[6 * P + 3 + d] * rho_bg[2][P] * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 2 * drho[6 * P + 0 + d] * rho_ag[2][P] * v2_rho_a_gamma_aa[P] * w[P];
+                        c += 2 * drho[6 * P + 3 + d] * rho_ag[2][P] * v2_rho_b_gamma_aa[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_ag[0][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_ag[2][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_ag[1][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_ag[2][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_ag[2][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_a_g_grad_rho_a * rho_ag[2][P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                        c += dot_dgrad_rho_a_g_grad_rho_b * rho_bg[2][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 2 * dot_dgrad_rho_b_g_grad_rho_a * rho_ag[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += dot_dgrad_rho_b_g_grad_rho_a * rho_bg[2][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 2 * dot_dgrad_rho_b_g_grad_rho_b * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 4 * dot_dgrad_rho_b_g_grad_rho_b * rho_ag[2][P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 2 * dtau[6 * P + 0 + d] * rho_bg[2][P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 2 * dtau[6 * P + 3 + d] * rho_bg[2][P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 4 * dtau[6 * P + 0 + d] * rho_ag[2][P] * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 4 * dtau[6 * P + 3 + d] * rho_ag[2][P] * v2_gamma_aa_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, T0ap[P], 1);
+                    }
+                    // (dchi_g, chi)
+                    c = 0.0;
+                    c += v_rho_a[P] * w[P];
+                    C_DAXPY(nlocal, c, phi_i[d][P], 1, T0ap[P], 1);
+                    // (ddchi_g[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += rho_bg[0][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_ag[0][P] * v_gamma_aa[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][0]][P], 1, T0ap[P], 1);
+                    }
+                    // (ddchi_g[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += rho_bg[1][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_ag[1][P] * v_gamma_aa[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][1]][P], 1, T0ap[P], 1);
+                    }
+                    // (ddchi_g[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += rho_bg[2][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_ag[2][P] * v_gamma_aa[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][2]][P], 1, T0ap[P], 1);
+                    }
+                    if (ansatz >= 1) {
+                        // (dchi[0], dchi[0]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[6 * P + 0 + d] * v2_rho_a_tau_a[P] * w[P];
+                            c += 0.5 * drho[6 * P + 3 + d] * v2_rho_b_tau_a[P] * w[P];
+                            c += dtau[6 * P + 0 + d] * v2_tau_a_tau_a[P] * w[P];
+                            c += dtau[6 * P + 3 + d] * v2_tau_a_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_a_g_grad_rho_a * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_a_g_grad_rho_b * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_b_g_grad_rho_a * v2_gamma_ab_tau_a[P] * w[P];
+                            c += dot_dgrad_rho_b_g_grad_rho_b * v2_gamma_bb_tau_a[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[0][P], 1, Tiap[0][P], 1);
+                        }
+                        // (dchi_g, dchi[0])
+                        c = 0.0;
+                        c += rho_bg[0][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_ag[0][P] * v_gamma_aa[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tiap[0][P], 1);
+                        // (ddchi_g[0], dchi[0])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau_a[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][0]][P], 1, Tiap[0][P], 1);
+                        }
+                        // (dchi[1], dchi[1]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[6 * P + 0 + d] * v2_rho_a_tau_a[P] * w[P];
+                            c += 0.5 * drho[6 * P + 3 + d] * v2_rho_b_tau_a[P] * w[P];
+                            c += dtau[6 * P + 0 + d] * v2_tau_a_tau_a[P] * w[P];
+                            c += dtau[6 * P + 3 + d] * v2_tau_a_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_a_g_grad_rho_a * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_a_g_grad_rho_b * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_b_g_grad_rho_a * v2_gamma_ab_tau_a[P] * w[P];
+                            c += dot_dgrad_rho_b_g_grad_rho_b * v2_gamma_bb_tau_a[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[1][P], 1, Tiap[1][P], 1);
+                        }
+                        // (dchi_g, dchi[1])
+                        c = 0.0;
+                        c += rho_bg[1][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_ag[1][P] * v_gamma_aa[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tiap[1][P], 1);
+                        // (ddchi_g[1], dchi[1])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau_a[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][1]][P], 1, Tiap[1][P], 1);
+                        }
+                        // (dchi[2], dchi[2]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[6 * P + 0 + d] * v2_rho_a_tau_a[P] * w[P];
+                            c += 0.5 * drho[6 * P + 3 + d] * v2_rho_b_tau_a[P] * w[P];
+                            c += dtau[6 * P + 0 + d] * v2_tau_a_tau_a[P] * w[P];
+                            c += dtau[6 * P + 3 + d] * v2_tau_a_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_a_g_grad_rho_a * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_a_g_grad_rho_b * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_b_g_grad_rho_a * v2_gamma_ab_tau_a[P] * w[P];
+                            c += dot_dgrad_rho_b_g_grad_rho_b * v2_gamma_bb_tau_a[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[2][P], 1, Tiap[2][P], 1);
+                        }
+                        // (dchi_g, dchi[2])
+                        c = 0.0;
+                        c += rho_bg[2][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_ag[2][P] * v_gamma_aa[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tiap[2][P], 1);
+                        // (ddchi_g[2], dchi[2])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau_a[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][2]][P], 1, Tiap[2][P], 1);
                         }
                     }
-                    scatter(6 * Ag + 2 * d + sp);
                 }
+                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0ap[0], max_functions, phi[0], coll_funcs, 0.0,
+                        Vx_localp[0], max_functions);
+                if (ansatz >= 1) {
+                    for (int i = 0; i < 3; i++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tiap[i][0], max_functions, phi_i[i][0], coll_funcs, 1.0,
+                                Vx_localp[0], max_functions);
+                    }
+                }
+                // ==> END GENERATED CODE <==
+                scatter(6 * Ag + 2 * d + 0);
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_gradient_spin(mgga_tau, b)] <==
+                for (int P = 0; P < npoints; P++) {
+                    std::fill(T0bp[P], T0bp[P] + nlocal, 0.0);
+                    if (ansatz >= 1) {
+                        std::fill(Tibp[0][P], Tibp[0][P] + nlocal, 0.0);
+                        std::fill(Tibp[1][P], Tibp[1][P] + nlocal, 0.0);
+                        std::fill(Tibp[2][P], Tibp[2][P] + nlocal, 0.0);
+                    }
+                    if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
+                    double dot_dgrad_rho_a_g_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_g_grad_rho_a = ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_ag[0][P] + ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_ag[1][P] + ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_ag[2][P];
+                    double dot_dgrad_rho_a_g_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_g_grad_rho_b = ddrho[12 * P + 0 + hess_addr_r[d][0]] * rho_bg[0][P] + ddrho[12 * P + 0 + hess_addr_r[d][1]] * rho_bg[1][P] + ddrho[12 * P + 0 + hess_addr_r[d][2]] * rho_bg[2][P];
+                    double dot_dgrad_rho_b_g_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_g_grad_rho_a = ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_ag[0][P] + ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_ag[1][P] + ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_ag[2][P];
+                    double dot_dgrad_rho_b_g_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_g_grad_rho_b = ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_bg[0][P] + ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_bg[1][P] + ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_bg[2][P];
+                    double c;
+                    // (chi, chi) at half weight
+                    c = 0.0;
+                    c += 0.5 * drho[6 * P + 0 + d] * v2_rho2_ab[P] * w[P];
+                    c += 0.5 * drho[6 * P + 3 + d] * v2_rho2_bb[P] * w[P];
+                    if (ansatz >= 1) {
+                        c += dot_dgrad_rho_a_g_grad_rho_a * v2_rho_b_gamma_aa[P] * w[P];
+                        c += 0.5 * dot_dgrad_rho_a_g_grad_rho_b * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 0.5 * dot_dgrad_rho_b_g_grad_rho_a * v2_rho_b_gamma_ab[P] * w[P];
+                        c += dot_dgrad_rho_b_g_grad_rho_b * v2_rho_b_gamma_bb[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        c += dtau[6 * P + 0 + d] * v2_rho_b_tau_a[P] * w[P];
+                        c += dtau[6 * P + 3 + d] * v2_rho_b_tau_b[P] * w[P];
+                    }
+                    C_DAXPY(nlocal, c, phi[P], 1, T0bp[P], 1);
+                    // (dchi[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += ddrho[12 * P + 0 + hess_addr_r[d][0]] * v_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][0]] * v_gamma_bb[P] * w[P];
+                        c += drho[6 * P + 0 + d] * rho_ag[0][P] * v2_rho_a_gamma_ab[P] * w[P];
+                        c += drho[6 * P + 3 + d] * rho_ag[0][P] * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 2 * drho[6 * P + 0 + d] * rho_bg[0][P] * v2_rho_a_gamma_bb[P] * w[P];
+                        c += 2 * drho[6 * P + 3 + d] * rho_bg[0][P] * v2_rho_b_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_ag[0][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_ag[1][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_ag[0][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_ag[2][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 4 * ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_ag[0][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * dot_dgrad_rho_a_g_grad_rho_a * rho_ag[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_a_g_grad_rho_a * rho_bg[0][P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                        c += 2 * dot_dgrad_rho_a_g_grad_rho_b * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += dot_dgrad_rho_a_g_grad_rho_b * rho_ag[0][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += dot_dgrad_rho_b_g_grad_rho_a * rho_ag[0][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_b_g_grad_rho_b * rho_bg[0][P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 2 * dtau[6 * P + 0 + d] * rho_ag[0][P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 2 * dtau[6 * P + 3 + d] * rho_ag[0][P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 4 * dtau[6 * P + 0 + d] * rho_bg[0][P] * v2_gamma_bb_tau_a[P] * w[P];
+                            c += 4 * dtau[6 * P + 3 + d] * rho_bg[0][P] * v2_gamma_bb_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, T0bp[P], 1);
+                    }
+                    // (dchi[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += ddrho[12 * P + 0 + hess_addr_r[d][1]] * v_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][1]] * v_gamma_bb[P] * w[P];
+                        c += drho[6 * P + 0 + d] * rho_ag[1][P] * v2_rho_a_gamma_ab[P] * w[P];
+                        c += drho[6 * P + 3 + d] * rho_ag[1][P] * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 2 * drho[6 * P + 0 + d] * rho_bg[1][P] * v2_rho_a_gamma_bb[P] * w[P];
+                        c += 2 * drho[6 * P + 3 + d] * rho_bg[1][P] * v2_rho_b_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_ag[0][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_ag[1][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_ag[1][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_ag[2][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 4 * ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_ag[1][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * dot_dgrad_rho_a_g_grad_rho_a * rho_ag[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_a_g_grad_rho_a * rho_bg[1][P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                        c += 2 * dot_dgrad_rho_a_g_grad_rho_b * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += dot_dgrad_rho_a_g_grad_rho_b * rho_ag[1][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += dot_dgrad_rho_b_g_grad_rho_a * rho_ag[1][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_b_g_grad_rho_b * rho_bg[1][P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 2 * dtau[6 * P + 0 + d] * rho_ag[1][P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 2 * dtau[6 * P + 3 + d] * rho_ag[1][P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 4 * dtau[6 * P + 0 + d] * rho_bg[1][P] * v2_gamma_bb_tau_a[P] * w[P];
+                            c += 4 * dtau[6 * P + 3 + d] * rho_bg[1][P] * v2_gamma_bb_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, T0bp[P], 1);
+                    }
+                    // (dchi[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += ddrho[12 * P + 0 + hess_addr_r[d][2]] * v_gamma_ab[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][2]] * v_gamma_bb[P] * w[P];
+                        c += drho[6 * P + 0 + d] * rho_ag[2][P] * v2_rho_a_gamma_ab[P] * w[P];
+                        c += drho[6 * P + 3 + d] * rho_ag[2][P] * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 2 * drho[6 * P + 0 + d] * rho_bg[2][P] * v2_rho_a_gamma_bb[P] * w[P];
+                        c += 2 * drho[6 * P + 3 + d] * rho_bg[2][P] * v2_rho_b_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_ag[0][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][0]] * rho_ag[2][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_ag[1][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * ddrho[12 * P + 6 + hess_addr_r[d][1]] * rho_ag[2][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 4 * ddrho[12 * P + 6 + hess_addr_r[d][2]] * rho_ag[2][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += 2 * dot_dgrad_rho_a_g_grad_rho_a * rho_ag[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_a_g_grad_rho_a * rho_bg[2][P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                        c += 2 * dot_dgrad_rho_a_g_grad_rho_b * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                        c += dot_dgrad_rho_a_g_grad_rho_b * rho_ag[2][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += dot_dgrad_rho_b_g_grad_rho_a * rho_ag[2][P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                        c += 4 * dot_dgrad_rho_b_g_grad_rho_b * rho_bg[2][P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                        if (ansatz >= 2) {
+                            c += 2 * dtau[6 * P + 0 + d] * rho_ag[2][P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 2 * dtau[6 * P + 3 + d] * rho_ag[2][P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 4 * dtau[6 * P + 0 + d] * rho_bg[2][P] * v2_gamma_bb_tau_a[P] * w[P];
+                            c += 4 * dtau[6 * P + 3 + d] * rho_bg[2][P] * v2_gamma_bb_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, T0bp[P], 1);
+                    }
+                    // (dchi_g, chi)
+                    c = 0.0;
+                    c += v_rho_b[P] * w[P];
+                    C_DAXPY(nlocal, c, phi_i[d][P], 1, T0bp[P], 1);
+                    // (ddchi_g[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += rho_ag[0][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_bg[0][P] * v_gamma_bb[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][0]][P], 1, T0bp[P], 1);
+                    }
+                    // (ddchi_g[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += rho_ag[1][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_bg[1][P] * v_gamma_bb[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][1]][P], 1, T0bp[P], 1);
+                    }
+                    // (ddchi_g[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        c += rho_ag[2][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_bg[2][P] * v_gamma_bb[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][2]][P], 1, T0bp[P], 1);
+                    }
+                    if (ansatz >= 1) {
+                        // (dchi[0], dchi[0]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[6 * P + 0 + d] * v2_rho_a_tau_b[P] * w[P];
+                            c += 0.5 * drho[6 * P + 3 + d] * v2_rho_b_tau_b[P] * w[P];
+                            c += dtau[6 * P + 0 + d] * v2_tau_a_tau_b[P] * w[P];
+                            c += dtau[6 * P + 3 + d] * v2_tau_b_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_a_g_grad_rho_a * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_a_g_grad_rho_b * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_b_g_grad_rho_a * v2_gamma_ab_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_b_g_grad_rho_b * v2_gamma_bb_tau_b[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[0][P], 1, Tibp[0][P], 1);
+                        }
+                        // (dchi_g, dchi[0])
+                        c = 0.0;
+                        c += rho_ag[0][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_bg[0][P] * v_gamma_bb[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tibp[0][P], 1);
+                        // (ddchi_g[0], dchi[0])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau_b[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][0]][P], 1, Tibp[0][P], 1);
+                        }
+                        // (dchi[1], dchi[1]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[6 * P + 0 + d] * v2_rho_a_tau_b[P] * w[P];
+                            c += 0.5 * drho[6 * P + 3 + d] * v2_rho_b_tau_b[P] * w[P];
+                            c += dtau[6 * P + 0 + d] * v2_tau_a_tau_b[P] * w[P];
+                            c += dtau[6 * P + 3 + d] * v2_tau_b_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_a_g_grad_rho_a * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_a_g_grad_rho_b * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_b_g_grad_rho_a * v2_gamma_ab_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_b_g_grad_rho_b * v2_gamma_bb_tau_b[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[1][P], 1, Tibp[1][P], 1);
+                        }
+                        // (dchi_g, dchi[1])
+                        c = 0.0;
+                        c += rho_ag[1][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_bg[1][P] * v_gamma_bb[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tibp[1][P], 1);
+                        // (ddchi_g[1], dchi[1])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau_b[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][1]][P], 1, Tibp[1][P], 1);
+                        }
+                        // (dchi[2], dchi[2]) at half weight
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += 0.5 * drho[6 * P + 0 + d] * v2_rho_a_tau_b[P] * w[P];
+                            c += 0.5 * drho[6 * P + 3 + d] * v2_rho_b_tau_b[P] * w[P];
+                            c += dtau[6 * P + 0 + d] * v2_tau_a_tau_b[P] * w[P];
+                            c += dtau[6 * P + 3 + d] * v2_tau_b_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_a_g_grad_rho_a * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_a_g_grad_rho_b * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.5 * dot_dgrad_rho_b_g_grad_rho_a * v2_gamma_ab_tau_b[P] * w[P];
+                            c += dot_dgrad_rho_b_g_grad_rho_b * v2_gamma_bb_tau_b[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_i[2][P], 1, Tibp[2][P], 1);
+                        }
+                        // (dchi_g, dchi[2])
+                        c = 0.0;
+                        c += rho_ag[2][P] * v_gamma_ab[P] * w[P];
+                        c += 2 * rho_bg[2][P] * v_gamma_bb[P] * w[P];
+                        C_DAXPY(nlocal, c, phi_i[d][P], 1, Tibp[2][P], 1);
+                        // (ddchi_g[2], dchi[2])
+                        if (ansatz >= 2) {
+                            c = 0.0;
+                            c += v_tau_b[P] * w[P];
+                            C_DAXPY(nlocal, c, phi_hess[hess_addr_r[d][2]][P], 1, Tibp[2][P], 1);
+                        }
+                    }
+                }
+                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0bp[0], max_functions, phi[0], coll_funcs, 0.0,
+                        Vx_localp[0], max_functions);
+                if (ansatz >= 1) {
+                    for (int i = 0; i < 3; i++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tibp[i][0], max_functions, phi_i[i][0], coll_funcs, 1.0,
+                                Vx_localp[0], max_functions);
+                    }
+                }
+                // ==> END GENERATED CODE <==
+                scatter(6 * Ag + 2 * d + 1);
             }
         }
     }
