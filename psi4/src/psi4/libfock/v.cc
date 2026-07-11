@@ -3767,117 +3767,481 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
                 for (int P = 0; P < npoints; P++) {
                     std::fill(T0ap[P], T0ap[P] + nlocal, 0.0);
                     std::fill(T0bp[P], T0bp[P] + nlocal, 0.0);
+                    if (ansatz >= 1) {
+                        for (int i = 0; i < 3; i++) {
+                            std::fill(Tiap[i][P], Tiap[i][P] + nlocal, 0.0);
+                            std::fill(Tibp[i][P], Tibp[i][P] + nlocal, 0.0);
+                        }
+                    }
 
-                    // perturbed spin densities: rho_sk = -2 (phi Ds)_A . dphi_x
+                    // plumbing: the atom-restricted fixed-grid perturbed spin fields
                     double rho_ak = -2.0 * C_DDOT(nfuncs, &U0ap[P][off], 1, &phi_i[x][P][off], 1);
                     double rho_bk = -2.0 * C_DDOT(nfuncs, &U0bp[P][off], 1, &phi_i[x][P][off], 1);
-
-                    //   (phi, phi) pattern, quarter weight
-                    double c0a = 0.25 * w[P] * (v2_rho2_aa[P] * rho_ak + v2_rho2_ab[P] * rho_bk);
-                    double c0b = 0.25 * w[P] * (v2_rho2_bb[P] * rho_bk + v2_rho2_ab[P] * rho_ak);
-
+                    double grad_ak[3] = {0.0, 0.0, 0.0};
+                    double grad_bk[3] = {0.0, 0.0, 0.0};
+                    double tau_ak = 0.0, tau_bk = 0.0;
                     if (ansatz >= 1) {
-                        // perturbed spin density gradients and gammas
-                        double grad_ak[3], grad_bk[3];
-                        double gamma_aak = 0.0, gamma_abk = 0.0, gamma_bbk = 0.0;
                         for (int i = 0; i < 3; i++) {
                             grad_ak[i] = -2.0 * (C_DDOT(nfuncs, &U0ap[P][off], 1, &phi_hess[hess_addr[x][i]][P][off], 1)
                                                  + C_DDOT(nfuncs, &Uiap[i][P][off], 1, &phi_i[x][P][off], 1));
                             grad_bk[i] = -2.0 * (C_DDOT(nfuncs, &U0bp[P][off], 1, &phi_hess[hess_addr[x][i]][P][off], 1)
                                                  + C_DDOT(nfuncs, &Uibp[i][P][off], 1, &phi_i[x][P][off], 1));
-                            gamma_aak += 2.0 * rho_ag[i][P] * grad_ak[i];
-                            gamma_bbk += 2.0 * rho_bg[i][P] * grad_bk[i];
-                            gamma_abk += rho_ag[i][P] * grad_bk[i] + rho_bg[i][P] * grad_ak[i];
-                        }
-
-                        // perturbed spin kinetic energy densities (meta)
-                        double tau_ak = 0.0, tau_bk = 0.0;
-                        if (ansatz >= 2) {
-                            for (int i = 0; i < 3; i++) {
+                            if (ansatz >= 2) {
                                 tau_ak += C_DDOT(nfuncs, &Uiap[i][P][off], 1, &phi_hess[hess_addr[x][i]][P][off], 1);
                                 tau_bk += C_DDOT(nfuncs, &Uibp[i][P][off], 1, &phi_hess[hess_addr[x][i]][P][off], 1);
                             }
-                            tau_ak *= -1.0;
-                            tau_bk *= -1.0;
-                            c0a += 0.25 * w[P] * 2.0 * (v2_rho_a_tau_a[P] * tau_ak + v2_rho_a_tau_b[P] * tau_bk);
-                            c0b += 0.25 * w[P] * 2.0 * (v2_rho_b_tau_b[P] * tau_bk + v2_rho_b_tau_a[P] * tau_ak);
                         }
-                        c0a += 0.25 * w[P] * (v2_rho_a_gamma_aa[P] * gamma_aak + v2_rho_a_gamma_ab[P] * gamma_abk
-                                              + v2_rho_a_gamma_bb[P] * gamma_bbk);
-                        c0b += 0.25 * w[P] * (v2_rho_b_gamma_bb[P] * gamma_bbk + v2_rho_b_gamma_ab[P] * gamma_abk
-                                              + v2_rho_b_gamma_aa[P] * gamma_aak);
-
-                        // (dphi_i, phi) mixed pattern, half weight on the left factor
-                        double v2v_aa = v2_rho_a_gamma_aa[P] * rho_ak + v2_rho_b_gamma_aa[P] * rho_bk
-                                        + v2_gamma_aa_gamma_aa[P] * gamma_aak + v2_gamma_aa_gamma_ab[P] * gamma_abk
-                                        + v2_gamma_aa_gamma_bb[P] * gamma_bbk;
-                        double v2v_ab = v2_rho_a_gamma_ab[P] * rho_ak + v2_rho_b_gamma_ab[P] * rho_bk
-                                        + v2_gamma_aa_gamma_ab[P] * gamma_aak + v2_gamma_ab_gamma_ab[P] * gamma_abk
-                                        + v2_gamma_ab_gamma_bb[P] * gamma_bbk;
-                        double v2v_bb = v2_rho_a_gamma_bb[P] * rho_ak + v2_rho_b_gamma_bb[P] * rho_bk
-                                        + v2_gamma_aa_gamma_bb[P] * gamma_aak + v2_gamma_ab_gamma_bb[P] * gamma_abk
-                                        + v2_gamma_bb_gamma_bb[P] * gamma_bbk;
-                        if (ansatz >= 2) {
-                            v2v_aa += 2.0 * (v2_gamma_aa_tau_a[P] * tau_ak + v2_gamma_aa_tau_b[P] * tau_bk);
-                            v2v_ab += 2.0 * (v2_gamma_ab_tau_a[P] * tau_ak + v2_gamma_ab_tau_b[P] * tau_bk);
-                            v2v_bb += 2.0 * (v2_gamma_bb_tau_a[P] * tau_ak + v2_gamma_bb_tau_b[P] * tau_bk);
-                        }
-                        for (int i = 0; i < 3; i++) {
-                            double cia = 0.5 * w[P] * (2.0 * v_gamma_aa[P] * grad_ak[i] + v_gamma_ab[P] * grad_bk[i]
-                                                       + 2.0 * v2v_aa * rho_ag[i][P] + v2v_ab * rho_bg[i][P]);
-                            double cib = 0.5 * w[P] * (2.0 * v_gamma_bb[P] * grad_bk[i] + v_gamma_ab[P] * grad_ak[i]
-                                                       + 2.0 * v2v_bb * rho_bg[i][P] + v2v_ab * rho_ag[i][P]);
-                            C_DAXPY(nlocal, cia, phi_i[i][P], 1, T0ap[P], 1);
-                            C_DAXPY(nlocal, cib, phi_i[i][P], 1, T0bp[P], 1);
-                        }
-
-                        // (dphi_i, dphi_i) pattern, quarter weight (meta)
-                        double cma = 0.0, cmb = 0.0;
-                        if (ansatz >= 2) {
-                            cma = 0.25 * w[P] * (v2_rho_a_tau_a[P] * rho_ak + v2_rho_b_tau_a[P] * rho_bk
-                                                 + v2_gamma_aa_tau_a[P] * gamma_aak + v2_gamma_ab_tau_a[P] * gamma_abk
-                                                 + v2_gamma_bb_tau_a[P] * gamma_bbk + 2.0 * v2_tau_a_tau_a[P] * tau_ak
-                                                 + 2.0 * v2_tau_a_tau_b[P] * tau_bk);
-                            cmb = 0.25 * w[P] * (v2_rho_b_tau_b[P] * rho_bk + v2_rho_a_tau_b[P] * rho_ak
-                                                 + v2_gamma_bb_tau_b[P] * gamma_bbk + v2_gamma_ab_tau_b[P] * gamma_abk
-                                                 + v2_gamma_aa_tau_b[P] * gamma_aak + 2.0 * v2_tau_b_tau_b[P] * tau_bk
-                                                 + 2.0 * v2_tau_a_tau_b[P] * tau_ak);
-                        }
-                        for (int i = 0; i < 3; i++) {
-                            std::fill(Tiap[i][P], Tiap[i][P] + nlocal, 0.0);
-                            std::fill(Tibp[i][P], Tibp[i][P] + nlocal, 0.0);
-                            if (ansatz >= 2) {
-                                C_DAXPY(nlocal, cma, phi_i[i][P], 1, Tiap[i][P], 1);
-                                C_DAXPY(nlocal, cmb, phi_i[i][P], 1, Tibp[i][P], 1);
-                            }
-                        }
-
-                        // basis-derivative (seed) terms, atom-restricted, at half weight:
-                        //   -w (2 vg_ss grad_rho_s,i + vg_ab grad_rho_t,i) [d2phi_xi(A) vs phi
-                        //                                                   and dphi_x(A) vs dphi_i]
-                        //   -w vtau_s d2phi_xi(A) vs dphi_i
-                        for (int i = 0; i < 3; i++) {
-                            double ga = 0.5 * (2.0 * v_gamma_aa[P] * rho_ag[i][P] + v_gamma_ab[P] * rho_bg[i][P]);
-                            double gb = 0.5 * (2.0 * v_gamma_bb[P] * rho_bg[i][P] + v_gamma_ab[P] * rho_ag[i][P]);
-                            C_DAXPY(nfuncs, -w[P] * ga, &phi_hess[hess_addr[x][i]][P][off], 1, &T0ap[P][off], 1);
-                            C_DAXPY(nfuncs, -w[P] * gb, &phi_hess[hess_addr[x][i]][P][off], 1, &T0bp[P][off], 1);
-                            C_DAXPY(nfuncs, -w[P] * ga, &phi_i[x][P][off], 1, &Tiap[i][P][off], 1);
-                            C_DAXPY(nfuncs, -w[P] * gb, &phi_i[x][P][off], 1, &Tibp[i][P][off], 1);
-                            if (ansatz >= 2) {
-                                C_DAXPY(nfuncs, -0.5 * w[P] * v_tau_a[P], &phi_hess[hess_addr[x][i]][P][off], 1,
-                                        &Tiap[i][P][off], 1);
-                                C_DAXPY(nfuncs, -0.5 * w[P] * v_tau_b[P], &phi_hess[hess_addr[x][i]][P][off], 1,
-                                        &Tibp[i][P][off], 1);
-                            }
-                        }
+                        tau_ak *= -1.0;
+                        tau_bk *= -1.0;
                     }
 
-                    C_DAXPY(nlocal, c0a, phi[P], 1, T0ap[P], 1);
-                    C_DAXPY(nlocal, c0b, phi[P], 1, T0bp[P], 1);
-
-                    //   -1/2 w vrho_s dphi_x(A) vs phi (the LSDA seed term)
-                    C_DAXPY(nfuncs, -0.5 * v_rho_a[P] * w[P], &phi_i[x][P][off], 1, &T0ap[P][off], 1);
-                    C_DAXPY(nfuncs, -0.5 * v_rho_b[P] * w[P], &phi_i[x][P][off], 1, &T0bp[P][off], 1);
+                    // ==> BEGIN GENERATED CODE [xckernel psi4backend: geometric_fock_spin(mgga_tau)] <==
+                    // Reproduce with: python -m xckernel.psi4backend --uvfx
+                    // Physics source: the spin geometric derivative of the
+                    // symbolic tower (basis class, fixed grid); the
+                    // intermediates are IR compaction output.
+                    double dot_grad_rho_a_grad_rho_a_p1 = 0.0;
+                    if (ansatz >= 1) dot_grad_rho_a_grad_rho_a_p1 = rho_ag[0][P] * grad_ak[0] + rho_ag[1][P] * grad_ak[1] + rho_ag[2][P] * grad_ak[2];
+                    double dot_grad_rho_a_grad_rho_b_p1 = 0.0;
+                    if (ansatz >= 1) dot_grad_rho_a_grad_rho_b_p1 = rho_ag[0][P] * grad_bk[0] + rho_ag[1][P] * grad_bk[1] + rho_ag[2][P] * grad_bk[2];
+                    double dot_grad_rho_a_p1_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_grad_rho_a_p1_grad_rho_b = grad_ak[0] * rho_bg[0][P] + grad_ak[1] * rho_bg[1][P] + grad_ak[2] * rho_bg[2][P];
+                    double dot_grad_rho_b_grad_rho_b_p1 = 0.0;
+                    if (ansatz >= 1) dot_grad_rho_b_grad_rho_b_p1 = rho_bg[0][P] * grad_bk[0] + rho_bg[1][P] * grad_bk[1] + rho_bg[2][P] * grad_bk[2];
+                    double hsum_grad_rho_a_0_a = 0.0;
+                    if (ansatz >= 1) {
+                        hsum_grad_rho_a_0_a += 4 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_gamma_aa[P] * w[P];
+                        hsum_grad_rho_a_0_a += 2 * dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_aa_gamma_ab[P] * w[P];
+                        hsum_grad_rho_a_0_a += 4 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_aa_gamma_bb[P] * w[P];
+                        hsum_grad_rho_a_0_a += 2 * rho_ak * v2_rho_a_gamma_aa[P] * w[P];
+                        hsum_grad_rho_a_0_a += 2 * rho_bk * v2_rho_b_gamma_aa[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        hsum_grad_rho_a_0_a += 4 * tau_ak * v2_gamma_aa_tau_a[P] * w[P];
+                        hsum_grad_rho_a_0_a += 4 * tau_bk * v2_gamma_aa_tau_b[P] * w[P];
+                    }
+                    double hsum_grad_rho_a_0_b = 0.0;
+                    if (ansatz >= 1) {
+                        hsum_grad_rho_a_0_b += 2 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_gamma_ab[P] * w[P];
+                        hsum_grad_rho_a_0_b += dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_gamma_ab[P] * w[P];
+                        hsum_grad_rho_a_0_b += dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_gamma_ab[P] * w[P];
+                        hsum_grad_rho_a_0_b += rho_ak * v2_rho_a_gamma_ab[P] * w[P];
+                        hsum_grad_rho_a_0_b += rho_bk * v2_rho_b_gamma_ab[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        hsum_grad_rho_a_0_b += 2 * tau_ak * v2_gamma_ab_tau_a[P] * w[P];
+                        hsum_grad_rho_a_0_b += 2 * tau_bk * v2_gamma_ab_tau_b[P] * w[P];
+                    }
+                    double hsum_grad_rho_b_1_a = 0.0;
+                    if (ansatz >= 1) {
+                        hsum_grad_rho_b_1_a += dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_gamma_ab[P] * w[P];
+                        hsum_grad_rho_b_1_a += dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_gamma_ab[P] * w[P];
+                        hsum_grad_rho_b_1_a += 2 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_ab_gamma_bb[P] * w[P];
+                        hsum_grad_rho_b_1_a += rho_ak * v2_rho_a_gamma_ab[P] * w[P];
+                        hsum_grad_rho_b_1_a += rho_bk * v2_rho_b_gamma_ab[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        hsum_grad_rho_b_1_a += 2 * tau_ak * v2_gamma_ab_tau_a[P] * w[P];
+                        hsum_grad_rho_b_1_a += 2 * tau_bk * v2_gamma_ab_tau_b[P] * w[P];
+                    }
+                    double hsum_grad_rho_b_1_b = 0.0;
+                    if (ansatz >= 1) {
+                        hsum_grad_rho_b_1_b += 4 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_gamma_bb[P] * w[P];
+                        hsum_grad_rho_b_1_b += 2 * dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_gamma_bb[P] * w[P];
+                        hsum_grad_rho_b_1_b += 4 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_gamma_bb[P] * w[P];
+                        hsum_grad_rho_b_1_b += 2 * rho_ak * v2_rho_a_gamma_bb[P] * w[P];
+                        hsum_grad_rho_b_1_b += 2 * rho_bk * v2_rho_b_gamma_bb[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        hsum_grad_rho_b_1_b += 4 * tau_ak * v2_gamma_bb_tau_a[P] * w[P];
+                        hsum_grad_rho_b_1_b += 4 * tau_bk * v2_gamma_bb_tau_b[P] * w[P];
+                    }
+                    double c;
+                    // spin a: field (phi, phi) pattern at quarter weight
+                    c = 0.0;
+                    c += 0.25 * rho_ak * v2_rho2_aa[P] * w[P];
+                    c += 0.25 * rho_bk * v2_rho2_ab[P] * w[P];
+                    if (ansatz >= 1) {
+                        c += 0.5 * dot_grad_rho_a_grad_rho_a_p1 * v2_rho_a_gamma_aa[P] * w[P];
+                        c += 0.25 * dot_grad_rho_a_grad_rho_b_p1 * v2_rho_a_gamma_ab[P] * w[P];
+                        c += 0.25 * dot_grad_rho_a_p1_grad_rho_b * v2_rho_a_gamma_ab[P] * w[P];
+                        c += 0.5 * dot_grad_rho_b_grad_rho_b_p1 * v2_rho_a_gamma_bb[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        c += 0.5 * tau_ak * v2_rho_a_tau_a[P] * w[P];
+                        c += 0.5 * tau_bk * v2_rho_a_tau_b[P] * w[P];
+                    }
+                    C_DAXPY(nlocal, c, phi[P], 1, T0ap[P], 1);
+                    // spin a: field (dphi_x, phi) + transpose at half weight
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += 0.5 * grad_bk[0] * v_gamma_ab[P] * w[P];
+                            c += grad_ak[0] * v_gamma_aa[P] * w[P];
+                            c += grad_ak[1] * rho_ag[0][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[1] * rho_ag[1][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[2] * rho_ag[0][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[2] * rho_ag[2][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += 2 * grad_ak[0] * rho_ag[0][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += 0.5 * hsum_grad_rho_a_0_a * rho_ag[0][P];
+                            c += 0.5 * hsum_grad_rho_b_1_a * rho_bg[0][P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, T0ap[P], 1);
+                    }
+                    // spin a: field (dphi_y, phi) + transpose at half weight
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += 0.5 * grad_bk[1] * v_gamma_ab[P] * w[P];
+                            c += grad_ak[1] * v_gamma_aa[P] * w[P];
+                            c += grad_ak[0] * rho_ag[0][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[0] * rho_ag[1][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[2] * rho_ag[1][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[2] * rho_ag[2][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += 2 * grad_ak[1] * rho_ag[1][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += 0.5 * hsum_grad_rho_a_0_a * rho_ag[1][P];
+                            c += 0.5 * hsum_grad_rho_b_1_a * rho_bg[1][P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, T0ap[P], 1);
+                    }
+                    // spin a: field (dphi_z, phi) + transpose at half weight
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += 0.5 * grad_bk[2] * v_gamma_ab[P] * w[P];
+                            c += grad_ak[2] * v_gamma_aa[P] * w[P];
+                            c += grad_ak[0] * rho_ag[0][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[0] * rho_ag[2][P] * rho_bg[0][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[1] * rho_ag[1][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += grad_ak[1] * rho_ag[2][P] * rho_bg[1][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += 2 * grad_ak[2] * rho_ag[2][P] * rho_bg[2][P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                            c += 0.5 * hsum_grad_rho_a_0_a * rho_ag[2][P];
+                            c += 0.5 * hsum_grad_rho_b_1_a * rho_bg[2][P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, T0ap[P], 1);
+                    }
+                    // spin a: field (dphi_x, dphi_x) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_ak * v2_rho_a_tau_a[P] * w[P];
+                            c += 0.25 * rho_bk * v2_rho_b_tau_a[P] * w[P];
+                            c += 0.5 * tau_ak * v2_tau_a_tau_a[P] * w[P];
+                            c += 0.5 * tau_bk * v2_tau_a_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.5 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_tau_a[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, Tiap[0][P], 1);
+                    }
+                    // spin a: field (dphi_y, dphi_y) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_ak * v2_rho_a_tau_a[P] * w[P];
+                            c += 0.25 * rho_bk * v2_rho_b_tau_a[P] * w[P];
+                            c += 0.5 * tau_ak * v2_tau_a_tau_a[P] * w[P];
+                            c += 0.5 * tau_bk * v2_tau_a_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.5 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_tau_a[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, Tiap[1][P], 1);
+                    }
+                    // spin a: field (dphi_z, dphi_z) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_ak * v2_rho_a_tau_a[P] * w[P];
+                            c += 0.25 * rho_bk * v2_rho_b_tau_a[P] * w[P];
+                            c += 0.5 * tau_ak * v2_tau_a_tau_a[P] * w[P];
+                            c += 0.5 * tau_bk * v2_tau_a_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 0.5 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_tau_a[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, Tiap[2][P], 1);
+                    }
+                    // spin a: atom-restricted seed patterns at half weight;
+                    // each masked factor carries the -d/dr sign
+                    // spin a: seed (dchi_gA, chi)
+                    c = 0.0;
+                    c += -0.5 * v_rho_a[P] * w[P];
+                    C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &T0ap[P][off], 1);
+                    // spin a: seed (dchi_gA, dchi[0])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_bg[0][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_ag[0][P] * v_gamma_aa[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tiap[0][P][off], 1);
+                    }
+                    // spin a: seed (dchi_gA, dchi[1])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_bg[1][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_ag[1][P] * v_gamma_aa[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tiap[1][P][off], 1);
+                    }
+                    // spin a: seed (dchi_gA, dchi[2])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_bg[2][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_ag[2][P] * v_gamma_aa[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tiap[2][P][off], 1);
+                    }
+                    // spin a: seed (ddchi_gA[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_bg[0][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_ag[0][P] * v_gamma_aa[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][0]][P][off], 1, &T0ap[P][off], 1);
+                    }
+                    // spin a: seed (ddchi_gA[0], dchi[0])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau_a[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][0]][P][off], 1, &Tiap[0][P][off], 1);
+                    }
+                    // spin a: seed (ddchi_gA[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_bg[1][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_ag[1][P] * v_gamma_aa[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][1]][P][off], 1, &T0ap[P][off], 1);
+                    }
+                    // spin a: seed (ddchi_gA[1], dchi[1])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau_a[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][1]][P][off], 1, &Tiap[1][P][off], 1);
+                    }
+                    // spin a: seed (ddchi_gA[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_bg[2][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_ag[2][P] * v_gamma_aa[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][2]][P][off], 1, &T0ap[P][off], 1);
+                    }
+                    // spin a: seed (ddchi_gA[2], dchi[2])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau_a[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][2]][P][off], 1, &Tiap[2][P][off], 1);
+                    }
+                    // spin b: field (phi, phi) pattern at quarter weight
+                    c = 0.0;
+                    c += 0.25 * rho_ak * v2_rho2_ab[P] * w[P];
+                    c += 0.25 * rho_bk * v2_rho2_bb[P] * w[P];
+                    if (ansatz >= 1) {
+                        c += 0.5 * dot_grad_rho_a_grad_rho_a_p1 * v2_rho_b_gamma_aa[P] * w[P];
+                        c += 0.25 * dot_grad_rho_a_grad_rho_b_p1 * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 0.25 * dot_grad_rho_a_p1_grad_rho_b * v2_rho_b_gamma_ab[P] * w[P];
+                        c += 0.5 * dot_grad_rho_b_grad_rho_b_p1 * v2_rho_b_gamma_bb[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        c += 0.5 * tau_ak * v2_rho_b_tau_a[P] * w[P];
+                        c += 0.5 * tau_bk * v2_rho_b_tau_b[P] * w[P];
+                    }
+                    C_DAXPY(nlocal, c, phi[P], 1, T0bp[P], 1);
+                    // spin b: field (dphi_x, phi) + transpose at half weight
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += 0.5 * grad_ak[0] * v_gamma_ab[P] * w[P];
+                            c += grad_bk[0] * v_gamma_bb[P] * w[P];
+                            c += grad_bk[1] * rho_ag[0][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[2] * rho_ag[0][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[1] * rho_ag[1][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[2] * rho_ag[2][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += 2 * grad_bk[0] * rho_ag[0][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += 0.5 * hsum_grad_rho_a_0_b * rho_ag[0][P];
+                            c += 0.5 * hsum_grad_rho_b_1_b * rho_bg[0][P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, T0bp[P], 1);
+                    }
+                    // spin b: field (dphi_y, phi) + transpose at half weight
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += 0.5 * grad_ak[1] * v_gamma_ab[P] * w[P];
+                            c += grad_bk[1] * v_gamma_bb[P] * w[P];
+                            c += grad_bk[0] * rho_ag[0][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[0] * rho_ag[1][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[2] * rho_ag[1][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[2] * rho_ag[2][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += 2 * grad_bk[1] * rho_ag[1][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += 0.5 * hsum_grad_rho_a_0_b * rho_ag[1][P];
+                            c += 0.5 * hsum_grad_rho_b_1_b * rho_bg[1][P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, T0bp[P], 1);
+                    }
+                    // spin b: field (dphi_z, phi) + transpose at half weight
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += 0.5 * grad_ak[2] * v_gamma_ab[P] * w[P];
+                            c += grad_bk[2] * v_gamma_bb[P] * w[P];
+                            c += grad_bk[0] * rho_ag[0][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[1] * rho_ag[1][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[0] * rho_ag[2][P] * rho_bg[0][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += grad_bk[1] * rho_ag[2][P] * rho_bg[1][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += 2 * grad_bk[2] * rho_ag[2][P] * rho_bg[2][P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                            c += 0.5 * hsum_grad_rho_a_0_b * rho_ag[2][P];
+                            c += 0.5 * hsum_grad_rho_b_1_b * rho_bg[2][P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, T0bp[P], 1);
+                    }
+                    // spin b: field (dphi_x, dphi_x) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_ak * v2_rho_a_tau_b[P] * w[P];
+                            c += 0.25 * rho_bk * v2_rho_b_tau_b[P] * w[P];
+                            c += 0.5 * tau_ak * v2_tau_a_tau_b[P] * w[P];
+                            c += 0.5 * tau_bk * v2_tau_b_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, Tibp[0][P], 1);
+                    }
+                    // spin b: field (dphi_y, dphi_y) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_ak * v2_rho_a_tau_b[P] * w[P];
+                            c += 0.25 * rho_bk * v2_rho_b_tau_b[P] * w[P];
+                            c += 0.5 * tau_ak * v2_tau_a_tau_b[P] * w[P];
+                            c += 0.5 * tau_bk * v2_tau_b_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, Tibp[1][P], 1);
+                    }
+                    // spin b: field (dphi_z, dphi_z) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_ak * v2_rho_a_tau_b[P] * w[P];
+                            c += 0.25 * rho_bk * v2_rho_b_tau_b[P] * w[P];
+                            c += 0.5 * tau_ak * v2_tau_a_tau_b[P] * w[P];
+                            c += 0.5 * tau_bk * v2_tau_b_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.25 * dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 0.5 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, Tibp[2][P], 1);
+                    }
+                    // spin b: atom-restricted seed patterns at half weight;
+                    // each masked factor carries the -d/dr sign
+                    // spin b: seed (dchi_gA, chi)
+                    c = 0.0;
+                    c += -0.5 * v_rho_b[P] * w[P];
+                    C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &T0bp[P][off], 1);
+                    // spin b: seed (dchi_gA, dchi[0])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_ag[0][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_bg[0][P] * v_gamma_bb[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tibp[0][P][off], 1);
+                    }
+                    // spin b: seed (dchi_gA, dchi[1])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_ag[1][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_bg[1][P] * v_gamma_bb[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tibp[1][P][off], 1);
+                    }
+                    // spin b: seed (dchi_gA, dchi[2])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_ag[2][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_bg[2][P] * v_gamma_bb[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tibp[2][P][off], 1);
+                    }
+                    // spin b: seed (ddchi_gA[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_ag[0][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_bg[0][P] * v_gamma_bb[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][0]][P][off], 1, &T0bp[P][off], 1);
+                    }
+                    // spin b: seed (ddchi_gA[0], dchi[0])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][0]][P][off], 1, &Tibp[0][P][off], 1);
+                    }
+                    // spin b: seed (ddchi_gA[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_ag[1][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_bg[1][P] * v_gamma_bb[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][1]][P][off], 1, &T0bp[P][off], 1);
+                    }
+                    // spin b: seed (ddchi_gA[1], dchi[1])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][1]][P][off], 1, &Tibp[1][P][off], 1);
+                    }
+                    // spin b: seed (ddchi_gA[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -0.5 * rho_ag[2][P] * v_gamma_ab[P] * w[P];
+                            c += -1 * rho_bg[2][P] * v_gamma_bb[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][2]][P][off], 1, &T0bp[P][off], 1);
+                    }
+                    // spin b: seed (ddchi_gA[2], dchi[2])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][2]][P][off], 1, &Tibp[2][P][off], 1);
+                    }
+                    // ==> END GENERATED CODE <==
                 }
 
                 // => Contract the left factors against their right-side collocations,
