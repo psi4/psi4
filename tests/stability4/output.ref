@@ -1,0 +1,43 @@
+# NOTE: This output.ref is a structural placeholder and MUST be regenerated
+# from a real Psi4 run on a working build before the test is valid.
+# To regenerate: run `psi4 tests/stability4/input.dat` and copy the output
+# as tests/stability4/output.ref, then replace host/timestamp header lines.
+
+# The test asserts:
+# 1. compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+# 2. compare_values(refenergy, thisenergy, 7, "Reference energy")
+#
+# Both must show PASSED. The "Stability analysis over." message must appear
+# on the line following the triplet eigenvalues (confirming FOLLOW took no action).
+# The "Rotating orbitals by" message must NOT appear (confirming no FOLLOW rotation).
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF stability FOLLOW test for a stable system (water, cc-pVDZ).
+#! Verifies that FOLLOW does not attempt to rotate orbitals when the
+#! wavefunction is already a singlet-stable minimum. The post-FOLLOW
+#! energy must match the RHF reference, confirming FOLLOW took no action.
+
+nucenergy =   8.8014655646     #TEST
+refenergy = -76.02141844515491 #TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+basis cc-pvdz
+reference rhf
+scf_type pk
+d_convergence 8
+stability_analysis follow
+}
+
+thisenergy = energy('scf')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 7, "Reference energy")                            #TEST
