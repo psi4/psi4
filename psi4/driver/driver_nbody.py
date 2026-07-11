@@ -127,7 +127,6 @@ try:
     from qcmanybody.utils import delabeler, labeler, translate_qcvariables, modelchem_labels
 except ImportError as err:
     _QCMANYBODY_IMPORT_ERROR = err
-    AtomicSpecification = Any
     ManyBodyInput = Any
     ManyBodyResult = Any
     BsseEnum = Any
