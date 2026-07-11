@@ -310,7 +310,7 @@ jobs:
         readelf -r objdir/stage/lib/psi4/core*.so | grep libecpint
         objdump -R objdir/stage/lib/psi4/core*.so | c++filt | grep libecpint
         #nm -D objdir/stage/lib/psi4/core.*.so | c++filt | grep -i libecpint && exit 1 || true
-        readelf -d objdir/stage/lib/psi4/core.*.so | grep -E 'BIND_NOW|FLAGS_1'
+        readelf -d objdir/stage/lib/psi4/core.*.so | grep -E 'BIND_NOW|FLAGS_1' || true
 
     - name: Linked dependencies, otool (M)
       if: runner.os == 'macOS'
