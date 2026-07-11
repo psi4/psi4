@@ -288,7 +288,7 @@ void export_functional(py::module &m) {
             },
             "Computes the Vx contraction with singlet/triplet spin adaptation. Restricted potentials only.")
         .def("compute_gradient", &VBase::compute_gradient, "Compute the DFT nuclear gradient contribution.")
-        .def("compute_hessain", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.")
+        .def("compute_hessian", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.")
         .def("compute_fock_derivatives", &VBase::compute_fock_derivatives,
              "Compute the derivatives of the XC potential matrix with respect to nuclear displacements, at fixed density and grid.")
 
