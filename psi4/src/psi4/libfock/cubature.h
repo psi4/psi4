@@ -36,6 +36,7 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
+#include <cstdint>
 #include <map>
 #include <vector>
 
@@ -404,8 +405,8 @@ class BlockOPoints {
     /// Bounding radius of the BlockOPoints
     double R_;
 
-    /// Parent atom of this BlockOPoints. -1 indicated none has been set.
-    size_t parent_atom_ = -1;
+    /// Parent atom of this BlockOPoints. SIZE_MAX indicates none has been set.
+    size_t parent_atom_ = SIZE_MAX;
 
     /// Populate significant functions given information in extents
     void populate();
@@ -433,7 +434,7 @@ class BlockOPoints {
     void set_parent_atom(size_t atom) { parent_atom_ = atom; };
     /// Parent atom if the current block
     size_t parent_atom() const {
-        if (parent_atom_ >= 0) {
+        if (parent_atom_ != SIZE_MAX) {
             return parent_atom_;
         } else {
             throw PSIEXCEPTION("BlockOPoints: no parent atom set! Wrong blockscheme?");
