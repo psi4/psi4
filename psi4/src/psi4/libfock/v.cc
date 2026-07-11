@@ -6876,11 +6876,12 @@ SharedMatrix UV::compute_hessian() {
 
             for (int P = 0; P < npoints; P++) {
                 bool live = std::fabs(rho_a[P]) + std::fabs(rho_b[P]) > v2_rho_cutoff_;
-                double vta = is_meta ? 2.0 * v_tau_sp[0][P] : 0.0;
-                double vtb = is_meta ? 2.0 * v_tau_sp[1][P] : 0.0;
 
-                // spatial field derivatives at this point, per channel
-                double drho[2][3], ddrho[2][6], dsig[3][3] = {{0}}, dtau[2][3] = {{0}};
+                // plumbing: raw per-channel spatial collocation dots (TRUE
+                // d rho and dd rho; dtau and ddtau are the plain per-channel
+                // dots, with the tau-index Libxc halving folded into the
+                // generated regions)
+                double drho[2][3], ddrho[2][6], dtau[2][3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
                 static const int kx6[6] = {0, 0, 0, 1, 1, 2};
                 static const int ky6[6] = {0, 1, 2, 1, 2, 2};
                 for (int sp = 0; sp < 2; sp++) {
@@ -6901,25 +6902,34 @@ SharedMatrix UV::compute_hessian() {
                         }
                     }
                 }
-                if (ansatz >= 1) {
-                    for (int d = 0; d < 3; d++) {
-                        for (int i = 0; i < 3; i++) {
-                            double dda = ddrho[0][hess_addr[d][i]];
-                            double ddb = ddrho[1][hess_addr[d][i]];
-                            dsig[0][d] += 2.0 * rho_sg[0][i][P] * dda;
-                            dsig[1][d] += rho_sg[0][i][P] * ddb + rho_sg[1][i][P] * dda;
-                            dsig[2][d] += 2.0 * rho_sg[1][i][P] * ddb;
-                        }
-                    }
-                }
+
+                // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_energy_gradient_spin(mgga_tau)] <==
                 double es[3];
                 for (int d = 0; d < 3; d++) {
-                    es[d] = v_rho_a[P] * drho[0][d] + v_rho_b[P] * drho[1][d];
-                    if (ansatz >= 1)
-                        es[d] += v_gamma_aa[P] * dsig[0][d] + v_gamma_ab[P] * dsig[1][d]
-                                 + v_gamma_bb[P] * dsig[2][d];
-                    if (is_meta) es[d] += vta * dtau[0][d] + vtb * dtau[1][d];
+                    double de = 0.0;
+                    de += drho[0][d] * v_rho_a[P];
+                    de += drho[1][d] * v_rho_b[P];
+                    if (ansatz >= 1) {
+                        de += ddrho[0][hess_addr[d][0]] * rho_sg[1][0][P] * v_gamma_ab[P];
+                        de += ddrho[0][hess_addr[d][1]] * rho_sg[1][1][P] * v_gamma_ab[P];
+                        de += ddrho[0][hess_addr[d][2]] * rho_sg[1][2][P] * v_gamma_ab[P];
+                        de += ddrho[1][hess_addr[d][0]] * rho_sg[0][0][P] * v_gamma_ab[P];
+                        de += ddrho[1][hess_addr[d][1]] * rho_sg[0][1][P] * v_gamma_ab[P];
+                        de += ddrho[1][hess_addr[d][2]] * rho_sg[0][2][P] * v_gamma_ab[P];
+                        de += 2 * ddrho[0][hess_addr[d][0]] * rho_sg[0][0][P] * v_gamma_aa[P];
+                        de += 2 * ddrho[0][hess_addr[d][1]] * rho_sg[0][1][P] * v_gamma_aa[P];
+                        de += 2 * ddrho[0][hess_addr[d][2]] * rho_sg[0][2][P] * v_gamma_aa[P];
+                        de += 2 * ddrho[1][hess_addr[d][0]] * rho_sg[1][0][P] * v_gamma_bb[P];
+                        de += 2 * ddrho[1][hess_addr[d][1]] * rho_sg[1][1][P] * v_gamma_bb[P];
+                        de += 2 * ddrho[1][hess_addr[d][2]] * rho_sg[1][2][P] * v_gamma_bb[P];
+                    }
+                    if (ansatz >= 2) {
+                        de += 2 * dtau[0][d] * v_tau_sp[0][P];
+                        de += 2 * dtau[1][d] * v_tau_sp[1][P];
+                    }
+                    es[d] = de;
                 }
+                // ==> END GENERATED CODE <==
 
                 // basis derivative of e, scattered by center; de_tot column
                 for (int k = 0; k < 3 * natom; k++) DeT[k][P] = 0.0;
@@ -6927,27 +6937,26 @@ SharedMatrix UV::compute_hessian() {
                     for (int ml = 0; ml < nlocal; ml++) {
                         int C = primary_->function_to_center(function_map[ml]);
                         for (int xd = 0; xd < 3; xd++) {
-                            double fra = -2.0 * U0s[0][P][ml] * phi_i[xd][P][ml];
-                            double frb = -2.0 * U0s[1][P][ml] * phi_i[xd][P][ml];
-                            double val = v_rho_a[P] * fra + v_rho_b[P] * frb;
-                            if (ansatz >= 1) {
-                                double fsaa = 0.0, fsab = 0.0, fsbb = 0.0, fta = 0.0, ftb = 0.0;
-                                for (int i = 0; i < 3; i++) {
-                                    double ga = -2.0 * (U0s[0][P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                        + Uis[0][i][P][ml] * phi_i[xd][P][ml]);
-                                    double gb = -2.0 * (U0s[1][P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                        + Uis[1][i][P][ml] * phi_i[xd][P][ml]);
-                                    fsaa += 2.0 * rho_sg[0][i][P] * ga;
-                                    fsab += rho_sg[0][i][P] * gb + rho_sg[1][i][P] * ga;
-                                    fsbb += 2.0 * rho_sg[1][i][P] * gb;
-                                    if (is_meta) {
-                                        fta += -1.0 * Uis[0][i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
-                                        ftb += -1.0 * Uis[1][i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
-                                    }
-                                }
-                                val += v_gamma_aa[P] * fsaa + v_gamma_ab[P] * fsab + v_gamma_bb[P] * fsbb
-                                       + vta * fta + vtb * ftb;
+                        // ==> BEGIN GENERATED CODE [xckernel psi4backend: basis rows of de: sum_K v_K F_K, spin(mgga_tau)] <==
+                        double val = 0.0;
+                        val += -2 * U0s[0][P][ml] * phi_i[xd][P][ml] * v_rho_a[P];
+                        val += -2 * U0s[1][P][ml] * phi_i[xd][P][ml] * v_rho_b[P];
+                        if (ansatz >= 1) {
+                            double f_saa = 0.0, f_sab = 0.0, f_sbb = 0.0;
+                            double f_ta = 0.0, f_tb = 0.0;
+                            for (int i = 0; i < 3; i++) {
+                                double g_a = -2.0 * U0s[0][P][ml] * phi_hess[hess_addr[xd][i]][P][ml] -2.0 * Uis[0][i][P][ml] * phi_i[xd][P][ml];
+                                double g_b = -2.0 * U0s[1][P][ml] * phi_hess[hess_addr[xd][i]][P][ml] -2.0 * Uis[1][i][P][ml] * phi_i[xd][P][ml];
+                                f_saa += 2.0 * g_a * rho_sg[0][i][P];
+                                f_sab += 1.0 * g_a * rho_sg[1][i][P] +1.0 * g_b * rho_sg[0][i][P];
+                                f_sbb += 2.0 * g_b * rho_sg[1][i][P];
+                                if (ansatz >= 2) f_ta += -1.0 * Uis[0][i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
+                                if (ansatz >= 2) f_tb += -1.0 * Uis[1][i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
                             }
+                            val += v_gamma_aa[P] * f_saa + v_gamma_ab[P] * f_sab + v_gamma_bb[P] * f_sbb;
+                            if (ansatz >= 2) val += 2.0 * v_tau_sp[0][P] * f_ta + 2.0 * v_tau_sp[1][P] * f_tb;
+                        }
+                        // ==> END GENERATED CODE <==
                             DeT[3 * C + xd][P] += val;
                         }
                     }
@@ -6956,80 +6965,167 @@ SharedMatrix UV::compute_hessian() {
 
                 if (!live) continue;
 
-                // chained first-derivative arrays per direction
-                double dv_ra[3], dv_rb[3], dv_g[3][3] = {{0}}, dv_ta[3] = {0}, dv_tb[3] = {0};
-                for (int yd = 0; yd < 3; yd++) {
-                    dv_ra[yd] = v_rho_aa[P] * drho[0][yd] + v_rho_ab[P] * drho[1][yd];
-                    dv_rb[yd] = v_rho_ab[P] * drho[0][yd] + v_rho_bb[P] * drho[1][yd];
-                    if (ansatz >= 1) {
-                        static const int ggmap[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
-                        for (int c = 0; c < 3; c++) {
-                            dv_ra[yd] += v2_rag[c][P] * dsig[c][yd];
-                            dv_rb[yd] += v2_rbg[c][P] * dsig[c][yd];
-                            dv_g[c][yd] = v2_rag[c][P] * drho[0][yd] + v2_rbg[c][P] * drho[1][yd];
-                            for (int cc = 0; cc < 3; cc++) dv_g[c][yd] += v2_gg[ggmap[c][cc]][P] * dsig[cc][yd];
-                        }
-                        if (is_meta) {
-                            dv_ra[yd] += 2.0 * (v2_rt[0][0][P] * dtau[0][yd] + v2_rt[0][1][P] * dtau[1][yd]);
-                            dv_rb[yd] += 2.0 * (v2_rt[1][0][P] * dtau[0][yd] + v2_rt[1][1][P] * dtau[1][yd]);
-                            for (int c = 0; c < 3; c++)
-                                dv_g[c][yd] += 2.0 * (v2_gt[c][0][P] * dtau[0][yd] + v2_gt[c][1][P] * dtau[1][yd]);
-                            dv_ta[yd] = 2.0 * (v2_rt[0][0][P] * drho[0][yd] + v2_rt[1][0][P] * drho[1][yd]
-                                               + v2_gt[0][0][P] * dsig[0][yd] + v2_gt[1][0][P] * dsig[1][yd]
-                                               + v2_gt[2][0][P] * dsig[2][yd])
-                                        + 4.0 * (v2_tt[0][P] * dtau[0][yd] + v2_tt[1][P] * dtau[1][yd]);
-                            dv_tb[yd] = 2.0 * (v2_rt[0][1][P] * drho[0][yd] + v2_rt[1][1][P] * drho[1][yd]
-                                               + v2_gt[0][1][P] * dsig[0][yd] + v2_gt[1][1][P] * dsig[1][yd]
-                                               + v2_gt[2][1][P] * dsig[2][yd])
-                                        + 4.0 * (v2_tt[1][P] * dtau[0][yd] + v2_tt[2][P] * dtau[1][yd]);
-                        }
-                    }
-                }
-
                 // MM: second spatial derivative on the parent diagonal (full,
                 // explicit mirror)
                 for (int xd = 0; xd < 3; xd++) {
                     for (int yd = xd; yd < 3; yd++) {
-                        double d2e = drho[0][xd] * dv_ra[yd] + drho[1][xd] * dv_rb[yd]
-                                     + v_rho_a[P] * ddrho[0][hess_addr[xd][yd]]
-                                     + v_rho_b[P] * ddrho[1][hess_addr[xd][yd]];
+                        double d3[2][3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+                        double ddtau[2] = {0.0, 0.0};
                         if (ansatz >= 1) {
-                            for (int c = 0; c < 3; c++) d2e += dsig[c][xd] * dv_g[c][yd];
-                            double d3[2][3];
-                            for (int sp = 0; sp < 2; sp++)
-                                for (int i = 0; i < 3; i++)
-                                    d3[sp][i] = 2.0 * (C_DDOT(nlocal, Uhs[sp][hess_addr[xd][yd]][P], 1,
-                                                              phi_i[i][P], 1)
+                            for (int sp = 0; sp < 2; sp++) {
+                                for (int i = 0; i < 3; i++) {
+                                    d3[sp][i] = 2.0 * (C_DDOT(nlocal, Uhs[sp][hess_addr[xd][yd]][P], 1, phi_i[i][P], 1)
                                                        + C_DDOT(nlocal, Uis[sp][yd][P], 1,
                                                                 phi_hess[hess_addr[xd][i]][P], 1)
                                                        + C_DDOT(nlocal, Uis[sp][xd][P], 1,
                                                                 phi_hess[hess_addr[yd][i]][P], 1)
                                                        + C_DDOT(nlocal, U0s[sp][P], 1,
                                                                 phi_3[t3_addr[xd][yd][i]][P], 1));
-                            double ddsaa = 0.0, ddsab = 0.0, ddsbb = 0.0;
-                            for (int i = 0; i < 3; i++) {
-                                double dax = ddrho[0][hess_addr[xd][i]], day = ddrho[0][hess_addr[yd][i]];
-                                double dbx = ddrho[1][hess_addr[xd][i]], dby = ddrho[1][hess_addr[yd][i]];
-                                ddsaa += 2.0 * (dax * day + rho_sg[0][i][P] * d3[0][i]);
-                                ddsab += dax * dby + day * dbx + rho_sg[0][i][P] * d3[1][i]
-                                         + rho_sg[1][i][P] * d3[0][i];
-                                ddsbb += 2.0 * (dbx * dby + rho_sg[1][i][P] * d3[1][i]);
-                            }
-                            d2e += v_gamma_aa[P] * ddsaa + v_gamma_ab[P] * ddsab + v_gamma_bb[P] * ddsbb;
-                            if (is_meta) {
-                                d2e += dtau[0][xd] * dv_ta[yd] + dtau[1][xd] * dv_tb[yd];
-                                double ddta = 0.0, ddtb = 0.0;
-                                for (int i = 0; i < 3; i++) {
-                                    ddta += C_DDOT(nlocal, Uhs[0][hess_addr[xd][i]][P], 1,
-                                                   phi_hess[hess_addr[yd][i]][P], 1)
-                                            + C_DDOT(nlocal, Uis[0][i][P], 1, phi_3[t3_addr[xd][yd][i]][P], 1);
-                                    ddtb += C_DDOT(nlocal, Uhs[1][hess_addr[xd][i]][P], 1,
-                                                   phi_hess[hess_addr[yd][i]][P], 1)
-                                            + C_DDOT(nlocal, Uis[1][i][P], 1, phi_3[t3_addr[xd][yd][i]][P], 1);
+                                    if (is_meta)
+                                        ddtau[sp] += C_DDOT(nlocal, Uhs[sp][hess_addr[xd][i]][P], 1,
+                                                            phi_hess[hess_addr[yd][i]][P], 1)
+                                                     + C_DDOT(nlocal, Uis[sp][i][P], 1,
+                                                              phi_3[t3_addr[xd][yd][i]][P], 1);
                                 }
-                                d2e += vta * ddta + vtb * ddtb;
                             }
                         }
+                    // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_energy_hessian_spin(mgga_tau)] <==
+                    double dot_d2grad_rho_a_gh_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_d2grad_rho_a_gh_grad_rho_a = d3[0][0] * rho_sg[0][0][P] + d3[0][1] * rho_sg[0][1][P] + d3[0][2] * rho_sg[0][2][P];
+                    double dot_d2grad_rho_a_gh_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_d2grad_rho_a_gh_grad_rho_b = d3[0][0] * rho_sg[1][0][P] + d3[0][1] * rho_sg[1][1][P] + d3[0][2] * rho_sg[1][2][P];
+                    double dot_d2grad_rho_b_gh_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_d2grad_rho_b_gh_grad_rho_a = d3[1][0] * rho_sg[0][0][P] + d3[1][1] * rho_sg[0][1][P] + d3[1][2] * rho_sg[0][2][P];
+                    double dot_d2grad_rho_b_gh_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_d2grad_rho_b_gh_grad_rho_b = d3[1][0] * rho_sg[1][0][P] + d3[1][1] * rho_sg[1][1][P] + d3[1][2] * rho_sg[1][2][P];
+                    const double dot_dgrad_rho_a_g_dgrad_rho_a_h = ddrho[0][hess_addr[xd][0]] * ddrho[0][hess_addr[yd][0]] + ddrho[0][hess_addr[xd][1]] * ddrho[0][hess_addr[yd][1]] + ddrho[0][hess_addr[xd][2]] * ddrho[0][hess_addr[yd][2]];
+                    const double dot_dgrad_rho_a_g_dgrad_rho_b_h = ddrho[0][hess_addr[xd][0]] * ddrho[1][hess_addr[yd][0]] + ddrho[0][hess_addr[xd][1]] * ddrho[1][hess_addr[yd][1]] + ddrho[0][hess_addr[xd][2]] * ddrho[1][hess_addr[yd][2]];
+                    double dot_dgrad_rho_a_g_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_g_grad_rho_a = ddrho[0][hess_addr[xd][0]] * rho_sg[0][0][P] + ddrho[0][hess_addr[xd][1]] * rho_sg[0][1][P] + ddrho[0][hess_addr[xd][2]] * rho_sg[0][2][P];
+                    double dot_dgrad_rho_a_g_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_g_grad_rho_b = ddrho[0][hess_addr[xd][0]] * rho_sg[1][0][P] + ddrho[0][hess_addr[xd][1]] * rho_sg[1][1][P] + ddrho[0][hess_addr[xd][2]] * rho_sg[1][2][P];
+                    const double dot_dgrad_rho_a_h_dgrad_rho_b_g = ddrho[0][hess_addr[yd][0]] * ddrho[1][hess_addr[xd][0]] + ddrho[0][hess_addr[yd][1]] * ddrho[1][hess_addr[xd][1]] + ddrho[0][hess_addr[yd][2]] * ddrho[1][hess_addr[xd][2]];
+                    double dot_dgrad_rho_a_h_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_h_grad_rho_a = ddrho[0][hess_addr[yd][0]] * rho_sg[0][0][P] + ddrho[0][hess_addr[yd][1]] * rho_sg[0][1][P] + ddrho[0][hess_addr[yd][2]] * rho_sg[0][2][P];
+                    double dot_dgrad_rho_a_h_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_h_grad_rho_b = ddrho[0][hess_addr[yd][0]] * rho_sg[1][0][P] + ddrho[0][hess_addr[yd][1]] * rho_sg[1][1][P] + ddrho[0][hess_addr[yd][2]] * rho_sg[1][2][P];
+                    const double dot_dgrad_rho_b_g_dgrad_rho_b_h = ddrho[1][hess_addr[xd][0]] * ddrho[1][hess_addr[yd][0]] + ddrho[1][hess_addr[xd][1]] * ddrho[1][hess_addr[yd][1]] + ddrho[1][hess_addr[xd][2]] * ddrho[1][hess_addr[yd][2]];
+                    double dot_dgrad_rho_b_g_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_g_grad_rho_a = ddrho[1][hess_addr[xd][0]] * rho_sg[0][0][P] + ddrho[1][hess_addr[xd][1]] * rho_sg[0][1][P] + ddrho[1][hess_addr[xd][2]] * rho_sg[0][2][P];
+                    double dot_dgrad_rho_b_g_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_g_grad_rho_b = ddrho[1][hess_addr[xd][0]] * rho_sg[1][0][P] + ddrho[1][hess_addr[xd][1]] * rho_sg[1][1][P] + ddrho[1][hess_addr[xd][2]] * rho_sg[1][2][P];
+                    double dot_dgrad_rho_b_h_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_h_grad_rho_a = ddrho[1][hess_addr[yd][0]] * rho_sg[0][0][P] + ddrho[1][hess_addr[yd][1]] * rho_sg[0][1][P] + ddrho[1][hess_addr[yd][2]] * rho_sg[0][2][P];
+                    double dot_dgrad_rho_b_h_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_h_grad_rho_b = ddrho[1][hess_addr[yd][0]] * rho_sg[1][0][P] + ddrho[1][hess_addr[yd][1]] * rho_sg[1][1][P] + ddrho[1][hess_addr[yd][2]] * rho_sg[1][2][P];
+                    double d2e = 0.0;
+                    d2e += ddrho[0][hess_addr[xd][yd]] * v_rho_a[P];
+                    d2e += ddrho[1][hess_addr[xd][yd]] * v_rho_b[P];
+                    d2e += drho[0][xd] * drho[0][yd] * v_rho_aa[P];
+                    d2e += drho[0][xd] * drho[1][yd] * v_rho_ab[P];
+                    d2e += drho[0][yd] * drho[1][xd] * v_rho_ab[P];
+                    d2e += drho[1][xd] * drho[1][yd] * v_rho_bb[P];
+                    if (ansatz >= 1) {
+                        d2e += 2 * ddrho[0][hess_addr[xd][0]] * ddrho[0][hess_addr[yd][1]] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][0]] * ddrho[0][hess_addr[yd][1]] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][0]] * ddrho[0][hess_addr[yd][2]] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][0]] * ddrho[0][hess_addr[yd][2]] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][1]] * ddrho[0][hess_addr[yd][0]] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][1]] * ddrho[0][hess_addr[yd][0]] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][1]] * ddrho[0][hess_addr[yd][2]] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][1]] * ddrho[0][hess_addr[yd][2]] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][2]] * ddrho[0][hess_addr[yd][0]] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][2]] * ddrho[0][hess_addr[yd][0]] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][2]] * ddrho[0][hess_addr[yd][1]] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[0][hess_addr[xd][2]] * ddrho[0][hess_addr[yd][1]] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][0]] * ddrho[1][hess_addr[yd][1]] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][0]] * ddrho[1][hess_addr[yd][1]] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][0]] * ddrho[1][hess_addr[yd][2]] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][0]] * ddrho[1][hess_addr[yd][2]] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][1]] * ddrho[1][hess_addr[yd][0]] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][1]] * ddrho[1][hess_addr[yd][0]] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][1]] * ddrho[1][hess_addr[yd][2]] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][1]] * ddrho[1][hess_addr[yd][2]] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][2]] * ddrho[1][hess_addr[yd][0]] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][2]] * ddrho[1][hess_addr[yd][0]] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][2]] * ddrho[1][hess_addr[yd][1]] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                        d2e += 2 * ddrho[1][hess_addr[xd][2]] * ddrho[1][hess_addr[yd][1]] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                        d2e += 4 * ddrho[0][hess_addr[xd][0]] * ddrho[0][hess_addr[yd][0]] * rho_sg[0][0][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                        d2e += 4 * ddrho[0][hess_addr[xd][1]] * ddrho[0][hess_addr[yd][1]] * rho_sg[0][1][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                        d2e += 4 * ddrho[0][hess_addr[xd][2]] * ddrho[0][hess_addr[yd][2]] * rho_sg[0][2][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                        d2e += 4 * ddrho[1][hess_addr[xd][0]] * ddrho[1][hess_addr[yd][0]] * rho_sg[0][0][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                        d2e += 4 * ddrho[1][hess_addr[xd][1]] * ddrho[1][hess_addr[yd][1]] * rho_sg[0][1][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                        d2e += 4 * ddrho[1][hess_addr[xd][2]] * ddrho[1][hess_addr[yd][2]] * rho_sg[0][2][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                        d2e += 2 * dot_d2grad_rho_a_gh_grad_rho_a * v_gamma_aa[P];
+                        d2e += dot_d2grad_rho_a_gh_grad_rho_b * v_gamma_ab[P];
+                        d2e += dot_d2grad_rho_b_gh_grad_rho_a * v_gamma_ab[P];
+                        d2e += 2 * dot_d2grad_rho_b_gh_grad_rho_b * v_gamma_bb[P];
+                        d2e += 2 * dot_dgrad_rho_a_g_dgrad_rho_a_h * v_gamma_aa[P];
+                        d2e += dot_dgrad_rho_a_g_dgrad_rho_b_h * v_gamma_ab[P];
+                        d2e += 2 * dot_dgrad_rho_a_g_grad_rho_a * drho[0][yd] * v2_rag[0][P];
+                        d2e += 2 * dot_dgrad_rho_a_g_grad_rho_a * drho[1][yd] * v2_rbg[0][P];
+                        d2e += dot_dgrad_rho_a_g_grad_rho_b * drho[0][yd] * v2_rag[1][P];
+                        d2e += dot_dgrad_rho_a_g_grad_rho_b * drho[1][yd] * v2_rbg[1][P];
+                        d2e += dot_dgrad_rho_a_h_dgrad_rho_b_g * v_gamma_ab[P];
+                        d2e += 2 * dot_dgrad_rho_a_h_grad_rho_a * drho[0][xd] * v2_rag[0][P];
+                        d2e += 2 * dot_dgrad_rho_a_h_grad_rho_a * drho[1][xd] * v2_rbg[0][P];
+                        d2e += 4 * dot_dgrad_rho_a_g_grad_rho_a * dot_dgrad_rho_a_h_grad_rho_a * v2_gg[0][P];
+                        d2e += dot_dgrad_rho_a_h_grad_rho_b * drho[0][xd] * v2_rag[1][P];
+                        d2e += dot_dgrad_rho_a_h_grad_rho_b * drho[1][xd] * v2_rbg[1][P];
+                        d2e += dot_dgrad_rho_a_g_grad_rho_b * dot_dgrad_rho_a_h_grad_rho_b * v2_gg[3][P];
+                        d2e += 2 * dot_dgrad_rho_b_g_dgrad_rho_b_h * v_gamma_bb[P];
+                        d2e += dot_dgrad_rho_b_g_grad_rho_a * drho[0][yd] * v2_rag[1][P];
+                        d2e += dot_dgrad_rho_b_g_grad_rho_a * drho[1][yd] * v2_rbg[1][P];
+                        d2e += 2 * dot_dgrad_rho_a_h_grad_rho_a * dot_dgrad_rho_b_g_grad_rho_a * v2_gg[1][P];
+                        d2e += dot_dgrad_rho_a_h_grad_rho_b * dot_dgrad_rho_b_g_grad_rho_a * v2_gg[3][P];
+                        d2e += 2 * dot_dgrad_rho_b_g_grad_rho_b * drho[0][yd] * v2_rag[2][P];
+                        d2e += 2 * dot_dgrad_rho_b_g_grad_rho_b * drho[1][yd] * v2_rbg[2][P];
+                        d2e += 4 * dot_dgrad_rho_a_h_grad_rho_a * dot_dgrad_rho_b_g_grad_rho_b * v2_gg[2][P];
+                        d2e += 2 * dot_dgrad_rho_a_h_grad_rho_b * dot_dgrad_rho_b_g_grad_rho_b * v2_gg[4][P];
+                        d2e += dot_dgrad_rho_b_h_grad_rho_a * drho[0][xd] * v2_rag[1][P];
+                        d2e += dot_dgrad_rho_b_h_grad_rho_a * drho[1][xd] * v2_rbg[1][P];
+                        d2e += 2 * dot_dgrad_rho_a_g_grad_rho_a * dot_dgrad_rho_b_h_grad_rho_a * v2_gg[1][P];
+                        d2e += dot_dgrad_rho_a_g_grad_rho_b * dot_dgrad_rho_b_h_grad_rho_a * v2_gg[3][P];
+                        d2e += dot_dgrad_rho_b_g_grad_rho_a * dot_dgrad_rho_b_h_grad_rho_a * v2_gg[3][P];
+                        d2e += 2 * dot_dgrad_rho_b_h_grad_rho_b * drho[0][xd] * v2_rag[2][P];
+                        d2e += 2 * dot_dgrad_rho_b_h_grad_rho_b * drho[1][xd] * v2_rbg[2][P];
+                        d2e += 4 * dot_dgrad_rho_a_g_grad_rho_a * dot_dgrad_rho_b_h_grad_rho_b * v2_gg[2][P];
+                        d2e += 2 * dot_dgrad_rho_a_g_grad_rho_b * dot_dgrad_rho_b_h_grad_rho_b * v2_gg[4][P];
+                        d2e += 4 * dot_dgrad_rho_b_g_grad_rho_b * dot_dgrad_rho_b_h_grad_rho_b * v2_gg[5][P];
+                    }
+                    if (ansatz >= 2) {
+                        d2e += 2 * ddtau[0] * v_tau_sp[0][P];
+                        d2e += 2 * ddtau[1] * v_tau_sp[1][P];
+                        d2e += 2 * drho[0][xd] * dtau[0][yd] * v2_rt[0][0][P];
+                        d2e += 2 * drho[0][xd] * dtau[1][yd] * v2_rt[0][1][P];
+                        d2e += 2 * drho[0][yd] * dtau[0][xd] * v2_rt[0][0][P];
+                        d2e += 2 * drho[0][yd] * dtau[1][xd] * v2_rt[0][1][P];
+                        d2e += 2 * drho[1][xd] * dtau[0][yd] * v2_rt[1][0][P];
+                        d2e += 2 * drho[1][xd] * dtau[1][yd] * v2_rt[1][1][P];
+                        d2e += 2 * drho[1][yd] * dtau[0][xd] * v2_rt[1][0][P];
+                        d2e += 2 * drho[1][yd] * dtau[1][xd] * v2_rt[1][1][P];
+                        d2e += 4 * dtau[0][xd] * dtau[0][yd] * v2_tt[0][P];
+                        d2e += 4 * dtau[0][xd] * dtau[1][yd] * v2_tt[1][P];
+                        d2e += 4 * dtau[0][yd] * dtau[1][xd] * v2_tt[1][P];
+                        d2e += 4 * dtau[1][xd] * dtau[1][yd] * v2_tt[2][P];
+                        d2e += 4 * dot_dgrad_rho_a_g_grad_rho_a * dtau[0][yd] * v2_gt[0][0][P];
+                        d2e += 4 * dot_dgrad_rho_a_g_grad_rho_a * dtau[1][yd] * v2_gt[0][1][P];
+                        d2e += 2 * dot_dgrad_rho_a_g_grad_rho_b * dtau[0][yd] * v2_gt[1][0][P];
+                        d2e += 2 * dot_dgrad_rho_a_g_grad_rho_b * dtau[1][yd] * v2_gt[1][1][P];
+                        d2e += 4 * dot_dgrad_rho_a_h_grad_rho_a * dtau[0][xd] * v2_gt[0][0][P];
+                        d2e += 4 * dot_dgrad_rho_a_h_grad_rho_a * dtau[1][xd] * v2_gt[0][1][P];
+                        d2e += 2 * dot_dgrad_rho_a_h_grad_rho_b * dtau[0][xd] * v2_gt[1][0][P];
+                        d2e += 2 * dot_dgrad_rho_a_h_grad_rho_b * dtau[1][xd] * v2_gt[1][1][P];
+                        d2e += 2 * dot_dgrad_rho_b_g_grad_rho_a * dtau[0][yd] * v2_gt[1][0][P];
+                        d2e += 2 * dot_dgrad_rho_b_g_grad_rho_a * dtau[1][yd] * v2_gt[1][1][P];
+                        d2e += 4 * dot_dgrad_rho_b_g_grad_rho_b * dtau[0][yd] * v2_gt[2][0][P];
+                        d2e += 4 * dot_dgrad_rho_b_g_grad_rho_b * dtau[1][yd] * v2_gt[2][1][P];
+                        d2e += 2 * dot_dgrad_rho_b_h_grad_rho_a * dtau[0][xd] * v2_gt[1][0][P];
+                        d2e += 2 * dot_dgrad_rho_b_h_grad_rho_a * dtau[1][xd] * v2_gt[1][1][P];
+                        d2e += 4 * dot_dgrad_rho_b_h_grad_rho_b * dtau[0][xd] * v2_gt[2][0][P];
+                        d2e += 4 * dot_dgrad_rho_b_h_grad_rho_b * dtau[1][xd] * v2_gt[2][1][P];
+                    }
+                    // ==> END GENERATED CODE <==
                         double t = w[P] * d2e;
                         Hp[3 * Ag + xd][3 * Ag + yd] += t;
                         if (yd != xd) Hp[3 * Ag + yd][3 * Ag + xd] += t;
@@ -7040,65 +7136,402 @@ SharedMatrix UV::compute_hessian() {
                 for (int ml = 0; ml < nlocal; ml++) {
                     int C = primary_->function_to_center(function_map[ml]);
                     for (int xd = 0; xd < 3; xd++) {
-                        double fra = -2.0 * U0s[0][P][ml] * phi_i[xd][P][ml];
-                        double frb = -2.0 * U0s[1][P][ml] * phi_i[xd][P][ml];
-                        double fsaa = 0.0, fsab = 0.0, fsbb = 0.0, fta = 0.0, ftb = 0.0;
-                        double Ga[3], Gb[3];
-                        if (ansatz >= 1) {
-                            for (int i = 0; i < 3; i++) {
-                                Ga[i] = -2.0 * (U0s[0][P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                + Uis[0][i][P][ml] * phi_i[xd][P][ml]);
-                                Gb[i] = -2.0 * (U0s[1][P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                + Uis[1][i][P][ml] * phi_i[xd][P][ml]);
-                                fsaa += 2.0 * rho_sg[0][i][P] * Ga[i];
-                                fsab += rho_sg[0][i][P] * Gb[i] + rho_sg[1][i][P] * Ga[i];
-                                fsbb += 2.0 * rho_sg[1][i][P] * Gb[i];
-                                if (is_meta) {
-                                    fta += -1.0 * Uis[0][i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
-                                    ftb += -1.0 * Uis[1][i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
-                                }
-                            }
-                        }
                         for (int yd = 0; yd < 3; yd++) {
-                            double mb = dv_ra[yd] * fra + dv_rb[yd] * frb;
-                            if (ansatz >= 1)
-                                mb += dv_g[0][yd] * fsaa + dv_g[1][yd] * fsab + dv_g[2][yd] * fsbb
-                                      + dv_ta[yd] * fta + dv_tb[yd] * ftb;
-                            // spatial derivatives of the rows themselves
-                            double dfra = -2.0 * (Uis[0][yd][P][ml] * phi_i[xd][P][ml]
-                                                  + U0s[0][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml]);
-                            double dfrb = -2.0 * (Uis[1][yd][P][ml] * phi_i[xd][P][ml]
-                                                  + U0s[1][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml]);
-                            mb += v_rho_a[P] * dfra + v_rho_b[P] * dfrb;
-                            if (ansatz >= 1) {
-                                double dfsaa = 0.0, dfsab = 0.0, dfsbb = 0.0, dfta = 0.0, dftb = 0.0;
-                                for (int i = 0; i < 3; i++) {
-                                    double dGa = -2.0 * (Uis[0][yd][P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                         + U0s[0][P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml]
-                                                         + Uhs[0][hess_addr[yd][i]][P][ml] * phi_i[xd][P][ml]
-                                                         + Uis[0][i][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml]);
-                                    double dGb = -2.0 * (Uis[1][yd][P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
-                                                         + U0s[1][P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml]
-                                                         + Uhs[1][hess_addr[yd][i]][P][ml] * phi_i[xd][P][ml]
-                                                         + Uis[1][i][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml]);
-                                    double dax = ddrho[0][hess_addr[yd][i]];
-                                    double dbx = ddrho[1][hess_addr[yd][i]];
-                                    dfsaa += 2.0 * (dax * Ga[i] + rho_sg[0][i][P] * dGa);
-                                    dfsab += dax * Gb[i] + rho_sg[0][i][P] * dGb + dbx * Ga[i]
-                                             + rho_sg[1][i][P] * dGa;
-                                    dfsbb += 2.0 * (dbx * Gb[i] + rho_sg[1][i][P] * dGb);
-                                    if (is_meta) {
-                                        dfta += -1.0 * (Uhs[0][hess_addr[yd][i]][P][ml]
-                                                            * phi_hess[hess_addr[xd][i]][P][ml]
-                                                        + Uis[0][i][P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml]);
-                                        dftb += -1.0 * (Uhs[1][hess_addr[yd][i]][P][ml]
-                                                            * phi_hess[hess_addr[xd][i]][P][ml]
-                                                        + Uis[1][i][P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml]);
-                                    }
-                                }
-                                mb += v_gamma_aa[P] * dfsaa + v_gamma_ab[P] * dfsab + v_gamma_bb[P] * dfsbb
-                                      + vta * dfta + vtb * dftb;
-                            }
+                        // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_row_gradient_spin(mgga_tau)] <==
+                        double dot_dgrad_rho_a_h_grad_rho_a = 0.0;
+                        if (ansatz >= 1) dot_dgrad_rho_a_h_grad_rho_a = ddrho[0][hess_addr[yd][0]] * rho_sg[0][0][P] + ddrho[0][hess_addr[yd][1]] * rho_sg[0][1][P] + ddrho[0][hess_addr[yd][2]] * rho_sg[0][2][P];
+                        double dot_dgrad_rho_a_h_grad_rho_b = 0.0;
+                        if (ansatz >= 1) dot_dgrad_rho_a_h_grad_rho_b = ddrho[0][hess_addr[yd][0]] * rho_sg[1][0][P] + ddrho[0][hess_addr[yd][1]] * rho_sg[1][1][P] + ddrho[0][hess_addr[yd][2]] * rho_sg[1][2][P];
+                        double dot_dgrad_rho_b_h_grad_rho_a = 0.0;
+                        if (ansatz >= 1) dot_dgrad_rho_b_h_grad_rho_a = ddrho[1][hess_addr[yd][0]] * rho_sg[0][0][P] + ddrho[1][hess_addr[yd][1]] * rho_sg[0][1][P] + ddrho[1][hess_addr[yd][2]] * rho_sg[0][2][P];
+                        double dot_dgrad_rho_b_h_grad_rho_b = 0.0;
+                        if (ansatz >= 1) dot_dgrad_rho_b_h_grad_rho_b = ddrho[1][hess_addr[yd][0]] * rho_sg[1][0][P] + ddrho[1][hess_addr[yd][1]] * rho_sg[1][1][P] + ddrho[1][hess_addr[yd][2]] * rho_sg[1][2][P];
+                        double mb = 0.0;
+                        mb += -2 * U0s[0][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * v_rho_a[P];
+                        mb += -2 * U0s[1][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * v_rho_b[P];
+                        mb += -2 * Uis[0][yd][P][ml] * phi_i[xd][P][ml] * v_rho_a[P];
+                        mb += -2 * Uis[1][yd][P][ml] * phi_i[xd][P][ml] * v_rho_b[P];
+                        mb += -2 * U0s[0][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * v_rho_aa[P];
+                        mb += -2 * U0s[0][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * v_rho_ab[P];
+                        mb += -2 * U0s[1][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * v_rho_ab[P];
+                        mb += -2 * U0s[1][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * v_rho_bb[P];
+                        if (ansatz >= 1) {
+                            mb += -2 * U0s[0][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_hess[hess_addr[xd][0]][P][ml] * v_gamma_ab[P];
+                            mb += -2 * U0s[0][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_hess[hess_addr[xd][1]][P][ml] * v_gamma_ab[P];
+                            mb += -2 * U0s[0][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_hess[hess_addr[xd][2]][P][ml] * v_gamma_ab[P];
+                            mb += -2 * U0s[0][P][ml] * phi_3[t3_addr[xd][yd][0]][P][ml] * rho_sg[1][0][P] * v_gamma_ab[P];
+                            mb += -2 * U0s[0][P][ml] * phi_3[t3_addr[xd][yd][1]][P][ml] * rho_sg[1][1][P] * v_gamma_ab[P];
+                            mb += -2 * U0s[0][P][ml] * phi_3[t3_addr[xd][yd][2]][P][ml] * rho_sg[1][2][P] * v_gamma_ab[P];
+                            mb += -2 * U0s[1][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_hess[hess_addr[xd][0]][P][ml] * v_gamma_ab[P];
+                            mb += -2 * U0s[1][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_hess[hess_addr[xd][1]][P][ml] * v_gamma_ab[P];
+                            mb += -2 * U0s[1][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_hess[hess_addr[xd][2]][P][ml] * v_gamma_ab[P];
+                            mb += -2 * U0s[1][P][ml] * phi_3[t3_addr[xd][yd][0]][P][ml] * rho_sg[0][0][P] * v_gamma_ab[P];
+                            mb += -2 * U0s[1][P][ml] * phi_3[t3_addr[xd][yd][1]][P][ml] * rho_sg[0][1][P] * v_gamma_ab[P];
+                            mb += -2 * U0s[1][P][ml] * phi_3[t3_addr[xd][yd][2]][P][ml] * rho_sg[0][2][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][0][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_i[xd][P][ml] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][0][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[1][0][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_i[xd][P][ml] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][0][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[0][0][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_i[xd][P][ml] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][1][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[1][1][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][1][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_i[xd][P][ml] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][1][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[0][1][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][2][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_i[xd][P][ml] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][2][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[1][2][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][2][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_i[xd][P][ml] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][2][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[0][2][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][yd][P][ml] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][yd][P][ml] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[0][yd][P][ml] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][yd][P][ml] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][yd][P][ml] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v_gamma_ab[P];
+                            mb += -2 * Uis[1][yd][P][ml] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v_gamma_ab[P];
+                            mb += -2 * Uhs[0][hess_addr[yd][0]][P][ml] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v_gamma_ab[P];
+                            mb += -2 * Uhs[0][hess_addr[yd][1]][P][ml] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v_gamma_ab[P];
+                            mb += -2 * Uhs[0][hess_addr[yd][2]][P][ml] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v_gamma_ab[P];
+                            mb += -2 * Uhs[1][hess_addr[yd][0]][P][ml] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v_gamma_ab[P];
+                            mb += -2 * Uhs[1][hess_addr[yd][1]][P][ml] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v_gamma_ab[P];
+                            mb += -2 * Uhs[1][hess_addr[yd][2]][P][ml] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v_gamma_ab[P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_hess[hess_addr[xd][0]][P][ml] * v_gamma_aa[P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_hess[hess_addr[xd][1]][P][ml] * v_gamma_aa[P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_hess[hess_addr[xd][2]][P][ml] * v_gamma_aa[P];
+                            mb += -4 * U0s[0][P][ml] * phi_3[t3_addr[xd][yd][0]][P][ml] * rho_sg[0][0][P] * v_gamma_aa[P];
+                            mb += -4 * U0s[0][P][ml] * phi_3[t3_addr[xd][yd][1]][P][ml] * rho_sg[0][1][P] * v_gamma_aa[P];
+                            mb += -4 * U0s[0][P][ml] * phi_3[t3_addr[xd][yd][2]][P][ml] * rho_sg[0][2][P] * v_gamma_aa[P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_hess[hess_addr[xd][0]][P][ml] * v_gamma_bb[P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_hess[hess_addr[xd][1]][P][ml] * v_gamma_bb[P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_hess[hess_addr[xd][2]][P][ml] * v_gamma_bb[P];
+                            mb += -4 * U0s[1][P][ml] * phi_3[t3_addr[xd][yd][0]][P][ml] * rho_sg[1][0][P] * v_gamma_bb[P];
+                            mb += -4 * U0s[1][P][ml] * phi_3[t3_addr[xd][yd][1]][P][ml] * rho_sg[1][1][P] * v_gamma_bb[P];
+                            mb += -4 * U0s[1][P][ml] * phi_3[t3_addr[xd][yd][2]][P][ml] * rho_sg[1][2][P] * v_gamma_bb[P];
+                            mb += -4 * Uis[0][0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_i[xd][P][ml] * v_gamma_aa[P];
+                            mb += -4 * Uis[0][0][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[0][0][P] * v_gamma_aa[P];
+                            mb += -4 * Uis[1][0][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_i[xd][P][ml] * v_gamma_bb[P];
+                            mb += -4 * Uis[1][0][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[1][0][P] * v_gamma_bb[P];
+                            mb += -4 * Uis[0][1][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_i[xd][P][ml] * v_gamma_aa[P];
+                            mb += -4 * Uis[0][1][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[0][1][P] * v_gamma_aa[P];
+                            mb += -4 * Uis[1][1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_i[xd][P][ml] * v_gamma_bb[P];
+                            mb += -4 * Uis[1][1][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[1][1][P] * v_gamma_bb[P];
+                            mb += -4 * Uis[0][2][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_i[xd][P][ml] * v_gamma_aa[P];
+                            mb += -4 * Uis[0][2][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[0][2][P] * v_gamma_aa[P];
+                            mb += -4 * Uis[1][2][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_i[xd][P][ml] * v_gamma_bb[P];
+                            mb += -4 * Uis[1][2][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml] * rho_sg[1][2][P] * v_gamma_bb[P];
+                            mb += -4 * Uis[0][yd][P][ml] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v_gamma_aa[P];
+                            mb += -4 * Uis[0][yd][P][ml] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v_gamma_aa[P];
+                            mb += -4 * Uis[0][yd][P][ml] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v_gamma_aa[P];
+                            mb += -4 * Uis[1][yd][P][ml] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v_gamma_bb[P];
+                            mb += -4 * Uis[1][yd][P][ml] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v_gamma_bb[P];
+                            mb += -4 * Uis[1][yd][P][ml] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v_gamma_bb[P];
+                            mb += -4 * Uhs[0][hess_addr[yd][0]][P][ml] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v_gamma_aa[P];
+                            mb += -4 * Uhs[0][hess_addr[yd][1]][P][ml] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v_gamma_aa[P];
+                            mb += -4 * Uhs[0][hess_addr[yd][2]][P][ml] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v_gamma_aa[P];
+                            mb += -4 * Uhs[1][hess_addr[yd][0]][P][ml] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v_gamma_bb[P];
+                            mb += -4 * Uhs[1][hess_addr[yd][1]][P][ml] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v_gamma_bb[P];
+                            mb += -4 * Uhs[1][hess_addr[yd][2]][P][ml] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v_gamma_bb[P];
+                            mb += -2 * U0s[0][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_rag[1][P];
+                            mb += -2 * U0s[0][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_rbg[1][P];
+                            mb += -2 * U0s[0][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_rag[1][P];
+                            mb += -2 * U0s[0][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_rbg[1][P];
+                            mb += -2 * U0s[0][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_rag[1][P];
+                            mb += -2 * U0s[0][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_rbg[1][P];
+                            mb += -2 * U0s[1][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_rag[1][P];
+                            mb += -2 * U0s[1][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_rbg[1][P];
+                            mb += -2 * U0s[1][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_rag[1][P];
+                            mb += -2 * U0s[1][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_rbg[1][P];
+                            mb += -2 * U0s[1][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_rag[1][P];
+                            mb += -2 * U0s[1][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_rbg[1][P];
+                            mb += -2 * Uis[0][0][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_rag[1][P];
+                            mb += -2 * Uis[0][0][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_rbg[1][P];
+                            mb += -2 * Uis[1][0][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_rag[1][P];
+                            mb += -2 * Uis[1][0][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_rbg[1][P];
+                            mb += -2 * Uis[0][1][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_rag[1][P];
+                            mb += -2 * Uis[0][1][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_rbg[1][P];
+                            mb += -2 * Uis[1][1][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_rag[1][P];
+                            mb += -2 * Uis[1][1][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_rbg[1][P];
+                            mb += -2 * Uis[0][2][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_rag[1][P];
+                            mb += -2 * Uis[0][2][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_rbg[1][P];
+                            mb += -2 * Uis[1][2][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_rag[1][P];
+                            mb += -2 * Uis[1][2][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_rbg[1][P];
+                            mb += -4 * U0s[0][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_rag[0][P];
+                            mb += -4 * U0s[0][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_rbg[0][P];
+                            mb += -4 * U0s[0][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_rag[0][P];
+                            mb += -4 * U0s[0][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_rbg[0][P];
+                            mb += -4 * U0s[0][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_rag[0][P];
+                            mb += -4 * U0s[0][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_rbg[0][P];
+                            mb += -4 * U0s[1][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_rag[2][P];
+                            mb += -4 * U0s[1][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_rbg[2][P];
+                            mb += -4 * U0s[1][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_rag[2][P];
+                            mb += -4 * U0s[1][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_rbg[2][P];
+                            mb += -4 * U0s[1][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_rag[2][P];
+                            mb += -4 * U0s[1][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_rbg[2][P];
+                            mb += -4 * Uis[0][0][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_rag[0][P];
+                            mb += -4 * Uis[0][0][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_rbg[0][P];
+                            mb += -4 * Uis[1][0][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_rag[2][P];
+                            mb += -4 * Uis[1][0][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_rbg[2][P];
+                            mb += -4 * Uis[0][1][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_rag[0][P];
+                            mb += -4 * Uis[0][1][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_rbg[0][P];
+                            mb += -4 * Uis[1][1][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_rag[2][P];
+                            mb += -4 * Uis[1][1][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_rbg[2][P];
+                            mb += -4 * Uis[0][2][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_rag[0][P];
+                            mb += -4 * Uis[0][2][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_rbg[0][P];
+                            mb += -4 * Uis[1][2][P][ml] * drho[0][yd] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_rag[2][P];
+                            mb += -4 * Uis[1][2][P][ml] * drho[1][yd] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_rbg[2][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * Uis[0][0][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][0][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][0][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][0][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -4 * Uis[1][0][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][0][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][0][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][0][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * Uis[0][1][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][1][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][1][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][1][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -4 * Uis[1][1][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][1][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][1][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][1][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * Uis[0][2][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][2][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][2][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][2][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -4 * Uis[1][2][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][2][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][2][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][2][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -8 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -8 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -8 * U0s[0][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -8 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -8 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -8 * U0s[1][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -8 * Uis[0][0][P][ml] * ddrho[0][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][0][P] * v2_gg[1][P];
+                            mb += -8 * Uis[1][0][P][ml] * ddrho[1][hess_addr[yd][0]] * phi_i[xd][P][ml] * rho_sg[0][0][P] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -8 * Uis[0][1][P][ml] * ddrho[0][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][1][P] * v2_gg[1][P];
+                            mb += -8 * Uis[1][1][P][ml] * ddrho[1][hess_addr[yd][1]] * phi_i[xd][P][ml] * rho_sg[0][1][P] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -8 * Uis[0][2][P][ml] * ddrho[0][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][2][P] * v2_gg[1][P];
+                            mb += -8 * Uis[1][2][P][ml] * ddrho[1][hess_addr[yd][2]] * phi_i[xd][P][ml] * rho_sg[0][2][P] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * U0s[0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * v2_rag[0][P];
+                            mb += -4 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * v2_rbg[0][P];
+                            mb += -4 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gg[1][P];
+                            mb += -4 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gg[1][P];
+                            mb += -4 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gg[1][P];
+                            mb += -4 * Uis[1][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gg[1][P];
+                            mb += -4 * Uis[1][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gg[1][P];
+                            mb += -4 * Uis[1][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gg[1][P];
+                            mb += -8 * U0s[0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gg[0][P];
+                            mb += -8 * U0s[0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gg[0][P];
+                            mb += -8 * U0s[0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gg[0][P];
+                            mb += -8 * Uis[0][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gg[0][P];
+                            mb += -8 * Uis[0][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gg[0][P];
+                            mb += -8 * Uis[0][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gg[0][P];
+                            mb += -8 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gg[2][P];
+                            mb += -8 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gg[2][P];
+                            mb += -8 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gg[2][P];
+                            mb += -8 * Uis[1][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gg[2][P];
+                            mb += -8 * Uis[1][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gg[2][P];
+                            mb += -8 * Uis[1][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gg[2][P];
+                            mb += -2 * U0s[0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * v2_rag[1][P];
+                            mb += -2 * U0s[0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gg[3][P];
+                            mb += -2 * U0s[0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gg[3][P];
+                            mb += -2 * U0s[0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gg[3][P];
+                            mb += -2 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * v2_rbg[1][P];
+                            mb += -2 * Uis[0][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gg[3][P];
+                            mb += -2 * Uis[0][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gg[3][P];
+                            mb += -2 * Uis[0][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gg[3][P];
+                            mb += -4 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * Uis[1][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -2 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gg[3][P];
+                            mb += -2 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gg[3][P];
+                            mb += -2 * U0s[1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gg[3][P];
+                            mb += -2 * Uis[1][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gg[3][P];
+                            mb += -2 * Uis[1][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gg[3][P];
+                            mb += -2 * Uis[1][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gg[3][P];
+                            mb += -2 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * v2_rag[1][P];
+                            mb += -2 * U0s[1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * v2_rbg[1][P];
+                            mb += -2 * U0s[1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gg[3][P];
+                            mb += -2 * U0s[1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gg[3][P];
+                            mb += -2 * U0s[1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gg[3][P];
+                            mb += -2 * Uis[1][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gg[3][P];
+                            mb += -2 * Uis[1][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gg[3][P];
+                            mb += -2 * Uis[1][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gg[3][P];
+                            mb += -4 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gg[1][P];
+                            mb += -4 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gg[1][P];
+                            mb += -4 * Uis[0][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gg[1][P];
+                            mb += -2 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gg[3][P];
+                            mb += -2 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gg[3][P];
+                            mb += -2 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gg[3][P];
+                            mb += -2 * Uis[0][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gg[3][P];
+                            mb += -2 * Uis[0][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gg[3][P];
+                            mb += -2 * Uis[0][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gg[3][P];
+                            mb += -4 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * v2_rag[2][P];
+                            mb += -4 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -4 * U0s[1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * v2_rbg[2][P];
+                            mb += -4 * Uis[0][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gg[4][P];
+                            mb += -4 * Uis[0][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gg[4][P];
+                            mb += -4 * Uis[0][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gg[4][P];
+                            mb += -8 * U0s[1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gg[5][P];
+                            mb += -8 * U0s[1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gg[5][P];
+                            mb += -8 * U0s[1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gg[5][P];
+                            mb += -8 * Uis[1][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gg[5][P];
+                            mb += -8 * Uis[1][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gg[5][P];
+                            mb += -8 * Uis[1][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gg[5][P];
+                            mb += -8 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gg[2][P];
+                            mb += -8 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gg[2][P];
+                            mb += -8 * U0s[0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gg[2][P];
+                            mb += -8 * Uis[0][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gg[2][P];
+                            mb += -8 * Uis[0][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gg[2][P];
+                            mb += -8 * Uis[0][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gg[2][P];
+                        }
+                        if (ansatz >= 2) {
+                            mb += -2 * Uis[0][0][P][ml] * phi_3[t3_addr[xd][yd][0]][P][ml] * v_tau_sp[0][P];
+                            mb += -2 * Uis[1][0][P][ml] * phi_3[t3_addr[xd][yd][0]][P][ml] * v_tau_sp[1][P];
+                            mb += -2 * Uis[0][1][P][ml] * phi_3[t3_addr[xd][yd][1]][P][ml] * v_tau_sp[0][P];
+                            mb += -2 * Uis[1][1][P][ml] * phi_3[t3_addr[xd][yd][1]][P][ml] * v_tau_sp[1][P];
+                            mb += -2 * Uis[0][2][P][ml] * phi_3[t3_addr[xd][yd][2]][P][ml] * v_tau_sp[0][P];
+                            mb += -2 * Uis[1][2][P][ml] * phi_3[t3_addr[xd][yd][2]][P][ml] * v_tau_sp[1][P];
+                            mb += -2 * Uhs[0][hess_addr[yd][0]][P][ml] * phi_hess[hess_addr[xd][0]][P][ml] * v_tau_sp[0][P];
+                            mb += -2 * Uhs[0][hess_addr[yd][1]][P][ml] * phi_hess[hess_addr[xd][1]][P][ml] * v_tau_sp[0][P];
+                            mb += -2 * Uhs[0][hess_addr[yd][2]][P][ml] * phi_hess[hess_addr[xd][2]][P][ml] * v_tau_sp[0][P];
+                            mb += -2 * Uhs[1][hess_addr[yd][0]][P][ml] * phi_hess[hess_addr[xd][0]][P][ml] * v_tau_sp[1][P];
+                            mb += -2 * Uhs[1][hess_addr[yd][1]][P][ml] * phi_hess[hess_addr[xd][1]][P][ml] * v_tau_sp[1][P];
+                            mb += -2 * Uhs[1][hess_addr[yd][2]][P][ml] * phi_hess[hess_addr[xd][2]][P][ml] * v_tau_sp[1][P];
+                            mb += -2 * Uis[0][0][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_rt[0][0][P];
+                            mb += -2 * Uis[0][0][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_rt[1][0][P];
+                            mb += -4 * Uis[0][0][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_tt[0][P];
+                            mb += -4 * Uis[0][0][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_tt[1][P];
+                            mb += -2 * Uis[1][0][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_rt[0][1][P];
+                            mb += -2 * Uis[1][0][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_rt[1][1][P];
+                            mb += -4 * Uis[1][0][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_tt[1][P];
+                            mb += -4 * Uis[1][0][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * v2_tt[2][P];
+                            mb += -2 * Uis[0][1][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_rt[0][0][P];
+                            mb += -2 * Uis[0][1][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_rt[1][0][P];
+                            mb += -4 * Uis[0][1][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_tt[0][P];
+                            mb += -4 * Uis[0][1][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_tt[1][P];
+                            mb += -2 * Uis[1][1][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_rt[0][1][P];
+                            mb += -2 * Uis[1][1][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_rt[1][1][P];
+                            mb += -4 * Uis[1][1][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_tt[1][P];
+                            mb += -4 * Uis[1][1][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * v2_tt[2][P];
+                            mb += -2 * Uis[0][2][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_rt[0][0][P];
+                            mb += -2 * Uis[0][2][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_rt[1][0][P];
+                            mb += -4 * Uis[0][2][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_tt[0][P];
+                            mb += -4 * Uis[0][2][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_tt[1][P];
+                            mb += -2 * Uis[1][2][P][ml] * drho[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_rt[0][1][P];
+                            mb += -2 * Uis[1][2][P][ml] * drho[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_rt[1][1][P];
+                            mb += -4 * Uis[1][2][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_tt[1][P];
+                            mb += -4 * Uis[1][2][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * v2_tt[2][P];
+                            mb += -4 * U0s[0][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * v2_rt[0][0][P];
+                            mb += -4 * U0s[0][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * v2_rt[0][1][P];
+                            mb += -4 * U0s[1][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * v2_rt[1][0][P];
+                            mb += -4 * U0s[1][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * v2_rt[1][1][P];
+                            mb += -4 * U0s[0][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gt[1][0][P];
+                            mb += -4 * U0s[0][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gt[1][1][P];
+                            mb += -4 * U0s[0][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gt[1][0][P];
+                            mb += -4 * U0s[0][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gt[1][1][P];
+                            mb += -4 * U0s[0][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gt[1][0][P];
+                            mb += -4 * U0s[0][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gt[1][1][P];
+                            mb += -4 * U0s[1][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gt[1][0][P];
+                            mb += -4 * U0s[1][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gt[1][1][P];
+                            mb += -4 * U0s[1][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gt[1][0][P];
+                            mb += -4 * U0s[1][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gt[1][1][P];
+                            mb += -4 * U0s[1][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gt[1][0][P];
+                            mb += -4 * U0s[1][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gt[1][1][P];
+                            mb += -4 * Uis[0][0][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gt[1][0][P];
+                            mb += -4 * Uis[0][0][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gt[1][1][P];
+                            mb += -4 * Uis[1][0][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gt[1][0][P];
+                            mb += -4 * Uis[1][0][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gt[1][1][P];
+                            mb += -4 * Uis[0][1][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gt[1][0][P];
+                            mb += -4 * Uis[0][1][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gt[1][1][P];
+                            mb += -4 * Uis[1][1][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gt[1][0][P];
+                            mb += -4 * Uis[1][1][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gt[1][1][P];
+                            mb += -4 * Uis[0][2][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gt[1][0][P];
+                            mb += -4 * Uis[0][2][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gt[1][1][P];
+                            mb += -4 * Uis[1][2][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gt[1][0][P];
+                            mb += -4 * Uis[1][2][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gt[1][1][P];
+                            mb += -8 * U0s[0][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gt[0][0][P];
+                            mb += -8 * U0s[0][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[0][0][P] * v2_gt[0][1][P];
+                            mb += -8 * U0s[0][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gt[0][0][P];
+                            mb += -8 * U0s[0][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[0][1][P] * v2_gt[0][1][P];
+                            mb += -8 * U0s[0][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gt[0][0][P];
+                            mb += -8 * U0s[0][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[0][2][P] * v2_gt[0][1][P];
+                            mb += -8 * U0s[1][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gt[2][0][P];
+                            mb += -8 * U0s[1][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][0]][P][ml] * rho_sg[1][0][P] * v2_gt[2][1][P];
+                            mb += -8 * U0s[1][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gt[2][0][P];
+                            mb += -8 * U0s[1][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][1]][P][ml] * rho_sg[1][1][P] * v2_gt[2][1][P];
+                            mb += -8 * U0s[1][P][ml] * dtau[0][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gt[2][0][P];
+                            mb += -8 * U0s[1][P][ml] * dtau[1][yd] * phi_hess[hess_addr[xd][2]][P][ml] * rho_sg[1][2][P] * v2_gt[2][1][P];
+                            mb += -8 * Uis[0][0][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gt[0][0][P];
+                            mb += -8 * Uis[0][0][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[0][0][P] * v2_gt[0][1][P];
+                            mb += -8 * Uis[1][0][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gt[2][0][P];
+                            mb += -8 * Uis[1][0][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[1][0][P] * v2_gt[2][1][P];
+                            mb += -8 * Uis[0][1][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gt[0][0][P];
+                            mb += -8 * Uis[0][1][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[0][1][P] * v2_gt[0][1][P];
+                            mb += -8 * Uis[1][1][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gt[2][0][P];
+                            mb += -8 * Uis[1][1][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[1][1][P] * v2_gt[2][1][P];
+                            mb += -8 * Uis[0][2][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gt[0][0][P];
+                            mb += -8 * Uis[0][2][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[0][2][P] * v2_gt[0][1][P];
+                            mb += -8 * Uis[1][2][P][ml] * dtau[0][yd] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gt[2][0][P];
+                            mb += -8 * Uis[1][2][P][ml] * dtau[1][yd] * phi_i[xd][P][ml] * rho_sg[1][2][P] * v2_gt[2][1][P];
+                            mb += -4 * Uis[0][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * v2_gt[0][0][P];
+                            mb += -4 * Uis[1][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * v2_gt[0][1][P];
+                            mb += -4 * Uis[0][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * v2_gt[0][0][P];
+                            mb += -4 * Uis[1][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * v2_gt[0][1][P];
+                            mb += -4 * Uis[0][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * v2_gt[0][0][P];
+                            mb += -4 * Uis[1][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * v2_gt[0][1][P];
+                            mb += -2 * Uis[0][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * v2_gt[1][0][P];
+                            mb += -2 * Uis[1][0][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * v2_gt[1][1][P];
+                            mb += -2 * Uis[0][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * v2_gt[1][0][P];
+                            mb += -2 * Uis[1][1][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * v2_gt[1][1][P];
+                            mb += -2 * Uis[0][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * v2_gt[1][0][P];
+                            mb += -2 * Uis[1][2][P][ml] * dot_dgrad_rho_a_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * v2_gt[1][1][P];
+                            mb += -2 * Uis[0][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * v2_gt[1][0][P];
+                            mb += -2 * Uis[1][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][0]][P][ml] * v2_gt[1][1][P];
+                            mb += -2 * Uis[0][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * v2_gt[1][0][P];
+                            mb += -2 * Uis[1][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][1]][P][ml] * v2_gt[1][1][P];
+                            mb += -2 * Uis[0][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * v2_gt[1][0][P];
+                            mb += -2 * Uis[1][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_a * phi_hess[hess_addr[xd][2]][P][ml] * v2_gt[1][1][P];
+                            mb += -4 * Uis[0][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * v2_gt[2][0][P];
+                            mb += -4 * Uis[1][0][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][0]][P][ml] * v2_gt[2][1][P];
+                            mb += -4 * Uis[0][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * v2_gt[2][0][P];
+                            mb += -4 * Uis[1][1][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][1]][P][ml] * v2_gt[2][1][P];
+                            mb += -4 * Uis[0][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * v2_gt[2][0][P];
+                            mb += -4 * Uis[1][2][P][ml] * dot_dgrad_rho_b_h_grad_rho_b * phi_hess[hess_addr[xd][2]][P][ml] * v2_gt[2][1][P];
+                        }
+                        // ==> END GENERATED CODE <==
                             Hp[3 * C + xd][3 * Ag + yd] += 2.0 * w[P] * mb;
                         }
                     }
