@@ -1520,9 +1520,9 @@ data:
     use:
       added: "1.10"
       required: false
-      required_note: "Allows BSSE treatments and MBE analyses. Optional for v1.12. Required for v1.10. Prior to v1.10, internal code was used."
+      required_note: "Allows BSSE treatments and MBE analyses. Optional for v1.12. Required for v1.10 & 1.11. Prior to v1.10, internal code was used."
       buildable: true
-      buildtime: true
+      buildtime: false
       buildtime_note: "buildtime for cmake checks; otherwise, runtime."
       cms: true
     repository:
@@ -1534,16 +1534,18 @@ data:
     cmake:
       name: qcmanybody
       constraint: "ATLEAST 0.7.1"
+      enable: "ENABLE_qcmanybody"
       target: null
     conda:
       channel: conda-forge
       name: qcmanybody
       constraint: ">=0.7.1"
       cmake:
+        ENABLE_qcmanybody: true
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
-      cmake_note: "Primarily OTF runtime detected."
-
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
+      
   - project: openorbitaloptimizer
     use:
       added: "1.10"
