@@ -122,14 +122,14 @@ def test_uks_rks_hessian_consistency(func):
         noreorient""")
     vpot = wfn.V_potential()
     vpot.set_D([wfn.Da()])
-    H_rv = vpot.compute_hessain().to_array()
+    H_rv = vpot.compute_hessian().to_array()
     sup_u = psi4.driver.dft.build_superfunctional(func, False)[0]
     vpot_u = psi4.core.VBase.build(wfn.basisset(), sup_u, "UV")
     vpot_u.initialize()
     vpot_u.set_D([wfn.Da(), wfn.Da()])
     nbf = wfn.nmo()
     vpot_u.compute_V([psi4.core.Matrix(nbf, nbf), psi4.core.Matrix(nbf, nbf)])
-    H_uv = vpot_u.compute_hessain().to_array()
+    H_uv = vpot_u.compute_hessian().to_array()
     assert np.allclose(H_rv, H_uv, atol=1e-10)
 
 
@@ -155,7 +155,7 @@ def test_uks_hessian_explicit_fd():
     Da, Db = wfn.Da().to_array(), wfn.Db().to_array()
     vpot = wfn.V_potential()
     vpot.set_D([wfn.Da(), wfn.Db()])
-    Hx = vpot.compute_hessain().to_array()
+    Hx = vpot.compute_hessian().to_array()
     coords0 = mol.geometry().to_array()
 
     def exc_at(coords):
