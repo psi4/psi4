@@ -474,7 +474,7 @@ jobs:
       run: |
         export PYTHONPATH=stage/lib
         pytest --cache-clear -v -rws --color yes -n auto -m qcmanybody stage/lib/psi4/tests/
-        pytest --cache-clear -v -rws --color yes -n auto stage/lib/psi4/tests/test_missing_qcmanybody.py‎
+        pytest --cache-clear -v -rws --color yes -n auto -k missing stage/lib/psi4/tests/
 
 # Notes
 # -----
