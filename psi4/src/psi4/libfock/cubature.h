@@ -116,6 +116,8 @@ class MolecularGrid {
     /// an atomic block (points ride their parent atom): out(3 natom, npoints).
     /// Requires DFT_BLOCK_SCHEME = ATOMIC.
     void compute_weight_gradient(std::shared_ptr<BlockOPoints> block, SharedMatrix out) const;
+    void compute_weight_hessian(std::shared_ptr<BlockOPoints> block, std::shared_ptr<Vector> escal,
+                                SharedMatrix out) const;
 
    protected:
     void remove_distant_points(double Rcut);

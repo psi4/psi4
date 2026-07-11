@@ -237,6 +237,8 @@ void export_functional(py::module &m) {
     py::class_<MolecularGrid, std::shared_ptr<MolecularGrid>>(m, "MolecularGrid", "docstring")
         .def("compute_weight_gradient", &MolecularGrid::compute_weight_gradient,
              "Total nuclear derivative of the quadrature weights of an atomic block (3*natom x npoints).")
+        .def("compute_weight_hessian", &MolecularGrid::compute_weight_hessian,
+             "Accumulate the second nuclear derivative of the quadrature weights of a block, contracted with a per-point scalar, into a (3 natom, 3 natom) matrix")
         .def("print", &MolecularGrid::print, "Prints grid information.")
         .def("orientation", &MolecularGrid::orientation, "Returns the orientation of the grid.")
         .def("npoints", &MolecularGrid::npoints, "Returns the number of grid points.")
