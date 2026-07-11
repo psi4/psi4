@@ -1825,6 +1825,131 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
                 }
             }
         }
+
+        // => Quadrature response of the Fock derivative (DFT_GRID_RESPONSE):
+        //    the weight class dw_X f_mn and the grid-motion class
+        //    w d_d f_mn, making this routine the TOTAL dV/dX at fixed
+        //    density. f_mn is the potential integrand
+        //    v_rho phi phi + 2 v_gamma sum_i d_i rho (dphi_i phi + phi dphi_i)
+        //    + v_tau sum_i dphi_i dphi_i. <= //
+        if (grid_response_) {
+            int Ag = block->parent_atom();  // throws for non-atomic blocking
+            int natom3 = 3 * primary_->molecule()->natom();
+            auto dw_mat = std::make_shared<Matrix>("dw", natom3, max_points);
+            grid_->compute_weight_gradient(block, dw_mat);
+            auto dwp = dw_mat->pointer();
+
+            // per-point spatial field derivatives (shared by both classes)
+            std::vector<double> drho(3 * npoints), dsig(3 * npoints, 0.0), dtau(3 * npoints, 0.0),
+                ddrho6(6 * npoints, 0.0);
+            static const int kx6[6] = {0, 0, 0, 1, 1, 2};
+            static const int ky6[6] = {0, 1, 2, 1, 2, 2};
+            for (int P = 0; P < npoints; P++) {
+                if (ansatz >= 1) {
+                    for (int k = 0; k < 6; k++)
+                        ddrho6[6 * P + k] = 4.0 * (C_DDOT(nlocal, Uip[kx6[k]][P], 1, phi_i[ky6[k]][P], 1)
+                                                   + C_DDOT(nlocal, U0p[P], 1, phi_hess[k][P], 1));
+                    for (int d = 0; d < 3; d++) {
+                        drho[3 * P + d] = rho_g[d][P];
+                        for (int i = 0; i < 3; i++) {
+                            dsig[3 * P + d] += 2.0 * rho_g[i][P] * ddrho6[6 * P + hess_addr[d][i]];
+                            if (ansatz >= 2)
+                                dtau[3 * P + d] +=
+                                    2.0 * C_DDOT(nlocal, Uip[i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
+                        }
+                    }
+                } else {
+                    for (int d = 0; d < 3; d++) drho[3 * P + d] = 4.0 * C_DDOT(nlocal, U0p[P], 1, phi_i[d][P], 1);
+                }
+            }
+
+            auto scatter = [&](int X) {
+                double** Vxp = Vx[X]->pointer();
+                for (int ml = 0; ml < nlocal; ml++) {
+                    int mg = function_map[ml];
+                    for (int nl = 0; nl < nlocal; nl++) {
+                        int ng = function_map[nl];
+                        double result = Vx_localp[ml][nl] + Vx_localp[nl][ml];
+#pragma omp atomic update
+                        Vxp[mg][ng] += result;
+                    }
+                }
+            };
+
+            // ==> weight class <== //
+            for (int X = 0; X < natom3; X++) {
+                for (int P = 0; P < npoints; P++) {
+                    std::fill(T0p[P], T0p[P] + nlocal, 0.0);
+                    if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
+                    double dwX = dwp[X][P];
+                    C_DAXPY(nlocal, 0.5 * dwX * v_rho_a[P], phi[P], 1, T0p[P], 1);
+                    if (ansatz >= 1) {
+                        for (int i = 0; i < 3; i++)
+                            C_DAXPY(nlocal, 2.0 * dwX * v_gamma[P] * rho_g[i][P], phi_i[i][P], 1, T0p[P], 1);
+                    }
+                }
+                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0p[0], max_functions, phi[0], coll_funcs, 0.0,
+                        Vx_localp[0], max_functions);
+                if (ansatz >= 2) {
+                    for (int i = 0; i < 3; i++) {
+                        for (int P = 0; P < npoints; P++) {
+                            std::fill(T0p[P], T0p[P] + nlocal, 0.0);
+                            if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
+                            C_DAXPY(nlocal, 0.5 * dwp[X][P] * v_tau[P], phi_i[i][P], 1, T0p[P], 1);
+                        }
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0p[0], max_functions, phi_i[i][0],
+                                coll_funcs, 1.0, Vx_localp[0], max_functions);
+                    }
+                }
+                scatter(X);
+            }
+
+            // ==> grid-motion class (parent atom only) <== //
+            for (int d = 0; d < 3; d++) {
+                for (int P = 0; P < npoints; P++) {
+                    std::fill(T0p[P], T0p[P] + nlocal, 0.0);
+                    if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
+                    // chained first-derivative arrays at this point
+                    double frY = v_rho_aa[P] * drho[3 * P + d];
+                    if (ansatz >= 1) frY += v2_rho_gamma[P] * dsig[3 * P + d];
+                    if (ansatz >= 2) frY += 2.0 * v2_rho_tau[P] * dtau[3 * P + d];
+                    C_DAXPY(nlocal, 0.5 * w[P] * frY, phi[P], 1, T0p[P], 1);
+                    C_DAXPY(nlocal, w[P] * v_rho_a[P], phi_i[d][P], 1, T0p[P], 1);
+                    if (ansatz >= 1) {
+                        double fsY = v2_rho_gamma[P] * drho[3 * P + d] + v2_gamma_gamma[P] * dsig[3 * P + d];
+                        if (ansatz >= 2) fsY += 2.0 * v2_gamma_tau[P] * dtau[3 * P + d];
+                        for (int i = 0; i < 3; i++) {
+                            C_DAXPY(nlocal,
+                                    w[P] * (2.0 * fsY * rho_g[i][P] + 2.0 * v_gamma[P] * ddrho6[6 * P + hess_addr[d][i]]),
+                                    phi_i[i][P], 1, T0p[P], 1);
+                            C_DAXPY(nlocal, w[P] * 2.0 * v_gamma[P] * rho_g[i][P], phi_hess[hess_addr[d][i]][P], 1,
+                                    T0p[P], 1);
+                        }
+                    }
+                }
+                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0p[0], max_functions, phi[0], coll_funcs, 0.0,
+                        Vx_localp[0], max_functions);
+                if (ansatz >= 1) {
+                    for (int i = 0; i < 3; i++) {
+                        for (int P = 0; P < npoints; P++) {
+                            std::fill(T0p[P], T0p[P] + nlocal, 0.0);
+                            if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
+                            C_DAXPY(nlocal, w[P] * 2.0 * v_gamma[P] * rho_g[i][P], phi_i[d][P], 1, T0p[P], 1);
+                            if (ansatz >= 2) {
+                                double ftY = 2.0 * v2_rho_tau[P] * drho[3 * P + d]
+                                             + 2.0 * v2_gamma_tau[P] * dsig[3 * P + d]
+                                             + 4.0 * v2_tau_tau[P] * dtau[3 * P + d];
+                                C_DAXPY(nlocal, 0.25 * w[P] * ftY, phi_i[i][P], 1, T0p[P], 1);
+                                C_DAXPY(nlocal, w[P] * v_tau[P], phi_hess[hess_addr[d][i]][P], 1, T0p[P], 1);
+                            }
+                        }
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, T0p[0], max_functions, phi_i[i][0],
+                                coll_funcs, 1.0, Vx_localp[0], max_functions);
+                    }
+                }
+                scatter(3 * Ag + d);
+            }
+        }
     }
 
     // Reset the workers
@@ -2933,6 +3058,249 @@ SharedMatrix RV::compute_hessian() {
                     }
                 }
             }
+        }
+
+        // ==> Quadrature response classes (DFT_GRID_RESPONSE) <== //
+        //
+        // d2(w e)/dX dY = d2w e + dw de + de dw + w d2e, with total point
+        // derivatives (the points ride their parent atom). The fixed-grid
+        // basis x basis part of w d2e is the explicit term above; here:
+        //   W2: d2w e (symmetric, half weight for the trailing scale(2))
+        //   WG: dw (x) de_tot, one transpose member at full weight
+        //   MB: w d_y(de_X^basis), one transpose member at full weight
+        //   MM: w d_x d_y e on the parent diagonal block (half weight)
+        if (grid_response_) {
+            int Ag = block->parent_atom();  // throws for non-atomic blocking
+            auto e_den = vals["V"]->pointer();
+            auto v_rho = vals["V_RHO_A"]->pointer();
+            auto v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
+            bool is_meta = (ansatz >= 2);
+            double** phi_i[3] = {phi_x, phi_y, phi_z};
+            double** phi_hess[6] = {phi_xx, phi_xy, phi_xz, phi_yy, phi_yz, phi_zz};
+            int hess_addr[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
+            static const char* keys3r[10] = {"PHI_XXX", "PHI_XXY", "PHI_XXZ", "PHI_XYY", "PHI_XYZ",
+                                             "PHI_XZZ", "PHI_YYY", "PHI_YYZ", "PHI_YZZ", "PHI_ZZZ"};
+            static const int t3_addr[3][3][3] = {{{0, 1, 2}, {1, 3, 4}, {2, 4, 5}},
+                                                 {{1, 3, 4}, {3, 6, 7}, {4, 7, 8}},
+                                                 {{2, 4, 5}, {4, 7, 8}, {5, 8, 9}}};
+            double** phi_3[10] = {nullptr, nullptr, nullptr, nullptr, nullptr,
+                                  nullptr, nullptr, nullptr, nullptr, nullptr};
+            double* rho_g[3] = {nullptr, nullptr, nullptr};
+            double* v_gamma = nullptr;
+            double* v2_rho_gamma = nullptr;
+            double* v2_gamma_gamma = nullptr;
+            double* v_tau = nullptr;
+            double* v2_rho_tau = nullptr;
+            double* v2_gamma_tau = nullptr;
+            double* v2_tau_tau = nullptr;
+            if (ansatz >= 1) {
+                for (int k = 0; k < 10; k++) phi_3[k] = pworker->basis_value(keys3r[k])->pointer();
+                rho_g[0] = pworker->point_value("RHO_AX")->pointer();
+                rho_g[1] = pworker->point_value("RHO_AY")->pointer();
+                rho_g[2] = pworker->point_value("RHO_AZ")->pointer();
+                v_gamma = vals["V_GAMMA_AA"]->pointer();
+                v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
+                v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
+                if (is_meta) {
+                    v_tau = vals["V_TAU_A"]->pointer();
+                    v2_rho_tau = vals["V_RHO_A_TAU_A"]->pointer();
+                    v2_gamma_tau = vals["V_GAMMA_AA_TAU_A"]->pointer();
+                    v2_tau_tau = vals["V_TAU_A_TAU_A"]->pointer();
+                }
+            }
+
+            // density-contracted collocations, through second derivatives
+            auto U0_mat(U_local->clone());
+            auto U0 = U0_mat->pointer();
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0, U0[0],
+                    max_functions);
+            std::vector<SharedMatrix> Ux_mat;
+            double** Uip[3];
+            double** Uhess[6];
+            for (int i = 0; i < 3; i++) {
+                Ux_mat.push_back(U_local->clone());
+                Uip[i] = Ux_mat.back()->pointer();
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Dp[0], max_functions, 0.0,
+                        Uip[i][0], max_functions);
+            }
+            for (int k = 0; k < 6; k++) {
+                Ux_mat.push_back(U_local->clone());
+                Uhess[k] = Ux_mat.back()->pointer();
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_hess[k][0], coll_funcs, Dp[0], max_functions, 0.0,
+                        Uhess[k][0], max_functions);
+            }
+
+            // W2: sum_g d2w e at half weight (contract before closure)
+            auto escal = std::make_shared<Vector>("escal", npoints);
+            for (int P = 0; P < npoints; P++) escal->set(P, 0.5 * e_den[P]);
+            auto Hw2 = std::make_shared<Matrix>("d2w e", 3 * natom, 3 * natom);
+            grid_->compute_weight_hessian(block, escal, Hw2);
+            auto Hw2p = Hw2->pointer();
+            for (int k = 0; k < 3 * natom; k++) {
+                for (int l = 0; l < 3 * natom; l++) Hp[k][l] += Hw2p[k][l];
+            }
+
+            // dw for the WG class
+            auto dw_mat = std::make_shared<Matrix>("dw", 3 * natom, max_points);
+            grid_->compute_weight_gradient(block, dw_mat);
+            auto dwp = dw_mat->pointer();
+            auto DeT_mat = std::make_shared<Matrix>("de tot", 3 * natom, max_points);
+            auto DeT = DeT_mat->pointer();
+            DeT_mat->zero();
+
+            for (int P = 0; P < npoints; P++) {
+                bool live = std::fabs(rho_a[P]) > v2_rho_cutoff_;
+                double vt = is_meta ? 2.0 * v_tau[P] : 0.0;
+
+                // spatial field derivatives at this point
+                double drho[3], dsig[3] = {0.0, 0.0, 0.0}, dtau[3] = {0.0, 0.0, 0.0};
+                double ddrho[6];
+                for (int k = 0; k < 6; k++) {
+                    static const int kx[6] = {0, 0, 0, 1, 1, 2};
+                    static const int ky[6] = {0, 1, 2, 1, 2, 2};
+                    ddrho[k] = 4.0 * (C_DDOT(nlocal, Uip[kx[k]][P], 1, phi_i[ky[k]][P], 1)
+                                      + C_DDOT(nlocal, U0[P], 1, phi_hess[k][P], 1));
+                }
+                if (ansatz >= 1) {
+                    for (int d = 0; d < 3; d++) {
+                        drho[d] = rho_g[d][P];
+                        for (int i = 0; i < 3; i++) {
+                            dsig[d] += 2.0 * rho_g[i][P] * ddrho[hess_addr[d][i]];
+                            if (is_meta) dtau[d] += 2.0 * C_DDOT(nlocal, Uip[i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
+                        }
+                    }
+                } else {
+                    for (int d = 0; d < 3; d++) drho[d] = 4.0 * C_DDOT(nlocal, U0[P], 1, phi_i[d][P], 1);
+                }
+                double es[3];
+                for (int d = 0; d < 3; d++) {
+                    es[d] = v_rho[P] * drho[d];
+                    if (ansatz >= 1) es[d] += v_gamma[P] * dsig[d];
+                    if (is_meta) es[d] += vt * dtau[d];
+                }
+
+                // basis derivative of e, scattered by center; de_tot column
+                for (int k = 0; k < 3 * natom; k++) DeT[k][P] = 0.0;
+                if (live) {
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        int C = primary_->function_to_center(function_map[ml]);
+                        for (int xd = 0; xd < 3; xd++) {
+                            double frho = -4.0 * U0[P][ml] * phi_i[xd][P][ml];
+                            double val = v_rho[P] * frho;
+                            if (ansatz >= 1) {
+                                double fsig = 0.0, ftau = 0.0;
+                                for (int i = 0; i < 3; i++) {
+                                    double g = -4.0 * (U0[P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
+                                                       + Uip[i][P][ml] * phi_i[xd][P][ml]);
+                                    fsig += 2.0 * rho_g[i][P] * g;
+                                    if (is_meta) ftau += -2.0 * Uip[i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
+                                }
+                                val += v_gamma[P] * fsig + vt * ftau;
+                            }
+                            DeT[3 * C + xd][P] += val;
+                        }
+                    }
+                }
+                for (int d = 0; d < 3; d++) DeT[3 * Ag + d][P] += es[d];
+
+                if (!live) continue;
+
+                // MM: second spatial derivative of e on the parent diagonal
+                for (int xd = 0; xd < 3; xd++) {
+                    for (int yd = xd; yd < 3; yd++) {
+                        double d2e = v2_rho2[P] * drho[xd] * drho[yd] + v_rho[P] * ddrho[hess_addr[xd][yd]];
+                        if (ansatz >= 1) {
+                            d2e += v2_rho_gamma[P] * (drho[xd] * dsig[yd] + dsig[xd] * drho[yd])
+                                   + v2_gamma_gamma[P] * dsig[xd] * dsig[yd];
+                            double ddsig = 0.0;
+                            for (int i = 0; i < 3; i++) {
+                                double d3r = 4.0 * (C_DDOT(nlocal, Uhess[hess_addr[xd][yd]][P], 1, phi_i[i][P], 1)
+                                                    + C_DDOT(nlocal, Uip[yd][P], 1, phi_hess[hess_addr[xd][i]][P], 1)
+                                                    + C_DDOT(nlocal, Uip[xd][P], 1, phi_hess[hess_addr[yd][i]][P], 1)
+                                                    + C_DDOT(nlocal, U0[P], 1, phi_3[t3_addr[xd][yd][i]][P], 1));
+                                ddsig += 2.0 * (ddrho[hess_addr[xd][i]] * ddrho[hess_addr[yd][i]]
+                                                + rho_g[i][P] * d3r);
+                            }
+                            d2e += v_gamma[P] * ddsig;
+                            if (is_meta) {
+                                d2e += 2.0 * v2_rho_tau[P] * (drho[xd] * dtau[yd] + dtau[xd] * drho[yd])
+                                       + 2.0 * v2_gamma_tau[P] * (dsig[xd] * dtau[yd] + dtau[xd] * dsig[yd])
+                                       + 4.0 * v2_tau_tau[P] * dtau[xd] * dtau[yd];
+                                double ddtau = 0.0;
+                                for (int i = 0; i < 3; i++) {
+                                    ddtau += 2.0 * (C_DDOT(nlocal, Uhess[hess_addr[xd][i]][P], 1,
+                                                           phi_hess[hess_addr[yd][i]][P], 1)
+                                                    + C_DDOT(nlocal, Uip[i][P], 1, phi_3[t3_addr[xd][yd][i]][P], 1));
+                                }
+                                d2e += vt * ddtau;
+                            }
+                        }
+                        double t = 0.5 * w[P] * d2e;
+                        Hp[3 * Ag + xd][3 * Ag + yd] += t;
+                        if (yd != xd) Hp[3 * Ag + yd][3 * Ag + xd] += t;
+                    }
+                }
+
+                // MB: w d_y(de_X^basis), one transpose member at full weight
+                // per-point second-derivative chain scalars against the rows
+                double frY[3], fsY[3] = {0.0, 0.0, 0.0}, ftY[3] = {0.0, 0.0, 0.0};
+                for (int yd = 0; yd < 3; yd++) {
+                    frY[yd] = v2_rho2[P] * drho[yd];
+                    if (ansatz >= 1) {
+                        frY[yd] += v2_rho_gamma[P] * dsig[yd];
+                        fsY[yd] = v2_rho_gamma[P] * drho[yd] + v2_gamma_gamma[P] * dsig[yd];
+                        if (is_meta) {
+                            frY[yd] += 2.0 * v2_rho_tau[P] * dtau[yd];
+                            fsY[yd] += 2.0 * v2_gamma_tau[P] * dtau[yd];
+                            ftY[yd] = 2.0 * v2_rho_tau[P] * drho[yd] + 2.0 * v2_gamma_tau[P] * dsig[yd]
+                                      + 4.0 * v2_tau_tau[P] * dtau[yd];
+                        }
+                    }
+                }
+                for (int ml = 0; ml < nlocal; ml++) {
+                    int C = primary_->function_to_center(function_map[ml]);
+                    for (int xd = 0; xd < 3; xd++) {
+                        double frho = -4.0 * U0[P][ml] * phi_i[xd][P][ml];
+                        double fsig = 0.0, ftau = 0.0;
+                        double Gx[3];
+                        if (ansatz >= 1) {
+                            for (int i = 0; i < 3; i++) {
+                                Gx[i] = -4.0 * (U0[P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
+                                                + Uip[i][P][ml] * phi_i[xd][P][ml]);
+                                fsig += 2.0 * rho_g[i][P] * Gx[i];
+                                if (is_meta) ftau += -2.0 * Uip[i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
+                            }
+                        }
+                        for (int yd = 0; yd < 3; yd++) {
+                            double mb = frY[yd] * frho + fsY[yd] * fsig + ftY[yd] * ftau;
+                            // spatial derivatives of the rows themselves
+                            double dfrho = -4.0 * (Uip[yd][P][ml] * phi_i[xd][P][ml]
+                                                   + U0[P][ml] * phi_hess[hess_addr[xd][yd]][P][ml]);
+                            mb += v_rho[P] * dfrho;
+                            if (ansatz >= 1) {
+                                double dfsig = 0.0, dftau = 0.0;
+                                for (int i = 0; i < 3; i++) {
+                                    double dG = -4.0 * (Uip[yd][P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
+                                                        + U0[P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml]
+                                                        + Uhess[hess_addr[yd][i]][P][ml] * phi_i[xd][P][ml]
+                                                        + Uip[i][P][ml] * phi_hess[hess_addr[xd][yd]][P][ml]);
+                                    dfsig += 2.0 * (ddrho[hess_addr[yd][i]] * Gx[i] + rho_g[i][P] * dG);
+                                    if (is_meta)
+                                        dftau += -2.0 * (Uhess[hess_addr[yd][i]][P][ml]
+                                                             * phi_hess[hess_addr[xd][i]][P][ml]
+                                                         + Uip[i][P][ml] * phi_3[t3_addr[xd][yd][i]][P][ml]);
+                                }
+                                mb += v_gamma[P] * dfsig + vt * dftau;
+                            }
+                            Hp[3 * C + xd][3 * Ag + yd] += w[P] * mb;
+                        }
+                    }
+                }
+            }
+
+            // WG: one transpose member at full weight
+            C_DGEMM('N', 'T', 3 * natom, 3 * natom, npoints, 1.0, dwp[0], max_points, DeT[0], max_points, 1.0,
+                    Hp[0], 3 * natom);
         }
 
         // Accumulate contributions to the full Hessian: N.B. these terms are not symmetric!
