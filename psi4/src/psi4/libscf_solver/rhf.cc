@@ -890,7 +890,28 @@ bool RHF::stability_analysis() {
     }
     if (scf_type_ == "DF" || scf_type_ == "CD") {
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
-    } else {
+    }
+
+    // FOLLOW tracking: capture lowest totally-symmetric (h=0) singlet eigenvector.
+    // UHF stability follows only totally symmetric rotations (subclass_methods.py:174);
+    // the same convention is adopted here. Instabilities in other irreps would break the
+    // ground-state spatial symmetry and are out of scope.
+    // Declared at function scope so the FOLLOW block (after the else) can reference them.
+    SharedMatrix stability_eigvec;
+    double lowest_singlet_eval = std::numeric_limits<double>::max();
+
+    // Allocate the SCF STABILITY EIGENVALUES matrix (singlet), matching the ROHF/UHF
+    // convention so that downstream consumers (tests, variable("SCF STABILITY EIGENVALUES"))
+    // behave the same regardless of reference.
+    int nsave = options_.get_int("SOLVER_N_ROOT");
+    if (nsave < 1) nsave = 1;
+    std::vector<int> onevec(nirrep_, 1);
+    std::vector<int> dimvec(nirrep_, nsave);
+    Dimension ones(onevec);
+    Dimension evalsdim(dimvec);
+    auto stabvals = std::make_shared<Matrix>("Eigenvalues from RHF stability calculation", evalsdim, ones);
+
+    {
 #define ID(x) ints.DPD_ID(x)
         // Build the Fock Matrix
         auto moF = std::make_shared<Matrix>("MO basis fock matrix", nmopi_, nmopi_);
@@ -981,6 +1002,34 @@ bool RHF::stability_analysis() {
             int mindim = dim < 5 ? dim : 5;
             for (int i = 0; i < mindim; i++) singlet_eval_sym.push_back(std::make_pair(evals[i], h));
 
+            // Save the lowest `nsave` singlet eigenvalues per irrep into stabvals.
+            double** pEvals = stabvals->pointer(h);
+            for (int i = 0; i < nsave && i < dim; ++i) pEvals[i][0] = evals[i];
+
+            // Capture the lowest totally-symmetric (h=0) singlet eigenvector for FOLLOW.
+            // Only the totally-symmetric irrep can yield an internal instability that respects
+            // the ground-state spatial symmetry, matching UHF's convention.
+            if (h == 0 && evals[0] < lowest_singlet_eval) {
+                lowest_singlet_eval = evals[0];
+                // Unflatten DPD column 0 of `evecs` into a (doccpi x virpi) per-irrep Matrix.
+                // Asing.params->roworb[h][ia][0/1] give absolute (i, a) indices; for h=0,
+                // isym == asym, so each pair slots cleanly into matrix irrep `isym`.
+                Dimension virpi = nmopi_ - nalphapi_;
+                stability_eigvec = std::make_shared<Matrix>("Stability eigenvector", nalphapi_, virpi);
+                for (int ia = 0; ia < dim; ++ia) {
+                    int iabs = Asing.params->roworb[h][ia][0];
+                    int aabs = Asing.params->roworb[h][ia][1];
+                    int isym = Asing.params->psym[iabs];
+                    int asym = Asing.params->qsym[aabs];
+                    // For the h=0 block of a closed-shell RHF wfn (G_gs == 0), isym == asym.
+                    int irel = iabs - Asing.params->poff[isym];
+                    // arel counts from 0 at the first virtual within irrep asym (no nalphapi_ shift,
+                    // since the (docc, vir) Matrix's column 0 corresponds to the first virtual).
+                    int arel = aabs - Asing.params->qoff[asym] - nalphapi_[asym];
+                    stability_eigvec->set(isym, irel, arel, evecs[ia][0]);
+                }
+            }
+
             zero_arr(evals, dim);
             zero_mat(evecs, dim, dim);
 
@@ -1001,10 +1050,33 @@ bool RHF::stability_analysis() {
         print_stability_analysis(singlet_eval_sym);
         outfile->Printf("    Lowest triplet (RHF->UHF) stability eigenvalues:\n");
         print_stability_analysis(triplet_eval_sym);
+        Process::environment.arrays["SCF STABILITY EIGENVALUES"] = stabvals;
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
 
-    // FOLLOW is not implemented for RHF
+    // FOLLOW: rotate orbitals along the lowest totally-symmetric singlet eigenvector.
+    // Mirrors _UHF_stability_analysis (subclass_methods.py:209-229). Singlet rotation is
+    // spin-symmetric so Ca_ (which equals Cb_ in RHF) carries both spins.
+    // Triplet (RHF->UHF) external instabilities are reported above but not followed; users
+    // detecting a triplet instability should rerun with REFERENCE UHF.
+    if (lowest_singlet_eval < 0.0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
+        // Adaptive step_scale: increment if cycling back to the same minimum is detected.
+        if (!std::isnan(last_hess_eigval_) && std::abs(last_hess_eigval_ - lowest_singlet_eval) < 1e-4) {
+            outfile->Printf("    Negative eigenvalue similar to previous one, wavefunction\n");
+            outfile->Printf("    likely to be in the same minimum.\n");
+            step_scale_ += options_.get_double("FOLLOW_STEP_INCREMENT");
+            outfile->Printf("    Modifying FOLLOW_STEP_SCALE to %f.\n", step_scale_);
+        } else {
+            step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
+        }
+        last_hess_eigval_ = lowest_singlet_eval;
+
+        outfile->Printf("    Rotating orbitals by %f * pi / 2 radians along unstable eigenvector.\n", step_scale_);
+        stability_eigvec->scale(step_scale_ * M_PI);
+        rotate_orbitals(Ca_, stability_eigvec);
+        return true;
+    }
+
     return false;
 }
 
