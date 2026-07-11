@@ -183,3 +183,87 @@ def test_uks_hessian_explicit_fd():
         else:
             fd = (E(1, 1) - E(1, -1) - E(-1, 1) + E(-1, -1)) / (4 * h**2)
         assert abs(Hx[3 * A + x][3 * B + y] - fd) < 2e-3
+
+
+# ==========================================================================
+# End-to-end DFT_GRID_RESPONSE coverage: with grid response on, the analytic
+# XC gradient/Hessian become the exact derivatives of the computed energy.
+# These exercise the full driver path (CPKS + nuclear + JK + XC), the grid-
+# response term classes, and the analytic first/second quadrature-weight
+# derivatives -- none of which the fixed-grid unit tests above touch.
+# ==========================================================================
+
+# C2v water / NH2, kept symmetric so the driver's finite-difference builds only
+# the symmetry-unique displacements. The frame is fixed (noreorient/no_com), as
+# grid response requires (the grid rides its parent atoms rigidly).
+_WATER = """
+    O  0.000  0.000  0.117
+    H  0.000  0.755 -0.469
+    H  0.000 -0.755 -0.469
+    noreorient
+    no_com"""
+
+_NH2 = """
+    0 2
+    N  0.000  0.000  0.142
+    H  0.000  0.802 -0.496
+    H  0.000 -0.802 -0.496
+    noreorient
+    no_com"""
+
+
+def _gr_opts(ref, response):
+    # Atomic blocking + orientation off are required for the analytic weight
+    # Jacobian; toggling `response` on the same grid isolates the grid-response
+    # terms. `points 5` gives the driver a 5-point findif stencil, accurate
+    # enough to resolve the ~1e-10 agreement (the default 3-point is not). The
+    # grid is deliberately coarse: this is an analytic-vs-findif consistency
+    # check on one and the same grid, so density costs rigor nothing.
+    return {"basis": "6-31G", "reference": ref, "scf_type": "pk",
+            "dft_spherical_points": 110, "dft_radial_points": 30,
+            "e_convergence": 1e-10, "d_convergence": 1e-9, "maxiter": 200,
+            "dft_block_scheme": "atomic", "dft_grid_orientation": False,
+            "dft_grid_response": response, "points": 5}
+
+
+@pytest.mark.parametrize("ref,geom", [("rks", _WATER), ("uks", _NH2)])
+def test_gradient_grid_response(ref, geom):
+    """With DFT_GRID_RESPONSE on, the analytic XC gradient is the exact
+    derivative of the energy: it matches the driver's 5-point finite-difference
+    gradient (dertype=0) to the findif floor, whereas the fixed-grid gradient on
+    the same grid is off by the grid-motion/weight convention (~1e-4)."""
+    func = "TPSS"
+    psi4.core.clean()
+    psi4.set_options(_gr_opts(ref, True))
+    mol = psi4.geometry(geom)
+    g_analytic = np.array(psi4.gradient(func, dertype=1, molecule=mol))
+
+    psi4.core.clean()
+    psi4.set_options(_gr_opts(ref, True))
+    g_findif = np.array(psi4.gradient(func, dertype=0, molecule=mol))
+    assert np.max(np.abs(g_analytic - g_findif)) < 1e-8      # grid-response gradient is exact
+
+    psi4.core.clean()
+    psi4.set_options(_gr_opts(ref, False))
+    g_fixed = np.array(psi4.gradient(func, dertype=1, molecule=mol))
+    assert np.max(np.abs(g_fixed - g_findif)) > 1e-5         # fixed-grid gradient is not
+
+
+@pytest.mark.parametrize("ref,geom", [("rks", _WATER), ("uks", _NH2)])
+def test_hessian_grid_response(ref, geom):
+    """End-to-end analytic mGGA Hessian (dertype=2) through the full driver
+    (CPKS + nuclear + JK + XC) with grid response on, against the driver's
+    5-point finite difference of the analytic gradients (dertype=1). Exercises
+    the Hessian grid-response classes, including the second weight derivatives,
+    over the whole matrix."""
+    func = "TPSS"
+    psi4.core.clean()
+    psi4.set_options(_gr_opts(ref, True))
+    mol = psi4.geometry(geom)
+    H_analytic = np.array(psi4.hessian(func, dertype=2, molecule=mol))
+    assert np.allclose(H_analytic, H_analytic.T, atol=1e-8)
+
+    psi4.core.clean()
+    psi4.set_options(_gr_opts(ref, True))
+    H_findif = np.array(psi4.hessian(func, dertype=1, molecule=mol))
+    assert np.max(np.abs(H_analytic - H_findif)) < 1e-6
