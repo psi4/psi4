@@ -27,6 +27,25 @@ if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
     # Strip unnecessary sections of the binary on Linux/macOS
     pybind11_strip(core)
 endif()
+
+if(ENABLE_ecpint_RUNTIME AND UNIX AND NOT APPLE)
+    # ENABLE_ecpint_RUNTIME leaves real *undefined* libecpint::* symbols in
+    # core.so (see psi4/src/psi4/CMakeLists.txt); psi4/__init__.py imports
+    # core.so with RTLD_LAZY so those symbols are resolved lazily (on first
+    # ECP use, via libmints/ecpint_loader.cc) instead of eagerly at import
+    # time. However, many Linux toolchains (notably conda-forge's default,
+    # hardened LDFLAGS) link with `-Wl,-z,now`, which sets the ELF
+    # DF_1_NOW/DT_FLAGS_1 flag. Once that flag is embedded in the .so, the
+    # dynamic linker (ld.so) ignores the caller's RTLD_LAZY and eagerly
+    # resolves ALL undefined symbols at dlopen() time anyway -- silently
+    # defeating the whole runtime-optional mechanism and reproducing the
+    # original "undefined symbol" crash even when libecpint truly isn't
+    # installed. `-z` flags are last-one-wins on the linker command line, and
+    # CMake places target_link_options after the global (env-derived)
+    # CMAKE_SHARED_LINKER_FLAGS, so appending `-Wl,-z,lazy` here overrides any
+    # inherited `-Wl,-z,now` for this target specifically.
+    target_link_options(core PRIVATE -Wl,-z,lazy)
+endif()
 set_target_properties(core
   PROPERTIES
     CXX_VISIBILITY_PRESET "hidden"

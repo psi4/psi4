@@ -117,7 +117,14 @@ else()
 endif()
 
 # Conditionally add sources that depend on optional dependencies
-if(TARGET ECPINT::ecpint)
+if(ENABLE_ecpint_RUNTIME)
+  target_sources(mints
+    PRIVATE
+      ecpint.cc
+      ecpint_loader.cc
+    )
+
+elseif(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
       ecpint.cc

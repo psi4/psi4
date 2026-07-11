@@ -31,6 +31,10 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 
+#ifdef USING_ecpint_RUNTIME
+#include "psi4/libmints/ecpint_loader.h"
+#endif
+
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -75,4 +79,22 @@ void export_misc(py::module &m) {
     "Get timing information as structured timer records. Returns a dictionary keyed by timer_id. "
     "Each value contains timing fields (wall_time, user_time, system_time, n_calls) and, when "
     "compact=False, hierarchy fields (parent_id, timer_name, timer_path, level).");
+
+    m.def("ecpint_available", []() {
+#ifdef USING_ecpint_RUNTIME
+        // Runtime-optional build: libecpint is not linked into core.so, so the only way to
+        // know whether ECP integrals can actually be computed is to attempt the dlopen and
+        // see if it succeeds. This is the same check used internally by
+        // IntegralFactory::ao_ecp() before touching any libecpint symbol.
+        return ecpint_runtime::is_available();
+#elif defined(USING_ecpint_STATIC)
+        // Statically linked: always available if this build has ECP support at all.
+        return true;
+#else
+        // Not compiled with ECP support at all.
+        return false;
+#endif
+    }, "Returns whether ECP integrals (libecpint) are actually usable right now: true if compiled "
+       "in statically, or (for runtime-optional builds) if libecpint could be dlopen'd. False if "
+       "ECP support wasn't compiled in, or (runtime-optional builds) libecpint isn't installed.");
 }

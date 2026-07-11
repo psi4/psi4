@@ -604,7 +604,10 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
     std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
 #ifdef USING_ecpint
-    auto ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp().release()));
+    std::unique_ptr<ECPInt> ECP_ints;
+    if (bas->has_ECP()) {
+        ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp().release()));
+    }
 #endif
 
     // Compute overlap S and orthogonalizer X;
@@ -627,7 +630,11 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     V_ints->compute(V);
 #ifdef USING_ecpint
     SharedMatrix ECP(mat.create_matrix("ECP"));
-    ECP_ints->compute(ECP);
+    if (bas->has_ECP()) {
+        ECP_ints->compute(ECP);
+    } else {
+        ECP->zero();
+    }
 #endif
     SharedMatrix H(mat.create_matrix("Core Hamiltonian Matrix H"));
     H->zero();
@@ -870,7 +877,10 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
     std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
 #ifdef USING_ecpint
-    auto ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp().release()));
+    std::unique_ptr<ECPInt> ECP_ints;
+    if (bas->has_ECP()) {
+        ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp().release()));
+    }
 #endif
 
     // Compute overlap S and orthogonalizer X;
@@ -893,7 +903,11 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     V_ints->compute(V);
 #ifdef USING_ecpint
     SharedMatrix ECP(mat.create_matrix("ECP"));
-    ECP_ints->compute(ECP);
+    if (bas->has_ECP()) {
+        ECP_ints->compute(ECP);
+    } else {
+        ECP->zero();
+    }
 #endif
     SharedMatrix H(mat.create_matrix("Core Hamiltonian Matrix H"));
     H->zero();

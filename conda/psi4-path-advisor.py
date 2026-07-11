@@ -554,6 +554,10 @@ Can instead rename on cmdline, so argument mostly for printing.""")
 parser_cmake.add_argument("--insist",
     action="store_true",
     help=f"""Set the cache (`INSIST_FIND_PACKAGE_<pkg>=ON`) to prevent cmake from falling back on internal build for packages present in the conda environment.""")
+parser_cmake.add_argument("--dlopen",
+    action="store_true",
+    help=f"""Set the cache to `ENABLE_<pkg>_RUNTIME=ON` instead of `ENABLE_<pkg>=ON` where available to favor building for flexible runtime
+loading.""")
 
 parser_bulletin = subparsers.add_parser("bulletin",
     formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
@@ -930,6 +934,19 @@ elif args.subparser_name in ["cmake", "cache"]:
             else:
                 dcmake_vars = conda["cmake"]
 
+            # --dlopen: for packages offering an ENABLE_<x>_RUNTIME alternative to
+            # ENABLE_<x> (marked `use/dlopen: true` in codedeps.yaml and `//ENABLE_<x>_RUNTIME`
+            # in the cmake block), prefer building/linking dynamically: turn the ordinary
+            # ENABLE_<x> OFF and uncomment+activate ENABLE_<x>_RUNTIME instead.
+            dlopen_pairs = {}
+            if args.dlopen and use.get("dlopen"):
+                for k in dcmake_vars:
+                    if not k.startswith("//") and isinstance(dcmake_vars[k], bool):
+                        runtime_key = f"//{k}_RUNTIME"
+                        if runtime_key in dcmake_vars:
+                            dlopen_pairs[k] = runtime_key
+            dlopen_activated = set(dlopen_pairs.values())
+
             for k, v in dcmake_vars.items():
 
                 if isinstance(v, dict):
@@ -946,8 +963,15 @@ elif args.subparser_name in ["cmake", "cache"]:
                 if k == "CMAKE_PROGRAM_PATH":
                     raise ValueError("more than one var", dcmake_vars)
 
+                if k in dlopen_pairs:
+                    # Disable the ordinary build/link-time enable in favor of its
+                    # _RUNTIME (dlopen) counterpart, activated below.
+                    v = "OFF"
+
                 if k.startswith("//"):
-                    if args.insist and "INSIST_FIND_PACKAGE" in k and all_found:
+                    if k in dlopen_activated:
+                        text.append(f'set({k[2:]:<28} ON CACHE {ctyp} "")')
+                    elif args.insist and "INSIST_FIND_PACKAGE" in k and all_found:
                         text.append(f'set({k[2:]:<28} ON CACHE {ctyp} "")')
                     else:
                         text.append(f'# set({k[2:]:<28} {"<placeholder>" if v is None else v} CACHE {ctyp} "")')

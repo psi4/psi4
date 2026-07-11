@@ -1,9 +1,14 @@
-if(${ENABLE_ecpint})
+if(${ENABLE_ecpint} OR ${ENABLE_ecpint_RUNTIME})
     find_package(ecpint 1.0.7 CONFIG QUIET)  # edit in codedeps
 
     if(${ecpint_FOUND})
         get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
         message(STATUS "${Cyan}Found ecpint${ColourReset}: ${_loc} (found version ${ecpint_VERSION})")
+
+        if(${ENABLE_ecpint_RUNTIME})
+            message(STATUS "  ${Yellow}Runtime mode:${ColourReset} Headers for compilation, library loaded dynamically")
+        endif()
+
         add_library(ecpint_external INTERFACE)  # dummy
 
         if(${CMAKE_INSIST_FIND_PACKAGE_ecpint})
@@ -11,6 +16,12 @@ if(${ENABLE_ecpint})
         endif()
 
     else()
+        if(${ENABLE_ecpint_RUNTIME})
+            message(FATAL_ERROR "ENABLE_ecpint_RUNTIME=ON requires libecpint in host environment. "
+                               "Headers needed for compilation even though library is runtime-optional. "
+                               "Install libecpint or use ENABLE_ecpint=ON for internal build.")
+        endif()
+
         if(${CMAKE_INSIST_FIND_PACKAGE_ecpint})
             message(FATAL_ERROR "Suitable ecpint could not be externally located as user insists")
         endif()
@@ -45,4 +56,3 @@ if(${ENABLE_ecpint})
 else()
     add_library(ecpint_external INTERFACE)  # dummy
 endif()
-
