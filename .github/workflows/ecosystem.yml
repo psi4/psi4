@@ -301,14 +301,16 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
-      run: |
-        cmake --build objdir --config Release --target install
-        readelf -r objdir/stage/lib/psi4/core*.so | grep libecpint
-        objdump -R objdir/stage/lib/psi4/core*.so | c++filt | grep libecpint
+      run: cmake --build objdir --config Release --target install
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'
-      run: ldd objdir/stage/lib/psi4/core.*.so
+      run: |
+        ldd objdir/stage/lib/psi4/core.*.so
+        readelf -r objdir/stage/lib/psi4/core*.so | grep libecpint
+        objdump -R objdir/stage/lib/psi4/core*.so | c++filt | grep libecpint
+        #nm -D objdir/stage/lib/psi4/core.*.so | c++filt | grep -i libecpint && exit 1 || true
+        readelf -d objdir/stage/lib/psi4/core.*.so | grep -E 'BIND_NOW|FLAGS_1'
 
     - name: Linked dependencies, otool (M)
       if: runner.os == 'macOS'
