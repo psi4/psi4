@@ -676,7 +676,7 @@ def scf_finalize_energy(self):
 
         if follow and self.attempt_number_ > core.get_option('SCF', 'MAX_ATTEMPTS'):
             core.print_out("    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n")
-            core.print_out("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n")
+            core.print_out("    or increasing MAX_ATTEMPTS.\n")
 
     # At this point, we are not doing any more SCF cycles
     #   and we can compute and print final quantities.
