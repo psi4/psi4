@@ -27,7 +27,7 @@ jobs:
             pytest-marker-expr: "addon and not (medlong or long)"
             pytest-name-expr: "not pe_ecp"
             cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D CMAKE_VERBOSE_MAKEFILE=ON
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
@@ -303,7 +303,8 @@ jobs:
     - name: Compile & Install Psi4
       run: |
         cmake --build objdir --config Release --target install
-        nm -D objdir/stage/lib/psi4/core.*.so | c++filt | grep -i libecpint && exit 1 || true
+	readelf -r objdir/stage/lib/psi4/core*.so | grep libecpint
+	objdump -R objdir/stage/lib/psi4/core.*.so | c++filt | grep libecpint
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'
