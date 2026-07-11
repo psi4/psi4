@@ -4975,9 +4975,23 @@ SharedMatrix UV::compute_gradient() {
     // Thread scratch
     std::vector<std::shared_ptr<Vector>> Q_temp;
     std::vector<SharedMatrix> G_local;
+    std::vector<SharedMatrix> R_dw, R_U0a, R_U1a, R_U2a, R_U3a, R_U0b, R_U1b, R_U2b, R_U3b;
     for (size_t i = 0; i < num_threads_; i++) {
         Q_temp.push_back(std::make_shared<Vector>("Quadrature Temp", max_points));
         G_local.push_back(std::make_shared<Matrix>("G Temp", natom, 3));
+        if (grid_response_) {
+            R_dw.push_back(std::make_shared<Matrix>("dw Temp", 3 * natom, max_points));
+            R_U0a.push_back(std::make_shared<Matrix>("U0a Temp", max_points, max_functions));
+            R_U0b.push_back(std::make_shared<Matrix>("U0b Temp", max_points, max_functions));
+            if (ansatz >= 1) {
+                R_U1a.push_back(std::make_shared<Matrix>("U1a Temp", max_points, max_functions));
+                R_U2a.push_back(std::make_shared<Matrix>("U2a Temp", max_points, max_functions));
+                R_U3a.push_back(std::make_shared<Matrix>("U3a Temp", max_points, max_functions));
+                R_U1b.push_back(std::make_shared<Matrix>("U1b Temp", max_points, max_functions));
+                R_U2b.push_back(std::make_shared<Matrix>("U2b Temp", max_points, max_functions));
+                R_U3b.push_back(std::make_shared<Matrix>("U3b Temp", max_points, max_functions));
+            }
+        }
     }
 
     std::vector<double> functionalq(num_threads_);
@@ -5259,6 +5273,125 @@ SharedMatrix UV::compute_gradient() {
                 }
             }
         }
+        // => Quadrature response: the grid derivative classes. The Becke
+        //    weights depend on the nuclear positions, and the points ride
+        //    their parent atom. Assembled at FULL weight (UKS gradient has
+        //    no trailing scale). <= //
+        if (grid_response_) {
+            // weight class: dE += sum_g dw_g/dR e_g, all atoms
+            grid_->compute_weight_gradient(block, R_dw[rank]);
+            auto dwp = R_dw[rank]->pointer();
+            for (int C = 0; C < natom; C++) {
+                for (int d = 0; d < 3; d++) {
+                    Gp[C][d] += C_DDOT(npoints, dwp[3 * C + d], 1, zk, 1);
+                }
+            }
+
+            // grid-motion class: dE += sum_{g in A} w_g d_d e(r_g)
+            int A = block->parent_atom();
+            double** phi_i[3] = {phi_x, phi_y, phi_z};
+            double* rho_ag[3] = {nullptr, nullptr, nullptr};
+            double* rho_bg[3] = {nullptr, nullptr, nullptr};
+            double** phi_hess[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+            int hess_addr[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
+            double* v_gamma_aa = nullptr;
+            double* v_gamma_ab = nullptr;
+            double* v_gamma_bb = nullptr;
+            double* v_tau_a = nullptr;
+            double* v_tau_b = nullptr;
+            double** U0s[2] = {R_U0a[rank]->pointer(), R_U0b[rank]->pointer()};
+            double** Uis[2][3] = {{nullptr, nullptr, nullptr}, {nullptr, nullptr, nullptr}};
+            double** Ds[2] = {Dap, Dbp};
+            for (int sp = 0; sp < 2; sp++) {
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Ds[sp][0], max_functions, 0.0,
+                        U0s[sp][0], max_functions);
+            }
+            if (ansatz >= 1) {
+                rho_ag[0] = pworker->point_value("RHO_AX")->pointer();
+                rho_ag[1] = pworker->point_value("RHO_AY")->pointer();
+                rho_ag[2] = pworker->point_value("RHO_AZ")->pointer();
+                rho_bg[0] = pworker->point_value("RHO_BX")->pointer();
+                rho_bg[1] = pworker->point_value("RHO_BY")->pointer();
+                rho_bg[2] = pworker->point_value("RHO_BZ")->pointer();
+                phi_hess[0] = pworker->basis_value("PHI_XX")->pointer();
+                phi_hess[1] = pworker->basis_value("PHI_XY")->pointer();
+                phi_hess[2] = pworker->basis_value("PHI_XZ")->pointer();
+                phi_hess[3] = pworker->basis_value("PHI_YY")->pointer();
+                phi_hess[4] = pworker->basis_value("PHI_YZ")->pointer();
+                phi_hess[5] = pworker->basis_value("PHI_ZZ")->pointer();
+                v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
+                v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
+                v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
+                if (ansatz >= 2) {
+                    v_tau_a = vals["V_TAU_A"]->pointer();
+                    v_tau_b = vals["V_TAU_B"]->pointer();
+                }
+                Uis[0][0] = R_U1a[rank]->pointer();
+                Uis[0][1] = R_U2a[rank]->pointer();
+                Uis[0][2] = R_U3a[rank]->pointer();
+                Uis[1][0] = R_U1b[rank]->pointer();
+                Uis[1][1] = R_U2b[rank]->pointer();
+                Uis[1][2] = R_U3b[rank]->pointer();
+                for (int sp = 0; sp < 2; sp++) {
+                    for (int i = 0; i < 3; i++) {
+                        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Ds[sp][0],
+                                max_functions, 0.0, Uis[sp][i][0], max_functions);
+                    }
+                }
+            }
+            for (int P = 0; P < npoints; P++) {
+                for (int d = 0; d < 3; d++) {
+                    // plumbing: the per-channel spatial field gradients
+                    double drho_a_g, drho_b_g;
+                    double dgrad_a[3] = {0.0, 0.0, 0.0};
+                    double dgrad_b[3] = {0.0, 0.0, 0.0};
+                    double dtau_a_g = 0.0, dtau_b_g = 0.0;
+                    if (ansatz >= 1) {
+                        drho_a_g = rho_ag[d][P];
+                        drho_b_g = rho_bg[d][P];
+                        for (int i = 0; i < 3; i++) {
+                            dgrad_a[i] = 2.0 * (C_DDOT(nlocal, U0s[0][P], 1, phi_hess[hess_addr[d][i]][P], 1)
+                                                + C_DDOT(nlocal, Uis[0][d][P], 1, phi_i[i][P], 1));
+                            dgrad_b[i] = 2.0 * (C_DDOT(nlocal, U0s[1][P], 1, phi_hess[hess_addr[d][i]][P], 1)
+                                                + C_DDOT(nlocal, Uis[1][d][P], 1, phi_i[i][P], 1));
+                            if (ansatz >= 2) {
+                                dtau_a_g += C_DDOT(nlocal, Uis[0][i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
+                                dtau_b_g += C_DDOT(nlocal, Uis[1][i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
+                            }
+                        }
+                    } else {
+                        drho_a_g = 2.0 * C_DDOT(nlocal, U0s[0][P], 1, phi_i[d][P], 1);
+                        drho_b_g = 2.0 * C_DDOT(nlocal, U0s[1][P], 1, phi_i[d][P], 1);
+                    }
+                    // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_energy_gradient_spin(mgga_tau)] <==
+                    // Reproduce with: python -m xckernel.psi4backend --uvgridmotion
+                    double dot_dgrad_rho_a_g_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_g_grad_rho_a = dgrad_a[0] * rho_ag[0][P] + dgrad_a[1] * rho_ag[1][P] + dgrad_a[2] * rho_ag[2][P];
+                    double dot_dgrad_rho_a_g_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_a_g_grad_rho_b = dgrad_a[0] * rho_bg[0][P] + dgrad_a[1] * rho_bg[1][P] + dgrad_a[2] * rho_bg[2][P];
+                    double dot_dgrad_rho_b_g_grad_rho_a = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_g_grad_rho_a = dgrad_b[0] * rho_ag[0][P] + dgrad_b[1] * rho_ag[1][P] + dgrad_b[2] * rho_ag[2][P];
+                    double dot_dgrad_rho_b_g_grad_rho_b = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_b_g_grad_rho_b = dgrad_b[0] * rho_bg[0][P] + dgrad_b[1] * rho_bg[1][P] + dgrad_b[2] * rho_bg[2][P];
+                    double de = 0.0;
+                    de += drho_a_g * v_rho_a[P];
+                    de += drho_b_g * v_rho_b[P];
+                    if (ansatz >= 1) {
+                        de += 2 * dot_dgrad_rho_a_g_grad_rho_a * v_gamma_aa[P];
+                        de += dot_dgrad_rho_a_g_grad_rho_b * v_gamma_ab[P];
+                        de += dot_dgrad_rho_b_g_grad_rho_a * v_gamma_ab[P];
+                        de += 2 * dot_dgrad_rho_b_g_grad_rho_b * v_gamma_bb[P];
+                    }
+                    if (ansatz >= 2) {
+                        de += 2 * dtau_a_g * v_tau_a[P];
+                        de += 2 * dtau_b_g * v_tau_b[P];
+                    }
+                    // ==> END GENERATED CODE <==
+                    Gp[A][d] += w[P] * de;
+                }
+            }
+        }
+
         Ua_local.reset();
         Ub_local.reset();
         parallel_timer_off("V_xc gradient", rank);
