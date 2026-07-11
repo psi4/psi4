@@ -303,8 +303,8 @@ jobs:
     - name: Compile & Install Psi4
       run: |
         cmake --build objdir --config Release --target install
-	readelf -r objdir/stage/lib/psi4/core*.so | grep libecpint
-	objdump -R objdir/stage/lib/psi4/core.*.so | c++filt | grep libecpint
+        readelf -r objdir/stage/lib/psi4/core*.so | grep libecpint
+        objdump -R objdir/stage/lib/psi4/core*.so | c++filt | grep libecpint
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'
