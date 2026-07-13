@@ -1,7 +1,7 @@
 #! RHF stability FOLLOW test for a stable system (water, cc-pVDZ).
 #! Verifies that FOLLOW does not attempt to rotate orbitals when the
 #! wavefunction is already a singlet-stable minimum. The wfn's
-#! attempt_number_ must remain 1 (no re-SCF triggered) and the
+#! ``attempt_number_`` must remain 1 (no re-SCF triggered) and the
 #! post-FOLLOW energy must match the RHF reference.
 
 nucenergy =   8.8014655646     #TEST
