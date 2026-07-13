@@ -2601,7 +2601,6 @@ def run_scf(name, **kwargs):
         if "xdh" in dft.functionals[requested_func.lower()]:
             xdh_def = dft.functionals[requested_func.lower()]["xdh"]
 
-    print(f"{requested_func=} {xdh_name=} {xdh_def=}")
     if xdh_def is not None:
         if core.get_option("SCF", "REFERENCE") != "RKS":
             raise ValidationError("xDH functionals are currently implemented for RKS references only.")
@@ -2617,37 +2616,14 @@ def run_scf(name, **kwargs):
         orbital_ref = scf_wfn.energy()
 
         xdh_super, _ = dft.build_superfunctional(xdh_name, True)
-        dmat = scf_wfn.Da()
-        jk_obj = scf_wfn.jk()
-        if jk_obj is None:
-            raise ValidationError("xDH energy requires SCF JK matrices, but no JK object is available.")
-        jmat = jk_obj.J()[0]
-        kmat = jk_obj.K()[0]
-
-        vxc = core.VBase.build(scf_wfn.get_basisset("ORBITAL"), xdh_super, "RV")
-        vxc.initialize()
-        vxc.set_D([dmat])
-        vtmp = dmat.clone()
-        vtmp.zero()
-        vxc.compute_V([vtmp])
-        quad = vxc.quadrature_values()
-        xdh_xc = quad["FUNCTIONAL"] if "FUNCTIONAL" in quad else 0.0
-        xdh_vv10 = quad["VV10"] if "VV10" in quad else 0.0
-        vxc.finalize()
-
-        nuc = scf_wfn.get_energies("Nuclear")
-        one_e = scf_wfn.get_energies("One-Electron")
-        dashd_e = scf_wfn.get_energies("-D")
-        coulomb_e = 2.0 * dmat.vector_dot(jmat)
-        exchange_e = -xdh_super.x_alpha() * dmat.vector_dot(kmat)
-        if xdh_super.is_x_lrc():
-            wK = jk_obj.wK()[0]
-            if jk_obj.get_do_wK() and jk_obj.get_wcombine():
-                exchange_e -= dmat.vector_dot(wK)
-            else:
-                exchange_e -= xdh_super.x_beta() * dmat.vector_dot(wK)
-
-        xdh_ref = nuc + one_e + coulomb_e + exchange_e + xdh_xc + xdh_vv10 + dashd_e
+        xdh_components = scf_wfn.evaluate_fixed_density_dft_energy(xdh_super)
+        nuc = xdh_components["Nuclear"]
+        one_e = xdh_components["One-Electron"]
+        coulomb_e = xdh_components["Coulomb"]
+        exchange_e = xdh_components["Exchange"]
+        xdh_xc = xdh_components["XC"]
+        xdh_vv10 = xdh_components["VV10"]
+        xdh_ref = xdh_components["Total"]
 
         core.tstart()
         aux_basis = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
@@ -2660,6 +2636,7 @@ def run_scf(name, **kwargs):
             core.set_local_option('DFMP2', 'MP2_SS_SCALE', xdh_super.c_ss_alpha())
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
+            totvdh = dfmp2_wfn.variable("MP2 CORRELATION ENERGY")
             vdh = dfmp2_wfn.variable("CUSTOM SCS-MP2 CORRELATION ENERGY")
         else:
             dfmp2_wfn = core.dfmp2(scf_wfn)
@@ -2727,6 +2704,7 @@ def run_scf(name, **kwargs):
             core.set_local_option('DFMP2', 'MP2_SS_SCALE', ssuper.c_ss_alpha())
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
+            totvdh = dfmp2_wfn.variable('MP2 CORRELATION ENERGY')
 
             vdh = dfmp2_wfn.variable('CUSTOM SCS-MP2 CORRELATION ENERGY')
 

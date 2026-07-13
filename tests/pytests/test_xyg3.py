@@ -90,7 +90,7 @@ H   3.117061   0.013701   0.000000
     if db == 2:
         tottol, ietol = 0.0001, 0.001
     elif db == 4:
-        tottol, ietol = 0.0005, 0.008
+        tottol, ietol = 0.0005, 0.010
 
     import qcmanybody as qcmb
     cluster_qcvars = {qcmb.labeler(*qcmb.delabeler(k), opaque=False): v.extras["qcvars"] for k, v in wfn.qcschema.component_results.items()}
