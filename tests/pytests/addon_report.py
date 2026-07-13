@@ -18,6 +18,16 @@ def _addons(item):
     return sorted(set(item.keywords).intersection(_using_cache))
 
 
+def _status_icon(counts):
+    if counts["failed"]:
+        return "🔴"
+    if counts["passed"]:
+        return "🟢"
+    if counts["skipped"]:
+        return "🟡"
+    return "⚪"
+
+
 def _cell_text(counts, *, diagonal=False):
     total = sum(counts.values())
     if not total:
@@ -25,7 +35,7 @@ def _cell_text(counts, *, diagonal=False):
     # A pass proves the addon is present and operational even if other tests in
     # the cell skip because a second addon is absent. Failures remain highest
     # priority; yellow is reserved for cells where every test skipped.
-    icon = "🔴" if counts["failed"] else "🟢" if counts["passed"] else "🟡"
+    icon = _status_icon(counts)
     details = " ".join(
         f"{counts[status]}{status[0].upper()}"
         for status in ("passed", "failed", "skipped")
@@ -47,11 +57,14 @@ def summarize(tests, known_addons=()):
     """Build per-addon and addon-pair result counts from test records."""
     addons = sorted(set(known_addons) | {addon for test in tests.values() for addon in test["addons"]})
     empty = lambda: {"registered": 0, "passed": 0, "failed": 0, "skipped": 0}
-    totals = {addon: empty() for addon in addons}
+    totals = {addon: empty() for addon in ["core", *addons]}
     matrix = {a: {b: empty() for b in addons} for a in addons}
 
     for test in tests.values():
         status = test["status"]
+        if not test["addons"]:
+            totals["core"]["registered"] += 1
+            totals["core"][status] += 1
         for addon in test["addons"]:
             totals[addon]["registered"] += 1
             totals[addon][status] += 1
@@ -67,15 +80,15 @@ def render_markdown(tests, known_addons=()):
     lines = [
         "# Psi4 addon test report",
         "",
-        "🟢 at least one passed · 🟡 all skipped · 🔴 at least one failed · **〔bold brackets〕** diagonal",
+        "🟢 at least one passed · 🟡 all skipped · 🔴 at least one failed · ⚪ no executed tests · **〔bold brackets〕** diagonal",
         "",
-        "| Addon | Registered | Passed | Failed | Skipped |",
-        "|---|---:|---:|---:|---:|",
+        "| Addon | Status | Registered | Passed | Failed | Skipped |",
+        "|---|:---:|---:|---:|---:|---:|",
     ]
-    for addon in addons:
+    for addon in ["core", *addons]:
         row = totals[addon]
         lines.append(
-            f"| {addon} | {row['registered']} | {row['passed']} | {row['failed']} | {row['skipped']} |"
+            f"| {addon} | {_status_icon(row)} | {row['registered']} | {row['passed']} | {row['failed']} | {row['skipped']} |"
         )
 
     lines.extend(["", "## Addon overlap matrix", ""])
@@ -104,16 +117,16 @@ class AddonReporter:
 
     def pytest_runtest_logreport(self, report):
         properties = dict(report.user_properties)
-        addons = properties.get("psi4_addons")
+        if "psi4_addons" not in properties:
+            return
+        addons = properties["psi4_addons"]
         self.known_addons.update(properties.get("psi4_known_addons", "").split(","))
         self.known_addons.discard("")
-        if not addons:
-            return
         current = self.tests.get(report.nodeid)
         status = "skipped" if report.skipped else "failed" if report.failed else "passed"
         # A passing setup must not mask a later skipped/failed call or teardown.
         if current is None or _STATUS_ORDER[status] > _STATUS_ORDER[current["status"]]:
-            self.tests[report.nodeid] = {"addons": addons.split(","), "status": status}
+            self.tests[report.nodeid] = {"addons": addons.split(",") if addons else [], "status": status}
 
     def pytest_sessionfinish(self):
         # Each invocation merges into the same report, which lets the ecosystem
@@ -122,7 +135,7 @@ class AddonReporter:
         known_addons = set(self.known_addons)
         if self.output.exists():
             try:
-                old_payload = json.loads(self.output.read_text())
+                old_payload = json.loads(self.output.read_text(encoding="utf-8"))
                 previous = old_payload.get("tests", {})
                 known_addons.update(old_payload.get("known_addons", ()))
             except (OSError, ValueError):
@@ -140,9 +153,9 @@ class AddonReporter:
         payload = {"known_addons": known_addons, "addons": totals, "matrix": matrix, "tests": previous}
         self.output.parent.mkdir(parents=True, exist_ok=True)
         temporary = self.output.with_suffix(self.output.suffix + ".tmp")
-        temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+        temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         temporary.replace(self.output)
-        self.output.with_suffix(".md").write_text(render_markdown(previous, known_addons))
+        self.output.with_suffix(".md").write_text(render_markdown(previous, known_addons), encoding="utf-8")
 
 
 def pytest_addoption(parser):
@@ -167,8 +180,7 @@ def pytest_collection_modifyitems(items):
     known_addons = ",".join(sorted(_using_cache))
     for item in items:
         addons = _addons(item)
-        if addons:
-            item.user_properties.append(("psi4_addons", ",".join(addons)))
-            # xdist's controller does not collect tests itself, so send the
-            # complete addon universe along with reports from each worker.
-            item.user_properties.append(("psi4_known_addons", known_addons))
+        item.user_properties.append(("psi4_addons", ",".join(addons)))
+        # xdist's controller does not collect tests itself, so send the
+        # complete addon universe along with reports from each worker.
+        item.user_properties.append(("psi4_known_addons", known_addons))

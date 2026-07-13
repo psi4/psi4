@@ -446,9 +446,18 @@ jobs:
       if: always()
       working-directory: ./objdir
       run: |
-        cat addon-report.md >> "$GITHUB_STEP_SUMMARY"
-        # To require ECPInt to be green (some passed and none failed), uncomment:
-        python -c 'import json; r=json.load(open("addon-report.json"))["addons"]["ecpint"]; assert r["passed"] > 0 and r["failed"] == 0, r'
+        if [[ -f addon-report.md ]]; then
+          echo "::group::Addon test report (Markdown source)"
+          cat addon-report.md
+          echo "::endgroup::"
+          cat addon-report.md >> "$GITHUB_STEP_SUMMARY"
+          # Require ECPInt to be green (some passed and none failed):
+          python -c 'import json; r=json.load(open("addon-report.json"))["addons"]["ecpint"]; assert r["passed"] > 0 and r["failed"] == 0, r'
+        else
+          echo "::warning::addon-report.md was not produced"
+          echo "## Psi4 addon test report" >> "$GITHUB_STEP_SUMMARY"
+          echo "The addon report was not produced; pytest may have exited before session cleanup." >> "$GITHUB_STEP_SUMMARY"
+        fi
 
     - name: Upload addon test report
       # if: always()
