@@ -900,6 +900,16 @@ bool RHF::stability_analysis() {
     SharedMatrix stability_eigvec;
     double lowest_singlet_eval = std::numeric_limits<double>::max();
 
+    // Per-irrep flat buffer for the captured singlet eigenvector, sized (doccpi[h] x virpi[h]).
+    // Populated only for h==0 (totally-symmetric singlet); scattered as ia -> [isym][irel*virpi+arel].
+    // Committed into `stability_eigvec` via bulk Matrix::set(const double** const, int h) after the
+    // diagonalization loop, replacing the former element-wise Matrix::set(h, irel, arel, val) call
+    // (which was an un-bounds-checked inline matrix_[h][m][n] = val and the source of a heap-corruption
+    // bug when its index arithmetic was wrong).
+    const Dimension virpi_eig = nmopi_ - nalphapi_;
+    std::vector<std::vector<double>> eigvec_buf(nirrep_);
+    for (int h = 0; h < nirrep_; ++h) eigvec_buf[h].assign(nalphapi_[h] * virpi_eig[h], 0.0);
+
     // Allocate the SCF STABILITY EIGENVALUES matrix (singlet), matching the ROHF/UHF
     // convention so that downstream consumers (tests, variable("SCF STABILITY EIGENVALUES"))
     // behave the same regardless of reference.
@@ -1011,11 +1021,12 @@ bool RHF::stability_analysis() {
             // the ground-state spatial symmetry, matching UHF's convention.
             if (h == 0 && evals[0] < lowest_singlet_eval) {
                 lowest_singlet_eval = evals[0];
-                // Unflatten DPD column 0 of `evecs` into a (doccpi x virpi) per-irrep Matrix.
+                // Zero per-irrep fill buffers in case a previous (defensively-impossible for h==0)
+                // iteration left stale entries; cheap and makes the loop invariant explicit.
+                for (auto& buf : eigvec_buf) std::fill(buf.begin(), buf.end(), 0.0);
+                // Unflatten DPD column 0 of `evecs` into per-irrep (doccpi x virpi) blocks.
                 // Asing.params->roworb[h][ia][0/1] give absolute (i, a) indices; for h=0,
                 // isym == asym, so each pair slots cleanly into matrix irrep `isym`.
-                Dimension virpi = nmopi_ - nalphapi_;
-                stability_eigvec = std::make_shared<Matrix>("Stability eigenvector", nalphapi_, virpi);
                 for (int ia = 0; ia < dim; ++ia) {
                     int iabs = Asing.params->roworb[h][ia][0];
                     int aabs = Asing.params->roworb[h][ia][1];
@@ -1027,8 +1038,15 @@ bool RHF::stability_analysis() {
                     // (libdpd init.cc::orboff starts each subspace at 0), so their difference
                     // is the 0-based virtual-relative column index. Do NOT subtract nalphapi_.
                     int arel = aabs - Asing.params->qoff[asym];
-                    //TODO: figure out how to do this without using this non bounds-checked Matrix::set function, ewww
-                    stability_eigvec->set(isym, irel, arel, evecs[ia][0]);
+                    // Explicit bounds check: any arithmetic regression here throws instead of
+                    // corrupting heap metadata via an out-of-bounds write.
+                    if (isym < 0 || isym >= nirrep_ || asym < 0 || asym >= nirrep_) {
+                        throw PSIEXCEPTION("RHF stability FOLLOW: eigenvector irrep index out of bounds.");
+                    }
+                    if (irel < 0 || irel >= nalphapi_[isym] || arel < 0 || arel >= virpi_eig[asym]) {
+                        throw PSIEXCEPTION("RHF stability FOLLOW: eigenvector occ/vir index out of bounds.");
+                    }
+                    eigvec_buf[isym][irel * virpi_eig[isym] + arel] = evecs[ia][0];
                 }
             }
 
@@ -1054,6 +1072,26 @@ bool RHF::stability_analysis() {
         print_stability_analysis(triplet_eval_sym);
         Process::environment.arrays["SCF STABILITY EIGENVALUES"] = stabvals;
         psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+        // Commit the captured singlet eigenvector (if any) from the flat per-irrep scatter
+        // buffers into a SharedMatrix, using the bulk Matrix::set(const double** const, int h)
+        // per irrep. This replaces the prior per-element Matrix::set(h, irel, arel, val) loop.
+        // Only allocate when the FOLLOW block below will actually consume the Matrix: i.e. only
+        // when an instability was detected (lowest_singlet_eval < 0.0) AND the user asked for
+        // FOLLOW. On stable spectra or REPORT-only mode, this skip avoids the Matrix allocation
+        // and per-irrep row-pointer construction entirely.
+        if (lowest_singlet_eval < 0.0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
+            stability_eigvec = std::make_shared<Matrix>("Stability eigenvector", nalphapi_, virpi_eig);
+            for (int h = 0; h < nirrep_; ++h) {
+                if (nalphapi_[h] == 0 || virpi_eig[h] == 0) continue;
+                // Build a row-pointer view into the flat irrep buffer; Matrix::set(h) copies
+                // rowspi_[h] x colspi_[h] = nalphapi_[h] x virpi_eig[h] elements out of it.
+                std::vector<double*> row_ptrs(nalphapi_[h]);
+                for (int r = 0; r < nalphapi_[h]; ++r)
+                    row_ptrs[r] = &eigvec_buf[h][r * virpi_eig[h]];
+                stability_eigvec->set(row_ptrs.data(), h);
+            }
+        }
     }
 
     // FOLLOW: rotate orbitals along the lowest totally-symmetric singlet eigenvector.
