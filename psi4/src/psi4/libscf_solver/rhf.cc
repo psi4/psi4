@@ -1027,6 +1027,7 @@ bool RHF::stability_analysis() {
                     // (libdpd init.cc::orboff starts each subspace at 0), so their difference
                     // is the 0-based virtual-relative column index. Do NOT subtract nalphapi_.
                     int arel = aabs - Asing.params->qoff[asym];
+                    //TODO: figure out how to do this without using this non bounds-checked Matrix::set function, ewww
                     stability_eigvec->set(isym, irel, arel, evecs[ia][0]);
                 }
             }
