@@ -24,8 +24,10 @@ stability_analysis follow
 
 thisenergy, wfn = energy('scf', return_wfn=True)
 
+# If FOLLOW returned True, scf_iterator.py would increment the attempt counter to 2+.
+# A value of 1 proves FOLLOW returned False — no orbital rotation, no re-SCF.
+attempts = wfn.attempt_number_
+
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 7, "Reference energy")                            #TEST
-# If FOLLOW returned True, scf_iterator.py:666 would increment attempt_number_ to 2+.
-# attempt_number_ == 1 proves FOLLOW returned False — no orbital rotation, no re-SCF.
-compare_integers(1, wfn.attempt_number_, "Stable RHF FOLLOW did not rotate orbitals")  #TEST
+compare_integers(1, attempts, "Stable RHF FOLLOW did not rotate orbitals")             #TEST
