@@ -98,9 +98,6 @@ void UHF::common_init() {
 
     mix_performed_ = false;
 
-    // step_scale_ / step_increment_ are now initialized in HF::common_init()
-    // and read from options on demand by the Python-side _UHF_stability_analysis.
-
     Fa_ = SharedMatrix(factory_->create_matrix("F alpha"));
     Fb_ = SharedMatrix(factory_->create_matrix("F beta"));
     Da_ = SharedMatrix(factory_->create_matrix("SCF alpha density"));
