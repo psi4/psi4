@@ -1,7 +1,8 @@
 #! RHF stability FOLLOW test for a stable system (water, cc-pVDZ).
 #! Verifies that FOLLOW does not attempt to rotate orbitals when the
-#! wavefunction is already a singlet-stable minimum. The post-FOLLOW
-#! energy must match the RHF reference, confirming FOLLOW took no action.
+#! wavefunction is already a singlet-stable minimum. The wfn's
+#! attempt_number_ must remain 1 (no re-SCF triggered) and the
+#! post-FOLLOW energy must match the RHF reference.
 
 nucenergy =   8.8014655646     #TEST
 refenergy = -76.02141844515491 #TEST
@@ -21,7 +22,10 @@ d_convergence 8
 stability_analysis follow
 }
 
-thisenergy = energy('scf')
+thisenergy, wfn = energy('scf', return_wfn=True)
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 7, "Reference energy")                            #TEST
+# If FOLLOW returned True, scf_iterator.py:666 would increment attempt_number_ to 2+.
+# attempt_number_ == 1 proves FOLLOW returned False — no orbital rotation, no re-SCF.
+compare_integers(1, wfn.attempt_number_, "Stable RHF FOLLOW did not rotate orbitals")  #TEST
