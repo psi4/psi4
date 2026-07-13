@@ -120,6 +120,7 @@ funcs.append({"name": "LC-VV10"        , "xc_functionals": {"HYB_GGA_XC_LC_VV10"
 funcs.append({"name": "HPBEINT"        , "xc_functionals": {"HYB_GGA_XC_HPBEINT"        : {}}})
 funcs.append({"name": "LRC-WPBE"       , "xc_functionals": {"HYB_GGA_XC_LRC_WPBE"       : {}}})
 funcs.append({"name": "B3LYP5"         , "xc_functionals": {"HYB_GGA_XC_B3LYP5"         : {}}})
+funcs.append({"name": "B3LYP3"         , "xc_functionals": {"HYB_GGA_XC_B3LYP3"         : {}}})
 funcs.append({"name": "EDF2"           , "xc_functionals": {"HYB_GGA_XC_EDF2"           : {}}})
 funcs.append({"name": "CAP0"           , "xc_functionals": {"HYB_GGA_XC_CAP0"           : {}}})
 funcs.append({"name": "B88B95"         , "xc_functionals": {"HYB_MGGA_XC_B88B95"        : {}}, "alias": ["B1B95"]})

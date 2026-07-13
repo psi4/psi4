@@ -87,13 +87,18 @@ H   3.117061   0.013701   0.000000
 
     assert compare_values(refie, ie_au * psi4.constants.hartree2kcalmol, 2, f"S22-{db} IE")
 
+    if db == 2:
+        tottol, ietol = 0.0001, 0.001
+    elif db == 4:
+        tottol, ietol = 0.0005, 0.008
+
     import qcmanybody as qcmb
     cluster_qcvars = {qcmb.labeler(*qcmb.delabeler(k), opaque=False): v.extras["qcvars"] for k, v in wfn.qcschema.component_results.items()}
     for pv in ref[db].keys():
         for cluster in ref[db][pv].keys():
-            assert compare_values(ref[db][pv][cluster], cluster_qcvars[cluster][pv], 3, f"{cluster}: {pv}")
+            assert compare_values(ref[db][pv][cluster], cluster_qcvars[cluster][pv], tottol, f"{cluster}: {pv}")
         assert compare_values(ie(ref[db][pv][labels[0]], ref[db][pv][labels[1]], ref[db][pv][labels[2]]),
-                              ie(cluster_qcvars[labels[0]][pv], cluster_qcvars[labels[1]][pv], cluster_qcvars[labels[2]][pv]), 2, "IE")
+                              ie(cluster_qcvars[labels[0]][pv], cluster_qcvars[labels[1]][pv], cluster_qcvars[labels[2]][pv]), ietol, "IE")
 
 
 if __name__ == "__main__":

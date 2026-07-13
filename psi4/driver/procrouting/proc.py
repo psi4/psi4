@@ -2589,10 +2589,126 @@ def run_scf(name, **kwargs):
     if not core.has_global_option_changed('SCF_TYPE'):
         core.set_global_option('SCF_TYPE', 'DF')
 
+    requested_func = kwargs.get("dft_functional", name)
+    xdh_def = None
+    xdh_name = requested_func
+    if isinstance(requested_func, dict):
+        if "xdh" in requested_func:
+            xdh_def = requested_func["xdh"]
+            xdh_name = requested_func
+    elif isinstance(requested_func, str) and requested_func.lower() in dft.functionals:
+        xdh_name = dft.functionals[requested_func.lower()]["name"]
+        if "xdh" in dft.functionals[requested_func.lower()]:
+            xdh_def = dft.functionals[requested_func.lower()]["xdh"]
+
+    print(f"{requested_func=} {xdh_name=} {xdh_def=}")
+    if xdh_def is not None:
+        if core.get_option("SCF", "REFERENCE") != "RKS":
+            raise ValidationError("xDH functionals are currently implemented for RKS references only.")
+
+        if (mp2_type := core.get_global_option("MP2_TYPE")) != "DF":
+            raise ValidationError(f"Invalid MP2 type {mp2_type} for xDH energy. See capabilities Table.")
+
+        xdh_orbital_functional = xdh_def["orbital_functional"]
+        scf_kwargs = dict(kwargs)
+        scf_kwargs.pop("dft_functional", None)
+        core.set_local_option("SCF", "SAVE_JK", True)
+        scf_wfn = scf_helper(xdh_orbital_functional, post_scf=False, **scf_kwargs)
+        orbital_ref = scf_wfn.energy()
+
+        xdh_super, _ = dft.build_superfunctional(xdh_name, True)
+        dmat = scf_wfn.Da()
+        jk_obj = scf_wfn.jk()
+        if jk_obj is None:
+            raise ValidationError("xDH energy requires SCF JK matrices, but no JK object is available.")
+        jmat = jk_obj.J()[0]
+        kmat = jk_obj.K()[0]
+
+        vxc = core.VBase.build(scf_wfn.get_basisset("ORBITAL"), xdh_super, "RV")
+        vxc.initialize()
+        vxc.set_D([dmat])
+        vtmp = dmat.clone()
+        vtmp.zero()
+        vxc.compute_V([vtmp])
+        quad = vxc.quadrature_values()
+        xdh_xc = quad["FUNCTIONAL"] if "FUNCTIONAL" in quad else 0.0
+        xdh_vv10 = quad["VV10"] if "VV10" in quad else 0.0
+        vxc.finalize()
+
+        nuc = scf_wfn.get_energies("Nuclear")
+        one_e = scf_wfn.get_energies("One-Electron")
+        dashd_e = scf_wfn.get_energies("-D")
+        coulomb_e = 2.0 * dmat.vector_dot(jmat)
+        exchange_e = -xdh_super.x_alpha() * dmat.vector_dot(kmat)
+        if xdh_super.is_x_lrc():
+            wK = jk_obj.wK()[0]
+            if jk_obj.get_do_wK() and jk_obj.get_wcombine():
+                exchange_e -= dmat.vector_dot(wK)
+            else:
+                exchange_e -= xdh_super.x_beta() * dmat.vector_dot(wK)
+
+        xdh_ref = nuc + one_e + coulomb_e + exchange_e + xdh_xc + xdh_vv10 + dashd_e
+
+        core.tstart()
+        aux_basis = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
+                                        core.get_option("DFMP2", "DF_BASIS_MP2"),
+                                        "RIFIT", core.get_global_option('BASIS'),
+                                        puream=-1)
+        scf_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
+        if xdh_super.is_c_scs_hybrid():
+            core.set_local_option('DFMP2', 'MP2_OS_SCALE', xdh_super.c_os_alpha())
+            core.set_local_option('DFMP2', 'MP2_SS_SCALE', xdh_super.c_ss_alpha())
+            dfmp2_wfn = core.dfmp2(scf_wfn)
+            dfmp2_wfn.compute_energy()
+            vdh = dfmp2_wfn.variable("CUSTOM SCS-MP2 CORRELATION ENERGY")
+        else:
+            dfmp2_wfn = core.dfmp2(scf_wfn)
+            dfmp2_wfn.compute_energy()
+            totvdh = dfmp2_wfn.variable("MP2 CORRELATION ENERGY")
+            vdh = xdh_super.c_alpha() * dfmp2_wfn.variable("MP2 CORRELATION ENERGY")
+
+        for var in dfmp2_wfn.variables():
+            if var.startswith('MP2 '):
+                scf_wfn.del_variable(var)
+
+        returnvalue = xdh_ref + vdh
+        scf_wfn.set_variable("DFT XC ENERGY", xdh_xc)
+        scf_wfn.set_variable("DFT VV10 ENERGY", xdh_vv10)
+        scf_wfn.set_variable("DFT FUNCTIONAL TOTAL ENERGY", nuc + one_e + coulomb_e + exchange_e + xdh_xc + xdh_vv10)
+        scf_wfn.set_variable("SCF TOTAL ENERGY", xdh_ref)
+        scf_wfn.set_variable("DFT ORBITAL TOTAL ENERGY", orbital_ref)
+        scf_wfn.set_variable(f"{xdh_super.name()} ORBITAL REFERENCE ENERGY", orbital_ref)
+        scf_wfn.set_variable(f"{xdh_super.name()} DFT REFERENCE ENERGY", xdh_ref)
+        scf_wfn.set_variable("DOUBLE-HYBRID CORRECTION ENERGY", vdh)
+        scf_wfn.set_variable(f"{xdh_super.name()} DOUBLE-HYBRID CORRECTION ENERGY", vdh)
+        scf_wfn.set_variable("DFT TOTAL ENERGY", returnvalue)
+        scf_wfn.set_variable(f"{xdh_super.name()} TOTAL ENERGY", returnvalue)
+        scf_wfn.set_variable("CURRENT ENERGY", returnvalue)
+        scf_wfn.set_variable("CURRENT REFERENCE ENERGY", xdh_ref)
+        scf_wfn.set_energy(returnvalue)
+
+        core.print_out('\n\n')
+        core.print_out(f'    {xdh_super.name()} Energy Summary\n')
+        core.print_out('    ' + '-' * (15 + len(xdh_super.name())) + '\n')
+        core.print_out(f'    Orbital Functional ({xdh_orbital_functional})    = {orbital_ref:18.12f}\n')
+        core.print_out('    xDH DFT Reference Energy               = %18.12lf\n' % (xdh_ref))
+        core.print_out('    MP2 Correlation                        = %18.12lf\n' % (totvdh))
+        core.print_out('    Scaled MP2 Correlation                 = %18.12lf\n' % (vdh))
+        core.print_out('    @Final xDH DFT total energy            = %18.12lf\n\n' % (returnvalue))
+        core.tstop()
+
+        for k, v in scf_wfn.variables().items():
+            core.set_variable(k, v)
+
+        optstash_scf.restore()
+        optstash_mp2.restore()
+        return scf_wfn
+
     scf_wfn = scf_helper(name, post_scf=False, **kwargs)
     returnvalue = scf_wfn.energy()
 
     ssuper = scf_wfn.functional()
+
 
     if ssuper.is_c_hybrid():
 
@@ -2617,6 +2733,7 @@ def run_scf(name, **kwargs):
         else:
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
+            totvdh = dfmp2_wfn.variable('MP2 CORRELATION ENERGY')
             vdh = ssuper.c_alpha() * dfmp2_wfn.variable('MP2 CORRELATION ENERGY')
 
         # remove misleading MP2 psivars computed with DFT, not HF, reference
@@ -2642,6 +2759,7 @@ def run_scf(name, **kwargs):
         core.print_out('    %s Energy Summary\n' % (name.upper()))
         core.print_out('    ' + '-' * (15 + len(name)) + '\n')
         core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
+        core.print_out('    MP2 Correlation                       = %22.16lf\n' % (totvdh))
         core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
         core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
         core.tstop()
