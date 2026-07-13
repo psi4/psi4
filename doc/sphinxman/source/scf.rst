@@ -1071,15 +1071,12 @@ analysis. The capabilities of both algorithms are summarized below:
     +------------------+------------------+----------------------------------------------+---------------------------+---------------------+
     |     Algorithm    | |scf__reference| |     Stability checked                        | |scf__stability_analysis| | |globals__scf_type| |
     +==================+==================+==============================================+===========================+=====================+
-    |                  |       RHF        | Internal, External (:math:`\rightarrow` UHF) | ``CHECK`` or ``FOLLOW``\* |   PK only           |
+    |                  |       RHF        | Internal, External (:math:`\rightarrow` UHF) | ``CHECK`` or ``FOLLOW``   |   PK only           |
     +                  +------------------+----------------------------------------------+---------------------------+---------------------+
     | Direct Inversion |       ROHF       | Internal                                     | ``CHECK``                 |   PK only           |
     +------------------+------------------+----------------------------------------------+---------------------------+---------------------+
     |   Davidson       |       UHF        | Internal                                     | ``CHECK`` or ``FOLLOW``   |   Anything          |
     +------------------+------------------+----------------------------------------------+---------------------------+---------------------+
-
-    \* For RHF, ``FOLLOW`` follows the singlet (RHF :math:`\rightarrow` RHF) internal instability only.
-    The triplet (RHF :math:`\rightarrow` UHF) external instability can be checked but not followed.
 
 The best algorithm is automatically selected, *i.e.* Davidson for UHF :math:`\rightarrow` UHF and Direct Inversion otherwise.
 
