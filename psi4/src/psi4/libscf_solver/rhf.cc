@@ -1023,9 +1023,10 @@ bool RHF::stability_analysis() {
                     int asym = Asing.params->qsym[aabs];
                     // For the h=0 block of a closed-shell RHF wfn (G_gs == 0), isym == asym.
                     int irel = iabs - Asing.params->poff[isym];
-                    // arel counts from 0 at the first virtual within irrep asym (no nalphapi_ shift,
-                    // since the (docc, vir) Matrix's column 0 corresponds to the first virtual).
-                    int arel = aabs - Asing.params->qoff[asym] - nalphapi_[asym];
+                    // Both aabs and qoff[asym] are offsets within the virtual-only subspace
+                    // (libdpd init.cc::orboff starts each subspace at 0), so their difference
+                    // is the 0-based virtual-relative column index. Do NOT subtract nalphapi_.
+                    int arel = aabs - Asing.params->qoff[asym];
                     stability_eigvec->set(isym, irel, arel, evecs[ia][0]);
                 }
             }
