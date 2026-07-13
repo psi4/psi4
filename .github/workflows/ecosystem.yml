@@ -436,11 +436,29 @@ jobs:
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --addon-report=addon-report.json --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" -k "${{ matrix.cfg.pytest-name-expr }}" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --addon-report=addon-report.json --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" -k "${{ matrix.cfg.pytest-name-expr }}" stage/lib/psi4/tests/
+
+    - name: Publish addon test report
+      if: always()
+      working-directory: ./objdir
+      run: |
+        cat addon-report.md >> "$GITHUB_STEP_SUMMARY"
+        # To require ECPInt to be green (some passed and none failed), uncomment:
+        python -c 'import json; r=json.load(open("addon-report.json"))["addons"]["ecpint"]; assert r["passed"] > 0 and r["failed"] == 0, r'
+
+    - name: Upload addon test report
+      # if: always()
+      if: false
+      uses: actions/upload-artifact@v4
+      with:
+        name: addon-report-${{ runner.os }}-py${{ matrix.cfg.python-version }}-${{ strategy.job-index }}
+        path: |
+          objdir/addon-report.json
+          objdir/addon-report.md
 
     - name: Write user Conda environment files
       run: |
