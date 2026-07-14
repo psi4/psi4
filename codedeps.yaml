@@ -29,6 +29,7 @@
 #      aux_build_names: !!set          # Field optional. Use to list add'l packages needed to build Psi4 against dummy that aren't deps of dummy (e.g., mkl-devel for mkl).
 #      cmake: !!map                    # Field required. Use to specify CMake variables relevant to this package. Those starting with // aren't usually set. May involve substitutions.
 #      skip_win: !!bool                # Field optional. Use to list packages not adapted for Windows. Perhaps should be in 'use' block?
+#      skip_mac: !!bool                # Field optional. Use to list packages not adapted for MacOS.
 #      brings_psi4: !!bool             # Field optional. Use to indicate its conda pkg brings Psi4 as a dep, so needs to be commented for a Psi4 *build* env.
 
 data:
@@ -1611,9 +1612,13 @@ data:
       target: cuEST::cuEST
       components: null
     conda:
-      channel: nvidia
+      channel: conda-forge
       name: libcuest-dev
       constraint: null
+      #aux_build_names:
+      #  - libcublas-dev
+      #  - libcusolver-dev
+      #  - cuda-cudart-dev
       skip_win: true
       skip_mac: true
       cmake:
@@ -1622,7 +1627,4 @@ data:
         #  unix: ${CONDA_PREFIX}/lib/cmake/gauxc
         //CMAKE_INSIST_FIND_PACKAGE_cuEST: true
         #//CMAKE_DISABLE_FIND_PACKAGE_gauxc: true
-      #aux_build_names:
-      #  - exchcxx
-      #  - highfive
 
