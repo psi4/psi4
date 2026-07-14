@@ -1101,7 +1101,7 @@ bool RHF::stability_analysis() {
     // detecting a triplet instability should rerun with REFERENCE UHF.
     if (lowest_singlet_eval < 0.0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
         // Adaptive step_scale: increment if cycling back to the same minimum is detected.
-        if (!std::isnan(last_hess_eigval_) && std::abs(last_hess_eigval_ - lowest_singlet_eval) < 1e-4) {
+        if (last_hess_eigval_.has_value() && std::abs(*last_hess_eigval_ - lowest_singlet_eval) < 1e-4) {
             outfile->Printf("    Negative eigenvalue similar to previous one, wavefunction\n");
             outfile->Printf("    likely to be in the same minimum.\n");
             step_scale_ += options_.get_double("FOLLOW_STEP_INCREMENT");
