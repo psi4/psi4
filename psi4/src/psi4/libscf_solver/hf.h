@@ -30,6 +30,7 @@
 #define HF_H
 
 #include <vector>
+#include <optional>
 #include <functional>
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/vector3.h"
@@ -205,8 +206,9 @@ class HF : public Wavefunction {
     double step_scale_;
     /// Increment to step_scale_ when FOLLOW cycles to the same minimum
     double step_increment_;
-    /// Lowest totally-symmetric Hessian eigenvalue from previous FOLLOW iteration; NaN if unset
-    double last_hess_eigval_;
+    /// Lowest totally-symmetric Hessian eigenvalue from previous FOLLOW iteration; unset if no
+    /// previous FOLLOW iteration (std::nullopt). Replaces a former NaN-sentinel convention.
+    std::optional<double> last_hess_eigval_;
 
     /// The number of electrons
     int nelectron_;
