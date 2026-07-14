@@ -891,6 +891,12 @@ bool RHF::stability_analysis() {
     if (scf_type_ == "DF" || scf_type_ == "CD") {
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }
+    // Validate up front rather than silently clamping. A non-positive SOLVER_N_ROOT would
+    // produce a zero-column `stabvals` Matrix and silently report no eigenvalues; failing
+    // fast makes the misconfiguration obvious.
+    if (options_.get_int("SOLVER_N_ROOT") < 1) {
+        throw PSIEXCEPTION("RHF::stability_analysis: SOLVER_N_ROOT must be a positive integer.");
+    }
 
     // FOLLOW tracking: capture lowest totally-symmetric (h=0) singlet eigenvector.
     // UHF stability follows only totally symmetric rotations (subclass_methods.py:174);
@@ -913,13 +919,12 @@ bool RHF::stability_analysis() {
     // Allocate the SCF STABILITY EIGENVALUES matrix (singlet), matching the ROHF/UHF
     // convention so that downstream consumers (tests, variable("SCF STABILITY EIGENVALUES"))
     // behave the same regardless of reference.
-    int nsave = options_.get_int("SOLVER_N_ROOT");
-    if (nsave < 1) nsave = 1;
+    const int nSavedEigvals = options_.get_int("SOLVER_N_ROOT");
     std::vector<int> onevec(nirrep_, 1);
-    std::vector<int> dimvec(nirrep_, nsave);
+    std::vector<int> dimvec(nirrep_, nSavedEigvals);
     Dimension ones(onevec);
     Dimension evalsdim(dimvec);
-    auto stabvals = std::make_shared<Matrix>("Eigenvalues from RHF stability calculation", evalsdim, ones);
+    const auto stabvals = std::make_shared<Matrix>("Eigenvalues from RHF stability calculation", evalsdim, ones);
 
     {
 #define ID(x) ints.DPD_ID(x)
@@ -1012,9 +1017,9 @@ bool RHF::stability_analysis() {
             int mindim = dim < 5 ? dim : 5;
             for (int i = 0; i < mindim; i++) singlet_eval_sym.push_back(std::make_pair(evals[i], h));
 
-            // Save the lowest `nsave` singlet eigenvalues per irrep into stabvals.
+            // Save the lowest `nSavedEigvals` singlet eigenvalues per irrep into stabvals.
             double** pEvals = stabvals->pointer(h);
-            for (int i = 0; i < nsave && i < dim; ++i) pEvals[i][0] = evals[i];
+            for (int i = 0; i < nSavedEigvals && i < dim; ++i) pEvals[i][0] = evals[i];
 
             // Capture the lowest totally-symmetric (h=0) singlet eigenvector for FOLLOW.
             // Only the totally-symmetric irrep can yield an internal instability that respects
