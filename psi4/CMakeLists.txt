@@ -56,7 +56,7 @@ get_property(_illb TARGET tgt::blas PROPERTY INTERFACE_LINK_LIBRARIES)
 list(APPEND _addons ${_ill} ${_illb})
 message(STATUS "${Cyan}Using LAPACK${_isMKL}${ColourReset}: ${_ill0};...")
 
-if(ENABLE_ambit OR ENABLE_CheMPS2 OR ENABLE_Einsums)
+if(ENABLE_ambit OR ENABLE_CheMPS2 OR ENABLE_Einsums OR ENABLE_Einsums2)
     find_package(TargetHDF5 CONFIG REQUIRED)
     get_property(_ill TARGET tgt::hdf5 PROPERTY INTERFACE_LINK_LIBRARIES)
     list(GET _ill 0 _ill0)
@@ -143,13 +143,30 @@ else()
     message(STATUS "Disabled libefp ${libefp_DIR} ${pylibefp_DIR} (deferrable to runtime)")
 endif()
 
-if(${ENABLE_Einsums})
+if(einsums2_DIR AND NOT Einsums2_DIR)
+    set(Einsums2_DIR ${einsums2_DIR})
+endif()
+set(_Einsums2_DIR ${Einsums2_DIR})
+
+if(ENABLE_Einsums AND ENABLE_Einsums2)
+    message(FATAL_ERROR "ENABLE_Einsums and ENABLE_Einsums2 are mutually exclusive")
+endif()
+
+if(${ENABLE_Einsums2})
+    if(Einsums2_DIR)
+        set(Einsums_DIR ${Einsums2_DIR})
+    endif()
+    find_package(Einsums 2.0.0 CONFIG REQUIRED)  # edit in codedeps
+    get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using Einsums2${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
+elseif(${ENABLE_Einsums})
     find_package(Einsums 1.1.3 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
 else()
-    message(STATUS "Disabled Einsums ${Einsums_DIR}")
+    message(STATUS "Disabled Einsums ${Einsums_DIR} ${Einsums2_DIR}")
 endif ()
 
 find_package(gau2grid 2.0.7 CONFIG REQUIRED)  # edit in codedeps
@@ -480,4 +497,3 @@ configure_package_config_file(
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4ConfigVersion.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKECONFIG_INSTALL_DIR})
-
