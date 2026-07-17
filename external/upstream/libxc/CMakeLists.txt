@@ -25,8 +25,8 @@ else()
         # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
         #GIT_REPOSITORY https://gitlab.com/ libxc/libxc.git
-        #GIT_TAG 5.1.5
-        URL https://gitlab.com/libxc/libxc/-/archive/7.0.0/libxc-7.0.0.tar.gz  # edit in codedeps
+        #GIT_TAG 7.1.2
+        URL https://gitlab.com/libxc/libxc/-/archive/7.1.2/libxc-7.1.2.tar.gz  # edit in codedeps
         #UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
