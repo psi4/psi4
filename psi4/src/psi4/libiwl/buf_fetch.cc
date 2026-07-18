@@ -30,20 +30,29 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
 #include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "iwl.h"
 #include "iwl.hpp"
 
 namespace psi {
 
-void IWL::fetch() {
-    psio_->read(itap_, IWL_KEY_BUF, (char *)&(lastbuf_), sizeof(int), bufpos_, &bufpos_);
-    psio_->read(itap_, IWL_KEY_BUF, (char *)&(inbuf_), sizeof(int), bufpos_, &bufpos_);
-    psio_->read(itap_, IWL_KEY_BUF, (char *)labels_, ints_per_buf_ * 4 * sizeof(Label), bufpos_, &bufpos_);
-    psio_->read(itap_, IWL_KEY_BUF, (char *)values_, ints_per_buf_ * sizeof(Value), bufpos_, &bufpos_);
-    idx_ = 0;
+namespace {
+
+// Single source of truth for the bucket read sequence. Both the C-style and
+// C++ APIs go through here.
+void fetch_bucket(PSIO *psio, int itap, psio_address &bufpos, int &lastbuf, int &inbuf, Label *labels, Value *values,
+                  int ints_per_buf, int &idx) {
+    psio->read(itap, IWL_KEY_BUF, reinterpret_cast<char *>(&lastbuf), sizeof(int), bufpos, &bufpos);
+    psio->read(itap, IWL_KEY_BUF, reinterpret_cast<char *>(&inbuf), sizeof(int), bufpos, &bufpos);
+    psio->read(itap, IWL_KEY_BUF, reinterpret_cast<char *>(labels), ints_per_buf * 4 * sizeof(Label), bufpos, &bufpos);
+    psio->read(itap, IWL_KEY_BUF, reinterpret_cast<char *>(values), ints_per_buf * sizeof(Value), bufpos, &bufpos);
+    idx = 0;
 }
+
+}  // namespace
+
+void IWL::fetch() { fetch_bucket(psio_, itap_, bufpos_, lastbuf_, inbuf_, labels_, values_, ints_per_buf_, idx_); }
 
 /*!
 ** iwl_buf_fetch()
@@ -53,12 +62,7 @@ void IWL::fetch() {
 ** \ingroup IWL
 */
 void PSI_API iwl_buf_fetch(struct iwlbuf *Buf) {
-    psio_read(Buf->itap, IWL_KEY_BUF, (char *)&(Buf->lastbuf), sizeof(int), Buf->bufpos, &Buf->bufpos);
-    psio_read(Buf->itap, IWL_KEY_BUF, (char *)&(Buf->inbuf), sizeof(int), Buf->bufpos, &Buf->bufpos);
-    psio_read(Buf->itap, IWL_KEY_BUF, (char *)Buf->labels, Buf->ints_per_buf * 4 * sizeof(Label), Buf->bufpos,
-              &Buf->bufpos);
-    psio_read(Buf->itap, IWL_KEY_BUF, (char *)Buf->values, Buf->ints_per_buf * sizeof(Value), Buf->bufpos,
-              &Buf->bufpos);
-    Buf->idx = 0;
+    fetch_bucket(_default_psio_lib_.get(), Buf->itap, Buf->bufpos, Buf->lastbuf, Buf->inbuf, Buf->labels, Buf->values,
+                 Buf->ints_per_buf, Buf->idx);
 }
 }
