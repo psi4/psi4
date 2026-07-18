@@ -33,59 +33,71 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/psi4-dec.h"  //need outfile
+#include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 
-IWL::IWL() : psio_{nullptr}, labels_{nullptr}, values_{nullptr} {
-    /*! set up buffer info */
-    itap_ = -1;
-    bufpos_ = PSIO_ZERO;
-    ints_per_buf_ = IWL_INTS_PER_BUF;
-    cutoff_ = 1.e-14;
-    bufszc_ = 2 * sizeof(int) + ints_per_buf_ * 4 * sizeof(Label) + ints_per_buf_ * sizeof(Value);
-    lastbuf_ = 0;
-    inbuf_ = 0;
-    idx_ = 0;
+namespace {
+
+// Constant on-disk bucket size in bytes. Matches the layout written by
+// buf_put.cc / read by buf_fetch.cc.
+inline int bucket_bytes(int ints_per_buf) {
+    return 2 * static_cast<int>(sizeof(int)) + ints_per_buf * 4 * static_cast<int>(sizeof(Label)) +
+           ints_per_buf * static_cast<int>(sizeof(Value));
 }
 
-IWL::IWL(PSIO *psio, int it, double coff, int oldfile, int readflag) : keep_(true) {
-    init(psio, it, coff, oldfile, readflag);
+// Open the underlying psio file for an IWL buffer and verify it has the
+// expected TOC entry when reopening an existing file. Throws on failure
+// instead of leaving the buffer in a half-initialized state.
+void open_iwl_unit(PSIO *psio, int itap, bool oldfile) {
+    psio->open(itap, oldfile ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
+    if (oldfile && psio->tocscan(itap, IWL_KEY_BUF) == nullptr) {
+        psio->close(itap, 0);
+        throw PSIEXCEPTION("iwl_buf_init: file " + std::to_string(itap) +
+                           " does not contain an IWL buffer (TOC key '" + IWL_KEY_BUF + "' missing)");
+    }
 }
+
+}  // namespace
+
+IWL::IWL()
+    : itap_(-1),
+      bufpos_(PSIO_ZERO),
+      ints_per_buf_(IWL_INTS_PER_BUF),
+      bufszc_(bucket_bytes(IWL_INTS_PER_BUF)),
+      cutoff_(1.e-14),
+      lastbuf_(0),
+      inbuf_(0),
+      idx_(0),
+      labels_(nullptr),
+      values_(nullptr),
+      psio_(nullptr),
+      keep_(true) {}
+
+IWL::IWL(PSIO *psio, int it, double coff, int oldfile, int readflag) : IWL() { init(psio, it, coff, oldfile, readflag); }
 
 void IWL::init(PSIO *psio, int it, double coff, int oldfile, int readflag) {
     psio_ = psio;
-
-    /*! set up buffer info */
     itap_ = it;
     bufpos_ = PSIO_ZERO;
     ints_per_buf_ = IWL_INTS_PER_BUF;
     cutoff_ = coff;
-    bufszc_ = 2 * sizeof(int) + ints_per_buf_ * 4 * sizeof(Label) + ints_per_buf_ * sizeof(Value);
+    bufszc_ = bucket_bytes(ints_per_buf_);
     lastbuf_ = 0;
     inbuf_ = 0;
     idx_ = 0;
 
-    /*! make room in the buffer */
-    // labels_ = (Label *) malloc (4 * ints_per_buf_ * sizeof(Label));
-    // values_ = (Value *) malloc (ints_per_buf_ * sizeof(Value));
     labels_ = new Label[4 * ints_per_buf_];
     values_ = new Value[ints_per_buf_];
 
-    /*! open the output file */
-    /*! Note that we assume that if oldfile isn't set, we O_CREAT the file */
-    psio_->open(itap_, oldfile ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
-    if (oldfile && (psio_->tocscan(itap_, IWL_KEY_BUF) == nullptr)) {
-        outfile->Printf("iwl_buf_init: Can't open file %d\n", itap_);
-        psio_->close(itap_, 0);
-        return;
-    }
+    open_iwl_unit(psio_, itap_, oldfile != 0);
 
-    /*! go ahead and read a buffer */
     if (readflag) fetch();
 }
 
@@ -108,30 +120,20 @@ void IWL::init(PSIO *psio, int it, double coff, int oldfile, int readflag) {
 ** \ingroup IWL
 */
 void PSI_API iwl_buf_init(struct iwlbuf *Buf, int itape, double cutoff, int oldfile, int readflag) {
-    /*! set up buffer info */
     Buf->itap = itape;
     Buf->bufpos = PSIO_ZERO;
     Buf->ints_per_buf = IWL_INTS_PER_BUF;
     Buf->cutoff = cutoff;
-    Buf->bufszc = 2 * sizeof(int) + Buf->ints_per_buf * 4 * sizeof(Label) + Buf->ints_per_buf * sizeof(Value);
+    Buf->bufszc = bucket_bytes(Buf->ints_per_buf);
     Buf->lastbuf = 0;
     Buf->inbuf = 0;
     Buf->idx = 0;
 
-    /*! make room in the buffer */
-    Buf->labels = (Label *)malloc(4 * Buf->ints_per_buf * sizeof(Label));
-    Buf->values = (Value *)malloc(Buf->ints_per_buf * sizeof(Value));
+    Buf->labels = new Label[4 * Buf->ints_per_buf];
+    Buf->values = new Value[Buf->ints_per_buf];
 
-    /*! open the output file */
-    /*! Note that we assume that if oldfile isn't set, we O_CREAT the file */
-    psio_open(Buf->itap, oldfile ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
-    if (oldfile && (psio_tocscan(Buf->itap, IWL_KEY_BUF) == nullptr)) {
-        outfile->Printf("iwl_buf_init: Can't open file %d\n", Buf->itap);
-        psio_close(Buf->itap, 0);
-        return;
-    }
+    open_iwl_unit(_default_psio_lib_.get(), Buf->itap, oldfile != 0);
 
-    /*! go ahead and read a buffer */
     if (readflag) iwl_buf_fetch(Buf);
 }
 }

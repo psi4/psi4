@@ -28,7 +28,8 @@
 
 // Standalone round-trip test for libiwl. Exercises every bucket-boundary case
 // the 1995 README warned about: empty, single, exactly one bucket, just over
-// one bucket, and mid-bucket termination.
+// one bucket, and mid-bucket termination. Also verifies that the 16-bit Label
+// overflow check fires instead of silently truncating.
 //
 // Also covers cutoff filtering. write_value() keeps an integral only when
 // |value| > cutoff, so sub-cutoff entries are *dropped*, not stored as zeros --
@@ -38,10 +39,13 @@
 // positional cases below (first/second/second-to-last/last bucket fully
 // filtered, plus all-filtered and interleaved) pin that behavior down.
 
+#include <cassert>
+#include <climits>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -222,6 +226,26 @@ bool round_trip_filtered(std::size_t n, std::size_t lo, std::size_t hi, int itap
     return true;
 }
 
+// Verify that writing an out-of-range orbital index throws rather than
+// silently truncating.
+bool overflow_check_fires(int itap) {
+    psi::IWL buf(psi::_default_psio_lib_.get(), itap, 1.0e-14,
+                 /*oldfile*/ 0, /*readflag*/ 0);
+    bool threw = false;
+    try {
+        buf.write_value(SHRT_MAX + 1, 0, 0, 0, 1.0, 0, std::string("outfile"), 0);
+    } catch (const std::exception &e) {
+        threw = true;
+    }
+    buf.flush(/*lastbuf*/ 1);
+    buf.set_keep_flag(false);
+    if (!threw) {
+        std::cerr << "  overflow check did not throw\n";
+        return false;
+    }
+    return true;
+}
+
 }  // namespace
 
 int main() {
@@ -234,7 +258,7 @@ int main() {
     int unit = base_unit;
     int failures = 0;
 
-    const std::size_t B = static_cast<std::size_t>(IWL_INTS_PER_BUF);
+    const std::size_t B = static_cast<std::size_t>(psi::IWL_INTS_PER_BUF);
     const std::vector<std::size_t> sizes = {1, B - 1, B, B + 1, 3 * B + B / 2};
 
     std::cout << "[iwl_roundtrip] empty buffer\n";
@@ -271,6 +295,9 @@ int main() {
     // sides of it repack into the same bucket.
     std::cout << "[iwl_roundtrip] run straddling a bucket boundary\n";
     if (!round_trip_filtered(3 * B, B - 7, B + 11, unit++, "straddling run")) ++failures;
+
+    std::cout << "[iwl_roundtrip] Label overflow check\n";
+    if (!overflow_check_fires(unit++)) ++failures;
 
     if (failures) {
         std::cerr << failures << " case(s) failed.\n";

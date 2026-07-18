@@ -30,18 +30,29 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
 #include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "iwl.h"
 #include "iwl.hpp"
 
 namespace psi {
 
+namespace {
+
+void put_bucket(PSIO *psio, int itap, psio_address &bufpos, int lastbuf, int inbuf, const Label *labels,
+                const Value *values, int ints_per_buf) {
+    psio->write(itap, IWL_KEY_BUF, reinterpret_cast<char *>(const_cast<int *>(&lastbuf)), sizeof(int), bufpos, &bufpos);
+    psio->write(itap, IWL_KEY_BUF, reinterpret_cast<char *>(const_cast<int *>(&inbuf)), sizeof(int), bufpos, &bufpos);
+    psio->write(itap, IWL_KEY_BUF, reinterpret_cast<char *>(const_cast<Label *>(labels)),
+                ints_per_buf * 4 * sizeof(Label), bufpos, &bufpos);
+    psio->write(itap, IWL_KEY_BUF, reinterpret_cast<char *>(const_cast<Value *>(values)), ints_per_buf * sizeof(Value),
+                bufpos, &bufpos);
+}
+
+}  // namespace
+
 void IWL::put() {
-    psio_->write(itap_, IWL_KEY_BUF, (char *)&(lastbuf_), sizeof(int), bufpos_, &(bufpos_));
-    psio_->write(itap_, IWL_KEY_BUF, (char *)&(inbuf_), sizeof(int), bufpos_, &(bufpos_));
-    psio_->write(itap_, IWL_KEY_BUF, (char *)labels_, ints_per_buf_ * 4 * sizeof(Label), bufpos_, &(bufpos_));
-    psio_->write(itap_, IWL_KEY_BUF, (char *)values_, ints_per_buf_ * sizeof(Value), bufpos_, &(bufpos_));
+    put_bucket(psio_, itap_, bufpos_, lastbuf_, inbuf_, labels_, values_, ints_per_buf_);
 }
 
 /*!
@@ -52,11 +63,7 @@ void IWL::put() {
 ** \ingroup IWL
 */
 void iwl_buf_put(struct iwlbuf *Buf) {
-    psio_write(Buf->itap, IWL_KEY_BUF, (char *)&(Buf->lastbuf), sizeof(int), Buf->bufpos, &(Buf->bufpos));
-    psio_write(Buf->itap, IWL_KEY_BUF, (char *)&(Buf->inbuf), sizeof(int), Buf->bufpos, &(Buf->bufpos));
-    psio_write(Buf->itap, IWL_KEY_BUF, (char *)Buf->labels, Buf->ints_per_buf * 4 * sizeof(Label), Buf->bufpos,
-               &(Buf->bufpos));
-    psio_write(Buf->itap, IWL_KEY_BUF, (char *)Buf->values, Buf->ints_per_buf * sizeof(Value), Buf->bufpos,
-               &(Buf->bufpos));
+    put_bucket(_default_psio_lib_.get(), Buf->itap, Buf->bufpos, Buf->lastbuf, Buf->inbuf, Buf->labels, Buf->values,
+               Buf->ints_per_buf);
 }
 }
