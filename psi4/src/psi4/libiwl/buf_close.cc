@@ -32,9 +32,8 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "iwl.h"
 #include "iwl.hpp"
 
@@ -44,8 +43,8 @@ IWL::~IWL() { close(); }
 
 void IWL::close() {
     if (psio_ != nullptr && psio_->open_check(itap_)) psio_->close(itap_, keep_);
-    if (labels_) delete[](labels_);
-    if (values_) delete[](values_);
+    delete[] labels_;
+    delete[] values_;
     labels_ = nullptr;
     values_ = nullptr;
 }
@@ -61,7 +60,9 @@ void IWL::close() {
 */
 void PSI_API iwl_buf_close(struct iwlbuf *Buf, int keep) {
     psio_close(Buf->itap, keep ? 1 : 0);
-    free(Buf->labels);
-    free(Buf->values);
+    delete[] Buf->labels;
+    delete[] Buf->values;
+    Buf->labels = nullptr;
+    Buf->values = nullptr;
 }
 }
