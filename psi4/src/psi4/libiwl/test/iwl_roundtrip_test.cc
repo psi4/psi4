@@ -28,7 +28,15 @@
 
 // Standalone round-trip test for libiwl. Exercises every bucket-boundary case
 // the 1995 README warned about: empty, single, exactly one bucket, just over
-// one bucket, mid-bucket termination, and all-zeros sweeps.
+// one bucket, and mid-bucket termination.
+//
+// Also covers cutoff filtering. write_value() keeps an integral only when
+// |value| > cutoff, so sub-cutoff entries are *dropped*, not stored as zeros --
+// nothing is read back for them at all. That makes filtering a repacking
+// operation: survivors slide forward into earlier bucket slots, so which
+// bucket the dropped run falls in changes the packing downstream of it. The
+// positional cases below (first/second/second-to-last/last bucket fully
+// filtered, plus all-filtered and interleaved) pin that behavior down.
 
 #include <cmath>
 #include <cstdio>
@@ -73,6 +81,21 @@ std::vector<Quartet> make_test_data(std::size_t n) {
     return out;
 }
 
+// Sub-cutoff stand-ins. Exactly +0.0 is the common case in a real integrals
+// sweep, but a nonzero magnitude below the cutoff must be dropped just the
+// same, and |value| == cutoff must *also* drop because write_value() tests
+// strictly greater-than. Cycling all three keeps that boundary honest.
+double subcutoff_value(std::size_t i) {
+    switch (i % 3) {
+        case 0:
+            return 0.0;
+        case 1:
+            return (i % 6 == 1) ? 1.0e-20 : -1.0e-20;
+        default:
+            return 1.0e-14;  // == cutoff, so filtered by the strict >
+    }
+}
+
 // Drive an IWL write loop using the C++ API.
 void write_all(psi::IWL &buf, const std::vector<Quartet> &data) {
     for (const auto &q : data) {
@@ -108,9 +131,12 @@ std::vector<Quartet> read_all(int itap) {
     return out;
 }
 
+// Exact comparison, deliberately. IWL neither scales nor rounds: write_value()
+// casts to Value (= double, so a no-op) and put()/fetch() move the raw bytes
+// through libpsio. A surviving integral must therefore come back bit-identical,
+// and any tolerance here would only hide a real corruption.
 bool quartets_equal(const Quartet &a, const Quartet &b) {
-    return a.p == b.p && a.q == b.q && a.r == b.r && a.s == b.s &&
-           std::fabs(a.value - b.value) < 1.0e-12;
+    return a.p == b.p && a.q == b.q && a.r == b.r && a.s == b.s && a.value == b.value;
 }
 
 // Run one write/read round-trip for the given size and tape unit. Returns
@@ -160,6 +186,42 @@ bool round_trip_empty(int itap) {
     return true;
 }
 
+// Round-trip N integrals of which a contiguous run [lo, hi) is pushed below the
+// cutoff. Only the survivors should come back, in order and bit-exact; the
+// dropped run must leave no trace (no zero-valued placeholder, no gap).
+bool round_trip_filtered(std::size_t n, std::size_t lo, std::size_t hi, int itap, const std::string &what) {
+    auto data = make_test_data(n);
+    std::vector<Quartet> expected;
+    for (std::size_t i = 0; i < n; ++i) {
+        if (i >= lo && i < hi) {
+            data[i].value = subcutoff_value(i);
+        } else {
+            expected.push_back(data[i]);
+        }
+    }
+
+    {
+        psi::IWL buf(psi::_default_psio_lib_.get(), itap, 1.0e-14,
+                     /*oldfile*/ 0, /*readflag*/ 0);
+        write_all(buf, data);
+        buf.set_keep_flag(true);
+    }
+
+    auto got = read_all(itap);
+
+    if (got.size() != expected.size()) {
+        std::cerr << "  " << what << ": expected " << expected.size() << " survivors, read " << got.size() << "\n";
+        return false;
+    }
+    for (std::size_t i = 0; i < expected.size(); ++i) {
+        if (!quartets_equal(expected[i], got[i])) {
+            std::cerr << "  " << what << ": survivor " << i << " mismatch\n";
+            return false;
+        }
+    }
+    return true;
+}
+
 }  // namespace
 
 int main() {
@@ -182,6 +244,33 @@ int main() {
         std::cout << "[iwl_roundtrip] N = " << n << "\n";
         if (!round_trip(n, unit++)) ++failures;
     }
+
+    // Cutoff filtering, positioned bucket by bucket over a four-bucket write.
+    // Each case drops a full bucket's worth of input, so the survivors have to
+    // repack across the remaining buckets -- the first and last cases also
+    // exercise "the very first thing written is dropped" and "the file ends on
+    // a dropped run", where an off-by-one in flush/lastbuf would show up.
+    const std::size_t N4 = 4 * B;
+    struct FilterCase {
+        const char *what;
+        std::size_t lo, hi;
+    };
+    const std::vector<FilterCase> filtered = {
+        {"first bucket below cutoff", 0, B},
+        {"second bucket below cutoff", B, 2 * B},
+        {"second-to-last bucket below cutoff", 2 * B, 3 * B},
+        {"last bucket below cutoff", 3 * B, N4},
+        {"all below cutoff", 0, N4},
+    };
+    for (const auto &fc : filtered) {
+        std::cout << "[iwl_roundtrip] " << fc.what << "\n";
+        if (!round_trip_filtered(N4, fc.lo, fc.hi, unit++, fc.what)) ++failures;
+    }
+
+    // A sub-cutoff run that straddles a bucket boundary, so survivors on both
+    // sides of it repack into the same bucket.
+    std::cout << "[iwl_roundtrip] run straddling a bucket boundary\n";
+    if (!round_trip_filtered(3 * B, B - 7, B + 11, unit++, "straddling run")) ++failures;
 
     if (failures) {
         std::cerr << failures << " case(s) failed.\n";
