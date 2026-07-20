@@ -31,6 +31,7 @@
 
 #include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libmints/basewavefunction.h"
 #include "psi4/libmints/dimension.h"
 
 #include <cstddef>
@@ -83,7 +84,7 @@ class ExternalPotential;
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
+class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_from_this<Wavefunction> {
    protected:
     /// Name of the wavefunction
     std::string name_;
@@ -319,7 +320,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
      **/
     std::shared_ptr<Wavefunction> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 
-    virtual ~Wavefunction();
+    ~Wavefunction() override;
 
     /// Compute energy. Subclasses override this function to compute its energy.
     virtual double compute_energy() {
