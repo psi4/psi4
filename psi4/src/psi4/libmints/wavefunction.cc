@@ -83,25 +83,16 @@ double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options &options)
-    : options_(options),
-      basisset_(basis),
-      molecule_(molecule),
-      dipole_field_strength_{{0.0, 0.0, 0.0}},
-      PCM_enabled_(false) {
+    : BaseWavefunction(molecule, basis, options) {
     common_init();
 }
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options),
-      basisset_(basis),
-      molecule_(molecule),
-      dipole_field_strength_{{0.0, 0.0, 0.0}},
-      PCM_enabled_(false) {
+    : BaseWavefunction(molecule, basis) {
     common_init();
 }
 
-Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &options)
-    : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {
+Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &options) : BaseWavefunction(options) {
     // Copy the wavefuntion then update
     shallow_copy(reference_wavefunction);
     set_reference_wavefunction(reference_wavefunction);
@@ -114,7 +105,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
                            std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints,
                            std::map<std::string, std::string> strings, std::map<std::string, bool> booleans,
                            std::map<std::string, double> floats)
-    : options_(Process::environment.options), basisset_(basisset), molecule_(molecule) {
+    : BaseWavefunction(molecule, basisset, Process::environment.options) {
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
         molecule_->set_point_group(molecule_->find_point_group());
@@ -177,8 +168,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     dipole_field_strength_[2] = floats["dipole_field_z"];
 }
 
-Wavefunction::Wavefunction(Options &options)
-    : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
+Wavefunction::Wavefunction(Options &options) : BaseWavefunction(options) {}
 
 Wavefunction::~Wavefunction() {}
 
@@ -756,8 +746,6 @@ const Dimension Wavefunction::soccpi(bool warn_on_beta_socc) const {
     return socc_vec;
 }
 
-std::shared_ptr<Molecule> Wavefunction::molecule() const { return molecule_; }
-
 std::shared_ptr<PSIO> Wavefunction::psio() const { return psio_; }
 
 Options &Wavefunction::options() const { return options_; }
@@ -765,8 +753,6 @@ Options &Wavefunction::options() const { return options_; }
 std::shared_ptr<IntegralFactory> Wavefunction::integral() const { return integral_; }
 
 std::shared_ptr<MintsHelper> Wavefunction::mintshelper() const { return mintshelper_; }
-
-std::shared_ptr<BasisSet> Wavefunction::basisset() const { return basisset_; }
 
 std::map<std::string, std::shared_ptr<BasisSet>> Wavefunction::basissets() const { return mintshelper_->basissets(); }
 

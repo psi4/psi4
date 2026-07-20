@@ -28,8 +28,34 @@
 
 #include "basewavefunction.h"
 
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
+
 namespace psi {
+
+void BaseWavefunction::common_init() {}
+
+BaseWavefunction::BaseWavefunction()
+    : options_(Process::environment.options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
+
+BaseWavefunction::BaseWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis,
+                                   Options& options)
+    : molecule_(molecule),
+      basisset_(basis),
+      options_(options),
+      dipole_field_strength_{{0.0, 0.0, 0.0}},
+      PCM_enabled_(false) {}
+
+BaseWavefunction::BaseWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis)
+    : molecule_(molecule),
+      basisset_(basis),
+      options_(Process::environment.options),
+      dipole_field_strength_{{0.0, 0.0, 0.0}},
+      PCM_enabled_(false) {}
+
+BaseWavefunction::BaseWavefunction(Options& options)
+    : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
 
 BaseWavefunction::~BaseWavefunction() = default;
 
-}
+}  // namespace psi

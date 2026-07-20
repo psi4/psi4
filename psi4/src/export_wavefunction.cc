@@ -86,7 +86,9 @@ void export_wavefunction(py::module& m) {
 
     py::class_<BaseWavefunction, std::shared_ptr<BaseWavefunction>>(m, "BaseWavefunction",
                                                                     "Base class for real and complex wavefunctions.")
-        .def(py::init<>());
+        .def(py::init<>())
+        .def("molecule", &BaseWavefunction::molecule, "Returns the wavefunction's molecule.")
+        .def("basisset", &BaseWavefunction::basisset, "Returns the current orbital basis.");
 
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>, BaseWavefunction>(m, "Wavefunction", "docstring",
                                                                               py::dynamic_attr())
@@ -207,7 +209,6 @@ void export_wavefunction(py::module& m) {
         .def("S", &Wavefunction::S, "Returns the One-electron Overlap Matrix.")
         .def("mintshelper", &Wavefunction::mintshelper, "Returns the current MintsHelper object.")
         .def("aotoso", &Wavefunction::aotoso, "Returns the Atomic Orbital to Symmetry Orbital transformer.")
-        .def("basisset", &Wavefunction::basisset, "Returns the current orbital basis.")
         .def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.")
         .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
         .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
@@ -255,7 +256,6 @@ void export_wavefunction(py::module& m) {
                 Information on *subset* alpha orbitals.
             )pbdoc")
         .def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring")
-        .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of doubly occupied orbitals per irrep.")
         .def("force_occpi", &Wavefunction::force_occpi,
@@ -328,7 +328,10 @@ void export_wavefunction(py::module& m) {
 
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
             "ComplexWavefunction", "ComplexWavefunction class docstring")
-        .def(py::init<>());
+        .def(py::init<>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
+        .def(py::init<Options&>());
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
