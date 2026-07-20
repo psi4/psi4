@@ -92,20 +92,11 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
     /// Module name for CURRENT ENERGY
     std::string module_;
 
-    /// The ORBITAL basis
-    std::shared_ptr<BasisSet> basisset_;
-
     /// Primary basis set for SO integrals
     std::shared_ptr<SOBasisSet> sobasisset_;
 
     /// AO2SO conversion matrix (AO in rows, SO in cols)
     SharedMatrix AO2SO_;
-
-    /// Molecule that this wavefunction is run on
-    std::shared_ptr<Molecule> molecule_;
-
-    /// Options object
-    Options& options_;
 
     // PSI file access variables
     std::shared_ptr<PSIO> psio_;
@@ -129,8 +120,6 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
     /// With what...
     enum FieldType { nothing, dipole_x, dipole_y, dipole_z, dipole, embpot, dx, sphere };
     FieldType dipole_field_type_;
-    /// How big of a field perturbation to apply
-    std::array<double, 3> dipole_field_strength_;
 
     /// Debug flag
     size_t debug_;
@@ -262,12 +251,9 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
     std::map<std::string, std::shared_ptr<ExternalPotential>> potentials_;
 
     // Polarizable continuum model
-    bool PCM_enabled_;
     std::shared_ptr<PCM> PCM_;
 
-   private:
-    // Wavefunction() {}
-    void common_init();
+    void common_init() override;
 
    public:
     /// Constructor for an entirely new wavefunction with an existing basis
@@ -345,8 +331,7 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
     /// with occupations mapped to the current point group
     Dimension map_irreps(const Dimension& dimpi);
 
-    /// Returns the molecule object that pertains to this wavefunction.
-    std::shared_ptr<Molecule> molecule() const;
+    /// Returns the PSIO object that pertains to this wavefunction.
     std::shared_ptr<PSIO> psio() const;
     Options& options() const;
 
@@ -354,8 +339,6 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
     std::shared_ptr<IntegralFactory> integral() const;
     /// An molecular integrals helper with basisset() on each center.
     std::shared_ptr<MintsHelper> mintshelper() const;
-    /// Returns the basis set object that pertains to this wavefunction.
-    std::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
     std::shared_ptr<SOBasisSet> sobasisset() const;
 

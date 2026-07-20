@@ -30,7 +30,23 @@
 
 namespace psi {
 
-ComplexWavefunction::ComplexWavefunction() {}
+void ComplexWavefunction::common_init() {}
+
+ComplexWavefunction::ComplexWavefunction() : BaseWavefunction() { common_init(); }
+
+ComplexWavefunction::ComplexWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis,
+                                         Options& options)
+    : BaseWavefunction(molecule, basis, options) {
+    common_init();
+}
+
+ComplexWavefunction::ComplexWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis)
+    : BaseWavefunction(molecule, basis) {
+    common_init();
+}
+
+ComplexWavefunction::ComplexWavefunction(Options& options) : BaseWavefunction(options) { common_init(); }
+
 ComplexWavefunction::~ComplexWavefunction() {}
 
 }  // namespace psi
