@@ -31,16 +31,59 @@
 
 #include "psi4/psi4-dec.h"
 
+#include <array>
+#include <memory>
+
 namespace psi {
+
+class Molecule;
+class BasisSet;
+class Options;
 
 /*! \ingroup MINTS
  *  \class BaseWavefunction
  *  \brief Common polymorphic root for real and complex wavefunctions.
  */
 class PSI_API BaseWavefunction {
+   protected:
+    /// Molecule that this wavefunction is run on
+    std::shared_ptr<Molecule> molecule_;
+
+    /// The ORBITAL basis
+    std::shared_ptr<BasisSet> basisset_;
+
+    /// Options object
+    Options& options_;
+
+    /// How big of a field perturbation to apply
+    std::array<double, 3> dipole_field_strength_;
+
+    /// Polarizable continuum model enabled?
+    bool PCM_enabled_;
+
+    /// Subclass-specific initialization after shared members are set.
+    /// Must be called from the derived constructor body (not the base ctor)
+    /// so virtual dispatch reaches the derived override.
+    virtual void common_init();
+
    public:
-    BaseWavefunction() = default;
+    BaseWavefunction();
+
+    /// Constructor for an entirely new wavefunction with an existing basis
+    BaseWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options& options);
+
+    /// Constructor for an entirely new wavefunction with an existing basis and global options
+    BaseWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis);
+
+    /// Blank constructor for derived classes
+    BaseWavefunction(Options& options);
+
     virtual ~BaseWavefunction();
+
+    /// Returns the molecule object that pertains to this wavefunction.
+    std::shared_ptr<Molecule> molecule() const { return molecule_; }
+    /// Returns the basis set object that pertains to this wavefunction.
+    std::shared_ptr<BasisSet> basisset() const { return basisset_; }
 };
 
 }  // namespace psi

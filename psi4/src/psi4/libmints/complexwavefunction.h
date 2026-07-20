@@ -33,13 +33,30 @@
 
 namespace psi {
 
+class Molecule;
+class BasisSet;
+class Options;
+
 /*! \ingroup MINTS
  *  \class ComplexWavefunction
  *  \brief Home for wavefunctions built on complex molecular orbitals.
  */
 class PSI_API ComplexWavefunction : public BaseWavefunction {
+   protected:
+    void common_init() override;
+
    public:
     ComplexWavefunction();
+
+    /// Constructor for an entirely new wavefunction with an existing basis
+    ComplexWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options& options);
+
+    /// Constructor for an entirely new wavefunction with an existing basis and global options
+    ComplexWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis);
+
+    /// Blank constructor for derived classes
+    ComplexWavefunction(Options& options);
+
     ~ComplexWavefunction() override;
 };
 
