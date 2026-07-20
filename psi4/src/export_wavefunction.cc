@@ -39,6 +39,7 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/extern.h"
+#include "psi4/libmints/complexwavefunction.h"
 
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/soscf.h"
@@ -82,7 +83,13 @@ using namespace pybind11::literals;
 
 void export_wavefunction(py::module& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
-    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
+
+    py::class_<BaseWavefunction, std::shared_ptr<BaseWavefunction>>(m, "BaseWavefunction",
+                                                                    "Base class for real and complex wavefunctions.")
+        .def(py::init<>());
+
+    py::class_<Wavefunction, std::shared_ptr<Wavefunction>, BaseWavefunction>(m, "Wavefunction", "docstring",
+                                                                              py::dynamic_attr())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>,
@@ -318,6 +325,10 @@ void export_wavefunction(py::module& m) {
 #endif
         .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
+
+    py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
+            "ComplexWavefunction", "ComplexWavefunction class docstring")
+        .def(py::init<>());
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
