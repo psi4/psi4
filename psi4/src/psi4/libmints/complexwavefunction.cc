@@ -27,6 +27,7 @@
  */
 
 #include "psi4/libmints/complexwavefunction.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 namespace psi {
 
@@ -48,5 +49,40 @@ ComplexWavefunction::ComplexWavefunction(std::shared_ptr<Molecule> molecule, std
 ComplexWavefunction::ComplexWavefunction(Options& options) : BaseWavefunction(options) { common_init(); }
 
 ComplexWavefunction::~ComplexWavefunction() {}
+
+SharedComplexMatrix ComplexWavefunction::C() const {
+    if (!C_) {
+        throw PSIEXCEPTION("ComplexWavefunction::C: Unable to obtain MO coefficients.");
+    }
+    return C_;
+}
+
+void ComplexWavefunction::set_gradient(SharedComplexMatrix grad) { set_array_variable("CURRENT GRADIENT", grad); }
+
+void ComplexWavefunction::set_hessian(SharedComplexMatrix hess) { set_array_variable("CURRENT HESSIAN", hess); }
+
+bool ComplexWavefunction::has_array_variable(const std::string& key) { return arrays_.count(to_upper_copy(key)); }
+
+SharedComplexMatrix ComplexWavefunction::array_variable(const std::string& key) {
+    std::string uc_key = to_upper_copy(key);
+
+    auto search = arrays_.find(uc_key);
+    if (search != arrays_.end()) {
+        return std::make_shared<ComplexMatrix>(*search->second);
+    } else {
+        throw PSIEXCEPTION("ComplexWavefunction::array_variable: Requested variable " + uc_key + " was not set!\n");
+    }
+}
+
+void ComplexWavefunction::set_array_variable(const std::string& key, SharedComplexMatrix val) {
+    arrays_[to_upper_copy(key)] = std::make_shared<ComplexMatrix>(*val);
+
+    if (to_upper_copy(key) == "CURRENT GRADIENT") gradient_ = std::make_shared<ComplexMatrix>(*val);
+    if (to_upper_copy(key) == "CURRENT HESSIAN") hessian_ = std::make_shared<ComplexMatrix>(*val);
+}
+
+int ComplexWavefunction::del_array_variable(const std::string& key) { return arrays_.erase(to_upper_copy(key)); }
+
+std::map<std::string, SharedComplexMatrix> ComplexWavefunction::array_variables() { return arrays_; }
 
 }  // namespace psi
