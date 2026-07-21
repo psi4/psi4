@@ -666,10 +666,6 @@ void Wavefunction::common_init() {
 #endif
 }
 
-std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return dipole_field_strength_; }
-
-BaseWavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const { return dipole_field_type_; }
-
 Dimension Wavefunction::map_irreps(const Dimension &dimpi) {
     auto ps = options_.get_str("PARENT_SYMMETRY");
 
@@ -746,45 +742,11 @@ const Dimension Wavefunction::soccpi(bool warn_on_beta_socc) const {
     return socc_vec;
 }
 
-std::shared_ptr<PSIO> Wavefunction::psio() const { return psio_; }
-
-Options &Wavefunction::options() const { return options_; }
-
-std::shared_ptr<IntegralFactory> Wavefunction::integral() const { return integral_; }
-
-std::shared_ptr<MintsHelper> Wavefunction::mintshelper() const { return mintshelper_; }
-
-std::map<std::string, std::shared_ptr<BasisSet>> Wavefunction::basissets() const { return mintshelper_->basissets(); }
-
-std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) { return mintshelper_->get_basisset(label); }
-
-void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) {
-    return mintshelper_->set_basisset(label, basis);
-}
-
-bool Wavefunction::basisset_exists(std::string label) { return mintshelper_->basisset_exists(label); }
-
-std::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const { return sobasisset_; }
-
-std::shared_ptr<MatrixFactory> Wavefunction::matrix_factory() const { return factory_; }
-
-std::shared_ptr<Wavefunction> Wavefunction::reference_wavefunction() const { return reference_wavefunction_; }
-
-void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn) {
-    reference_wavefunction_ = wfn;
-}
-
 void Wavefunction::force_occpi(const Dimension &input_doccpi, const Dimension &input_soccpi) {
     nalphapi_ = input_doccpi + input_soccpi;
     nbetapi_ = input_doccpi;
     nalpha_ = nalphapi_.sum();
     nbeta_ = nbetapi_.sum();
-}
-
-void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
-    for (int h = 0; h < nirrep_; h++) {
-        frzvpi_[h] = frzvpi[h];
-    }
 }
 
 SharedMatrix Wavefunction::Ca() const {
@@ -1214,8 +1176,6 @@ SharedMatrix Wavefunction::lagrangian() const { return Lagrangian_; }
 
 void Wavefunction::set_lagrangian(SharedMatrix X) { Lagrangian_ = X; }
 
-void Wavefunction::set_energy(double ene) { set_scalar_variable("CURRENT ENERGY", ene); }
-
 SharedMatrix Wavefunction::gradient() const { return gradient_; }
 
 void Wavefunction::set_gradient(SharedMatrix grad) { set_array_variable("CURRENT GRADIENT", grad); }
@@ -1225,8 +1185,6 @@ SharedMatrix Wavefunction::hessian() const { return hessian_; }
 void Wavefunction::set_hessian(SharedMatrix hess) { set_array_variable("CURRENT HESSIAN", hess); }
 
 void Wavefunction::save() const {}
-
-std::shared_ptr<ExternalPotential> Wavefunction::external_pot() const { return external_pot_; }
 
 std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {
     std::shared_ptr<std::vector<double>> v = esp_at_nuclei();
@@ -1282,22 +1240,7 @@ std::vector<std::vector<std::tuple<double, int, int>>> Wavefunction::get_no_occu
     return no_occs;
 }
 
-bool Wavefunction::has_scalar_variable(const std::string &key) { return variables_.count(to_upper_copy(key)); }
-
 bool Wavefunction::has_array_variable(const std::string &key) { return arrays_.count(to_upper_copy(key)); }
-
-bool Wavefunction::has_potential_variable(const std::string &key) { return potentials_.count(to_upper_copy(key)); }
-
-double Wavefunction::scalar_variable(const std::string &key) {
-    std::string uc_key = to_upper_copy(key);
-
-    auto search = variables_.find(uc_key);
-    if (search != variables_.end()) {
-        return search->second;
-    } else {
-        throw PSIEXCEPTION("Wavefunction::scalar_variable: Requested variable " + uc_key + " was not set!\n");
-    }
-}
 
 SharedMatrix Wavefunction::array_variable(const std::string &key) {
     std::string uc_key = to_upper_copy(key);
@@ -1310,23 +1253,6 @@ SharedMatrix Wavefunction::array_variable(const std::string &key) {
     }
 }
 
-std::shared_ptr<ExternalPotential> Wavefunction::potential_variable(const std::string &key) {
-    std::string uc_key = to_upper_copy(key);
-
-    auto search = potentials_.find(uc_key);
-    if (search != potentials_.end()) {
-        return search->second;
-    } else {
-        throw PSIEXCEPTION("Wavefunction::potential_variable: Requested variable " + uc_key + " was not set!\n");
-    }
-}
-
-void Wavefunction::set_scalar_variable(const std::string &key, double val) {
-    variables_[to_upper_copy(key)] = val;
-
-    if (to_upper_copy(key) == "CURRENT ENERGY") energy_ = val;
-}
-
 void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) {
     arrays_[to_upper_copy(key)] = val->clone();
 
@@ -1334,25 +1260,6 @@ void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) 
     if (to_upper_copy(key) == "CURRENT HESSIAN") hessian_ = val->clone();
 }
 
-void Wavefunction::set_potential_variable(const std::string &key, std::shared_ptr<ExternalPotential> val) {
-    potentials_[to_upper_copy(key)] = val;
-}
-
-int Wavefunction::del_scalar_variable(const std::string &key) { return variables_.erase(to_upper_copy(key)); }
-
 int Wavefunction::del_array_variable(const std::string &key) { return arrays_.erase(to_upper_copy(key)); }
 
-int Wavefunction::del_potential_variable(const std::string &key) { return potentials_.erase(to_upper_copy(key)); }
-
-std::map<std::string, double> Wavefunction::scalar_variables() { return variables_; }
-
 std::map<std::string, SharedMatrix> Wavefunction::array_variables() { return arrays_; }
-
-std::map<std::string, std::shared_ptr<ExternalPotential>> Wavefunction::potential_variables() { return potentials_; }
-
-void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
-    PCM_ = pcm;
-    PCM_enabled_ = true;
-}
-
-std::shared_ptr<PCM> Wavefunction::get_PCM() const { return PCM_; }
