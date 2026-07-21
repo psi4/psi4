@@ -32,11 +32,9 @@
 #include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/basewavefunction.h"
-#include "psi4/libmints/dimension.h"
 
 #include <cstddef>
 #include <vector>
-#include <array>
 #include <memory>
 #include <map>
 
@@ -66,19 +64,9 @@ extern double fac[MAX_FAC];
 
 namespace psi {
 
-class Molecule;
-class BasisSet;
-class IntegralFactory;
-class MintsHelper;
 class Matrix;
 class Vector;
-class MatrixFactory;
-class Options;
-class SOBasisSet;
-class PCM;
-class PSIO;
 class OrbitalSpace;
-class ExternalPotential;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -86,78 +74,16 @@ class ExternalPotential;
  */
 class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_from_this<Wavefunction> {
    protected:
-    /// Name of the wavefunction
-    std::string name_;
-
-    /// Module name for CURRENT ENERGY
-    std::string module_;
-
-    /// Primary basis set for SO integrals
-    std::shared_ptr<SOBasisSet> sobasisset_;
-
     /// AO2SO conversion matrix (AO in rows, SO in cols)
     SharedMatrix AO2SO_;
-
-    // PSI file access variables
-    std::shared_ptr<PSIO> psio_;
-
-    /// Integral factory
-    std::shared_ptr<IntegralFactory> integral_;
-
-    /// MintsHelper
-    std::shared_ptr<MintsHelper> mintshelper_;
-
-    /// Matrix factory for creating standard sized matrices
-    std::shared_ptr<MatrixFactory> factory_;
-
-    std::shared_ptr<Wavefunction> reference_wavefunction_;
-
-    /// How much memory you have access to.
-    long int memory_;
-
-    /// Perturb the Hamiltonian?
-    int perturb_h_;
-    /// With what...
-    enum FieldType { nothing, dipole_x, dipole_y, dipole_z, dipole, embpot, dx, sphere };
-    FieldType dipole_field_type_;
-
-    /// Debug flag
-    size_t debug_;
-    /// Print flag
-    size_t print_;
 
     /// Total alpha and beta electrons
     int nalpha_, nbeta_;
 
-    /// Total frozen core orbitals
-    int nfrzc_;
-
-    /// Number of frozen core per irrep
-    Dimension frzcpi_;
-    /// Number of frozen virtuals per irrep
-    Dimension frzvpi_;
     /// Number of alpha electrons per irrep
     Dimension nalphapi_;
     /// Number of beta electrons per irrep
     Dimension nbetapi_;
-
-    /// Number of so per irrep
-    Dimension nsopi_;
-    /// Number of mo per irrep
-    Dimension nmopi_;
-
-    /// The energy associated with this wavefunction
-    double energy_;
-
-    /// Frozen-core energy associated with this wavefunction
-    double efzc_;
-
-    /// Total number of SOs
-    int nso_;
-    /// Total number of MOs
-    int nmo_;
-    /// Number of irreps
-    int nirrep_;
 
     /// Overlap matrix
     SharedMatrix S_;
@@ -213,45 +139,18 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
     //                of which are to be returned.
     std::vector<std::vector<int>> subset_occupation(const Dimension& noccpi, const std::string& subset) const;
 
-    /// Should nuclear electrostatic potentials be available, they will be here
-    std::shared_ptr<std::vector<double>> esp_at_nuclei_;
-
     /// Should molecular orbital extents be available, they will be here
     std::vector<SharedVector> mo_extents_;
-
-    /// If atomic point charges are available they will be here
-    std::shared_ptr<std::vector<double>> atomic_point_charges_;
-
-    /// Should natural orbital occupations be available, they will be here
-    std::vector<std::vector<std::tuple<double, int, int>>> no_occupations_;
 
     /// Same orbs or dens
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
-
-    // The external potential for the current wave function
-    std::shared_ptr<ExternalPotential> external_pot_;
-
-    // Collection of scalar variables
-    std::map<std::string, double> variables_;
 
     // Collection of Matrix variables
     // * any '<mtd> GRADIENT' is an energy derivative w.r.t. nuclear perturbations (a.u.) as a (nat, 3) Matrix
     // * any '<mtd> DIPOLE GRADIENT' is a dipole derivative w.r.t. nuclear perturbations (a.u.) as a degree-of-freedom
     //   by dipole component (3 * nat, 3) Matrix
     std::map<std::string, SharedMatrix> arrays_;
-
-    // Collection of external potentials; this member variable is provisional and might be removed in the future.
-    // This member variable is currently used for passing ExternalPotential objects to the F/I-SAPT code
-    // The above defined external_pot_ member variable contains the total external potential defined for the current
-    // wave function. For F/I-SAPT, we need a set of external potential that can be assigned to either the interacting
-    // fragments or to the environment
-    // For F/I-SAPT the keys can be A, B, or C (all optionals), where A and B signify the interacting subsystem
-    // and C signify the envirnoment
-    std::map<std::string, std::shared_ptr<ExternalPotential>> potentials_;
-
-    // Polarizable continuum model
-    std::shared_ptr<PCM> PCM_;
 
     void common_init() override;
 
