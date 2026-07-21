@@ -668,7 +668,7 @@ void Wavefunction::common_init() {
 
 std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return dipole_field_strength_; }
 
-Wavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const { return dipole_field_type_; }
+BaseWavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const { return dipole_field_type_; }
 
 Dimension Wavefunction::map_irreps(const Dimension &dimpi) {
     auto ps = options_.get_str("PARENT_SYMMETRY");
