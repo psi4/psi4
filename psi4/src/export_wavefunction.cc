@@ -325,12 +325,49 @@ void export_wavefunction(py::module& m) {
              "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
+    // Opaque holder so SharedComplexMatrix can cross the Python boundary.
+    py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
+                                                             "Complex blocked matrix (einsums BlockTensor).");
+
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
             "ComplexWavefunction", "ComplexWavefunction class docstring")
         .def(py::init<>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
-        .def(py::init<Options&>());
+        .def(py::init<Options&>())
+        .def("nelec", &ComplexWavefunction::nelec, "Number of electrons.")
+        .def("nelecpi", &ComplexWavefunction::nelecpi, py::return_value_policy::copy,
+             "Returns the number of electrons per irrep.")
+        .def("S", &ComplexWavefunction::S, "Returns the One-electron Overlap Matrix.")
+        .def("H", &ComplexWavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.")
+        .def("C", &ComplexWavefunction::C, "Returns the MO coefficients.")
+        .def("D", &ComplexWavefunction::D, "Returns the Density Matrix.")
+        .def("F", &ComplexWavefunction::F, "Returns the Fock Matrix.")
+        .def("epsilon", &ComplexWavefunction::epsilon, "Returns the orbital energies.")
+        .def("lagrangian", &ComplexWavefunction::lagrangian, "Returns the Lagrangian Matrix.")
+        .def("set_lagrangian", &ComplexWavefunction::set_lagrangian, "Sets the orbital Lagrangian matrix.")
+        .def("gradient", &ComplexWavefunction::gradient, "Returns the Wavefunction's gradient.")
+        .def("set_gradient", &ComplexWavefunction::set_gradient,
+             "Sets the Wavefunction's gradient. Syncs with QC variable ``CURRENT GRADIENT``.")
+        .def("hessian", &ComplexWavefunction::hessian, "Returns the Wavefunction's Hessian.")
+        .def("set_hessian", &ComplexWavefunction::set_hessian,
+             "Sets the Wavefunction's Hessian. Syncs with QC variable ``CURRENT HESSIAN``.")
+        .def("mo_extents", &ComplexWavefunction::mo_extents, "Returns the wavefunction's electronic orbital extents.")
+        .def("compute_energy", &ComplexWavefunction::compute_energy, "Computes the energy of the Wavefunction.")
+        .def("compute_gradient", &ComplexWavefunction::compute_gradient, "Computes the gradient of the Wavefunction")
+        .def("compute_hessian", &ComplexWavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.")
+        .def("has_array_variable", &ComplexWavefunction::has_array_variable,
+             "Is the Matrix QC variable (case-insensitive) set?")
+        .def("array_variable", &ComplexWavefunction::array_variable,
+             "Returns copy of the requested (case-insensitive) Matrix QC variable.")
+        .def("set_array_variable", &ComplexWavefunction::set_array_variable,
+             "Sets the requested (case-insensitive) Matrix QC variable.")
+        .def("del_array_variable", &ComplexWavefunction::del_array_variable,
+             "Removes the requested (case-insensitive) Matrix QC variable.")
+        .def("array_variables", &ComplexWavefunction::array_variables,
+             "Returns the dictionary of all Matrix QC variables.")
+        .def("get_density", [](ComplexWavefunction& wfn, std::string name) { return wfn.density_map_[name]; },
+             "Experimental!");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")

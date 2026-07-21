@@ -30,8 +30,26 @@
 #define _psi_src_lib_libmints_complexwavefunction_h
 
 #include "psi4/libmints/basewavefunction.h"
+#include "psi4/libmints/typedefs.h"
+#include "psi4/libpsi4util/exception.h"
+
+#include <Einsums/Config.hpp>
+#include <Einsums/Tensor.hpp>
+
+#include <Einsums/LinearAlgebra.hpp>
+#include <Einsums/TensorAlgebra.hpp>
+#include <Einsums/Runtime.hpp>
+
+#include <complex>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace psi {
+
+using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
+using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
 
 class Molecule;
 class BasisSet;
@@ -43,6 +61,47 @@ class Options;
  */
 class PSI_API ComplexWavefunction : public BaseWavefunction {
    protected:
+    /// Total number of electrons
+    int nelec_;
+
+    /// Number of electrons per irrep
+    Dimension nelecpi_;
+
+    /// Overlap matrix
+    SharedComplexMatrix S_;
+
+    /// Core Hamiltonian matrix
+    SharedComplexMatrix H_;
+
+    /// MO coefficients
+    SharedComplexMatrix C_;
+
+    /// Density matrix
+    SharedComplexMatrix D_;
+    /// Lagrangian matrix
+    SharedComplexMatrix Lagrangian_;
+
+    /// Fock matrix
+    SharedComplexMatrix F_;
+
+    /// Orbital energies
+    SharedVector epsilon_;
+
+    /// gradient, if available, as natom_ x 3 SharedComplexMatrix
+    SharedComplexMatrix gradient_;
+
+    /// Hessian, if available, as natom_*3 x natom_*3 SharedComplexMatrix (NOT mass-weighted!)
+    SharedComplexMatrix hessian_;
+
+    /// Should molecular orbital extents be available, they will be here
+    std::vector<SharedVector> mo_extents_;
+
+    // Collection of Matrix variables
+    // * any '<mtd> GRADIENT' is an energy derivative w.r.t. nuclear perturbations (a.u.) as a (nat, 3) Matrix
+    // * any '<mtd> DIPOLE GRADIENT' is a dipole derivative w.r.t. nuclear perturbations (a.u.) as a degree-of-freedom
+    //   by dipole component (3 * nat, 3) Matrix
+    std::map<std::string, SharedComplexMatrix> arrays_;
+
     void common_init() override;
 
    public:
@@ -58,6 +117,75 @@ class PSI_API ComplexWavefunction : public BaseWavefunction {
     ComplexWavefunction(Options& options);
 
     ~ComplexWavefunction() override;
+
+    /// Compute energy. Subclasses override this function to compute its energy.
+    virtual double compute_energy() {
+        throw PSIEXCEPTION("Compute energy has not been implemented for this wavefunction.");
+    }
+
+    /// Compute gradient.  Subclasses override this function to compute the gradient.
+    virtual SharedComplexMatrix compute_gradient() {
+        throw PSIEXCEPTION("Analytic gradients are not available for this wavefunction.");
+    }
+
+    /// Compute Hessian.  Subclasses override this function to compute the Hessian.
+    virtual SharedComplexMatrix compute_hessian() {
+        throw PSIEXCEPTION("Analytic Hessians are not available for this wavefunction.");
+    }
+
+    /// Returns the number of electrons per irrep array.
+    const Dimension& nelecpi() const { return nelecpi_; }
+    /// Return the number of electrons
+    int nelec() const { return nelec_; }
+
+    /// Returns the overlap matrix
+    SharedComplexMatrix S() const { return S_; }
+
+    /// Returns the core Hamiltonian matrix
+    SharedComplexMatrix H() const { return H_; }
+
+    /// Returns the MO coefficients
+    SharedComplexMatrix C() const;
+    /// Returns the (SO basis) Fock matrix
+    SharedComplexMatrix F() const { return F_; }
+    /// Returns the orbital energies
+    SharedVector epsilon() const { return epsilon_; }
+
+    /// Returns the OPDM for the wavefunction
+    const SharedComplexMatrix D() const { return D_; }
+
+    /// Returns the SO basis Lagrangian
+    SharedComplexMatrix lagrangian() const { return Lagrangian_; }
+    /// Set Lagrangian matrix in SO basis
+    void set_lagrangian(SharedComplexMatrix X) { Lagrangian_ = X; }
+
+    /// Returns the gradient
+    SharedComplexMatrix gradient() const { return gradient_; }
+    /// Set the gradient for the wavefunction
+    void set_gradient(SharedComplexMatrix grad);
+
+    /// Returns the Hessian
+    SharedComplexMatrix hessian() const { return hessian_; }
+    /// Set the Hessian for the wavefunction
+    void set_hessian(SharedComplexMatrix hess);
+
+    /// Returns Molecular orbital extents
+    std::vector<SharedVector> mo_extents() const { return mo_extents_; }
+    /// Sets molecular orbital extents
+    void set_mo_extents(const std::vector<SharedVector> mo_es) { mo_extents_ = mo_es; }
+
+    /// Save the wavefunction to checkpoint
+    virtual void save() const {}
+
+    /// Get and set array variable dictionaries
+    bool has_array_variable(const std::string& key);
+    SharedComplexMatrix array_variable(const std::string& key);
+    void set_array_variable(const std::string& key, SharedComplexMatrix value);
+    int del_array_variable(const std::string& key);
+    std::map<std::string, SharedComplexMatrix> array_variables();
+
+    /// Vector of density matrices
+    std::map<std::string, SharedComplexMatrix> density_map_;
 };
 
 }  // namespace psi
