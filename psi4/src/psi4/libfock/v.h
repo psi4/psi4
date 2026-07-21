@@ -160,6 +160,7 @@ class RV : public VBase {
     // compute_V assuming same orbitals for different spin. Computes V_alpha, not spin-summed V.
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
     bool can_compute_Vx() override { return true; };
+    bool can_compute_Vx_triplet() override { return true; };
     /// Compute the orbital derivative of the KS potential, contract against Dx, and
     /// putting the result in ret. ret[i] is Vx where x = Dx[i]. The "true" vector has
     /// 2^-0.5 Dx[i] for each input spin case and returns **half** the α component of the output.
@@ -170,6 +171,7 @@ class RV : public VBase {
     /// And no, we can't just make singlet a default argument. Then compute_Vx has different signatures for
     /// different VBase subclasses, so we can't call compute_Vx from VBase, which breaks the hessian code.
     void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override { compute_Vx_full(Dx, ret, true); };
+    void compute_Vx_triplet(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override { compute_Vx_full(Dx, ret, false); };
     bool can_compute_gradient() override { return true; };
     SharedMatrix compute_gradient() override;
     bool can_compute_hessian() override { return true; };
