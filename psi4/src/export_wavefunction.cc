@@ -88,7 +88,73 @@ void export_wavefunction(py::module& m) {
                                                                     "Base class for real and complex wavefunctions.")
         .def(py::init<>())
         .def("molecule", &BaseWavefunction::molecule, "Returns the wavefunction's molecule.")
-        .def("basisset", &BaseWavefunction::basisset, "Returns the current orbital basis.");
+        .def("basisset", &BaseWavefunction::basisset, "Returns the current orbital basis.")
+        .def("reference_wavefunction", &BaseWavefunction::reference_wavefunction, "Returns the reference wavefunction.")
+        .def("set_reference_wavefunction", &BaseWavefunction::set_reference_wavefunction, "docstring")
+        .def("nfrzc", &BaseWavefunction::nfrzc, "Number of frozen core electrons.")
+        .def("nso", &BaseWavefunction::nso, "Number of symmetry orbitals.")
+        .def("nmo", &BaseWavefunction::nmo, "Number of molecule orbitals.")
+        .def("nirrep", &BaseWavefunction::nirrep, "Number of irreps in the system.")
+        .def("efzc", &BaseWavefunction::efzc, "Returns the frozen-core energy")
+        .def("mintshelper", &BaseWavefunction::mintshelper, "Returns the current MintsHelper object.")
+        .def("sobasisset", &BaseWavefunction::sobasisset, "Returns the symmetry orbitals basis.")
+        .def("get_basisset", &BaseWavefunction::get_basisset, "Returns the requested auxiliary basis.")
+        .def("set_basisset", &BaseWavefunction::set_basisset, "Sets the requested auxiliary basis.")
+        .def("energy", &BaseWavefunction::energy, "Returns the Wavefunction's energy.")
+        .def("options", &BaseWavefunction::options, "Returns the Wavefunction's options object")
+        .def("set_energy", &BaseWavefunction::set_energy,
+             "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
+        .def("get_dipole_field_strength", &BaseWavefunction::get_dipole_field_strength,
+             "Returns a vector of length 3, containing the x, y, and z dipole field strengths.")
+        .def("set_name", &BaseWavefunction::set_name, "Sets the level of theory this wavefunction corresponds to.")
+        .def("name", &BaseWavefunction::name, py::return_value_policy::copy,
+             "The level of theory this wavefunction corresponds to.")
+        .def("set_module", &BaseWavefunction::set_module, "module"_a,
+             "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
+        .def("module", &BaseWavefunction::module, py::return_value_policy::copy,
+             "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
+        .def("nsopi", &BaseWavefunction::nsopi, py::return_value_policy::copy,
+             "Returns the number of symmetry orbitals per irrep.")
+        .def("nmopi", &BaseWavefunction::nmopi, py::return_value_policy::copy,
+             "Returns the number of molecular orbitals per irrep.")
+        .def("frzcpi", &BaseWavefunction::frzcpi, py::return_value_policy::copy,
+             "Returns the number of frozen core orbitals per irrep.")
+        .def("frzvpi", &BaseWavefunction::frzvpi, py::return_value_policy::copy,
+             "Returns the number of frozen virtual orbitals per irrep.")
+        .def("set_print", &BaseWavefunction::set_print, "Sets the print level of the Wavefunction.")
+        .def("get_print", &BaseWavefunction::get_print, "Get the print level of the Wavefunction.")
+        .def("set_external_potential", &BaseWavefunction::set_external_potential, "Sets the requested external potential.")
+        .def("external_pot", &BaseWavefunction::external_pot, "Gets the requested external potential.")
+        .def("has_scalar_variable", &BaseWavefunction::has_scalar_variable,
+             "Is the double QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.Wavefunction.has_variable`.")
+        .def("has_potential_variable", &BaseWavefunction::has_potential_variable,
+             "Is the ExternalPotential QC variable (case-insensitive) set? "
+             "(This function is provisional and might be removed in the future.)")
+        .def("scalar_variable", &BaseWavefunction::scalar_variable,
+             "Returns the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.Wavefunction.variable`.")
+        .def("potential_variable", &BaseWavefunction::potential_variable,
+             "key"_a, "Returns copy of the requested (case-insensitive) ExternalPotential QC variable *key*. "
+             "(This function is provisional and might be removed in the future.)")
+        .def("set_scalar_variable", &BaseWavefunction::set_scalar_variable,
+             "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT "
+             "ENERGY. Prefer :meth:`~psi4.core.Wavefunction.set_variable`.")
+        .def("set_potential_variable", &BaseWavefunction::set_potential_variable,
+             "Sets the requested (case-insensitive) ExternalPotential QC variable. "
+             "(This function is provisional and might be removed in the future.)")
+        .def("del_scalar_variable", &BaseWavefunction::del_scalar_variable,
+             "Removes the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.Wavefunction.del_variable`.")
+        .def("del_potential_variable", &BaseWavefunction::del_potential_variable,
+             "Removes the requested (case-insensitive) ExternalPotential QC variable. "
+             "(This function is provisional and might be removed in the future.)")
+        .def("scalar_variables", &BaseWavefunction::scalar_variables,
+             "Returns the dictionary of all double QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
+        .def("potential_variables", &BaseWavefunction::potential_variables, "Returns the dictionary of all ExternalPotential QC variables. "
+             "(This function is provisional and might be removed in the future.)")
+#ifdef USING_PCMSolver
+        .def("set_PCM", &BaseWavefunction::set_PCM, "Set the PCM object")
+        .def("get_PCM", &BaseWavefunction::get_PCM, "Get the PCM object")
+#endif
+        .def("PCM_enabled", &BaseWavefunction::PCM_enabled, "Whether running a PCM calculation");
 
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>, BaseWavefunction>(m, "Wavefunction", "docstring",
                                                                               py::dynamic_attr())
@@ -98,8 +164,6 @@ void export_wavefunction(py::module& m) {
                       std::map<std::string, std::shared_ptr<Matrix>>, std::map<std::string, std::shared_ptr<Vector>>,
                       std::map<std::string, Dimension>, std::map<std::string, int>, std::map<std::string, std::string>,
                       std::map<std::string, bool>, std::map<std::string, double>>())
-        .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "Returns the reference wavefunction.")
-        .def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring")
         .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.")
         .def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "Deep copies the internal data.")
         .def("c1_deep_copy", &Wavefunction::c1_deep_copy,
@@ -108,13 +172,8 @@ void export_wavefunction(py::module& m) {
         .def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "Returns true if the alpha and beta orbitals are the same.")
         .def("same_a_b_dens", &Wavefunction::same_a_b_dens,
              "Returns true if the alpha and beta densities are the same.")
-        .def("nfrzc", &Wavefunction::nfrzc, "Number of frozen core electrons.")
         .def("nalpha", &Wavefunction::nalpha, "Number of Alpha electrons.")
         .def("nbeta", &Wavefunction::nbeta, "Number of Beta electrons.")
-        .def("nso", &Wavefunction::nso, "Number of symmetry orbitals.")
-        .def("nmo", &Wavefunction::nmo, "Number of molecule orbitals.")
-        .def("nirrep", &Wavefunction::nirrep, "Number of irreps in the system.")
-        .def("efzc", &Wavefunction::efzc, "Returns the frozen-core energy")
         .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
         .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
         .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership, R"pbdoc(
@@ -207,15 +266,7 @@ void export_wavefunction(py::module& m) {
              "Projects a orbital matrix from one basis to another.")
         .def("H", &Wavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.")
         .def("S", &Wavefunction::S, "Returns the One-electron Overlap Matrix.")
-        .def("mintshelper", &Wavefunction::mintshelper, "Returns the current MintsHelper object.")
         .def("aotoso", &Wavefunction::aotoso, "Returns the Atomic Orbital to Symmetry Orbital transformer.")
-        .def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.")
-        .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
-        .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
-        .def("energy", &Wavefunction::energy, "Returns the Wavefunction's energy.")
-        .def("options", &Wavefunction::options, "Returns the Wavefunction's options object")
-        .def("set_energy", &Wavefunction::set_energy,
-             "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
         .def("gradient", &Wavefunction::gradient, "Returns the Wavefunction's gradient.")
         .def("set_gradient", &Wavefunction::set_gradient,
              "Sets the Wavefunction's gradient. Syncs with Wavefunction's QC variable ``CURRENT GRADIENT``.")
@@ -227,15 +278,6 @@ void export_wavefunction(py::module& m) {
         .def("no_occupations", &Wavefunction::get_no_occupations,
              "returns the natural orbital occupations on the wavefunction.")
         .def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "Returns the set atomic point charges.")
-        .def("get_dipole_field_strength", &Wavefunction::get_dipole_field_strength,
-             "Returns a vector of length 3, containing the x, y, and z dipole field strengths.")
-        .def("set_name", &Wavefunction::set_name, "Sets the level of theory this wavefunction corresponds to.")
-        .def("name", &Wavefunction::name, py::return_value_policy::copy,
-             "The level of theory this wavefunction corresponds to.")
-        .def("set_module", &Wavefunction::set_module, "module"_a,
-             "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
-        .def("module", &Wavefunction::module, py::return_value_policy::copy,
-             "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
         .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "id"_a, "basis"_a, "subset"_a, R"pbdoc(
             Creates OrbitalSpace with information about the requested alpha orbital space.
 
@@ -263,67 +305,24 @@ void export_wavefunction(py::module& m) {
              "results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of singly occupied orbitals per irrep.")
-        .def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy,
-             "Returns the number of symmetry orbitals per irrep.")
-        .def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy,
-             "Returns the number of molecular orbitals per irrep.")
         .def("nalphapi", &Wavefunction::nalphapi, py::return_value_policy::copy,
              "Returns the number of alpha orbitals per irrep.")
         .def("nbetapi", &Wavefunction::nbetapi, py::return_value_policy::copy,
              "Returns the number of beta orbitals per irrep.")
-        .def("frzcpi", &Wavefunction::frzcpi, py::return_value_policy::copy,
-             "Returns the number of frozen core orbitals per irrep.")
-        .def("frzvpi", &Wavefunction::frzvpi, py::return_value_policy::copy,
-             "Returns the number of frozen virtual orbitals per irrep.")
-        .def("set_print", &Wavefunction::set_print, "Sets the print level of the Wavefunction.")
-        .def("get_print", &Wavefunction::get_print, "Get the print level of the Wavefunction.")
         .def("compute_energy", &Wavefunction::compute_energy, "Computes the energy of the Wavefunction.")
         .def("compute_gradient", &Wavefunction::compute_gradient, "Computes the gradient of the Wavefunction")
         .def("compute_hessian", &Wavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.")
-        .def("set_external_potential", &Wavefunction::set_external_potential, "Sets the requested external potential.")
-        .def("external_pot", &Wavefunction::external_pot, "Gets the requested external potential.")
-        .def("has_scalar_variable", &Wavefunction::has_scalar_variable,
-             "Is the double QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.Wavefunction.has_variable`.")
         .def("has_array_variable", &Wavefunction::has_array_variable,
              "Is the Matrix QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.Wavefunction.has_variable`.")
-        .def("has_potential_variable", &Wavefunction::has_potential_variable,
-             "Is the ExternalPotential QC variable (case-insensitive) set? "
-             "(This function is provisional and might be removed in the future.)")
-        .def("scalar_variable", &Wavefunction::scalar_variable,
-             "Returns the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.Wavefunction.variable`.")
         .def("array_variable", &Wavefunction::array_variable,
              "Returns copy of the requested (case-insensitive) Matrix QC variable. Prefer :meth:`~psi4.core.Wavefunction.variable`.")
-        .def("potential_variable", &Wavefunction::potential_variable,
-             "key"_a, "Returns copy of the requested (case-insensitive) ExternalPotential QC variable *key*. "
-             "(This function is provisional and might be removed in the future.)")
-        .def("set_scalar_variable", &Wavefunction::set_scalar_variable,
-             "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT "
-             "ENERGY. Prefer :meth:`~psi4.core.Wavefunction.set_variable`.")
         .def("set_array_variable", &Wavefunction::set_array_variable,
              "Sets the requested (case-insensitive) Matrix QC variable. Syncs with ``Wavefunction.gradient_`` or "
              "``hessian_`` if CURRENT GRADIENT or HESSIAN. Prefer :meth:`~psi4.core.Wavefunction.set_variable`.")
-        .def("set_potential_variable", &Wavefunction::set_potential_variable,
-             "Sets the requested (case-insensitive) ExternalPotential QC variable. "
-             "(This function is provisional and might be removed in the future.)")
-        .def("del_scalar_variable", &Wavefunction::del_scalar_variable,
-             "Removes the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.Wavefunction.del_variable`.")
         .def("del_array_variable", &Wavefunction::del_array_variable,
              "Removes the requested (case-insensitive) Matrix QC variable. Prefer :meth:`~psi4.core.Wavefunction.del_variable`.")
-        .def("del_potential_variable", &Wavefunction::del_potential_variable,
-             "Removes the requested (case-insensitive) ExternalPotential QC variable. "
-             "(This function is provisional and might be removed in the future.)")
-        .def("scalar_variables", &Wavefunction::scalar_variables,
-             "Returns the dictionary of all double QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
         .def("array_variables", &Wavefunction::array_variables,
              "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
-        .def("potential_variables", &Wavefunction::potential_variables, "Returns the dictionary of all ExternalPotential QC variables. "
-             "(This function is provisional and might be removed in the future.)")
-
-#ifdef USING_PCMSolver
-        .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
-        .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
-#endif
-        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
