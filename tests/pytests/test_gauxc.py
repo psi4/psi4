@@ -21,7 +21,7 @@ from addons import uusing
     pytest.param({'name': "sto-6g"}, id='sto6g'),
     pytest.param({'name': "cc-pvdz"}, id='dz'),
 ])
-def test_rks(inp, symmetry, basis):
+def test_rks_energy(inp, symmetry, basis):
     h2o = psi4.geometry("""
         O
         H 1 1.0
@@ -46,6 +46,45 @@ def test_rks(inp, symmetry, basis):
 
     assert psi4.compare_values(enPsi, enGau, 6, f"{inp['name']} energies")
 
+@uusing("gauxc")
+@pytest.mark.parametrize("inp", [
+    pytest.param({'name': 'svwn'}, id='svwn'),
+    pytest.param({'name': 'pbe'}, id='pbe'),
+    pytest.param({'name': 'b3lyp'}, id='b3lyp'),
+    pytest.param({'name': 'wb97x'}, id='wb97x'),
+    #pytest.param({'name': 'b2plyp'}, id='b2plyp')
+])
+@pytest.mark.parametrize("symmetry", [
+    pytest.param({'on': True}, id='sym-true'),
+    pytest.param({'on': False}, id='sym-false'),
+])
+@pytest.mark.parametrize("basis", [
+    pytest.param({'name': "sto-6g"}, id='sto6g'),
+    pytest.param({'name': "cc-pvdz"}, id='dz'),
+])
+def test_rks_grad(inp, symmetry, basis):
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
+
+    if not symmetry["on"]: h2o.reset_point_group("c1")
+
+    psi4.set_options({
+        "gauxc_integrate": False,
+        "basis": basis["name"],
+        "d_convergence": 10,
+        "dft_radial_points": 80,
+        "dft_spherical_points": 590
+    })
+
+    psi4.set_options({"gauxc_integrate": True, "gauxc_radial_points": 80, "gauxc_spherical_points": 590, "dft_enable_psi": False})
+
+    findif_gradient = psi4.gradient(inp["name"], dertype=0)
+    analytic_gradient = psi4.gradient(inp["name"], dertype=1)
+
+    assert psi4.compare_values(findif_gradient, analytic_gradient, 5, "analytic vs. findif gradient")
 
 @uusing("gauxc")
 @pytest.mark.parametrize("inp", [
@@ -63,7 +102,7 @@ def test_rks(inp, symmetry, basis):
     pytest.param({'name': "sto-6g"}, id='sto6g'),
     pytest.param({'name': "cc-pvdz"}, id='dz'),
 ])
-def test_uks(inp, symmetry, basis):
+def test_uks_energy(inp, symmetry, basis):
     h2o = psi4.geometry("""
         1 2
         O
@@ -89,4 +128,46 @@ def test_uks(inp, symmetry, basis):
     enGau = psi4.energy(inp["name"])
 
     assert psi4.compare_values(enPsi, enGau, 6, f"{inp['name']} energies")
+
+@uusing("gauxc")
+@pytest.mark.parametrize("inp", [
+    pytest.param({'name': 'svwn'}, id='svwn'),
+    pytest.param({'name': 'pbe'}, id='pbe'),
+    pytest.param({'name': 'b3lyp'}, id='b3lyp'),
+    pytest.param({'name': 'wb97x'}, id='wb97x'),
+    #pytest.param({'name': 'b2plyp'}, id='b2plyp')
+])
+@pytest.mark.parametrize("symmetry", [
+    pytest.param({'on': True}, id='sym-true'),
+    pytest.param({'on': False}, id='sym-false'),
+])
+@pytest.mark.parametrize("basis", [
+    pytest.param({'name': "sto-6g"}, id='sto6g'),
+    pytest.param({'name': "cc-pvdz"}, id='dz'),
+])
+def test_uks_gradient(inp, symmetry, basis):
+    h2o = psi4.geometry("""
+        1 2
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
+
+    if not symmetry["on"]: h2o.reset_point_group("c1")
+
+    psi4.set_options({
+        "gauxc_integrate": False,
+        "basis": basis["name"],
+        "d_convergence": 10,
+        "dft_radial_points": 80,
+        "dft_spherical_points": 590,
+        "reference": "uks"
+    })
+
+    psi4.set_options({"gauxc_integrate": True, "gauxc_radial_points": 80, "gauxc_spherical_points": 590, "dft_enable_psi": False})
+
+    findif_gradient = psi4.gradient(inp["name"], dertype=0)
+    analytic_gradient = psi4.gradient(inp["name"], dertype=1)
+
+    assert psi4.compare_values(findif_gradient, analytic_gradient, 5, "analytic vs. findif gradient")
 
