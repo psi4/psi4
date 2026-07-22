@@ -142,6 +142,9 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
     /// Should molecular orbital extents be available, they will be here
     std::vector<SharedVector> mo_extents_;
 
+    /// Matrix factory for creating standard sized matrices
+    std::shared_ptr<MatrixFactory> factory_;
+
     /// Same orbs or dens
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
@@ -174,6 +177,9 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
 
     /// Blank constructor for derived classes
     Wavefunction(Options& options);
+
+    /// Returns the MatrixFactory object that pertains to this wavefunction
+    std::shared_ptr<MatrixFactory> matrix_factory() const { return factory_; }
 
     /**
      * Copy the contents of another Wavefunction into this one.
