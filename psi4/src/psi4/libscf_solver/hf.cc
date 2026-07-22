@@ -87,7 +87,7 @@ namespace psi {
 namespace scf {
 
 HF::HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options, std::shared_ptr<PSIO> psio)
-    : Wavefunction(options), functional_(func) {
+    : Wavefunction(options), BaseHF(func) {
     shallow_copy(ref_wfn);
     psio_ = psio;
     common_init();
