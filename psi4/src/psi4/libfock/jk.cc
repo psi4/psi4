@@ -67,7 +67,7 @@ void _set_dfjk_options(std::shared_ptr<T> jk, Options& options) {
         jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 }
 
-JK::JK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
+JK::JK(std::shared_ptr<BasisSet> primary) : BaseJK(primary) { common_init(); }
 JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
@@ -236,39 +236,14 @@ SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
 }
 
-const std::unordered_map<std::string, std::vector<size_t> >& JK::computed_shells_per_iter() {
-    return computed_shells_per_iter_;
-}
-
-const std::vector<size_t>& JK::computed_shells_per_iter(const std::string& n_let) {
-    return computed_shells_per_iter_[n_let];
-}
-
 void JK::common_init() {
-    print_ = 1;
-    debug_ = 0;
-    bench_ = 0;
-
-    // 256 MB default
-    memory_ = 32000000L;
-    omp_nthread_ = 1;
-#ifdef _OPENMP
-    omp_nthread_ = Process::environment.get_n_threads();
-#endif
-    cutoff_ = 1.0E-12;
     do_csam_ = false;
 
-    do_J_ = true;
-    do_K_ = true;
     do_wK_ = false;
     wcombine_ = false;
-    lr_symmetric_ = false;
     omega_ = 0.0;
     omega_alpha_ = 1.0;
     omega_beta_ = 0.0;
-
-    num_computed_shells_ = 0L;
-    computed_shells_per_iter_ = {};
 
     std::shared_ptr<IntegralFactory> integral =
         std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
@@ -700,13 +675,6 @@ void JK::zero() {
         for(auto wK : wK_) wK->zero();
         for(auto wK : wK_ao_) wK->zero();
     }
-}
-
-size_t JK::num_computed_shells() {
-    outfile->Printf("WARNING: JK::num_computed_shells() was called, but benchmarking is disabled for the chosen JK algorithm.");
-    outfile->Printf(" Returning 0 as computed shells count.\n");
-
-    return 0;
 }
 
 void JK::finalize() { postiterations(); }
