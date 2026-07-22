@@ -202,14 +202,19 @@ core.BasisSet.build = _pybuild_basis
 ## Python wavefunction helps
 
 
-@staticmethod
-def _core_wavefunction_build(
+@classmethod
+def _core_basewavefunction_build(
+        cls,
         mol: core.Molecule,
         basis: Union[None, str, core.BasisSet] = None,
         *,
         quiet: bool = False,
-    ) -> core.Wavefunction:
+    ) -> core.BaseWavefunction:
     """Build a wavefunction from minimal inputs, molecule and basis set.
+
+    Shared by :class:`~psi4.core.Wavefunction` and
+    :class:`~psi4.core.ComplexWavefunction` via
+    :class:`~psi4.core.BaseWavefunction`.
 
     Parameters
     ----------
@@ -223,28 +228,34 @@ def _core_wavefunction_build(
         When True, do not print to the output file.
 
     """
+    if cls is core.BaseWavefunction:
+        raise TypeError("Cannot build BaseWavefunction directly; use Wavefunction or ComplexWavefunction.")
+
     if basis is None:
         basis = core.BasisSet.build(mol, quiet=quiet)
     elif isinstance(basis, str):
         basis = core.BasisSet.build(mol, "ORBITAL", basis, quiet=quiet)
 
-    wfn = core.Wavefunction(mol, basis)
+    wfn = cls(mol, basis)
     # Set basis for density-fitted calculations to the zero basis...
     # ...until the user explicitly provides a DF basis.
     wfn.set_basisset("DF_BASIS_SCF", core.BasisSet.zero_ao_basis_set())
     return wfn
 
 
-core.Wavefunction.build = _core_wavefunction_build
+core.BaseWavefunction.build = _core_basewavefunction_build
+# Explicit subclass aliases: can't rely on pybind for your MRO!
+core.Wavefunction.build = _core_basewavefunction_build
+core.ComplexWavefunction.build = _core_basewavefunction_build
 
 
-def _core_wavefunction_get_scratch_filename(self: core.Wavefunction, filenumber: int) -> str:
+def _core_wavefunction_get_scratch_filename(self: core.BaseWavefunction, filenumber: int) -> str:
     """Return canonical path to scratch file `filenumber` based on molecule on `self`.
 
     Parameters
     ----------
     self
-        Wavefunction instance.
+        Wavefunction or ComplexWavefunction instance.
     filenumber
         Scratch file number from :source:`psi4/include/psi4/psifiles.h`.
 
@@ -254,7 +265,7 @@ def _core_wavefunction_get_scratch_filename(self: core.Wavefunction, filenumber:
     return os.path.join(psi_scratch, fname + '.' + str(filenumber))
 
 
-core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
+core.BaseWavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
 
 
 @staticmethod

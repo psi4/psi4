@@ -87,9 +87,6 @@ class PSI_API BaseWavefunction {
     /// MintsHelper
     std::shared_ptr<MintsHelper> mintshelper_;
 
-    /// Matrix factory for creating standard sized matrices
-    std::shared_ptr<MatrixFactory> factory_;
-
     std::shared_ptr<Wavefunction> reference_wavefunction_;
 
     /// How much memory you have access to.
@@ -205,8 +202,6 @@ class PSI_API BaseWavefunction {
     void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
     bool basisset_exists(std::string label);
 
-    /// Returns the MatrixFactory object that pertains to this wavefunction
-    std::shared_ptr<MatrixFactory> matrix_factory() const { return factory_; }
     /// Returns the reference wavefunction
     std::shared_ptr<Wavefunction> reference_wavefunction() const { return reference_wavefunction_; }
     /// Sets the reference wavefunction

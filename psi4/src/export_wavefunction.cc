@@ -59,6 +59,7 @@
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
+#include "psi4/libscf_solver/cghf.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfock/v.h"
 
@@ -484,6 +485,12 @@ void export_wavefunction(py::module& m) {
              "BasisSet *basis*",
              "basis"_a)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
+
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction>(m, "CGHF", "docstring")
+        .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("set_sad_basissets", &scf::CGHF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
+        .def("set_sad_fitting_basissets", &scf::CGHF::set_sad_fitting_basissets,
+             "Sets the Superposition of Atomic Densities density-fitted basisset.");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())

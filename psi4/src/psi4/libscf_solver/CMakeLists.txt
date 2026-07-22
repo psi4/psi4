@@ -7,6 +7,7 @@ list(APPEND sources
   rohf.cc
   sad.cc
   uhf.cc
+  cghf.cc
   )
 psi4_add_module(lib scf_solver sources)
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
