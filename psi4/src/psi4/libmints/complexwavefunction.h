@@ -138,26 +138,38 @@ class PSI_API ComplexWavefunction : public BaseWavefunction {
     /// Return the number of electrons
     int nelec() const { return nelec_; }
 
-    /// Returns the overlap matrix
-    SharedComplexMatrix S() const { return S_; }
-
-    /// Returns the core Hamiltonian matrix
-    SharedComplexMatrix H() const { return H_; }
-
     /// Returns the MO coefficients
     SharedComplexMatrix C() const;
+    /// Set MO coefficients
+    void set_C(SharedComplexMatrix C) { C_ = C; }
     /// Returns the (SO basis) Fock matrix
     SharedComplexMatrix F() const { return F_; }
+    /// Set Fock matrix
+    void set_F(SharedComplexMatrix F) { F_ = F; }
     /// Returns the orbital energies
     SharedVector epsilon() const { return epsilon_; }
+    /// Set orbital energies
+    void set_epsilon(SharedVector epsilon) { epsilon_ = epsilon; }
 
     /// Returns the OPDM for the wavefunction
     const SharedComplexMatrix D() const { return D_; }
+    /// Set density matrix
+    void set_D(SharedComplexMatrix D) { D_ = D; }
 
     /// Returns the SO basis Lagrangian
     SharedComplexMatrix lagrangian() const { return Lagrangian_; }
     /// Set Lagrangian matrix in SO basis
     void set_lagrangian(SharedComplexMatrix X) { Lagrangian_ = X; }
+
+    /// Returns the overlap matrix
+    SharedComplexMatrix S() const { return S_; }
+    /// Set overlap matrix
+    void set_S(SharedComplexMatrix S) { S_ = S; }
+
+    /// Returns the core Hamiltonian matrix
+    SharedComplexMatrix H() const { return H_; }
+    /// Set core Hamiltonian matrix
+    void set_H(SharedComplexMatrix H) { H_ = H; }
 
     /// Returns the gradient
     SharedComplexMatrix gradient() const { return gradient_; }
