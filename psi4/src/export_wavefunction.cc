@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <cstring>
 #include <string>
 
 #include "psi4/pybind11.h"
@@ -81,6 +82,7 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 #include <pybind11/functional.h>
+#include <pybind11/numpy.h>
 
 void export_wavefunction(py::module& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
@@ -326,9 +328,47 @@ void export_wavefunction(py::module& m) {
              "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
-    // Opaque holder so SharedComplexMatrix can cross the Python boundary.
+    // ComplexMatrix is einsums::BlockTensor<complex<double>, 2>. Full BlockTensor
+    // densify via pyeinsums is not available yet; C1 (single block) NumPy export only.
     py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
-                                                             "Complex blocked matrix (einsums BlockTensor).");
+                                                             "Complex blocked matrix (einsums BlockTensor).")
+        .def_static(
+            "from_array",
+            [](const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast>& arr,
+               const std::string& name) {
+                if (arr.ndim() != 2) {
+                    throw PSIEXCEPTION("ComplexMatrix.from_array: array must be 2-dimensional.");
+                }
+                const auto n0 = static_cast<size_t>(arr.shape(0));
+                const auto n1 = static_cast<size_t>(arr.shape(1));
+                if (n0 != n1) {
+                    throw PSIEXCEPTION("ComplexMatrix.from_array: C1 BlockTensor blocks must be square.");
+                }
+                auto mat = std::make_shared<ComplexMatrix>(name, std::vector<size_t>{n0});
+                if (mat->num_blocks() != 1) {
+                    throw PSIEXCEPTION("ComplexMatrix.from_array: expected a single C1 block.");
+                }
+                std::memcpy(mat->block(0).data(), arr.data(), sizeof(std::complex<double>) * n0 * n1);
+                return mat;
+            },
+            "array"_a, "name"_a = "ComplexMatrix",
+            "Build a C1 (single-block) ComplexMatrix from a square complex NumPy array.")
+        .def(
+            "to_array",
+            [](const ComplexMatrix& self) {
+                if (self.num_blocks() != 1) {
+                    throw PSIEXCEPTION(
+                        "ComplexMatrix.to_array currently supports only C1 symmetry (a single block).");
+                }
+                const auto& blk = self.block(0);
+                const auto n0 = static_cast<py::ssize_t>(blk.dim(0));
+                const auto n1 = static_cast<py::ssize_t>(blk.dim(1));
+                py::array_t<std::complex<double>> out({n0, n1});
+                std::memcpy(out.mutable_data(), blk.data(), sizeof(std::complex<double>) * static_cast<size_t>(n0 * n1));
+                return out;
+            },
+            "Return a NumPy copy of the single C1 block. Higher symmetry is not supported yet.")
+        .def("num_blocks", &ComplexMatrix::num_blocks, "Number of symmetry blocks.");
 
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
             "ComplexWavefunction", "ComplexWavefunction class docstring")
