@@ -55,6 +55,7 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
 
+#include "psi4/libscf_solver/basehf.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libscf_solver/uhf.h"
@@ -416,7 +417,30 @@ void export_wavefunction(py::module& m) {
         .def("get_density", [](ComplexWavefunction& wfn, std::string name) { return wfn.density_map_[name]; },
              "Experimental!");
 
-    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
+        py::class_<scf::BaseHF, std::shared_ptr<scf::BaseHF>>(m, "BaseHF",
+                                                          "Shared SCF-loop state for real and complex Hartree–Fock.")
+        .def_property("reset_occ_", &scf::BaseHF::reset_occ, &scf::BaseHF::set_reset_occ,
+                      "Do reset the occupation after the guess to the inital occupation.")
+        .def_property("sad_", &scf::BaseHF::sad, &scf::BaseHF::set_sad,
+                      "Do assume a non-idempotent density matrix and no orbitals after the guess.")
+        .def("functional", &scf::BaseHF::functional, "Returns the internal DFT Superfunctional.")
+        .def_property("diis_manager_", &scf::BaseHF::diis_manager, &scf::BaseHF::set_diis_manager, "The DIIS object.")
+        .def_property("initialized_diis_manager_", &scf::BaseHF::initialized_diis_manager,
+                      &scf::BaseHF::set_initialized_diis_manager, "Has the DIIS object been initialized?")
+        .def("scf_type", &scf::BaseHF::scf_type, "Return the value of scf_type used in the SCF computation.")
+        .def_property("iteration_", &scf::BaseHF::iteration, &scf::BaseHF::set_iteration,
+                      "Internal iterator for SCF cycles. After completion, this equals the number of iterations taken "
+                      "to converge the SCF equations.")
+        .def_property("diis_enabled_", &scf::BaseHF::diis_enabled, &scf::BaseHF::set_diis_enabled, "docstring")
+        .def_property("diis_start_", &scf::BaseHF::diis_start, &scf::BaseHF::set_diis_start, "docstring")
+        .def_property("MOM_excited_", &scf::BaseHF::MOM_excited, &scf::BaseHF::set_MOM_excited,
+                      "Are we to do excited-state MOM?")
+        .def_property("MOM_performed_", &scf::BaseHF::MOM_performed, &scf::BaseHF::set_MOM_performed,
+                      "MOM performed current iteration?")
+        .def_property("attempt_number_", &scf::BaseHF::attempt_number, &scf::BaseHF::set_attempt_number,
+                      "Current macroiteration (1-indexed) for stability analysis");
+
+    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction, scf::BaseHF>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
         .def("form_initial_C", &scf::HF::form_initial_C,
@@ -439,10 +463,6 @@ void export_wavefunction(py::module& m) {
         .def("cphf_converged", &scf::HF::cphf_converged, "Adds occupied guess alpha orbitals.")
         .def("guess_Ca", &scf::HF::guess_Ca, "Sets the guess Alpha Orbital Matrix")
         .def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix")
-        .def_property("reset_occ_", &scf::HF::reset_occ, &scf::HF::set_reset_occ,
-                      "Do reset the occupation after the guess to the inital occupation.")
-        .def_property("sad_", &scf::HF::sad, &scf::HF::set_sad,
-                      "Do assume a non-idempotent density matrix and no orbitals after the guess.")
         .def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
@@ -450,7 +470,6 @@ void export_wavefunction(py::module& m) {
         .def("Vb", &scf::HF::Vb, "Returns the Beta Kohn-Sham Potential Matrix.")
         .def("jk", &scf::HF::jk, "Returns the internal JK object.")
         .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
-        .def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
         .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunction's temporary data.")
         .def("soscf_update", &scf::HF::soscf_update, "Computes a second-order SCF update.")
@@ -464,33 +483,20 @@ void export_wavefunction(py::module& m) {
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
-        .def_property("diis_manager_", &scf::HF::diis_manager, &scf::HF::set_diis_manager, "The DIIS object.")
-        .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager,
-                      &scf::HF::set_initialized_diis_manager, "Has the DIIS object been initialized?")
         .def("damping_update", &scf::HF::damping_update, "docstring")
         .def("check_phases", &scf::HF::check_phases, "docstring")
         .def("print_orbitals", &scf::HF::print_orbitals, "docstring")
         .def("print_header", &scf::HF::print_header, "docstring")
         .def("get_energies", &scf::HF::get_energies, "docstring")
         .def("set_energies", &scf::HF::set_energies, "docstring")
-        .def("scf_type", &scf::HF::scf_type, "Return the value of scf_type used in the SCF computation.")
         .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear private external_potentials list")
         .def("push_back_external_potential", &scf::HF::push_back_external_potential,
              "Add an external potential to the private external_potentials list", "V"_a)
         .def("set_external_cpscf_perturbation", &scf::HF::set_external_cpscf_perturbation,
              "Add an external potential/perturbation to the private external_cpscf_perturbations map for CPSCF", "name"_a, "function"_a)
         .def("clear_external_cpscf_perturbations", &scf::HF::clear_external_cpscf_perturbations, "Clear private external_cpscf_perturbations map")
-        .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "Internal iterator for SCF cycles. After completion, this equals the number of iterations taken to converge the SCF equations.")
-        .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")
-        .def_property("diis_start_", &scf::HF::diis_start, &scf::HF::set_diis_start, "docstring")
         .def_property("frac_performed_", &scf::HF::frac_performed, &scf::HF::set_frac_performed,
                       "Frac performed current iteration?")
-        .def_property("MOM_excited_", &scf::HF::MOM_excited, &scf::HF::set_MOM_excited,
-                      "Are we to do excited-state MOM?")
-        .def_property("MOM_performed_", &scf::HF::MOM_performed, &scf::HF::set_MOM_performed,
-                      "MOM performed current iteration?")
-        .def_property("attempt_number_", &scf::HF::attempt_number, &scf::HF::set_attempt_number,
-                      "Current macroiteration (1-indexed) for stability analysis")
         .def("stability_analysis", &scf::HF::stability_analysis, "Assess wfn stability and correct if requested")
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
@@ -532,9 +538,8 @@ void export_wavefunction(py::module& m) {
              "basis"_a)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
-    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction>(m, "CGHF", "docstring")
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", "docstring")
         .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>())
-        .def("functional", &scf::CGHF::functional, "Returns the internal DFT Superfunctional.")
         .def("set_sad_basissets", &scf::CGHF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::CGHF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.");
