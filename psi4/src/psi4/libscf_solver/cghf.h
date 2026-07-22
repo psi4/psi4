@@ -31,6 +31,7 @@
 
 #include "psi4/libmints/complexwavefunction.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libscf_solver/basehf.h"
 
 #include <vector>
 
@@ -39,10 +40,11 @@ class BasisSet;
 class SuperFunctional;
 namespace scf {
 
-class CGHF : public ComplexWavefunction {
+class CGHF : public ComplexWavefunction, public BaseHF {
    protected:
-    /// The DFT functional definition
-    std::shared_ptr<SuperFunctional> functional_;
+    // Prefer BaseHF's copies over BaseWavefunction's for these names.
+    using BaseHF::nelectron_;
+    using BaseHF::multiplicity_;
 
     /// Basis list for SAD
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
@@ -62,7 +64,6 @@ class CGHF : public ComplexWavefunction {
         sad_fitting_basissets_ = basis_vec;
     }
 
-    std::shared_ptr<SuperFunctional> functional() const { return functional_; }
 
     double compute_energy() override;
 };

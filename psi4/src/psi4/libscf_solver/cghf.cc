@@ -41,7 +41,7 @@ CGHF::CGHF(std::shared_ptr<ComplexWavefunction> ref_wfn, std::shared_ptr<SuperFu
 
 CGHF::CGHF(std::shared_ptr<ComplexWavefunction> ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options,
            std::shared_ptr<PSIO> psio)
-    : ComplexWavefunction(options), functional_(func) {
+    : ComplexWavefunction(options), BaseHF(func) {
     // Analogous to HF::HF's shallow_copy(ref_wfn); full ComplexWavefunction::shallow_copy comes later.
     molecule_ = ref_wfn->molecule();
     basisset_ = ref_wfn->basisset();
