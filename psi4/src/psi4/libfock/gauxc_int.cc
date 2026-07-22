@@ -201,20 +201,80 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
         ret[1]->copy(ao_b);
     }
 
-    std::map<std::string, double> quad_values;
-    quad_values["VV10"] = 0.0;
-    quad_values["FUNCTIONAL"] = e_xc;
-    quad_values["RHO_A"] = 0.0;
-    quad_values["RHO_AX"] = 0.0;
-    quad_values["RHO_AY"] = 0.0;
-    quad_values["RHO_AZ"] = 0.0;
-    quad_values["RHO_B"] = 0.0;
-    quad_values["RHO_BX"] = 0.0;
-    quad_values["RHO_BY"] = 0.0;
-    quad_values["RHO_BZ"] = 0.0;
-    return quad_values;
+    quad_values_["VV10"] = 0.0;
+    quad_values_["FUNCTIONAL"] = e_xc;
+    quad_values_["RHO_A"] = 0.0;
+    quad_values_["RHO_AX"] = 0.0;
+    quad_values_["RHO_AY"] = 0.0;
+    quad_values_["RHO_AZ"] = 0.0;
+    quad_values_["RHO_B"] = 0.0;
+    quad_values_["RHO_BX"] = 0.0;
+    quad_values_["RHO_BY"] = 0.0;
+    quad_values_["RHO_BZ"] = 0.0;
+    return quad_values_;
 }
 
+SharedMatrix GauRV::compute_gradient() {
+    Eigen::MatrixXd eigen_d = D_AO_[0]->eigen_map();
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+    if (primary_->has_puream()) {
+        auto permuter = primary_->generate_permutation_to_cca();
+        eigen_d = permuter * eigen_d * permuter.transpose();
+    }
+#endif
+    auto grad_xc = integrator_->eval_exc_grad(eigen_d);
+
+    int natom = primary_->molecule()->natom();
+    auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
+
+    memcpy(G->get_pointer(), grad_xc.data(), natom * 3 * sizeof(double));
+
+    quad_values_["FUNCTIONAL"] = 0.0;
+    quad_values_["RHO_A"] = 0.0;
+    quad_values_["RHO_AX"] = 0.0;
+    quad_values_["RHO_AY"] = 0.0;
+    quad_values_["RHO_AZ"] = 0.0;
+    quad_values_["RHO_B"] = 0.0;
+    quad_values_["RHO_BX"] = 0.0;
+    quad_values_["RHO_BY"] = 0.0;
+    quad_values_["RHO_BZ"] = 0.0;
+
+    return G;
+}
+
+SharedMatrix GauUV::compute_gradient() {
+    auto Ds = D_AO_[0]->clone();
+    Ds->add(D_AO_[1]);
+    auto Dz = D_AO_[0]->clone();
+    Dz->subtract(D_AO_[1]);
+    Eigen::MatrixXd eigen_ds = Ds->eigen_map();
+    Eigen::MatrixXd eigen_dz = Dz->eigen_map();
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+    if (primary_->has_puream()) {
+        auto permuter = primary_->generate_permutation_to_cca();
+        eigen_ds = permuter * eigen_ds * permuter.transpose();
+        eigen_dz = permuter * eigen_dz * permuter.transpose();
+    }
+#endif
+    auto grad_xc = integrator_->eval_exc_grad(eigen_ds, eigen_dz);
+
+    int natom = primary_->molecule()->natom();
+    auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
+
+    memcpy(G->get_pointer(), grad_xc.data(), natom * 3 * sizeof(double));
+
+    quad_values_["FUNCTIONAL"] = 0.0;
+    quad_values_["RHO_A"] = 0.0;
+    quad_values_["RHO_AX"] = 0.0;
+    quad_values_["RHO_AY"] = 0.0;
+    quad_values_["RHO_AZ"] = 0.0;
+    quad_values_["RHO_B"] = 0.0;
+    quad_values_["RHO_BX"] = 0.0;
+    quad_values_["RHO_BY"] = 0.0;
+    quad_values_["RHO_BZ"] = 0.0;
+
+    return G;
+}
 } // namespace psi
 
 #endif

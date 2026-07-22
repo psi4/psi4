@@ -57,6 +57,8 @@ class GauRV : public GauXCBase {
     using GauXCBase::GauXCBase;
 
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+    bool can_compute_gradient() override { return true; };
+    SharedMatrix compute_gradient() override;
     ExchCXX::Spin spin() const override { return ExchCXX::Spin::Unpolarized; };
 };
 
@@ -64,6 +66,8 @@ class GauUV : public GauXCBase {
     using GauXCBase::GauXCBase;
 
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+    bool can_compute_gradient() override { return true; };
+    SharedMatrix compute_gradient() override;
     ExchCXX::Spin spin() const override { return ExchCXX::Spin::Polarized; };
 };
 }
