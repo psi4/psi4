@@ -29,6 +29,8 @@
 #include "cghf.h"
 
 #include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 
 namespace psi {
@@ -54,6 +56,10 @@ CGHF::~CGHF() {}
 void CGHF::common_init() {
     name_ = "CGHF";
     module_ = "scf";
+
+    if (molecule_->schoenflies_symbol() != "c1") {
+        throw PSIEXCEPTION("CGHF currently supports only C1 symmetry. Set symmetry c1 in the molecule block.");
+    }
 }
 
 double CGHF::compute_energy() {
