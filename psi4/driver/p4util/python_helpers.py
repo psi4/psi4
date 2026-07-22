@@ -446,6 +446,183 @@ def _core_wavefunction_to_file(wfn: core.Wavefunction, filename: str = None) -> 
 
 core.Wavefunction.to_file = _core_wavefunction_to_file
 
+
+@staticmethod
+def _core_complexwavefunction_from_file(wfn_data: Union[str, Dict, "pathlib.Path"]) -> core.ComplexWavefunction:
+    r"""Build ComplexWavefunction from data laid out like
+    :meth:`~psi4.core.ComplexWavefunction.to_file`.
+
+    Parameters
+    ----------
+    wfn_data
+        If a dict, use data directly. Otherwise, path-like passed to
+        :py:func:`numpy.load` to read from disk.
+
+    Returns
+    -------
+    ComplexWavefunction
+        A deserialized ComplexWavefunction object.
+
+    Raises
+    ------
+    NotImplementedError
+        If any ComplexMatrix payload is present (opaque until NumPy export exists).
+
+    """
+    if isinstance(wfn_data, dict):
+        pass
+    elif isinstance(wfn_data, str):
+        if not wfn_data.endswith(".npy"):
+            wfn_data = wfn_data + ".npy"
+        wfn_data = np.load(wfn_data, allow_pickle=True).item()
+    else:
+        wfn_data = np.load(wfn_data, allow_pickle=True).item()
+
+    wfn_matrix = wfn_data['matrix']
+    wfn_string = wfn_data['string']
+    wfn_boolean = wfn_data['boolean']
+    wfn_float = wfn_data['float']
+    wfn_floatvar = wfn_data['floatvar']
+    wfn_matrixarr = wfn_data['matrixarr']
+
+    # ComplexMatrix has no from_array yet; refuse non-null complex payloads.
+    for label, array in wfn_matrix.items():
+        if array is not None:
+            raise NotImplementedError(
+                f"ComplexWavefunction.from_file: restoring ComplexMatrix '{label}' is not implemented."
+            )
+    for label, array in wfn_matrixarr.items():
+        if array is not None:
+            raise NotImplementedError(
+                f"ComplexWavefunction.from_file: restoring ComplexMatrix QCVariable '{label}' is not implemented."
+            )
+
+    molecule = core.Molecule.from_dict(wfn_data['molecule'])
+
+    basis_name = wfn_string['basisname']
+    if ".gbs" in basis_name:
+        basis_name = basis_name.split('/')[-1].replace('.gbs', '')
+
+    basis_puream = wfn_boolean['basispuream']
+    basisset = core.BasisSet.build(molecule, 'ORBITAL', basis_name, puream=basis_puream)
+
+    # No dict ctor yet; rebuild from molecule/basis and restore public fields.
+    wfn = core.ComplexWavefunction(molecule, basisset)
+
+    wfn.set_name(wfn_string['name'])
+    wfn.set_module(wfn_string['module'])
+    wfn.set_print(wfn_data['int']['print'])
+    wfn.set_energy(wfn_float['energy'])
+    # efzc / dimensions / nelec / epsilon lack Python setters; common_init fills
+    # geometry-derived quantities. Non-null epsilon arrays are left unrestored.
+
+    for k, v in wfn_floatvar.items():
+        wfn.set_variable(k, v)
+
+    return wfn
+
+
+core.ComplexWavefunction.from_file = _core_complexwavefunction_from_file
+
+
+def _core_complexwavefunction_to_file(wfn: core.ComplexWavefunction, filename: str = None) -> Dict[str, Dict[str, Any]]:
+    """Serialize a ComplexWavefunction object. Opposite of
+    :meth:`~psi4.core.ComplexWavefunction.from_file`.
+
+    Analogous to :meth:`~psi4.core.Wavefunction.to_file`, but keyed to the
+    complex layout (``C``, ``D``, ``F``, ``epsilon``, ``nelec`` / ``nelecpi``)
+    rather than alpha/beta spin blocks.
+
+    TODO: FIGURE OUT COMPLEX MATRICES HERE
+    Complex matrices are currently opaque to pybind. They do not have a ``to_array``
+    attribute! Matrices are stored as ``None`` until serialization gets wired.
+    Scalar, dimension, and QCVariable fields are written normally.
+
+    Parameters
+    ----------
+    wfn
+        ComplexWavefunction or inherited class instance.
+    filename
+        An optional filename to which to write the data.
+
+    Returns
+    -------
+    ~typing.Dict[str, ~typing.Dict[str, ~typing.Any]]
+        A dictionary representation of the ComplexWavefunction.
+
+    """
+    if wfn.basisset().name().startswith("anonymous"):
+        raise ValidationError("Cannot serialize wavefunction with custom basissets.")
+
+    def _cmat_or_none(getter):
+        """Return None until I figure out NumPy export."""
+        try:
+            getter()
+        except Exception:
+            pass
+        return None
+
+    wfn_data = {
+        'molecule': wfn.molecule().to_dict(quiet=True),
+        'matrix': {
+            'C': _cmat_or_none(wfn.C),
+            'D': _cmat_or_none(wfn.D),
+            'F': _cmat_or_none(wfn.F),
+            'H': _cmat_or_none(wfn.H),
+            'S': _cmat_or_none(wfn.S),
+            'X': _cmat_or_none(wfn.lagrangian),
+            'gradient': _cmat_or_none(wfn.gradient),
+            'hessian': _cmat_or_none(wfn.hessian),
+        },
+        'vector': {
+            'epsilon': wfn.epsilon().to_array() if wfn.epsilon() else None,
+        },
+        'dimension': {
+            'frzcpi': wfn.frzcpi().to_tuple(),
+            'frzvpi': wfn.frzvpi().to_tuple(),
+            'nelecpi': wfn.nelecpi().to_tuple(),
+            'nmopi': wfn.nmopi().to_tuple(),
+            'nsopi': wfn.nsopi().to_tuple(),
+        },
+        'int': {
+            'nelec': wfn.nelec(),
+            'nfrzc': wfn.nfrzc(),
+            'nirrep': wfn.nirrep(),
+            'nmo': wfn.nmo(),
+            'nso': wfn.nso(),
+            'print': wfn.get_print(),
+        },
+        'string': {
+            'name': wfn.name(),
+            'module': wfn.module(),
+            'basisname': wfn.basisset().name()
+        },
+        'boolean': {
+            'PCM_enabled': wfn.PCM_enabled(),
+            'basispuream': wfn.basisset().has_puream()
+        },
+        'float': {
+            'energy': wfn.energy(),
+            'efzc': wfn.efzc(),
+            'dipole_field_x': wfn.get_dipole_field_strength()[0],
+            'dipole_field_y': wfn.get_dipole_field_strength()[1],
+            'dipole_field_z': wfn.get_dipole_field_strength()[2]
+        },
+        'floatvar': wfn.scalar_variables(),
+        # TODO: THIS
+        'matrixarr': {k: None for k in wfn.array_variables()},
+    }  # yapf: disable
+
+    if filename is not None:
+        if not filename.endswith('.npy'):
+            filename += '.npy'
+        np.save(filename, wfn_data, allow_pickle=True)
+
+    return wfn_data
+
+
+core.ComplexWavefunction.to_file = _core_complexwavefunction_to_file
+
 ## Python JK helps
 
 
@@ -1524,14 +1701,14 @@ def _core_variables(include_deprecated_keys: bool = False) -> Dict[str, Union[fl
     return dicary
 
 
-def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
+def _core_basewavefunction_variables(self, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
     """Return all scalar or array :ref:`QCVariables <sec:appendices:qcvars>`
     from *self*.
 
     Parameters
     ----------
     self
-        Wavefunction instance.
+        BaseWavefunction instance (including Wavefunction and ComplexWavefunction).
     include_deprecated_keys
         Also return duplicate entries with keys that have been deprecated.
 
@@ -1543,11 +1720,17 @@ def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) ->
         - Scalar variables are returned as floats.
         - Array variables not naturally 2D (like multipoles or per-atom charges)
           are returned as :class:`~numpy.ndarray` of natural dimensionality.
-        - Other array variables are returned as :py:class:`~psi4.core.Matrix` and
+        - Other real array variables are returned as :py:class:`~psi4.core.Matrix` and
           may have an extra dimension with symmetry information.
+        - ComplexMatrix array variables are omitted until NumPy export exists.
 
     """
-    dicary = {**self.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in self.array_variables().items()}}
+    dicary: Dict[str, Union[float, core.Matrix, np.ndarray]] = dict(self.scalar_variables())
+    array_vars = getattr(self, "array_variables", None)
+    if array_vars is not None:
+        for k, v in array_vars().items():
+            if isinstance(v, core.Matrix):
+                dicary[k] = _qcvar_reshape_get(k, v)
 
     if include_deprecated_keys:
         for old_key, (current_key, version) in _qcvar_transitions.items():
@@ -1555,6 +1738,10 @@ def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) ->
                 dicary[old_key] = dicary[current_key]
 
     return dicary
+
+
+# Keep the old name as an alias for any external callers.
+_core_wavefunction_variables = _core_basewavefunction_variables
 
 
 core.has_variable = _core_has_variable
@@ -1567,7 +1754,14 @@ core.Wavefunction.has_variable = _core_wavefunction_has_variable
 core.Wavefunction.variable = _core_wavefunction_variable
 core.Wavefunction.set_variable = _core_wavefunction_set_variable
 core.Wavefunction.del_variable = _core_wavefunction_del_variable
-core.Wavefunction.variables = _core_wavefunction_variables
+
+# Scalar QCVariables live on BaseWavefunction; array merge is type-aware above.
+core.BaseWavefunction.variables = _core_basewavefunction_variables
+
+# ComplexWavefunction shares the scalar QCVariable path with Wavefunction
+# (set_scalar_variable lives on BaseWavefunction). Array branches still expect
+# Matrix; ComplexMatrix-aware helpers can replace these as needed.
+core.ComplexWavefunction.set_variable = _core_wavefunction_set_variable
 
 # removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
 # core.get_variable
