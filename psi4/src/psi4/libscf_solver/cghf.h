@@ -61,6 +61,10 @@ class CGHF : public ComplexWavefunction {
     void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) {
         sad_fitting_basissets_ = basis_vec;
     }
+
+    std::shared_ptr<SuperFunctional> functional() const { return functional_; }
+
+    double compute_energy() override;
 };
 
 }  // namespace scf

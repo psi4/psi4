@@ -90,8 +90,6 @@ void export_wavefunction(py::module& m) {
         .def(py::init<>())
         .def("molecule", &BaseWavefunction::molecule, "Returns the wavefunction's molecule.")
         .def("basisset", &BaseWavefunction::basisset, "Returns the current orbital basis.")
-        .def("reference_wavefunction", &BaseWavefunction::reference_wavefunction, "Returns the reference wavefunction.")
-        .def("set_reference_wavefunction", &BaseWavefunction::set_reference_wavefunction, "docstring")
         .def("nfrzc", &BaseWavefunction::nfrzc, "Number of frozen core electrons.")
         .def("nso", &BaseWavefunction::nso, "Number of symmetry orbitals.")
         .def("nmo", &BaseWavefunction::nmo, "Number of molecule orbitals.")
@@ -165,6 +163,8 @@ void export_wavefunction(py::module& m) {
                       std::map<std::string, std::shared_ptr<Matrix>>, std::map<std::string, std::shared_ptr<Vector>>,
                       std::map<std::string, Dimension>, std::map<std::string, int>, std::map<std::string, std::string>,
                       std::map<std::string, bool>, std::map<std::string, double>>())
+        .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "Returns the reference wavefunction.")
+        .def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring")
         .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.")
         .def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "Deep copies the internal data.")
         .def("c1_deep_copy", &Wavefunction::c1_deep_copy,
@@ -488,6 +488,7 @@ void export_wavefunction(py::module& m) {
 
     py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction>(m, "CGHF", "docstring")
         .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("functional", &scf::CGHF::functional, "Returns the internal DFT Superfunctional.")
         .def("set_sad_basissets", &scf::CGHF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::CGHF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.");

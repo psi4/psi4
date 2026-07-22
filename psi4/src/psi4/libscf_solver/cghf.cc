@@ -56,5 +56,10 @@ void CGHF::common_init() {
     module_ = "scf";
 }
 
+double CGHF::compute_energy() {
+    // TODO: Implement the CGHF SCF energy (initialize / iterate / finalize).
+    return 0.0;
+}
+
 }  // namespace scf
 }  // namespace psi
