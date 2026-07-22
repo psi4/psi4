@@ -145,6 +145,8 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
     /// Matrix factory for creating standard sized matrices
     std::shared_ptr<MatrixFactory> factory_;
 
+    std::shared_ptr<Wavefunction> reference_wavefunction_;
+
     /// Same orbs or dens
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
@@ -180,6 +182,10 @@ class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_
 
     /// Returns the MatrixFactory object that pertains to this wavefunction
     std::shared_ptr<MatrixFactory> matrix_factory() const { return factory_; }
+    /// Returns the reference wavefunction
+    std::shared_ptr<Wavefunction> reference_wavefunction() const;
+    /// Sets the reference wavefunction
+    void set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn);
 
     /**
      * Copy the contents of another Wavefunction into this one.
