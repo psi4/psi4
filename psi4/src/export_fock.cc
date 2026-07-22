@@ -29,6 +29,7 @@
 #include "psi4/pybind11.h"
 
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/basejk.h"
 #include "psi4/libfock/soscf.h"
 #include "psi4/lib3index/denominator.h"
 #include "psi4/lib3index/dftensor.h"
@@ -46,7 +47,24 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_fock(py::module &m) {
-    py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
+    py::class_<BaseJK, std::shared_ptr<BaseJK>>(m, "BaseJK", "Shared logistics base for J/K builders")
+        .def("basisset", &BaseJK::basisset)
+        .def("set_print", &BaseJK::set_print)
+        .def("set_debug", &BaseJK::set_debug)
+        .def("set_bench", &BaseJK::set_bench)
+        .def("set_cutoff", &BaseJK::set_cutoff)
+        .def("set_memory", &BaseJK::set_memory)
+        .def("set_omp_nthread", &BaseJK::set_omp_nthread)
+        .def("set_do_J", &BaseJK::set_do_J)
+        .def("set_do_K", &BaseJK::set_do_K)
+        .def("computed_shells_per_iter", py::overload_cast<>(&BaseJK::computed_shells_per_iter),
+             "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during "
+             "each compute call.")
+        .def("computed_shells_per_iter", py::overload_cast<const std::string &>(&BaseJK::computed_shells_per_iter),
+             "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during "
+             "each compute call.");
+
+    py::class_<JK, BaseJK, std::shared_ptr<JK>>(m, "JK", "docstring")
         .def_static("build_JK",
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {
                         return JK::build_JK(basis, aux, Process::environment.options);
@@ -58,21 +76,15 @@ void export_fock(py::module &m) {
         .def("name", &JK::name)
         .def("memory_estimate", &JK::memory_estimate)
         .def("initialize", &JK::initialize)
-        .def("basisset", &JK::basisset)
-        .def("set_print", &JK::set_print)
-        .def("set_cutoff", &JK::set_cutoff)
-        .def("set_memory", &JK::set_memory)
-        .def("set_omp_nthread", &JK::set_omp_nthread)
-        .def("set_do_J", &JK::set_do_J)
-        .def("set_do_K", &JK::set_do_K)
         .def("set_do_wK", &JK::set_do_wK)
         .def("set_omega", &JK::set_omega, "Dampening term for range separated DFT", "omega"_a)
         .def("get_omega", &JK::get_omega, "Dampening term for range separated DFT")
-        .def("set_wcombine", &JK::set_wcombine, "Are Exchange terms in one Matrix", "wcombine"_a )
+        .def("set_wcombine", &JK::set_wcombine, "Are Exchange terms in one Matrix", "wcombine"_a)
         .def("get_wcombine", &JK::get_wcombine, "Are Exchange terms in one Matrix", "wcombine")
         .def("set_omega_alpha", &JK::set_omega_alpha, "Weight for HF exchange term in range-separated DFT", "alpha"_a)
         .def("get_omega_alpha", &JK::get_omega_alpha, "Weight for HF exchange term in range-separated DFT")
-        .def("set_omega_beta", &JK::set_omega_beta, "Weight for dampened exchange term in range-separated DFT", "beta"_a)
+        .def("set_omega_beta", &JK::set_omega_beta, "Weight for dampened exchange term in range-separated DFT",
+             "beta"_a)
         .def("get_omega_beta", &JK::get_omega_beta, "Weight for dampened exchange term in range-separated DFT")
         .def("compute", &JK::compute)
         .def("finalize", &JK::finalize)
@@ -92,9 +104,9 @@ void export_fock(py::module &m) {
         .def("K", &JK::K, py::return_value_policy::reference_internal)
         .def("wK", &JK::wK, py::return_value_policy::reference_internal)
         .def("D", &JK::D, py::return_value_policy::reference_internal)
-        .def("computed_shells_per_iter", py::overload_cast<>(&JK::computed_shells_per_iter), "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during each compute call.")
-        .def("computed_shells_per_iter", py::overload_cast<const std::string&>(&JK::computed_shells_per_iter), "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during each compute call.")
-        .def("print_header", &JK::print_header, "Prints information about the type and config of the JK object into the output file. Print verbosity may depend on the value of JK::print\\_.");
+        .def("print_header", &JK::print_header,
+             "Prints information about the type and config of the JK object into the output file. Print verbosity may "
+             "depend on the value of JK::print\\_.");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
