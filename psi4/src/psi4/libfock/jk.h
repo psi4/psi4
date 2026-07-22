@@ -291,7 +291,7 @@ class PSI_API JK : public BaseJK {
     // => Per-Iteration Setup/Finalize Routines <= //
 
     /// Build the pseudo-density D_, before compute_JK()
-    void compute_D();
+    void compute_D() override;
     /// Transform current C_left_/C_right_/D_ to C_left_ao_/C_right_ao_/D_ao_, before compute_JK()
     void USO2AO();
     /// Transform finished J_ao_/K_ao_ to J_/K_, after compute_JK()
@@ -309,16 +309,7 @@ class PSI_API JK : public BaseJK {
      *  one derived class, use with care!!!!!
      *
      */
-    void common_init();
-
-    // => Required Algorithm-Specific Methods <= //
-
-    /// Setup integrals, files, etc
-    virtual void preiterations() = 0;
-    /// Compute J/K for current C/D
-    virtual void compute_JK() = 0;
-    /// Delete integrals, files, etc
-    virtual void postiterations() = 0;
+    void common_init() override;
 
     // => Helper Routines <= //
 
@@ -346,7 +337,7 @@ class PSI_API JK : public BaseJK {
     JK(std::shared_ptr<BasisSet> primary);
 
     /// Destructor
-    virtual ~JK();
+    ~JK() override;
 
     /**
     * Static instance constructor, used to get prebuilt DiskDFJK/DirectJK objects
@@ -362,9 +353,6 @@ class PSI_API JK : public BaseJK {
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                         Options& options, bool do_wK, size_t doubles);
 
-    /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const = 0;
-    virtual std::string name() = 0;
     // TODO: investigate if JK::memory_estimate and all of its derived variants could be made const
     // Probably requires refactoring DFHelper and MemDFJK first.
     virtual size_t memory_estimate() = 0;
@@ -416,26 +404,13 @@ class PSI_API JK : public BaseJK {
     // => Computers <= //
 
     /**
-     * Initialize the integral technology.
-     * MUST be called AFTER setting knobs
-     * but BEFORE first call of compute()
-     */
-    void initialize();
-    /**
      * Compute D/J/K for the current C
      * Update values in your reference to
      * C_left/C_right BEFORE calling this,
      * renew your references to the matrices
      * in D/J/K AFTER calling this.
      */
-    void compute();
-    /**
-     * Method to clear off memory without
-     * totally destroying the object. The
-     * object can be rebuilt later by calling
-     * initialize()
-     */
-    void finalize();
+    void compute() override;
 
     /**
      * Virtual method to provide (ia|ia) integrals for

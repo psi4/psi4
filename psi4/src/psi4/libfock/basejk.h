@@ -82,13 +82,41 @@ class PSI_API BaseJK {
     /// Primary basis set
     std::shared_ptr<BasisSet> primary_;
 
+    // => Per-Iteration Setup/Finalize Routines <= //
+
+    /// Build the pseudo-density D_, before compute_JK()
+    virtual void compute_D() = 0;
+    /**
+     *  Function that sets a number of flags and allocates memory
+     *  and sets up AO2USO.
+     *
+     *  Important note: no other memory is allocated here. That
+     *  needs to be done in your derived class' constructor!!!!
+     *
+     *  Warning: this function is currently shadowed in at least
+     *  one derived class, use with care!!!!!
+     *
+     */
+    virtual void common_init();
+
+    // => Required Algorithm-Specific Methods <= //
+
+    /// Setup integrals, files, etc
+    virtual void preiterations() = 0;
+    /// Compute J/K for current C/D
+    virtual void compute_JK() = 0;
+    /// Delete integrals, files, etc
+    virtual void postiterations() = 0;
+
+    // => Helper Routines <= //
+
     /**
      * Return number of ERI shell quartets computed during the JK build process.
      */
     virtual size_t num_computed_shells();
 
     /// Initialize logistics knobs to defaults
-    void common_init();
+    void init_knobs();
 
    public:
     /**
@@ -98,6 +126,10 @@ class PSI_API BaseJK {
 
     /// Destructor
     virtual ~BaseJK();
+
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const = 0;
+    virtual std::string name() = 0;
 
     // => Knobs <= //
 
@@ -147,6 +179,30 @@ class PSI_API BaseJK {
      *        defaults to true
      */
     virtual void set_do_K(bool do_K) { do_K_ = do_K; }
+
+    // => Computers <= //
+
+    /**
+     * Initialize the integral technology.
+     * MUST be called AFTER setting knobs
+     * but BEFORE first call of compute()
+     */
+    void initialize();
+    /**
+     * Compute D/J/K for the current C
+     * Update values in your reference to
+     * C_left/C_right BEFORE calling this,
+     * renew your references to the matrices
+     * in D/J/K AFTER calling this.
+     */
+    virtual void compute() = 0;
+    /**
+     * Method to clear off memory without
+     * totally destroying the object. The
+     * object can be rebuilt later by calling
+     * initialize()
+     */
+    void finalize();
 
     // => Accessors <= //
 
