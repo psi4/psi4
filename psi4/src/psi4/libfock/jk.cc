@@ -559,8 +559,6 @@ void JK::AO2USO() {
     }
     delete[] temp;
 }
-void JK::initialize() { preiterations(); }
-
 void JK::compute() {
     // Is this density symmetric?
     if (C_left_.size() && !C_right_.size()) {
@@ -671,5 +669,4 @@ void JK::zero() {
     }
 }
 
-void JK::finalize() { postiterations(); }
 }  // namespace psi

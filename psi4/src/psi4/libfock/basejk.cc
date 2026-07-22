@@ -34,11 +34,11 @@
 
 namespace psi {
 
-BaseJK::BaseJK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
+BaseJK::BaseJK(std::shared_ptr<BasisSet> primary) : primary_(primary) { init_knobs(); }
 
 BaseJK::~BaseJK() {}
 
-void BaseJK::common_init() {
+void BaseJK::init_knobs() {
     print_ = 1;
     debug_ = 0;
     bench_ = 0;
@@ -59,6 +59,8 @@ void BaseJK::common_init() {
     computed_shells_per_iter_ = {};
 }
 
+void BaseJK::common_init() {}
+
 const std::unordered_map<std::string, std::vector<size_t>>& BaseJK::computed_shells_per_iter() {
     return computed_shells_per_iter_;
 }
@@ -74,5 +76,9 @@ size_t BaseJK::num_computed_shells() {
 
     return 0;
 }
+
+void BaseJK::initialize() { preiterations(); }
+
+void BaseJK::finalize() { postiterations(); }
 
 }  // namespace psi
