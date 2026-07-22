@@ -2060,6 +2060,8 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # We always would like to print a little property information
     if kwargs.get('scf_do_properties', True):
+        if scf_wfn is core.ComplexWavefunction:
+            raise NotImplementedError("Set scf_do_properties=False.")
         oeprop = core.OEProp(scf_wfn)
         oeprop.set_title("SCF")
 
