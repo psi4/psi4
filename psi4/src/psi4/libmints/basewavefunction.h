@@ -46,7 +46,6 @@ class Molecule;
 class BasisSet;
 class IntegralFactory;
 class MintsHelper;
-class Wavefunction;
 class MatrixFactory;
 class Options;
 class SOBasisSet;
@@ -87,8 +86,6 @@ class PSI_API BaseWavefunction {
     /// MintsHelper
     std::shared_ptr<MintsHelper> mintshelper_;
 
-    std::shared_ptr<Wavefunction> reference_wavefunction_;
-
     /// How much memory you have access to.
     long int memory_;
 
@@ -113,6 +110,11 @@ class PSI_API BaseWavefunction {
     Dimension frzcpi_;
     /// Number of frozen virtuals per irrep
     Dimension frzvpi_;
+
+    /// Total number of electrons in the system
+    int nelectron_{0};
+    /// Spin multiplicity of the system
+    int multiplicity_{1};
 
     /// Number of so per irrep
     Dimension nsopi_;
@@ -201,11 +203,6 @@ class PSI_API BaseWavefunction {
     std::shared_ptr<BasisSet> get_basisset(std::string label);
     void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
     bool basisset_exists(std::string label);
-
-    /// Returns the reference wavefunction
-    std::shared_ptr<Wavefunction> reference_wavefunction() const { return reference_wavefunction_; }
-    /// Sets the reference wavefunction
-    void set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn) { reference_wavefunction_ = wfn; }
 
     /// Returns the print level
     int get_print() const { return print_; }
