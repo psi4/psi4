@@ -463,10 +463,10 @@ def _core_complexwavefunction_from_file(wfn_data: Union[str, Dict, "pathlib.Path
     ComplexWavefunction
         A deserialized ComplexWavefunction object.
 
-    Raises
-    ------
-    NotImplementedError
-        If any ComplexMatrix payload is present (opaque until NumPy export exists).
+    Notes
+    -----
+    ComplexMatrix payloads are restored via
+    :meth:`~psi4.core.ComplexMatrix.from_array` (C1 / single-block only).
 
     """
     if isinstance(wfn_data, dict):
@@ -479,23 +479,12 @@ def _core_complexwavefunction_from_file(wfn_data: Union[str, Dict, "pathlib.Path
         wfn_data = np.load(wfn_data, allow_pickle=True).item()
 
     wfn_matrix = wfn_data['matrix']
+    wfn_vector = wfn_data['vector']
     wfn_string = wfn_data['string']
     wfn_boolean = wfn_data['boolean']
     wfn_float = wfn_data['float']
     wfn_floatvar = wfn_data['floatvar']
     wfn_matrixarr = wfn_data['matrixarr']
-
-    # ComplexMatrix has no from_array yet; refuse non-null complex payloads.
-    for label, array in wfn_matrix.items():
-        if array is not None:
-            raise NotImplementedError(
-                f"ComplexWavefunction.from_file: restoring ComplexMatrix '{label}' is not implemented."
-            )
-    for label, array in wfn_matrixarr.items():
-        if array is not None:
-            raise NotImplementedError(
-                f"ComplexWavefunction.from_file: restoring ComplexMatrix QCVariable '{label}' is not implemented."
-            )
 
     molecule = core.Molecule.from_dict(wfn_data['molecule'])
 
@@ -513,11 +502,31 @@ def _core_complexwavefunction_from_file(wfn_data: Union[str, Dict, "pathlib.Path
     wfn.set_module(wfn_string['module'])
     wfn.set_print(wfn_data['int']['print'])
     wfn.set_energy(wfn_float['energy'])
-    # efzc / dimensions / nelec / epsilon lack Python setters; common_init fills
-    # geometry-derived quantities. Non-null epsilon arrays are left unrestored.
+
+    setters = {
+        'C': wfn.set_C,
+        'D': wfn.set_D,
+        'F': wfn.set_F,
+        'H': wfn.set_H,
+        'S': wfn.set_S,
+        'X': wfn.set_lagrangian,
+        'gradient': wfn.set_gradient,
+        'hessian': wfn.set_hessian,
+    }
+    for label, setter in setters.items():
+        array = wfn_matrix.get(label)
+        if array is not None:
+            setter(core.ComplexMatrix.from_array(array, name=label))
+
+    eps = wfn_vector.get('epsilon')
+    if eps is not None:
+        wfn.set_epsilon(core.Vector.from_array(eps, name='epsilon'))
 
     for k, v in wfn_floatvar.items():
         wfn.set_variable(k, v)
+    for k, v in wfn_matrixarr.items():
+        if v is not None:
+            wfn.set_array_variable(k, core.ComplexMatrix.from_array(v, name=k))
 
     return wfn
 
@@ -533,10 +542,8 @@ def _core_complexwavefunction_to_file(wfn: core.ComplexWavefunction, filename: s
     complex layout (``C``, ``D``, ``F``, ``epsilon``, ``nelec`` / ``nelecpi``)
     rather than alpha/beta spin blocks.
 
-    TODO: FIGURE OUT COMPLEX MATRICES HERE
-    Complex matrices are currently opaque to pybind. They do not have a ``to_array``
-    attribute! Matrices are stored as ``None`` until serialization gets wired.
-    Scalar, dimension, and QCVariable fields are written normally.
+    ComplexMatrix values use :meth:`~psi4.core.ComplexMatrix.to_array`, which
+    currently supports C1 (single block) only.
 
     Parameters
     ----------
@@ -554,25 +561,24 @@ def _core_complexwavefunction_to_file(wfn: core.ComplexWavefunction, filename: s
     if wfn.basisset().name().startswith("anonymous"):
         raise ValidationError("Cannot serialize wavefunction with custom basissets.")
 
-    def _cmat_or_none(getter):
-        """Return None until I figure out NumPy export."""
+    def _cmat_to_array(getter):
         try:
-            getter()
+            mat = getter()
         except Exception:
-            pass
-        return None
+            return None
+        return None if mat is None else mat.to_array()
 
     wfn_data = {
         'molecule': wfn.molecule().to_dict(quiet=True),
         'matrix': {
-            'C': _cmat_or_none(wfn.C),
-            'D': _cmat_or_none(wfn.D),
-            'F': _cmat_or_none(wfn.F),
-            'H': _cmat_or_none(wfn.H),
-            'S': _cmat_or_none(wfn.S),
-            'X': _cmat_or_none(wfn.lagrangian),
-            'gradient': _cmat_or_none(wfn.gradient),
-            'hessian': _cmat_or_none(wfn.hessian),
+            'C': _cmat_to_array(wfn.C),
+            'D': _cmat_to_array(wfn.D),
+            'F': _cmat_to_array(wfn.F),
+            'H': _cmat_to_array(wfn.H),
+            'S': _cmat_to_array(wfn.S),
+            'X': _cmat_to_array(wfn.lagrangian),
+            'gradient': _cmat_to_array(wfn.gradient),
+            'hessian': _cmat_to_array(wfn.hessian),
         },
         'vector': {
             'epsilon': wfn.epsilon().to_array() if wfn.epsilon() else None,
@@ -609,8 +615,7 @@ def _core_complexwavefunction_to_file(wfn: core.ComplexWavefunction, filename: s
             'dipole_field_z': wfn.get_dipole_field_strength()[2]
         },
         'floatvar': wfn.scalar_variables(),
-        # TODO: THIS
-        'matrixarr': {k: None for k in wfn.array_variables()},
+        'matrixarr': {k: v.to_array() for k, v in wfn.array_variables().items()},
     }  # yapf: disable
 
     if filename is not None:
