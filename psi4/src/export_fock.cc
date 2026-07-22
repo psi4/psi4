@@ -48,6 +48,7 @@ using namespace pybind11::literals;
 
 void export_fock(py::module &m) {
     py::class_<BaseJK, std::shared_ptr<BaseJK>>(m, "BaseJK", "Shared logistics base for J/K builders")
+        .def("name", &BaseJK::name)
         .def("basisset", &BaseJK::basisset)
         .def("set_print", &BaseJK::set_print)
         .def("set_debug", &BaseJK::set_debug)
@@ -57,6 +58,9 @@ void export_fock(py::module &m) {
         .def("set_omp_nthread", &BaseJK::set_omp_nthread)
         .def("set_do_J", &BaseJK::set_do_J)
         .def("set_do_K", &BaseJK::set_do_K)
+        .def("initialize", &BaseJK::initialize)
+        .def("compute", &BaseJK::compute)
+        .def("finalize", &BaseJK::finalize)
         .def("computed_shells_per_iter", py::overload_cast<>(&BaseJK::computed_shells_per_iter),
              "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during "
              "each compute call.")
@@ -73,9 +77,7 @@ void export_fock(py::module &m) {
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux, bool do_wK, size_t doubles) {
                         return JK::build_JK(basis, aux, Process::environment.options, do_wK, doubles);
                     })
-        .def("name", &JK::name)
         .def("memory_estimate", &JK::memory_estimate)
-        .def("initialize", &JK::initialize)
         .def("set_do_wK", &JK::set_do_wK)
         .def("set_omega", &JK::set_omega, "Dampening term for range separated DFT", "omega"_a)
         .def("get_omega", &JK::get_omega, "Dampening term for range separated DFT")
@@ -86,8 +88,6 @@ void export_fock(py::module &m) {
         .def("set_omega_beta", &JK::set_omega_beta, "Weight for dampened exchange term in range-separated DFT",
              "beta"_a)
         .def("get_omega_beta", &JK::get_omega_beta, "Weight for dampened exchange term in range-separated DFT")
-        .def("compute", &JK::compute)
-        .def("finalize", &JK::finalize)
         .def("C_clear",
              [](JK &jk) {
                  jk.C_left().clear();
