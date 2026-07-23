@@ -1,4 +1,5 @@
 list(APPEND sources
+  basehf.cc
   cuhf.cc
   frac.cc
   hf.cc

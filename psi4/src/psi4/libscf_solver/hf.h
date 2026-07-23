@@ -87,9 +87,6 @@ class HF : public Wavefunction, public BaseHF {
     // Q: right now, thresholds are removed from Wfn since only appear once, py-side.
     //    should we instead store here the E & D to which SCF was converged?
 
-    /// Table of energy components
-    std::map<std::string, double> energies_;
-
     /// Basis list for SAD
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
     std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
@@ -336,10 +333,6 @@ class HF : public Wavefunction, public BaseHF {
     void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) {
         sad_fitting_basissets_ = basis_vec;
     }
-
-    // Energies data
-    void set_energies(std::string key, double value) { energies_[key] = value; }
-    double get_energies(std::string key) { return energies_[key]; }
 
     // External potentials
     void clear_external_potentials() { external_potentials_.clear(); }

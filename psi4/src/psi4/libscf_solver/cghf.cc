@@ -57,8 +57,10 @@ CGHF::CGHF(std::shared_ptr<ComplexWavefunction> ref_wfn, std::shared_ptr<SuperFu
 CGHF::~CGHF() {}
 
 void CGHF::common_init() {
+    BaseHF::common_init(options_, module_, molecule_, dipole_field_strength_);
     name_ = "CGHF";
-    module_ = "scf";
+    // Prefer BaseHF::nelectron_ over BaseWavefunction's; copy from ComplexWavefunction.
+    nelectron_ = nelec_;
 
     if (molecule_->schoenflies_symbol() != "c1") {
         throw PSIEXCEPTION("CGHF currently supports only C1 symmetry. Set symmetry c1 in the molecule block.");

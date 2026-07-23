@@ -96,18 +96,13 @@ HF::HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Option
 HF::~HF() {}
 
 void HF::common_init() {
-    attempt_number_ = 1;
-    reset_occ_ = false;
-    sad_ = false;
-    module_ = "scf";
+    BaseHF::common_init(options_, module_, molecule_, dipole_field_strength_);
     frac_performed_ = false;
 
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
     integral_threshold_ = options_.get_double("INTS_TOLERANCE");
-
-    scf_type_ = options_.get_str("SCF_TYPE");
 
     H_ = factory_->create_matrix("One-electron Hamiltonian");
     X_ = factory_->create_matrix("X");
@@ -119,8 +114,6 @@ void HF::common_init() {
         nsopi_[h] = dimpi[h];
         nso_ += nsopi_[h];
     }
-
-    energies_["Total Energy"] = 0.0;
 
     // Read in DOCC and SOCC from memory
     input_docc_ = false;
@@ -205,10 +198,6 @@ void HF::common_init() {
         }
     }
 
-    // Set additional information
-    nuclearrep_ = molecule_->nuclear_repulsion_energy(dipole_field_strength_);
-    charge_ = molecule_->molecular_charge();
-    multiplicity_ = molecule_->multiplicity();
     nelectron_ = nbeta_ + nalpha_;
 
     // Copy data for storage
@@ -252,17 +241,12 @@ void HF::common_init() {
     // How much stuff shall we echo to the user?
     if (options_["PRINT"].has_changed()) print_ = options_.get_int("PRINT");
 
-    initialized_diis_manager_ = false;
-
-    MOM_performed_ = false;  // duplicated py-side (needed before iterate)
-
     if (print_) {
         print_header();
     }
 
     // -D is zero by default
     set_scalar_variable("-D Energy", 0.0);  // no-autodoc
-    energies_["-D"] = 0.0;
 
     // CPHF info
     cphf_nfock_builds_ = 0;
