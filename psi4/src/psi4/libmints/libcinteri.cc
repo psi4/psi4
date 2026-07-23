@@ -42,9 +42,13 @@ extern "C" {
 #include <cint.h>
 int int2e_sph(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env, CINTOpt *opt,
               double *cache);
+int int2e_cart(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env, CINTOpt *opt,
+               double *cache);
 void int2e_optimizer(CINTOpt **opt, int *atm, int natm, int *bas, int nbas, double *env);
 int int1e_ovlp_sph(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env,
                    CINTOpt *opt, double *cache);
+int int1e_ovlp_cart(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env,
+                    CINTOpt *opt, double *cache);
 double CINTgto_norm(int n, double a);
 }
 
@@ -71,6 +75,8 @@ inline int libcint_m(int i, int l) {
     return i - l;
 }
 
+inline int ncart(int l) { return (l + 1) * (l + 2) / 2; }
+
 }  // namespace
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, int deriv, double omega,
@@ -79,17 +85,16 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
     if (deriv_ != 0)
         throw PSIEXCEPTION("LIBCINT backend: integral derivatives are not implemented (use INTEGRAL_PACKAGE LIBINT2).");
 
-    // Spherical harmonics only for now; cartesian normalization differs from
-    // psi4's and would need a separate per-component rescale. Density fitting
-    // is supported by a simple jerry-rig: psi4 passes the "absent" center as a
-    // dummy s-shell (l=0, exp=0, coef=1) -- exactly libint2's unit shell, a
-    // constant function -- so the 4-center int2e_sph path with that dummy shell
-    // already yields the (ij|k) 3-center and (i|k) 2-center integrals.
+    // Determine whether the (non-dummy) bases are cartesian or spherical. psi4
+    // uses one convention per calculation (the PUREAM option), so a single flag
+    // suffices; the l=0 dummy shell is identical either way. Density fitting is
+    // handled by the dummy s-shell (l=0, exp=0) that psi4 places in the absent
+    // center's slot -- see append_basis / normalize_shells.
+    cart_ = false;
     for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()}) {
-        if (is_dummy_basis(*bs)) continue;  // handled shell-by-shell below
+        if (is_dummy_basis(*bs)) continue;
         for (int s = 0; s < bs->nshell(); ++s)
-            if (bs->shell(s).is_cartesian())
-                throw PSIEXCEPTION("LIBCINT backend: cartesian basis sets are not yet supported (spherical only).");
+            if (bs->shell(s).is_cartesian() && bs->shell(s).am() > 0) cart_ = true;
     }
 
     build_environment();
@@ -136,7 +141,7 @@ void LibcintTwoElectronInt::common_init() {
     int maxam = 0;
     for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()})
         maxam = std::max(maxam, bs->max_am());
-    const size_t nmax = static_cast<size_t>(2 * maxam + 1);
+    const size_t nmax = static_cast<size_t>(cart_ ? ncart(maxam) : 2 * maxam + 1);
     const size_t blk = nmax * nmax * nmax * nmax;
     target_store_.assign(blk, 0.0);
     cint_buf_.assign(blk, 0.0);
@@ -249,11 +254,19 @@ void LibcintTwoElectronInt::normalize_shells() {
         // Skip the dummy/unit shell (exp=0): its self-overlap diverges and it
         // must stay the bare constant to mirror libint2's unit shell.
         if (nprim == 1 && l == 0 && env_[exp_off] == 0.0) continue;
-        const int nf = 2 * l + 1;
+        const int nf = cart_ ? ncart(l) : 2 * l + 1;
         ov.assign(static_cast<size_t>(nf) * nf, 0.0);
         int shls[2] = {g, g};
-        int1e_ovlp_sph(ov.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(), nullptr, nullptr);
-        const double s = ov[0];  // diagonal self-overlap (equal for all components)
+        if (cart_)
+            int1e_ovlp_cart(ov.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(), nullptr, nullptr);
+        else
+            int1e_ovlp_sph(ov.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(), nullptr, nullptr);
+        // ov[0] is the axial (l,0,0) cartesian / m=0 spherical self-overlap.
+        // Normalizing it to 1 matches libint2: for spherical every component
+        // shares this norm; for cartesian libint2 likewise normalizes the axial
+        // component and lets the off-axis ones follow, and libcint differs only
+        // by a single per-shell scale, so this one factor aligns the whole shell.
+        const double s = ov[0];
         if (s > 0.0) {
             const double inv = 1.0 / std::sqrt(s);
             for (int p = 0; p < nprim; ++p) env_[coef_off + p] *= inv;
@@ -261,32 +274,40 @@ void LibcintTwoElectronInt::normalize_shells() {
     }
 }
 
-size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, int n1, int n2, int n3, int n4) {
-    const int l1 = (n1 - 1) / 2, l2 = (n2 - 1) / 2, l3 = (n3 - 1) / 2, l4 = (n4 - 1) / 2;
+size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, int l1, int l2, int l3, int l4) {
+    const int n1 = cart_ ? ncart(l1) : 2 * l1 + 1;
+    const int n2 = cart_ ? ncart(l2) : 2 * l2 + 1;
+    const int n3 = cart_ ? ncart(l3) : 2 * l3 + 1;
+    const int n4 = cart_ ? ncart(l4) : 2 * l4 + 1;
     const size_t n = static_cast<size_t>(n1) * n2 * n3 * n4;
     if (cint_buf_.size() < n) cint_buf_.assign(n, 0.0);
 
     int shls[4] = {g1, g2, g3, g4};
     const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
     const int natm = static_cast<int>(atm_.size() / ATM_SLOTS);
-    int ok = int2e_sph(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
-                       static_cast<CINTOpt *>(opt_), nullptr);
+    int ok = cart_ ? int2e_cart(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
+                                static_cast<CINTOpt *>(opt_), nullptr)
+                   : int2e_sph(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
+                               static_cast<CINTOpt *>(opt_), nullptr);
     double *tgt = target_full_;
     if (!ok) {
         std::fill(tgt, tgt + n, 0.0);
         return 0;
     }
 
-    // Repack: libcint is col-major (index 1 fastest) in m = -l..+l order;
-    // psi4 is row-major (index 1 slowest) in Gaussian-m order. Signs all +1.
+    // Repack libcint (col-major, index 1 fastest) into psi4 (row-major, index 1
+    // slowest), mapping each shell's components. Spherical: libcint m-order ->
+    // psi4 Gaussian-m order (all +1 signs). Cartesian: identity (libcint's
+    // cartesian order already equals psi4's CartesianIter order).
+    auto slot = [&](int i, int l) { return cart_ ? i : psi4_slot(libcint_m(i, l)); };
     for (int a = 0; a < n1; ++a) {
-        const int pa = psi4_slot(libcint_m(a, l1));
+        const int pa = slot(a, l1);
         for (int b = 0; b < n2; ++b) {
-            const int pb = psi4_slot(libcint_m(b, l2));
+            const int pb = slot(b, l2);
             for (int c = 0; c < n3; ++c) {
-                const int pc = psi4_slot(libcint_m(c, l3));
+                const int pc = slot(c, l3);
                 for (int d = 0; d < n4; ++d) {
-                    const int pd = psi4_slot(libcint_m(d, l4));
+                    const int pd = slot(d, l4);
                     const size_t iC =
                         static_cast<size_t>(a) + n1 * (static_cast<size_t>(b) + n2 * (static_cast<size_t>(c) + static_cast<size_t>(n3) * d));
                     const size_t iP = (((static_cast<size_t>(pa) * n2 + pb) * n3 + pc) * n4 + pd);
@@ -303,14 +324,13 @@ size_t LibcintTwoElectronInt::compute_shell(const AOShellCombinationsIterator &s
 }
 
 size_t LibcintTwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
-    const int n1 = original_bs1_->shell(s1).nfunction();
-    const int n2 = original_bs2_->shell(s2).nfunction();
-    const int n3 = original_bs3_->shell(s3).nfunction();
-    const int n4 = original_bs4_->shell(s4).nfunction();
-    curr_buff_size_ = n1 * n2 * n3 * n4;
+    const int l1 = original_bs1_->shell(s1).am(), l2 = original_bs2_->shell(s2).am();
+    const int l3 = original_bs3_->shell(s3).am(), l4 = original_bs4_->shell(s4).am();
+    curr_buff_size_ = original_bs1_->shell(s1).nfunction() * original_bs2_->shell(s2).nfunction() *
+                      original_bs3_->shell(s3).nfunction() * original_bs4_->shell(s4).nfunction();
 
     const size_t ret = compute_quartet(bas_start_[0] + s1, bas_start_[1] + s2, bas_start_[2] + s3, bas_start_[3] + s4,
-                                       n1, n2, n3, n4);
+                                       l1, l2, l3, l4);
     buffers_[0] = target_full_;
     return ret;
 }
@@ -322,13 +342,11 @@ size_t LibcintTwoElectronInt::compute_shell_for_sieve(const std::shared_ptr<Basi
         if (kv.first == bs.get()) start = kv.second;
     if (start < 0) throw PSIEXCEPTION("LIBCINT backend: sieve basis not found in libcint environment.");
 
-    const int n1 = bs->shell(s1).nfunction();
-    const int n2 = bs->shell(s2).nfunction();
-    const int n3 = bs->shell(s3).nfunction();
-    const int n4 = bs->shell(s4).nfunction();
-    curr_buff_size_ = n1 * n2 * n3 * n4;
+    const int l1 = bs->shell(s1).am(), l2 = bs->shell(s2).am(), l3 = bs->shell(s3).am(), l4 = bs->shell(s4).am();
+    curr_buff_size_ = bs->shell(s1).nfunction() * bs->shell(s2).nfunction() * bs->shell(s3).nfunction() *
+                      bs->shell(s4).nfunction();
 
-    const size_t ret = compute_quartet(start + s1, start + s2, start + s3, start + s4, n1, n2, n3, n4);
+    const size_t ret = compute_quartet(start + s1, start + s2, start + s3, start + s4, l1, l2, l3, l4);
     buffers_[0] = target_full_;
     return ret;
 }
