@@ -61,7 +61,7 @@ funcs.append({"name": "mPWLYP1W"       , "xc_functionals": {"GGA_XC_MPWLYP1W"   
 funcs.append({"name": "PBELYP1W"       , "xc_functionals": {"GGA_XC_PBELYP1W"           : {}}})
 funcs.append({"name": "MOHLYP"         , "xc_functionals": {"GGA_XC_MOHLYP"             : {}}})
 funcs.append({"name": "MOHLYP2"        , "xc_functionals": {"GGA_XC_MOHLYP2"            : {}}})
-funcs.append({"name": "TH-FL"          , "xc_functionals": {"GGA_XC_TH_FL"              : {}}})
+funcs.append({"name": "TH-FL"          , "xc_functionals": {"LDA_XC_TH_FL"              : {}}})
 funcs.append({"name": "TH-FC"          , "xc_functionals": {"GGA_XC_TH_FC"              : {}}})
 funcs.append({"name": "TH-FCFO"        , "xc_functionals": {"GGA_XC_TH_FCFO"            : {}}})
 funcs.append({"name": "TH-FCO"         , "xc_functionals": {"GGA_XC_TH_FCO"             : {}}})
