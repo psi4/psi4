@@ -80,12 +80,13 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
         throw PSIEXCEPTION("LIBCINT backend: integral derivatives are not implemented (use INTEGRAL_PACKAGE LIBINT2).");
 
     // Spherical harmonics only for now; cartesian normalization differs from
-    // psi4's and would need a separate per-component rescale.
+    // psi4's and would need a separate per-component rescale. Density fitting
+    // is supported by a simple jerry-rig: psi4 passes the "absent" center as a
+    // dummy s-shell (l=0, exp=0, coef=1) -- exactly libint2's unit shell, a
+    // constant function -- so the 4-center int2e_sph path with that dummy shell
+    // already yields the (ij|k) 3-center and (i|k) 2-center integrals.
     for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()}) {
-        if (is_dummy_basis(*bs))
-            throw PSIEXCEPTION(
-                "LIBCINT backend: density-fitting (2-/3-center) integrals are handled by the native eri_2c/eri_3c "
-                "interface, not the 4-center path.");
+        if (is_dummy_basis(*bs)) continue;  // handled shell-by-shell below
         for (int s = 0; s < bs->nshell(); ++s)
             if (bs->shell(s).is_cartesian())
                 throw PSIEXCEPTION("LIBCINT backend: cartesian basis sets are not yet supported (spherical only).");
@@ -127,10 +128,16 @@ void LibcintTwoElectronInt::common_init() {
     int2e_optimizer(&o, atm_.data(), natm, bas_.data(), nbas, env_.data());
     opt_ = o;
 
-    // Largest single-quartet block (spherical) across the four bases.
-    auto maxn = [](const BasisSet &bs) { return 2 * bs.max_am() + 1; };
-    const size_t blk = static_cast<size_t>(maxn(*original_bs1_)) * maxn(*original_bs2_) * maxn(*original_bs3_) *
-                       maxn(*original_bs4_);
+    // Size scratch for the largest quartet block we may compute. This must
+    // cover not only the factory's (bs1,bs2,bs3,bs4) block but also the Schwarz
+    // sieve, which computes (MN|MN) over a single basis -- so a block up to
+    // (2*maxam+1)^4 for the largest-am basis (e.g. the auxiliary in DF, whose
+    // (MN|MN) blocks dwarf the aux*dummy*prim*prim factory block).
+    int maxam = 0;
+    for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()})
+        maxam = std::max(maxam, bs->max_am());
+    const size_t nmax = static_cast<size_t>(2 * maxam + 1);
+    const size_t blk = nmax * nmax * nmax * nmax;
     target_store_.assign(blk, 0.0);
     cint_buf_.assign(blk, 0.0);
     target_full_ = target_store_.data();
@@ -160,7 +167,22 @@ int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
         // (verified in-tree: unit shell self-overlap, ERIs to ~1e-13).
         const int l = sh.am();
         const int coef_off = static_cast<int>(env_.size());
-        for (int p = 0; p < nprim; ++p) env_.push_back(sh.original_coef(p) * CINTgto_norm(l, sh.exp(p)));
+        const bool dummy = (nprim == 1 && l == 0 && sh.exp(0) == 0.0);
+        if (dummy) {
+            // Unit shell = the bare constant function "1", matching
+            // libint2::Shell::unit() (its renorm() skips alpha==0, leaving
+            // coeff=1). CINTgto_norm is singular at exp=0 and cannot be used, so
+            // it is not applied here -- but libcint's spherical transform still
+            // folds the Y_00 = 1/sqrt(4*pi) normalization into every s shell.
+            // Feed sqrt(4*pi) to cancel it, so the dummy is a true constant 1 and
+            // the DF metric (P|Q) and 3-center (Q|mn) are *identical* to the
+            // Libint2 path, not merely proportional. A global scale on the metric
+            // would otherwise change which vectors a fixed linear-dependence
+            // threshold discards when it is inverted.
+            env_.push_back(std::sqrt(4.0 * M_PI));
+        } else {
+            for (int p = 0; p < nprim; ++p) env_.push_back(sh.original_coef(p) * CINTgto_norm(l, sh.exp(p)));
+        }
 
         bas_.push_back(bs.shell_to_center(s));  // ATOM_OF
         bas_.push_back(sh.am());                // ANG_OF
@@ -223,6 +245,10 @@ void LibcintTwoElectronInt::normalize_shells() {
         const int l = bas_[g * BAS_SLOTS + ANG_OF];
         const int nprim = bas_[g * BAS_SLOTS + NPRIM_OF];
         const int coef_off = bas_[g * BAS_SLOTS + PTR_COEFF];
+        const int exp_off = bas_[g * BAS_SLOTS + PTR_EXP];
+        // Skip the dummy/unit shell (exp=0): its self-overlap diverges and it
+        // must stay the bare constant to mirror libint2's unit shell.
+        if (nprim == 1 && l == 0 && env_[exp_off] == 0.0) continue;
         const int nf = 2 * l + 1;
         ov.assign(static_cast<size_t>(nf) * nf, 0.0);
         int shls[2] = {g, g};
