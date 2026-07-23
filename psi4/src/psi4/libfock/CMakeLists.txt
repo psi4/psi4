@@ -1,5 +1,6 @@
 list(APPEND sources
   CDJK.cc
+  ComplexJK.cc
   CompositeJK.cc
   COSK.cc
   DirectDFJ.cc

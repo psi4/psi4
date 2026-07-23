@@ -37,6 +37,7 @@
 namespace psi {
 
 class SuperFunctional;
+class BaseJK;
 
 namespace scf {
 
@@ -44,6 +45,9 @@ namespace scf {
  *
  *  HF / CGHF inherit this alongside Wavefunction / ComplexWavefunction so common
  *  iteration, DIIS, MOM, and DFT-functional bookkeeping is not duplicated.
+ *
+ *  JK storage lives on the derived class (typed JK vs BaseJK/ComplexJK); BaseHF
+ *  only exposes a polymorphic accessor interface.
  */
 class BaseHF {
    protected:

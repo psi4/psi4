@@ -440,7 +440,7 @@ void export_wavefunction(py::module& m) {
         .def_property("attempt_number_", &scf::BaseHF::attempt_number, &scf::BaseHF::set_attempt_number,
                       "Current macroiteration (1-indexed) for stability analysis");
 
-    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction, scf::BaseHF>(m, "HF", "docstring")
+    py::class_<scf::HF, Wavefunction, scf::BaseHF, std::shared_ptr<scf::HF>>(m, "HF", py::multiple_inheritance(), "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
         .def("form_initial_C", &scf::HF::form_initial_C,
@@ -468,8 +468,6 @@ void export_wavefunction(py::module& m) {
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
         .def("Va", &scf::HF::Va, "Returns the Alpha Kohn-Sham Potential Matrix.")
         .def("Vb", &scf::HF::Vb, "Returns the Beta Kohn-Sham Potential Matrix.")
-        .def("jk", &scf::HF::jk, "Returns the internal JK object.")
-        .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
         .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunction's temporary data.")
         .def("soscf_update", &scf::HF::soscf_update, "Computes a second-order SCF update.")
@@ -495,6 +493,8 @@ void export_wavefunction(py::module& m) {
         .def("set_external_cpscf_perturbation", &scf::HF::set_external_cpscf_perturbation,
              "Add an external potential/perturbation to the private external_cpscf_perturbations map for CPSCF", "name"_a, "function"_a)
         .def("clear_external_cpscf_perturbations", &scf::HF::clear_external_cpscf_perturbations, "Clear private external_cpscf_perturbations map")
+        .def("jk", &scf::HF::jk, "Returns the internal JK object.")
+        .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
         .def_property("frac_performed_", &scf::HF::frac_performed, &scf::HF::set_frac_performed,
                       "Frac performed current iteration?")
         .def("stability_analysis", &scf::HF::stability_analysis, "Assess wfn stability and correct if requested")
@@ -538,11 +538,14 @@ void export_wavefunction(py::module& m) {
              "basis"_a)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
-    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", "docstring")
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", py::multiple_inheritance(), "docstring")
         .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("V_potential", &scf::CGHF::V_potential, "Returns the internal DFT V object.")
         .def("set_sad_basissets", &scf::CGHF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::CGHF::set_sad_fitting_basissets,
-             "Sets the Superposition of Atomic Densities density-fitted basisset.");
+             "Sets the Superposition of Atomic Densities density-fitted basisset.")
+        .def("jk", &scf::CGHF::jk, "Returns the internal JK object.")
+        .def("set_jk", &scf::CGHF::set_jk, "Sets the internal JK object !expert.");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
