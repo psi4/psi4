@@ -62,7 +62,11 @@ class IntegralFactory;
  *
  *  Current scope: 4-center (ab|cd), spherical basis sets, deriv=0, plus the
  *  range-separated erf/erfc variants (env[PTR_RANGE_OMEGA]). Density-fitting
- *  (2-/3-center) is handled by the native eri_2c/eri_3c interface, not here.
+ *  (2-/3-center) works too: psi4 passes the absent center as a dummy s-shell
+ *  (l=0, exp=0) which is fed to libcint as a bare constant matching libint2's
+ *  unit shell, so int2e_sph over the dummy yields (ij|k)/(i|k) integrals
+ *  bit-identical to the Libint2 path. (A first-class native 2c/3c interface is
+ *  the intended long-term replacement for that dummy-shell route.)
  */
 class LibcintTwoElectronInt : public TwoBodyAOInt {
    protected:
