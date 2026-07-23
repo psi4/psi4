@@ -1,8 +1,4 @@
-find_package(Libxc 7.0.0 COMPONENTS C CONFIG QUIET)  # edit in codedeps
-if(NOT ${Libxc_FOUND})
-    # LibxcConfig.cmake encodes searching only within major version, so need two calls to allow v6 or v7
-    find_package( Libxc 6.1.0 COMPONENTS C CONFIG QUIET)
-endif()
+find_package(Libxc 7.1.0 COMPONENTS C CONFIG QUIET)  # edit in codedeps
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
