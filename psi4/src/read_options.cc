@@ -163,8 +163,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("DIE_IF_NOT_CONVERGED", true);
     /*- Integral package to use for two-electron integrals. If compiled with Simint support, SIMINT computes the
        non-derivative Coulomb integrals and LibInt2 is used for derivative and range-separated integrals. Requesting
-       SIMINT when Simint is not compiled in is an error. -*/
-    options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "LIBINT2 SIMINT");
+       SIMINT when Simint is not compiled in is an error. LIBCINT is experimental and currently covers 4-center (ab|cd)
+       and range-separated erf/erfc integrals for spherical basis sets (energies only). -*/
+    options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "LIBINT2 SIMINT LIBCINT");
 #ifdef USING_BrianQC
     /*- Whether to enable using the BrianQC GPU module -*/
     options.add_bool("BRIANQC_ENABLE", false);
