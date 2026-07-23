@@ -118,7 +118,7 @@ void RBase::set_reference(SharedWavefunction ref_wfn) {
 void RBase::preiterations() {
     if (!jk_) {
         if (options_.get_bool("SAVE_JK")) {
-            jk_ = (static_cast<psi::scf::HF*>(reference_wavefunction_.get()))->jk();
+            jk_ = std::static_pointer_cast<JK>((static_cast<psi::scf::HF*>(reference_wavefunction_.get()))->jk());
             outfile->Printf("    Reusing JK object from SCF.\n\n");
         } else {
             size_t effective_memory = (size_t)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
