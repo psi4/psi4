@@ -915,7 +915,7 @@ def scf_print_preiterations(self,small=False):
         core.print_out("   -------------------------\n\n")
 
 
-# Bind functions to core.HF class
+# Bind functions to core classes
 core.HF.initialize = scf_initialize
 core.HF.initialize_jk = initialize_jk
 core.HF.iterations = scf_iterate
@@ -924,6 +924,15 @@ core.HF.finalize_energy = scf_finalize_energy
 core.HF.print_energies = scf_print_energies
 core.HF.print_preiterations = scf_print_preiterations
 core.HF.iteration_energies = []
+
+core.CGHF.initialize = scf_initialize
+# core.CGHF.initialize_jk = initialize_jk
+# core.CGHF.iterations = scf_iterate
+core.CGHF.compute_energy = scf_compute_energy
+# core.CGHF.finalize_energy = scf_finalize_energy
+# core.CGHF.print_energies = scf_print_energies
+# core.CGHF.print_preiterations = scf_print_preiterations
+# core.CGHF.iteration_energies = []
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):

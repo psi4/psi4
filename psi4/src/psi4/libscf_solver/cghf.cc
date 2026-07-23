@@ -29,9 +29,12 @@
 #include "cghf.h"
 
 #include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libfock/jk.h"
+#include "psi4/libfock/v.h"
 
 namespace psi {
 namespace scf {
@@ -60,12 +63,30 @@ void CGHF::common_init() {
     if (molecule_->schoenflies_symbol() != "c1") {
         throw PSIEXCEPTION("CGHF currently supports only C1 symmetry. Set symmetry c1 in the molecule block.");
     }
+
+    // DFT stuff (would typically go in subclass_init)
+    setup_potential();
 }
 
-double CGHF::compute_energy() {
-    // TODO: Implement the CGHF SCF energy (initialize / iterate / finalize).
-    return 0.0;
+void CGHF::setup_potential() {
+    if (functional_->needs_xc()) {
+        throw PSIEXCEPTION("DFT functionals are not supported with CGHF.");
+    } else {
+        potential_ = nullptr;
+    }
 }
+
+void CGHF::set_jk(std::shared_ptr<BaseJK> jk) {
+    // Cheap basis check
+    int jk_nbf = jk->basisset()->nbf();
+    int hf_nbf = basisset_->nbf();
+    if (hf_nbf != jk_nbf) {
+        throw PSIEXCEPTION("Tried setting a JK object whos number of basis functions does not match HF's!");
+    }
+
+    jk_ = jk;
+}
+
 
 }  // namespace scf
 }  // namespace psi
