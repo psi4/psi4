@@ -54,14 +54,20 @@ class IntegralFactory;
  *     unit self-overlap via libcint's own int1e_ovlp (normalize_shells) --
  *     matching libint2's embed_normalization, including split general
  *     contractions.
- *   - Component ordering: libcint uses m = -l..+l for l != 1 and the cartesian
- *     order (px,py,pz) for l == 1; psi4 (libint2, Gaussian solid-harmonic
- *     ordering) uses m = 0,+1,-1,+2,-2,... All relative signs are +1.
+ *   - Component ordering: for spherical shells libcint uses m = -l..+l for
+ *     l != 1 and the cartesian order (px,py,pz) for l == 1, while psi4 (libint2,
+ *     Gaussian solid-harmonic ordering) uses m = 0,+1,-1,+2,-2,...; for
+ *     cartesian shells (int2e_cart) libcint's order already equals psi4's
+ *     CartesianIter order, so the map is the identity. All relative signs +1.
+ *   - Cartesian normalization: libcint's cartesian shell differs from psi4's by
+ *     a single per-shell scale; normalizing the axial (l,0,0) self-overlap to 1
+ *     via int1e_ovlp_cart (see normalize_shells) cancels it.
  *   - libcint writes col-major (first index fastest); psi4 wants row-major
  *     (first index slowest). Both are handled in the same repack.
  *
- *  Current scope: 4-center (ab|cd), spherical basis sets, deriv=0, plus the
- *  range-separated erf/erfc variants (env[PTR_RANGE_OMEGA]). Density-fitting
+ *  Current scope: 4-center (ab|cd), spherical and cartesian basis sets,
+ *  deriv=0, plus the range-separated erf/erfc variants (env[PTR_RANGE_OMEGA]).
+ *  Density-fitting
  *  (2-/3-center) works too: psi4 passes the absent center as a dummy s-shell
  *  (l=0, exp=0) which is fed to libcint as a bare constant matching libint2's
  *  unit shell, so int2e_sph over the dummy yields (ij|k)/(i|k) integrals
@@ -91,6 +97,9 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// (0 = full Coulomb, >0 = erf/long-range, <0 = erfc/short-range).
     double omega_;
 
+    /// Whether the (non-dummy) bases are cartesian (int2e_cart) or spherical.
+    bool cart_;
+
     void common_init();
 
     /// Build the libcint atm/bas/env arrays from the four psi4 basis sets.
@@ -102,9 +111,9 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// Rescale each shell's contraction to unit self-overlap (matches libint2).
     void normalize_shells();
 
-    /// Compute one shell quartet into target_full_ in psi4 order. Returns the
-    /// number of integrals computed.
-    size_t compute_quartet(int g1, int g2, int g3, int g4, int n1, int n2, int n3, int n4);
+    /// Compute one shell quartet (given libcint bas indices and angular momenta)
+    /// into target_full_ in psi4 order. Returns the number of integrals computed.
+    size_t compute_quartet(int g1, int g2, int g3, int g4, int l1, int l2, int l3, int l4);
 
     size_t compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int s1, int s2, int s3, int s4,
                                    bool is_bra) override;
