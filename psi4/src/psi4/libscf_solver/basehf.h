@@ -31,11 +31,15 @@
 
 #include "psi4/pybind11.h"
 
+#include <array>
+#include <map>
 #include <memory>
 #include <string>
 
 namespace psi {
 
+class Molecule;
+class Options;
 class SuperFunctional;
 class BaseJK;
 
@@ -67,6 +71,9 @@ class BaseHF {
 
     /// SCF algorithm type
     std::string scf_type_;
+
+    /// Table of energy components
+    std::map<std::string, double> energies_;
 
     /// Are we to do MOM?
     bool MOM_enabled_;
@@ -103,6 +110,11 @@ class BaseHF {
 
     BaseHF() = default;
     explicit BaseHF(std::shared_ptr<SuperFunctional> functional) : functional_(std::move(functional)) {}
+
+    /// Shared SCF bookkeeping
+    /// `module` is BaseWavefunction::module_
+    void common_init(Options& options, std::string& module, const std::shared_ptr<Molecule>& molecule,
+                     const std::array<double, 3>& dipole_field_strength);
 
    public:
     virtual ~BaseHF() = default;
@@ -151,6 +163,10 @@ class BaseHF {
     // Expert option to toggle non-idempotent density matrix or not at iteration zero
     bool sad() const { return sad_; }
     void set_sad(bool sad) { sad_ = sad; }
+
+    // Energies data
+    void set_energies(std::string key, double value) { energies_[key] = value; }
+    double get_energies(std::string key) { return energies_[key]; }
 };
 
 }  // namespace scf
