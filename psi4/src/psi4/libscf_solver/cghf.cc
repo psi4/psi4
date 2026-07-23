@@ -31,13 +31,35 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 
+#include <Einsums/TensorBase/TensorBase.hpp>
+#include <Einsums/TensorBase/Common.hpp>
+#include <Einsums/Tensor/Tensor.hpp>
+
 namespace psi {
 namespace scf {
+
+std::shared_ptr<BlockTensorView<double, 2>> share_matrix_to_einsums(SharedMatrix M) {
+    // Heap-allocated holder keeps both the source Matrix and the view tensor alive; the
+    // returned shared_ptr aliases the holder's refcount while pointing at the tensor.
+    struct Holder {
+        SharedMatrix matrix;
+        BlockTensorView<double, 2> tensor;
+    };
+    auto holder = std::make_shared<Holder>();
+    holder->matrix = M;
+    for (size_t h = 0; h < M->nirrep(); h++) {
+        auto dim = einsums::Dim<2>{M->rowspi(h), M->colspi(h)};
+        einsums::TensorView<double, 2> t{M->get_pointer(h), dim};
+        holder->tensor.push_block(t);
+    }
+    return std::shared_ptr<BlockTensorView<double, 2>>(holder, &holder->tensor);
+}
 
 CGHF::CGHF(std::shared_ptr<ComplexWavefunction> ref_wfn, std::shared_ptr<SuperFunctional> func)
     : CGHF(ref_wfn, func, Process::environment.options, PSIO::shared_object()) {}

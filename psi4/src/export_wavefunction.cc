@@ -85,6 +85,32 @@ using namespace pybind11::literals;
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 
+namespace {
+
+// Build the list of per-block NumPy views for an einsums block tensor, mirroring
+// Matrix::array_interface in export_mints.cc. Works for any
+// einsums::tensor_base::BlockTensor instantiation (owning ComplexMatrix or a view
+// tensor) since both expose num_blocks()/block() and per-block data()/dim()/stride().
+template <typename BlockT>
+py::list block_tensor_array_interface(BlockT& bt) {
+    using ValueT = typename BlockT::ValueType;
+    py::list ret;
+    for (size_t h = 0; h < bt.num_blocks(); ++h) {
+        auto& blk = bt.block(static_cast<int>(h));
+        const auto r = static_cast<py::ssize_t>(blk.dim(0));
+        const auto c = static_cast<py::ssize_t>(blk.dim(1));
+        ValueT* ptr = (r != 0 && c != 0) ? blk.data() : nullptr;
+        std::vector<py::ssize_t> shape{r, c};
+        std::vector<py::ssize_t> strides{static_cast<py::ssize_t>(blk.stride(0) * sizeof(ValueT)),
+                                         static_cast<py::ssize_t>(blk.stride(1) * sizeof(ValueT))};
+        // Passing py::cast(&bt) as base ties each view's lifetime to the C++ object (no copy).
+        ret.append(py::array(py::dtype::of<ValueT>(), shape, strides, ptr, py::cast(&bt)));
+    }
+    return ret;
+}
+
+}  // namespace
+
 void export_wavefunction(py::module& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
 
@@ -329,47 +355,35 @@ void export_wavefunction(py::module& m) {
              "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
-    // ComplexMatrix is einsums::BlockTensor<complex<double>, 2>. Full BlockTensor
-    // densify via pyeinsums is not available yet; C1 (single block) NumPy export only.
+    // ComplexMatrix is einsums::BlockTensor<complex<double>, 2>. NumPy conversion
+    // (to_array/from_array) lives in Python (p4util/numpy_helper.py) and is built on the
+    // array_interface method below, mirroring the real Matrix class in export_mints.cc.
     py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
                                                              "Complex blocked matrix (einsums BlockTensor).")
-        .def_static(
-            "from_array",
-            [](const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast>& arr,
-               const std::string& name) {
-                if (arr.ndim() != 2) {
-                    throw PSIEXCEPTION("ComplexMatrix.from_array: array must be 2-dimensional.");
-                }
-                const auto n0 = static_cast<size_t>(arr.shape(0));
-                const auto n1 = static_cast<size_t>(arr.shape(1));
-                if (n0 != n1) {
-                    throw PSIEXCEPTION("ComplexMatrix.from_array: C1 BlockTensor blocks must be square.");
-                }
-                auto mat = std::make_shared<ComplexMatrix>(name, std::vector<size_t>{n0});
-                if (mat->num_blocks() != 1) {
-                    throw PSIEXCEPTION("ComplexMatrix.from_array: expected a single C1 block.");
-                }
-                std::memcpy(mat->block(0).data(), arr.data(), sizeof(std::complex<double>) * n0 * n1);
-                return mat;
-            },
-            "array"_a, "name"_a = "ComplexMatrix",
-            "Build a C1 (single-block) ComplexMatrix from a square complex NumPy array.")
-        .def(
-            "to_array",
-            [](const ComplexMatrix& self) {
-                if (self.num_blocks() != 1) {
-                    throw PSIEXCEPTION(
-                        "ComplexMatrix.to_array currently supports only C1 symmetry (a single block).");
-                }
-                const auto& blk = self.block(0);
-                const auto n0 = static_cast<py::ssize_t>(blk.dim(0));
-                const auto n1 = static_cast<py::ssize_t>(blk.dim(1));
-                py::array_t<std::complex<double>> out({n0, n1});
-                std::memcpy(out.mutable_data(), blk.data(), sizeof(std::complex<double>) * static_cast<size_t>(n0 * n1));
-                return out;
-            },
-            "Return a NumPy copy of the single C1 block. Higher symmetry is not supported yet.")
-        .def("num_blocks", &ComplexMatrix::num_blocks, "Number of symmetry blocks.");
+        .def(py::init([](const std::string& name, const std::vector<size_t>& block_sizes) {
+                 auto mat = std::make_shared<ComplexMatrix>(name, block_sizes);
+                 mat->zero();
+                 return mat;
+             }),
+             "name"_a, "block_sizes"_a,
+             "Construct a zeroed ComplexMatrix with one square block per entry in block_sizes.")
+        .def("num_blocks", &ComplexMatrix::num_blocks, "Number of symmetry blocks.")
+        .def("array_interface", &block_tensor_array_interface<ComplexMatrix>,
+             py::return_value_policy::reference_internal,
+             "List of per-block NumPy views sharing the tensor's memory.");
+
+    // View-based block tensor (blocks are non-owning TensorViews over a real Matrix's memory).
+    // Produced by share_matrix_to_einsums. Read-only bridge to NumPy (no from_array).
+    using RealBlockTensorView = scf::BlockTensorView<double, 2>;
+    py::class_<RealBlockTensorView, std::shared_ptr<RealBlockTensorView>>(
+        m, "BlockTensorView", "Real block tensor whose blocks are views into a Matrix's memory.")
+        .def("num_blocks", &RealBlockTensorView::num_blocks, "Number of symmetry blocks.")
+        .def("array_interface", &block_tensor_array_interface<RealBlockTensorView>,
+             py::return_value_policy::reference_internal,
+             "List of per-block NumPy views sharing the underlying Matrix's memory.");
+
+    m.def("share_matrix_to_einsums", &scf::share_matrix_to_einsums, "matrix"_a,
+          "Alias a real psi4 Matrix's memory as an einsums block-tensor view (no copy).");
 
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
             "ComplexWavefunction", "ComplexWavefunction class docstring")

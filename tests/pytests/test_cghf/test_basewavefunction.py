@@ -43,20 +43,6 @@ def test_basewavefunction_constructors(cls, h2o_sto3g):
     assert wfn_mol_basis_opts.basisset().nbf() == basis.nbf()
 
 
-def test_complexmatrix_to_from_array_c1():
-    """C1 ComplexMatrix NumPy round-trip via to_array / from_array."""
-    n = 3
-    ref = np.arange(n * n, dtype=np.complex128).reshape(n, n)
-    ref += 1.0j * np.flip(ref)
-
-    mat = psi4.core.ComplexMatrix.from_array(ref, name="Test")
-    assert mat.num_blocks() == 1
-    np.testing.assert_allclose(mat.to_array(), ref)
-
-    with pytest.raises(RuntimeError, match="square"):
-        psi4.core.ComplexMatrix.from_array(np.ones((2, 3), dtype=np.complex128))
-
-
 def test_complexwavefunction_to_from_file(h2o_sto3g):
     """ComplexWavefunction.to_file / from_file round-trip including ComplexMatrix (C1)."""
     mol, basis = h2o_sto3g
