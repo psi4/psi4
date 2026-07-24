@@ -103,6 +103,7 @@ size_t DirectJK::num_computed_shells() {
 }
 
 size_t DirectJK::memory_estimate() {
+    // TODO: return an accurate value.
     return 0;  // Effectively
 }
 
