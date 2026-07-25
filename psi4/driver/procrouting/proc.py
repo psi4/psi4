@@ -5025,6 +5025,14 @@ def run_sapt(name, **kwargs):
     monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
     core.timer_off("SAPT: Monomer B SCF")
 
+    # Psi4 issue #1975: ROHF orbitals require semicanonicalization before
+    # SAPT second-order amplitudes are computed. Without this, the orbital
+    # energies used in the amplitude denominators are ambiguously defined
+    # and Ind20/Disp20 are wrong for ROHF references.
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+        monomerA_wfn.semicanonicalize()
+        monomerB_wfn.semicanonicalize()
+
     # Delta MP2
     if do_delta_mp2:
         select_mp2("mp2", ref_wfn=monomerB_wfn, **kwargs)
