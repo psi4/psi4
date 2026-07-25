@@ -35,6 +35,10 @@
 
 #include <vector>
 
+#ifdef USING_Einsums
+#include <Einsums/Tensor/BlockTensor.hpp>
+#endif
+
 namespace psi {
 
 class CdSalcList;
@@ -342,6 +346,17 @@ class PSI_API MintsHelper {
 #endif
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
+#ifdef USING_Einsums
+    /// Copy a totally-symmetric, square, symmetry-blocked Matrix into an owning
+    /// einsums::BlockTensor<double, 2> (one diagonal block per irrep).
+    einsums::BlockTensor<double, 2> block_from_matrix(SharedMatrix mat, const std::string& name);
+    /// SO overlap integrals as an owning BlockTensor<double, 2>.
+    einsums::BlockTensor<double, 2> so_overlap_einsums(bool include_perturbations = true);
+    /// SO kinetic integrals as an owning BlockTensor<double, 2>.
+    einsums::BlockTensor<double, 2> so_kinetic_einsums(bool include_perturbations = true);
+    /// SO potential (nuclear attraction) integrals as an owning BlockTensor<double, 2>.
+    einsums::BlockTensor<double, 2> so_potential_einsums(bool include_perturbations = true);
+#endif
     /// Vector SO Dipole Integrals
     std::vector<SharedMatrix> so_dipole() const;
     /// Vector SO Nabla Integrals
