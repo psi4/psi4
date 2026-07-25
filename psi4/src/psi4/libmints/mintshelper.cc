@@ -34,6 +34,10 @@
 #include "psi4/libmints/molecule.h"
 
 #include "psi4/libmints/matrix.h"
+#ifdef USING_Einsums
+#include <Einsums/Tensor/BlockTensor.hpp>
+#include <Einsums/Tensor/Tensor.hpp>
+#endif
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
@@ -1430,6 +1434,51 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
     }
     return cached_oe_ints_[p];
 }
+
+#ifdef USING_Einsums
+einsums::BlockTensor<double, 2> MintsHelper::block_from_matrix(SharedMatrix mat, const std::string& name) {
+    if (mat->symmetry() != 0) {
+        throw PSIEXCEPTION(
+            "block_from_matrix: Matrix has non-zero symmetry; einsums::BlockTensor only stores "
+            "block-diagonal (totally symmetric) operators.");
+    }
+
+    const int nirrep = mat->nirrep();
+    std::vector<size_t> block_sizes(nirrep);
+    for (int h = 0; h < nirrep; ++h) {
+        const int rows = mat->rowspi(h);
+        const int cols = mat->colspi(h);
+        if (rows != cols) {
+            throw PSIEXCEPTION(
+                "block_from_matrix: irrep block is not square; einsums::BlockTensor requires "
+                "square diagonal blocks.");
+        }
+        block_sizes[h] = static_cast<size_t>(rows);
+    }
+
+    einsums::BlockTensor<double, 2> T(name, block_sizes);
+    for (int h = 0; h < nirrep; ++h) {
+        if (block_sizes[h] == 0) continue;
+        // Psi4 Matrix and Einsums 1.x Tensor both use contiguous row-major layout.
+        einsums::Dim<2> dim{block_sizes[h], block_sizes[h]};
+        einsums::TensorView<double, 2> src{mat->get_pointer(h), dim};
+        T.block(h) = src;
+    }
+    return T;
+}
+
+einsums::BlockTensor<double, 2> MintsHelper::so_overlap_einsums(bool include_perturbations) {
+    return block_from_matrix(so_overlap(include_perturbations), "SO Overlap");
+}
+
+einsums::BlockTensor<double, 2> MintsHelper::so_kinetic_einsums(bool include_perturbations) {
+    return block_from_matrix(so_kinetic(include_perturbations), "SO Kinetic");
+}
+
+einsums::BlockTensor<double, 2> MintsHelper::so_potential_einsums(bool include_perturbations) {
+    return block_from_matrix(so_potential(include_perturbations), "SO Potential");
+}
+#endif
 
 void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
     std::string perturb_with = options_.get_str("PERTURB_WITH");
