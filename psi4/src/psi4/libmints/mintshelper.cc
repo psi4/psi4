@@ -37,6 +37,7 @@
 #ifdef USING_Einsums
 #include <Einsums/Tensor/BlockTensor.hpp>
 #include <Einsums/Tensor/Tensor.hpp>
+#include <Einsums/Tensor/TiledTensor.hpp>
 #endif
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
@@ -1477,6 +1478,99 @@ einsums::BlockTensor<double, 2> MintsHelper::so_kinetic_einsums(bool include_per
 
 einsums::BlockTensor<double, 2> MintsHelper::so_potential_einsums(bool include_perturbations) {
     return block_from_matrix(so_potential(include_perturbations), "SO Potential");
+}
+
+namespace {
+
+/// Fills a rank-4 TiledTensor with SO ERIs, expanding 8-fold permutational symmetry.
+class TiledSOERIFiller {
+    einsums::TiledTensor<double, 4>& T_;
+
+    void put(int hp, int p, int hq, int q, int hr, int r, int hs, int s, double v) {
+        T_.tile(hp, hq, hr, hs)(p, q, r, s) = v;
+    }
+
+   public:
+    explicit TiledSOERIFiller(einsums::TiledTensor<double, 4>& T) : T_(T) {}
+
+    // Argument order matches TwoBodySOInt's functor convention: four absolute SO
+    // indices (unused here), then (irrep, within-irrep) for each of p,q,r,s, then
+    // the value. (pq|rs)=(qp|rs)=(pq|sr)=(qp|sr)=(rs|pq)=(sr|pq)=(rs|qp)=(sr|qp).
+    void operator()(int, int, int, int, int hp, int p, int hq, int q, int hr, int r, int hs, int s, double v) {
+        put(hp, p, hq, q, hr, r, hs, s, v);
+        put(hq, q, hp, p, hr, r, hs, s, v);
+        put(hp, p, hq, q, hs, s, hr, r, v);
+        put(hq, q, hp, p, hs, s, hr, r, v);
+        put(hr, r, hs, s, hp, p, hq, q, v);
+        put(hs, s, hr, r, hp, p, hq, q, v);
+        put(hr, r, hs, s, hq, q, hp, p, v);
+        put(hs, s, hr, r, hq, q, hp, p, v);
+    }
+};
+
+}  // namespace
+
+einsums::TiledTensor<double, 4> MintsHelper::so_eri_tiled() {
+    const int nirrep = sobasis_->nirrep();
+    const Dimension sopi_dim = sobasis_->dimension();
+    std::vector<int> sopi(nirrep);
+    for (int h = 0; h < nirrep; ++h) sopi[h] = sopi_dim[h];
+
+    // One grid on every axis (SO-per-irrep). Tiles are created lazily when an
+    // integral lands in that irrep quadruple.
+    einsums::TiledTensor<double, 4> T("SO ERI", sopi);
+
+    std::vector<std::shared_ptr<TwoBodyAOInt>> tb(1);
+    tb[0] = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
+    auto soeri = std::make_shared<TwoBodySOInt>(tb, integral_);
+
+    TiledSOERIFiller filler(T);
+    soeri->compute_integrals(filler);
+    return T;
+}
+
+einsums::Tensor<double, 4> MintsHelper::ao_eri_einsums() {
+    auto ints = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
+    std::shared_ptr<BasisSet> bs1 = ints->basis1();
+    std::shared_ptr<BasisSet> bs2 = ints->basis2();
+    std::shared_ptr<BasisSet> bs3 = ints->basis3();
+    std::shared_ptr<BasisSet> bs4 = ints->basis4();
+    const size_t nbf1 = bs1->nbf();
+    const size_t nbf2 = bs2->nbf();
+    const size_t nbf3 = bs3->nbf();
+    const size_t nbf4 = bs4->nbf();
+
+    // Dense rank-4 tensor; write straight into its row-major backing buffer.
+    einsums::Tensor<double, 4> T("AO ERI", nbf1, nbf2, nbf3, nbf4);
+    T.zero();
+    double* data = T.data();
+
+    for (int M = 0; M < bs1->nshell(); ++M) {
+        for (int N = 0; N < bs2->nshell(); ++N) {
+            for (int P = 0; P < bs3->nshell(); ++P) {
+                for (int Q = 0; Q < bs4->nshell(); ++Q) {
+                    ints->compute_shell(M, N, P, Q);
+                    const double* buffer = ints->buffer();
+                    const size_t om = bs1->shell(M).function_index();
+                    const size_t on = bs2->shell(N).function_index();
+                    const size_t op = bs3->shell(P).function_index();
+                    const size_t oq = bs4->shell(Q).function_index();
+                    size_t index = 0;
+                    for (int m = 0; m < bs1->shell(M).nfunction(); ++m) {
+                        for (int n = 0; n < bs2->shell(N).nfunction(); ++n) {
+                            for (int p = 0; p < bs3->shell(P).nfunction(); ++p) {
+                                for (int q = 0; q < bs4->shell(Q).nfunction(); ++q, ++index) {
+                                    data[(((om + m) * nbf2 + (on + n)) * nbf3 + (op + p)) * nbf4 + (oq + q)] =
+                                        buffer[index];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return T;
 }
 #endif
 
