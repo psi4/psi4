@@ -28,11 +28,11 @@
 
 #include "psi4/libfock/ComplexJK.h"
 
-// Only used for AttributeErrors
-#include "psi4/pybind11.h"
-// Needed for `outfile`
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
+
+#include "psi4/libmints/twobody.h"
+#include "psi4/libmints/integral.h"
 
 namespace psi {
 
@@ -49,7 +49,74 @@ size_t ComplexDirectJK::memory_estimate() {
 
 void ComplexDirectJK::preiterations() { /*no-op*/ }
 
-void ComplexDirectJK::compute_JK() { throw pybind11::attribute_error("DirectJK::compute_JK() not implemented!"); }
+void ComplexDirectJK::compute_JK() {
+    if (!do_J_ && !do_K_) {
+        outfile->Printf("\n  WARNING: ComplexDirectJK tried to compute JK, but "
+                        "do_J_ and do_K_ were both set to false.\n");
+        return;
+    }
+
+    auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+    for (int N = 0; N < D_.size(); N++) {
+        if (D_[N]->grid_size(0) != 1)
+            throw PSIEXCEPTION("Non-C1 symmetries not allowed with ComplexJK and SCF_TYPE DIRECT");
+
+        const auto& D_ref = D_[N]->tile(0, 0);
+
+        auto ints = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+        if (do_J_ && do_K_) {
+            build_JK_naive(ints, D_ref, J_[N]->tile(0, 0), K_[N]->tile(0, 0));
+        } else {
+            // TODO: figure out later
+            throw PSIEXCEPTION("Both J and K must be computed with ComplexJK and SCF_TYPE DIRECT");
+        }
+    }
+}
+
+void ComplexDirectJK::build_JK_naive(std::shared_ptr<TwoBodyAOInt> ints, const ComplexT& D, ComplexT& J, ComplexT& K) {
+    // TODO: Something like below
+    // bool build_J = (!J.empty());
+    // bool build_K = (!K.empty());
+    timer_on("build_JK_naive");
+
+    J.zero();
+    K.zero();
+    const int nshell = primary_->nshell();
+    for (int P = 0; P < nshell; P++) {
+        for (int Q = 0; Q < nshell; Q++) {
+            for (int R = 0; R < nshell; R++) {
+                for (int S = 0; S < nshell; S++) {
+                    if (ints->compute_shell(P, Q, R, S) == 0) continue;
+                    const double* buf = ints->buffer();
+                    const int Psize = primary_->shell(P).nfunction();
+                    const int Qsize = primary_->shell(Q).nfunction();
+                    const int Rsize = primary_->shell(R).nfunction();
+                    const int Ssize = primary_->shell(S).nfunction();
+                    const int Poff  = primary_->shell(P).function_index();
+                    const int Qoff  = primary_->shell(Q).function_index();
+                    const int Roff  = primary_->shell(R).function_index();
+                    const int Soff  = primary_->shell(S).function_index();
+                    for (int p = 0; p < Psize; p++) {
+                        for (int q = 0; q < Qsize; q++) {
+                            for (int r = 0; r < Rsize; r++) {
+                                for (int s = 0; s < Ssize; s++) {
+                                    const double I = *buf++;
+                                    // J_pq += D_rs * (pq|rs)
+                                    J(p + Poff, q + Qoff) += D(r + Roff, s + Soff) * I;
+                                    // K_pr += D_qs * (pq|rs)
+                                    K(p + Poff, r + Roff) += D(q + Qoff, s + Soff) * I;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    timer_off("build_JK_naive");
+}
+
 
 void ComplexDirectJK::postiterations() { /*no-op*/ }
 

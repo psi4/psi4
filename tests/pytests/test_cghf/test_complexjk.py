@@ -126,3 +126,99 @@ def test_complexjk_compute_D_multiple_C_pairs():
     for D, ref in zip(Ds, refs):
         assert D.num_blocks() == 1
         np.testing.assert_allclose(D.to_array(), ref)
+
+
+def _h2_sto3g():
+    """C1 H2 / STO-3G molecule and orbital basis."""
+    mol = psi4.geometry(
+        """
+        0 1
+        H
+        H 1 0.74
+        symmetry c1
+        """
+    )
+    psi4.set_options({"SCF_TYPE": "DIRECT", "SCREENING": "NONE", "DF_SCF_GUESS": False})
+    basis = psi4.core.BasisSet.build(mol, "ORBITAL", "sto-3g")
+    return mol, basis
+
+
+def _jk_reference(basis, D):
+    """J_pq = sum_rs D_rs (pq|rs), K_pr = sum_qs D_qs (pq|rs) via MintsHelper.ao_eri."""
+    mints = psi4.core.MintsHelper(basis)
+    I = np.asarray(mints.ao_eri())
+    J = np.einsum("pqrs,rs->pq", I, D, optimize=True)
+    K = np.einsum("pqrs,qs->pr", I, D, optimize=True)
+    return J, K
+
+
+def test_complexdirectjk_matches_einsum():
+    """ComplexDirectJK J/K match explicit einsum contractions of ao_eri with complex D."""
+    _, basis = _h2_sto3g()
+    nbf = basis.nbf()
+    rng = np.random.default_rng(7)
+    C_arr = _random_complex((nbf, 1), rng)
+    D_ref = C_arr @ C_arr.conj().T
+    J_ref, K_ref = _jk_reference(basis, D_ref)
+
+    jk = psi4.core.ComplexJK.build_JK(basis, basis)
+    jk.initialize()
+    jk.C_clear()
+    jk.C_add(psi4.core.ComplexMatrix.from_array(C_arr, name="C"))
+    jk.compute()
+    jk.finalize()
+
+    np.testing.assert_allclose(jk.D()[0].to_array(), D_ref)
+    np.testing.assert_allclose(jk.J()[0].to_array(), J_ref, atol=1e-10)
+    np.testing.assert_allclose(jk.K()[0].to_array(), K_ref, atol=1e-10)
+
+
+def test_complexdirectjk_asymmetric_matches_einsum():
+    """ComplexDirectJK with C_left != C_right still matches einsum (general complex D)."""
+    _, basis = _h2_sto3g()
+    nbf = basis.nbf()
+    rng = np.random.default_rng(11)
+    Cl_arr = _random_complex((nbf, 1), rng)
+    Cr_arr = _random_complex((nbf, 1), rng)
+    D_ref = Cl_arr @ Cr_arr.conj().T
+    J_ref, K_ref = _jk_reference(basis, D_ref)
+
+    jk = psi4.core.ComplexJK.build_JK(basis, basis)
+    jk.initialize()
+    jk.C_clear()
+    jk.C_left_add(psi4.core.ComplexMatrix.from_array(Cl_arr, name="Cl"))
+    jk.C_right_add(psi4.core.ComplexMatrix.from_array(Cr_arr, name="Cr"))
+    jk.compute()
+    jk.finalize()
+
+    np.testing.assert_allclose(jk.D()[0].to_array(), D_ref)
+    np.testing.assert_allclose(jk.J()[0].to_array(), J_ref, atol=1e-10)
+    np.testing.assert_allclose(jk.K()[0].to_array(), K_ref, atol=1e-10)
+
+
+def test_complexdirectjk_real_D_matches_jk():
+    """Completely real D: ComplexDirectJK agrees with real Direct JK."""
+    _, basis = _h2_sto3g()
+    nbf = basis.nbf()
+    rng = np.random.default_rng(13)
+    C_arr = rng.normal(size=(nbf, 1))
+
+    cjk = psi4.core.ComplexJK.build_JK(basis, basis)
+    cjk.initialize()
+    cjk.C_clear()
+    cjk.C_add(psi4.core.ComplexMatrix.from_array(C_arr.astype(np.complex128), name="C"))
+    cjk.compute()
+    cjk.finalize()
+
+    rjk = psi4.core.JK.build_JK(basis, basis)
+    rjk.initialize()
+    rjk.C_clear()
+    rjk.C_add(psi4.core.Matrix.from_array(C_arr, name="C"))
+    rjk.compute()
+    rjk.finalize()
+
+    np.testing.assert_allclose(cjk.D()[0].to_array().real, np.asarray(rjk.D()[0]), atol=1e-10)
+    np.testing.assert_allclose(cjk.J()[0].to_array().real, np.asarray(rjk.J()[0]), atol=1e-10)
+    np.testing.assert_allclose(cjk.K()[0].to_array().real, np.asarray(rjk.K()[0]), atol=1e-10)
+    np.testing.assert_allclose(cjk.J()[0].to_array().imag, 0.0, atol=1e-10)
+    np.testing.assert_allclose(cjk.K()[0].to_array().imag, 0.0, atol=1e-10)
