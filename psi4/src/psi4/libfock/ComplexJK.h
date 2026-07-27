@@ -69,8 +69,7 @@ class PSI_API ComplexJK : public BaseJK {
 
     /// CSAM Screening (defaults to false)
     double do_csam_;
-    /// Whether to allow desymmetrization, for cases when it's already been performed elsewhere
-    std::vector<bool> input_symmetry_cast_map_;
+    /// input_symmetry_cast_map_ not needed for C1
 
     // => Architecture-Level State Variables (Spatial Symmetry) <= //
 
