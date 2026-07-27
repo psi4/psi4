@@ -5,6 +5,7 @@ list(APPEND sources
   COSK.cc
   DirectDFJ.cc
   DirectJK.cc
+  ComplexDirectJK.cc
   DiskDFJK.cc
   DiskJK.cc
   GTFockJK.cc
