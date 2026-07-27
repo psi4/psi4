@@ -92,6 +92,9 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// Sets the internal JK object (expert)
     void set_jk(std::shared_ptr<BaseJK> jk);
 
+    /// Builds the correct JK object (placeholder for future ComplexJK)
+    std::shared_ptr<BaseJK> build_jk(size_t memory) const;
+
     /// Construct the DFT potential.
     void setup_potential();
 

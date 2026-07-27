@@ -100,19 +100,11 @@ def scf_compute_energy(self):
     return scf_energy
 
 
-def _build_jk(wfn, memory):
-    jk = core.JK.build(wfn.get_basisset("ORBITAL"),
-                       aux=wfn.get_basisset("DF_BASIS_SCF"),
-                       do_wK=wfn.functional().is_x_lrc(),
-                       memory=memory)
-    return jk
-
-
 def initialize_jk(self, memory, jk=None):
 
     functional = self.functional()
     if jk is None:
-        jk = _build_jk(self, memory)
+        jk = self.build_jk(memory)
 
     self.set_jk(jk)
 
@@ -155,7 +147,7 @@ def scf_initialize(self):
         jk = self.jk()
     else:
         initialize_jk_obj = True
-        jk = _build_jk(self, total_memory)
+        jk = self.build_jk(total_memory)
     jk_size = jk.memory_estimate()
 
     # Give remaining to collocation

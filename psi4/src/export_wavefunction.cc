@@ -509,6 +509,7 @@ void export_wavefunction(py::module& m) {
         .def("clear_external_cpscf_perturbations", &scf::HF::clear_external_cpscf_perturbations, "Clear private external_cpscf_perturbations map")
         .def("jk", &scf::HF::jk, "Returns the internal JK object.")
         .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
+        .def("build_jk", [](scf::HF& self, double memory) { return self.build_jk(static_cast<size_t>(memory)); }, "Returns a fresh JK object with correct type.")
         .def_property("frac_performed_", &scf::HF::frac_performed, &scf::HF::set_frac_performed,
                       "Frac performed current iteration?")
         .def("stability_analysis", &scf::HF::stability_analysis, "Assess wfn stability and correct if requested")
@@ -559,7 +560,8 @@ void export_wavefunction(py::module& m) {
         .def("set_sad_fitting_basissets", &scf::CGHF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
         .def("jk", &scf::CGHF::jk, "Returns the internal JK object.")
-        .def("set_jk", &scf::CGHF::set_jk, "Sets the internal JK object !expert.");
+        .def("set_jk", &scf::CGHF::set_jk, "Sets the internal JK object !expert.")
+        .def("build_jk", [](scf::CGHF& self, double memory) { return self.build_jk(static_cast<size_t>(memory)); }, "Returns a fresh JK object with correct type.");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())

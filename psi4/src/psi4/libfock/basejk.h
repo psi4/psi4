@@ -125,7 +125,7 @@ class PSI_API BaseJK {
     BaseJK(std::shared_ptr<BasisSet> primary);
 
     /// Destructor
-    virtual ~BaseJK();
+    virtual ~BaseJK() = default;
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const = 0;

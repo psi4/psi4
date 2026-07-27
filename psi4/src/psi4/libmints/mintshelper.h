@@ -172,9 +172,9 @@ class PSI_API MintsHelper {
 
     /// Getters and setters for other basis sets
     std::map<std::string, std::shared_ptr<BasisSet>> basissets() const { return basissets_; };
-    std::shared_ptr<BasisSet> get_basisset(std::string label);
+    std::shared_ptr<BasisSet> get_basisset(std::string label) const;
     void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
-    bool basisset_exists(std::string label);
+    bool basisset_exists(std::string label) const;
 
     /// Molecular integrals (just like cints used to do)
     void integrals();

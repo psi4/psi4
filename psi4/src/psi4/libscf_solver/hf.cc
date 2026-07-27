@@ -392,6 +392,13 @@ void HF::set_jk(std::shared_ptr<JK> jk) {
     jk_ = jk;
 }
 
+std::shared_ptr<JK> HF::build_jk(size_t memory) const {
+    const bool do_wK = this->functional()->is_x_lrc();
+    auto jk = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"),
+                           Process::environment.options, do_wK, memory);
+    return jk;
+}
+
 void HF::semicanonicalize() { throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!"); }
 
 void HF::find_occupation() {
