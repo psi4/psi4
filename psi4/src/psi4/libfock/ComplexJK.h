@@ -86,8 +86,6 @@ class PSI_API ComplexJK : public BaseJK {
 
     // => Per-Iteration Setup/Finalize Routines <= //
 
-    /// Build the pseudo-density D_, before compute_JK()
-    void compute_D() override;
     /// Allocate J_/K_
     void allocate_JK() override;
 
@@ -133,6 +131,13 @@ class PSI_API ComplexJK : public BaseJK {
     double get_csam() const { return do_csam_; }
 
     // => Computers <= //
+
+    /**
+     * Build the pseudo-density D_ from C_left / C_right:
+     * \f$D = C_{\mathrm{left}} C_{\mathrm{right}}^{\dagger}\f$ (per irrep tile).
+     * Exposed for unit testing; normally called from compute().
+     */
+    void compute_D() override;
 
     /**
      * Compute D/J/K for the current C
