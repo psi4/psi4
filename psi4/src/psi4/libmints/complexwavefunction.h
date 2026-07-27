@@ -48,7 +48,7 @@
 
 namespace psi {
 
-using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
+using ComplexMatrix = einsums::TiledTensor<std::complex<double>, 2>;
 using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
 
 class Molecule;

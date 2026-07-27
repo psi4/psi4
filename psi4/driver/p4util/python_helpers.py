@@ -466,7 +466,7 @@ def _core_complexwavefunction_from_file(wfn_data: Union[str, Dict, "pathlib.Path
     Notes
     -----
     ComplexMatrix payloads are restored via
-    :meth:`~psi4.core.ComplexMatrix.from_array` (C1 / single-block only).
+    :meth:`~psi4.core.ComplexMatrix.from_array` (C1 / single-tile only).
 
     """
     if isinstance(wfn_data, dict):

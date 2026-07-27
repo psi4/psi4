@@ -34,9 +34,6 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libscf_solver/basehf.h"
 
-#include <Einsums/Tensor/BlockTensor.hpp>
-#include <Einsums/Tensor/Tensor.hpp>
-
 #include <memory>
 #include <vector>
 
@@ -47,14 +44,6 @@ class VBase;
 class ComplexJK;
 
 namespace scf {
-
-/// A block-diagonal einsums tensor whose blocks are (non-owning) TensorViews.
-template <typename T, size_t Rank>
-using BlockTensorView = einsums::tensor_base::BlockTensor<T, Rank, einsums::TensorView<T, Rank>>;
-
-/// Alias a real psi4 Matrix's per-irrep memory as an einsums block-tensor view.
-/// The returned shared_ptr keeps the source Matrix alive for as long as the view exists.
-std::shared_ptr<BlockTensorView<double, 2>> share_matrix_to_einsums(SharedMatrix M);
 
 class CGHF : public ComplexWavefunction, public BaseHF {
    protected:

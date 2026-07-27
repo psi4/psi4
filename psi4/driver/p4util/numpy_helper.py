@@ -616,18 +616,18 @@ core.Vector.from_serial = classmethod(_from_serial)
 core.Vector.__iter__ = _irrep_access
 core.Vector.__getitem__ = _irrep_access
 
-### ComplexMatrix / BlockTensorView (einsums block tensors)
+### ComplexMatrix (einsums TiledTensor)
 
 
-def _blocktensor_to_array(
-    self: Union["core.ComplexMatrix", "core.BlockTensorView"],
+def _complexmatrix_to_array(
+    self: "core.ComplexMatrix",
     copy: bool = True,
 ) -> Union[np.ndarray, List[np.ndarray]]:
     """
-    Converts an einsums block tensor (:class:`~psi4.core.ComplexMatrix` or
-    :class:`~psi4.core.BlockTensorView`) to a NumPy array via its per-block
-    ``array_interface`` views. Returns a single 2D array for a one-block (C1)
-    tensor, otherwise a list of per-block arrays. Copies unless ``copy=False``.
+    Converts a :class:`~psi4.core.ComplexMatrix` (einsums TiledTensor) to a NumPy
+    array via its per-tile ``array_interface`` views. Returns a single 2D array
+    for a one-block (C1) tensor, otherwise a list of per-block arrays. Copies
+    unless ``copy=False``.
     """
     views = self.array_interface()
     if self.num_blocks() == 1:
@@ -641,27 +641,26 @@ def _complexmatrix_from_array(
     name: str = "ComplexMatrix",
 ) -> "core.ComplexMatrix":
     """
-    Builds a C1 (single-block) :class:`~psi4.core.ComplexMatrix` from a square 2D
-    NumPy array. Real input is cast to complex. Blocks of an einsums BlockTensor
-    must be square.
+    Builds a C1 (single-tile) :class:`~psi4.core.ComplexMatrix` from a 2D NumPy
+    array. Real input is cast to complex. Rectangular arrays are allowed
+    (TiledTensor diagonal tiles need not be square).
     """
     arr = np.asarray(arr, dtype=np.complex128)
     if arr.ndim != 2:
         raise ValidationError("ComplexMatrix.from_array: array must be 2-dimensional.")
-    if arr.shape[0] != arr.shape[1]:
-        raise ValidationError("ComplexMatrix.from_array: C1 BlockTensor blocks must be square.")
 
-    ret = self(name, [int(arr.shape[0])])
+    nrows, ncols = int(arr.shape[0]), int(arr.shape[1])
+    if nrows == ncols:
+        ret = self(name, [nrows])
+    else:
+        ret = self(name, [nrows], [ncols])
     np.asarray(ret.array_interface()[0])[:] = arr
     return ret
 
 
 # ComplexMatrix attributes
 core.ComplexMatrix.from_array = classmethod(_complexmatrix_from_array)
-core.ComplexMatrix.to_array = _blocktensor_to_array
-
-# BlockTensorView attributes (non-owning view; no from_array)
-core.BlockTensorView.to_array = _blocktensor_to_array
+core.ComplexMatrix.to_array = _complexmatrix_to_array
 
 ### CIVector properties
 
