@@ -34,6 +34,7 @@
 #include "psi4/libmints/basisset.h"
 
 #include <Einsums/BLAS.hpp>
+#include <Einsums/Print.hpp>
 
 #include <complex>
 #include <sstream>
@@ -111,13 +112,15 @@ void ComplexJK::allocate_JK() {
 }
 
 void ComplexJK::compute_D() {
-    // Ensure D_ matches C_left_ (square AOxAO per irrep from C's row tiling).
+    // Ensure D_ matches C_left_/C_right_ (AO_left x AO_right per irrep; square when bases match).
     if (C_left_.size() != D_.size()) {
         D_.clear();
         for (size_t N = 0; N < C_left_.size(); N++) {
             std::stringstream s;
             s << "D " << N << " (SO)";
-            D_.push_back(std::make_shared<ComplexMatrix>(s.str(), C_left_[N]->tile_size(0)));
+            auto const& row_sizes = C_left_[N]->tile_size(0);
+            auto const& col_sizes = (N < C_right_.size()) ? C_right_[N]->tile_size(0) : row_sizes;
+            D_.push_back(std::make_shared<ComplexMatrix>(s.str(), row_sizes, col_sizes));
         }
     }
 
@@ -155,7 +158,7 @@ void ComplexJK::compute_D() {
 }
 
 size_t ComplexJK::memory_overhead() const {
-    // Only non-zero for USO / AO quantities
+    // TODO: Check this?
     return 0L;
 }
 
@@ -174,7 +177,7 @@ void ComplexJK::compute() {
         lr_symmetric_ = true;
         C_right_ = C_left_;
     } else {
-        throw PSIEXCEPTION("C_left must equal C_right.");
+        lr_symmetric_ = false;
     }
 
     // input_symmetry_cast_map_ not needed for C1
@@ -191,20 +194,18 @@ void ComplexJK::compute() {
     timer_off("JK: JK");
 
     if (debug_ > 6) {
-        outfile->Printf("\n   WARNING: ComplexMatrix->print() not implemented. "
-                        "No internal JK quantities will be logged.\n");
-        // TODO: implement ComplexMatrix::print()
-        // for (size_t N = 0; N < C_left_.size(); N++) {
-        //     C_left_[N]->print("outfile");
-        //     C_right_[N]->print("outfile");
-        //     D_[N]->print("outfile");
-        //     J_[N]->print("outfile");
-        //     K_[N]->print("outfile");
-        // }
+        for (size_t N = 0; N < C_left_.size(); N++) {
+            einsums::fprintln(*outfile->stream(), *C_left_[N]);
+            einsums::fprintln(*outfile->stream(), *C_right_[N]);
+            einsums::fprintln(*outfile->stream(), *D_[N]);
+            if (N < J_.size()) einsums::fprintln(*outfile->stream(), *J_[N]);
+            if (N < K_.size()) einsums::fprintln(*outfile->stream(), *K_[N]);
+        }
     }
 
-    // Assuming lr_symmetric_
-    C_right_.clear();
+    if (lr_symmetric_) {
+        C_right_.clear();
+    }
 }
 
 }  // namespace psi
