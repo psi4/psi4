@@ -28,11 +28,15 @@
 
 #include "psi4/libfock/ComplexJK.h"
 
-#include "psi4/pybind11.h"
-// #include "psi4/libpsi4util/process.h" this also includes options as below
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/basisset.h"
+
+#include <Einsums/BLAS.hpp>
+
+#include <complex>
+#include <sstream>
 
 namespace psi {
 
@@ -107,66 +111,46 @@ void ComplexJK::allocate_JK() {
 }
 
 void ComplexJK::compute_D() {
-    /// Make sure the memory is there
-    bool same = true;
+    // Ensure D_ matches C_left_ (square AOxAO per irrep from C's row tiling).
     if (C_left_.size() != D_.size()) {
-        same = false;
-    }
-
-    if (!same) {
         D_.clear();
         for (size_t N = 0; N < C_left_.size(); N++) {
             std::stringstream s;
             s << "D " << N << " (SO)";
-            // Density is square AO×AO; use the row tiling of C_left_.
             D_.push_back(std::make_shared<ComplexMatrix>(s.str(), C_left_[N]->tile_size(0)));
         }
     }
 
-    // Form the density, differs from dou
     for (size_t N = 0; N < D_.size(); ++N) {
-        // int symm = D_[N]->symmetry();
         D_[N]->zero();
-        auto temp1_ = ComplexMatrix("square C", D_[N]->tile_size(0));
-        auto temp2_ = ComplexMatrix("square C.H", D_[N]->tile_size(0));
 
-        for (size_t h = 0; h < D_[N]->grid_size(0); h++) {
-            // C_DGEMM('N', 'T', nsol, nsor, nocc, 1.0, Clp[0], nocc, Crp[0], nocc, 0.0, Dp[0], nsor);
+        auto const& Cl = *C_left_[N];
+        // compute() aliases C_right_ = C_left_ when only C_left is filled; allow the same here.
+        auto const& Cr = (N < C_right_.size()) ? *C_right_[N] : Cl;
 
-            auto& t1 = temp1_.tile(static_cast<int>(h), static_cast<int>(h));
-            auto& t2 = temp2_.tile(static_cast<int>(h), static_cast<int>(h));
-            t1.zero();
-            t2.zero();
-
-            /// Yeah, this one isn't ready yet.
-            throw pybind11::attribute_error("DirectJK::compute_D() not implemented!");
-
-            // Fills temp1_ and temp2_ with the occupied (2*nsopi_ x nelecpi_) and conjugate
-            // occupied matrices (e.g. Cocc)
-            // Note that temp1_ and temp2_ are both (2*nsopi_ x 2*nsopi_), but the 'remainder'
-            // are all->zeros and contribute nothing
-            // This is just a minor inefficiency, since these matrices are larger than they should be
-            // NOTE: prefer rectangular C tiles once compute_D is implemented for TiledTensor
-
-            auto nelecpi_ = C_left_[N]->tile_size(1)[h];
-            auto nso_h = C_left_[N]->tile_size(0)[h];
-
-            for (int j = 0; j < nso_h; j++) {
-                for (int k = 0; k < nelecpi_; k++) {
-                    const std::complex<double>& C_jk =
-                        C_left_[N]->tile(static_cast<int>(h), static_cast<int>(h))(j, k);
-                    t1(j, k) = C_jk;
-                    t2(j, k) = std::conj(C_jk);
-                }
-            }
+        if (Cl.grid_size(0) != Cr.grid_size(0) || Cl.grid_size(1) != Cr.grid_size(1)) {
+            throw PSIEXCEPTION("ComplexJK::compute_D: C_left/C_right tile grids must match.");
         }
 
-        // D_ = einsums("ui,vi->uv", temp1_, temp2_)
-        einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, D_[N].get(),  // D_uv
-                                        einsums::Indices{einsums::index::u, einsums::index::i}, temp1_,   // Cocc_ui
-                                        einsums::Indices{einsums::index::v, einsums::index::i}, temp2_    // Cocc_vi.conj().T
-        );
+        for (int h = 0; h < static_cast<int>(Cl.grid_size(0)); ++h) {
+            int nsol = Cl.tile_size(0)[h];
+            int nsor = Cr.tile_size(0)[h];
+            int nocc = Cl.tile_size(1)[h];
+            if (nocc != Cr.tile_size(1)[h]) {
+                throw PSIEXCEPTION("ComplexJK::compute_D: C_left/C_right occupied dimensions must match.");
+            }
+            if (!nsol || !nsor || !nocc) continue;
+            if (!Cl.has_tile(h, h) || !Cr.has_tile(h, h)) continue;
 
+            auto const& Cl_h = Cl.tile(h, h);
+            auto const& Cr_h = Cr.tile(h, h);
+            auto& D_h = D_[N]->tile(h, h);  // allocates (nsol x nsor)
+
+            // D_h = Cl_h * Cr_h^H
+            einsums::blas::gemm('n', 'c', nsol, nsor, nocc, std::complex<double>{1.0}, Cl_h.data(),
+                                static_cast<int>(Cl_h.stride(0)), Cr_h.data(), static_cast<int>(Cr_h.stride(0)),
+                                std::complex<double>{0.0}, D_h.data(), static_cast<int>(D_h.stride(0)));
+        }
     }
 }
 
@@ -209,6 +193,7 @@ void ComplexJK::compute() {
     if (debug_ > 6) {
         outfile->Printf("\n   WARNING: ComplexMatrix->print() not implemented. "
                         "No internal JK quantities will be logged.\n");
+        // TODO: implement ComplexMatrix::print()
         // for (size_t N = 0; N < C_left_.size(); N++) {
         //     C_left_[N]->print("outfile");
         //     C_right_[N]->print("outfile");

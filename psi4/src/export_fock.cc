@@ -131,6 +131,8 @@ void export_fock(py::module &m) {
              })
         .def("C_left_add", [](ComplexJK &jk, SharedComplexMatrix Cl) { jk.C_left().push_back(Cl); })
         .def("C_right_add", [](ComplexJK &jk, SharedComplexMatrix Cr) { jk.C_right().push_back(Cr); })
+        .def("compute_D", &ComplexJK::compute_D,
+             "Form D = C_left @ C_right.H (per irrep) from currently queued C matrices.")
         .def("J", &ComplexJK::J, py::return_value_policy::reference_internal)
         .def("K", &ComplexJK::K, py::return_value_policy::reference_internal)
         .def("D", &ComplexJK::D, py::return_value_policy::reference_internal)
