@@ -129,11 +129,9 @@ size_t ComplexJK::memory_overhead() const {
 void ComplexJK::zero() {
     if (do_J_) {
         for(auto J : J_) J->zero();
-        for(auto J : J_ao_) J->zero();
     }
     if (do_K_) {
         for(auto K : K_) K->zero();
-        for(auto K : K_ao_) K->zero();
     }
 }
 
