@@ -220,6 +220,23 @@ class HF : public Wavefunction, public BaseHF {
     /// Sets the internal JK object (expert)
     void set_jk(std::shared_ptr<JK> jk);
 
+    /* Builds the correct JK object. This is a new function defined so that the
+    * python side no longer constructs the JK object separately from wfn.
+    * ComplexJKs should be built for ComplexWavefunctions. However, any mechanism
+    * to determine if ComplexJK is requested within JK::build_JK is smelly.
+    *   1. We could infer a ComplexJK with `REFERENCE CGHF`, but every new complex
+    *      reference would require an addition to this list.
+    *   2. We could add another option for `IS_COMPLEX`, but being a global option
+    *      anyone could change it. (not obvious what the source of truth is)
+    *   3. We could pass in the wfn directly to Build_JK and do RTTI. This works
+    *      but is awfuly smelly too *insert foghorn sound*
+    * Here, we build the correct JK via an overriden pure virtual function.
+    * Notice the const qualifier: This doesn't change `HF::jk_`. A downside
+    * to this approach is that shared ptrs are not covariant, meaning
+    * a bit more work is required to upcast JK/ComplexJK --> BaseJK.
+    */
+    std::shared_ptr<JK> build_jk(size_t memory) const;
+
     /// The DFT Potential object (or null if it has been deleted)
     /// This needs to be virtual so that subclasses can enforce their
     /// particular potential's derived class.

@@ -111,6 +111,11 @@ void CGHF::set_jk(std::shared_ptr<BaseJK> jk) {
     jk_ = jk;
 }
 
+std::shared_ptr<BaseJK> CGHF::build_jk(size_t memory) const {
+    // auto jk = ComplexJK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), Process::environment.options, false, memory);
+    // return jk;
+    return jk_;
+}
 
 }  // namespace scf
 }  // namespace psi

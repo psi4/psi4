@@ -36,8 +36,6 @@ namespace psi {
 
 BaseJK::BaseJK(std::shared_ptr<BasisSet> primary) : primary_(primary) { init_knobs(); }
 
-BaseJK::~BaseJK() {}
-
 void BaseJK::init_knobs() {
     print_ = 1;
     debug_ = 0;

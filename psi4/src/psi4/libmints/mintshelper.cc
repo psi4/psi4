@@ -269,7 +269,7 @@ std::shared_ptr<BasisSet> MintsHelper::basisset() const { return basisset_; }
 
 std::shared_ptr<SOBasisSet> MintsHelper::sobasisset() const { return sobasis_; }
 
-std::shared_ptr<BasisSet> MintsHelper::get_basisset(std::string label) {
+std::shared_ptr<BasisSet> MintsHelper::get_basisset(std::string label) const {
     // This may be slightly confusing, but better than changing this in 800 other places
     if (label == "ORBITAL") {
         return basisset_;
@@ -277,7 +277,7 @@ std::shared_ptr<BasisSet> MintsHelper::get_basisset(std::string label) {
         outfile->Printf("Could not find requested basisset (%s).", label.c_str());
         throw PSIEXCEPTION("MintsHelper::get_basisset: Requested basis set (" + label + ") was not set!\n");
     } else {
-        return basissets_[label];
+        return basissets_.at(label);
     }
 }
 void MintsHelper::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) {
@@ -288,7 +288,7 @@ void MintsHelper::set_basisset(std::string label, std::shared_ptr<BasisSet> basi
     }
 }
 
-bool MintsHelper::basisset_exists(std::string label) {
+bool MintsHelper::basisset_exists(std::string label) const {
     if (basissets_.count(label) == 0)
         return false;
     else

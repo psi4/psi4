@@ -200,7 +200,7 @@ class PSI_API BaseWavefunction {
 
     /// Getters and setters for other basis sets
     std::map<std::string, std::shared_ptr<BasisSet>> basissets() const;
-    std::shared_ptr<BasisSet> get_basisset(std::string label);
+    std::shared_ptr<BasisSet> get_basisset(std::string label) const;
     void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
     bool basisset_exists(std::string label);
 

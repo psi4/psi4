@@ -184,7 +184,7 @@ std::map<std::string, std::shared_ptr<BasisSet>> BaseWavefunction::basissets() c
     return mintshelper_->basissets();
 }
 
-std::shared_ptr<BasisSet> BaseWavefunction::get_basisset(std::string label) {
+std::shared_ptr<BasisSet> BaseWavefunction::get_basisset(std::string label) const {
     return mintshelper_->get_basisset(label);
 }
 
