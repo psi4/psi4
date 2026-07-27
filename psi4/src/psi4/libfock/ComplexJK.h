@@ -39,9 +39,9 @@
 #include "psi4/libmints/typedefs.h"
 
 namespace psi {
-
 class BasisSet;
 class Options;
+class TwoBodyAOInt;
 
 /**
  * Class ComplexJK
@@ -70,6 +70,10 @@ class PSI_API ComplexJK : public BaseJK {
     /// CSAM Screening (defaults to false)
     double do_csam_;
     /// input_symmetry_cast_map_ not needed for C1
+
+    /// The meaning of C1 is slightly twisted here. C1()==true implies USO2AO
+    /// But since we excpect C1 symm regardless, no such transforms are required.
+    bool C1() const override { return false; }
 
     // => Architecture-Level State Variables (Spatial Symmetry) <= //
 
@@ -195,8 +199,6 @@ class PSI_API ComplexDirectJK : public ComplexJK {
     /// Options object
     Options& options_;
 
-    /// Do we need to backtransform to C1 under the hood?
-    bool C1() const override { return false; }
     /// Setup integrals, files, etc
     void preiterations() override;
     /// Compute J/K for current C/D
@@ -206,6 +208,10 @@ class PSI_API ComplexDirectJK : public ComplexJK {
 
     /// Common initialization
     void common_init() override;
+
+    /// Actually do the JK
+    using ComplexT = einsums::Tensor<std::complex<double>, 2>;
+    void build_JK_naive(std::shared_ptr<TwoBodyAOInt>, const ComplexT&, ComplexT&, ComplexT&);
 
   public:
     // => Constructors < = //
