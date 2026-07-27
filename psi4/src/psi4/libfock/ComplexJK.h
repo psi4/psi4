@@ -53,8 +53,12 @@ class Options;
  *  K_mn = (ml|ns) C_li^left C_si^right
  *
  * API intentionally mirrors JK (push C_left, compute(), grab D/J/K), with
- * SharedComplexMatrix storage instead of SharedMatrix. DFT/range-separated
- * quantities (wK, omega, ...) are intentionally omitted.
+ * SharedComplexMatrix storage instead of SharedMatrix.
+ *
+ * Intentional omissions:
+ *   - DFT/range-separated quantities (wK, omega, ...) are intentionally omitted.
+ *   - Symmetry: C1 is explicitly enforced.
+ *      - `*_ao_` varibles.
  *
  * Method bodies that require algorithm or tensor logic currently throw
  * pybind11::attribute_error until implemented.
@@ -81,19 +85,6 @@ class PSI_API ComplexJK : public BaseJK {
     /// K matrices: \f$K_{mn}=(ml|ns)C_{li}^{left}C_{si}^{right}\f$
     std::vector<SharedComplexMatrix> K_;
 
-    // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
-
-    /// Pseudo-occupied C matrices, left side
-    std::vector<SharedComplexMatrix> C_left_ao_;
-    /// Pseudo-occupied C matrices, right side
-    std::vector<SharedComplexMatrix> C_right_ao_;
-    /// Pseudo-density matrices
-    std::vector<SharedComplexMatrix> D_ao_;
-    /// J matrices: J_mn = (mn|ls) C_li^left C_si^right
-    std::vector<SharedComplexMatrix> J_ao_;
-    /// K matrices: K_mn = (ml|ns) C_li^left C_si^right
-    std::vector<SharedComplexMatrix> K_ao_;
-
     // => Per-Iteration Setup/Finalize Routines <= //
 
     /// Build the pseudo-density D_, before compute_JK()
@@ -101,9 +92,7 @@ class PSI_API ComplexJK : public BaseJK {
     /// Allocate J_/K_
     void allocate_JK() override;
 
-    /**
-     *  Function that sets a number of flags and allocates memory.
-     */
+    /// Function that sets a number of flags and allocates memory.
     void common_init() override;
 
     // => Helper Routines <= //
