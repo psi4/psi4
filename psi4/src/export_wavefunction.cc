@@ -88,24 +88,28 @@ using namespace pybind11::literals;
 
 namespace {
 
-// Build the list of per-block NumPy views for an einsums block tensor, mirroring
-// Matrix::array_interface in export_mints.cc. Works for any
-// einsums::tensor_base::BlockTensor instantiation (owning ComplexMatrix or a view
-// tensor) since both expose num_blocks()/block() and per-block data()/dim()/stride().
-template <typename BlockT>
-py::list block_tensor_array_interface(BlockT& bt) {
-    using ValueT = typename BlockT::ValueType;
+// Diagonal-tile NumPy views for an einsums TiledTensor (ComplexMatrix). Requires the
+// same number of tiles on each axis (one tile index per irrep). Non-const tile(h, h)
+// lazily allocates missing diagonal tiles so Python can write into them.
+template <typename TiledT>
+py::list tiled_tensor_array_interface(TiledT& tt) {
+    using ValueT = typename TiledT::ValueType;
+    if (tt.grid_size(0) != tt.grid_size(1)) {
+        throw py::value_error(
+            "ComplexMatrix.array_interface requires equal tile counts on both axes "
+            "(one tile index per irrep).");
+    }
     py::list ret;
-    for (size_t h = 0; h < bt.num_blocks(); ++h) {
-        auto& blk = bt.block(static_cast<int>(h));
-        const auto r = static_cast<py::ssize_t>(blk.dim(0));
-        const auto c = static_cast<py::ssize_t>(blk.dim(1));
-        ValueT* ptr = (r != 0 && c != 0) ? blk.data() : nullptr;
+    const size_t ntiles = tt.grid_size(0);
+    for (size_t h = 0; h < ntiles; ++h) {
+        auto& tile = tt.tile(static_cast<int>(h), static_cast<int>(h));
+        const auto r = static_cast<py::ssize_t>(tile.dim(0));
+        const auto c = static_cast<py::ssize_t>(tile.dim(1));
+        ValueT* ptr = (r != 0 && c != 0) ? tile.data() : nullptr;
         std::vector<py::ssize_t> shape{r, c};
-        std::vector<py::ssize_t> strides{static_cast<py::ssize_t>(blk.stride(0) * sizeof(ValueT)),
-                                         static_cast<py::ssize_t>(blk.stride(1) * sizeof(ValueT))};
-        // Passing py::cast(&bt) as base ties each view's lifetime to the C++ object (no copy).
-        ret.append(py::array(py::dtype::of<ValueT>(), shape, strides, ptr, py::cast(&bt)));
+        std::vector<py::ssize_t> strides{static_cast<py::ssize_t>(tile.stride(0) * sizeof(ValueT)),
+                                         static_cast<py::ssize_t>(tile.stride(1) * sizeof(ValueT))};
+        ret.append(py::array(py::dtype::of<ValueT>(), shape, strides, ptr, py::cast(&tt)));
     }
     return ret;
 }
@@ -356,35 +360,43 @@ void export_wavefunction(py::module& m) {
              "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
-    // ComplexMatrix is einsums::BlockTensor<complex<double>, 2>. NumPy conversion
+    // ComplexMatrix is einsums::TiledTensor<complex<double>, 2>. NumPy conversion
     // (to_array/from_array) lives in Python (p4util/numpy_helper.py) and is built on the
     // array_interface method below, mirroring the real Matrix class in export_mints.cc.
+    // Diagonal tiles tile(h, h) play the role of BlockTensor::block(h); tiles may be
+    // rectangular when row and column grids differ (e.g. occupied-only MO coefficients).
     py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
-                                                             "Complex blocked matrix (einsums BlockTensor).")
+                                                             "Complex blocked matrix (einsums TiledTensor).")
         .def(py::init([](const std::string& name, const std::vector<size_t>& block_sizes) {
+                 // One size list --> same tiling on both axes (square diagonal tiles).
                  auto mat = std::make_shared<ComplexMatrix>(name, block_sizes);
-                 mat->zero();
+                 for (int h = 0; h < static_cast<int>(block_sizes.size()); ++h) {
+                     (void)mat->tile(h, h);  // allocate + zero diagonal tiles
+                 }
                  return mat;
              }),
              "name"_a, "block_sizes"_a,
-             "Construct a zeroed ComplexMatrix with one square block per entry in block_sizes.")
-        .def("num_blocks", &ComplexMatrix::num_blocks, "Number of symmetry blocks.")
-        .def("array_interface", &block_tensor_array_interface<ComplexMatrix>,
+             "Construct a ComplexMatrix with one square diagonal tile per entry in block_sizes.")
+        .def(py::init([](const std::string& name, const std::vector<size_t>& row_sizes,
+                         const std::vector<size_t>& col_sizes) {
+                 if (row_sizes.size() != col_sizes.size()) {
+                     throw py::value_error(
+                         "ComplexMatrix: row_sizes and col_sizes must have the same number of irreps.");
+                 }
+                 auto mat = std::make_shared<ComplexMatrix>(name, row_sizes, col_sizes);
+                 for (int h = 0; h < static_cast<int>(row_sizes.size()); ++h) {
+                     (void)mat->tile(h, h);
+                 }
+                 return mat;
+             }),
+             "name"_a, "row_sizes"_a, "col_sizes"_a,
+             "Construct a ComplexMatrix with diagonal tiles of shape (row_sizes[h], col_sizes[h]).")
+        .def(
+            "num_blocks", [](const ComplexMatrix& m) { return m.grid_size(0); },
+            "Number of symmetry blocks (tile count along axis 0).")
+        .def("array_interface", &tiled_tensor_array_interface<ComplexMatrix>,
              py::return_value_policy::reference_internal,
-             "List of per-block NumPy views sharing the tensor's memory.");
-
-    // View-based block tensor (blocks are non-owning TensorViews over a real Matrix's memory).
-    // Produced by share_matrix_to_einsums. Read-only bridge to NumPy (no from_array).
-    using RealBlockTensorView = scf::BlockTensorView<double, 2>;
-    py::class_<RealBlockTensorView, std::shared_ptr<RealBlockTensorView>>(
-        m, "BlockTensorView", "Real block tensor whose blocks are views into a Matrix's memory.")
-        .def("num_blocks", &RealBlockTensorView::num_blocks, "Number of symmetry blocks.")
-        .def("array_interface", &block_tensor_array_interface<RealBlockTensorView>,
-             py::return_value_policy::reference_internal,
-             "List of per-block NumPy views sharing the underlying Matrix's memory.");
-
-    m.def("share_matrix_to_einsums", &scf::share_matrix_to_einsums, "matrix"_a,
-          "Alias a real psi4 Matrix's memory as an einsums block-tensor view (no copy).");
+             "List of per-irrep diagonal-tile NumPy views sharing the tensor's memory.");
 
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
             "ComplexWavefunction", "ComplexWavefunction class docstring")

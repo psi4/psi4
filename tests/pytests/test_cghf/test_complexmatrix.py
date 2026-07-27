@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 
 import psi4
-from psi4.core import Dimension, Matrix
 from psi4.driver.p4util.exceptions import ValidationError
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.cghf]
@@ -22,6 +21,19 @@ def test_complexmatrix_constructor_zeroed():
     assert isinstance(blocks, list)
     for blk in blocks:
         np.testing.assert_allclose(blk, np.zeros_like(blk))
+
+
+def test_complexmatrix_constructor_rectangular():
+    """ComplexMatrix(name, row_sizes, col_sizes) builds rectangular diagonal tiles."""
+    mat = psi4.core.ComplexMatrix("Cocc", [4, 2], [1, 3])
+    assert mat.num_blocks() == 2
+    views = mat.array_interface()
+    assert [v.shape for v in views] == [(4, 1), (2, 3)]
+    views[0][:] = [[1 + 1j], [2], [3], [4]]
+    views[1][:] = np.arange(6, dtype=np.complex128).reshape(2, 3)
+    blocks = mat.to_array()
+    np.testing.assert_allclose(blocks[0], views[0])
+    np.testing.assert_allclose(blocks[1], views[1])
 
 
 def test_complexmatrix_array_interface_write_through():
@@ -53,8 +65,11 @@ def test_complexmatrix_to_from_array_c1():
     assert cast.to_array().dtype == np.complex128
     np.testing.assert_allclose(cast.to_array(), real)
 
-    with pytest.raises(ValidationError, match="square"):
-        psi4.core.ComplexMatrix.from_array(np.ones((2, 3), dtype=np.complex128))
+    # Rectangular C1 tiles are supported (TiledTensor)
+    rect = np.arange(6, dtype=np.complex128).reshape(3, 2)
+    rect_mat = psi4.core.ComplexMatrix.from_array(rect, name="Cocc")
+    np.testing.assert_allclose(rect_mat.to_array(), rect)
+    assert rect_mat.array_interface()[0].shape == (3, 2)
 
     with pytest.raises(ValidationError, match="2-dimensional"):
         psi4.core.ComplexMatrix.from_array(np.ones(3, dtype=np.complex128))
@@ -96,60 +111,3 @@ def test_complexmatrix_to_array_multiblock():
     assert len(blocks) == len(sizes)
     for got, ref in zip(blocks, refs):
         np.testing.assert_allclose(got, ref)
-
-
-def test_share_matrix_to_einsums_c1():
-    """share_matrix_to_einsums aliases a C1 Matrix as a BlockTensorView (no copy)."""
-    ref = np.arange(9, dtype=float).reshape(3, 3)
-    M = Matrix.from_array(ref)
-    bt = psi4.core.share_matrix_to_einsums(M)
-
-    assert isinstance(bt, psi4.core.BlockTensorView)
-    assert bt.num_blocks() == 1
-    assert not hasattr(bt, "from_array")
-    np.testing.assert_allclose(bt.to_array(), ref)
-
-    # View -> Matrix
-    bt.to_array(copy=False)[1, 1] = 42.0
-    assert M.np[1, 1] == pytest.approx(42.0)
-
-    # Matrix -> View
-    M.np[0, 0] = -5.0
-    assert bt.to_array()[0, 0] == pytest.approx(-5.0)
-
-
-def test_share_matrix_to_einsums_multi_irrep():
-    """Multi-irrep Matrix (including empty blocks) shares correctly with BlockTensorView."""
-    rdim = Dimension([2, 1, 3, 0])
-    cdim = Dimension([2, 1, 3, 0])
-    M = Matrix("sym", rdim, cdim)
-    rng = np.random.default_rng(0)
-    for h in range(M.nirrep()):
-        if M.rows(h) and M.cols(h):
-            M.nph[h][:] = rng.normal(size=(M.rows(h), M.cols(h)))
-
-    bt = psi4.core.share_matrix_to_einsums(M)
-    assert bt.num_blocks() == M.nirrep()
-
-    mat_blocks = M.to_array()
-    bt_blocks = bt.to_array()
-    assert isinstance(bt_blocks, list)
-    assert len(bt_blocks) == 4
-    for h, (a, b) in enumerate(zip(mat_blocks, bt_blocks)):
-        assert a.shape == b.shape
-        np.testing.assert_allclose(a, b)
-
-    # Empty irrep is a (0, 0) view
-    assert bt.array_interface()[3].shape == (0, 0)
-
-    # Write-through on a non-empty block
-    bt.to_array(copy=False)[2][0, 0] = 99.0
-    assert M.nph[2][0, 0] == pytest.approx(99.0)
-
-
-def test_blocktensorview_keeps_matrix_alive():
-    """Returned BlockTensorView keeps the source Matrix alive after the Python ref drops."""
-    bt = psi4.core.share_matrix_to_einsums(Matrix.from_array(np.eye(2) * 3.0))
-    np.testing.assert_allclose(bt.to_array(), np.eye(2) * 3.0)
-    bt.to_array(copy=False)[0, 1] = 1.5
-    assert bt.to_array()[0, 1] == pytest.approx(1.5)
