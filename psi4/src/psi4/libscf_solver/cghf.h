@@ -44,7 +44,7 @@ namespace psi {
 class BasisSet;
 class SuperFunctional;
 class VBase;
-class BaseJK;
+class ComplexJK;
 
 namespace scf {
 
@@ -69,8 +69,8 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
     std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
 
-    /// JK object (ComplexJK when available; BaseJK for now)
-    std::shared_ptr<BaseJK> jk_;
+    /// JK object
+    std::shared_ptr<ComplexJK> jk_;
 
     void common_init();
 
@@ -87,13 +87,13 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     }
 
     /// The JK object (or null if it has been deleted)
-    std::shared_ptr<BaseJK> jk() const { return jk_; }
+    std::shared_ptr<ComplexJK> jk() const { return jk_; }
 
     /// Sets the internal JK object (expert)
-    void set_jk(std::shared_ptr<BaseJK> jk);
+    void set_jk(std::shared_ptr<ComplexJK> jk);
 
     /// Builds the correct JK object (placeholder for future ComplexJK)
-    std::shared_ptr<BaseJK> build_jk(size_t memory) const;
+    std::shared_ptr<ComplexJK> build_jk(size_t memory) const;
 
     /// Construct the DFT potential.
     void setup_potential();

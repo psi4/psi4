@@ -34,12 +34,16 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libfock/jk.h"
+#include "psi4/libfock/ComplexJK.h"
 #include "psi4/libfock/v.h"
 
 #include <Einsums/TensorBase/TensorBase.hpp>
 #include <Einsums/TensorBase/Common.hpp>
 #include <Einsums/Tensor/Tensor.hpp>
+
+// DEBUG STATEMENTS
+#include <pybind11/pybind11.h>
+// END DEBUG
 
 namespace psi {
 namespace scf {
@@ -100,7 +104,7 @@ void CGHF::setup_potential() {
     }
 }
 
-void CGHF::set_jk(std::shared_ptr<BaseJK> jk) {
+void CGHF::set_jk(std::shared_ptr<ComplexJK> jk) {
     // Cheap basis check
     int jk_nbf = jk->basisset()->nbf();
     int hf_nbf = basisset_->nbf();
@@ -111,10 +115,10 @@ void CGHF::set_jk(std::shared_ptr<BaseJK> jk) {
     jk_ = jk;
 }
 
-std::shared_ptr<BaseJK> CGHF::build_jk(size_t memory) const {
-    // auto jk = ComplexJK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), Process::environment.options, false, memory);
-    // return jk;
-    return jk_;
+std::shared_ptr<ComplexJK> CGHF::build_jk(size_t memory) const {
+    auto jk = ComplexJK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"),
+                                  Process::environment.options, false, memory);
+    return jk;
 }
 
 }  // namespace scf

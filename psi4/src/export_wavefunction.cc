@@ -43,6 +43,7 @@
 #include "psi4/libmints/complexwavefunction.h"
 
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/ComplexJK.h"
 #include "psi4/libfock/soscf.h"
 
 #include "psi4/cc/ccwave.h"
