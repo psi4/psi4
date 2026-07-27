@@ -36,6 +36,7 @@
 #include <vector>
 
 #include "psi4/pragma.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 
@@ -86,6 +87,13 @@ class PSI_API BaseJK {
 
     /// Build the pseudo-density D_, before compute_JK()
     virtual void compute_D() = 0;
+    /// Transform current C_left_/C_right_/D_ to C_left_ao_/C_right_ao_/D_ao_, before compute_JK()
+    virtual void USO2AO() { throw PSIEXCEPTION("USO2AO not available for this JK type."); }
+    /// Transform finished J_ao_/K_ao_ to J_/K_, after compute_JK()
+    virtual void AO2USO() { throw PSIEXCEPTION("AO2USO not available for this JK type."); }
+    /// Allocate J_/K_
+    virtual void allocate_JK();
+
     /**
      *  Function that sets a number of flags and allocates memory
      *  and sets up AO2USO.
@@ -123,6 +131,10 @@ class PSI_API BaseJK {
      * @param primary primary basis set for this system.
      */
     BaseJK(std::shared_ptr<BasisSet> primary);
+
+    /// Overriden by subclasses of JK/ComplexJK
+    // TODO: investigate if JK::memory_estimate and all of its derived variants could be made const
+    virtual size_t memory_estimate() = 0;
 
     /// Destructor
     virtual ~BaseJK() = default;
@@ -216,6 +228,12 @@ class PSI_API BaseJK {
      */
     const std::unordered_map<std::string, std::vector<size_t>>& computed_shells_per_iter();
     const std::vector<size_t>& computed_shells_per_iter(const std::string& n_let);
+
+    /**
+     * Print header information regarding ComplexJK
+     * type on output file
+     */
+    virtual void print_header() const = 0;
 };
 
 }  // namespace psi

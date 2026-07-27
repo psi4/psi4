@@ -59,6 +59,8 @@ void BaseJK::init_knobs() {
 
 void BaseJK::common_init() {}
 
+void BaseJK::allocate_JK() { throw PSIEXCEPTION("allocate_JK not available for this JK type."); }
+
 const std::unordered_map<std::string, std::vector<size_t>>& BaseJK::computed_shells_per_iter() {
     return computed_shells_per_iter_;
 }

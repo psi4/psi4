@@ -293,11 +293,11 @@ class PSI_API JK : public BaseJK {
     /// Build the pseudo-density D_, before compute_JK()
     void compute_D() override;
     /// Transform current C_left_/C_right_/D_ to C_left_ao_/C_right_ao_/D_ao_, before compute_JK()
-    void USO2AO();
+    void USO2AO() override;
     /// Transform finished J_ao_/K_ao_ to J_/K_, after compute_JK()
-    void AO2USO();
+    void AO2USO() override;
     /// Allocate J_/K_ should we be using SOs
-    void allocate_JK();
+    void allocate_JK() override;
     /**
      *  Function that sets a number of flags and allocates memory
      *  and sets up AO2USO.
@@ -352,9 +352,6 @@ class PSI_API JK : public BaseJK {
                                         Options& options, std::string jk_type);
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                         Options& options, bool do_wK, size_t doubles);
-
-    // TODO: investigate if JK::memory_estimate and all of its derived variants could be made const
-    virtual size_t memory_estimate() = 0;
 
     // => Knobs <= //
 
@@ -469,12 +466,6 @@ class PSI_API JK : public BaseJK {
      * @return D vector of D matrices
      */
     const std::vector<SharedMatrix>& D() const { return D_; }
-
-    /**
-    * Print header information regarding JK
-    * type on output file
-    */
-    virtual void print_header() const = 0;
 };
 
 // => APPLIED CLASSES <= //
