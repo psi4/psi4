@@ -583,7 +583,17 @@ void export_wavefunction(py::module& m) {
         .def("form_G", &scf::CGHF::form_G, "Form the G (J-K) matrix.")
         .def("jk", &scf::CGHF::jk, "Returns the internal JK object.")
         .def("set_jk", &scf::CGHF::set_jk, "Sets the internal JK object !expert.")
-        .def("build_jk", [](scf::CGHF& self, double memory) { return self.build_jk(static_cast<size_t>(memory)); }, "Returns a fresh JK object with correct type.");
+        .def("build_jk", [](scf::CGHF& self, double memory) { return self.build_jk(static_cast<size_t>(memory)); }, "Returns a fresh JK object with correct type.")
+        .def("get_T", &scf::CGHF::get_T, "Returns the kinetic energy matrix (spin-blocked).")
+        .def("get_V", &scf::CGHF::get_V, "Returns the one-electron potential matrix (spin-blocked).")
+        .def("get_H", &scf::CGHF::get_H, "Returns the core Hamiltonian matrix (spin-blocked).")
+        .def("get_X", &scf::CGHF::get_X, "Returns the orthogonalization matrix (spin-blocked).")
+        .def("get_F", &scf::CGHF::get_F, "Returns the Fock matrix (spin-blocked).")
+        .def("get_C", &scf::CGHF::get_C, "Returns the MO coefficient matrix (spin-blocked).")
+        .def("get_D", &scf::CGHF::get_D, "Returns the density matrix (spin-blocked).")
+        .def("get_G", &scf::CGHF::get_G, "Returns the G (J-K) matrix (spin-blocked).")
+        .def("get_J", &scf::CGHF::get_J, "Returns the Coulomb matrix (spin-blocked).")
+        .def("get_K", &scf::CGHF::get_K, "Returns the exchange matrix (spin-blocked).");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
