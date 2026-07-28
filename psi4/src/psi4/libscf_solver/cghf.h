@@ -61,17 +61,32 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// JK object
     std::shared_ptr<ComplexJK> jk_;
 
-    SharedComplexMatrix H_;
+    /// The kinetic energy matrix
     SharedComplexMatrix T_;
+    /// The 1e potential energy matrix
     SharedComplexMatrix V_;
-    /// A temporary spot for the H matrix
-    SharedComplexMatrix Horig_;
-    /// No DFT potential matrices
-    /// The orthogonalization matrix (symmetric or canonical)
+    /// Core Hamiltonian
+    SharedComplexMatrix H_;
+    /// The orthogonalization matrix
     SharedComplexMatrix X_;
+
+    /// Fock matrix
+    SharedComplexMatrix F_;
+    /// MO coefficients
+    SharedComplexMatrix C_;
+    /// density matrix
+    SharedComplexMatrix D_;
+    /// No DFT potential matrices
+    /// Temporary matrices
+    SharedComplexMatrix G_;
+    SharedComplexMatrix J_;
+    SharedComplexMatrix K_;
 
     void common_init();
 
+    // Dimension of irreps. Einsums likes vectors over psi::Dimension.
+    std::vector<size_t> irrep_sizes_;  // each irrep (h) size will be 2*nsopi_[h]
+    std::vector<size_t> nelecpi_;      // Number of electrons per irrep
    public:
     CGHF(std::shared_ptr<ComplexWavefunction> ref_wfn, std::shared_ptr<SuperFunctional> functional);
     CGHF(std::shared_ptr<ComplexWavefunction> ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
@@ -125,6 +140,18 @@ class CGHF : public ComplexWavefunction, public BaseHF {
 
     /// The DFT Potential object (or nullptr if it has been deleted)
     std::shared_ptr<VBase> V_potential() const { return potential_; };
+
+    /// Accessors for internal SCF matrices. Delete these before PR.
+    SharedComplexMatrix get_T() const { return T_; }
+    SharedComplexMatrix get_V() const { return V_; }
+    SharedComplexMatrix get_H() const { return H_; }
+    SharedComplexMatrix get_X() const { return X_; }
+    SharedComplexMatrix get_F() const { return F_; }
+    SharedComplexMatrix get_C() const { return C_; }
+    SharedComplexMatrix get_D() const { return D_; }
+    SharedComplexMatrix get_G() const { return G_; }
+    SharedComplexMatrix get_J() const { return J_; }
+    SharedComplexMatrix get_K() const { return K_; }
 };
 
 }  // namespace scf

@@ -38,9 +38,42 @@
 #include "psi4/libfock/ComplexJK.h"
 #include "psi4/libfock/v.h"
 
+#include <Einsums/Print.hpp>
 // DEBUG STATEMENTS
 #include <pybind11/pybind11.h>
 // END DEBUG
+
+namespace {
+
+// Takes an nsopi_-shaped square SharedMatrix and copies to 2 (two) diagonal
+// blocks **per irrep** into each tile of the provided ComplexMatrix.
+void copy_matrix_to_complex(const psi::Matrix& A, psi::ComplexMatrix& B) {
+    const int nirrep = A.nirrep();
+    std::vector<int> row_dim(nirrep);
+    std::vector<int> col_dim(nirrep);
+
+    for (int h = 0; h < nirrep; h++) {
+        row_dim[h] = A.rowspi(h) * 2;
+        col_dim[h] = A.colspi(h) * 2;
+    }
+
+    B = psi::ComplexMatrix{"", row_dim, col_dim};
+    B.zero();
+
+    for (int h = 0; h < nirrep; h++) {
+        const int r_ = A.rowspi(h);
+        const int c_ = A.colspi(h);
+        for (int i = 0; i < r_; i++) {
+            for (int j = 0; j < c_; j++) {
+                B.tile(h, h)(i, j) = A(h, i, j);
+                B.tile(h, h)(i + r_, j + c_) = A(h, i, j);
+            }
+        }
+    }
+    // Call B.set_name(""); after
+}
+
+}
 
 namespace psi {
 namespace scf {
@@ -68,12 +101,43 @@ void CGHF::common_init() {
     // Prefer BaseHF::nelectron_ over BaseWavefunction's; copy from ComplexWavefunction.
     nelectron_ = nelec_;
 
-    if (molecule_->schoenflies_symbol() != "c1") {
+    if (molecule_->schoenflies_symbol() != "c1" || nirrep_ != 1) {
         throw PSIEXCEPTION("CGHF currently supports only C1 symmetry. Set symmetry c1 in the molecule block.");
     }
 
     // DFT stuff (would typically go in subclass_init)
     setup_potential();
+
+    std::vector<size_t> irrep_sizes(nirrep_);
+    std::vector<size_t> nelecpi_(nirrep_);
+    for (int h = 0; h < nirrep_; h++) {
+        irrep_sizes[h] = static_cast<size_t>(nsopi_[h] * 2);
+        // nelecpi_[h] = static_cast<size_t>(nalphapi_[h] + nbetapi_[h]);
+        nelecpi_[0] = static_cast<size_t>(nelectron_);
+        if (h > 0) throw PSIEXCEPTION("looking for something? *waves nalphapi_ in front of face*");
+    }
+
+    T_ = std::make_shared<ComplexMatrix>("T", irrep_sizes, irrep_sizes);
+    V_ = std::make_shared<ComplexMatrix>("V", irrep_sizes, irrep_sizes);
+    H_ = std::make_shared<ComplexMatrix>("H", irrep_sizes, irrep_sizes);
+    X_ = std::make_shared<ComplexMatrix>("X", irrep_sizes, irrep_sizes);
+    F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes, irrep_sizes);
+    C_ = std::make_shared<ComplexMatrix>("MO coefficients", irrep_sizes, irrep_sizes);
+    D_ = std::make_shared<ComplexMatrix>("SCF density", irrep_sizes, irrep_sizes);
+    G_ = std::make_shared<ComplexMatrix>("G", irrep_sizes, irrep_sizes);
+    J_ = std::make_shared<ComplexMatrix>("J", irrep_sizes, irrep_sizes);
+    K_ = std::make_shared<ComplexMatrix>("K", irrep_sizes, irrep_sizes);
+
+    T_->zero();
+    V_->zero();
+    H_->zero();
+    X_->zero();
+    F_->zero();
+    C_->zero();
+    D_->zero();
+    G_->zero();
+    J_->zero();
+    K_->zero();
 }
 
 void CGHF::setup_potential() {
@@ -96,10 +160,14 @@ void CGHF::set_jk(std::shared_ptr<ComplexJK> jk) {
 }
 
 void CGHF::form_H() {
-    // T_ = mintshelper()->so_kinetic_einsums();
-    // V_ = mintshelper()->so_potential_einsums();
+    SharedMatrix T_real = mintshelper()->so_kinetic();
+    SharedMatrix V_real = mintshelper()->so_potential();
 
-    if (debug_ > 2) outfile->Printf("CGHF::form_H. Printing ComplexMatrix not supported yet");
+    copy_matrix_to_complex(*T_real, *T_);
+    copy_matrix_to_complex(*V_real, *V_);
+
+    if (debug_ > 2) einsums::fprintln(*outfile->stream(), *T_);
+    if (debug_ > 2) einsums::fprintln(*outfile->stream(), *V_);
 
     if (perturb_h_)
         throw PSIEXCEPTION("Perturbed Hamiltonian not supported with CGHF.");
@@ -107,10 +175,10 @@ void CGHF::form_H() {
     if (external_pot_)
         throw PSIEXCEPTION("External potential not supported with CGHF.");
 
-    // H_->copy(T_);
-    // H_->add(V_);
+    (*H_) = (*T_);
+    (*H_) += (*V_);
 
-    if (print_ > 3) outfile->Printf("CGHF::form_H. Printing ComplexMatrix not supported yet");
+    if (print_ > 3) einsums::fprintln(*outfile->stream(), *H_);
 }
 
 void CGHF::form_Shalf() {
