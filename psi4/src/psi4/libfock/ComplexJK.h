@@ -209,9 +209,13 @@ class PSI_API ComplexDirectJK : public ComplexJK {
     /// Common initialization
     void common_init() override;
 
+    /// Number of shell quartets that survived screening
+    size_t num_computed_shells() override;
+
     /// Actually do the JK
     using ComplexT = einsums::Tensor<std::complex<double>, 2>;
-    void build_JK_naive(std::shared_ptr<TwoBodyAOInt>, const ComplexT&, ComplexT&, ComplexT&);
+    /// Atom-blocked J/K build
+    void build_JK_matrices(std::shared_ptr<TwoBodyAOInt>, const ComplexT&, ComplexT&, ComplexT&);
 
   public:
     // => Constructors < = //

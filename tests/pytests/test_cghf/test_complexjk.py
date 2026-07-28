@@ -222,3 +222,126 @@ def test_complexdirectjk_real_D_matches_jk():
     np.testing.assert_allclose(cjk.K()[0].to_array().real, np.asarray(rjk.K()[0]), atol=1e-10)
     np.testing.assert_allclose(cjk.J()[0].to_array().imag, 0.0, atol=1e-10)
     np.testing.assert_allclose(cjk.K()[0].to_array().imag, 0.0, atol=1e-10)
+
+
+def _run_complex_jk(basis, C_arr, screening="NONE", ints_tol=1.0e-12, bench=False):
+    """Build/initialize/compute/finalize ComplexDirectJK for a single C."""
+    psi4.set_options(
+        {
+            "SCF_TYPE": "DIRECT",
+            "SCREENING": screening,
+            "INTS_TOLERANCE": ints_tol,
+            "DF_SCF_GUESS": False,
+        }
+    )
+    jk = psi4.core.ComplexJK.build_JK(basis, basis)
+    if bench:
+        jk.set_bench(1)
+    jk.initialize()
+    jk.C_clear()
+    jk.C_add(psi4.core.ComplexMatrix.from_array(np.asarray(C_arr, dtype=np.complex128), name="C"))
+    jk.compute()
+    jk.finalize()
+    return jk
+
+
+def _max_eri_am():
+    """Highest angular momentum with 4-center ERI support in this libint2 build."""
+    amchar = "SPDFGHIKLM"
+    max_am = 0
+    for am, ch in enumerate(amchar):
+        # libint2 uses lowercase shell labels in support keys, e.g. eri_kkkk_d0
+        key = f"eri_{ch.lower() * 4}_d0"
+        if psi4.core.libint2_supports(key):
+            max_am = am
+        else:
+            break
+    return max_am
+
+
+def _uncontracted_am_basis_string(max_am):
+    """Spherical custom basis: one primitive per AM from S through max_am."""
+    amchar = "SPDFGHIKLM"
+    lines = ["spherical", "****", "H 0"]
+    for am in range(max_am + 1):
+        lines.append(f"{amchar[am]} 1 1.0")
+        lines.append("  1.0 1.0")
+    lines.append("****")
+    return "\n".join(lines)
+
+
+def test_complexdirectjk_high_am_single_atom():
+    """Single atom with one primitive per shell up through max supported ERI AM."""
+    max_am = _max_eri_am()
+    assert max_am >= 4  # at least G in a normal Psi4 build
+    basis_string = _uncontracted_am_basis_string(max_am)
+
+    mol = psi4.geometry(
+        """
+        0 1
+        He
+        symmetry c1
+        """
+    )
+
+    def basisspec_psi4_yo__anonymous_higham(mol, role):
+        mol.set_basis_all_atoms("higham", role=role)
+        # One-primitive-per-AM string is written for H; reuse label for He.
+        return {"higham": basis_string.replace("H 0", "He 0")}
+
+    psi4.driver.qcdb.libmintsbasisset.basishorde["HIGHAM"] = basisspec_psi4_yo__anonymous_higham
+    psi4.set_options({"SCF_TYPE": "DIRECT", "SCREENING": "NONE", "DF_SCF_GUESS": False})
+    basis = psi4.core.BasisSet.build(mol, "ORBITAL", "HIGHAM")
+
+    assert basis.max_am() == max_am
+    assert basis.nshell() == max_am + 1
+    nbf = basis.nbf()
+    # spherical: sum_{l=0}^{L} (2l+1) = (L+1)^2
+    assert nbf == (max_am + 1) ** 2
+
+    rng = np.random.default_rng(17)
+    C_arr = _random_complex((nbf, 1), rng)
+    D_ref = C_arr @ C_arr.conj().T
+    J_ref, K_ref = _jk_reference(basis, D_ref)
+
+    jk = _run_complex_jk(basis, C_arr, screening="NONE")
+    np.testing.assert_allclose(jk.J()[0].to_array(), J_ref, atol=1e-8)
+    np.testing.assert_allclose(jk.K()[0].to_array(), K_ref, atol=1e-8)
+
+
+def test_complexdirectjk_h2_dimer_screening():
+    """H2···H2 at ~10 Å: Schwarz screening must match the full einsum reference and skip work."""
+    mol = psi4.geometry(
+        """
+        0 1
+        H  0.0  0.0   0.00
+        H  0.0  0.0   0.74
+        H  0.0  0.0  10.00
+        H  0.0  0.0  10.74
+        units angstrom
+        symmetry c1
+        """
+    )
+
+    psi4.set_options({"SCF_TYPE": "DIRECT", "SCREENING": "NONE", "DF_SCF_GUESS": False})
+    basis = psi4.core.BasisSet.build(mol, "ORBITAL", "sto-3g")
+    assert mol.natom() == 4
+    assert basis.nshell() == 4
+
+    nbf = basis.nbf()
+    rng = np.random.default_rng(19)
+    C_arr = _random_complex((nbf, 2), rng)
+    D_ref = C_arr @ C_arr.conj().T
+    J_ref, K_ref = _jk_reference(basis, D_ref)
+
+    jk_none = _run_complex_jk(basis, C_arr, screening="NONE", bench=True)
+    n_none = jk_none.computed_shells_per_iter()["Quartets"][-1]
+
+    jk_schwarz = _run_complex_jk(basis, C_arr, screening="SCHWARZ", ints_tol=1.0e-10, bench=True)
+    n_schwarz = jk_schwarz.computed_shells_per_iter()["Quartets"][-1]
+
+    np.testing.assert_allclose(jk_schwarz.J()[0].to_array(), J_ref, atol=1e-8)
+    np.testing.assert_allclose(jk_schwarz.K()[0].to_array(), K_ref, atol=1e-8)
+    assert n_schwarz < n_none
+    # Without uniqueness, unscreened count is nshell^4
+    assert n_none == basis.nshell() ** 4
