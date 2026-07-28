@@ -46,6 +46,10 @@ namespace psi {
 void ComplexWavefunction::common_init() {
     BaseWavefunction::common_init();
 
+    // Initialize einsums and turn off logging to stdout.
+    const char* ein_argv[4] = {"psi4", "--einsums:no-profiler-report", "--einsums:log-level", "3"};
+    einsums::initialize(4, ein_argv);
+
     nelecpi_ = Dimension(nirrep_, "Electrons per irrep");
     for (int k = 0; k < nirrep_; k++) {
         nelecpi_[k] = 0;

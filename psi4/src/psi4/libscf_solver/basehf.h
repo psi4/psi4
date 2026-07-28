@@ -167,6 +167,33 @@ class BaseHF {
     // Energies data
     void set_energies(std::string key, double value) { energies_[key] = value; }
     double get_energies(std::string key) { return energies_[key]; }
+
+    /// Form core Hamiltonian
+    virtual void form_H() = 0;
+
+    /// Form the S^{1/2} orthogonalization matrix
+    virtual void form_Shalf() = 0;
+
+    /// Compute MO coefficients from the current Fock matrix
+    virtual void form_C(double shift = 0.0) = 0;
+
+    /// Compute initial MO coefficients (default calls form_C)
+    virtual void form_initial_C() { form_C(); };
+
+    /// Form the density matrix from the current orbitals
+    virtual void form_D() = 0;
+
+    /// Form the Kohn-Sham potential matrix from the current density
+    virtual void form_V() = 0;
+
+    /// Form the Fock matrix
+    virtual void form_F() = 0;
+
+    /// Form the initial Fock matrix (default calls form_F)
+    virtual void form_initial_F() { form_F(); };
+
+    /// Form the G (J-K) matrix
+    virtual void form_G() = 0;
 };
 
 }  // namespace scf

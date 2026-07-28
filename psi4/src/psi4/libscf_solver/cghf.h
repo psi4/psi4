@@ -61,6 +61,15 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// JK object
     std::shared_ptr<ComplexJK> jk_;
 
+    SharedComplexMatrix H_;
+    SharedComplexMatrix T_;
+    SharedComplexMatrix V_;
+    /// A temporary spot for the H matrix
+    SharedComplexMatrix Horig_;
+    /// No DFT potential matrices
+    /// The orthogonalization matrix (symmetric or canonical)
+    SharedComplexMatrix X_;
+
     void common_init();
 
    public:
@@ -68,6 +77,33 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     CGHF(std::shared_ptr<ComplexWavefunction> ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
          std::shared_ptr<PSIO> psio);
     ~CGHF() override;
+
+    /// Form core Hamiltonian
+    void form_H() override;
+
+    /// Form the S^{1/2} orthogonalization matrix
+    void form_Shalf() override;
+
+    /// Compute MO coefficients from the current Fock matrix
+    void form_C(double shift = 0.0) override;
+
+    /// Compute initial MO coefficients (default calls form_C)
+    void form_initial_C() override { form_C(); }
+
+    /// Form the density matrix from the current orbitals
+    void form_D() override;
+
+    /// Form the Kohn-Sham potential matrix from the current density
+    void form_V() override { throw PSIEXCEPTION("CGHF::form_V() DFT for CGHF not available."); }
+
+    /// Form the Fock matrix
+    void form_F() override;
+
+    /// Form the initial Fock matrix (default calls form_F)
+    void form_initial_F() override { form_F(); }
+
+    /// Form the G (J-K) matrix
+    void form_G() override;
 
     /// SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
