@@ -31,6 +31,8 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libfock/ComplexJK.h"
@@ -91,6 +93,44 @@ void CGHF::set_jk(std::shared_ptr<ComplexJK> jk) {
     }
 
     jk_ = jk;
+}
+
+void CGHF::form_H() {
+    // T_ = mintshelper()->so_kinetic_einsums();
+    // V_ = mintshelper()->so_potential_einsums();
+
+    if (debug_ > 2) outfile->Printf("CGHF::form_H. Printing ComplexMatrix not supported yet");
+
+    if (perturb_h_)
+        throw PSIEXCEPTION("Perturbed Hamiltonian not supported with CGHF.");
+
+    if (external_pot_)
+        throw PSIEXCEPTION("External potential not supported with CGHF.");
+
+    // H_->copy(T_);
+    // H_->add(V_);
+
+    if (print_ > 3) outfile->Printf("CGHF::form_H. Printing ComplexMatrix not supported yet");
+}
+
+void CGHF::form_Shalf() {
+    throw pybind11::attribute_error("form_Shalf is not implemented for CGHF.");
+}
+
+void CGHF::form_C(double shift) {
+    throw pybind11::attribute_error("form_C is not implemented for CGHF.");
+}
+
+void CGHF::form_D() {
+    throw pybind11::attribute_error("form_D is not implemented for CGHF.");
+}
+
+void CGHF::form_F() {
+    throw pybind11::attribute_error("form_F is not implemented for CGHF.");
+}
+
+void CGHF::form_G() {
+    throw pybind11::attribute_error("form_G is not implemented for CGHF.");
 }
 
 std::shared_ptr<ComplexJK> CGHF::build_jk(size_t memory) const {

@@ -286,38 +286,38 @@ class HF : public Wavefunction, public BaseHF {
     void frac_renormalize();
     void frac_helper();
 
-    /// Formation of H is the same regardless of RHF, ROHF, UHF
-    // Temporarily converting to virtual function for testing embedding
-    // potentials.  TDC, 5/23/12.
-    virtual void form_H();
+    /// Form core Hamiltonian
+    void form_H() override;
+
+    /// Form the S^{1/2} orthogonalization matrix
+    void form_Shalf() override;
+
+    /// Compute MO coefficients from the current Fock matrix
+    void form_C(double shift = 0.0) override;
+
+    /// Compute initial MO coefficients (default calls form_C)
+    void form_initial_C() override { form_C(); }
+
+    /// Form the density matrix from the current orbitals
+    void form_D() override;
+
+    /// Form the Kohn-Sham potential matrix from the current density
+    void form_V() override;
+
+    /// Form the Fock matrix
+    void form_F() override;
+
+    /// Form the initial Fock matrix (default calls form_F)
+    void form_initial_F() override { form_F(); }
+
+    /// Form the G (J-K) matrix
+    void form_G() override;
 
     /// Do any needed integral JK setup
     virtual void initialize_gtfock_jk();
 
-    /// Formation of S^+1/2 and S^-1/2 are the same
-    void form_Shalf();
-
     /// Form the guess (guarantees C, D, and E)
     virtual void guess();
-
-    /// Compute the MO coefficients (C_) using level shift
-    virtual void form_C(double shift = 0.0);
-    /** Computes the initial MO coefficients (default is to call form_C) */
-    virtual void form_initial_C() { form_C(); }
-
-    /// Computes the density matrix (D_)
-    virtual void form_D();
-
-    /// Computes the density matrix (V_)
-    virtual void form_V();
-
-    /** Computes the Fock matrix */
-    virtual void form_F();
-    /** Computes the initial Fock matrix (default is to call form_F) */
-    virtual void form_initial_F() { form_F(); }
-
-    /** Forms the G matrix */
-    virtual void form_G();
 
     /** Form X'(FDS - SDF)X (for DIIS) **/
     virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);

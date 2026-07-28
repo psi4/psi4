@@ -111,11 +111,14 @@ def initialize_jk(self, memory, jk=None):
     jk.set_print(self.get_print())
     jk.set_memory(memory)
     jk.set_do_K(functional.is_x_hybrid())
-    jk.set_do_wK(functional.is_x_lrc())
-    jk.set_omega(functional.x_omega())
 
-    jk.set_omega_alpha(functional.x_alpha())
-    jk.set_omega_beta(functional.x_beta())
+    # core.ComplexJK does not support any of these yet.
+    if isinstance(jk, core.JK):
+        jk.set_do_wK(functional.is_x_lrc())
+        jk.set_omega(functional.x_omega())
+
+        jk.set_omega_alpha(functional.x_alpha())
+        jk.set_omega_beta(functional.x_beta())
 
     jk.initialize()
     jk.print_header()
@@ -918,7 +921,7 @@ core.HF.print_preiterations = scf_print_preiterations
 core.HF.iteration_energies = []
 
 core.CGHF.initialize = scf_initialize
-# core.CGHF.initialize_jk = initialize_jk
+core.CGHF.initialize_jk = initialize_jk
 # core.CGHF.iterations = scf_iterate
 core.CGHF.compute_energy = scf_compute_energy
 # core.CGHF.finalize_energy = scf_finalize_energy
