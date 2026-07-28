@@ -572,6 +572,15 @@ void export_wavefunction(py::module& m) {
         .def("set_sad_basissets", &scf::CGHF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::CGHF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
+        .def("form_H", &scf::CGHF::form_H, "Form core Hamiltonian")
+        .def("form_Shalf", &scf::CGHF::form_Shalf, "Form the S^{1/2} orthogonalization matrix")
+        .def("form_C", &scf::CGHF::form_C, "Compute MO coefficients from the current Fock matrix.", "shift"_a = 0.0)
+        .def("form_initial_C", &scf::CGHF::form_initial_C, "Compute initial MO coefficients from the current Fock matrix.")
+        .def("form_D", &scf::CGHF::form_D, "Form the density matrix from the current orbitals.")
+        .def("form_V", &scf::CGHF::form_V, "Form the Kohn-Sham potential matrix from the current density.")
+        .def("form_F", &scf::CGHF::form_F, "Form the Fock matrix.")
+        .def("form_initial_F", &scf::CGHF::form_initial_F, "Form the initial Fock matrix.")
+        .def("form_G", &scf::CGHF::form_G, "Form the G (J-K) matrix.")
         .def("jk", &scf::CGHF::jk, "Returns the internal JK object.")
         .def("set_jk", &scf::CGHF::set_jk, "Sets the internal JK object !expert.")
         .def("build_jk", [](scf::CGHF& self, double memory) { return self.build_jk(static_cast<size_t>(memory)); }, "Returns a fresh JK object with correct type.");
