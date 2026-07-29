@@ -30,6 +30,7 @@
 
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/orthog.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/matrix.h"
@@ -57,7 +58,7 @@ void copy_matrix_to_complex(const psi::Matrix& A, psi::ComplexMatrix& B) {
         col_dim[h] = A.colspi(h) * 2;
     }
 
-    B = psi::ComplexMatrix{"", row_dim, col_dim};
+    B = psi::ComplexMatrix{B.name(), row_dim, col_dim};
     B.zero();
 
     for (int h = 0; h < nirrep; h++) {
@@ -70,7 +71,6 @@ void copy_matrix_to_complex(const psi::Matrix& A, psi::ComplexMatrix& B) {
             }
         }
     }
-    // Call B.set_name(""); after
 }
 
 }
@@ -109,7 +109,6 @@ void CGHF::common_init() {
     setup_potential();
 
     std::vector<size_t> irrep_sizes(nirrep_);
-    std::vector<size_t> nelecpi_(nirrep_);
     for (int h = 0; h < nirrep_; h++) {
         irrep_sizes[h] = static_cast<size_t>(nsopi_[h] * 2);
         // nelecpi_[h] = static_cast<size_t>(nalphapi_[h] + nbetapi_[h]);
@@ -120,10 +119,7 @@ void CGHF::common_init() {
     T_ = std::make_shared<ComplexMatrix>("T", irrep_sizes, irrep_sizes);
     V_ = std::make_shared<ComplexMatrix>("V", irrep_sizes, irrep_sizes);
     H_ = std::make_shared<ComplexMatrix>("H", irrep_sizes, irrep_sizes);
-    X_ = std::make_shared<ComplexMatrix>("X", irrep_sizes, irrep_sizes);
     F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes, irrep_sizes);
-    C_ = std::make_shared<ComplexMatrix>("MO coefficients", irrep_sizes, irrep_sizes);
-    D_ = std::make_shared<ComplexMatrix>("SCF density", irrep_sizes, irrep_sizes);
     G_ = std::make_shared<ComplexMatrix>("G", irrep_sizes, irrep_sizes);
     J_ = std::make_shared<ComplexMatrix>("J", irrep_sizes, irrep_sizes);
     K_ = std::make_shared<ComplexMatrix>("K", irrep_sizes, irrep_sizes);
@@ -131,13 +127,17 @@ void CGHF::common_init() {
     T_->zero();
     V_->zero();
     H_->zero();
-    X_->zero();
     F_->zero();
-    C_->zero();
-    D_->zero();
     G_->zero();
     J_->zero();
     K_->zero();
+
+    // We don't know the sizes of these until nmopi_ fills in form_Shalf();
+    S_ = std::make_shared<ComplexMatrix>(); S_->set_name("Overlap");
+    X_ = std::make_shared<ComplexMatrix>(); X_->set_name("Orthogonalization");
+    // Literally don't need these for the PR. C_/D_ will be formed automagically.
+    C_ = std::make_shared<ComplexMatrix>(); C_->set_name("MO coefficients");
+    D_ = std::make_shared<ComplexMatrix>(); D_->set_name("SCF density");
 }
 
 void CGHF::setup_potential() {
@@ -182,7 +182,42 @@ void CGHF::form_H() {
 }
 
 void CGHF::form_Shalf() {
-    throw pybind11::attribute_error("form_Shalf is not implemented for CGHF.");
+    BasisSetOrthogonalization::OrthogonalizationMethod method;
+    if (options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC")
+        method = BasisSetOrthogonalization::Symmetric;
+    else if (options_.get_str("S_ORTHOGONALIZATION") == "CANONICAL")
+        method = BasisSetOrthogonalization::Canonical;
+    else if (options_.get_str("S_ORTHOGONALIZATION") == "PARTIALCHOLESKY")
+        method = BasisSetOrthogonalization::PartialCholesky;
+    else if (options_.get_str("S_ORTHOGONALIZATION") == "AUTO")
+        method = BasisSetOrthogonalization::Automatic;
+    else
+        throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
+
+
+    double lindep_tolerance = options_.get_double("S_TOLERANCE");
+    double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
+
+    SharedMatrix S_temp = mintshelper()->so_overlap();
+    BasisSetOrthogonalization orthog(method, S_temp, lindep_tolerance, cholesky_tolerance, print_);
+
+    // Transform
+    SharedMatrix X_temp = orthog.basis_to_orthog_basis();
+
+    // Update nmo_
+    auto nmopi_ = X_temp->colspi();
+    auto nmo_ = nmopi_.sum();
+
+    // Double check occupation vectors
+    for (int h = 0; h < X_temp->nirrep(); ++h) {
+        if (nelecpi_[h] > nmopi_[h]) {
+            throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
+        }
+    }
+
+    // Create the correct sized quantities now.
+    copy_matrix_to_complex(*S_temp, *S_);
+    copy_matrix_to_complex(*X_temp, *X_);
 }
 
 void CGHF::form_C(double shift) {
