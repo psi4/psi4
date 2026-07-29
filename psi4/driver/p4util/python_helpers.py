@@ -586,7 +586,7 @@ def _core_complexwavefunction_to_file(wfn: core.ComplexWavefunction, filename: s
         'dimension': {
             'frzcpi': wfn.frzcpi().to_tuple(),
             'frzvpi': wfn.frzvpi().to_tuple(),
-            'nelecpi': wfn.nelecpi().to_tuple(),
+            'nelecpi': tuple(wfn.nelecpi()),
             'nmopi': wfn.nmopi().to_tuple(),
             'nsopi': wfn.nsopi().to_tuple(),
         },

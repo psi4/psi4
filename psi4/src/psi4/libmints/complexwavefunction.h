@@ -65,7 +65,7 @@ class PSI_API ComplexWavefunction : public BaseWavefunction {
     int nelec_;
 
     /// Number of electrons per irrep
-    Dimension nelecpi_;
+    std::vector<size_t> nelecpi_;
 
     /// Overlap matrix
     SharedComplexMatrix S_;
@@ -134,7 +134,7 @@ class PSI_API ComplexWavefunction : public BaseWavefunction {
     }
 
     /// Returns the number of electrons per irrep array.
-    const Dimension& nelecpi() const { return nelecpi_; }
+    const std::vector<size_t>& nelecpi() const { return nelecpi_; }
     /// Return the number of electrons
     int nelec() const { return nelec_; }
 
