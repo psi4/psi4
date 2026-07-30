@@ -249,3 +249,75 @@ def test_cghf_compute_initial_E():
 
     assert E == pytest.approx(E_ref, abs=1e-12)
 
+
+def _core_guess_cghf(basis_name="sto-3g", **scf_options):
+    """CGHF with core-Hamiltonian orbitals (form_H --> form_Shalf --> form_C)."""
+    wfn = _build_cghf(_h2_c1(), basis_name=basis_name, s_orthogonalization="SYMMETRIC", **scf_options)
+    wfn.form_H()
+    wfn.form_Shalf()
+    F_view = wfn.get_F().to_array(copy=False)
+    F_view[:] = wfn.get_H().to_array()
+    wfn.form_C()
+    return wfn
+
+
+def _jk_reference_ao(basis, D):
+    """J_pq = sum_rs D_rs (pq|rs), K_pr = sum_qs D_qs (pq|rs) via ao_eri."""
+    I = np.asarray(psi4.core.MintsHelper(basis).ao_eri())
+    J = np.einsum("pqrs,rs->pq", I, D, optimize=True)
+    K = np.einsum("pqrs,qs->pr", I, D, optimize=True)
+    return J, K
+
+
+def test_cghf_form_D():
+    """form_D builds D = C_occ @ C_occ^H with Tr(D S) = nelectron."""
+    wfn = _core_guess_cghf()
+    C = wfn.get_C().to_array()
+    S = wfn.S().to_array()
+    nocc = int(sum(wfn.nelecpi()))
+
+    wfn.form_D()
+    D = wfn.get_D().to_array()
+    D_ref = C[:, :nocc] @ C[:, :nocc].conj().T
+
+    assert D.shape == (C.shape[0], C.shape[0])
+    np.testing.assert_allclose(D, D_ref, atol=1e-12)
+    np.testing.assert_allclose(D, D.conj().T, atol=1e-12)  # Hermitian
+    assert np.trace(D @ S).real == pytest.approx(nocc, abs=1e-10)
+    # Virtuals must not contribute
+    assert not np.allclose(D, C @ C.conj().T)
+
+
+def test_cghf_form_G():
+    """form_G pushes occupied C into ComplexJK and sets G = J - K."""
+    wfn = _core_guess_cghf(scf_type="direct", screening="NONE")
+    basis = wfn.basisset()
+    nbf = basis.nbf()
+    C = wfn.get_C().to_array()
+    nocc = int(sum(wfn.nelecpi()))
+    Cocc = C[:, :nocc]
+    D_ref = Cocc @ Cocc.conj().T
+
+    jk = psi4.core.ComplexJK.build_JK(basis, basis)
+    jk.initialize()
+    wfn.set_jk(jk)
+    wfn.form_G()
+
+    J = wfn.get_J().to_array()
+    K = wfn.get_K().to_array()
+    G = wfn.get_G().to_array()
+
+    # Occupied columns reached JK: D = C_occ @ C_occ^H
+    np.testing.assert_allclose(jk.D()[0].to_array(), D_ref, atol=1e-12)
+    np.testing.assert_allclose(G, J - K, atol=1e-12)
+
+    # ComplexDirectJK contracts AO integrals against D using AO indices, so only
+    # the top-left nbf by nbf block is filled (current DirectJK / spin-block wiring).
+    J_ao, K_ao = _jk_reference_ao(basis, D_ref[:nbf, :nbf])
+    np.testing.assert_allclose(J[:nbf, :nbf], J_ao, atol=1e-10)
+    np.testing.assert_allclose(K[:nbf, :nbf], K_ao, atol=1e-10)
+    np.testing.assert_allclose(J[nbf:, :], 0.0, atol=1e-14)
+    np.testing.assert_allclose(J[:, nbf:], 0.0, atol=1e-14)
+    np.testing.assert_allclose(K[nbf:, :], 0.0, atol=1e-14)
+    np.testing.assert_allclose(K[:, nbf:], 0.0, atol=1e-14)
+

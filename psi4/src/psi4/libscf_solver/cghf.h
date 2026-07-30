@@ -84,6 +84,9 @@ class CGHF : public ComplexWavefunction, public BaseHF {
 
     void common_init();
 
+    /// Sets nelecpi_
+    void find_occupation();
+
     // Dimension of irreps. Einsums likes vectors over psi::Dimension.
     std::vector<size_t> irrep_sizes_;  // each irrep (h) size will be 2*nsopi_[h]
    public:
