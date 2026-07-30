@@ -116,6 +116,14 @@ class PSI_API Dimension {
 
     void print() const;
 
+    // Forward underlying vector's iterators
+    // This allows for range-based for loops:
+    //    for (auto h : nsopi_) { ... }
+    auto begin() { return blocks_.begin(); }
+    auto end() { return blocks_.end(); }
+    auto begin() const { return blocks_.begin(); }
+    auto end() const { return blocks_.end(); }
+
     // Only used for python
     const int& get(size_t i) const { return blocks_[i]; }
     void set(size_t i, int val) { blocks_[i] = val; }
