@@ -119,6 +119,12 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// Form the G (J-K) matrix
     void form_G() override;
 
+    /// Form the guess (guarantees C, D, and E)
+    void guess();
+
+    /// Compute 1e energy + nuc
+    double compute_initial_E() override;
+
     /// SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
     void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) {
