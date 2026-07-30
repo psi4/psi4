@@ -34,6 +34,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libfock/ComplexJK.h"
@@ -111,14 +112,12 @@ void CGHF::common_init() {
     std::vector<size_t> irrep_sizes(nirrep_);
     for (int h = 0; h < nirrep_; h++) {
         irrep_sizes[h] = static_cast<size_t>(nsopi_[h] * 2);
-        // nelecpi_[h] = static_cast<size_t>(nalphapi_[h] + nbetapi_[h]);
-        nelecpi_[0] = static_cast<size_t>(nelectron_);
-        if (h > 0) throw PSIEXCEPTION("looking for something? *waves nalphapi_ in front of face*");
     }
 
     T_ = std::make_shared<ComplexMatrix>("T", irrep_sizes, irrep_sizes);
     V_ = std::make_shared<ComplexMatrix>("V", irrep_sizes, irrep_sizes);
     H_ = std::make_shared<ComplexMatrix>("H", irrep_sizes, irrep_sizes);
+    D_ = std::make_shared<ComplexMatrix>("SCF density", irrep_sizes, irrep_sizes);
     F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes, irrep_sizes);
     G_ = std::make_shared<ComplexMatrix>("G", irrep_sizes, irrep_sizes);
     J_ = std::make_shared<ComplexMatrix>("J", irrep_sizes, irrep_sizes);
@@ -127,6 +126,7 @@ void CGHF::common_init() {
     T_->zero();
     V_->zero();
     H_->zero();
+    D_->zero();
     F_->zero();
     G_->zero();
     J_->zero();
@@ -135,10 +135,8 @@ void CGHF::common_init() {
     // We don't know the sizes of these until nmopi_ fills in form_Shalf();
     S_ = std::make_shared<ComplexMatrix>(); S_->set_name("Overlap");
     X_ = std::make_shared<ComplexMatrix>(); X_->set_name("Orthogonalization");
-    // C_ is resized in form_C once X_ is known; D_ matches SO dimension.
+    // C_ is resized in form_C once X_ is known
     C_ = std::make_shared<ComplexMatrix>(); C_->set_name("MO coefficients");
-    D_ = std::make_shared<ComplexMatrix>("SCF density", irrep_sizes, irrep_sizes);
-    D_->zero();
 }
 
 void CGHF::setup_potential() {
@@ -206,10 +204,13 @@ void CGHF::form_Shalf() {
     SharedMatrix X_temp = orthog.basis_to_orthog_basis();
 
     // Update nmo_
-    auto nmopi_ = X_temp->colspi();
-    auto nmo_ = nmopi_.sum();
+    nmopi_ = X_temp->colspi();
 
-    // Double check occupation vectors
+    // Double for spin blocks
+    for (auto& h : nmopi_) { h *= 2; }
+    nmo_ = nmopi_.sum();
+
+    // This check may not apply in most cases.
     for (int h = 0; h < X_temp->nirrep(); ++h) {
         if (nelecpi_[h] > nmopi_[h]) {
             throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
@@ -271,17 +272,25 @@ void CGHF::form_C(double shift) {
     // Form C' = eig(F')
     temp = ComplexMatrix("temp", XFX.tile_sizes());
     temp.zero();
+    epsilon_ = std::make_shared<Vector>("Orbital energies", nmopi_);
+
     for (int h = 0; h < nirrep_; h++) {
         // Do not diagonalize 0x0 matrix
-        if (nsopi_[h] == 0) continue;
+        if (nmopi_[h] == 0) continue;
 
-        auto evals = einsums::Tensor<double, 1>("Fock evals", nsopi_[h]*2);
+        auto evals = einsums::Tensor<double, 1>("Fock evals", nmopi_[h]);
         evals.zero();
 
         // Hermitian eigensolver one block at a time
         einsums::linear_algebra::heev<true>(&XFX.tile(h, h), &evals);
 
-        // TODO: initialize epsilon_ with correct shape then copy evals->*epsilon_
+        double last_value = - std::numeric_limits<double>::infinity();
+        for (int m = 0; m < nmopi_[h]; m++) {
+            const double& current_value = evals(m);
+            if (last_value > current_value + 1e-16) throw PSIEXCEPTION("CGHF Orbitals are not ordered!");
+            epsilon_->set(h, m, current_value);
+            last_value = current_value;
+        }
 
         // heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
 
@@ -297,11 +306,56 @@ void CGHF::form_C(double shift) {
     einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *X_, temp,
                                        std::complex<double>{0.0}, C_.get());
 
-    // find_occupation();
+    find_occupation();
+}
+
+void CGHF::find_occupation() {
+    epsilon_->IrreppedVector<double>::print("", "%.6f"); // stdout
+    // epsilon_->print("outfile");
+
+    if (nirrep_ > 1) throw pybind11::attribute_error("CGHF::find_occupation is a work in progress.");
+
+    // No changing C_ because we assume the orbitals are sorted within their irreps
+
+    std::vector<std::pair<double, int>> pvec;
+    pvec.reserve(nmo_);
+    for (int h = 0; h < nirrep_; h++) {
+        for (int m = 0; m < nmopi_[h]; m++) {
+            pvec.emplace_back(epsilon_->get(h, m), h);
+        }
+    }
+
+    std::sort(pvec.begin(), pvec.end());
+
+    for (auto& e : nelecpi_) { e = 0; }
+
+    // Aufbau principle
+    for (int i = 0; i < nelectron_; i++) {
+        const auto& [energy, irrep] = pvec[i];
+        nelecpi_[irrep] += 1;
+    }
 }
 
 void CGHF::form_D() {
-    throw pybind11::attribute_error("form_D is not implemented for CGHF.");
+    D_->zero();
+    for (int h = 0; h < nirrep_; ++h) {
+        int nso = C_->tile_size(0)[h];
+        int nocc = static_cast<int>(nelecpi_[h]);
+        if (!nso || !nocc) continue;
+
+        auto const& C_h = C_->tile(h, h);
+        auto& D_h = D_->tile(h, h);
+
+        // D_h = C_occ * C_occ^H using the leading occupied columns (lda = full MO stride)
+        einsums::blas::gemm('n', 'c', nso, nso, nocc, std::complex<double>{1.0}, C_h.data(),
+                            static_cast<int>(C_h.stride(0)), C_h.data(), static_cast<int>(C_h.stride(0)),
+                            std::complex<double>{0.0}, D_h.data(), static_cast<int>(D_h.stride(0)));
+    }
+
+    if (debug_ > 0) {
+        outfile->Printf("in CGHF::form_D:\n");
+        einsums::fprintln(*outfile->stream(), *D_);
+    }
 }
 
 void CGHF::form_F() {
@@ -309,7 +363,36 @@ void CGHF::form_F() {
 }
 
 void CGHF::form_G() {
-    throw pybind11::attribute_error("form_G is not implemented for CGHF.");
+    G_->zero();
+
+    // Push the C matrix
+    std::vector<SharedComplexMatrix>& C = jk_->C_left();
+    C.clear();
+
+    // Grab the occupied columns
+    auto C2 = std::make_shared<ComplexMatrix>("C SO OCC", C_->tile_size(0), nelecpi_);
+    for (int h = 0; h < nirrep_; h++) {
+        if (nelecpi_[h] == 0) continue;
+        // Einsums analog of Matrix's per-column C_DCOPY
+        C2->tile(h, h) = C_->tile(h, h)(einsums::All, einsums::Range{0, nelecpi_[h]});
+    }
+    C.push_back(C2);
+
+    // Run the JK object
+    jk_->compute();
+
+    // Pull the J and K matrices off
+    const std::vector<SharedComplexMatrix>& J = jk_->J();
+    const std::vector<SharedComplexMatrix>& K = jk_->K();
+    J_ = J[0];
+    K_ = K[0];
+
+    double alpha = functional_->x_alpha();
+    if (alpha != 1) throw PSIEXCEPTION("Who let the DFT in?");
+    if (!functional_->is_x_hybrid()) throw PSIEXCEPTION("Who let the DFT in?");
+
+    (*G_) += (*J_);
+    (*G_) -= (*K_);
 }
 
 std::shared_ptr<ComplexJK> CGHF::build_jk(size_t memory) const {

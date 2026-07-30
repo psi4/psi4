@@ -922,12 +922,17 @@ core.HF.iteration_energies = []
 
 core.CGHF.initialize = scf_initialize
 core.CGHF.initialize_jk = initialize_jk
-# core.CGHF.iterations = scf_iterate
+core.CGHF.iterations = scf_iterate
 core.CGHF.compute_energy = scf_compute_energy
 # core.CGHF.finalize_energy = scf_finalize_energy
 # core.CGHF.print_energies = scf_print_energies
 # core.CGHF.print_preiterations = scf_print_preiterations
 # core.CGHF.iteration_energies = []
+
+def noop(*args, **kwargs):
+    pass
+core.CGHF.save_density_and_energy = noop
+core.CGHF.clear_external_potentials = noop
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
@@ -983,7 +988,11 @@ def _validate_diis(self):
 
     """
 
-    restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
+    if isinstance(self, core.ComplexWavefunction):
+        restricted_open = False
+    else:
+        restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
+
     aediis_active = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR') != "NONE" and not restricted_open
 
     if aediis_active:
@@ -1086,7 +1095,7 @@ def _validate_soscf():
 
     return enabled
 
-core.HF.validate_diis = _validate_diis
+core.BaseHF.validate_diis = _validate_diis
 
 def efp_field_fn(xyz):
     """Callback function for PylibEFP to compute electric field from electrons
