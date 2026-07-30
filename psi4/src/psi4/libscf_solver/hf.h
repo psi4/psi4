@@ -197,9 +197,6 @@ class HF : public Wavefunction, public BaseHF {
     /// For UHF, this is defined Python-side. The other methods should be joining it.
     virtual bool stability_analysis();
 
-    /** Computes the initial energy. */
-    virtual double compute_initial_E() { return 0.0; }
-
     /// Check MO phases
     void check_phases();
 
