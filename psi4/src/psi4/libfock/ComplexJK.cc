@@ -32,6 +32,7 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libqt/qt.h"
 
 #include <Einsums/BLAS.hpp>
 #include <Einsums/Print.hpp>
