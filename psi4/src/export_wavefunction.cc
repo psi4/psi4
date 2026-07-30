@@ -581,6 +581,8 @@ void export_wavefunction(py::module& m) {
         .def("form_F", &scf::CGHF::form_F, "Form the Fock matrix.")
         .def("form_initial_F", &scf::CGHF::form_initial_F, "Form the initial Fock matrix.")
         .def("form_G", &scf::CGHF::form_G, "Form the G (J-K) matrix.")
+        .def("guess", &scf::CGHF::guess, "Form SCF guess.")
+        .def("compute_initial_E", &scf::CGHF::compute_initial_E, "Compute initial energy (nuclear + Tr(HD)).")
         .def("jk", &scf::CGHF::jk, "Returns the internal JK object.")
         .def("set_jk", &scf::CGHF::set_jk, "Sets the internal JK object !expert.")
         .def("build_jk", [](scf::CGHF& self, double memory) { return self.build_jk(static_cast<size_t>(memory)); }, "Returns a fresh JK object with correct type.")

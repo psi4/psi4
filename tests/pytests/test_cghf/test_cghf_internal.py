@@ -33,7 +33,13 @@ def _spin_block(A):
 
 def _build_cghf(mol, basis_name="sto-3g", **scf_options):
     """Minimal CGHF instance on a C1 molecule."""
-    opts = {"basis": basis_name, "reference": "cghf"}
+    opts = {
+        "basis": basis_name,
+        "reference": "cghf",
+        "guess": "core",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+    }
     opts.update(scf_options)
     psi4.set_options(opts)
     basis = psi4.core.BasisSet.build(mol, "ORBITAL", basis_name)
@@ -171,4 +177,75 @@ def test_cghf_form_Shalf_cc_pvtz():
     """One larger-basis form_Shalf check (cc-pVTZ, default AUTO orthogonalization)."""
     wfn = _build_cghf(_h2_c1(), basis_name="cc-pVTZ", s_orthogonalization="AUTO")
     _assert_form_Shalf(wfn, "AUTO", "cc-pVTZ", s_tol=1e-3, chol_tol=1e-3)
+
+
+def _reference_form_C(F, X):
+    """Mirror CGHF::form_C: C = X @ eigvecs(X^H F X)."""
+    Fp = X.conj().T @ F @ X
+    _, evecs = np.linalg.eigh(Fp)
+    return X @ evecs
+
+
+def _phase_align(C, C_ref):
+    """Flip each column phase so <C_ref[:,k]|C[:,k]> is real and positive."""
+    C = np.array(C, copy=True, dtype=np.complex128)
+    for k in range(C.shape[1]):
+        ov = np.vdot(C_ref[:, k], C[:, k])
+        if abs(ov) > 1e-14:
+            C[:, k] *= np.conj(ov) / abs(ov)
+    return C
+
+
+def test_cghf_form_C():
+    """form_C diagonalizes F in the X-orthogonal basis; C^H S C = I."""
+    wfn = _build_cghf(_h2_c1(), s_orthogonalization="SYMMETRIC")
+    wfn.form_H()
+    wfn.form_Shalf()
+
+    # Core-Hamiltonian guess: F <- H
+    F_view = wfn.get_F().to_array(copy=False)
+    F_view[:] = wfn.get_H().to_array()
+
+    wfn.form_C()
+
+    F = wfn.get_F().to_array()
+    X = wfn.get_X().to_array()
+    S = wfn.S().to_array()
+    C = wfn.get_C().to_array()
+    C_ref = _reference_form_C(F, X)
+
+    assert C.shape == C_ref.shape
+    np.testing.assert_allclose(C.conj().T @ S @ C, np.eye(C.shape[1]), atol=1e-10)
+
+    # MO Fock matrix should be diagonal (eigenvalues of X^H F X)
+    F_mo = C.conj().T @ F @ C
+    np.testing.assert_allclose(F_mo, np.diag(np.diag(F_mo)), atol=1e-10)
+
+    C_aligned = _phase_align(C, C_ref)
+    np.testing.assert_allclose(C_aligned, C_ref, atol=1e-10)
+
+    with pytest.raises(RuntimeError, match="Level shifting"):
+        wfn.form_C(shift=0.1)
+
+
+def test_cghf_compute_initial_E():
+    """compute_initial_E returns Enuc + Re(Tr(H D))."""
+    wfn = _build_cghf(_h2_c1())
+    wfn.form_H()
+
+    H = wfn.get_H().to_array()
+    n = H.shape[0]
+    rng = np.random.default_rng(0)
+    # Hermitian density so Tr(H D) is real for Hermitian H
+    A = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    D_ref = A @ A.conj().T
+
+    D_view = wfn.get_D().to_array(copy=False)
+    D_view[:] = D_ref
+
+    enuc = wfn.molecule().nuclear_repulsion_energy()
+    E_ref = enuc + np.real(np.trace(H @ D_ref))
+    E = wfn.compute_initial_E()
+
+    assert E == pytest.approx(E_ref, abs=1e-12)
 

@@ -180,6 +180,9 @@ class BaseHF {
     /// Compute initial MO coefficients (default calls form_C)
     virtual void form_initial_C() { form_C(); };
 
+    /** Computes the initial energy. */
+    virtual double compute_initial_E() { return 0.0; }
+
     /// Form the density matrix from the current orbitals
     virtual void form_D() = 0;
 

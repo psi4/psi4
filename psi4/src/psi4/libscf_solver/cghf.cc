@@ -135,9 +135,10 @@ void CGHF::common_init() {
     // We don't know the sizes of these until nmopi_ fills in form_Shalf();
     S_ = std::make_shared<ComplexMatrix>(); S_->set_name("Overlap");
     X_ = std::make_shared<ComplexMatrix>(); X_->set_name("Orthogonalization");
-    // Literally don't need these for the PR. C_/D_ will be formed automagically.
+    // C_ is resized in form_C once X_ is known; D_ matches SO dimension.
     C_ = std::make_shared<ComplexMatrix>(); C_->set_name("MO coefficients");
-    D_ = std::make_shared<ComplexMatrix>(); D_->set_name("SCF density");
+    D_ = std::make_shared<ComplexMatrix>("SCF density", irrep_sizes, irrep_sizes);
+    D_->zero();
 }
 
 void CGHF::setup_potential() {
@@ -220,8 +221,83 @@ void CGHF::form_Shalf() {
     copy_matrix_to_complex(*X_temp, *X_);
 }
 
+void CGHF::guess() {
+    double guess_E;
+    std::string guess_type = options_.get_str("GUESS");
+
+    if (guess_type == "CORE") {
+        if (print_) outfile->Printf("  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
+
+        (*F_) = (*H_); // Try the core Hamiltonian as the Fock Matrix
+        form_initial_C(); // calls only CGHF::form_C()
+        form_D();
+        guess_E = compute_initial_E();
+    } else {
+        throw PSIEXCEPTION("CGHF '" + guess_type + "' GUESS not implemented. Use 'CORE'.");
+    }
+
+    energies_["Total Energy"] = 0.0;  // don't use this guess in our convergence checks
+}
+
+double CGHF::compute_initial_E() {
+    std::complex<double> E;
+
+    /*  \sum_{ij}h_{ij} \gamma_{ji} */
+    using namespace einsums;
+    tensor_algebra::einsum(Indices{}, &E, Indices{index::i, index::j}, *H_, Indices{index::j, index::i}, *D_);
+
+    if (E.imag() > 1e-12) {
+        outfile->Printf("WARNING: CGHF::compute_initial_E found large imaginary %+fi\n"
+                        "  Is D Hermitian?\n", E.imag());
+    }
+
+    return nuclearrep_ + E.real();
+}
+
 void CGHF::form_C(double shift) {
-    throw pybind11::attribute_error("form_C is not implemented for CGHF.");
+    if (shift != 0.0) throw PSIEXCEPTION("Level shifting not available for CGHF.");
+
+    auto temp = ComplexMatrix("temp", F_->tile_size(0), X_->tile_size(1));
+    auto XFX = ComplexMatrix("Othogonalized Fock", X_->tile_size(1), X_->tile_size(1));
+
+    // using namespace einsums;
+
+    // Form F' = X'FX for canonical orthogonalization
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *F_, *X_,
+                                       std::complex<double>{0.0}, &temp);
+    einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *X_, temp,
+                                      std::complex<double>{0.0}, &XFX);
+
+    // Form C' = eig(F')
+    temp = ComplexMatrix("temp", XFX.tile_sizes());
+    temp.zero();
+    for (int h = 0; h < nirrep_; h++) {
+        // Do not diagonalize 0x0 matrix
+        if (nsopi_[h] == 0) continue;
+
+        auto evals = einsums::Tensor<double, 1>("Fock evals", nsopi_[h]*2);
+        evals.zero();
+
+        // Hermitian eigensolver one block at a time
+        einsums::linear_algebra::heev<true>(&XFX.tile(h, h), &evals);
+
+        // TODO: initialize epsilon_ with correct shape then copy evals->*epsilon_
+
+        // heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
+
+        // Takes the conjugate transpose of XFX (e.g. ij -> ji) to give us the proper eigenvectors
+        // NOTE: the template parameters <true> states to take the conjugate (Einsums v1.x)
+        einsums::tensor_algebra::permute<true>(
+            std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &temp.tile(h,h),
+            std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, XFX.tile(h,h));
+    }
+
+    // Form C_ := X_ @ temp
+    C_ = std::make_shared<ComplexMatrix>("MO coefficients", X_->tile_sizes());
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *X_, temp,
+                                       std::complex<double>{0.0}, C_.get());
+
+    // find_occupation();
 }
 
 void CGHF::form_D() {
