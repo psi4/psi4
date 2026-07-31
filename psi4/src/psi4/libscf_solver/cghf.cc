@@ -74,6 +74,15 @@ void copy_matrix_to_complex(const psi::Matrix& A, psi::ComplexMatrix& B) {
     }
 }
 
+std::complex<double> vector_dot(const psi::ComplexMatrix& A, const psi::ComplexMatrix& B) {
+    std::complex<double> E;
+
+    using namespace einsums;
+    tensor_algebra::einsum(Indices{}, &E, Indices{index::i, index::j}, A, Indices{index::j, index::i}, B);
+
+    return E;
+}
+
 }
 
 namespace psi {
@@ -145,6 +154,27 @@ void CGHF::setup_potential() {
     } else {
         potential_ = nullptr;
     }
+}
+
+void CGHF::finalize() {
+    // Clean memory off, handle diis closeout, etc
+
+    // This will be the only one
+    if (!options_.get_bool("SAVE_JK")) {
+        jk_.reset();
+    }
+
+    // Clean up after DIIS
+    if (initialized_diis_manager_) diis_manager_.attr("delete_diis_file")();
+    diis_manager_ = py::none();
+    initialized_diis_manager_ = false;
+
+    // No frozen virtual and frozen core irrep vars to set
+
+    energy_ = energies_["Total Energy"];
+
+    X_.reset();
+    T_.reset();
 }
 
 void CGHF::set_jk(std::shared_ptr<ComplexJK> jk) {
@@ -241,11 +271,8 @@ void CGHF::guess() {
 }
 
 double CGHF::compute_initial_E() {
-    std::complex<double> E;
-
     /*  \sum_{ij}h_{ij} \gamma_{ji} */
-    using namespace einsums;
-    tensor_algebra::einsum(Indices{}, &E, Indices{index::i, index::j}, *H_, Indices{index::j, index::i}, *D_);
+    std::complex<double> E = vector_dot(*H_, *D_);
 
     if (E.imag() > 1e-12) {
         outfile->Printf("WARNING: CGHF::compute_initial_E found large imaginary %+fi\n"
@@ -254,6 +281,30 @@ double CGHF::compute_initial_E() {
 
     return nuclearrep_ + E.real();
 }
+
+double CGHF::compute_E() {
+    std::complex<double> one_electron_E = vector_dot(*H_, *D_);
+    std::complex<double> kinetic_E = vector_dot(*T_, *D_);
+    std::complex<double> coulomb_E = vector_dot(*J_, *D_);
+    std::complex<double> exchange_E = vector_dot(*K_, *D_);
+
+    energies_["Nuclear"] = nuclearrep_;
+    energies_["Kinetic"] = kinetic_E.real();
+    energies_["One-Electron"] = one_electron_E.real();
+    energies_["Two-Electron"] = coulomb_E.real() - exchange_E.real();
+    energies_["XC"] = 0.0;
+    energies_["VV10"] = 0.0;
+    energies_["-D"] = 0.0;
+
+    double Etotal = 0.0;
+    Etotal += nuclearrep_;
+    Etotal += one_electron_E.real();
+    Etotal += coulomb_E.real();
+    Etotal -= exchange_E.real();
+
+    return Etotal;
+}
+
 
 void CGHF::form_C(double shift) {
     if (shift != 0.0) throw PSIEXCEPTION("Level shifting not available for CGHF.");
@@ -310,8 +361,7 @@ void CGHF::form_C(double shift) {
 }
 
 void CGHF::find_occupation() {
-    epsilon_->IrreppedVector<double>::print("", "%.6f"); // stdout
-    // epsilon_->print("outfile");
+    epsilon_->print("outfile");
 
     if (nirrep_ > 1) throw pybind11::attribute_error("CGHF::find_occupation is a work in progress.");
 
@@ -359,7 +409,15 @@ void CGHF::form_D() {
 }
 
 void CGHF::form_F() {
-    throw pybind11::attribute_error("form_F is not implemented for CGHF.");
+    (*F_) = (*H_);
+    (*F_) += (*G_);
+
+    if (debug_) {
+        einsums::fprintln(*outfile->stream(), *F_);
+        einsums::fprintln(*outfile->stream(), *J_);
+        einsums::fprintln(*outfile->stream(), *K_);
+        einsums::fprintln(*outfile->stream(), *G_);
+    }
 }
 
 void CGHF::form_G() {
