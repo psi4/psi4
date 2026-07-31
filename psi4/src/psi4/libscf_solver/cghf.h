@@ -128,11 +128,17 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// Compute 1e energy + nuc
     double compute_initial_E() override;
 
+    /// Compute energy for the iteration.
+    double compute_E() override;
+
     /// SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
     void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) {
         sad_fitting_basissets_ = basis_vec;
     }
+
+    /// Clean up things after SCF
+    void finalize();
 
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<ComplexJK> jk() const { return jk_; }
@@ -149,10 +155,11 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// The DFT Potential object (or nullptr if it has been deleted)
     std::shared_ptr<VBase> V_potential() const { return potential_; };
 
-    /// Accessors for internal SCF matrices. Delete these before PR.
+    /// Accessors for internal SCF matrices.
     SharedComplexMatrix get_T() const { return T_; }
     SharedComplexMatrix get_V() const { return V_; }
     SharedComplexMatrix get_H() const { return H_; }
+    SharedComplexMatrix get_S() const { return S_; }
     SharedComplexMatrix get_X() const { return X_; }
     SharedComplexMatrix get_F() const { return F_; }
     SharedComplexMatrix get_C() const { return C_; }

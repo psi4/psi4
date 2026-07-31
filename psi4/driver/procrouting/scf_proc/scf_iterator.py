@@ -626,6 +626,8 @@ def scf_finalize_energy(self):
     # Perform wavefunction stability analysis before doing
     # anything on a wavefunction that may not be truly converged.
     if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE":
+        if isinstance(self, core.CGHF):
+            raise NotImplementedError('Stability analysis not supported for CGHF.')
 
         # We need the integral file, make sure it is written and
         # compute it if needed
@@ -717,9 +719,13 @@ def scf_finalize_energy(self):
             core.print_out(f"      Ntotal   = {rho_ab:15.10f} ; deviation = {dev_b+dev_a:.3e} \n\n")
         if ((dev_b+dev_a) > 0.1):
             core.print_out("   WARNING: large deviation in the electron count on grid detected. Check grid size!")
-    self.check_phases()
-    self.compute_spin_contamination()
-    self.frac_renormalize()
+    if isinstance(self, core.HF):
+        self.check_phases()
+        self.compute_spin_contamination()
+        self.frac_renormalize()
+    else:
+        core.print_out("\n  WARNING: Complex wavefunction SCF methods do not support "
+                       "check_phases, compute_spin_contamination, and frac_renormalize\n\n")
     reference = core.get_option("SCF", "REFERENCE")
 
     energy = self.get_energies("Total Energy")
@@ -745,13 +751,19 @@ def scf_finalize_energy(self):
     #                    (dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]))
     # }
     core.print_out("\n\n")
-    self.print_energies()
+    if hasattr(self, "print_energies"):
+        self.print_energies()
+    else:
+        core.print_out("\n  TODO: implement CGHF::print_energies()\n")
 
-    # force list into Matrix for storage
-    iteration_energies = np.array(self.iteration_energies).reshape(-1, 1)
-    iteration_energies = core.Matrix.from_array(iteration_energies)
-    core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
-    self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
+    if isinstance(self, core.HF):
+        # force list into Matrix for storage
+        iteration_energies = np.array(self.iteration_energies).reshape(-1, 1)
+        iteration_energies = core.Matrix.from_array(iteration_energies)
+        core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
+        self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
+    else:
+        core.print_out("\nNot storing 'SCF TOTAL ENERGIES' in complex HF object.\n")
 
     self.clear_external_potentials()
     if core.get_option('SCF', 'PCM'):
@@ -924,7 +936,7 @@ core.CGHF.initialize = scf_initialize
 core.CGHF.initialize_jk = initialize_jk
 core.CGHF.iterations = scf_iterate
 core.CGHF.compute_energy = scf_compute_energy
-# core.CGHF.finalize_energy = scf_finalize_energy
+core.CGHF.finalize_energy = scf_finalize_energy
 # core.CGHF.print_energies = scf_print_energies
 # core.CGHF.print_preiterations = scf_print_preiterations
 # core.CGHF.iteration_energies = []
