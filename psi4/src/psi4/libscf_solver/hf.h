@@ -251,7 +251,7 @@ class HF : public Wavefunction, public BaseHF {
     void reset_occupation();
 
     /// Compute energy for the iteration.
-    virtual double compute_E();
+    double compute_E() override;
 
     /** Applies second-order convergence acceleration */
     virtual int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print);

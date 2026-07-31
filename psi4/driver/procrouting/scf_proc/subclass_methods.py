@@ -71,12 +71,19 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         return max(gradient_a.absmax(), gradient_b.absmax())
 
 def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
-    gradient = self.form_FDSmSDF()
+    F = self.get_F().to_array()
+    D = self.get_D().to_array()
+    S = self.get_S().to_array()
+
+    gradient = F@D@S-S@D@F
+
+    if save_fock:
+        raise NotImplementedError("DIIS not implemented for CGHF.")
 
     if self.options().get_bool("DIIS_RMS_ERROR"):
-        return gradient.rms()
+        return (np.mean(gradient@gradient.conj().T).real)**.5
     else:
-        return gradient.absmax()
+        return float(np.max(np.abs(a)))
 
 def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     # Only the inact-act, inact-vir, and act-vir rotations are non-redundant
@@ -121,8 +128,7 @@ def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> floa
 core.RHF.compute_orbital_gradient = _RHF_orbital_gradient
 core.UHF.compute_orbital_gradient = core.CUHF.compute_orbital_gradient = _UHF_orbital_gradient
 core.ROHF.compute_orbital_gradient = _ROHF_orbital_gradient
-if hasattr(core, "CGHF"):
-    core.CGHF.compute_orbital_gradient = _CGHF_orbital_gradient
+core.CGHF.compute_orbital_gradient = _CGHF_orbital_gradient
 
 def _RHF_diis(self, Dnorm):
     return self.diis_manager_.extrapolate(self.Fa(), Dnorm=Dnorm)
