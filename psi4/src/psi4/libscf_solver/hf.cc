@@ -102,8 +102,6 @@ void HF::common_init() {
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
-    integral_threshold_ = options_.get_double("INTS_TOLERANCE");
-
     H_ = factory_->create_matrix("One-electron Hamiltonian");
     X_ = factory_->create_matrix("X");
 
