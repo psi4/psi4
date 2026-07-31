@@ -33,6 +33,7 @@
 #include "psi4/libmints/orthog.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/exception.h"
@@ -146,6 +147,96 @@ void CGHF::common_init() {
     X_ = std::make_shared<ComplexMatrix>(); X_->set_name("Orthogonalization");
     // C_ is resized in form_C once X_ is known
     C_ = std::make_shared<ComplexMatrix>(); C_->set_name("MO coefficients");
+
+    // How much stuff shall we echo to the user?
+    if (options_["PRINT"].has_changed()) print_ = options_.get_int("PRINT");
+
+    if (print_) {
+        outfile->Printf("\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("                                COMPLEX SCF\n");
+        outfile->Printf("                            by Nathan Gillispie\n");
+        outfile->Printf("                              %4s Reference\n", options_.get_str("REFERENCE").c_str());
+        outfile->Printf("                           %6ld MiB Core\n", memory_ / 1048576L);
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("\n");
+        outfile->Printf("  ==> Geometry <==\n\n");
+
+        molecule_->print();
+
+        outfile->Printf("  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
+
+        molecule_->print_rotational_constants();
+
+        outfile->Printf("  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
+        outfile->Printf("  Charge       = %d\n", charge_);
+        outfile->Printf("  Multiplicity = %d\n", multiplicity_);
+        outfile->Printf("  Electrons    = %d\n", nelectron_);
+
+        outfile->Printf("  ==> Algorithm <==\n\n");
+        outfile->Printf("  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
+        outfile->Printf("  DIIS %s.\n", options_.get_bool("DIIS") ? "enabled" : "disabled");
+        if ((options_.get_int("MOM_START") != 0) && (options_["MOM_OCC"].size() != 0))  // TROUBLE, NOT SET YET?
+            outfile->Printf("  Excited-state MOM enabled.\n");
+        else
+            outfile->Printf("  MOM %s.\n", (options_.get_int("MOM_START") == 0) ? "disabled" : "enabled");
+        outfile->Printf("  Fractional occupation %s.\n", (options_.get_int("FRAC_START") == 0) ? "disabled" : "enabled");
+        outfile->Printf("  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
+        outfile->Printf("  Energy threshold   = %3.2e\n", options_.get_double("E_CONVERGENCE"));
+        outfile->Printf("  Density threshold  = %3.2e\n", options_.get_double("D_CONVERGENCE"));
+        outfile->Printf("  Integral threshold = %3.2e\n\n", integral_threshold_);
+
+        outfile->Printf("  ==> Primary Basis <==\n\n");
+
+        basisset_->print_by_level("outfile", print_);
+    }
+}
+
+void CGHF::print_orbitals() {
+    std::vector<std::string> labels = molecule_->irrep_labels();
+
+    outfile->Printf("    Orbital Energies [Eh]\n    ---------------------\n\n");
+
+    std::vector<std::pair<double, std::pair<std::string, int>>> occ;
+    std::vector<std::pair<double, std::pair<std::string, int>>> vir;
+
+    for (int h = 0; h < nirrep_; h++) {
+        std::vector<std::pair<double, int> > orb_e;
+        for (int a = 0; a < nmopi_[h]; a++) orb_e.push_back(std::make_pair(epsilon_->get(h, a), a));
+        std::sort(orb_e.begin(), orb_e.end());
+
+        std::vector<int> orb_order(nmopi_[h]);
+        for (int a = 0; a < nmopi_[h]; a++) orb_order[orb_e[a].second] = a;
+
+        for (int a = 0; a < nelecpi_[h]; a++)
+            occ.push_back(std::make_pair(epsilon_->get(h, a), std::make_pair(labels[h], orb_order[a] + 1)));
+        for (int a = nelecpi_[h]; a < nmopi_[h]; a++)
+            vir.push_back(std::make_pair(epsilon_->get(h, a), std::make_pair(labels[h], orb_order[a] + 1)));
+    }
+    std::sort(occ.begin(), occ.end());
+    std::sort(vir.begin(), vir.end());
+
+    outfile->Printf("    Occupied:\n\n    ");
+    int count = 0;
+    for (int i = 0; i < occ.size(); i++) {
+        outfile->Printf("%4d%-4s%11.6f  ", occ[i].second.second, occ[i].second.first.c_str(), occ[i].first);
+        if (count++ % 3 == 2 && count != occ.size()) outfile->Printf("\n    ");
+    }
+    outfile->Printf("\n\n    Virtual:\n\n    ");
+    count = 0;
+    for (int i = 0; i < vir.size(); i++) {
+        outfile->Printf("%4d%-4s%11.6f  ", vir[i].second.second, vir[i].second.first.c_str(), vir[i].first);
+        if (count++ % 3 == 2 && count != vir.size()) outfile->Printf("\n    ");
+    }
+
+    outfile->Printf("\n\n    Final Occupation by Irrep:\n          ");
+    for (int h = 0; h < nirrep_; ++h) outfile->Printf(" %4s ", labels[h].c_str());
+    outfile->Printf("\n");
+
+    // TODO: print something like amount of alpha beta per electron? Or whatever
+    // is most physically meaningful.
+
+    outfile->Printf("\n");
 }
 
 void CGHF::setup_potential() {
@@ -288,6 +379,8 @@ double CGHF::compute_E() {
     std::complex<double> coulomb_E = vector_dot(*J_, *D_);
     std::complex<double> exchange_E = vector_dot(*K_, *D_);
 
+    kinetic_E *= .5;
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["Kinetic"] = kinetic_E.real();
     energies_["One-Electron"] = one_electron_E.real();
@@ -361,7 +454,7 @@ void CGHF::form_C(double shift) {
 }
 
 void CGHF::find_occupation() {
-    epsilon_->print("outfile");
+    if (debug_) epsilon_->print("outfile");
 
     if (nirrep_ > 1) throw pybind11::attribute_error("CGHF::find_occupation is a work in progress.");
 

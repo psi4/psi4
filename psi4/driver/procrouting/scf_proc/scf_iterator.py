@@ -724,8 +724,34 @@ def scf_finalize_energy(self):
         self.compute_spin_contamination()
         self.frac_renormalize()
     else:
-        core.print_out("\n  WARNING: Complex wavefunction SCF methods do not support "
-                       "check_phases, compute_spin_contamination, and frac_renormalize\n\n")
+        ovlp = self.mintshelper().so_overlap().to_array()
+        nelec = self.nelec()
+        mo_coeff = self.get_C().to_array()
+        nao = ovlp.shape[0]
+        assert 2 * nao == mo_coeff.shape[0]
+        mo_a = mo_coeff[:nao, :nelec]
+        mo_b = mo_coeff[nao:, :nelec]
+
+
+        saa = mo_a.conj().T @ ovlp @ mo_a
+        sbb = mo_b.conj().T @ ovlp @ mo_b
+        sab = mo_a.conj().T @ ovlp @ mo_b
+        sba = sab.conj().T
+
+        nocc_a = saa.trace()
+        nocc_b = sbb.trace()
+
+        ssxy = (nocc_a+nocc_b) * .5
+        ssxy+= sba.trace() * sab.trace() - np.einsum('ij,ji->', sba, sab)
+        ssz  = (nocc_a+nocc_b) * .25
+        ssz += (nocc_a-nocc_b)**2 * .25
+        tmp  = saa - sbb
+        ssz -= np.einsum('ij,ji', tmp, tmp) * .25
+        ss = (ssxy + ssz).real
+        s = np.sqrt(ss+.25) - .5
+
+        core.print_out(f"   @S^2:              {ss:17.9f}\n")
+        core.print_out(f"   @2S+1:             {s:17.9f}\n\n")
     reference = core.get_option("SCF", "REFERENCE")
 
     energy = self.get_energies("Total Energy")
@@ -751,19 +777,14 @@ def scf_finalize_energy(self):
     #                    (dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]))
     # }
     core.print_out("\n\n")
-    if hasattr(self, "print_energies"):
-        self.print_energies()
-    else:
-        core.print_out("\n  TODO: implement CGHF::print_energies()\n")
+    self.print_energies()
 
-    if isinstance(self, core.HF):
-        # force list into Matrix for storage
-        iteration_energies = np.array(self.iteration_energies).reshape(-1, 1)
-        iteration_energies = core.Matrix.from_array(iteration_energies)
-        core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
+    # force list into Matrix for storage
+    iteration_energies = np.array(self.iteration_energies).reshape(-1, 1)
+    iteration_energies = core.Matrix.from_array(iteration_energies)
+    core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
+    if not isinstance(self, core.ComplexWavefunction):
         self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
-    else:
-        core.print_out("\nNot storing 'SCF TOTAL ENERGIES' in complex HF object.\n")
 
     self.clear_external_potentials()
     if core.get_option('SCF', 'PCM'):
@@ -890,6 +911,9 @@ def scf_print_preiterations(self,small=False):
     # available
     ct = self.molecule().point_group().char_table()
 
+    if isinstance(self, core.CGHF):
+        small = True
+
     if not small:
         core.print_out("   -------------------------------------------------------\n")
         core.print_out("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n")
@@ -937,9 +961,9 @@ core.CGHF.initialize_jk = initialize_jk
 core.CGHF.iterations = scf_iterate
 core.CGHF.compute_energy = scf_compute_energy
 core.CGHF.finalize_energy = scf_finalize_energy
-# core.CGHF.print_energies = scf_print_energies
-# core.CGHF.print_preiterations = scf_print_preiterations
-# core.CGHF.iteration_energies = []
+core.CGHF.print_energies = scf_print_energies
+core.CGHF.print_preiterations = scf_print_preiterations
+core.CGHF.iteration_energies = []
 
 def noop(*args, **kwargs):
     pass

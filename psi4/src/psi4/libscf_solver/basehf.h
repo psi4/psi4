@@ -105,6 +105,9 @@ class BaseHF {
     /// The multiplicity of the system (specified as 2 Ms + 1)
     int multiplicity_;
 
+    /// The value below which integrals are neglected
+    double integral_threshold_;
+
     /// DFT variables
     std::shared_ptr<SuperFunctional> functional_;
 
@@ -200,6 +203,8 @@ class BaseHF {
 
     /// Form the G (J-K) matrix
     virtual void form_G() = 0;
+
+    virtual void print_orbitals() = 0;
 };
 
 }  // namespace scf

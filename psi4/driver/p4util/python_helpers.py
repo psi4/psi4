@@ -203,7 +203,7 @@ core.BasisSet.build = _pybuild_basis
 
 
 @classmethod
-def _core_basewavefunction_build(
+def _core_wavefunction_build(
         cls,
         mol: core.Molecule,
         basis: Union[None, str, core.BasisSet] = None,
@@ -243,10 +243,7 @@ def _core_basewavefunction_build(
     return wfn
 
 
-core.BaseWavefunction.build = _core_basewavefunction_build
-# Explicit subclass aliases: can't rely on pybind for your MRO!
-core.Wavefunction.build = _core_basewavefunction_build
-core.ComplexWavefunction.build = _core_basewavefunction_build
+core.BaseWavefunction.build = _core_wavefunction_build
 
 
 def _core_wavefunction_get_scratch_filename(self: core.BaseWavefunction, filenumber: int) -> str:
@@ -1438,13 +1435,13 @@ def _core_has_variable(key: str) -> bool:
     return core.has_scalar_variable(key) or core.has_array_variable(key)
 
 
-def _core_wavefunction_has_variable(self: core.Wavefunction, key: str) -> bool:
+def _core_wavefunction_has_variable(self: core.BaseWavefunction, key: str) -> bool:
     """Whether scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* has been set on *self*.
 
     Parameters
     ----------
     self
-        Wavefunction instance.
+        BaseWavefunction instance.
     key
         Case-insensitive key to instance's double or
         :py:class:`~psi4.core.Matrix` storage maps.
@@ -1503,14 +1500,14 @@ def _core_variable(key: str) -> Union[float, core.Matrix, np.ndarray]:
         raise KeyError(f"psi4.core.variable: Requested variable '{key}' was not set!\n")
 
 
-def _core_wavefunction_variable(self: core.Wavefunction, key: str) -> Union[float, core.Matrix, np.ndarray]:
+def _core_wavefunction_variable(self: core.BaseWavefunction, key: str) -> Union[float, core.Matrix, core.ComplexMatrix, np.ndarray]:
     """Return copy of scalar or array :ref:`QCVariable <sec:appendices:qcvars>`
     *key* from *self*.
 
     Parameters
     ----------
     self
-        Wavefunction instance.
+        BaseWavefunction instance.
     key
         Case-insensitive key to instance's double or :py:class:`~psi4.core.Matrix`
         storage maps.
@@ -1552,7 +1549,7 @@ def _core_wavefunction_variable(self: core.Wavefunction, key: str) -> Union[floa
     elif self.has_array_variable(key):
         return _qcvar_reshape_get(key, self.array_variable(key))
     else:
-        raise KeyError(f"psi4.core.Wavefunction.variable: Requested variable '{key}' was not set!\n")
+        raise KeyError(f"psi4.core.BaseWavefunction.variable: Requested variable '{key}' was not set!\n")
 
 
 def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
@@ -1622,19 +1619,19 @@ def _core_wavefunction_set_variable(self: core.Wavefunction, key: str, val: Unio
         if `val` is an array but `key` already exists as a scalar variable.
 
     """
-    if isinstance(val, core.Matrix):
+    if isinstance(val, core.Matrix) or isinstance(val, core.ComplexMatrix):
         if self.has_scalar_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already a scalar variable!")
+            raise ValidationError("psi4.core.BaseWavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
             self.set_array_variable(key, val)
     elif isinstance(val, np.ndarray):
         if self.has_scalar_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already a scalar variable!")
+            raise ValidationError("psi4.core.BaseWavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
             self.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
         if self.has_array_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already an array variable!")
+            raise ValidationError("psi4.core.BaseWavefunction.set_variable: Target variable '{key}' already an array variable!")
         else:
             self.set_scalar_variable(key, val)
 
@@ -1706,14 +1703,14 @@ def _core_variables(include_deprecated_keys: bool = False) -> Dict[str, Union[fl
     return dicary
 
 
-def _core_basewavefunction_variables(self, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
+def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, core.ComplexMatrix, np.ndarray]]:
     """Return all scalar or array :ref:`QCVariables <sec:appendices:qcvars>`
     from *self*.
 
     Parameters
     ----------
     self
-        BaseWavefunction instance (including Wavefunction and ComplexWavefunction).
+        BaseWavefunction instance.
     include_deprecated_keys
         Also return duplicate entries with keys that have been deprecated.
 
@@ -1730,7 +1727,7 @@ def _core_basewavefunction_variables(self, include_deprecated_keys: bool = False
         - ComplexMatrix array variables are omitted until NumPy export exists.
 
     """
-    dicary: Dict[str, Union[float, core.Matrix, np.ndarray]] = dict(self.scalar_variables())
+    dicary: Dict[str, Union[float, core.Matrix, core.ComplexMatrix, np.ndarray]] = dict(self.scalar_variables())
     array_vars = getattr(self, "array_variables", None)
     if array_vars is not None:
         for k, v in array_vars().items():
@@ -1745,23 +1742,19 @@ def _core_basewavefunction_variables(self, include_deprecated_keys: bool = False
     return dicary
 
 
-# Keep the old name as an alias for any external callers.
-_core_wavefunction_variables = _core_basewavefunction_variables
-
-
 core.has_variable = _core_has_variable
 core.variable = _core_variable
 core.set_variable = _core_set_variable
 core.del_variable = _core_del_variable
 core.variables = _core_variables
 
-core.Wavefunction.has_variable = _core_wavefunction_has_variable
-core.Wavefunction.variable = _core_wavefunction_variable
-core.Wavefunction.set_variable = _core_wavefunction_set_variable
-core.Wavefunction.del_variable = _core_wavefunction_del_variable
 
 # Scalar QCVariables live on BaseWavefunction; array merge is type-aware above.
-core.BaseWavefunction.variables = _core_basewavefunction_variables
+core.BaseWavefunction.has_variable = _core_wavefunction_has_variable
+core.BaseWavefunction.variable = _core_wavefunction_variable
+core.BaseWavefunction.variables = _core_wavefunction_variables
+core.BaseWavefunction.set_variable = _core_wavefunction_set_variable
+core.BaseWavefunction.del_variable = _core_wavefunction_del_variable
 
 # ComplexWavefunction shares the scalar QCVariable path with Wavefunction
 # (set_scalar_variable lives on BaseWavefunction). Array branches still expect

@@ -52,6 +52,8 @@ void BaseHF::common_init(Options& options, std::string& module, const std::share
 
     initialized_diis_manager_ = false;
     MOM_performed_ = false;  // duplicated py-side (needed before iterate)
+
+    integral_threshold_ = options.get_double("INTS_TOLERANCE");
 }
 
 }  // namespace scf

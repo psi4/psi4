@@ -110,9 +110,6 @@ class HF : public Wavefunction, public BaseHF {
     int* so2symblk_;
     int* so2index_;
 
-    /// The value below which integrals are neglected
-    double integral_threshold_;
-
     /// The soon to be ubiquitous JK object
     std::shared_ptr<JK> jk_;
 
@@ -201,7 +198,7 @@ class HF : public Wavefunction, public BaseHF {
     void check_phases();
 
     /// Prints the orbitals in arbitrary order (works with MOM)
-    void print_orbitals();
+    void print_orbitals() override;
 
     /// Prints some opening information
     void print_header();

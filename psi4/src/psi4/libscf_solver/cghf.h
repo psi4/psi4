@@ -140,6 +140,8 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// Clean up things after SCF
     void finalize();
 
+    void print_orbitals() override;
+
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<ComplexJK> jk() const { return jk_; }
 

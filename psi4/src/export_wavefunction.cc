@@ -460,6 +460,7 @@ void export_wavefunction(py::module& m) {
         .def("compute_E", &scf::BaseHF::compute_E, "Compute total energy for the iteration.")
         .def("get_energies", &scf::BaseHF::get_energies, "docstring")
         .def("set_energies", &scf::BaseHF::set_energies, "docstring")
+        .def("print_orbitals", &scf::BaseHF::print_orbitals, "docstring")
         .def("functional", &scf::BaseHF::functional, "Returns the internal DFT Superfunctional.")
         .def("scf_type", &scf::BaseHF::scf_type, "Return the value of scf_type used in the SCF computation.")
         .def_property("reset_occ_", &scf::BaseHF::reset_occ, &scf::BaseHF::set_reset_occ,
@@ -512,7 +513,6 @@ void export_wavefunction(py::module& m) {
         .def("diis", &scf::HF::diis, "docstring")
         .def("damping_update", &scf::HF::damping_update, "docstring")
         .def("check_phases", &scf::HF::check_phases, "docstring")
-        .def("print_orbitals", &scf::HF::print_orbitals, "docstring")
         .def("print_header", &scf::HF::print_header, "docstring")
         .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear private external_potentials list")
         .def("push_back_external_potential", &scf::HF::push_back_external_potential,
