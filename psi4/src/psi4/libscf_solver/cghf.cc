@@ -379,12 +379,12 @@ double CGHF::compute_E() {
     std::complex<double> coulomb_E = vector_dot(*J_, *D_);
     std::complex<double> exchange_E = vector_dot(*K_, *D_);
 
-    kinetic_E *= .5;
+    double two_electron_E = 0.5 * (coulomb_E.real() - exchange_E.real());
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["Kinetic"] = kinetic_E.real();
     energies_["One-Electron"] = one_electron_E.real();
-    energies_["Two-Electron"] = coulomb_E.real() - exchange_E.real();
+    energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
     energies_["VV10"] = 0.0;
     energies_["-D"] = 0.0;
@@ -392,8 +392,7 @@ double CGHF::compute_E() {
     double Etotal = 0.0;
     Etotal += nuclearrep_;
     Etotal += one_electron_E.real();
-    Etotal += coulomb_E.real();
-    Etotal -= exchange_E.real();
+    Etotal += two_electron_E;
 
     return Etotal;
 }

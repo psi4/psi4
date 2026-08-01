@@ -288,36 +288,64 @@ def test_cghf_form_D():
     assert not np.allclose(D, C @ C.conj().T)
 
 
-def test_cghf_form_G():
-    """form_G pushes occupied C into ComplexJK and sets G = J - K."""
-    wfn = _core_guess_cghf(scf_type="direct", screening="NONE")
-    basis = wfn.basisset()
+def _ghf_jk_reference(basis, D_full):
+    """Reference spin-blocked J/K for a GHF density, built from plain spatial AO integrals."""
     nbf = basis.nbf()
-    C = wfn.get_C().to_array()
-    nocc = int(sum(wfn.nelecpi()))
-    Cocc = C[:, :nocc]
-    D_ref = Cocc @ Cocc.conj().T
+    D_aa = D_full[:nbf, :nbf]
+    D_bb = D_full[nbf:, nbf:]
+    D_ab = D_full[:nbf, nbf:]
+    D_ba = D_full[nbf:, :nbf]
 
-    jk = psi4.core.ComplexJK.build_JK(basis, basis)
+    J_tot, _ = _jk_reference_ao(basis, D_aa + D_bb)
+    _, K_aa = _jk_reference_ao(basis, D_aa)
+    _, K_bb = _jk_reference_ao(basis, D_bb)
+    _, K_ab = _jk_reference_ao(basis, D_ab)
+    _, K_ba = _jk_reference_ao(basis, D_ba)
+
+    J = np.zeros_like(D_full)
+    K = np.zeros_like(D_full)
+    J[:nbf, :nbf] = J_tot
+    J[nbf:, nbf:] = J_tot
+    K[:nbf, :nbf] = K_aa
+    K[nbf:, nbf:] = K_bb
+    K[:nbf, nbf:] = K_ab
+    K[nbf:, :nbf] = K_ba
+    return J, K
+
+
+def _full_guess_cghf(basis_name="sto-3g", **scf_options):
+    """CGHF after core guess + one real ComplexDirectJK build: H_, S_/X_, C_, D_, J_/K_/G_ all populated."""
+    wfn = _core_guess_cghf(basis_name=basis_name, **scf_options)
+    wfn.form_D()
+
+    jk = psi4.core.ComplexJK.build_JK(wfn.basisset(), wfn.basisset())
     jk.initialize()
     wfn.set_jk(jk)
     wfn.form_G()
+    return wfn
 
+
+def test_cghf_compute_E():
+    wfn = _full_guess_cghf(scf_type="direct", screening="NONE")
+
+    H = wfn.get_H().to_array()
+    T = wfn.get_T().to_array()
+    D = wfn.get_D().to_array()
     J = wfn.get_J().to_array()
     K = wfn.get_K().to_array()
-    G = wfn.get_G().to_array()
+    enuc = wfn.molecule().nuclear_repulsion_energy()
 
-    # Occupied columns reached JK: D = C_occ @ C_occ^H
-    np.testing.assert_allclose(jk.D()[0].to_array(), D_ref, atol=1e-12)
-    np.testing.assert_allclose(G, J - K, atol=1e-12)
+    one_electron_E = np.trace(H @ D).real
+    kinetic_E = np.trace(T @ D).real
+    two_electron_E = 0.5 * (np.trace(J @ D).real - np.trace(K @ D).real)
+    E_ref = enuc + one_electron_E + two_electron_E
 
-    # ComplexDirectJK contracts AO integrals against D using AO indices, so only
-    # the top-left nbf by nbf block is filled (current DirectJK / spin-block wiring).
-    J_ao, K_ao = _jk_reference_ao(basis, D_ref[:nbf, :nbf])
-    np.testing.assert_allclose(J[:nbf, :nbf], J_ao, atol=1e-10)
-    np.testing.assert_allclose(K[:nbf, :nbf], K_ao, atol=1e-10)
-    np.testing.assert_allclose(J[nbf:, :], 0.0, atol=1e-14)
-    np.testing.assert_allclose(J[:, nbf:], 0.0, atol=1e-14)
-    np.testing.assert_allclose(K[nbf:, :], 0.0, atol=1e-14)
-    np.testing.assert_allclose(K[:, nbf:], 0.0, atol=1e-14)
+    E = wfn.compute_E()
+
+    assert E == pytest.approx(E_ref, abs=1e-10)
+    assert wfn.get_energies("Nuclear") == pytest.approx(enuc, abs=1e-12)
+    assert wfn.get_energies("Kinetic") == pytest.approx(kinetic_E, abs=1e-10)
+    assert wfn.get_energies("One-Electron") == pytest.approx(one_electron_E, abs=1e-10)
+    assert wfn.get_energies("Two-Electron") == pytest.approx(two_electron_E, abs=1e-10)
+
 
