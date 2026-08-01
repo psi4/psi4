@@ -18,8 +18,18 @@ class StoragePolicy(Enum):
     InCore = 1
     OnDisk = 2
 
+class _ComplexMatrixTemplate:
+    """Template marker for a core.ComplexMatrix DIIS entry: its per-irrep tile sizes.
+
+    TODO: determine if adding rowdim/coldim (Dimension) attributes to ComplexMatrix
+    would make this more seamless
+    """
+
+    def __init__(self, block_sizes):
+        self.block_sizes = list(block_sizes)
+
 def axpy(y, alpha, x):
-    if isinstance(y, (core.Matrix, core.Vector)):
+    if isinstance(y, (core.Matrix, core.Vector, core.ComplexMatrix)):
         y.axpy(alpha, x)
     elif isinstance(y, (core.dpdbuf4, core.dpdfile2)):
         y.axpy_matrix(x, alpha)
@@ -38,6 +48,7 @@ def template_helper(*args):
     But in practice, given one piece of information, we can deduce the other.
     If there's one dimension, it must be a Vector.
     If there are two dimensions, it must be written to disk as a Matrix.
+    If it's a ComplexMatrix, its per-irrep tile sizes are recorded via _ComplexMatrixTemplate.
     If it's a BlockedTensor, we can just read the dimensions.
     """
     template = []
@@ -46,6 +57,8 @@ def template_helper(*args):
             template.append([arg.dimpi()])
         elif isinstance(arg, (core.Matrix, core.dpdfile2, core.dpdbuf4)):
             template.append([arg.rowdim(), arg.coldim()])
+        elif isinstance(arg, core.ComplexMatrix):
+            template.append(_ComplexMatrixTemplate(arg.tile_size(0)))
         elif isinstance(arg, float):
             template.append(float(0))
         elif which_import("ambit", return_bool=True):
@@ -119,7 +132,7 @@ class DIIS:
 
     def copier(self, x, new_name: str):
         """ Copy the object x and give it a new_name. Save it to disk if needed. """
-        if isinstance(x, (core.Matrix, core.Vector)):
+        if isinstance(x, (core.Matrix, core.Vector, core.ComplexMatrix)):
             copy = x.clone()
         elif isinstance(x, (core.dpdbuf4, core.dpdfile2)):
             copy = core.Matrix(x)
@@ -142,6 +155,8 @@ class DIIS:
                 copy.save(psio, psif.PSIF_LIBDIIS)
             elif isinstance(copy, core.Matrix):
                 copy.save(psio, psif.PSIF_LIBDIIS, core.SaveType.SubBlocks)
+            elif isinstance(copy, core.ComplexMatrix):
+                copy.save(psio, psif.PSIF_LIBDIIS)
             elif isinstance(copy, ambit.BlockedTensor):
                 filename = f"{core.IOManager.shared_object().get_default_path()}/libdiis.{copy.name}"
                 copy.save(filename)
@@ -169,7 +184,10 @@ class DIIS:
         elif self.storage_policy == StoragePolicy.OnDisk:
             full_name = self.get_name(name, entry_num, item_num)
             psio = core.IO.shared_object()
-            if hasattr(template_object, "__len__"):
+            if isinstance(template_object, _ComplexMatrixTemplate):
+                quantity = core.ComplexMatrix(full_name, template_object.block_sizes)
+                quantity.load(psio, psif.PSIF_LIBDIIS)
+            elif hasattr(template_object, "__len__"):
                 # Looks like we have dimensions.
                 if len(template_object) == 2:
                     quantity = core.Matrix(full_name, *template_object)
