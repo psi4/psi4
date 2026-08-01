@@ -81,9 +81,9 @@ def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> floa
         raise NotImplementedError("DIIS not implemented for CGHF.")
 
     if self.options().get_bool("DIIS_RMS_ERROR"):
-        return (np.mean(gradient@gradient.conj().T).real)**.5
+        return float(np.sqrt(np.mean(np.abs(gradient) ** 2)))
     else:
-        return float(np.max(np.abs(a)))
+        return float(np.max(np.abs(gradient)))
 
 def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     # Only the inact-act, inact-vir, and act-vir rotations are non-redundant
