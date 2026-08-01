@@ -2059,9 +2059,14 @@ def scf_helper(name, post_scf=True, **kwargs):
             obj.set_variable(pv, e_scf)
 
     # We always would like to print a little property information
-    if kwargs.get('scf_do_properties', True):
+    scf_do_properties = kwargs.get('scf_do_properties')
+    if (scf_do_properties is None) and isinstance(scf_wfn, core.Wavefunction):
+        scf_do_properties = True
+
+    # The default behavior for Wavefunction: True, for ComplexWavefunction: False (None).
+    if scf_do_properties:
         if isinstance(scf_wfn, core.ComplexWavefunction):
-            raise NotImplementedError("Set scf_do_properties=False.")
+            raise NotImplementedError("SCF properties not available for complex wavefunctions.")
         oeprop = core.OEProp(scf_wfn)
         oeprop.set_title("SCF")
 
