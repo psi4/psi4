@@ -114,6 +114,89 @@ py::list tiled_tensor_array_interface(TiledT& tt) {
     return ret;
 }
 
+// The handful of ComplexMatrix operations psi4/driver/procrouting/diis.py needs in order
+// to treat ComplexMatrix exactly like Matrix/Vector (clone/axpy/vector_dot/zero/name/
+// save/load)
+
+std::shared_ptr<ComplexMatrix> complexmatrix_clone(const ComplexMatrix& self) {
+    return std::make_shared<ComplexMatrix>(self);
+}
+
+// self += alpha * other
+//
+// Implemented as a plain element loop (via operator(p, q), the same accessor used
+// throughout cghf.cc/ComplexJK) rather than einsums::linear_algebra::axpy, whose
+// generic TensorConcept dispatch appears to not work.
+// A manual loop is fast enough for my use at the moment.
+void complexmatrix_axpy(ComplexMatrix& self, std::complex<double> alpha, const ComplexMatrix& other) {
+    if (self.grid_size(0) != other.grid_size(0) || self.grid_size(1) != other.grid_size(1)) {
+        throw py::value_error("ComplexMatrix.axpy: tile grids must match.");
+    }
+    for (int h = 0; h < static_cast<int>(other.grid_size(0)); ++h) {
+        if (!other.has_tile(h, h) || other.has_zero_size(h, h)) continue;
+        const auto& B = other.tile(h, h);
+        auto& A = self.tile(h, h);  // lazily allocated if missing
+        const int nr = static_cast<int>(B.dim(0));
+        const int nc = static_cast<int>(B.dim(1));
+        for (int p = 0; p < nr; ++p) {
+            for (int q = 0; q < nc; ++q) {
+                A(p, q) += alpha * B(p, q);
+            }
+        }
+    }
+}
+
+// Re(Tr(self^H other)), summed over diagonal tiles
+// einsums::linear_algebra::true_dot appears to not work as expected.
+double complexmatrix_vector_dot(const ComplexMatrix& self, const ComplexMatrix& other) {
+    std::complex<double> total{0.0, 0.0};
+    for (int h = 0; h < static_cast<int>(self.grid_size(0)); ++h) {
+        if (!self.has_tile(h, h) || !other.has_tile(h, h)) continue;
+        const auto& A = self.tile(h, h);
+        const auto& B = other.tile(h, h);
+        const int nr = static_cast<int>(A.dim(0));
+        const int nc = static_cast<int>(A.dim(1));
+        for (int p = 0; p < nr; ++p) {
+            for (int q = 0; q < nc; ++q) {
+                total += std::conj(A(p, q)) * B(p, q);
+            }
+        }
+    }
+    return total.real();
+}
+
+// Raw per-tile complex sub-blocks to/from a PSIO file, mirroring Matrix::save/load with
+// SaveType::SubBlocks (libmints/matrix.cc).
+void complexmatrix_save(ComplexMatrix& self, std::shared_ptr<PSIO>& psio, size_t fileno) {
+    bool already_open = psio->open_check(fileno);
+    if (!already_open) psio->open(fileno, PSIO_OPEN_OLD);
+
+    for (int h = 0; h < static_cast<int>(self.grid_size(0)); ++h) {
+        if (!self.has_tile(h, h) || self.has_zero_size(h, h)) continue;
+        auto& tile = self.tile(h, h);
+        std::string entry = self.name() + " Tile " + std::to_string(h);
+        psio->write_entry(fileno, entry, (char*)tile.data(), sizeof(std::complex<double>) * tile.size());
+    }
+
+    if (!already_open) psio->close(fileno, 1);  // keep
+}
+
+// The ComplexMatrix must already have the right tile grid before loading (as with
+// Matrix::load), e.g. constructed via ComplexMatrix(name, block_sizes).
+void complexmatrix_load(ComplexMatrix& self, std::shared_ptr<PSIO>& psio, size_t fileno) {
+    bool already_open = psio->open_check(fileno);
+    if (!already_open) psio->open(fileno, PSIO_OPEN_OLD);
+
+    for (int h = 0; h < static_cast<int>(self.grid_size(0)); ++h) {
+        if (self.tile_size(0)[h] == 0 || self.tile_size(1)[h] == 0) continue;
+        auto& tile = self.tile(h, h);  // lazily allocated to the declared size
+        std::string entry = self.name() + " Tile " + std::to_string(h);
+        psio->read_entry(fileno, entry, (char*)tile.data(), sizeof(std::complex<double>) * tile.size());
+    }
+
+    if (!already_open) psio->close(fileno, 1);
+}
+
 }  // namespace
 
 void export_wavefunction(py::module& m) {
@@ -396,7 +479,25 @@ void export_wavefunction(py::module& m) {
             "Number of symmetry blocks (tile count along axis 0).")
         .def("array_interface", &tiled_tensor_array_interface<ComplexMatrix>,
              py::return_value_policy::reference_internal,
-             "List of per-irrep diagonal-tile NumPy views sharing the tensor's memory.");
+             "List of per-irrep diagonal-tile NumPy views sharing the tensor's memory.")
+        .def(
+            "tile_size", [](const ComplexMatrix& m, int axis) { return m.tile_size(axis); }, "axis"_a = 0,
+            "Per-tile sizes along the given axis (list of ints, one per irrep/tile).")
+        .def_property("name", [](const ComplexMatrix& m) { return m.name(); },
+                      [](ComplexMatrix& m, const std::string& name) { m.set_name(name); },
+                      "The name of this ComplexMatrix.")
+        .def("zero", &ComplexMatrix::zero, "Zeros out the tensor (drops all tile storage).")
+        .def("clone", &complexmatrix_clone, "Returns a deep copy of this ComplexMatrix.")
+        .def("axpy", &complexmatrix_axpy, "alpha"_a, "other"_a,
+             "In-place self += alpha * other (diagonal tiles only).")
+        .def("vector_dot", &complexmatrix_vector_dot, "other"_a,
+             "Re(Tr(self^H other)), summed over diagonal tiles (Hermitian inner product).")
+        .def("save", &complexmatrix_save, "psio"_a, "fileno"_a,
+             "Saves diagonal tiles as raw complex sub-blocks to a PSIO file.")
+        .def("load", &complexmatrix_load, "psio"_a, "fileno"_a,
+             "Loads diagonal tiles as raw complex sub-blocks from a PSIO file. The "
+             "ComplexMatrix must already have the correct tile grid (e.g. from the "
+             "(name, block_sizes) constructor).");
 
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
             "ComplexWavefunction", "ComplexWavefunction class docstring")
