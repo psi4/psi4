@@ -72,26 +72,31 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
 
 def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     F = self.get_F()
-    D = self.get_D().to_array()
+    D = self.get_D()
     S = self.get_S().to_array()
 
-    gradient_arr = F.to_array() @ D @ S - S @ D @ F.to_array()
+    # form_FDSmSDF isn't implemented for CGHF yet; compute FDS-SDF in NumPy and wrap the
+    # result into a ComplexMatrix only so it can be handed to DIIS.
+    gradient_arr = F.to_array() @ D.to_array() @ S - S @ D.to_array() @ F.to_array()
 
     if save_fock:
-        if core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR') != "NONE":
-            raise NotImplementedError(
-                "ADIIS/EDIIS not implemented for CGHF. Set SCF_INITIAL_ACCELERATOR=NONE.")
-
         if not self.initialized_diis_manager_:
             storage_policy = StoragePolicy.InCore if self.scf_type() == "DIRECT" else StoragePolicy.OnDisk
+            # closed_shell=False: CGHF's density is the full generalized spinor density
+            # (not RHF's alpha-only doubled convention that needs the A/EDIIS *= 2 factor).
             self.diis_manager_ = DIIS(max_diis_vectors, "CGHF DIIS vector", RemovalPolicy.LargestError,
-                                      storage_policy, engines={"diis"})
+                                      storage_policy, False, engines=diis_engine_helper(self))
             self.initialized_diis_manager_ = True
 
-        # form_FDSmSDF isn't implemented for CGHF yet; the gradient is computed above in
-        # plain NumPy and wrapped into a ComplexMatrix only so it can be handed to DIIS.
-        gradient = core.ComplexMatrix.from_array(gradient_arr, name="CGHF DIIS error")
-        self.diis_manager_.add_entry({"target": [F], "error": [gradient]})
+        entry = {"target": [F]}
+        if core.get_option('SCF', 'DIIS'):
+            entry["error"] = [core.ComplexMatrix.from_array(gradient_arr, name="CGHF DIIS error")]
+        aediis = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR')
+        if aediis != "NONE":
+            entry["densities"] = [D]
+            if aediis == "EDIIS":
+                entry["energy"] = [self.compute_E()]
+        self.diis_manager_.add_entry(entry)
 
     if self.options().get_bool("DIIS_RMS_ERROR"):
         return float(np.sqrt(np.mean(np.abs(gradient_arr) ** 2)))
