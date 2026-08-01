@@ -115,8 +115,8 @@ py::list tiled_tensor_array_interface(TiledT& tt) {
 }
 
 // The handful of ComplexMatrix operations psi4/driver/procrouting/diis.py needs in order
-// to treat ComplexMatrix exactly like Matrix/Vector (clone/axpy/vector_dot/zero/name/
-// save/load)
+// to treat ComplexMatrix exactly like Matrix/Vector (clone/axpy/subtract/vector_dot/zero/
+// name/save/load)
 
 std::shared_ptr<ComplexMatrix> complexmatrix_clone(const ComplexMatrix& self) {
     return std::make_shared<ComplexMatrix>(self);
@@ -144,6 +144,11 @@ void complexmatrix_axpy(ComplexMatrix& self, std::complex<double> alpha, const C
             }
         }
     }
+}
+
+// self -= other; used by ADIIS populate (delta densities / Focks vs. latest entry).
+void complexmatrix_subtract(ComplexMatrix& self, const ComplexMatrix& other) {
+    complexmatrix_axpy(self, -1.0, other);
 }
 
 // Re(Tr(self^H other)), summed over diagonal tiles
@@ -490,6 +495,8 @@ void export_wavefunction(py::module& m) {
         .def("clone", &complexmatrix_clone, "Returns a deep copy of this ComplexMatrix.")
         .def("axpy", &complexmatrix_axpy, "alpha"_a, "other"_a,
              "In-place self += alpha * other (diagonal tiles only).")
+        .def("subtract", &complexmatrix_subtract, "other"_a,
+             "In-place self -= other (diagonal tiles only).")
         .def("vector_dot", &complexmatrix_vector_dot, "other"_a,
              "Re(Tr(self^H other)), summed over diagonal tiles (Hermitian inner product).")
         .def("save", &complexmatrix_save, "psio"_a, "fileno"_a,
