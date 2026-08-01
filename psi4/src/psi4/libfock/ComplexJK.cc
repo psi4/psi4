@@ -60,7 +60,7 @@ std::shared_ptr<ComplexJK> ComplexJK::build_JK(std::shared_ptr<BasisSet> primary
     if (do_df_scf_guess) {
         std::string error_message = "SCREENING=DENSITY has not been implemented for ";
         error_message += (do_df_scf_guess) ? "DF_SCF_GUESS" : jk_type;
-        error_message += ".";
+        error_message += ". Set DF_SCF_GUESS=False";
 
         throw PSIEXCEPTION(error_message);
     }
@@ -77,6 +77,9 @@ std::shared_ptr<ComplexJK> ComplexJK::build_JK(std::shared_ptr<BasisSet> primary
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
 
         return jk;
+    } else if (jk_type == "PK" || jk_type == "DF") {
+        throw PSIEXCEPTION("SCF type '" + jk_type + "' not implemented for complex wavefunctions. "
+                           "Use SCF_TYPE=DIRECT instead.");
     } else {
         throw PSIEXCEPTION("ComplexJK::build_JK: Unknown complex SCF Type '" + jk_type + "'");
     }
