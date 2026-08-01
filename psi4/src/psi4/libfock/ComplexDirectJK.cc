@@ -37,6 +37,7 @@
 #include "psi4/libqt/qt.h"
 
 #include <complex>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -80,18 +81,79 @@ void ComplexDirectJK::compute_JK() {
     num_computed_shells_ = 0L;
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+    const size_t nbf = static_cast<size_t>(primary_->nbf());
+
     for (size_t N = 0; N < D_.size(); N++) {
         if (D_[N]->grid_size(0) != 1)
             throw PSIEXCEPTION("Non-C1 symmetries not allowed with ComplexJK and SCF_TYPE DIRECT");
 
-        const auto& D_ref = D_[N]->tile(0, 0);
-
-        auto ints = std::shared_ptr<TwoBodyAOInt>(factory->eri());
-        if (do_J_ && do_K_) {
-            build_JK_matrices(ints, D_ref, J_[N]->tile(0, 0), K_[N]->tile(0, 0));
-        } else {
+        if (!(do_J_ && do_K_)) {
             // TODO: figure out later
             throw PSIEXCEPTION("Both J and K must be computed with ComplexJK and SCF_TYPE DIRECT");
+        }
+
+        const auto& D_ref = D_[N]->tile(0, 0);
+        const size_t dim = D_ref.dim(0);
+        auto& J_out = J_[N]->tile(0, 0);
+        auto& K_out = K_[N]->tile(0, 0);
+
+        auto ints = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+
+        if (dim == nbf) {
+            // Plain (non spin-blocked) complex density
+            build_JK_matrices(ints, D_ref, J_out, K_out);
+        } else if (dim == 2 * nbf) {
+            // Generalized (CGHF) spin-blocked density. (D and J/K) are 2x2 block
+            // matrices of nbf x nbf blocks: [[D_aa, D_ab], [D_ba, D_bb]]
+
+            // This still leaves room for improvement in terms of uniqueness.
+            // D_ab is often adjoint of D_ba, for example. D_aa and D_bb are
+            // often Hermitian themselves.
+
+            // Splitting up into separate tensors is preferred. These are contiguous
+            // where Views would not be in general.
+            ComplexT D_aa("D_aa", nbf, nbf), D_bb("D_bb", nbf, nbf);
+            ComplexT D_ab("D_ab", nbf, nbf), D_ba("D_ba", nbf, nbf);
+            for (size_t p = 0; p < nbf; p++) {
+                for (size_t q = 0; q < nbf; q++) {
+                    D_aa(p, q) = D_ref(p, q);
+                    D_bb(p, q) = D_ref(p + nbf, q + nbf);
+                    D_ab(p, q) = D_ref(p, q + nbf);
+                    D_ba(p, q) = D_ref(p + nbf, q);
+                }
+            }
+
+            ComplexT D_tot = D_aa;
+            for (size_t p = 0; p < nbf; p++)
+                for (size_t q = 0; q < nbf; q++) D_tot(p, q) += D_bb(p, q);
+
+            ComplexT J_tot("J_tot", nbf, nbf);
+            ComplexT K_aa("K_aa", nbf, nbf), K_bb("K_bb", nbf, nbf);
+            ComplexT K_ab("K_ab", nbf, nbf), K_ba("K_ba", nbf, nbf);
+            ComplexT scratch("scratch", nbf, nbf);
+
+            build_JK_matrices(ints, D_tot, J_tot, scratch);
+            build_JK_matrices(ints, D_aa, scratch, K_aa);
+            build_JK_matrices(ints, D_bb, scratch, K_bb);
+            build_JK_matrices(ints, D_ab, scratch, K_ab);
+            build_JK_matrices(ints, D_ba, scratch, K_ba);
+
+            J_out.zero();
+            K_out.zero();
+            for (size_t p = 0; p < nbf; p++) {
+                for (size_t q = 0; q < nbf; q++) {
+                    J_out(p, q) = J_tot(p, q);
+                    J_out(p + nbf, q + nbf) = J_tot(p, q);
+                    K_out(p, q) = K_aa(p, q);
+                    K_out(p + nbf, q + nbf) = K_bb(p, q);
+                    K_out(p, q + nbf) = K_ab(p, q);
+                    K_out(p + nbf, q) = K_ba(p, q);
+                }
+            }
+        } else {
+            throw PSIEXCEPTION("ComplexDirectJK: density block dimension (" + std::to_string(dim) +
+                               ") must equal the number of AO basis functions (" + std::to_string(nbf) +
+                               ") or twice that (GHF spin-blocked density).");
         }
     }
 

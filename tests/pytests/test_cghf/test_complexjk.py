@@ -224,6 +224,62 @@ def test_complexdirectjk_real_D_matches_jk():
     np.testing.assert_allclose(cjk.K()[0].to_array().imag, 0.0, atol=1e-10)
 
 
+def test_complexdirectjk_ghf_spin_blocked_matches_reference():
+    """GHF spin-blocked density (2*nbf x 2*nbf) exercises the generalized branch of
+    ComplexDirectJK::compute_JK.
+
+    For the ordinary spin-independent Coulomb operator: J only depends on the
+    spin-traced total density and is spin-diagonal (J_aa = J_bb = J[D_aa+D_bb],
+    J_ab = J_ba = 0); K couples each of the four spin blocks independently
+    through the *same* spatial two-electron integrals (K_{sigma,tau} =
+    K[D_{sigma,tau}]). This previously silently ignored everything past the
+    top-left nbf x nbf (alpha-alpha) block, dropping the beta-beta (and any
+    spin-mixing) contribution to the Fock matrix entirely.
+    """
+    _, basis = _h2_sto3g()
+    nbf = basis.nbf()
+    rng = np.random.default_rng(23)
+    # 2 occupied spinors spanning both spin blocks with general complex mixing.
+    C_arr = _random_complex((2 * nbf, 2), rng)
+    D_ref = C_arr @ C_arr.conj().T
+
+    jk = psi4.core.ComplexJK.build_JK(basis, basis)
+    jk.initialize()
+    jk.C_clear()
+    jk.C_add(psi4.core.ComplexMatrix.from_array(C_arr, name="C"))
+    jk.compute()
+    jk.finalize()
+
+    D_aa = D_ref[:nbf, :nbf]
+    D_bb = D_ref[nbf:, nbf:]
+    D_ab = D_ref[:nbf, nbf:]
+    D_ba = D_ref[nbf:, :nbf]
+
+    J_tot, _ = _jk_reference(basis, D_aa + D_bb)
+    _, K_aa = _jk_reference(basis, D_aa)
+    _, K_bb = _jk_reference(basis, D_bb)
+    _, K_ab = _jk_reference(basis, D_ab)
+    _, K_ba = _jk_reference(basis, D_ba)
+
+    J_ref = np.zeros_like(D_ref)
+    K_ref = np.zeros_like(D_ref)
+    J_ref[:nbf, :nbf] = J_tot
+    J_ref[nbf:, nbf:] = J_tot
+    K_ref[:nbf, :nbf] = K_aa
+    K_ref[nbf:, nbf:] = K_bb
+    K_ref[:nbf, nbf:] = K_ab
+    K_ref[nbf:, :nbf] = K_ba
+
+    np.testing.assert_allclose(jk.D()[0].to_array(), D_ref, atol=1e-12)
+    np.testing.assert_allclose(jk.J()[0].to_array(), J_ref, atol=1e-10)
+    np.testing.assert_allclose(jk.K()[0].to_array(), K_ref, atol=1e-10)
+
+    # The historical bug left the beta-beta block (and everything else past
+    # the top-left nbf x nbf tile) at exactly zero.
+    assert not np.allclose(jk.K()[0].to_array()[nbf:, nbf:], 0.0)
+    assert not np.allclose(jk.J()[0].to_array()[nbf:, nbf:], 0.0)
+
+
 def _run_complex_jk(basis, C_arr, screening="NONE", ints_tol=1.0e-12, bench=False):
     """Build/initialize/compute/finalize ComplexDirectJK for a single C."""
     psi4.set_options(
