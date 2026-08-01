@@ -71,19 +71,32 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         return max(gradient_a.absmax(), gradient_b.absmax())
 
 def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
-    F = self.get_F().to_array()
+    F = self.get_F()
     D = self.get_D().to_array()
     S = self.get_S().to_array()
 
-    gradient = F@D@S-S@D@F
+    gradient_arr = F.to_array() @ D @ S - S @ D @ F.to_array()
 
     if save_fock:
-        raise NotImplementedError("DIIS not implemented for CGHF.")
+        if core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR') != "NONE":
+            raise NotImplementedError(
+                "ADIIS/EDIIS not implemented for CGHF. Set SCF_INITIAL_ACCELERATOR=NONE.")
+
+        if not self.initialized_diis_manager_:
+            storage_policy = StoragePolicy.InCore if self.scf_type() == "DIRECT" else StoragePolicy.OnDisk
+            self.diis_manager_ = DIIS(max_diis_vectors, "CGHF DIIS vector", RemovalPolicy.LargestError,
+                                      storage_policy, engines={"diis"})
+            self.initialized_diis_manager_ = True
+
+        # form_FDSmSDF isn't implemented for CGHF yet; the gradient is computed above in
+        # plain NumPy and wrapped into a ComplexMatrix only so it can be handed to DIIS.
+        gradient = core.ComplexMatrix.from_array(gradient_arr, name="CGHF DIIS error")
+        self.diis_manager_.add_entry({"target": [F], "error": [gradient]})
 
     if self.options().get_bool("DIIS_RMS_ERROR"):
-        return float(np.sqrt(np.mean(np.abs(gradient) ** 2)))
+        return float(np.sqrt(np.mean(np.abs(gradient_arr) ** 2)))
     else:
-        return float(np.max(np.abs(gradient)))
+        return float(np.max(np.abs(gradient_arr)))
 
 def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     # Only the inact-act, inact-vir, and act-vir rotations are non-redundant
@@ -140,11 +153,12 @@ def _ROHF_diis(self, Dnorm):
     return self.diis_manager_.extrapolate(self.soFeff(), Dnorm=Dnorm)
 
 def _CGHF_diis(self, Dnorm):
-    pass
+    return self.diis_manager_.extrapolate(self.get_F(), Dnorm=Dnorm)
 
 core.RHF.diis = _RHF_diis
 core.UHF.diis = core.CUHF.diis = _UHF_diis
 core.ROHF.diis = _ROHF_diis
+core.CGHF.diis = _CGHF_diis
 
 def _UHF_stability_analysis(self):
     # => Validate options <=
