@@ -14,7 +14,11 @@ def diis_engine_helper(self):
     engines = set()
     if core.get_option('SCF', 'DIIS'):
         engines.add('diis')
-    restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
+    # CGHF/ComplexWavefunction has no same_a_b_orbs/dens (single generalized spinor set).
+    if isinstance(self, core.ComplexWavefunction):
+        restricted_open = False
+    else:
+        restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
     if not restricted_open:
         aediis = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR')
         if aediis != "NONE":
