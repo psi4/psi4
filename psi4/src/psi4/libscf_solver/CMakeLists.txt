@@ -8,7 +8,6 @@ list(APPEND sources
   rohf.cc
   sad.cc
   uhf.cc
-  cghf.cc
   )
 psi4_add_module(lib scf_solver sources)
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
@@ -37,6 +36,10 @@ if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
 endif()
 
 if(TARGET Einsums::Einsums)
+  target_sources(scf_solver
+    PRIVATE
+      cghf.cc
+    )
   target_compile_definitions(scf_solver
     PUBLIC
     USING_Einsums

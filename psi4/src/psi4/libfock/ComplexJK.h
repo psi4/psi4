@@ -37,11 +37,54 @@
 #include "psi4/libfock/basejk.h"
 #include "psi4/libmints/complexwavefunction.h"
 #include "psi4/libmints/typedefs.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 class BasisSet;
 class Options;
 class TwoBodyAOInt;
+
+#ifndef USING_Einsums
+
+/*! Stub ComplexJK: constructors throw unless Psi4 is built with Einsums. */
+class PSI_API ComplexJK : public BaseJK {
+   protected:
+    void compute_D() override {}
+    void allocate_JK() override {}
+    void common_init() override {}
+    void preiterations() override {}
+    void compute_JK() override {}
+    void postiterations() override {}
+    bool C1() const override { return false; }
+    std::string name() override { return "ComplexJK"; }
+
+   public:
+    ComplexJK(std::shared_ptr<BasisSet> primary) : BaseJK(primary) {
+        throw PSIEXCEPTION("Psi4 not built with Einsums. ComplexJK not available. Recompile with -DENABLE_Einsums=ON.");
+    }
+    ~ComplexJK() override = default;
+
+    static std::shared_ptr<ComplexJK> build_JK(std::shared_ptr<BasisSet> /*primary*/,
+                                               std::shared_ptr<BasisSet> /*auxiliary*/, Options& /*options*/) {
+        throw PSIEXCEPTION("Psi4 not built with Einsums. ComplexJK not available. Recompile with -DENABLE_Einsums=ON.");
+    }
+    static std::shared_ptr<ComplexJK> build_JK(std::shared_ptr<BasisSet> /*primary*/,
+                                               std::shared_ptr<BasisSet> /*auxiliary*/, Options& /*options*/,
+                                               std::string /*jk_type*/) {
+        throw PSIEXCEPTION("Psi4 not built with Einsums. ComplexJK not available. Recompile with -DENABLE_Einsums=ON.");
+    }
+    static std::shared_ptr<ComplexJK> build_JK(std::shared_ptr<BasisSet> /*primary*/,
+                                               std::shared_ptr<BasisSet> /*auxiliary*/, Options& /*options*/,
+                                               bool /*do_wK*/, size_t /*doubles*/) {
+        throw PSIEXCEPTION("Psi4 not built with Einsums. ComplexJK not available. Recompile with -DENABLE_Einsums=ON.");
+    }
+
+    size_t memory_estimate() override { return 0; }
+    void compute() override {}
+    void print_header() const override {}
+};
+
+#else  // USING_Einsums
 
 /**
  * Class ComplexJK
@@ -231,6 +274,8 @@ class PSI_API ComplexDirectJK : public ComplexJK {
     */
     void print_header() const override;
 };
+
+#endif  // USING_Einsums
 
 }  // namespace psi
 

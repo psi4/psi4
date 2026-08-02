@@ -279,7 +279,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         level_shift_enabled = core.get_option("SCF", "LEVEL_SHIFT") != 0.0
         autograc_enabled = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE"
         guessmix_enabled = core.get_option("SCF", "GUESS_MIX")
-        if (reference in ["ROHF", "CUHF"] or soscf_enabled or self.MOM_excited_ or frac_enabled or
+        # CGHF does not inherit HF::openorbital_scf (and complex OOO is NYI).
+        if (reference in ["ROHF", "CUHF", "CGHF"] or soscf_enabled or self.MOM_excited_ or frac_enabled or
             efp_enabled or pcm_enabled or ddx_enabled or pe_enabled or autograc_enabled or
             level_shift_enabled or guessmix_enabled):
             core.print_out(f"    Note: OpenOrbitalOptimizer not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
@@ -309,8 +310,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             try:
                 self.openorbital_scf()
-            except RuntimeError as ex:
-                if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
+            except (RuntimeError, AttributeError) as ex:
+                # AttributeError: wavefunction types that do not inherit HF (e.g. CGHF).
+                # RuntimeError: HF subclasses that leave the virtual unimplemented.
+                if isinstance(ex, AttributeError) or "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
                     core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
                 else:
                     raise ex

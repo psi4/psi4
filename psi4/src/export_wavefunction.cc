@@ -88,6 +88,8 @@ using namespace pybind11::literals;
 
 namespace {
 
+#ifdef USING_Einsums
+
 // Diagonal-tile NumPy views for an einsums TiledTensor (ComplexMatrix). Requires the
 // same number of tiles on each axis (one tile index per irrep). Non-const tile(h, h)
 // lazily allocates missing diagonal tiles so Python can write into them.
@@ -201,6 +203,8 @@ void complexmatrix_load(ComplexMatrix& self, std::shared_ptr<PSIO>& psio, size_t
 
     if (!already_open) psio->close(fileno, 1);
 }
+
+#endif  // USING_Einsums
 
 }  // namespace
 
@@ -453,6 +457,7 @@ void export_wavefunction(py::module& m) {
     // array_interface method below, mirroring the real Matrix class in export_mints.cc.
     // Diagonal tiles tile(h, h) play the role of BlockTensor::block(h); tiles may be
     // rectangular when row and column grids differ (e.g. occupied-only MO coefficients).
+#ifdef USING_Einsums
     py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
                                                              "Complex blocked matrix (einsums TiledTensor).")
         .def(py::init([](const std::string& name, const std::vector<size_t>& block_sizes) {
@@ -551,6 +556,18 @@ void export_wavefunction(py::module& m) {
              "Returns the dictionary of all Matrix QC variables.")
         .def("get_density", [](ComplexWavefunction& wfn, std::string name) { return wfn.density_map_[name]; },
              "Experimental!");
+
+#else
+    // Type-only stubs so Python monkey-patches and isinstance checks still resolve.
+    py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
+                                                             "Complex blocked matrix (requires Einsums).");
+    py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m, "ComplexWavefunction",
+                                                                                            "ComplexWavefunction (requires Einsums)")
+        .def(py::init<>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
+        .def(py::init<Options&>());
+#endif
 
         py::class_<scf::BaseHF, std::shared_ptr<scf::BaseHF>>(m, "BaseHF",
                                                           "Shared SCF-loop state for real and complex Hartree–Fock.")
@@ -674,6 +691,7 @@ void export_wavefunction(py::module& m) {
              "basis"_a)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
+#ifdef USING_Einsums
     py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", py::multiple_inheritance(), "docstring")
         .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("V_potential", &scf::CGHF::V_potential, "Returns the internal DFT V object.")
@@ -696,6 +714,12 @@ void export_wavefunction(py::module& m) {
         .def("get_G", &scf::CGHF::get_G, "Returns the G (J-K) matrix (spin-blocked).")
         .def("get_J", &scf::CGHF::get_J, "Returns the Coulomb matrix (spin-blocked).")
         .def("get_K", &scf::CGHF::get_K, "Returns the exchange matrix (spin-blocked).");
+
+#else
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", py::multiple_inheritance(),
+                                                                                        "CGHF (requires Einsums)")
+        .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>());
+#endif
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())

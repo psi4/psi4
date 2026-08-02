@@ -2,8 +2,9 @@ import pytest
 import numpy as np
 
 import psi4
+from addons import using
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.smoke, pytest.mark.cghf]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.smoke, pytest.mark.cghf, *using("einsums")]
 
 REFERENCE_ENERGY = -1.1287000935604175
 

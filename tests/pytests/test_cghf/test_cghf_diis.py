@@ -3,10 +3,11 @@ import numpy as np
 from scipy.optimize import minimize
 
 import psi4
+from addons import using
 from psi4.driver.procrouting.diis import DIIS, RemovalPolicy, StoragePolicy
 from psi4.driver.p4util.exceptions import SCFConvergenceError
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.smoke, pytest.mark.cghf]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.smoke, pytest.mark.cghf, *using("einsums")]
 
 
 def _co_mol():

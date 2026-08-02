@@ -2,9 +2,10 @@ import pytest
 import numpy as np
 
 import psi4
+from addons import using
 from os.path import isfile
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.cghf]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.cghf, *using("einsums")]
 
 
 @pytest.fixture

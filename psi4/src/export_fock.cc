@@ -110,6 +110,7 @@ void export_fock(py::module &m) {
 
     py::class_<ComplexJK, BaseJK, std::shared_ptr<ComplexJK>>(m, "ComplexJK",
                                                               "Complex-orbital counterpart to JK for J/K builds")
+#ifdef USING_Einsums
         .def_static("build_JK",
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {
                         return ComplexJK::build_JK(basis, aux, Process::environment.options);
@@ -137,7 +138,9 @@ void export_fock(py::module &m) {
         .def("K", &ComplexJK::K, py::return_value_policy::reference_internal)
         .def("D", &ComplexJK::D, py::return_value_policy::reference_internal)
         .def("print_header", &ComplexJK::print_header,
-             "Prints information about the type and config of the ComplexJK object into the output file.");
+             "Prints information about the type and config of the ComplexJK object into the output file.")
+#endif
+        ;
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
