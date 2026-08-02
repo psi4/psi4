@@ -33,6 +33,7 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libscf_solver/basehf.h"
+#include "psi4/libpsi4util/exception.h"
 
 #include <memory>
 #include <vector>
@@ -44,6 +45,35 @@ class VBase;
 class ComplexJK;
 
 namespace scf {
+
+#ifndef USING_Einsums
+
+/*! Stub CGHF: constructors throw unless Psi4 is built with Einsums. */
+class CGHF : public ComplexWavefunction, public BaseHF {
+   public:
+    CGHF(std::shared_ptr<ComplexWavefunction> /*ref_wfn*/, std::shared_ptr<SuperFunctional> functional)
+        : ComplexWavefunction(), BaseHF(functional) {
+        throw PSIEXCEPTION("Psi4 not built with Einsums. CGHF not available. Recompile with -DENABLE_Einsums=ON.");
+    }
+    CGHF(std::shared_ptr<ComplexWavefunction> /*ref_wfn*/, std::shared_ptr<SuperFunctional> functional, Options& options,
+         std::shared_ptr<PSIO> /*psio*/)
+        : ComplexWavefunction(options), BaseHF(functional) {
+        throw PSIEXCEPTION("Psi4 not built with Einsums. CGHF not available. Recompile with -DENABLE_Einsums=ON.");
+    }
+    ~CGHF() override = default;
+
+    // Pure virtual stubs so the type is concrete for pybind.
+    void form_H() override {}
+    void form_Shalf() override {}
+    void form_C(double /*shift*/ = 0.0) override {}
+    void form_D() override {}
+    void form_V() override {}
+    void form_F() override {}
+    void form_G() override {}
+    void print_orbitals() override {}
+};
+
+#else
 
 class CGHF : public ComplexWavefunction, public BaseHF {
    protected:
@@ -170,6 +200,8 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     SharedComplexMatrix get_J() const { return J_; }
     SharedComplexMatrix get_K() const { return K_; }
 };
+
+#endif  // USING_Einsums
 
 }  // namespace scf
 }  // namespace psi
