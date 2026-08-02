@@ -33,27 +33,31 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include <Einsums/Config.hpp>
-#include <Einsums/Tensor.hpp>
-
-#include <Einsums/LinearAlgebra.hpp>
-#include <Einsums/TensorAlgebra.hpp>
-#include <Einsums/Runtime.hpp>
-
 #include <complex>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace psi {
+#ifdef USING_Einsums
+#include <Einsums/Config.hpp>
+#include <Einsums/Tensor.hpp>
 
-using ComplexMatrix = einsums::TiledTensor<std::complex<double>, 2>;
-using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
+#include <Einsums/LinearAlgebra.hpp>
+#include <Einsums/TensorAlgebra.hpp>
+#include <Einsums/Runtime.hpp>
+#endif
+
+namespace psi {
 
 class Molecule;
 class BasisSet;
 class Options;
+
+#ifdef USING_Einsums
+
+using ComplexMatrix = einsums::TiledTensor<std::complex<double>, 2>;
+using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
 
 /*! \ingroup MINTS
  *  \class ComplexWavefunction
@@ -199,6 +203,33 @@ class PSI_API ComplexWavefunction : public BaseWavefunction {
     /// Vector of density matrices
     std::map<std::string, SharedComplexMatrix> density_map_;
 };
+
+#else  // !USING_Einsums
+
+/// Stub type so pybind can expose ComplexMatrix without Einsums.
+class PSI_API ComplexMatrix {};
+using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
+
+/*! Stub ComplexWavefunction: public mol/basis constructors throw unless built with Einsums.
+ *  Blank / Options-only constructors remain for derived stubs (e.g. CGHF). */
+class PSI_API ComplexWavefunction : public BaseWavefunction {
+   public:
+    ComplexWavefunction() : BaseWavefunction() {}
+    ComplexWavefunction(Options& options) : BaseWavefunction(options) {}
+    ComplexWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options& options)
+        : BaseWavefunction(molecule, basis, options) {
+        throw PSIEXCEPTION(
+            "Psi4 not built with Einsums. ComplexWavefunction not available. Recompile with -DENABLE_Einsums=ON.");
+    }
+    ComplexWavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis)
+        : BaseWavefunction(molecule, basis) {
+        throw PSIEXCEPTION(
+            "Psi4 not built with Einsums. ComplexWavefunction not available. Recompile with -DENABLE_Einsums=ON.");
+    }
+    ~ComplexWavefunction() override = default;
+};
+
+#endif  // USING_Einsums
 
 }  // namespace psi
 

@@ -3,9 +3,10 @@ import numpy as np
 from scipy.linalg.lapack import dpstrf
 
 import psi4
+from addons import using
 from psi4.driver.procrouting.dft import build_superfunctional
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.cghf]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.cghf, *using("einsums")]
 
 _ORTHOG_METHODS = ["SYMMETRIC", "CANONICAL", "PARTIALCHOLESKY", "AUTO"]
 

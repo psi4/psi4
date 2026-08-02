@@ -18,7 +18,6 @@ list(APPEND sources
   basisset.cc
   basewavefunction.cc
   wavefunction.cc
-  complexwavefunction.cc
   irrep.cc
   fjt.cc
   chartab.cc
@@ -119,6 +118,13 @@ else()
 endif()
 
 # Conditionally add sources that depend on optional dependencies
+if(TARGET Einsums::Einsums)
+  target_sources(mints
+    PRIVATE
+      complexwavefunction.cc
+    )
+endif()
+
 if(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
