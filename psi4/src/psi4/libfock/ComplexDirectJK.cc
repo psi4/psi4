@@ -101,7 +101,7 @@ void ComplexDirectJK::compute_JK() {
 
         if (dim == nbf) {
             // Plain (non spin-blocked) complex density
-            build_JK_matrices(ints, D_ref, J_out, K_out);
+            build_JK_matrices<true, true>(ints, D_ref, &J_out, &K_out);
         } else if (dim == 2 * nbf) {
             // Generalized (CGHF) spin-blocked density. (D and J/K) are 2x2 block
             // matrices of nbf x nbf blocks: [[D_aa, D_ab], [D_ba, D_bb]]
@@ -130,13 +130,12 @@ void ComplexDirectJK::compute_JK() {
             ComplexT J_tot("J_tot", nbf, nbf);
             ComplexT K_aa("K_aa", nbf, nbf), K_bb("K_bb", nbf, nbf);
             ComplexT K_ab("K_ab", nbf, nbf), K_ba("K_ba", nbf, nbf);
-            ComplexT scratch("scratch", nbf, nbf);
 
-            build_JK_matrices(ints, D_tot, J_tot, scratch);
-            build_JK_matrices(ints, D_aa, scratch, K_aa);
-            build_JK_matrices(ints, D_bb, scratch, K_bb);
-            build_JK_matrices(ints, D_ab, scratch, K_ab);
-            build_JK_matrices(ints, D_ba, scratch, K_ba);
+            build_JK_matrices<true, false>(ints, D_tot, &J_tot, nullptr);
+            build_JK_matrices<false, true>(ints, D_aa, nullptr, &K_aa);
+            build_JK_matrices<false, true>(ints, D_bb, nullptr, &K_bb);
+            build_JK_matrices<false, true>(ints, D_ab, nullptr, &K_ab);
+            build_JK_matrices<false, true>(ints, D_ba, nullptr, &K_ba);
 
             J_out.zero();
             K_out.zero();
@@ -162,14 +161,15 @@ void ComplexDirectJK::compute_JK() {
     }
 }
 
-void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, const ComplexT& D, ComplexT& J, ComplexT& K) {
-    // TODO: Something like below
-    // bool build_J = (!J.empty());
-    // bool build_K = (!K.empty());
+// The template allows for us to provide the most optimized method at compile time
+// using constexpr. No longer using scratch matrices. Benchmarking shows this
+// being only marginally faster (<5%), but the code smells less.
+template<bool FillJ, bool FillK>
+void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, const ComplexT& D, ComplexT* J, ComplexT* K) {
     timer_on("build_JK_matrices");
 
-    J.zero();
-    K.zero();
+    if constexpr(FillJ) J->zero();
+    if constexpr(FillK) K->zero();
 
     // => Atomic Task Blocking <= //
     // One task = all shells on one atom. Shells stay in basis order (identity map).
@@ -247,8 +247,9 @@ void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, cons
             const int nRtask = task_starts[Rtask + 1] - R2start;
             const int nStask = task_starts[Stask + 1] - S2start;
 
-            JT.zero();
-            KT.zero();
+            if constexpr(FillJ) JT.zero();
+            if constexpr(FillK) KT.zero();
+
             bool touched = false;
 
             for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
@@ -286,8 +287,10 @@ void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, cons
                                     for (int r = 0; r < Rsize; r++) {
                                         for (int s = 0; s < Ssize; s++) {
                                             const double I = *buf++;
-                                            JT(p + Poff2, q + Qoff2) += D(r + Roff, s + Soff) * I;
-                                            KT(p + Poff2, r + Roff2) += D(q + Qoff, s + Soff) * I;
+                                            if constexpr(FillJ)
+                                                JT(p + Poff2, q + Qoff2) += D(r + Roff, s + Soff) * I;
+                                            if constexpr(FillK)
+                                                KT(p + Poff2, r + Roff2) += D(q + Qoff, s + Soff) * I;
                                         }
                                     }
                                 }
@@ -300,37 +303,41 @@ void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, cons
             if (!touched) continue;
 
             // Stripe task-local J_PQ / K_PR into global matrices
-            for (int P2 = 0; P2 < nPtask; P2++) {
-                for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                    const int P = task_shells[P2start + P2];
-                    const int Q = task_shells[Q2start + Q2];
-                    const int Psize = primary_->shell(P).nfunction();
-                    const int Qsize = primary_->shell(Q).nfunction();
-                    const int Poff = primary_->shell(P).function_index();
-                    const int Qoff = primary_->shell(Q).function_index();
-                    const int Poff2 = task_offsets[P2start + P2] - task_offsets[P2start];
-                    const int Qoff2 = task_offsets[Q2start + Q2] - task_offsets[Q2start];
-                    for (int p = 0; p < Psize; p++) {
-                        for (int q = 0; q < Qsize; q++) {
-                            J(p + Poff, q + Qoff) += JT(p + Poff2, q + Qoff2);
+            if constexpr(FillJ) {
+                for (int P2 = 0; P2 < nPtask; P2++) {
+                    for (int Q2 = 0; Q2 < nQtask; Q2++) {
+                        const int P = task_shells[P2start + P2];
+                        const int Q = task_shells[Q2start + Q2];
+                        const int Psize = primary_->shell(P).nfunction();
+                        const int Qsize = primary_->shell(Q).nfunction();
+                        const int Poff = primary_->shell(P).function_index();
+                        const int Qoff = primary_->shell(Q).function_index();
+                        const int Poff2 = task_offsets[P2start + P2] - task_offsets[P2start];
+                        const int Qoff2 = task_offsets[Q2start + Q2] - task_offsets[Q2start];
+                        for (int p = 0; p < Psize; p++) {
+                            for (int q = 0; q < Qsize; q++) {
+                                (*J)(p + Poff, q + Qoff) += JT(p + Poff2, q + Qoff2);
+                            }
                         }
                     }
                 }
             }
 
-            for (int P2 = 0; P2 < nPtask; P2++) {
-                for (int R2 = 0; R2 < nRtask; R2++) {
-                    const int P = task_shells[P2start + P2];
-                    const int R = task_shells[R2start + R2];
-                    const int Psize = primary_->shell(P).nfunction();
-                    const int Rsize = primary_->shell(R).nfunction();
-                    const int Poff = primary_->shell(P).function_index();
-                    const int Roff = primary_->shell(R).function_index();
-                    const int Poff2 = task_offsets[P2start + P2] - task_offsets[P2start];
-                    const int Roff2 = task_offsets[R2start + R2] - task_offsets[R2start];
-                    for (int p = 0; p < Psize; p++) {
-                        for (int r = 0; r < Rsize; r++) {
-                            K(p + Poff, r + Roff) += KT(p + Poff2, r + Roff2);
+            if constexpr(FillK) {
+                for (int P2 = 0; P2 < nPtask; P2++) {
+                    for (int R2 = 0; R2 < nRtask; R2++) {
+                        const int P = task_shells[P2start + P2];
+                        const int R = task_shells[R2start + R2];
+                        const int Psize = primary_->shell(P).nfunction();
+                        const int Rsize = primary_->shell(R).nfunction();
+                        const int Poff = primary_->shell(P).function_index();
+                        const int Roff = primary_->shell(R).function_index();
+                        const int Poff2 = task_offsets[P2start + P2] - task_offsets[P2start];
+                        const int Roff2 = task_offsets[R2start + R2] - task_offsets[R2start];
+                        for (int p = 0; p < Psize; p++) {
+                            for (int r = 0; r < Rsize; r++) {
+                                (*K)(p + Poff, r + Roff) += KT(p + Poff2, r + Roff2);
+                            }
                         }
                     }
                 }
