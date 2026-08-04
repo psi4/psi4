@@ -154,19 +154,6 @@ jobs:
       uses: actions/checkout@v6
       with:
         fetch-depth: 0
-        fetch-tags: true
-
-      # Forks often lack annotated release tags; versioner.py then emits "undefined"
-      # and importing psi4 raises TypeError in header.py. Fetch tags from upstream.
-    - name: Ensure release tags for versioning
-      run: |
-        desc=$(git describe --abbrev=7 --long --always HEAD)
-        echo "git describe: ${desc}"
-        if [[ "${desc}" != *-* ]]; then
-          echo "No annotated tags in clone; fetching from psi4/psi4"
-          git fetch --no-tags https://github.com/psi4/psi4.git "+refs/tags/*:refs/tags/*"
-          git describe --abbrev=7 --long --always HEAD
-        fi
 
       # see CMAKE_OSX_SYSROOT and CMAKE_Fortran_FLAGS for use
       # mac_ver line returns, e.g., "10.15" for Catalina & "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
