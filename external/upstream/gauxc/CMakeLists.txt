@@ -23,7 +23,7 @@ if(${ENABLE_gauxc})
         #== check if MAGMA-enabled GauXC is found, if MAGMA is specified ==#
         get_property(_magma TARGET gauxc::gauxc PROPERTY GAUXC_HAS_MAGMA)
         
-        if(${gauxc_ENABLE_MAGMA} AND (NOT ${GAUXC_ENABLE_GPU}))
+        if(${gauxc_ENABLE_MAGMA} AND (NOT ${gauxc_ENABLE_GPU}))
            message(FATAL_ERROR "gauxc_ENABLE_MAGMA turned on, but gauxc_ENABLE_GPU is turned off! Magma only works with device-enabled GauXC instances.")
         endif()
         
@@ -47,7 +47,9 @@ if(${ENABLE_gauxc})
             message(FATAL_ERROR "Suitable gauxc could not be externally located as user insists")
         endif()
 
-        if(${gauxc_ENABLE_GPU} AND (NOT DEFINED ${CMAKE_CUDA_ARCHITECTURES}))
+        set(CMAKE_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}" CACHE STRING "CUDA architectures")
+
+        if(${gauxc_ENABLE_GPU} AND (NOT DEFINED CMAKE_CUDA_ARCHITECTURES OR "${CMAKE_CUDA_ARCHITECTURES}" STREQUAL ""))
            message(FATAL_ERROR "Internal GPU-enabled GauXC construction specified, but CMAKE_CUDA_ARCHITECTURES is not defined!")
         endif()
 

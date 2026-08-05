@@ -47,11 +47,12 @@ namespace psi {
 
 void GauXCBase::initialize() {
     // TODO: Allow for Device execspace, depending on flags. This will add GPU support.
-    use_gpu_ = options_.get_bool("GAUXC_USE_GPU");
-    const auto gauxc_execspace = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;
+    const auto use_gpu = options_.get_bool("GAUXC_USE_GPU");
+    const auto gauxc_execspace = use_gpu ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;
     GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("GAUXC_LOAD_BALANCER_KERNEL"));
+    std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr;
  #ifdef GAUXC_HAS_DEVICE 
-    if (use_gpu_) {
+    if (use_gpu) {
         rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("GAUXC_GPU_MEM"));
     } else {
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
