@@ -98,6 +98,12 @@ void CCLambdaWavefunction::get_params(Options &options) {
     params.diis = 1;
     params.diis = options.get_bool("DIIS");
 
+    params.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
+
+    if(params.max_diis_vecs <= 0) {
+      params.diis = 0;
+    }
+
     params.aobasis = 0;
     params.aobasis = options.get_bool("AO_BASIS");
     params.aobasis = 0; /* AO basis code not yet working for lambda */
@@ -426,6 +432,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
     outfile->Printf("\tCache Level       =     %1d\n", params.cachelev);
     outfile->Printf("\tModel III         =     %s\n", params.sekino ? "Yes" : "No");
     outfile->Printf("\tDIIS              =     %s\n", params.diis ? "Yes" : "No");
+    outfile->Printf("\tDIIS_MAX_VECS     =     %d\n", params.max_diis_vecs);
     outfile->Printf("\tAO Basis          =     %s\n", params.aobasis ? "Yes" : "No");
     outfile->Printf("\tABCD              =     %s\n", params.abcd.c_str());
     outfile->Printf("\tLocal CC          =     %s\n", params.local ? "Yes" : "No");

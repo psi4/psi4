@@ -269,7 +269,7 @@ double CCLambdaWavefunction::compute_energy() {
                 break;
             }
 
-            if (params.diis) diis(moinfo.iter, pL_params[i].irrep);
+            if (params.diis && params.max_diis_vecs > 0) diis(moinfo.iter, pL_params[i].irrep);
             Lsave(pL_params[i].irrep);
             moinfo.lcc = pseudoenergy(pL_params[i]);
             update();

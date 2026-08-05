@@ -2102,6 +2102,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SEKINO", false);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
+	/*- Maximum number of DIIS vectors to use. -*/
+	options.add_int("DIIS_MAX_VECS", 8);
         /*- The algorithm to use for the $\left\langle VV||VV \right\rangle$ terms -*/
         options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
         /*- Type of ABCD algorithm will be used -*/
@@ -2343,6 +2345,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("R_CONVERGENCE", 1e-7);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", 1);
+	/*- Maximum number of DIIS vectors. -*/
+	options.add_int("DIIS_MAX_VECS", 8);
         /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
         (default) for dipole polarizabilities, ``ROTATION`` for specific rotations,
         ``ROA`` for Raman Optical Activity (``ROA_TENSOR`` for each displacement),

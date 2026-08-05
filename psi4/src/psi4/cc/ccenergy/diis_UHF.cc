@@ -60,7 +60,7 @@ namespace ccenergy {
 */
 
 void CCEnergyWavefunction::diis_UHF(int iter) {
-    int nvector = max_diis_vecs_; /* Number of error vectors to keep */
+    int nvector = params_.max_diis_vecs; /* Number of error vectors to keep */
     dpdfile2 T1a, T1b;
     dpdbuf4 T2a, T2b, T2c;
     psio_address start, end;

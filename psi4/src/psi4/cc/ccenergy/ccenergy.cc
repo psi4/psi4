@@ -82,8 +82,6 @@ void CCEnergyWavefunction::init() {
     // location, make this object's densities point to a different memory locationn
     Da_ = reference_wavefunction_->Da()->clone();
     Db_ = reference_wavefunction_->same_a_b_dens() ? Da_ : reference_wavefunction_->Db()->clone();
-
-    max_diis_vecs_ = options_.get_int("DIIS_MAX_VECS");
 }
 
 double CCEnergyWavefunction::compute_energy() {
@@ -282,7 +280,7 @@ double CCEnergyWavefunction::compute_energy() {
             if (params_.analyze != 0) analyze();
             break;
         }
-        if (params_.diis) diis(moinfo_.iter);
+        if (params_.diis && params_.max_diis_vecs > 0) diis(moinfo_.iter);
         tsave();
         tau_build();
         taut_build();

@@ -51,6 +51,7 @@ struct Params {
     int cachetype;
     int ref;
     int diis;
+    int max_diis_vecs;
     std::string wfn;
     int print;
     int local;

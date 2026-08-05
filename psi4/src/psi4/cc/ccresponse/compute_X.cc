@@ -119,7 +119,7 @@ void compute_X(const char *pert, int irrep, double omega) {
 
             break;
         }
-        if (params.diis) diis(iter, pert, irrep, omega);
+        if (params.diis && params.max_diis_vecs > 0) diis(iter, pert, irrep, omega);
         save_X(pert, irrep, omega);
         if (params.wfn == "CC2")
             cc2_sort_X(pert, irrep, omega);

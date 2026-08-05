@@ -132,6 +132,12 @@ void CCEnergyWavefunction::get_params(Options &options) {
         params_.nthreads = options.get_int("CC_NUM_THREADS");
     }
     params_.diis = options.get_bool("DIIS");
+    params_.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
+
+    if(params_.max_diis_vecs <= 0) {
+      params_.diis = 0;
+    }
+    
     params_.t2_coupled = options.get_bool("T2_COUPLED");
     params_.prop = options.get_str("PROPERTY");
     params_.abcd = options.get_str("ABCD");
@@ -204,6 +210,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
     outfile->Printf("    E_Convergence   =     %3.1e\n", params_.e_convergence);
     outfile->Printf("    Restart         =     %s\n", params_.restart ? "Yes" : "No");
     outfile->Printf("    DIIS            =     %s\n", params_.diis ? "Yes" : "No");
+    outfile->Printf("    DIIS_MAX_VECS   =     %d\n", params_.max_diis_vecs);
     outfile->Printf("    AO Basis        =     %s\n", params_.aobasis.c_str());
     outfile->Printf("    ABCD            =     %s\n", params_.abcd.c_str());
     outfile->Printf("    Cache Level     =     %1d\n", params_.cachelev);

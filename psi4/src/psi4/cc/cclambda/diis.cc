@@ -62,7 +62,7 @@ namespace cclambda {
 */
 
 void CCLambdaWavefunction::diis(int iter, int L_irr) {
-    int nvector = 8; /* Number of error vectors to keep */
+    int nvector = params.max_diis_vecs; /* Number of error vectors to keep */
     int h, nirreps;
     int row, col, word, p, q, i;
     int diis_cycle;

@@ -156,6 +156,11 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
     params.maxiter = options.get_int("MAXITER");
     params.convergence = options.get_double("R_CONVERGENCE");
     params.diis = options.get_bool("DIIS");
+    params.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
+
+    if(params.max_diis_vecs <= 0) {
+      params.diis = 0;
+    }
 
     params.prop = options.get_str("PROPERTY");
     if (params.prop != "POLARIZABILITY" && params.prop != "ROTATION" && params.prop != "ROA" &&
@@ -221,6 +226,7 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
     outfile->Printf("\tConvergence      =    %3.1e\n", params.convergence);
     outfile->Printf("\tRestart          =    %s\n", params.restart ? "Allowed" : "Not Allowed");
     outfile->Printf("\tDIIS             =    %s\n", params.diis ? "Yes" : "No");
+    outfile->Printf("\tDIIS_MAX_VECS    =    %d\n", params.diis_max_vecs);
     outfile->Printf("\tModel III        =    %s\n", params.sekino ? "Yes" : "No");
     outfile->Printf("\tLinear Model     =    %s\n", params.linear ? "Yes" : "No");
     outfile->Printf("\tABCD             =    %s\n", params.abcd.c_str());

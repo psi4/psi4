@@ -55,6 +55,7 @@ struct Params {
     int print;
     int dertype;
     int diis;
+    int max_diis_vecs;
     std::string abcd;
     int sekino; /* Sekino-Bartlett size-extensive models */
                 /* the following should be obseleted now or soon */

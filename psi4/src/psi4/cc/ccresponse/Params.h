@@ -48,6 +48,7 @@ struct Params {
     double convergence; /* convergence criterion for perturbed wfns */
     int restart;        /* boolean for allowing a restart from on-disk amps */
     int diis;           /* boolean for using DIIS extrapolation */
+    int max_diis_vecs;
     std::string prop;   /* user-selected property */
     int local;          /* boolean for simluation of local correlation */
     int analyze;

@@ -64,7 +64,7 @@ namespace ccresponse {
 */
 
 void diis(int iter, const char *pert, int irrep, double omega) {
-    int nvector = 8; /* Number of error vectors to keep */
+    int nvector = params.max_diis_vecs; /* Number of error vectors to keep */
     int h, nirreps;
     int row, col, word, p, q;
     int diis_cycle;
