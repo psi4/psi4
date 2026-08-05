@@ -226,7 +226,7 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
     outfile->Printf("\tConvergence      =    %3.1e\n", params.convergence);
     outfile->Printf("\tRestart          =    %s\n", params.restart ? "Allowed" : "Not Allowed");
     outfile->Printf("\tDIIS             =    %s\n", params.diis ? "Yes" : "No");
-    outfile->Printf("\tDIIS_MAX_VECS    =    %d\n", params.diis_max_vecs);
+    outfile->Printf("\tDIIS_MAX_VECS    =    %d\n", params.max_diis_vecs);
     outfile->Printf("\tModel III        =    %s\n", params.sekino ? "Yes" : "No");
     outfile->Printf("\tLinear Model     =    %s\n", params.linear ? "Yes" : "No");
     outfile->Printf("\tABCD             =    %s\n", params.abcd.c_str());
