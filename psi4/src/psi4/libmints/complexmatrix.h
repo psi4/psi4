@@ -39,6 +39,21 @@
 
 #include "dimension.h"
 
+#ifdef USING_OpenOrbitalOptimizer
+#ifdef USING_LAPACK_MKL
+#include <mkl.h>
+#define ARMA_USE_MKL
+#define ARMA_USE_MKL_TYPES
+#endif
+#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
+#define ARMA_DONT_USE_WRAPPER
+#include <armadillo>
+#else
+namespace arma {
+class cx_mat;
+}
+#endif
+
 #ifdef USING_Einsums
 #include <Einsums/Config.hpp>
 #include <Einsums/Tensor.hpp>
@@ -249,6 +264,13 @@ class PSI_API ComplexMatrix {
      * @param value Value
      */
     void set(const int& h, const int& m, const int& n, const ValueT& value) { tensor_.tile(h, h)(m, n) = value; }
+
+#ifdef USING_OpenOrbitalOptimizer
+    /// Returns an Armadillo complex matrix for irrep block ``h``
+    arma::cx_mat to_armadillo_matrix(int h = 0);
+    /// Copies data from an Armadillo complex matrix into irrep block ``h``
+    void from_armadillo_matrix(const arma::cx_mat& m, int h = 0);
+#endif
 
     template <bool, bool>
     friend ComplexMatrix linalg::doublet(const ComplexMatrix&, const ComplexMatrix&);

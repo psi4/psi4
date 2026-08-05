@@ -622,7 +622,8 @@ void export_wavefunction(py::module& m) {
         .def("get_D", &scf::CGHF::get_D, "Returns the density matrix (spin-blocked).")
         .def("get_G", &scf::CGHF::get_G, "Returns the G (J-K) matrix (spin-blocked).")
         .def("get_J", &scf::CGHF::get_J, "Returns the Coulomb matrix (spin-blocked).")
-        .def("get_K", &scf::CGHF::get_K, "Returns the exchange matrix (spin-blocked).");
+        .def("get_K", &scf::CGHF::get_K, "Returns the exchange matrix (spin-blocked).")
+        .def("openorbital_scf", &scf::CGHF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer");
 
 #else
     py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", py::multiple_inheritance(),
