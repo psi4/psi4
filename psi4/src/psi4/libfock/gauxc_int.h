@@ -42,6 +42,7 @@ class GauXCBase : public IntegratorManager {
     std::shared_ptr<SuperFunctional> functional_;
     /// Integrator object for GauXC based integration
     std::shared_ptr<GauXC::XCIntegrator<Eigen::MatrixXd>> integrator_;
+    bool use_gpu_ = false;
 
    public:
     GauXCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
@@ -74,4 +75,3 @@ class GauUV : public GauXCBase {
 
 #endif
 #endif
-
