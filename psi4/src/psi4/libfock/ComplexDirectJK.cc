@@ -81,10 +81,10 @@ void ComplexDirectJK::compute_JK() {
     num_computed_shells_ = 0L;
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    const size_t nbf = static_cast<size_t>(primary_->nbf());
+    const int nbf = primary_->nbf();
 
     for (size_t N = 0; N < D_.size(); N++) {
-        if (D_[N]->grid_size(0) != 1)
+        if (D_[N]->nirrep() != 1)
             throw PSIEXCEPTION("Non-C1 symmetries not allowed with ComplexJK and SCF_TYPE DIRECT");
 
         if (!(do_J_ && do_K_)) {
@@ -92,10 +92,10 @@ void ComplexDirectJK::compute_JK() {
             throw PSIEXCEPTION("Both J and K must be computed with ComplexJK and SCF_TYPE DIRECT");
         }
 
-        const auto& D_ref = D_[N]->tile(0, 0);
-        const size_t dim = D_ref.dim(0);
-        auto& J_out = J_[N]->tile(0, 0);
-        auto& K_out = K_[N]->tile(0, 0);
+        const auto& D_ref = D_[N]->get(0);
+        const int dim = D_ref.dim(0);
+        auto& J_out = J_[N]->get(0);
+        auto& K_out = K_[N]->get(0);
 
         auto ints = std::shared_ptr<TwoBodyAOInt>(factory->eri());
 

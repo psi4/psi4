@@ -50,7 +50,7 @@ void ComplexWavefunction::common_init() {
     const char* ein_argv[4] = {"psi4", "--einsums:no-profiler-report", "--einsums:log-level", "3"};
     einsums::initialize(4, ein_argv);
 
-    nelecpi_ = std::vector<size_t>(nirrep_); // Electrons per irrep
+    nelecpi_ = Dimension(nirrep_, "Electrons per irrep");
     nelec_ = nelectron_;
 }
 
