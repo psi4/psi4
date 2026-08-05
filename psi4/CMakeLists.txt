@@ -248,10 +248,7 @@ else()
     message(STATUS "Disabled BrianQC ${BrianQC_DIR}")
 endif()
 
-find_package(Libxc 7.0.0 COMPONENTS C CONFIG QUIET)  # edit in codedeps
-if(NOT ${Libxc_FOUND})
-    find_package( Libxc 6.1.0 COMPONENTS C CONFIG REQUIRED)
-endif()
+find_package(Libxc 7.1.2 COMPONENTS C CONFIG REQUIRED)  # edit in codedeps
 get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")

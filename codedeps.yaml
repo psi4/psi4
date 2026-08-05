@@ -929,11 +929,11 @@ data:
       host: gitlab
       account: libxc
       name: libxc
-      commit: 7.0.0
+      commit: 7.1.2
     cmake:
       name: Libxc
-      constraint: 7.0.0
-      constraint_note: "v6.1.0 required for HYB_MGGA_XC_R2SCAN0, etc. but v7 preferred"
+      constraint: 7.1.2
+      constraint_note: "v7.1.0 required: LDA_XC_TH_FL was renamed from GGA_XC_TH_FL in libxc 7.1"
       target: Libxc::xc
       components:
         - C
