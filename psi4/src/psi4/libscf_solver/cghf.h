@@ -152,6 +152,9 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// Form the G (J-K) matrix
     void form_G() override;
 
+    /// Runs the SCF using OpenOrbitalOptimizer
+    void openorbital_scf();
+
     /// Form the guess (guarantees C, D, and E)
     void guess();
 
