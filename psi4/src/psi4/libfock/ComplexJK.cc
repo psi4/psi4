@@ -55,7 +55,6 @@ void ComplexJK::common_init() {
 
 std::shared_ptr<ComplexJK> ComplexJK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                                Options& options, std::string jk_type) {
-
     bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
     if (do_df_scf_guess) {
         std::string error_message = "SCREENING=DENSITY has not been implemented for ";
@@ -101,16 +100,18 @@ void ComplexJK::allocate_JK() {
         J_.clear();
         K_.clear();
 
-        for (size_t N = 0; N < D_.size() && do_J_; N++) {
+        for (int N = 0; N < D_.size() && do_J_; N++) {
             std::stringstream s;
             s << "J " << N << " (SO)";
-            J_.push_back(std::make_shared<ComplexMatrix>(s.str(), D_[N]->tile_size(0)));
+            const auto& Dt = *D_[N];
+            J_.push_back(std::make_shared<ComplexMatrix>(s.str(), Dt.rowspi(), Dt.colspi()));
         }
 
-        for (size_t N = 0; N < D_.size() && do_K_; N++) {
+        for (int N = 0; N < D_.size() && do_K_; N++) {
             std::stringstream s;
             s << "K " << N << " (SO)";
-            K_.push_back(std::make_shared<ComplexMatrix>(s.str(), D_[N]->tile_size(0)));
+            const auto& Dt = *D_[N];
+            K_.push_back(std::make_shared<ComplexMatrix>(s.str(), Dt.rowspi(), Dt.colspi()));
         }
     }
 }
@@ -119,39 +120,38 @@ void ComplexJK::compute_D() {
     // Ensure D_ matches C_left_/C_right_ (AO_left x AO_right per irrep; square when bases match).
     if (C_left_.size() != D_.size()) {
         D_.clear();
-        for (size_t N = 0; N < C_left_.size(); N++) {
+        for (int N = 0; N < C_left_.size(); N++) {
             std::stringstream s;
             s << "D " << N << " (SO)";
-            auto const& row_sizes = C_left_[N]->tile_size(0);
-            auto const& col_sizes = (N < C_right_.size()) ? C_right_[N]->tile_size(0) : row_sizes;
+            const auto& row_sizes = C_left_[N]->rowspi();
+            const auto& col_sizes = (N < C_right_.size()) ? C_right_[N]->rowspi() : row_sizes;
             D_.push_back(std::make_shared<ComplexMatrix>(s.str(), row_sizes, col_sizes));
         }
     }
 
-    for (size_t N = 0; N < D_.size(); ++N) {
+    for (int N = 0; N < D_.size(); ++N) {
         D_[N]->zero();
 
         auto const& Cl = *C_left_[N];
         // compute() aliases C_right_ = C_left_ when only C_left is filled; allow the same here.
         auto const& Cr = (N < C_right_.size()) ? *C_right_[N] : Cl;
 
-        if (Cl.grid_size(0) != Cr.grid_size(0) || Cl.grid_size(1) != Cr.grid_size(1)) {
-            throw PSIEXCEPTION("ComplexJK::compute_D: C_left/C_right tile grids must match.");
+        if (Cl.nirrep() != Cr.nirrep()) {
+            throw PSIEXCEPTION("ComplexJK::compute_D: C_left/C_right must have same number of irreps.");
         }
 
-        for (int h = 0; h < static_cast<int>(Cl.grid_size(0)); ++h) {
-            int nsol = Cl.tile_size(0)[h];
-            int nsor = Cr.tile_size(0)[h];
-            int nocc = Cl.tile_size(1)[h];
-            if (nocc != Cr.tile_size(1)[h]) {
+        for (int h = 0; h < D_[N]->nirrep(); ++h) {
+            int nsol = Cl.rowdim(h);
+            int nsor = Cr.rowdim(h);
+            int nocc = Cl.coldim(h);
+            if (nocc != Cr.coldim(h)) {
                 throw PSIEXCEPTION("ComplexJK::compute_D: C_left/C_right occupied dimensions must match.");
             }
             if (!nsol || !nsor || !nocc) continue;
-            if (!Cl.has_tile(h, h) || !Cr.has_tile(h, h)) continue;
 
-            auto const& Cl_h = Cl.tile(h, h);
-            auto const& Cr_h = Cr.tile(h, h);
-            auto& D_h = D_[N]->tile(h, h);  // allocates (nsol x nsor)
+            auto const& Cl_h = Cl.get(h);
+            auto const& Cr_h = Cr.get(h);
+            auto& D_h = D_[N]->get(h);  // allocates (nsol x nsor)
 
             // D_h = Cl_h * Cr_h^H
             einsums::blas::gemm('n', 'c', nsol, nsor, nocc, std::complex<double>{1.0}, Cl_h.data(),
@@ -168,10 +168,10 @@ size_t ComplexJK::memory_overhead() const {
 
 void ComplexJK::zero() {
     if (do_J_) {
-        for(auto J : J_) J->zero();
+        for (auto J : J_) J->zero();
     }
     if (do_K_) {
-        for(auto K : K_) K->zero();
+        for (auto K : K_) K->zero();
     }
 }
 
@@ -199,11 +199,11 @@ void ComplexJK::compute() {
 
     if (debug_ > 6) {
         for (size_t N = 0; N < C_left_.size(); N++) {
-            einsums::fprintln(*outfile->stream(), *C_left_[N]);
-            einsums::fprintln(*outfile->stream(), *C_right_[N]);
-            einsums::fprintln(*outfile->stream(), *D_[N]);
-            if (N < J_.size()) einsums::fprintln(*outfile->stream(), *J_[N]);
-            if (N < K_.size()) einsums::fprintln(*outfile->stream(), *K_[N]);
+            C_left_[N]->print("outfile");
+            C_right_[N]->print("outfile");
+            D_[N]->print("outfile");
+            if (N < J_.size()) J_[N]->print("outfile");
+            if (N < K_.size()) K_[N]->print("outfile");
         }
     }
 

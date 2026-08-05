@@ -35,7 +35,7 @@
 
 #include "psi4/pragma.h"
 #include "psi4/libfock/basejk.h"
-#include "psi4/libmints/complexwavefunction.h"
+#include "psi4/libmints/complexmatrix.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 

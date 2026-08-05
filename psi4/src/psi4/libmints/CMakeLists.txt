@@ -121,6 +121,7 @@ endif()
 if(TARGET Einsums::Einsums)
   target_sources(mints
     PRIVATE
+      complexmatrix.cc
       complexwavefunction.cc
     )
 endif()

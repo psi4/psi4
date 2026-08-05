@@ -630,7 +630,7 @@ def _complexmatrix_to_array(
     unless ``copy=False``.
     """
     views = self.array_interface()
-    if self.num_blocks() == 1:
+    if self.nirrep() == 1:
         return np.array(views[0]) if copy else np.asarray(views[0])
     return [np.array(v) if copy else np.asarray(v) for v in views]
 

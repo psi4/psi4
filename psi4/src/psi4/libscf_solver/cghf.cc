@@ -35,16 +35,16 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/complexmatrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libfock/ComplexJK.h"
 #include "psi4/libfock/v.h"
 
-#include <Einsums/Print.hpp>
-// DEBUG STATEMENTS
-#include <pybind11/pybind11.h>
-// END DEBUG
+// TODO: REMOVE THESE
+#include <Einsums/LinearAlgebra.hpp>
+#include <Einsums/TensorAlgebra.hpp>
 
 namespace {
 
@@ -52,8 +52,8 @@ namespace {
 // blocks **per irrep** into each tile of the provided ComplexMatrix.
 void copy_matrix_to_complex(const psi::Matrix& A, psi::ComplexMatrix& B) {
     const int nirrep = A.nirrep();
-    std::vector<int> row_dim(nirrep);
-    std::vector<int> col_dim(nirrep);
+    psi::Dimension row_dim(nirrep);
+    psi::Dimension col_dim(nirrep);
 
     for (int h = 0; h < nirrep; h++) {
         row_dim[h] = A.rowspi(h) * 2;
@@ -68,20 +68,11 @@ void copy_matrix_to_complex(const psi::Matrix& A, psi::ComplexMatrix& B) {
         const int c_ = A.colspi(h);
         for (int i = 0; i < r_; i++) {
             for (int j = 0; j < c_; j++) {
-                B.tile(h, h)(i, j) = A(h, i, j);
-                B.tile(h, h)(i + r_, j + c_) = A(h, i, j);
+				B.set(h, i, j, A(h, i, j));
+				B.set(h, i + r_, j + c_, A(h, i, j));
             }
         }
     }
-}
-
-std::complex<double> vector_dot(const psi::ComplexMatrix& A, const psi::ComplexMatrix& B) {
-    std::complex<double> E;
-
-    using namespace einsums;
-    tensor_algebra::einsum(Indices{}, &E, Indices{index::i, index::j}, A, Indices{index::j, index::i}, B);
-
-    return E;
 }
 
 }
@@ -119,19 +110,19 @@ void CGHF::common_init() {
     // DFT stuff (would typically go in subclass_init)
     setup_potential();
 
-    std::vector<size_t> irrep_sizes(nirrep_);
+    Dimension irrep_dim(nirrep_);
     for (int h = 0; h < nirrep_; h++) {
-        irrep_sizes[h] = static_cast<size_t>(nsopi_[h] * 2);
+        irrep_dim[h] = nsopi_[h] * 2;
     }
 
-    T_ = std::make_shared<ComplexMatrix>("T", irrep_sizes, irrep_sizes);
-    V_ = std::make_shared<ComplexMatrix>("V", irrep_sizes, irrep_sizes);
-    H_ = std::make_shared<ComplexMatrix>("H", irrep_sizes, irrep_sizes);
-    D_ = std::make_shared<ComplexMatrix>("SCF density", irrep_sizes, irrep_sizes);
-    F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes, irrep_sizes);
-    G_ = std::make_shared<ComplexMatrix>("G", irrep_sizes, irrep_sizes);
-    J_ = std::make_shared<ComplexMatrix>("J", irrep_sizes, irrep_sizes);
-    K_ = std::make_shared<ComplexMatrix>("K", irrep_sizes, irrep_sizes);
+    T_ = std::make_shared<ComplexMatrix>("T", irrep_dim);
+    V_ = std::make_shared<ComplexMatrix>("V", irrep_dim);
+    H_ = std::make_shared<ComplexMatrix>("H", irrep_dim);
+    D_ = std::make_shared<ComplexMatrix>("SCF density", irrep_dim);
+    F_ = std::make_shared<ComplexMatrix>("F", irrep_dim);
+    G_ = std::make_shared<ComplexMatrix>("G", irrep_dim);
+    J_ = std::make_shared<ComplexMatrix>("J", irrep_dim);
+    K_ = std::make_shared<ComplexMatrix>("K", irrep_dim);
 
     T_->zero();
     V_->zero();
@@ -286,8 +277,8 @@ void CGHF::form_H() {
     copy_matrix_to_complex(*T_real, *T_);
     copy_matrix_to_complex(*V_real, *V_);
 
-    if (debug_ > 2) einsums::fprintln(*outfile->stream(), *T_);
-    if (debug_ > 2) einsums::fprintln(*outfile->stream(), *V_);
+    if (debug_ > 2) T_->print("outfile");
+    if (debug_ > 2) V_->print("outfile");
 
     if (perturb_h_)
         throw PSIEXCEPTION("Perturbed Hamiltonian not supported with CGHF.");
@@ -295,10 +286,11 @@ void CGHF::form_H() {
     if (external_pot_)
         throw PSIEXCEPTION("External potential not supported with CGHF.");
 
-    (*H_) = (*T_);
-    (*H_) += (*V_);
+    H_->zero();
+    H_->add(*T_);
+    H_->add(*V_);
 
-    if (print_ > 3) einsums::fprintln(*outfile->stream(), *H_);
+    if (print_ > 3) H_->print("outfile");
 }
 
 void CGHF::form_Shalf() {
@@ -363,7 +355,7 @@ void CGHF::guess() {
 
 double CGHF::compute_initial_E() {
     /*  \sum_{ij}h_{ij} \gamma_{ji} */
-    std::complex<double> E = vector_dot(*H_, *D_);
+    std::complex<double> E = H_->product_trace(*D_);
 
     if (E.imag() > 1e-12) {
         outfile->Printf("WARNING: CGHF::compute_initial_E found large imaginary %+fi\n"
@@ -374,10 +366,10 @@ double CGHF::compute_initial_E() {
 }
 
 double CGHF::compute_E() {
-    std::complex<double> one_electron_E = vector_dot(*H_, *D_);
-    std::complex<double> kinetic_E = vector_dot(*T_, *D_);
-    std::complex<double> coulomb_E = vector_dot(*J_, *D_);
-    std::complex<double> exchange_E = vector_dot(*K_, *D_);
+    std::complex<double> one_electron_E = H_->product_trace(*D_);
+    std::complex<double> kinetic_E = T_->product_trace(*D_);
+    std::complex<double> coulomb_E = J_->product_trace(*D_);
+    std::complex<double> exchange_E = K_->product_trace(*D_);
 
     double two_electron_E = 0.5 * (coulomb_E.real() - exchange_E.real());
 
@@ -401,20 +393,11 @@ double CGHF::compute_E() {
 void CGHF::form_C(double shift) {
     if (shift != 0.0) throw PSIEXCEPTION("Level shifting not available for CGHF.");
 
-    auto temp = ComplexMatrix("temp", F_->tile_size(0), X_->tile_size(1));
-    auto XFX = ComplexMatrix("Othogonalized Fock", X_->tile_size(1), X_->tile_size(1));
-
-    // using namespace einsums;
-
     // Form F' = X'FX for canonical orthogonalization
-    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *F_, *X_,
-                                       std::complex<double>{0.0}, &temp);
-    einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *X_, temp,
-                                      std::complex<double>{0.0}, &XFX);
+    auto Forth = linalg::triplet<true, false, false>(X_, F_, X_);
+    Forth->set_name("Orthogonalized Fock");
 
     // Form C' = eig(F')
-    temp = ComplexMatrix("temp", XFX.tile_sizes());
-    temp.zero();
     epsilon_ = std::make_shared<Vector>("Orbital energies", nmopi_);
 
     for (int h = 0; h < nirrep_; h++) {
@@ -425,7 +408,7 @@ void CGHF::form_C(double shift) {
         evals.zero();
 
         // Hermitian eigensolver one block at a time
-        einsums::linear_algebra::heev<true>(&XFX.tile(h, h), &evals);
+        einsums::linear_algebra::heev<true>(&Forth->get(h), &evals);
 
         double last_value = - std::numeric_limits<double>::infinity();
         for (int m = 0; m < nmopi_[h]; m++) {
@@ -434,20 +417,14 @@ void CGHF::form_C(double shift) {
             epsilon_->set(h, m, current_value);
             last_value = current_value;
         }
-
-        // heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
-
-        // Takes the conjugate transpose of XFX (e.g. ij -> ji) to give us the proper eigenvectors
-        // NOTE: the template parameters <true> states to take the conjugate (Einsums v1.x)
-        einsums::tensor_algebra::permute<true>(
-            std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &temp.tile(h,h),
-            std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, XFX.tile(h,h));
     }
 
-    // Form C_ := X_ @ temp
-    C_ = std::make_shared<ComplexMatrix>("MO coefficients", X_->tile_sizes());
-    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *X_, temp,
-                                       std::complex<double>{0.0}, C_.get());
+    // heev retuns the wrong side, so we need to take the conjugate transpose for the proper eigenvectors
+    auto temp = Forth->conjT();
+
+    // Form C_ := X_ @ C' (temp)
+    C_ = linalg::doublet<false, false>(X_, temp);
+    C_->set_name("MO coefficients");
 
     find_occupation();
 }
@@ -455,7 +432,7 @@ void CGHF::form_C(double shift) {
 void CGHF::find_occupation() {
     if (debug_) epsilon_->print("outfile");
 
-    if (nirrep_ > 1) throw pybind11::attribute_error("CGHF::find_occupation is a work in progress.");
+	if (nirrep_ > 1) throw PSIEXCEPTION("CGHF::find_occupation() C1 symmetry only!");
 
     // No changing C_ because we assume the orbitals are sorted within their irreps
 
@@ -481,12 +458,12 @@ void CGHF::find_occupation() {
 void CGHF::form_D() {
     D_->zero();
     for (int h = 0; h < nirrep_; ++h) {
-        int nso = C_->tile_size(0)[h];
+        int nso = C_->rowdim(h);
         int nocc = static_cast<int>(nelecpi_[h]);
         if (!nso || !nocc) continue;
 
-        auto const& C_h = C_->tile(h, h);
-        auto& D_h = D_->tile(h, h);
+        auto const& C_h = C_->get(h);
+        auto& D_h = D_->get(h);
 
         // D_h = C_occ * C_occ^H using the leading occupied columns (lda = full MO stride)
         einsums::blas::gemm('n', 'c', nso, nso, nocc, std::complex<double>{1.0}, C_h.data(),
@@ -496,7 +473,7 @@ void CGHF::form_D() {
 
     if (debug_ > 0) {
         outfile->Printf("in CGHF::form_D:\n");
-        einsums::fprintln(*outfile->stream(), *D_);
+        D_->print("outfile");
     }
 }
 
@@ -504,11 +481,13 @@ void CGHF::form_F() {
     (*F_) = (*H_);
     (*F_) += (*G_);
 
+    F_->set_name("Fock");
+
     if (debug_) {
-        einsums::fprintln(*outfile->stream(), *F_);
-        einsums::fprintln(*outfile->stream(), *J_);
-        einsums::fprintln(*outfile->stream(), *K_);
-        einsums::fprintln(*outfile->stream(), *G_);
+        F_->print("outfile");
+        J_->print("outfile");
+        K_->print("outfile");
+        G_->print("outfile");
     }
 }
 
@@ -520,11 +499,11 @@ void CGHF::form_G() {
     C.clear();
 
     // Grab the occupied columns
-    auto C2 = std::make_shared<ComplexMatrix>("C SO OCC", C_->tile_size(0), nelecpi_);
+    auto C2 = std::make_shared<ComplexMatrix>("C SO OCC", C_->rowspi(), nelecpi_);
     for (int h = 0; h < nirrep_; h++) {
         if (nelecpi_[h] == 0) continue;
         // Einsums analog of Matrix's per-column C_DCOPY
-        C2->tile(h, h) = C_->tile(h, h)(einsums::All, einsums::Range{0, nelecpi_[h]});
+        C2->get(h) = C_->get(h)(einsums::All, einsums::Range{0, nelecpi_[h]});
     }
     C.push_back(C2);
 
@@ -541,8 +520,8 @@ void CGHF::form_G() {
     if (alpha != 1) throw PSIEXCEPTION("Who let the DFT in?");
     if (!functional_->is_x_hybrid()) throw PSIEXCEPTION("Who let the DFT in?");
 
-    (*G_) += (*J_);
-    (*G_) -= (*K_);
+    G_->add(*J_);
+    G_->subtract(*K_);
 }
 
 std::shared_ptr<ComplexJK> CGHF::build_jk(size_t memory) const {

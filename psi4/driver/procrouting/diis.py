@@ -58,7 +58,7 @@ def template_helper(*args):
         elif isinstance(arg, (core.Matrix, core.dpdfile2, core.dpdbuf4)):
             template.append([arg.rowdim(), arg.coldim()])
         elif isinstance(arg, core.ComplexMatrix):
-            template.append(_ComplexMatrixTemplate(arg.tile_size(0)))
+            template.append(_ComplexMatrixTemplate(arg.rowdim()))
         elif isinstance(arg, float):
             template.append(float(0))
         elif which_import("ambit", return_bool=True):

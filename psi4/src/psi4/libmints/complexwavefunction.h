@@ -33,18 +33,12 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include <complex>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #ifdef USING_Einsums
-#include <Einsums/Config.hpp>
-#include <Einsums/Tensor.hpp>
-
-#include <Einsums/LinearAlgebra.hpp>
-#include <Einsums/TensorAlgebra.hpp>
 #include <Einsums/Runtime.hpp>
 #endif
 
@@ -56,9 +50,6 @@ class Options;
 
 #ifdef USING_Einsums
 
-using ComplexMatrix = einsums::TiledTensor<std::complex<double>, 2>;
-using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
-
 /*! \ingroup MINTS
  *  \class ComplexWavefunction
  *  \brief Home for wavefunctions built on complex molecular orbitals.
@@ -69,7 +60,7 @@ class PSI_API ComplexWavefunction : public BaseWavefunction {
     int nelec_;
 
     /// Number of electrons per irrep
-    std::vector<size_t> nelecpi_;
+    Dimension nelecpi_;
 
     /// Overlap matrix
     SharedComplexMatrix S_;
@@ -138,7 +129,7 @@ class PSI_API ComplexWavefunction : public BaseWavefunction {
     }
 
     /// Returns the number of electrons per irrep array.
-    const std::vector<size_t>& nelecpi() const { return nelecpi_; }
+    const Dimension& nelecpi() const { return nelecpi_; }
     /// Return the number of electrons
     int nelec() const { return nelec_; }
 
@@ -205,10 +196,6 @@ class PSI_API ComplexWavefunction : public BaseWavefunction {
 };
 
 #else  // !USING_Einsums
-
-/// Stub type so pybind can expose ComplexMatrix without Einsums.
-class PSI_API ComplexMatrix {};
-using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
 
 /*! Stub ComplexWavefunction: public mol/basis constructors throw unless built with Einsums.
  *  Blank / Options-only constructors remain for derived stubs (e.g. CGHF). */

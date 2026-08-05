@@ -52,7 +52,7 @@ def test_complexjk_compute_D_c1_rectangular():
     C = psi4.core.ComplexMatrix.from_array(C_arr, name="C")
 
     D = _run_compute_D(C)[0]
-    assert D.num_blocks() == 1
+    assert D.nirrep() == 1
     np.testing.assert_allclose(D.to_array(), C_arr @ C_arr.conj().T)
 
 
@@ -65,7 +65,7 @@ def test_complexjk_compute_D_c1_asymmetric():
     Cr = psi4.core.ComplexMatrix.from_array(Cr_arr, name="Cr")
 
     D = _run_compute_D(Cl, Cr)[0]
-    assert D.num_blocks() == 1
+    assert D.nirrep() == 1
     np.testing.assert_allclose(D.to_array(), Cl_arr @ Cr_arr.conj().T)
     # Sanity: not the same as the symmetric products
     assert not np.allclose(D.to_array(), Cl_arr @ Cl_arr.conj().T)
@@ -81,7 +81,7 @@ def test_complexjk_compute_D_c1_rectangular_D():
     Cr = psi4.core.ComplexMatrix.from_array(Cr_arr, name="Cr")
 
     D = _run_compute_D(Cl, Cr)[0]
-    assert D.num_blocks() == 1
+    assert D.nirrep() == 1
     D_arr = D.to_array()
     assert D_arr.shape == (5, 3)
     np.testing.assert_allclose(D_arr, Cl_arr @ Cr_arr.conj().T)
@@ -101,7 +101,7 @@ def test_complexjk_compute_D_multi_irrep_rectangular():
         refs.append(C_h @ C_h.conj().T)
 
     D = _run_compute_D(C)[0]
-    assert D.num_blocks() == len(row_sizes)
+    assert D.nirrep() == len(row_sizes)
     D_blocks = D.to_array()
     assert isinstance(D_blocks, list)
     assert len(D_blocks) == len(row_sizes)
@@ -125,7 +125,7 @@ def test_complexjk_compute_D_multiple_C_pairs():
     Ds = _run_compute_D(lefts, rights)
     assert len(Ds) == len(shapes)
     for D, ref in zip(Ds, refs):
-        assert D.num_blocks() == 1
+        assert D.nirrep() == 1
         np.testing.assert_allclose(D.to_array(), ref)
 
 
