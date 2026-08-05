@@ -1952,7 +1952,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Use GPU for GauXC? -*/
         options.add_bool("GAUXC_USE_GPU", false);
         /*- Proportion (in %) of available GPU memory to allocate to GauXC. !expert-*/
-        options.add_bool("GAUXC_GPU_MEM", 90);
+        options.add_int("GAUXC_GPU_MEM", 90);
 
         /*- SUBSECTION TDSCF -*/
         /*- Number of roots (excited states) we should seek to converge. This
