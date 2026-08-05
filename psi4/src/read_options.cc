@@ -2524,6 +2524,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("CC_NUM_THREADS", 1);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
+	/*- Set the maximum number of DIIS vectors to use. -*/
+	options.add_int("DIIS_MAX_VECS", 8);
         /*- -*/
         options.add_bool("T2_COUPLED", false);
         /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
