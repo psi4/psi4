@@ -38,6 +38,7 @@
 
 #include "psi4/liboptions/liboptions.h"
 
+#include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <gauxc/molecular_weights.hpp>
@@ -46,13 +47,17 @@
 namespace psi {
 
 void GauXCBase::initialize() {
-    // TODO: Allow for Device execspace, depending on flags. This will add GPU support.
-    const auto use_gpu = options_.get_bool("GAUXC_USE_GPU");
-    const auto gauxc_execspace = use_gpu ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;
+    use_gpu_ = options_.get_bool("GAUXC_USE_GPU");
+#ifndef GAUXC_HAS_DEVICE
+    if (use_gpu_) {
+        throw PSIEXCEPTION("GAUXC_USE_GPU was requested, but GauXC was not built with device support.");
+    }
+#endif
+    const auto gauxc_execspace = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;
     GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("GAUXC_LOAD_BALANCER_KERNEL"));
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr;
  #ifdef GAUXC_HAS_DEVICE 
-    if (use_gpu) {
+    if (use_gpu_) {
         rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("GAUXC_GPU_MEM"));
     } else {
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
@@ -127,6 +132,7 @@ void GauXCBase::print_header() const {
     outfile->Printf("  ===> DFT Potential <===\n\n");
     functional_->print("outfile", options_.get_int("PRINT"));
     outfile->Printf("   => GauXC Quadrature <=\n\n");
+    outfile->Printf("    Execution Space        = %14s\n", use_gpu_ ? "Device (GPU)" : "Host (CPU)");
     outfile->Printf("    Radial Scheme          = %14s\n", options_.get_str("GAUXC_RADIAL_SCHEME").c_str());
     outfile->Printf("    Pruning Scheme         = %14s\n", options_.get_str("GAUXC_PRUNING_SCHEME").c_str());
     outfile->Printf("\n");
