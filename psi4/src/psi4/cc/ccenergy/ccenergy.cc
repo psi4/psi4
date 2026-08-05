@@ -82,6 +82,8 @@ void CCEnergyWavefunction::init() {
     // location, make this object's densities point to a different memory locationn
     Da_ = reference_wavefunction_->Da()->clone();
     Db_ = reference_wavefunction_->same_a_b_dens() ? Da_ : reference_wavefunction_->Db()->clone();
+
+    max_diis_vecs_ = options_.get_int("DIIS_MAX_VECS");
 }
 
 double CCEnergyWavefunction::compute_energy() {

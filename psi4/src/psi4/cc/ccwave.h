@@ -204,6 +204,7 @@ class CCEnergyWavefunction : public Wavefunction {
     MOInfo moinfo_;
     Params params_;
     Local local_;
+    int max_diis_vecs_;
     std::array<dpd_file4_cache_entry, 113> cache_priority_list_;
 };
 
