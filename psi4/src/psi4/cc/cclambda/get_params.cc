@@ -52,7 +52,7 @@
 namespace psi {
 namespace cclambda {
 
-void CCLambdaWavefunction::get_params(Options &options) {
+void CCLambdaWavefunction::get_params(Options& options) {
     int errcod, iconv, i, j, k, l, prop_sym, prop_root, excited_method = 0;
     int prop_all, lambda_and_Ls = 0;
     std::vector<int> states_per_irrep;
@@ -64,15 +64,15 @@ void CCLambdaWavefunction::get_params(Options &options) {
     excited_method = cc_excited(params.wfn);
 
     if (params.wfn == "CC2" || params.wfn == "EOM_CC2") {
-        psio_read_entry(PSIF_CC_INFO, "CC2 Energy", (char *)&(moinfo.ecc), sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, "CC2 Energy", (char*)&(moinfo.ecc), sizeof(double));
         outfile->Printf("\tCC2 energy          (CC_INFO) = %20.15f\n", moinfo.ecc);
         outfile->Printf("\tTotal CC2 energy    (CC_INFO) = %20.15f\n", moinfo.eref + moinfo.ecc);
     } else if (params.wfn == "CCSD" || params.wfn == "EOM_CCSD") {
-        psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *)&(moinfo.ecc), sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char*)&(moinfo.ecc), sizeof(double));
         outfile->Printf("\tCCSD energy         (CC_INFO) = %20.15f\n", moinfo.ecc);
         outfile->Printf("\tTotal CCSD energy   (CC_INFO) = %20.15f\n", moinfo.eref + moinfo.ecc);
     } else if (params.wfn == "CC3" || params.wfn == "EOM_CC3") {
-        psio_read_entry(PSIF_CC_INFO, "CC3 Energy", (char *)&(moinfo.ecc), sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, "CC3 Energy", (char*)&(moinfo.ecc), sizeof(double));
         outfile->Printf("\tCC3 energy          (CC_INFO) = %20.15f\n", moinfo.ecc);
         outfile->Printf("\tTotal CC3 energy    (CC_INFO) = %20.15f\n", moinfo.eref + moinfo.ecc);
     }
@@ -100,8 +100,8 @@ void CCLambdaWavefunction::get_params(Options &options) {
 
     params.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
 
-    if(params.max_diis_vecs <= 0) {
-      params.diis = 0;
+    if (params.max_diis_vecs <= 0) {
+        params.diis = 0;
     }
 
     params.aobasis = 0;
@@ -235,8 +235,8 @@ void CCLambdaWavefunction::get_params(Options &options) {
 
     if (params.zeta) { /* only use Xi to solve for Zeta */
         params.nstates = 1;
-        pL_params = (struct L_Params *)malloc(params.nstates * sizeof(struct L_Params));
-        psio_read_entry(PSIF_CC_INFO, "XI Irrep", (char *)&i, sizeof(int));
+        pL_params = (struct L_Params*)malloc(params.nstates * sizeof(struct L_Params));
+        psio_read_entry(PSIF_CC_INFO, "XI Irrep", (char*)&i, sizeof(int));
         outfile->Printf("\tIrrep of Zeta       (CC_INFO) = %d\n", i);
         pL_params[0].irrep = prop_sym = i; /* is this always A1? I forget */
         pL_params[0].root = prop_root = 0;
@@ -252,7 +252,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
     } else if (params.dertype == 1) {  /* analytic gradient, ignore prop_all */
         if (!cc_excited(params.wfn)) { /* do only lambda for ground state */
             params.nstates = 1;
-            pL_params = (struct L_Params *)malloc(params.nstates * sizeof(struct L_Params));
+            pL_params = (struct L_Params*)malloc(params.nstates * sizeof(struct L_Params));
             pL_params[0].irrep = 0;
             pL_params[0].root = -1;
             pL_params[0].ground = 1;
@@ -266,25 +266,25 @@ void CCLambdaWavefunction::get_params(Options &options) {
             sprintf(pL_params[0].L2RHF_lbl, "2LIjAb - LIjbA %d %d", 0, -1);
         } else { /* do only one L for excited state */
             params.nstates = 1;
-            pL_params = (struct L_Params *)malloc(params.nstates * sizeof(struct L_Params));
+            pL_params = (struct L_Params*)malloc(params.nstates * sizeof(struct L_Params));
             pL_params[0].irrep = prop_sym;
             pL_params[0].root = prop_root;
             pL_params[0].ground = 0;
             if (params.wfn == "EOM_CC2") {
                 sprintf(lbl, "EOM CC2 Energy for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[0].cceom_energy), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[0].cceom_energy), sizeof(double));
                 sprintf(lbl, "EOM CC2 R0 for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[0].R0), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[0].R0), sizeof(double));
             } else if (params.wfn == "EOM_CCSD") {
                 sprintf(lbl, "EOM CCSD Energy for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[0].cceom_energy), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[0].cceom_energy), sizeof(double));
                 sprintf(lbl, "EOM CCSD R0 for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[0].R0), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[0].R0), sizeof(double));
             } else if (params.wfn == "EOM_CC3") {
                 sprintf(lbl, "EOM CC3 Energy for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[0].cceom_energy), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[0].cceom_energy), sizeof(double));
                 sprintf(lbl, "EOM CC3 R0 for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[0].R0), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[0].R0), sizeof(double));
             }
             sprintf(pL_params[0].L1A_lbl, "LIA %d %d", prop_sym, prop_root);
             sprintf(pL_params[0].L1B_lbl, "Lia %d %d", prop_sym, prop_root);
@@ -296,7 +296,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
     } else if (params.dertype == 3) {  /* response calculation */
         if (!cc_excited(params.wfn)) { /* ground state */
             params.nstates = 1;
-            pL_params = (struct L_Params *)malloc(params.nstates * sizeof(struct L_Params));
+            pL_params = (struct L_Params*)malloc(params.nstates * sizeof(struct L_Params));
             pL_params[0].irrep = 0;
             pL_params[0].root = -1;
             pL_params[0].ground = 1;
@@ -314,7 +314,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
     } else if (params.dertype == 0) {
         if (!cc_excited(params.wfn)) { /* ground state */
             params.nstates = 1;
-            pL_params = (struct L_Params *)malloc(params.nstates * sizeof(struct L_Params));
+            pL_params = (struct L_Params*)malloc(params.nstates * sizeof(struct L_Params));
             pL_params[0].irrep = 0;
             pL_params[0].root = -1;
             pL_params[0].ground = 1;
@@ -341,7 +341,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
             params.nstates += 1; /* do only one L */
         }
 
-        pL_params = (struct L_Params *)malloc(params.nstates * sizeof(struct L_Params));
+        pL_params = (struct L_Params*)malloc(params.nstates * sizeof(struct L_Params));
 
         /* ground state */
         pL_params[0].irrep = 0;
@@ -366,19 +366,19 @@ void CCLambdaWavefunction::get_params(Options &options) {
 
                     if (params.wfn == "EOM_CC2") {
                         sprintf(lbl, "EOM CC2 Energy for root %d %d", i, j);
-                        psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[k].cceom_energy), sizeof(double));
+                        psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[k].cceom_energy), sizeof(double));
                         sprintf(lbl, "EOM CC2 R0 for root %d %d", i, j);
-                        psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[k].R0), sizeof(double));
+                        psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[k].R0), sizeof(double));
                     } else if (params.wfn == "EOM_CCSD") {
                         sprintf(lbl, "EOM CCSD Energy for root %d %d", i, j);
-                        psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[k].cceom_energy), sizeof(double));
+                        psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[k].cceom_energy), sizeof(double));
                         sprintf(lbl, "EOM CCSD R0 for root %d %d", i, j);
-                        psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[k].R0), sizeof(double));
+                        psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[k].R0), sizeof(double));
                     } else if (params.wfn == "EOM_CC3") {
                         sprintf(lbl, "EOM CC3 Energy for root %d %d", i, j);
-                        psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[k].cceom_energy), sizeof(double));
+                        psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[k].cceom_energy), sizeof(double));
                         sprintf(lbl, "EOM CC3 R0 for root %d %d", i, j);
-                        psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[k].R0), sizeof(double));
+                        psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[k].R0), sizeof(double));
                     }
 
                     sprintf(pL_params[k].L1A_lbl, "LIA %d %d", i, j);
@@ -397,19 +397,19 @@ void CCLambdaWavefunction::get_params(Options &options) {
 
             if (params.wfn == "EOM_CC2") {
                 sprintf(lbl, "EOM CC2 Energy for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[1].cceom_energy), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[1].cceom_energy), sizeof(double));
                 sprintf(lbl, "EOM CC2 R0 for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[1].R0), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[1].R0), sizeof(double));
             } else if (params.wfn == "EOM_CCSD") {
                 sprintf(lbl, "EOM CCSD Energy for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[1].cceom_energy), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[1].cceom_energy), sizeof(double));
                 sprintf(lbl, "EOM CCSD R0 for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[1].R0), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[1].R0), sizeof(double));
             } else if (params.wfn == "EOM_CC3") {
                 sprintf(lbl, "EOM CC3 Energy for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[1].cceom_energy), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[1].cceom_energy), sizeof(double));
                 sprintf(lbl, "EOM CC3 R0 for root %d %d", prop_sym, prop_root);
-                psio_read_entry(PSIF_CC_INFO, lbl, (char *)&(pL_params[1].R0), sizeof(double));
+                psio_read_entry(PSIF_CC_INFO, lbl, (char*)&(pL_params[1].R0), sizeof(double));
             }
 
             sprintf(pL_params[1].L1A_lbl, "LIA %d %d", prop_sym, prop_root);

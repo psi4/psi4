@@ -70,15 +70,15 @@ void Lmag();
 double overlap(int L_irr);
 void Lsave_index(const struct L_Params& L_params);
 void Lamp_write(const struct L_Params& L_params);
-void check_ortho(struct L_Params *pL_params);
-void projections(struct L_Params *pL_params);
+void check_ortho(struct L_Params* pL_params);
+void projections(struct L_Params* pL_params);
 void L_zero(int irrep);
-void c_clean(dpdfile2 *LIA, dpdfile2 *Lia, dpdbuf4 *LIJAB, dpdbuf4 *Lijab, dpdbuf4 *LIjAb);
+void c_clean(dpdfile2* LIA, dpdfile2* Lia, dpdbuf4* LIJAB, dpdbuf4* Lijab, dpdbuf4* LIjAb);
 void L_clean(const struct L_Params& pL_params);
 void zeta_norm(const struct L_Params& pL_params);
 void spinad_amps();
 void hbar_extra();
-void ortho_Rs(struct L_Params *pL_params, int current_L);
+void ortho_Rs(struct L_Params* pL_params, int current_L);
 
 void cc2_L1_build(const struct L_Params& L_params);
 void cc2_L2_build(const struct L_Params& L_params);
@@ -96,14 +96,14 @@ void cc3_l3l1();
 // Forward declaration to call cctriples
 namespace psi {
 namespace cctriples {
-PsiReturnType cctriples(std::shared_ptr<Wavefunction> ref_wfn, Options &options);
+PsiReturnType cctriples(std::shared_ptr<Wavefunction> ref_wfn, Options& options);
 }
 }  // namespace psi
 
 namespace psi {
 namespace cclambda {
 
-CCLambdaWavefunction::CCLambdaWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+CCLambdaWavefunction::CCLambdaWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options& options)
     : CCEnergyWavefunction(reference_wavefunction, options) {
     psio_ = _default_psio_lib_;
     init();
@@ -142,13 +142,13 @@ double CCLambdaWavefunction::compute_energy() {
 
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-        std::vector<std::pair<Dimension, int *>> spaces;
+        std::vector<std::pair<Dimension, int*>> spaces;
         spaces.emplace_back(moinfo.occpi, moinfo.occ_sym);
         spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym);
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, spaces);
 
         if (params.aobasis) { /* Set up new DPD for AO-basis algorithm */
-            std::vector<std::pair<Dimension, int *>> aospaces;
+            std::vector<std::pair<Dimension, int*>> aospaces;
             aospaces.emplace_back(moinfo.occpi, moinfo.occ_sym);
             aospaces.emplace_back(moinfo.sopi, moinfo.sosym);
             dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, aospaces);
@@ -158,7 +158,7 @@ double CCLambdaWavefunction::compute_energy() {
     } else if (params.ref == 2) { /** UHF **/
 
         cachelist = cacheprep_uhf(params.cachelev, cachefiles);
-        std::vector<std::pair<Dimension, int *>> spaces;
+        std::vector<std::pair<Dimension, int*>> spaces;
         spaces.emplace_back(moinfo.aoccpi, moinfo.aocc_sym);
         spaces.emplace_back(moinfo.avirtpi, moinfo.avir_sym);
         spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym);
@@ -167,7 +167,7 @@ double CCLambdaWavefunction::compute_energy() {
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, spaces);
 
         if (params.aobasis) { /* Set up new DPD's for AO-basis algorithm */
-            std::vector<std::pair<Dimension, int *>> aospaces;
+            std::vector<std::pair<Dimension, int*>> aospaces;
             aospaces.emplace_back(moinfo.aoccpi, moinfo.aocc_sym);
             aospaces.emplace_back(moinfo.sopi, moinfo.sosym);
             aospaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym);
@@ -285,7 +285,7 @@ double CCLambdaWavefunction::compute_energy() {
         }
         if (pL_params[i].ground) {
             auto LR_overlap = overlap(pL_params[i].irrep);
-            std::string gs_name; // Which theory's lambda equations did we just solve?
+            std::string gs_name;  // Which theory's lambda equations did we just solve?
             if (params.wfn == "CC3" || params.wfn == "EOM_CC3") {
                 gs_name = "CC3";
             } else if (params.wfn == "CC2" || params.wfn == "EOM_CC2") {
@@ -334,10 +334,14 @@ double CCLambdaWavefunction::compute_energy() {
         // Run cctriples
         if (psi::cctriples::cctriples(reference_wavefunction_, options_) == Success) {
             energy_ = Process::environment.globals["CURRENT ENERGY"];
-            set_scalar_variable("A-(T) CORRECTION ENERGY", reference_wavefunction_->scalar_variable("A-(T) CORRECTION ENERGY"));
-            set_scalar_variable("A-CCSD(T) CORRELATION ENERGY", reference_wavefunction_->scalar_variable("A-CCSD(T) CORRELATION ENERGY"));
-            set_scalar_variable("A-CCSD(T) TOTAL ENERGY", reference_wavefunction_->scalar_variable("A-CCSD(T) TOTAL ENERGY"));
-            set_scalar_variable("CURRENT CORRELATION ENERGY", reference_wavefunction_->scalar_variable("A-CCSD(T) CORRELATION ENERGY"));
+            set_scalar_variable("A-(T) CORRECTION ENERGY",
+                                reference_wavefunction_->scalar_variable("A-(T) CORRECTION ENERGY"));
+            set_scalar_variable("A-CCSD(T) CORRELATION ENERGY",
+                                reference_wavefunction_->scalar_variable("A-CCSD(T) CORRELATION ENERGY"));
+            set_scalar_variable("A-CCSD(T) TOTAL ENERGY",
+                                reference_wavefunction_->scalar_variable("A-CCSD(T) TOTAL ENERGY"));
+            set_scalar_variable("CURRENT CORRELATION ENERGY",
+                                reference_wavefunction_->scalar_variable("A-CCSD(T) CORRELATION ENERGY"));
             set_scalar_variable("CURRENT ENERGY", reference_wavefunction_->scalar_variable("A-CCSD(T) TOTAL ENERGY"));
         } else {
             energy_ = 0.0;
@@ -403,12 +407,12 @@ void Lsave_index(const struct L_Params& L_params) {
     int L_irr;
     dpdfile2 L1;
     dpdbuf4 L2, LIjAb, LIjbA;
-    const char *L1A_lbl = L_params.L1A_lbl;
-    const char *L1B_lbl = L_params.L1B_lbl;
-    const char *L2AA_lbl = L_params.L2AA_lbl;
-    const char *L2BB_lbl = L_params.L2BB_lbl;
-    const char *L2AB_lbl = L_params.L2AB_lbl;
-    const char *L2RHF_lbl = L_params.L2RHF_lbl;
+    const char* L1A_lbl = L_params.L1A_lbl;
+    const char* L1B_lbl = L_params.L1B_lbl;
+    const char* L2AA_lbl = L_params.L2AA_lbl;
+    const char* L2BB_lbl = L_params.L2BB_lbl;
+    const char* L2AB_lbl = L_params.L2AB_lbl;
+    const char* L2RHF_lbl = L_params.L2RHF_lbl;
     L_irr = L_params.irrep;
 
     if (params.ref == 0 || params.ref == 1) { /** ROHF **/

@@ -63,7 +63,7 @@ namespace ccresponse {
 ** Modified for ccresponse, TDC, 5/03
 */
 
-void diis(int iter, const char *pert, int irrep, double omega) {
+void diis(int iter, const char* pert, int irrep, double omega) {
     int nvector = params.max_diis_vecs; /* Number of error vectors to keep */
     int h, nirreps;
     int row, col, word, p, q;
@@ -73,7 +73,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
     dpdfile2 T1, T1a, T1b;
     dpdbuf4 T2, T2a, T2b, T2c;
     psio_address start, end, next;
-    double **error;
+    double** error;
     double **B, *C, **vector;
     double product, determinant, maximum;
     char lbl[32];
@@ -135,7 +135,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
 
         start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
         sprintf(lbl, "DIIS %s Error Vectors", pert);
-        psio_write(PSIF_CC_DIIS_ERR, lbl, (char *)error[0], vector_length * sizeof(double), start, &end);
+        psio_write(PSIF_CC_DIIS_ERR, lbl, (char*)error[0], vector_length * sizeof(double), start, &end);
 
         /* Store the current amplitude vector on disk */
         word = 0;
@@ -163,7 +163,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
 
         start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
         sprintf(lbl, "DIIS %s Amplitude Vectors", pert);
-        psio_write(PSIF_CC_DIIS_AMP, lbl, (char *)error[0], vector_length * sizeof(double), start, &end);
+        psio_write(PSIF_CC_DIIS_AMP, lbl, (char*)error[0], vector_length * sizeof(double), start, &end);
 
         /* If we haven't run through enough iterations, set the correct dimensions
            for the extrapolation */
@@ -182,7 +182,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
             start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
             sprintf(lbl, "DIIS %s Error Vectors", pert);
-            psio_read(PSIF_CC_DIIS_ERR, lbl, (char *)vector[0], vector_length * sizeof(double), start, &end);
+            psio_read(PSIF_CC_DIIS_ERR, lbl, (char*)vector[0], vector_length * sizeof(double), start, &end);
 
             // dot_arr(vector[0], vector[0], vector_length, &product);
             product = C_DDOT(vector_length, vector[0], 1, vector[0], 1);
@@ -193,7 +193,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
                 start = psio_get_address(PSIO_ZERO, sizeof(double) * q * vector_length);
 
                 sprintf(lbl, "DIIS %s Error Vectors", pert);
-                psio_read(PSIF_CC_DIIS_ERR, lbl, (char *)vector[1], vector_length * sizeof(double), start, &end);
+                psio_read(PSIF_CC_DIIS_ERR, lbl, (char*)vector[1], vector_length * sizeof(double), start, &end);
 
                 // dot_arr(vector[1], vector[0], vector_length, &product);
                 product = C_DDOT(vector_length, vector[1], 1, vector[0], 1);
@@ -238,7 +238,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
             start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
             sprintf(lbl, "DIIS %s Amplitude Vectors", pert);
-            psio_read(PSIF_CC_DIIS_AMP, lbl, (char *)vector[0], vector_length * sizeof(double), start, &end);
+            psio_read(PSIF_CC_DIIS_AMP, lbl, (char*)vector[0], vector_length * sizeof(double), start, &end);
 
             for (q = 0; q < vector_length; q++) error[0][q] += C[p] * vector[0][q];
         }

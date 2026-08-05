@@ -71,7 +71,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
     dpdfile2 L1, L1a, L1b;
     dpdbuf4 L2, L2a, L2b, L2c;
     psio_address start, end, next;
-    double **error;
+    double** error;
     double **B, *C, **vector;
     double product, determinant, maximum;
 
@@ -135,7 +135,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         global_dpd_->buf4_close(&L2b);
 
         start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
-        psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)error[0], vector_length * sizeof(double), start,
+        psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char*)error[0], vector_length * sizeof(double), start,
                    &end);
 
         /* Store the current amplitude vector on disk */
@@ -161,7 +161,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         global_dpd_->buf4_close(&L2a);
 
         start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
-        psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)error[0], vector_length * sizeof(double), start,
+        psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char*)error[0], vector_length * sizeof(double), start,
                    &end);
 
         /* If we haven't run through enough iterations, set the correct dimensions
@@ -180,7 +180,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         for (p = 0; p < nvector; p++) {
             start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
-            psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)vector[0], vector_length * sizeof(double), start,
+            psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char*)vector[0], vector_length * sizeof(double), start,
                       &end);
 
             /*
@@ -196,7 +196,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
             for (q = 0; q < p; q++) {
                 start = psio_get_address(PSIO_ZERO, sizeof(double) * q * vector_length);
 
-                psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)vector[1], vector_length * sizeof(double),
+                psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char*)vector[1], vector_length * sizeof(double),
                           start, &end);
 
                 // dot_arr(vector[1], vector[0], vector_length, &product);
@@ -249,7 +249,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
 
             start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
-            psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)vector[0], vector_length * sizeof(double),
+            psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char*)vector[0], vector_length * sizeof(double),
                       start, &end);
 
             for (q = 0; q < vector_length; q++) error[0][q] += C[p] * vector[0][q];
@@ -392,7 +392,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         global_dpd_->buf4_close(&L2b);
 
         start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
-        psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)error[0], vector_length * sizeof(double), start,
+        psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char*)error[0], vector_length * sizeof(double), start,
                    &end);
 
         /* Store the current amplitude vector on disk */
@@ -446,7 +446,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         global_dpd_->buf4_close(&L2a);
 
         start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
-        psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)error[0], vector_length * sizeof(double), start,
+        psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char*)error[0], vector_length * sizeof(double), start,
                    &end);
 
         /* If we haven't run through enough iterations, set the correct dimensions
@@ -463,7 +463,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         vector = init_matrix(nvector, vector_length);
         next = PSIO_ZERO;
         for (p = 0; p < nvector; p++)
-            psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)vector[p], vector_length * sizeof(double), next,
+            psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char*)vector[p], vector_length * sizeof(double), next,
                       &next);
 
         /* Build B matrix of error vector products */
@@ -502,7 +502,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         /* Grab the old amplitude vectors */
         next = PSIO_ZERO;
         for (p = 0; p < nvector; p++)
-            psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)vector[p], vector_length * sizeof(double),
+            psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char*)vector[p], vector_length * sizeof(double),
                       next, &next);
 
         /* Build the new amplitude vector from the old ones */
@@ -566,7 +566,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         free_matrix(B, nvector + 1);
         free(C);
         global_dpd_->free_dpd_block(error, 1, vector_length);
-    }                           /** ROHF **/
+    } /** ROHF **/
     else if (params.ref == 2) { /** UHF **/
 
         /* Compute the length of a single error vector */
@@ -673,7 +673,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         global_dpd_->buf4_close(&L2b);
 
         start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
-        psio_write(PSIF_CC_DIIS_ERR, "DIIS Error[0] Vectors", (char *)error[0], vector_length * sizeof(double), start,
+        psio_write(PSIF_CC_DIIS_ERR, "DIIS Error[0] Vectors", (char*)error[0], vector_length * sizeof(double), start,
                    &end);
 
         /* Store the current amplitude vector on disk */
@@ -727,7 +727,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         global_dpd_->buf4_close(&L2a);
 
         start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
-        psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)error[0], vector_length * sizeof(double), start,
+        psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char*)error[0], vector_length * sizeof(double), start,
                    &end);
 
         /* If we haven't run through enough iterations, set the correct dimensions
@@ -744,8 +744,8 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         vector = init_matrix(nvector, vector_length);
         next = PSIO_ZERO;
         for (p = 0; p < nvector; p++)
-            psio_read(PSIF_CC_DIIS_ERR, "DIIS Error[0] Vectors", (char *)vector[p], vector_length * sizeof(double),
-                      next, &next);
+            psio_read(PSIF_CC_DIIS_ERR, "DIIS Error[0] Vectors", (char*)vector[p], vector_length * sizeof(double), next,
+                      &next);
 
         /* Build B matrix of error[0] vector products */
         B = init_matrix(nvector + 1, nvector + 1);
@@ -783,7 +783,7 @@ void CCLambdaWavefunction::diis(int iter, int L_irr) {
         /* Grab the old amplitude vectors */
         next = PSIO_ZERO;
         for (p = 0; p < nvector; p++)
-            psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)vector[p], vector_length * sizeof(double),
+            psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char*)vector[p], vector_length * sizeof(double),
                       next, &next);
 
         /* Build the new amplitude vector from the old ones */

@@ -42,15 +42,15 @@ struct Params {
     long int memory;    /* Memory available (in bytes) */
     int cachelev;       /* cacheing level for libdpd */
     int ref;            /* reference determinant (0=RHF, 1=ROHF, 2=UHF) */
-    double *omega;      /* energy of applied field (a.u) for dynamic polarizabilities */
+    double* omega;      /* energy of applied field (a.u) for dynamic polarizabilities */
     int nomega;         /* number of field energies desired */
     int maxiter;        /* maximum number of iterations allowed to converge perturbed amp eqns. */
     double convergence; /* convergence criterion for perturbed wfns */
     int restart;        /* boolean for allowing a restart from on-disk amps */
     int diis;           /* boolean for using DIIS extrapolation */
     int max_diis_vecs;
-    std::string prop;   /* user-selected property */
-    int local;          /* boolean for simluation of local correlation */
+    std::string prop; /* user-selected property */
+    int local;        /* boolean for simluation of local correlation */
     int analyze;
     int dertype;
     std::string gauge; /* choice of gauge for optical rotation */
@@ -64,4 +64,3 @@ struct Params {
 }  // namespace ccresponse
 }  // namespace psi
 #endif
-

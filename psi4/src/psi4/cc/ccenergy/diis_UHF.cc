@@ -175,7 +175,7 @@ void CCEnergyWavefunction::diis_UHF(int iter) {
     global_dpd_->buf4_close(&T2b);
 
     start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
-    psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)error[0], vector_length * sizeof(double), start, &end);
+    psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char*)error[0], vector_length * sizeof(double), start, &end);
 
     /* Store the current amplitude vector on disk */
     word = 0;
@@ -229,7 +229,7 @@ void CCEnergyWavefunction::diis_UHF(int iter) {
     global_dpd_->buf4_close(&T2a);
 
     start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
-    psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)error[0], vector_length * sizeof(double), start,
+    psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char*)error[0], vector_length * sizeof(double), start,
                &end);
 
     /* If we haven't run through enough iterations, set the correct dimensions
@@ -248,7 +248,7 @@ void CCEnergyWavefunction::diis_UHF(int iter) {
     for (int p = 0; p < nvector; p++) {
         start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
-        psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)vector[0], vector_length * sizeof(double), start,
+        psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char*)vector[0], vector_length * sizeof(double), start,
                   &end);
 
         // dot_arr(vector[0], vector[0], vector_length, &product);
@@ -259,7 +259,7 @@ void CCEnergyWavefunction::diis_UHF(int iter) {
         for (int q = 0; q < p; q++) {
             start = psio_get_address(PSIO_ZERO, sizeof(double) * q * vector_length);
 
-            psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)vector[1], vector_length * sizeof(double), start,
+            psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char*)vector[1], vector_length * sizeof(double), start,
                       &end);
 
             // dot_arr(vector[1], vector[0], vector_length, &product);
@@ -299,7 +299,7 @@ void CCEnergyWavefunction::diis_UHF(int iter) {
     for (int p = 0; p < nvector; p++) {
         start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
-        psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)vector[0], vector_length * sizeof(double), start,
+        psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char*)vector[0], vector_length * sizeof(double), start,
                   &end);
 
         for (int q = 0; q < vector_length; q++) error[0][q] += C[p] * vector[0][q];

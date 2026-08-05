@@ -56,7 +56,7 @@
 namespace psi {
 namespace ccresponse {
 
-void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
+void get_params(std::shared_ptr<Wavefunction> wfn, Options& options) {
     int i, errcod, ref, count, iconv, *tmpi;
     std::string units;
     std::string junk;
@@ -158,8 +158,8 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
     params.diis = options.get_bool("DIIS");
     params.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
 
-    if(params.max_diis_vecs <= 0) {
-      params.diis = 0;
+    if (params.max_diis_vecs <= 0) {
+        params.diis = 0;
     }
 
     params.prop = options.get_str("PROPERTY");

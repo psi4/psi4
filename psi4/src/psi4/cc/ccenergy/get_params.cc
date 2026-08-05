@@ -51,7 +51,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::get_params(Options &options) {
+void CCEnergyWavefunction::get_params(Options& options) {
     std::string cachetype = "";
     std::string junk;
 
@@ -134,10 +134,10 @@ void CCEnergyWavefunction::get_params(Options &options) {
     params_.diis = options.get_bool("DIIS");
     params_.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
 
-    if(params_.max_diis_vecs <= 0) {
-      params_.diis = 0;
+    if (params_.max_diis_vecs <= 0) {
+        params_.diis = 0;
     }
-    
+
     params_.t2_coupled = options.get_bool("T2_COUPLED");
     params_.prop = options.get_str("PROPERTY");
     params_.abcd = options.get_str("ABCD");

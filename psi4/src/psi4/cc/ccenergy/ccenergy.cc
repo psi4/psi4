@@ -59,14 +59,14 @@
 // Forward declaration to call cctriples
 namespace psi {
 namespace cctriples {
-PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Options& options);
 }
 }  // namespace psi
 
 namespace psi {
 namespace ccenergy {
 
-CCEnergyWavefunction::CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+CCEnergyWavefunction::CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options& options)
     : Wavefunction(options) {
     set_reference_wavefunction(reference_wavefunction);
     init();
@@ -86,7 +86,7 @@ void CCEnergyWavefunction::init() {
 
 double CCEnergyWavefunction::compute_energy() {
     int done = 0;
-    int **cachelist;
+    int** cachelist;
 
     moinfo_.iter = 0;
 
@@ -100,7 +100,7 @@ double CCEnergyWavefunction::compute_energy() {
 
     if (params_.ref == 2) { /** UHF **/
         cachelist = cacheprep_uhf(params_.cachelev, cachefiles.data());
-        std::vector<std::pair<Dimension, int *>> spaces;
+        std::vector<std::pair<Dimension, int*>> spaces;
         spaces.emplace_back(moinfo_.aoccpi, moinfo_.aocc_sym);
         spaces.emplace_back(moinfo_.avirtpi, moinfo_.avir_sym);
         spaces.emplace_back(moinfo_.boccpi, moinfo_.bocc_sym);
@@ -112,7 +112,7 @@ double CCEnergyWavefunction::compute_energy() {
         if (params_.df) {
             form_df_ints(options_, cachelist, cachefiles.data());
         } else if (params_.aobasis != "NONE") { /* Set up new DPD's for AO-basis algorithm */
-            std::vector<std::pair<Dimension, int *>> aospaces;
+            std::vector<std::pair<Dimension, int*>> aospaces;
             aospaces.emplace_back(moinfo_.aoccpi, moinfo_.aocc_sym);
             aospaces.emplace_back(moinfo_.sopi, moinfo_.sosym);
             aospaces.emplace_back(moinfo_.boccpi, moinfo_.bocc_sym);
@@ -124,7 +124,7 @@ double CCEnergyWavefunction::compute_energy() {
     } else { /** RHF or ROHF **/
         cachelist = cacheprep_rhf(params_.cachelev, cachefiles.data());
         init_priority_list();
-        std::vector<std::pair<Dimension, int *>> spaces;
+        std::vector<std::pair<Dimension, int*>> spaces;
         spaces.emplace_back(moinfo_.occpi, moinfo_.occ_sym);
         spaces.emplace_back(moinfo_.virtpi, moinfo_.vir_sym);
         dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles.data(), cachelist,
@@ -133,7 +133,7 @@ double CCEnergyWavefunction::compute_energy() {
         if (params_.df) {
             form_df_ints(options_, cachelist, cachefiles.data());
         } else if (params_.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
-            std::vector<std::pair<Dimension, int *>> aospaces;
+            std::vector<std::pair<Dimension, int*>> aospaces;
             aospaces.emplace_back(moinfo_.occpi, moinfo_.occ_sym);
             aospaces.emplace_back(moinfo_.sopi, moinfo_.sosym);
             dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, aospaces);
@@ -163,7 +163,7 @@ double CCEnergyWavefunction::compute_energy() {
     if (params_.ref == 0 || params_.ref == 2) {
         moinfo_.emp2 = mp2_energy();
         outfile->Printf("MP2 correlation energy %4.16f\n", moinfo_.emp2);
-        psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char *)&(moinfo_.emp2), sizeof(double));
+        psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char*)&(moinfo_.emp2), sizeof(double));
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.emp2 + moinfo_.eref;
         Process::environment.globals["MP2 SINGLES ENERGY"] = moinfo_.emp2_s;
@@ -185,7 +185,7 @@ double CCEnergyWavefunction::compute_energy() {
     moinfo_.ecc = energy();
 
     auto nocc_act = moinfo_.clsdpi.sum();
-    std::vector<double> emp2_aa(nocc_act * (nocc_act - 1) /2);
+    std::vector<double> emp2_aa(nocc_act * (nocc_act - 1) / 2);
     std::vector<double> emp2_ab(nocc_act * nocc_act);
     pair_energies(emp2_aa, emp2_ab);
     double last_energy = 0;
@@ -380,7 +380,7 @@ double CCEnergyWavefunction::compute_energy() {
             outfile->Printf("      * LCC2 (+LMP2) total energy             = %20.15f\n",
                             moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
             Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
-                            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+                moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
         }
     } else {
         if (params_.scscc) {
@@ -426,7 +426,7 @@ double CCEnergyWavefunction::compute_energy() {
             outfile->Printf("      * LCCSD (+LMP2) total energy            = %20.15f\n",
                             moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
             Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
-                            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+                moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
         }
     }
     outfile->Printf("\n");
@@ -435,7 +435,7 @@ double CCEnergyWavefunction::compute_energy() {
     if (params_.ref == 0) spinad_amps();
 
     /* Compute pair energies */
-    std::vector<double> ecc_aa(nocc_act * (nocc_act - 1) /2);
+    std::vector<double> ecc_aa(nocc_act * (nocc_act - 1) / 2);
     std::vector<double> ecc_ab(nocc_act * nocc_act);
     if (params_.print_pair_energies) {
         pair_energies(ecc_aa, ecc_ab);
@@ -491,10 +491,14 @@ double CCEnergyWavefunction::compute_energy() {
         // Run cctriples
         if (psi::cctriples::cctriples(reference_wavefunction_, options_) == Success) {
             energy_ = Process::environment.globals["CURRENT ENERGY"];
-            set_scalar_variable("(T) CORRECTION ENERGY", reference_wavefunction_->scalar_variable("(T) CORRECTION ENERGY"));
-            set_scalar_variable("CCSD(T) CORRELATION ENERGY", reference_wavefunction_->scalar_variable("CCSD(T) CORRELATION ENERGY"));
-            set_scalar_variable("CCSD(T) TOTAL ENERGY", reference_wavefunction_->scalar_variable("CCSD(T) TOTAL ENERGY"));
-            set_scalar_variable("CURRENT CORRELATION ENERGY", reference_wavefunction_->scalar_variable("CCSD(T) CORRELATION ENERGY"));
+            set_scalar_variable("(T) CORRECTION ENERGY",
+                                reference_wavefunction_->scalar_variable("(T) CORRECTION ENERGY"));
+            set_scalar_variable("CCSD(T) CORRELATION ENERGY",
+                                reference_wavefunction_->scalar_variable("CCSD(T) CORRELATION ENERGY"));
+            set_scalar_variable("CCSD(T) TOTAL ENERGY",
+                                reference_wavefunction_->scalar_variable("CCSD(T) TOTAL ENERGY"));
+            set_scalar_variable("CURRENT CORRELATION ENERGY",
+                                reference_wavefunction_->scalar_variable("CCSD(T) CORRELATION ENERGY"));
             set_scalar_variable("CURRENT ENERGY", reference_wavefunction_->scalar_variable("CCSD(T) TOTAL ENERGY"));
         } else {
             energy_ = 0.0;
@@ -540,7 +544,7 @@ void CCEnergyWavefunction::one_step() {
     moinfo_.ecc = energy();
     outfile->Printf("\n    Values computed from T amplitudes on disk.\n");
     outfile->Printf("Reference expectation value computed: %20.15lf\n", moinfo_.ecc);
-    psio_write_entry(PSIF_CC_HBAR, "Reference expectation value", (char *)&(moinfo_.ecc), sizeof(double));
+    psio_write_entry(PSIF_CC_HBAR, "Reference expectation value", (char*)&(moinfo_.ecc), sizeof(double));
 
     if (params_.just_residuals) {
         Fme_build();
