@@ -933,14 +933,14 @@ data:
     cmake:
       name: Libxc
       constraint: 7.0.0
-      constraint_note: "v6.1.0 required for HYB_MGGA_XC_R2SCAN0, etc. but v7 preferred"
+      constraint_note: "v6.1.0 required for HYB_MGGA_XC_R2SCAN0, etc. but v7 preferred. Pin conda to 7.0.0 until ExchCXX (gauxc dep) drops find_dependency(Libxc 7.0.0 EXACT)."
       target: Libxc::xc
       components:
         - C
     conda:
       channel: conda-forge
       name: libxc-c
-      constraint: null
+      constraint: "=7.0.0"
       cmake:
         Libxc_DIR:
           unix: ${CONDA_PREFIX}/lib/cmake/Libxc
