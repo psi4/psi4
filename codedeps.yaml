@@ -932,7 +932,7 @@ data:
       commit: 7.1.2
     cmake:
       name: Libxc
-      constraint: 7.1.0
+      constraint: 7.1.2
       constraint_note: "v7.1.0 required: LDA_XC_TH_FL was renamed from GGA_XC_TH_FL in libxc 7.1"
       target: Libxc::xc
       components:
