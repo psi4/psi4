@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import List
@@ -12,7 +13,9 @@ import psi4
 
 __all__ = [
     "hardware_nvidia_gpu",
+    "nvidia_compute_capability",
     "using",
+    "using_gauxc_gpu",
     "uusing",
     "ctest_labeler",
     "ctest_runner",
@@ -43,7 +46,10 @@ def is_nvidia_gpu_present():
             # who knows?
             return False
         else:
-            return gpu_dfcc.cudaGetDeviceCount() > 0
+            try:
+                return gpu_dfcc.cudaGetDeviceCount() > 0
+            except AttributeError:
+                return False
     else:
         try:
             ngpu = len(GPUtil.getGPUs())
@@ -52,6 +58,28 @@ def is_nvidia_gpu_present():
             return False
         else:
             return ngpu > 0
+
+
+def nvidia_compute_capability():
+    """Return the maximum visible Nvidia GPU compute capability, or None."""
+    try:
+        completed = subprocess.run(
+            ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+
+    capabilities = []
+    for line in completed.stdout.splitlines():
+        try:
+            capabilities.append(float(line.strip()))
+        except ValueError:
+            pass
+    return max(capabilities) if capabilities else None
 
 
 # Figure out what is imported
@@ -95,6 +123,7 @@ _programs = {
     "einsums": psi4.addons("einsums"),
     "pyeinsums": which_import("einsums", return_bool=True),
     "gauxc": psi4.addons("gauxc"),
+    "gauxc_gpu": psi4.addons("gauxc_gpu"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
 }
@@ -160,6 +189,20 @@ def using(program: str) -> List:
     """
     _using(program)
     return _using_cache[program][1]
+
+
+def using_gauxc_gpu(min_compute_capability=None):
+    """Marks for tests requiring GPU-enabled GauXC and a visible Nvidia GPU."""
+    compute_capability = nvidia_compute_capability()
+    has_gpu = compute_capability is not None or is_nvidia_gpu_present()
+    has_capability = min_compute_capability is None or (
+        compute_capability is not None and compute_capability >= min_compute_capability
+    )
+    skip = pytest.mark.skipif(
+        not has_program("gauxc_gpu") or not has_gpu or not has_capability,
+        reason="GauXC GPU tests require GPU-enabled GauXC and a suitable Nvidia GPU",
+    )
+    return (*using("gauxc"), skip, pytest.mark.gauxc_gpu)
 
 
 def ctest_labeler(labels: str):
