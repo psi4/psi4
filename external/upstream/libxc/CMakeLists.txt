@@ -1,4 +1,4 @@
-find_package(Libxc 7.1.0 COMPONENTS C CONFIG QUIET)  # edit in codedeps
+find_package(Libxc 7.1.2 COMPONENTS C CONFIG QUIET)  # edit in codedeps
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
