@@ -14,6 +14,10 @@ set CCENERGY {
     diis_max_vecs 4
 }
 
+set CCLAMBDA {
+    diis_max_vecs 5
+}
+
 wfn = optimize('ccsd', return_wfn=True)[1]
 
 refnuc   =   9.1654609427539  #TEST
