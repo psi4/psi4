@@ -48,6 +48,24 @@ namespace psi {
 
 std::shared_ptr<ComplexMatrix> ComplexMatrix::clone() const { return std::make_shared<ComplexMatrix>(*this); }
 
+#ifdef USING_OpenOrbitalOptimizer
+arma::cx_mat ComplexMatrix::to_armadillo_matrix(int h) {
+    int nc = coldim(h);
+    int nr = rowdim(h);
+    arma::cx_mat m(nr, nc);
+    for (int ir = 0; ir < nr; ir++)
+        for (int ic = 0; ic < nc; ic++) m(ir, ic) = get(h, ir, ic);
+    return m;
+}
+
+void ComplexMatrix::from_armadillo_matrix(const arma::cx_mat& m, int h) {
+    int nc = coldim(h);
+    int nr = rowdim(h);
+    for (int ir = 0; ir < nr; ir++)
+        for (int ic = 0; ic < nc; ic++) set(h, ir, ic, m(ir, ic));
+}
+#endif
+
 // self += alpha * other
 //
 // Implemented as a plain element loop (via operator(p, q), the same accessor used
