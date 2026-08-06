@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.12a1.dev3 
+                               Psi4 1.12a1.dev28 
 
-                         Git: Rev {mgga-vx} a1c38bf dirty
+                         Git: Rev {mgga-vx} cfc864d dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -32,9 +32,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 10 July 2026 03:54PM
+    Psi4 started on: Thursday, 06 August 2026 08:57AM
 
-    Process ID: 99224
+    Process ID: 2251312
     Host:       lenovo
     PSIDATADIR: /home/work/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -50,11 +50,17 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! TDA excitation energies of triplet methylene with meta-GGA functionals
-#! (UKS), exercising the spin-resolved tau second-derivative kernel.
+#! TDA excitation energies of triplet methylene with LDA, GGA, and meta-GGA
+#! functionals (UKS). The meta-GGA cases exercise the spin-resolved tau
+#! second-derivative kernel; the LDA (SVWN = LDA_X + LDA_C_VWN_RPA) and GGA
+#! (PBE) cases are rung controls that must reproduce PySCF at those rungs too.
 #! Reference values from PySCF 2.13.0 (same Libxc): 6-31G, identical geometry,
 #! grids.atom_grid = (99, 590), SCF conv_tol 1e-12, TD conv_tol 1e-9.
 
+svwn_scf = -38.8646630650                                     #TEST
+svwn_tda = [0.28652490, 0.28850940, 0.32842472]              #TEST
+pbe_scf = -39.0588357256                                      #TEST
+pbe_tda = [0.28736627, 0.28932949, 0.34620232]               #TEST
 tpss_scf = -39.1356185476                                     #TEST
 tpss_tda = [0.29577897, 0.29776197, 0.36820804]               #TEST
 r2scan_scf = -39.1002541060                                   #TEST
@@ -82,7 +88,9 @@ set {
 
 from psi4.driver.procrouting.response.scf_response import tdscf_excitations
 
-for func, ref_scf, ref_tda in (("TPSS", tpss_scf, tpss_tda),
+for func, ref_scf, ref_tda in (("SVWN", svwn_scf, svwn_tda),
+                               ("PBE", pbe_scf, pbe_tda),
+                               ("TPSS", tpss_scf, tpss_tda),
                                ("R2SCAN", r2scan_scf, r2scan_tda)):
     e, wfn = energy(func, return_wfn=True)
     compare_values(ref_scf, e, 5, f"{func} SCF energy vs PySCF")              #TEST
@@ -102,7 +110,7 @@ Scratch directory: /home/work/scratch/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on lenovo
-*** at Fri Jul 10 15:54:50 2026
+*** at Thu Aug  6 08:57:53 2026
 
    => Loading Basis Set <=
 
@@ -171,8 +179,792 @@ Scratch directory: /home/work/scratch/
 
    => LibXC <=
 
-    Version 7.0.0
-    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+    Version 7.1.2
+    S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+
+   => Composite Functional: SVWN <= 
+
+    Slater exchange
+    Vosko, Wilk & Nusair (VWN5_RPA)
+    P. A. M. Dirac,  Math. Proc. Cambridge Philos. Soc. 26, 376 (1930) (10.1017/S0305004100016108)
+    F. Bloch,  Z. Phys. 57, 545 (1929) (10.1007/BF01340281)
+    S. H. Vosko, L. Wilk, and M. Nusair,  Can. J. Phys. 58, 1200 (1980) (10.1139/p80-159)
+
+    Deriv               =              1
+    GGA                 =          FALSE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000         XC_LDA_X
+
+   => Correlation Functionals <=
+
+    1.0000   XC_LDA_C_VWN_RPA
+
+   => LibXC Density Thresholds  <==
+
+    XC_LDA_C_VWN_RPA:  1.00E-15 
+    XC_LDA_X:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    Blocking Scheme        =         OCTREE
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            590
+    Total Points           =         167886
+    Total Blocks           =           1297
+    Max Points             =            256
+    Max Functions          =             13
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               9
+      Number of primitives:             22
+      Number of atomic orbitals:        13
+      Number of basis functions:        13
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 6
+
+  Performing in-core PK
+  Using 8372 doubles for integral storage.
+  We computed 1608 shell quartets total.
+  Whereas there are 1035 unique shell quartets.
+    55.36 percent of shell quartets recomputed by reordering.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Memory [MiB]:              358
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              6
+
+  Cached 100.0% of DFT collocation blocks in 0.016 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.0394896392E-02.
+  Reciprocal condition number of the overlap matrix is 5.9702984690E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         13      13 
+   -------------------------
+    Total      13      13
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UKS iter SAD:   -38.55453246498484   -3.85545e+01   0.00000e+00 
+   @UKS iter   1:   -38.78002951869306   -2.25497e-01   2.83210e-02 DIIS/ADIIS
+   @UKS iter   2:   -38.78440684376692   -4.37733e-03   2.79738e-02 DIIS/ADIIS
+   @UKS iter   3:   -38.86461152886692   -8.02047e-02   6.32627e-04 DIIS/ADIIS
+   @UKS iter   4:   -38.86466197907782   -5.04502e-05   8.36365e-05 DIIS
+   @UKS iter   5:   -38.86466304814666   -1.06907e-06   1.02542e-05 DIIS
+   @UKS iter   6:   -38.86466306483601   -1.66893e-08   1.36180e-06 DIIS
+   @UKS iter   7:   -38.86466306511494   -2.78931e-10   2.82198e-07 DIIS
+   @UKS iter   8:   -38.86466306512724   -1.22995e-11   4.97378e-09 DIIS
+   @UKS iter   9:   -38.86466306512722    2.13163e-14   3.37154e-10 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Nalpha   =    4.9999999996 ; deviation = -4.261e-10
+      Nbeta    =    2.9999999996 ; deviation = -4.145e-10
+      Ntotal   =    7.9999999992 ; deviation = -8.406e-10 
+
+   @Spin Contamination Metric:   5.001442328E-03
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.005001442E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -9.816269     2A     -0.633047     3A     -0.470303  
+       4A     -0.211260     5A     -0.208943  
+
+    Alpha Virtual:                                                        
+
+       6A      0.074136     7A      0.169082     8A      0.459879  
+       9A      0.464846    10A      0.487681    11A      0.711974  
+      12A      0.924004    13A      1.095842  
+
+    Beta Occupied:                                                        
+
+       1A     -9.787543     2A     -0.568012     3A     -0.440444  
+
+    Beta Virtual:                                                         
+
+       4A     -0.109802     5A     -0.108665     6A      0.100743  
+       7A      0.182165     8A      0.514031     9A      0.546015  
+      10A      0.553922    11A      0.748322    12A      0.967465  
+      13A      1.117129  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     3 ]
+    SOCC [     2 ]
+    NA   [     5 ]
+    NB   [     3 ]
+
+  @UKS Final Energy:   -38.86466306512722
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              6.7162360049211420
+    One-Electron Energy =                 -64.9548028036403338
+    Two-Electron Energy =                  25.2660549618438566
+    DFT Exchange-Correlation Energy =      -5.8921512282518842
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -38.8646630651272176
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9980877
+  HONO-1 :    4  A 1.0000000
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0019123
+  LUNO+1 :    7  A 0.0005899
+  LUNO+2 :    8  A 0.0000005
+  LUNO+3 :    9  A 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.0681741            0.1605296            0.0923555
+ Magnitude           :                                                    0.0923555
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on lenovo at Thu Aug  6 08:57:57 2026
+Module time:
+	user time   =       5.87 seconds =       0.10 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       5.87 seconds =       0.10 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
+    SVWN SCF energy vs PySCF..............................................................PASSED
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+
+
+         ---------------------------------------------------------
+                         TDSCF excitation energies                
+                 by Andrew M. James and Daniel G. A. Smith        
+         ---------------------------------------------------------
+
+  ==> Options <==
+
+     Residual threshold  : 1.0000e-07
+     Initial guess       : denominators
+     Reference           : UHF
+     Solver type         : TDA (Davidson)
+
+
+  ==> Requested Excitations <==
+
+      3 singlet states with A symmetry
+
+
+  ==> Seeking the lowest 3 singlet states with A symmetry
+
+                         Generalized Davidson Solver                         
+                               By Ruhee Dcunha                               
+
+  ==> Options <==
+
+    Max number of iterations        = 60   
+    Eigenvector tolerance           = 1.0000e-07
+    Max number of expansion vectors = 1050 
+
+  => Iterations <=
+                           Max[D[value]]     Max[|R|]   # vectors
+  DavidsonSolver iter   1:   3.28667e-01  2.50918e-02     12      
+  DavidsonSolver iter   2:   5.11331e-04  4.49594e-03     15      
+  DavidsonSolver iter   3:   2.05282e-05  3.50713e-04     18      
+  DavidsonSolver iter   4:   1.22004e-07  2.46707e-05     21      
+  DavidsonSolver iter   5:   6.78558e-10  2.38006e-06     23      
+  DavidsonSolver iter   6:   5.51564e-12  4.28528e-08     25      Converged
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********  Length-gauge rotatory strengths are **NOT** gauge-origin invariant  **********
+******************************************************************************************
+
+                                    Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
+     #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
+    ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
+     1        A->A (1 A)       0.28652         7.79674        -38.57814        0.0001          0.0075          0.0000         -0.0000        
+     2        A->A (1 A)       0.28851         7.85074        -38.57615        0.0000          0.0086          0.0000         -0.0000        
+     3        A->A (1 A)       0.32842         8.93689        -38.53624        0.0001          0.0004         -0.0000         -0.0000        
+
+
+
+Contributing excitations
+Only contributions with abs(coeff) > 1.00e-01 will be printed:
+
+Excited State    1 (1 A):   0.28652 au   159.02 nm f = 0.0001
+Alpha orbitals:
+  Sums of squares: Xssq =  9.688713e-01
+      5a (a) ->   6a (a)    0.984253 (96.875%)
+Beta orbitals:
+  Sums of squares: Xssq =  3.112872e-02
+      2a (b) ->   5a (b)   -0.175411 ( 3.077%)
+
+Excited State    2 (1 A):   0.28851 au   157.93 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.704628e-01
+      4a (a) ->   6a (a)   -0.985045 (97.031%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.953715e-02
+      2a (b) ->   4a (b)    0.170155 ( 2.895%)
+
+Excited State    3 (1 A):   0.32842 au   138.73 nm f = 0.0001
+Alpha orbitals:
+  Sums of squares: Xssq =  1.999527e-02
+      4a (a) ->   7a (a)   -0.140239 ( 1.967%)
+Beta orbitals:
+  Sums of squares: Xssq =  9.800047e-01
+      3a (b) ->   4a (b)    0.989934 (97.997%)
+
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+    SVWN TDA root 1 vs PySCF..............................................................PASSED
+    SVWN TDA root 2 vs PySCF..............................................................PASSED
+    SVWN TDA root 3 vs PySCF..............................................................PASSED
+
+Scratch directory: /home/work/scratch/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  12, 11, 10
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lenovo
+*** at Thu Aug  6 08:58:03 2026
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    87 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UKS Reference
+                        6 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000    -0.000000000000    -0.014381424017    12.000000000000
+         H            0.000000000000     0.980000000000     0.085618575983     1.007825032230
+         H            0.000000000000    -0.980000000000     0.085618575983     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =    976.81734  B =      8.70822  C =      8.63127 [cm^-1]
+  Rotational constants: A = 29284247.06425  B = 261065.75722  C = 258758.95039 [MHz]
+  Nuclear repulsion =    6.716236004921143
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-09
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 9
+    Number of basis functions: 13
+    Number of Cartesian functions: 13
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => LibXC <=
+
+    Version 7.1.2
+    S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+
+   => Composite Functional: PBE <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000     XC_GGA_X_PBE
+
+   => Correlation Functionals <=
+
+    1.0000     XC_GGA_C_PBE
+
+   => LibXC Density Thresholds  <==
+
+    XC_GGA_C_PBE:  1.00E-12 
+    XC_GGA_X_PBE:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    Blocking Scheme        =         OCTREE
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            590
+    Total Points           =         167886
+    Total Blocks           =           1297
+    Max Points             =            256
+    Max Functions          =             13
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               9
+      Number of primitives:             22
+      Number of atomic orbitals:        13
+      Number of basis functions:        13
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 6
+
+  Performing in-core PK
+  Using 8372 doubles for integral storage.
+  We computed 1608 shell quartets total.
+  Whereas there are 1035 unique shell quartets.
+    55.36 percent of shell quartets recomputed by reordering.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Memory [MiB]:              310
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              6
+
+  Cached 100.0% of DFT collocation blocks in 0.063 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.0394896392E-02.
+  Reciprocal condition number of the overlap matrix is 5.9702984690E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         13      13 
+   -------------------------
+    Total      13      13
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UKS iter SAD:   -38.72658732635335   -3.87266e+01   0.00000e+00 
+   @UKS iter   1:   -38.98332465787095   -2.56737e-01   2.65754e-02 DIIS/ADIIS
+   @UKS iter   2:   -38.99169669517431   -8.37204e-03   2.54260e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.05876006198939   -6.70634e-02   7.44242e-04 DIIS/ADIIS
+   @UKS iter   4:   -39.05883319219526   -7.31302e-05   1.21686e-04 DIIS/ADIIS
+   @UKS iter   5:   -39.05883570008148   -2.50789e-06   1.22887e-05 DIIS
+   @UKS iter   6:   -39.05883572536213   -2.52806e-08   1.43780e-06 DIIS
+   @UKS iter   7:   -39.05883572571109   -3.48962e-10   2.81872e-07 DIIS
+   @UKS iter   8:   -39.05883572572625   -1.51630e-11   1.78397e-08 DIIS
+   @UKS iter   9:   -39.05883572572630   -4.26326e-14   1.19385e-09 DIIS
+   @UKS iter  10:   -39.05883572572633   -2.84217e-14   5.54068e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Nalpha   =    4.9999999996 ; deviation = -4.256e-10
+      Nbeta    =    2.9999999996 ; deviation = -4.078e-10
+      Ntotal   =    7.9999999992 ; deviation = -8.335e-10 
+
+   @Spin Contamination Metric:   7.661190824E-03
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.007661191E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -9.906637     2A     -0.621644     3A     -0.448128  
+       4A     -0.195339     5A     -0.192975  
+
+    Alpha Virtual:                                                        
+
+       6A      0.092411     7A      0.191466     8A      0.485403  
+       9A      0.492186    10A      0.507720    11A      0.741886  
+      12A      0.934764    13A      1.110015  
+
+    Beta Occupied:                                                        
+
+       1A     -9.879264     2A     -0.549356     3A     -0.428371  
+
+    Beta Virtual:                                                         
+
+       4A     -0.070863     5A     -0.069661     6A      0.121739  
+       7A      0.198622     8A      0.536460     9A      0.584944  
+      10A      0.590439    11A      0.774752    12A      0.984120  
+      13A      1.122919  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     3 ]
+    SOCC [     2 ]
+    NA   [     5 ]
+    NB   [     3 ]
+
+  @UKS Final Energy:   -39.05883572572633
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              6.7162360049211429
+    One-Electron Energy =                 -64.9637464029835030
+    Two-Electron Energy =                  25.2847448004296638
+    DFT Exchange-Correlation Energy =      -6.0960701280936282
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -39.0588357257263254
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9967070
+  HONO-1 :    4  A 1.0000000
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0032930
+  LUNO+1 :    7  A 0.0005427
+  LUNO+2 :    8  A 0.0000004
+  LUNO+3 :    9  A 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000           -0.0000000            0.0000000
+ Dipole Z            :         -0.0726304            0.1605296            0.0878992
+ Magnitude           :                                                    0.0878992
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on lenovo at Thu Aug  6 08:58:09 2026
+Module time:
+	user time   =      11.94 seconds =       0.20 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+Total time:
+	user time   =      29.03 seconds =       0.48 minutes
+	system time =       0.72 seconds =       0.01 minutes
+	total time  =         16 seconds =       0.27 minutes
+    PBE SCF energy vs PySCF...............................................................PASSED
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+
+
+         ---------------------------------------------------------
+                         TDSCF excitation energies                
+                 by Andrew M. James and Daniel G. A. Smith        
+         ---------------------------------------------------------
+
+  ==> Options <==
+
+     Residual threshold  : 1.0000e-07
+     Initial guess       : denominators
+     Reference           : UHF
+     Solver type         : TDA (Davidson)
+
+
+  ==> Requested Excitations <==
+
+      3 singlet states with A symmetry
+
+
+  ==> Seeking the lowest 3 singlet states with A symmetry
+
+                         Generalized Davidson Solver                         
+                               By Ruhee Dcunha                               
+
+  ==> Options <==
+
+    Max number of iterations        = 60   
+    Eigenvector tolerance           = 1.0000e-07
+    Max number of expansion vectors = 1050 
+
+  => Iterations <=
+                           Max[D[value]]     Max[|R|]   # vectors
+  DavidsonSolver iter   1:   3.46639e-01  2.65279e-02     12      
+  DavidsonSolver iter   2:   6.05453e-04  4.94278e-03     15      
+  DavidsonSolver iter   3:   2.61882e-05  5.21737e-04     18      
+  DavidsonSolver iter   4:   2.52023e-07  3.65178e-05     21      
+  DavidsonSolver iter   5:   1.46579e-09  3.66755e-06     23      
+  DavidsonSolver iter   6:   1.25916e-11  7.75096e-08     25      Converged
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********  Length-gauge rotatory strengths are **NOT** gauge-origin invariant  **********
+******************************************************************************************
+
+                                    Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
+     #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
+    ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
+     1        A->A (1 A)       0.28737         7.81963        -38.77147        0.0002          0.0063          0.0000          0.0000        
+     2        A->A (1 A)       0.28933         7.87306        -38.76951        0.0000          0.0073          0.0000         -0.0000        
+     3        A->A (1 A)       0.34620         9.42065        -38.71263        0.0003          0.0008          0.0000          0.0000        
+
+
+
+Contributing excitations
+Only contributions with abs(coeff) > 1.00e-01 will be printed:
+
+Excited State    1 (1 A):   0.28737 au   158.55 nm f = 0.0002
+Alpha orbitals:
+  Sums of squares: Xssq =  9.705333e-01
+      5a (a) ->   6a (a)    0.985107 (97.044%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.946675e-02
+      2a (b) ->   5a (b)   -0.170387 ( 2.903%)
+
+Excited State    2 (1 A):   0.28933 au   157.48 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.721527e-01
+      4a (a) ->   6a (a)    0.985912 (97.202%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.784725e-02
+      2a (b) ->   4a (b)   -0.164495 ( 2.706%)
+
+Excited State    3 (1 A):   0.34620 au   131.61 nm f = 0.0003
+Alpha orbitals:
+  Sums of squares: Xssq =  4.722848e-02
+      4a (a) ->   7a (a)    0.216132 ( 4.671%)
+Beta orbitals:
+  Sums of squares: Xssq =  9.527715e-01
+      3a (b) ->   4a (b)   -0.975999 (95.257%)
+
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+    PBE TDA root 1 vs PySCF...............................................................PASSED
+    PBE TDA root 2 vs PySCF...............................................................PASSED
+    PBE TDA root 3 vs PySCF...............................................................PASSED
+
+Scratch directory: /home/work/scratch/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  12, 11, 10
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lenovo
+*** at Thu Aug  6 08:58:17 2026
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    87 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UKS Reference
+                        6 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.014381424017    12.000000000000
+         H            0.000000000000     0.980000000000     0.085618575983     1.007825032230
+         H            0.000000000000    -0.980000000000     0.085618575983     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =    976.81734  B =      8.70822  C =      8.63127 [cm^-1]
+  Rotational constants: A = 29284247.06425  B = 261065.75722  C = 258758.95039 [MHz]
+  Nuclear repulsion =    6.716236004921143
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-09
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 9
+    Number of basis functions: 13
+    Number of Cartesian functions: 13
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => LibXC <=
+
+    Version 7.1.2
+    S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
 
    => Composite Functional: TPSS <= 
 
@@ -269,17 +1061,17 @@ Scratch directory: /home/work/scratch/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter SAD:   -38.77960830810174   -3.87796e+01   0.00000e+00 
-   @UKS iter   1:   -39.07323758072607   -2.93629e-01   2.42846e-02 ADIIS/DIIS
-   @UKS iter   2:   -39.09303456344636   -1.97970e-02   1.99671e-02 ADIIS/DIIS
-   @UKS iter   3:   -39.13540142919629   -4.23669e-02   1.28555e-03 ADIIS/DIIS
-   @UKS iter   4:   -39.13561309615318   -2.11667e-04   1.75486e-04 ADIIS/DIIS
-   @UKS iter   5:   -39.13561852895809   -5.43280e-06   1.57151e-05 DIIS
-   @UKS iter   6:   -39.13561857279086   -4.38328e-08   1.48706e-06 DIIS
-   @UKS iter   7:   -39.13561857327188   -4.81023e-10   3.10207e-07 DIIS
-   @UKS iter   8:   -39.13561857329107   -1.91847e-11   1.85364e-08 DIIS
-   @UKS iter   9:   -39.13561857329115   -8.52651e-14   1.29228e-09 DIIS
-   @UKS iter  10:   -39.13561857329117   -1.42109e-14   1.21654e-10 DIIS
+   @UKS iter SAD:   -38.77960830810175   -3.87796e+01   0.00000e+00 
+   @UKS iter   1:   -39.07323758072609   -2.93629e-01   2.42846e-02 DIIS/ADIIS
+   @UKS iter   2:   -39.09303456344641   -1.97970e-02   1.99671e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.13540142919628   -4.23669e-02   1.28555e-03 DIIS/ADIIS
+   @UKS iter   4:   -39.13561309615320   -2.11667e-04   1.75486e-04 DIIS/ADIIS
+   @UKS iter   5:   -39.13561852895806   -5.43280e-06   1.57151e-05 DIIS
+   @UKS iter   6:   -39.13561857279085   -4.38328e-08   1.48706e-06 DIIS
+   @UKS iter   7:   -39.13561857327187   -4.81023e-10   3.10207e-07 DIIS
+   @UKS iter   8:   -39.13561857329105   -1.91775e-11   1.85364e-08 DIIS
+   @UKS iter   9:   -39.13561857329115   -9.94760e-14   1.29228e-09 DIIS
+   @UKS iter  10:   -39.13561857329111    3.55271e-14   1.21654e-10 DIIS
   Energy and wave function converged.
 
 
@@ -328,17 +1120,17 @@ Scratch directory: /home/work/scratch/
     NA   [     5 ]
     NB   [     3 ]
 
-  @UKS Final Energy:   -39.13561857329117
+  @UKS Final Energy:   -39.13561857329111
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              6.7162360049211420
-    One-Electron Energy =                 -64.9798289903864799
-    Two-Electron Energy =                  25.3089197582480381
-    DFT Exchange-Correlation Energy =      -6.1809453460738677
+    Nuclear Repulsion Energy =              6.7162360049211429
+    One-Electron Energy =                 -64.9798289903864514
+    Two-Electron Energy =                  25.3089197582480629
+    DFT Exchange-Correlation Energy =      -6.1809453460738704
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -39.1356185732911683
+    Total Energy =                        -39.1356185732911115
 
   UHF NO Occupations:
   HONO-2 :    3  A 1.9958849
@@ -372,15 +1164,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on lenovo at Fri Jul 10 15:55:02 2026
+*** tstop() called on lenovo at Thu Aug  6 08:58:29 2026
 Module time:
-	user time   =      17.76 seconds =       0.30 minutes
-	system time =       0.56 seconds =       0.01 minutes
+	user time   =      37.90 seconds =       0.63 minutes
+	system time =       0.35 seconds =       0.01 minutes
 	total time  =         12 seconds =       0.20 minutes
 Total time:
-	user time   =      17.76 seconds =       0.30 minutes
-	system time =       0.56 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      89.76 seconds =       1.50 minutes
+	system time =       1.17 seconds =       0.02 minutes
+	total time  =         36 seconds =       0.60 minutes
     TPSS SCF energy vs PySCF..............................................................PASSED
 
 ******************************************************************************************
@@ -429,8 +1221,8 @@ Total time:
   DavidsonSolver iter   3:   2.75547e-05  7.63894e-04     18      
   DavidsonSolver iter   4:   4.99587e-07  6.70321e-05     21      
   DavidsonSolver iter   5:   3.82081e-09  2.63058e-06     24      
-  DavidsonSolver iter   6:   7.70156e-12  1.31109e-07     26      
-  DavidsonSolver iter   7:   1.32117e-14  1.17497e-08     27      Converged
+  DavidsonSolver iter   6:   7.70234e-12  1.31109e-07     26      
+  DavidsonSolver iter   7:   1.29341e-14  1.17497e-08     27      Converged
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -440,9 +1232,9 @@ Total time:
                                     Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
      #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
     ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
-     1        A->A (1 A)       0.29578         8.04855        -38.83984        0.0005          0.0043         -0.0000          0.0000        
-     2        A->A (1 A)       0.29776         8.10251        -38.83786        0.0002          0.0053         -0.0000          0.0000        
-     3        A->A (1 A)       0.36820         10.01934       -38.76741        0.0006          0.0011          0.0000          0.0000        
+     1        A->A (1 A)       0.29578         8.04855        -38.83984        0.0005          0.0043         -0.0000         -0.0000        
+     2        A->A (1 A)       0.29776         8.10251        -38.83786        0.0002          0.0053          0.0000         -0.0000        
+     3        A->A (1 A)       0.36820         10.01934       -38.76741        0.0006          0.0011         -0.0000         -0.0000        
 
 
 
@@ -452,26 +1244,26 @@ Only contributions with abs(coeff) > 1.00e-01 will be printed:
 Excited State    1 (1 A):   0.29578 au   154.05 nm f = 0.0005
 Alpha orbitals:
   Sums of squares: Xssq =  9.769621e-01
-      5a (a) ->   6a (a)   -0.988376 (97.689%)
+      5a (a) ->   6a (a)    0.988376 (97.689%)
 Beta orbitals:
   Sums of squares: Xssq =  2.303794e-02
-      2a (b) ->   5a (b)    0.150032 ( 2.251%)
+      2a (b) ->   5a (b)   -0.150032 ( 2.251%)
 
 Excited State    2 (1 A):   0.29776 au   153.02 nm f = 0.0002
 Alpha orbitals:
   Sums of squares: Xssq =  9.782779e-01
-      4a (a) ->   6a (a)    0.989009 (97.814%)
+      4a (a) ->   6a (a)   -0.989009 (97.814%)
 Beta orbitals:
   Sums of squares: Xssq =  2.172214e-02
-      2a (b) ->   4a (b)   -0.144359 ( 2.084%)
+      2a (b) ->   4a (b)    0.144359 ( 2.084%)
 
 Excited State    3 (1 A):   0.36820 au   123.74 nm f = 0.0006
 Alpha orbitals:
   Sums of squares: Xssq =  7.612880e-02
-      4a (a) ->   7a (a)    0.274749 ( 7.549%)
+      4a (a) ->   7a (a)   -0.274749 ( 7.549%)
 Beta orbitals:
   Sums of squares: Xssq =  9.238712e-01
-      3a (b) ->   4a (b)   -0.960811 (92.316%)
+      3a (b) ->   4a (b)    0.960811 (92.316%)
 
 
 ******************************************************************************************
@@ -495,7 +1287,7 @@ Scratch directory: /home/work/scratch/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on lenovo
-*** at Fri Jul 10 15:55:26 2026
+*** at Thu Aug  6 08:58:50 2026
 
    => Loading Basis Set <=
 
@@ -564,8 +1356,8 @@ Scratch directory: /home/work/scratch/
 
    => LibXC <=
 
-    Version 7.0.0
-    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+    Version 7.1.2
+    S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
 
    => Composite Functional: R2SCAN <= 
 
@@ -661,26 +1453,26 @@ Scratch directory: /home/work/scratch/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter SAD:   -38.73408203570762   -3.87341e+01   0.00000e+00 
-   @UKS iter   1:   -39.04457376364857   -3.10492e-01   2.27916e-02 ADIIS/DIIS
-   @UKS iter   2:   -39.06813018531170   -2.35564e-02   1.78943e-02 ADIIS/DIIS
-   @UKS iter   3:   -39.10006599505848   -3.19358e-02   1.10885e-03 ADIIS/DIIS
-   @UKS iter   4:   -39.10024954439896   -1.83549e-04   1.39892e-04 ADIIS/DIIS
-   @UKS iter   5:   -39.10025354569997   -4.00130e-06   1.57281e-05 DIIS
-   @UKS iter   6:   -39.10025358473676   -3.90368e-08   2.90779e-06 DIIS
-   @UKS iter   7:   -39.10025358601115   -1.27439e-09   2.53279e-07 DIIS
-   @UKS iter   8:   -39.10025358602631   -1.51630e-11   4.57092e-08 DIIS
-   @UKS iter   9:   -39.10025358602678   -4.68958e-13   4.88210e-09 DIIS
-   @UKS iter  10:   -39.10025358602682   -4.26326e-14   4.37455e-10 DIIS
+   @UKS iter SAD:   -38.73408203570759   -3.87341e+01   0.00000e+00 
+   @UKS iter   1:   -39.04457376364864   -3.10492e-01   2.27916e-02 DIIS/ADIIS
+   @UKS iter   2:   -39.06813018531174   -2.35564e-02   1.78943e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.10006599505854   -3.19358e-02   1.10885e-03 DIIS/ADIIS
+   @UKS iter   4:   -39.10024954439902   -1.83549e-04   1.39892e-04 DIIS/ADIIS
+   @UKS iter   5:   -39.10025354570002   -4.00130e-06   1.57281e-05 DIIS
+   @UKS iter   6:   -39.10025358473683   -3.90368e-08   2.90779e-06 DIIS
+   @UKS iter   7:   -39.10025358601124   -1.27441e-09   2.53279e-07 DIIS
+   @UKS iter   8:   -39.10025358602640   -1.51559e-11   4.57092e-08 DIIS
+   @UKS iter   9:   -39.10025358602689   -4.90274e-13   4.88210e-09 DIIS
+   @UKS iter  10:   -39.10025358602687    1.42109e-14   4.37455e-10 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
    Electrons on quadrature grid:
-      Nalpha   =    4.9999999996 ; deviation = -4.296e-10
+      Nalpha   =    4.9999999996 ; deviation = -4.295e-10
       Nbeta    =    2.9999999996 ; deviation = -4.047e-10
-      Ntotal   =    7.9999999992 ; deviation = -8.343e-10 
+      Ntotal   =    7.9999999992 ; deviation = -8.342e-10 
 
    @Spin Contamination Metric:   1.439388366E-02
    @S^2 Expected:                2.000000000E+00
@@ -720,17 +1512,17 @@ Scratch directory: /home/work/scratch/
     NA   [     5 ]
     NB   [     3 ]
 
-  @UKS Final Energy:   -39.10025358602682
+  @UKS Final Energy:   -39.10025358602687
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              6.7162360049211429
-    One-Electron Energy =                 -64.9573371571759139
-    Two-Electron Energy =                  25.2828968037987245
-    DFT Exchange-Correlation Energy =      -6.1420492375707711
+    One-Electron Energy =                 -64.9573371571760561
+    Two-Electron Energy =                  25.2828968037988275
+    DFT Exchange-Correlation Energy =      -6.1420492375707880
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -39.1002535860268239
+    Total Energy =                        -39.1002535860268736
 
   UHF NO Occupations:
   HONO-2 :    3  A 1.9936015
@@ -758,21 +1550,21 @@ Properties computed using the SCF density matrix
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :         -0.0000000            0.0000000           -0.0000000
- Dipole Y            :          0.0000000           -0.0000000            0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
  Dipole Z            :         -0.0777511            0.1605296            0.0827785
  Magnitude           :                                                    0.0827785
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on lenovo at Fri Jul 10 15:55:35 2026
+*** tstop() called on lenovo at Thu Aug  6 08:58:58 2026
 Module time:
-	user time   =      14.72 seconds =       0.25 minutes
+	user time   =      27.28 seconds =       0.45 minutes
 	system time =       0.18 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
+	total time  =          8 seconds =       0.13 minutes
 Total time:
-	user time   =      81.31 seconds =       1.36 minutes
-	system time =       1.03 seconds =       0.02 minutes
-	total time  =         45 seconds =       0.75 minutes
+	user time   =     194.50 seconds =       3.24 minutes
+	system time =       1.55 seconds =       0.03 minutes
+	total time  =         65 seconds =       1.08 minutes
     R2SCAN SCF energy vs PySCF............................................................PASSED
 
 ******************************************************************************************
@@ -821,8 +1613,8 @@ Total time:
   DavidsonSolver iter   3:   4.16113e-05  7.40618e-04     18      
   DavidsonSolver iter   4:   4.42091e-07  7.05073e-05     21      
   DavidsonSolver iter   5:   4.29917e-09  3.40104e-06     24      
-  DavidsonSolver iter   6:   1.21375e-11  2.00807e-07     26      
-  DavidsonSolver iter   7:   2.54796e-14  4.41591e-08     27      Converged
+  DavidsonSolver iter   6:   1.21373e-11  2.00807e-07     26      
+  DavidsonSolver iter   7:   2.52576e-14  4.41591e-08     27      Converged
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -832,8 +1624,8 @@ Total time:
                                     Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
      #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
     ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
-     1        A->A (1 A)       0.32570         8.86274        -38.77455        0.0000          0.0077         -0.0000         -0.0000        
-     2        A->A (1 A)       0.32771         8.91744        -38.77254        0.0000          0.0088          0.0000          0.0000        
+     1        A->A (1 A)       0.32570         8.86274        -38.77455        0.0000          0.0077          0.0000          0.0000        
+     2        A->A (1 A)       0.32771         8.91744        -38.77254        0.0000          0.0088         -0.0000         -0.0000        
      3        A->A (1 A)       0.38075         10.36068       -38.71951        0.0001          0.0006          0.0000          0.0000        
 
 
@@ -860,10 +1652,10 @@ Beta orbitals:
 Excited State    3 (1 A):   0.38075 au   119.67 nm f = 0.0001
 Alpha orbitals:
   Sums of squares: Xssq =  2.068381e-02
-      4a (a) ->   7a (a)   -0.141858 ( 2.012%)
+      4a (a) ->   7a (a)    0.141858 ( 2.012%)
 Beta orbitals:
   Sums of squares: Xssq =  9.793162e-01
-      3a (b) ->   4a (b)    0.989456 (97.902%)
+      3a (b) ->   4a (b)   -0.989456 (97.902%)
 
 
 ******************************************************************************************
@@ -878,7 +1670,7 @@ Beta orbitals:
     R2SCAN TDA root 2 vs PySCF............................................................PASSED
     R2SCAN TDA root 3 vs PySCF............................................................PASSED
 
-    Psi4 stopped on: Friday, 10 July 2026 03:55PM
-    Psi4 wall time for execution: 0:01:04.12
+    Psi4 stopped on: Thursday, 06 August 2026 08:59AM
+    Psi4 wall time for execution: 0:01:20.92
 
 *** Psi4 exiting successfully. Buy a developer a beer!
