@@ -159,7 +159,7 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options& options) {
     params.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
 
     if (params.max_diis_vecs <= 0) {
-        params.diis = 0;
+        params.diis = false;
     }
 
     params.prop = options.get_str("PROPERTY");

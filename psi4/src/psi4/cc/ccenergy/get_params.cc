@@ -135,7 +135,7 @@ void CCEnergyWavefunction::get_params(Options& options) {
     params_.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
 
     if (params_.max_diis_vecs <= 0) {
-        params_.diis = 0;
+        params_.diis = false;
     }
 
     params_.t2_coupled = options.get_bool("T2_COUPLED");

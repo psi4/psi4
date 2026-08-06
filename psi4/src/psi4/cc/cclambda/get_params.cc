@@ -101,7 +101,7 @@ void CCLambdaWavefunction::get_params(Options& options) {
     params.max_diis_vecs = options.get_int("DIIS_MAX_VECS");
 
     if (params.max_diis_vecs <= 0) {
-        params.diis = 0;
+        params.diis = false;
     }
 
     params.aobasis = 0;
