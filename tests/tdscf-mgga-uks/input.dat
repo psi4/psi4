@@ -1,8 +1,14 @@
-#! TDA excitation energies of triplet methylene with meta-GGA functionals
-#! (UKS), exercising the spin-resolved tau second-derivative kernel.
+#! TDA excitation energies of triplet methylene with LDA, GGA, and meta-GGA
+#! functionals (UKS). The meta-GGA cases exercise the spin-resolved tau
+#! second-derivative kernel; the LDA (SVWN = LDA_X + LDA_C_VWN_RPA) and GGA
+#! (PBE) cases are rung controls that must reproduce PySCF at those rungs too.
 #! Reference values from PySCF 2.13.0 (same Libxc): 6-31G, identical geometry,
 #! grids.atom_grid = (99, 590), SCF conv_tol 1e-12, TD conv_tol 1e-9.
 
+svwn_scf = -38.8646630650                                     #TEST
+svwn_tda = [0.28652490, 0.28850940, 0.32842472]              #TEST
+pbe_scf = -39.0588357256                                      #TEST
+pbe_tda = [0.28736627, 0.28932949, 0.34620232]               #TEST
 tpss_scf = -39.1356185476                                     #TEST
 tpss_tda = [0.29577897, 0.29776197, 0.36820804]               #TEST
 r2scan_scf = -39.1002541060                                   #TEST
@@ -30,7 +36,9 @@ set {
 
 from psi4.driver.procrouting.response.scf_response import tdscf_excitations
 
-for func, ref_scf, ref_tda in (("TPSS", tpss_scf, tpss_tda),
+for func, ref_scf, ref_tda in (("SVWN", svwn_scf, svwn_tda),
+                               ("PBE", pbe_scf, pbe_tda),
+                               ("TPSS", tpss_scf, tpss_tda),
                                ("R2SCAN", r2scan_scf, r2scan_tda)):
     e, wfn = energy(func, return_wfn=True)
     compare_values(ref_scf, e, 5, f"{func} SCF energy vs PySCF")              #TEST

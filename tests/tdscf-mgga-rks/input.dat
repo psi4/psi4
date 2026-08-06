@@ -61,3 +61,41 @@ res = tdscf_excitations(wfn, states=3, tda=True, triplets="NONE", r_convergence=
 for i, ref in enumerate(sorted(r2scan_tda_singlet)):                          #TEST
     compare_values(ref, sorted(r["EXCITATION ENERGY"] for r in res)[i], 5,    #TEST
                    f"r2SCAN TDA singlet root {i+1} vs PySCF")                 #TEST
+
+clean()
+
+# --- LDA (SVWN = LDA_X + LDA_C_VWN_RPA) and GGA (PBE) controls: the tau
+# --- second-derivative kernel collapses, but the singlet/triplet/RPA response
+# --- paths must still reproduce PySCF at the LDA and GGA rungs (R restricted).
+# SVWN/6-31G, PySCF 2.13 references (LDA_X,LDA_C_VWN_RPA)
+svwn_scf = -76.0130795365                                    #TEST
+svwn_tda_singlet = [0.28155772, 0.35272141, 0.36309725]      #TEST
+svwn_tda_triplet = [0.25633168, 0.31603334, 0.34540410]      #TEST
+svwn_rpa_singlet = [0.28064754, 0.34965488, 0.36293500]      #TEST
+# PBE/6-31G, PySCF 2.13 references
+pbe_scf = -76.2978537876                                     #TEST
+pbe_tda_singlet = [0.27841950, 0.35596587, 0.35889426]       #TEST
+pbe_tda_triplet = [0.25098092, 0.31258028, 0.33803111]       #TEST
+pbe_rpa_singlet = [0.27765205, 0.35275522, 0.35879284]       #TEST
+
+for func, r_scf, r_tda_s, r_tda_t, r_rpa_s in (
+        ("SVWN", svwn_scf, svwn_tda_singlet, svwn_tda_triplet, svwn_rpa_singlet),
+        ("PBE",  pbe_scf,  pbe_tda_singlet,  pbe_tda_triplet,  pbe_rpa_singlet)):
+    e, wfn = energy(func, return_wfn=True)
+    compare_values(r_scf, e, 5, f"{func} SCF energy vs PySCF")                #TEST
+
+    res = tdscf_excitations(wfn, states=3, tda=True, triplets="NONE", r_convergence=1e-7)
+    for i, ref in enumerate(sorted(r_tda_s)):                                 #TEST
+        compare_values(ref, sorted(r["EXCITATION ENERGY"] for r in res)[i], 5,  #TEST
+                       f"{func} TDA singlet root {i+1} vs PySCF")             #TEST
+
+    res = tdscf_excitations(wfn, states=3, tda=True, triplets="ONLY", r_convergence=1e-7)
+    for i, ref in enumerate(sorted(r_tda_t)):                                 #TEST
+        compare_values(ref, sorted(r["EXCITATION ENERGY"] for r in res)[i], 5,  #TEST
+                       f"{func} TDA triplet root {i+1} vs PySCF")            #TEST
+
+    res = tdscf_excitations(wfn, states=3, tda=False, triplets="NONE", r_convergence=1e-7)
+    for i, ref in enumerate(sorted(r_rpa_s)):                                 #TEST
+        compare_values(ref, sorted(r["EXCITATION ENERGY"] for r in res)[i], 5,  #TEST
+                       f"{func} RPA singlet root {i+1} vs PySCF")            #TEST
+    clean()

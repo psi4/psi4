@@ -51,3 +51,14 @@ evals = wfn.variable("SCF STABILITY EIGENVALUES").to_array()
 lowest = min(float(v) for v in evals.ravel())                                 #TEST
 compare_values(ch2_lowest, lowest, 5, "CH2 UKS TPSS: lowest Hessian eigenvalue vs PySCF")  #TEST
 compare(True, lowest > 0, "CH2 UKS TPSS flagged stable")                      #TEST
+
+# GGA (PBE) control at the same UKS geometry: the meta-GGA tau contribution to
+# the stability (electronic-Hessian) kernel collapses, but the GGA rung must
+# still reproduce the PySCF lowest eigenvalue and be flagged stable.
+ch2_lowest_pbe = 0.27869518                                   #TEST
+
+e, wfn = energy("PBE", return_wfn=True)
+evals = wfn.variable("SCF STABILITY EIGENVALUES").to_array()
+lowest = min(float(v) for v in evals.ravel())                                 #TEST
+compare_values(ch2_lowest_pbe, lowest, 5, "CH2 UKS PBE: lowest Hessian eigenvalue vs PySCF")  #TEST
+compare(True, lowest > 0, "CH2 UKS PBE flagged stable")                       #TEST

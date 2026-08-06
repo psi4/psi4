@@ -50,7 +50,7 @@ def _scf(func, ref, geom):
     return wfn
 
 
-@pytest.mark.parametrize("func", ["PBE", "SCAN", "TPSS", "M06-L"])
+@pytest.mark.parametrize("func", ["SVWN", "PBE", "SCAN", "TPSS", "M06-L"])
 def test_rks_vx_fd(func):
     wfn = _scf(func, "rks", """
         O  0.000  0.000  0.117
@@ -84,7 +84,7 @@ def test_rks_vx_fd(func):
     assert np.allclose(2.0 * ret[0].to_array(), fd, atol=5e-7)
 
 
-@pytest.mark.parametrize("func", ["PBE", "SCAN", "TPSS", "M06-L"])
+@pytest.mark.parametrize("func", ["SVWN", "PBE", "SCAN", "TPSS", "M06-L"])
 def test_uks_vx_fd(func):
     wfn = _scf(func, "uks", """
         0 2
@@ -110,7 +110,7 @@ def test_uks_vx_fd(func):
         assert np.allclose(ret[comp].to_array(), fd, atol=5e-7)
 
 
-@pytest.mark.parametrize("func", ["PBE", "TPSS"])
+@pytest.mark.parametrize("func", ["SVWN", "PBE", "TPSS"])
 def test_uks_rks_hessian_consistency(func):
     """Closed shell through the UV path must reproduce the RV explicit
     XC Hessian to machine precision."""
@@ -226,13 +226,15 @@ def _gr_opts(ref, response):
             "dft_grid_response": response, "points": 5}
 
 
+@pytest.mark.parametrize("func", ["SVWN", "PBE", "TPSS"])  # LDA, GGA, meta-GGA
 @pytest.mark.parametrize("ref,geom", [("rks", _WATER), ("uks", _NH2)])
-def test_gradient_grid_response(ref, geom):
+def test_gradient_grid_response(func, ref, geom):
     """With DFT_GRID_RESPONSE on, the analytic XC gradient is the exact
     derivative of the energy: it matches the driver's 5-point finite-difference
     gradient (dertype=0) to the findif floor, whereas the fixed-grid gradient on
-    the same grid is off by the grid-motion/weight convention (~1e-4)."""
-    func = "TPSS"
+    the same grid is off by the grid-motion/weight convention (~1e-4). Run for
+    an LDA, a GGA, and a meta-GGA functional, restricted and unrestricted, so
+    every ansatz branch of the grid-motion/weight-Jacobian classes is driven."""
     psi4.core.clean()
     psi4.set_options(_gr_opts(ref, True))
     mol = psi4.geometry(geom)
@@ -249,14 +251,16 @@ def test_gradient_grid_response(ref, geom):
     assert np.max(np.abs(g_fixed - g_findif)) > 1e-5         # fixed-grid gradient is not
 
 
+@pytest.mark.parametrize("func", ["SVWN", "PBE", "TPSS"])  # LDA, GGA, meta-GGA
 @pytest.mark.parametrize("ref,geom", [("rks", _WATER), ("uks", _NH2)])
-def test_hessian_grid_response(ref, geom):
-    """End-to-end analytic mGGA Hessian (dertype=2) through the full driver
+def test_hessian_grid_response(func, ref, geom):
+    """End-to-end analytic Hessian (dertype=2) through the full driver
     (CPKS + nuclear + JK + XC) with grid response on, against the driver's
     5-point finite difference of the analytic gradients (dertype=1). Exercises
     the Hessian grid-response classes, including the second weight derivatives,
-    over the whole matrix."""
-    func = "TPSS"
+    over the whole matrix. Run for an LDA, a GGA, and a meta-GGA functional,
+    restricted and unrestricted, to drive every ansatz branch of the newly
+    enabled GGA/meta-GGA analytic Hessians and their grid-response terms."""
     psi4.core.clean()
     psi4.set_options(_gr_opts(ref, True))
     mol = psi4.geometry(geom)

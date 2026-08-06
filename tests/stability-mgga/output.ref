@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.12a1.dev3 
+                               Psi4 1.12a1.dev28 
 
-                         Git: Rev {mgga-vx} a1c38bf dirty
+                         Git: Rev {mgga-vx} cfc864d dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -32,9 +32,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 10 July 2026 03:57PM
+    Psi4 started on: Thursday, 06 August 2026 08:59AM
 
-    Process ID: 100709
+    Process ID: 2252696
     Host:       lenovo
     PSIDATADIR: /home/work/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -103,6 +103,17 @@ evals = wfn.variable("SCF STABILITY EIGENVALUES").to_array()
 lowest = min(float(v) for v in evals.ravel())                                 #TEST
 compare_values(ch2_lowest, lowest, 5, "CH2 UKS TPSS: lowest Hessian eigenvalue vs PySCF")  #TEST
 compare(True, lowest > 0, "CH2 UKS TPSS flagged stable")                      #TEST
+
+# GGA (PBE) control at the same UKS geometry: the meta-GGA tau contribution to
+# the stability (electronic-Hessian) kernel collapses, but the GGA rung must
+# still reproduce the PySCF lowest eigenvalue and be flagged stable.
+ch2_lowest_pbe = 0.27869518                                   #TEST
+
+e, wfn = energy("PBE", return_wfn=True)
+evals = wfn.variable("SCF STABILITY EIGENVALUES").to_array()
+lowest = min(float(v) for v in evals.ravel())                                 #TEST
+compare_values(ch2_lowest_pbe, lowest, 5, "CH2 UKS PBE: lowest Hessian eigenvalue vs PySCF")  #TEST
+compare(True, lowest > 0, "CH2 UKS PBE flagged stable")                       #TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /home/work/scratch/
@@ -114,7 +125,7 @@ Scratch directory: /home/work/scratch/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on lenovo
-*** at Fri Jul 10 15:57:48 2026
+*** at Thu Aug  6 08:59:27 2026
 
    => Loading Basis Set <=
 
@@ -181,8 +192,8 @@ Scratch directory: /home/work/scratch/
 
    => LibXC <=
 
-    Version 7.0.0
-    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+    Version 7.1.2
+    S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
 
    => Composite Functional: TPSS <= 
 
@@ -281,17 +292,16 @@ Scratch directory: /home/work/scratch/
 
    @UKS iter SAD:    -0.92207775089992   -9.22078e-01   0.00000e+00 
    @UKS iter   1:    -1.01957070363987   -9.74930e-02   1.24624e-03 DIIS/ADIIS
-   @UKS iter   2:    -1.01959399123684   -2.32876e-05   1.70648e-05 DIIS
-   @UKS iter   3:    -1.01959399539611   -4.15927e-09   3.02041e-06 DIIS
-   @UKS iter   4:    -1.01959399560826   -2.12143e-10   3.25025e-07 DIIS
-   @UKS iter   5:    -1.01959399561061   -2.35056e-12   4.14168e-09 DIIS
-   @UKS iter   6:    -1.01959399561061    2.22045e-16   5.53466e-11 DIIS
+   @UKS iter   2:    -1.01959399036343   -2.32867e-05   1.86977e-05 DIIS
+   @UKS iter   3:    -1.01959399556891   -5.20548e-09   1.33436e-06 DIIS
+   @UKS iter   4:    -1.01959399561060   -4.16949e-11   1.58820e-08 DIIS
+   @UKS iter   5:    -1.01959399561061   -3.99680e-15   8.15633e-11 DIIS
   Energy and wave function converged.
 
-    Negative totally symmetric eigenvalue detected: -0.074938 
+    Negative totally symmetric eigenvalue detected: -0.077480 
     Wavefunction unstable!
     Lowest UHF->UHF stability eigenvalues: 
-       A -0.074938     
+       A -0.077480     
 
     Stability analysis over.
 
@@ -302,9 +312,9 @@ Scratch directory: /home/work/scratch/
       Nbeta    =    1.0000000002 ; deviation = 2.247e-10
       Ntotal   =    2.0000000004 ; deviation = 4.493e-10 
 
-   @Spin Contamination Metric:   8.881784197E-16
+   @Spin Contamination Metric:   2.220446049E-16
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:                8.881784197E-16
+   @S^2 Observed:                2.220446049E-16
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
@@ -317,7 +327,7 @@ Scratch directory: /home/work/scratch/
 
     Alpha Virtual:                                                        
 
-       2A     -0.142377     3A      0.795191     4A      0.797196  
+       2A     -0.144639     3A      0.794376     4A      0.798029  
 
     Beta Occupied:                                                        
 
@@ -325,7 +335,7 @@ Scratch directory: /home/work/scratch/
 
     Beta Virtual:                                                         
 
-       2A     -0.142377     3A      0.795191     4A      0.797196  
+       2A     -0.144639     3A      0.794376     4A      0.798029  
 
     Final Occupation by Irrep:
               A 
@@ -339,9 +349,9 @@ Scratch directory: /home/work/scratch/
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.2939873392611111
-    One-Electron Energy =                  -1.6898936399805504
-    Two-Electron Energy =                   0.9058504531150202
-    DFT Exchange-Correlation Energy =      -0.5295381480061888
+    One-Electron Energy =                  -1.6898936399495459
+    Two-Electron Energy =                   0.9058504529879543
+    DFT Exchange-Correlation Energy =      -0.5295381479101274
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
     Total Energy =                         -1.0195939956106077
@@ -349,7 +359,7 @@ Scratch directory: /home/work/scratch/
   UHF NO Occupations:
   HONO-0 :    1  A 2.0000000
   LUNO+0 :    2  A 0.0000000
-  LUNO+1 :    3  A 0.0000000
+  LUNO+1 :    3  A -0.0000000
   LUNO+2 :    4  A -0.0000000
 
 
@@ -375,14 +385,14 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on lenovo at Fri Jul 10 15:57:56 2026
+*** tstop() called on lenovo at Thu Aug  6 08:59:35 2026
 Module time:
-	user time   =      12.81 seconds =       0.21 minutes
-	system time =       0.26 seconds =       0.00 minutes
+	user time   =      24.55 seconds =       0.41 minutes
+	system time =       0.30 seconds =       0.01 minutes
 	total time  =          8 seconds =       0.13 minutes
 Total time:
-	user time   =      12.81 seconds =       0.21 minutes
-	system time =       0.26 seconds =       0.00 minutes
+	user time   =      24.55 seconds =       0.41 minutes
+	system time =       0.30 seconds =       0.01 minutes
 	total time  =          8 seconds =       0.13 minutes
     stretched H2 UKS TPSS flagged unstable................................................PASSED
 
@@ -395,7 +405,7 @@ Scratch directory: /home/work/scratch/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on lenovo
-*** at Fri Jul 10 15:57:57 2026
+*** at Thu Aug  6 08:59:35 2026
 
    => Loading Basis Set <=
 
@@ -464,8 +474,8 @@ Scratch directory: /home/work/scratch/
 
    => LibXC <=
 
-    Version 7.0.0
-    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+    Version 7.1.2
+    S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
 
    => Composite Functional: TPSS <= 
 
@@ -563,16 +573,16 @@ Scratch directory: /home/work/scratch/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UKS iter SAD:   -38.77960830810174   -3.87796e+01   0.00000e+00 
-   @UKS iter   1:   -39.07323758072608   -2.93629e-01   2.42846e-02 DIIS/ADIIS
-   @UKS iter   2:   -39.09303456344639   -1.97970e-02   1.99671e-02 DIIS/ADIIS
-   @UKS iter   3:   -39.13540142919629   -4.23669e-02   1.28555e-03 DIIS/ADIIS
+   @UKS iter   1:   -39.07323758072607   -2.93629e-01   2.42846e-02 DIIS/ADIIS
+   @UKS iter   2:   -39.09303456344638   -1.97970e-02   1.99671e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.13540142919630   -4.23669e-02   1.28555e-03 DIIS/ADIIS
    @UKS iter   4:   -39.13561309615321   -2.11667e-04   1.75486e-04 DIIS/ADIIS
-   @UKS iter   5:   -39.13561852895808   -5.43280e-06   1.57151e-05 DIIS
-   @UKS iter   6:   -39.13561857279084   -4.38328e-08   1.48706e-06 DIIS
-   @UKS iter   7:   -39.13561857327187   -4.81030e-10   3.10207e-07 DIIS
-   @UKS iter   8:   -39.13561857329107   -1.91989e-11   1.85364e-08 DIIS
-   @UKS iter   9:   -39.13561857329116   -9.23706e-14   1.29228e-09 DIIS
-   @UKS iter  10:   -39.13561857329114    2.13163e-14   1.21654e-10 DIIS
+   @UKS iter   5:   -39.13561852895809   -5.43280e-06   1.57151e-05 DIIS
+   @UKS iter   6:   -39.13561857279085   -4.38328e-08   1.48706e-06 DIIS
+   @UKS iter   7:   -39.13561857327188   -4.81030e-10   3.10207e-07 DIIS
+   @UKS iter   8:   -39.13561857329108   -1.92060e-11   1.85364e-08 DIIS
+   @UKS iter   9:   -39.13561857329117   -8.52651e-14   1.29228e-09 DIIS
+   @UKS iter  10:   -39.13561857329114    2.84217e-14   1.21654e-10 DIIS
   Energy and wave function converged.
 
     Wavefunction stable under totally symmetric rotations.
@@ -632,9 +642,9 @@ Scratch directory: /home/work/scratch/
    => Energetics <=
 
     Nuclear Repulsion Energy =              6.7162360049211420
-    One-Electron Energy =                 -64.9798289903864514
-    Two-Electron Energy =                  25.3089197582480345
-    DFT Exchange-Correlation Energy =      -6.1809453460738677
+    One-Electron Energy =                 -64.9798289903864372
+    Two-Electron Energy =                  25.3089197582480168
+    DFT Exchange-Correlation Energy =      -6.1809453460738659
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
     Total Energy =                        -39.1356185732911399
@@ -671,19 +681,316 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on lenovo at Fri Jul 10 15:58:25 2026
+*** tstop() called on lenovo at Thu Aug  6 09:00:04 2026
 Module time:
-	user time   =      49.53 seconds =       0.83 minutes
-	system time =       0.61 seconds =       0.01 minutes
-	total time  =         28 seconds =       0.47 minutes
+	user time   =     104.12 seconds =       1.74 minutes
+	system time =       0.67 seconds =       0.01 minutes
+	total time  =         29 seconds =       0.48 minutes
 Total time:
-	user time   =      62.47 seconds =       1.04 minutes
-	system time =       0.87 seconds =       0.01 minutes
+	user time   =     128.82 seconds =       2.15 minutes
+	system time =       0.97 seconds =       0.02 minutes
 	total time  =         37 seconds =       0.62 minutes
     CH2 UKS TPSS: lowest Hessian eigenvalue vs PySCF......................................PASSED
     CH2 UKS TPSS flagged stable...........................................................PASSED
 
-    Psi4 stopped on: Friday, 10 July 2026 03:58PM
-    Psi4 wall time for execution: 0:00:37.09
+Scratch directory: /home/work/scratch/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  12, 11, 10
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lenovo
+*** at Thu Aug  6 09:00:04 2026
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    87 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UKS Reference
+                        6 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000    -0.000000000000    -0.014381424017    12.000000000000
+         H            0.000000000000     0.980000000000     0.085618575983     1.007825032230
+         H            0.000000000000    -0.980000000000     0.085618575983     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =    976.81734  B =      8.70822  C =      8.63127 [cm^-1]
+  Rotational constants: A = 29284247.06425  B = 261065.75722  C = 258758.95039 [MHz]
+  Nuclear repulsion =    6.716236004921143
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-09
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 9
+    Number of basis functions: 13
+    Number of Cartesian functions: 13
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => LibXC <=
+
+    Version 7.1.2
+    S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+
+   => Composite Functional: PBE <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000     XC_GGA_X_PBE
+
+   => Correlation Functionals <=
+
+    1.0000     XC_GGA_C_PBE
+
+   => LibXC Density Thresholds  <==
+
+    XC_GGA_C_PBE:  1.00E-12 
+    XC_GGA_X_PBE:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    Blocking Scheme        =         OCTREE
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            590
+    Total Points           =         167886
+    Total Blocks           =           1297
+    Max Points             =            256
+    Max Functions          =             13
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               9
+      Number of primitives:             22
+      Number of atomic orbitals:        13
+      Number of basis functions:        13
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 6
+
+  Performing in-core PK
+  Using 8372 doubles for integral storage.
+  We computed 1608 shell quartets total.
+  Whereas there are 1035 unique shell quartets.
+    55.36 percent of shell quartets recomputed by reordering.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Memory [MiB]:              310
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              6
+
+  Cached 100.0% of DFT collocation blocks in 0.063 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.0394896392E-02.
+  Reciprocal condition number of the overlap matrix is 5.9702984690E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         13      13 
+   -------------------------
+    Total      13      13
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UKS iter SAD:   -38.72658732635335   -3.87266e+01   0.00000e+00 
+   @UKS iter   1:   -38.98332465787092   -2.56737e-01   2.65754e-02 DIIS/ADIIS
+   @UKS iter   2:   -38.99169669517432   -8.37204e-03   2.54260e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.05876006198940   -6.70634e-02   7.44242e-04 DIIS/ADIIS
+   @UKS iter   4:   -39.05883319219527   -7.31302e-05   1.21686e-04 DIIS/ADIIS
+   @UKS iter   5:   -39.05883570008150   -2.50789e-06   1.22887e-05 DIIS
+   @UKS iter   6:   -39.05883572536214   -2.52806e-08   1.43780e-06 DIIS
+   @UKS iter   7:   -39.05883572571110   -3.48955e-10   2.81872e-07 DIIS
+   @UKS iter   8:   -39.05883572572623   -1.51275e-11   1.78397e-08 DIIS
+   @UKS iter   9:   -39.05883572572630   -7.81597e-14   1.19385e-09 DIIS
+   @UKS iter  10:   -39.05883572572630    7.10543e-15   5.54068e-11 DIIS
+  Energy and wave function converged.
+
+    Wavefunction stable under totally symmetric rotations.
+    Lowest totally symmetric eigenvalue: 0.278695 
+    Lowest UHF->UHF stability eigenvalues: 
+       A 0.278695      
+
+    Stability analysis over.
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Nalpha   =    4.9999999996 ; deviation = -4.256e-10
+      Nbeta    =    2.9999999996 ; deviation = -4.078e-10
+      Ntotal   =    7.9999999992 ; deviation = -8.335e-10 
+
+   @Spin Contamination Metric:   7.661190824E-03
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.007661191E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -9.906637     2A     -0.621644     3A     -0.448128  
+       4A     -0.195339     5A     -0.192975  
+
+    Alpha Virtual:                                                        
+
+       6A      0.092411     7A      0.191466     8A      0.485403  
+       9A      0.492186    10A      0.507720    11A      0.741886  
+      12A      0.934764    13A      1.110015  
+
+    Beta Occupied:                                                        
+
+       1A     -9.879264     2A     -0.549356     3A     -0.428371  
+
+    Beta Virtual:                                                         
+
+       4A     -0.070863     5A     -0.069661     6A      0.121739  
+       7A      0.198622     8A      0.536460     9A      0.584944  
+      10A      0.590439    11A      0.774752    12A      0.984120  
+      13A      1.122919  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     3 ]
+    SOCC [     2 ]
+    NA   [     5 ]
+    NB   [     3 ]
+
+  @UKS Final Energy:   -39.05883572572630
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              6.7162360049211429
+    One-Electron Energy =                 -64.9637464029834746
+    Two-Electron Energy =                  25.2847448004296602
+    DFT Exchange-Correlation Energy =      -6.0960701280936300
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -39.0588357257262970
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9967070
+  HONO-1 :    4  A 1.0000000
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0032930
+  LUNO+1 :    7  A 0.0005427
+  LUNO+2 :    8  A 0.0000004
+  LUNO+3 :    9  A 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000           -0.0000000            0.0000000
+ Dipole Z            :         -0.0726304            0.1605296            0.0878992
+ Magnitude           :                                                    0.0878992
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on lenovo at Thu Aug  6 09:00:13 2026
+Module time:
+	user time   =      28.79 seconds =       0.48 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
+Total time:
+	user time   =     157.76 seconds =       2.63 minutes
+	system time =       1.11 seconds =       0.02 minutes
+	total time  =         46 seconds =       0.77 minutes
+    CH2 UKS PBE: lowest Hessian eigenvalue vs PySCF.......................................PASSED
+    CH2 UKS PBE flagged stable............................................................PASSED
+
+    Psi4 stopped on: Thursday, 06 August 2026 09:00AM
+    Psi4 wall time for execution: 0:00:46.70
 
 *** Psi4 exiting successfully. Buy a developer a beer!
