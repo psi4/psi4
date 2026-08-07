@@ -30,3 +30,25 @@ def test_cghf_basic_scf():
     e = psi4.energy("scf", molecule=mol)
     assert type(e) == float
     assert e == pytest.approx(REFERENCE_ENERGY, abs=1e-6)
+
+
+def test_cghf_sad_guess():
+    """CGHF with GUESS=SAD should converge to the same closed-shell energy as RHF."""
+    mol = psi4.geometry("""
+    0 1
+        H
+        H 1 0.74
+    symmetry c1
+    """)
+    psi4.set_options({
+        "basis": "cc-pVDZ",
+        "reference": "cghf",
+        "guess": "sad",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+        "diis": False,
+        "scf_initial_accelerator": "none",
+    })
+    e = psi4.energy("scf", molecule=mol)
+    assert type(e) == float
+    assert e == pytest.approx(REFERENCE_ENERGY, abs=1e-6)

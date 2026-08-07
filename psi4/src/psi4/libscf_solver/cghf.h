@@ -95,17 +95,9 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     SharedComplexMatrix T_;
     /// The 1e potential energy matrix
     SharedComplexMatrix V_;
-    /// Core Hamiltonian
-    SharedComplexMatrix H_;
     /// The orthogonalization matrix
     SharedComplexMatrix X_;
 
-    /// Fock matrix
-    SharedComplexMatrix F_;
-    /// MO coefficients
-    SharedComplexMatrix C_;
-    /// density matrix
-    SharedComplexMatrix D_;
     /// No DFT potential matrices
     /// Temporary matrices
     SharedComplexMatrix G_;
@@ -114,8 +106,8 @@ class CGHF : public ComplexWavefunction, public BaseHF {
 
     void common_init();
 
-    /// Sets nelecpi_
-    void find_occupation();
+    /// Fills real SADGuess into D_/C_
+    void compute_SAD_guess();
 
     // Dimension of irreps. Each irrep (h) size will be 2*nsopi_[h].
     Dimension irrep_sizes_;
@@ -158,6 +150,13 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// Form the guess (guarantees C, D, and E)
     void guess();
 
+    /// Sets nelecpi_ from orbital energies (Aufbau)
+    void find_occupation();
+
+    /// SAD in Python-side requires this method to be defined
+    /// nelectron_ is not mutated by SAD (unlike HF nalpha_/nbeta_)
+    void reset_occupation() {}
+
     /// Compute 1e energy + nuc
     double compute_initial_E() override;
 
@@ -190,15 +189,10 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// The DFT Potential object (or nullptr if it has been deleted)
     std::shared_ptr<VBase> V_potential() const { return potential_; };
 
-    /// Accessors for internal SCF matrices.
+    /// Accessors for CGHF-only matrices (H/S/C/D/F live on ComplexWavefunction).
     SharedComplexMatrix get_T() const { return T_; }
     SharedComplexMatrix get_V() const { return V_; }
-    SharedComplexMatrix get_H() const { return H_; }
-    SharedComplexMatrix get_S() const { return S_; }
     SharedComplexMatrix get_X() const { return X_; }
-    SharedComplexMatrix get_F() const { return F_; }
-    SharedComplexMatrix get_C() const { return C_; }
-    SharedComplexMatrix get_D() const { return D_; }
     SharedComplexMatrix get_G() const { return G_; }
     SharedComplexMatrix get_J() const { return J_; }
     SharedComplexMatrix get_K() const { return K_; }

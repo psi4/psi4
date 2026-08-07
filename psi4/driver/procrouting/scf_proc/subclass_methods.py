@@ -75,9 +75,9 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         return max(gradient_a.absmax(), gradient_b.absmax())
 
 def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
-    F = self.get_F()
-    D = self.get_D()
-    S = self.get_S().to_array()
+    F = self.F()
+    D = self.D()
+    S = self.S().to_array()
 
     # form_FDSmSDF isn't implemented for CGHF yet; compute FDS-SDF in NumPy and wrap the
     # result into a ComplexMatrix only so it can be handed to DIIS.
@@ -162,7 +162,7 @@ def _ROHF_diis(self, Dnorm):
     return self.diis_manager_.extrapolate(self.soFeff(), Dnorm=Dnorm)
 
 def _CGHF_diis(self, Dnorm):
-    return self.diis_manager_.extrapolate(self.get_F(), Dnorm=Dnorm)
+    return self.diis_manager_.extrapolate(self.F(), Dnorm=Dnorm)
 
 core.RHF.diis = _RHF_diis
 core.UHF.diis = core.CUHF.diis = _UHF_diis
