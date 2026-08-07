@@ -27,6 +27,7 @@
  */
 
 #include "cghf.h"
+#include "sad.h"
 
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libmints/basisset.h"
@@ -351,11 +352,67 @@ void CGHF::guess() {
         form_initial_C(); // calls only CGHF::form_C()
         form_D();
         guess_E = compute_initial_E();
+    } else if (guess_type == "SAD") {
+        if (print_)
+            outfile->Printf(
+                "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation "
+                "information).\n\n");
+
+        compute_SAD_guess();
+        // Guess iteration: occupations must be reset in SCF; SAD has no usable MOs yet.
+        iteration_ = -1;
+        sad_ = true;
+        guess_E = compute_initial_E();
     } else {
-        throw PSIEXCEPTION("CGHF '" + guess_type + "' GUESS not implemented. Use 'CORE'.");
+        throw PSIEXCEPTION("CGHF '" + guess_type + "' GUESS not implemented. Use 'CORE' or 'SAD'.");
     }
 
     energies_["Total Energy"] = 0.0;  // don't use this guess in our convergence checks
+}
+
+void CGHF::compute_SAD_guess() {
+    if (sad_basissets_.empty()) {
+        throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
+    }
+
+    auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, options_);
+    // Driver only fills fitting bases when SAD_SCF_TYPE is DF-like.
+    if (!sad_fitting_basissets_.empty()) {
+        guess->set_atomic_fit_bases(sad_fitting_basissets_);
+    }
+
+    guess->compute_guess();
+
+    // Spin-restricted SAD: Da == Db → block-diagonal spinor density [[Da,0],[0,Da]]
+    copy_matrix_to_complex(*guess->Da(), *D_);
+
+    // Embed Cholesky factors as temporary occupied spinors for form_G on SAD iter 0:
+    // Ca in alpha spatial block (cols [0, nchol)), Cb in beta block (cols [nchol, 2*nchol)).
+    SharedMatrix Ca_sad = guess->Ca();
+    SharedMatrix Cb_sad = guess->Cb();
+    C_ = std::make_shared<ComplexMatrix>("MO coefficients", X_->rowspi(), nmopi_);
+    C_->zero();
+
+    for (int h = 0; h < nirrep_; h++) {
+        int nso = Ca_sad->rowspi()[h];
+        int nchol = Ca_sad->colspi()[h];
+        // nmopi_ is already spin-doubled; clamp Cholesky columns to spatial MO count
+        int nmo_spatial = nmopi_[h] / 2;
+        if (nchol > nmo_spatial) nchol = nmo_spatial;
+
+        nelecpi_[h] = 2 * nchol;
+
+        if (!nso || !nchol) continue;
+
+        for (int i = 0; i < nso; i++) {
+            for (int j = 0; j < nchol; j++) {
+                C_->set(h, i, j, Ca_sad->get(h, i, j));
+                C_->set(h, i + nso, j + nchol, Cb_sad->get(h, i, j));
+            }
+        }
+    }
+
+    energies_["Total Energy"] = 0.0;  // This is the -1th iteration
 }
 
 double CGHF::compute_initial_E() {

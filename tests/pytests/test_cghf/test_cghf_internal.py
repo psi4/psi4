@@ -157,7 +157,7 @@ def test_cghf_core_hamiltonian():
 
     T = wfn.get_T().to_array()
     V = wfn.get_V().to_array()
-    H = wfn.get_H().to_array()
+    H = wfn.H().to_array()
 
     assert T.shape == T_ref.shape
     assert V.shape == V_ref.shape
@@ -204,15 +204,15 @@ def test_cghf_form_C():
     wfn.form_Shalf()
 
     # Core-Hamiltonian guess: F <- H
-    F_view = wfn.get_F().to_array(copy=False)
-    F_view[:] = wfn.get_H().to_array()
+    F_view = wfn.F().to_array(copy=False)
+    F_view[:] = wfn.H().to_array()
 
     wfn.form_C()
 
-    F = wfn.get_F().to_array()
+    F = wfn.F().to_array()
     X = wfn.get_X().to_array()
     S = wfn.S().to_array()
-    C = wfn.get_C().to_array()
+    C = wfn.C().to_array()
     C_ref = _reference_form_C(F, X)
 
     assert C.shape == C_ref.shape
@@ -234,14 +234,14 @@ def test_cghf_compute_initial_E():
     wfn = _build_cghf(_h2_c1())
     wfn.form_H()
 
-    H = wfn.get_H().to_array()
+    H = wfn.H().to_array()
     n = H.shape[0]
     rng = np.random.default_rng(0)
     # Hermitian density so Tr(H D) is real for Hermitian H
     A = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
     D_ref = A @ A.conj().T
 
-    D_view = wfn.get_D().to_array(copy=False)
+    D_view = wfn.D().to_array(copy=False)
     D_view[:] = D_ref
 
     enuc = wfn.molecule().nuclear_repulsion_energy()
@@ -256,8 +256,8 @@ def _core_guess_cghf(basis_name="sto-3g", **scf_options):
     wfn = _build_cghf(_h2_c1(), basis_name=basis_name, s_orthogonalization="SYMMETRIC", **scf_options)
     wfn.form_H()
     wfn.form_Shalf()
-    F_view = wfn.get_F().to_array(copy=False)
-    F_view[:] = wfn.get_H().to_array()
+    F_view = wfn.F().to_array(copy=False)
+    F_view[:] = wfn.H().to_array()
     wfn.form_C()
     return wfn
 
@@ -273,12 +273,12 @@ def _jk_reference_ao(basis, D):
 def test_cghf_form_D():
     """form_D builds D = C_occ @ C_occ^H with Tr(D S) = nelectron."""
     wfn = _core_guess_cghf()
-    C = wfn.get_C().to_array()
+    C = wfn.C().to_array()
     S = wfn.S().to_array()
     nocc = int(sum(wfn.nelecpi()))
 
     wfn.form_D()
-    D = wfn.get_D().to_array()
+    D = wfn.D().to_array()
     D_ref = C[:, :nocc] @ C[:, :nocc].conj().T
 
     assert D.shape == (C.shape[0], C.shape[0])
@@ -329,9 +329,9 @@ def _full_guess_cghf(basis_name="sto-3g", **scf_options):
 def test_cghf_compute_E():
     wfn = _full_guess_cghf(scf_type="direct", screening="NONE")
 
-    H = wfn.get_H().to_array()
+    H = wfn.H().to_array()
     T = wfn.get_T().to_array()
-    D = wfn.get_D().to_array()
+    D = wfn.D().to_array()
     J = wfn.get_J().to_array()
     K = wfn.get_K().to_array()
     enuc = wfn.molecule().nuclear_repulsion_energy()
