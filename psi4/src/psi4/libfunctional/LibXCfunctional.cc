@@ -52,6 +52,13 @@ std::string LibXCFunctional::xclib_description() {
     return xclib;
 }
 
+bool LibXCFunctional::available(const std::string& xc_name) {
+    // LibXC returns -1 for an unknown name; a non-negative id means the
+    // functional is present in this build. No xc_func_init, so no allocation
+    // and safe to call for names that may be absent.
+    return xc_functional_get_number(xc_name.c_str()) != -1;
+}
+
 LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     xc_func_name_ = xc_name;
     func_id_ = xc_functional_get_number(xc_name.c_str());
