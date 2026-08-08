@@ -205,7 +205,7 @@ def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: core.CdSalcLis
     # an arbitrary number of SALCs.
 
     #MolSym "salc_list" contains the salcs and the SymText object
-    if type(salc_list) == list:
+    if core.get_option("FINDIF", "SALC_PACKAGE").lower() == "molsym":
         salcs = salc_list[0]
         symtext = salc_list[1]
         for salc_index, disp_steps in i_m:
@@ -293,26 +293,32 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         info = initialize_string(data)
         core.print_out(info)
         logger.info(info)
-    exploit_degeneracy = core.get_option("FINDIF", "EXPLOIT_DEGENERACY")
+    exploit_degeneracy = core.get_option("FINDIF", "MOLSYM_EXPLOIT_DEGENERACY")
 
     # Get settings for CdSalcList, then get the CdSalcList.
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
     # core.get_option returns an int, but CdSalcList expect a bool, so re-cast
-    if core.get_option("FINDIF", "molsym"):
+    if core.get_option("FINDIF", "SALC_PACKAGE").lower() == "molsym":
         try:
             import molsym
         except ImportError:
-            print("Download & install MolSym at: https://github.com/NASymmetry/MolSym")
-        engine = "molsym" 
+            raise ModuleNotFoundError("Python module molsym not found. Solve by installing it: `conda install -c conda-forge molsym` or `pip install molsym`")
+        displacement_space = "molsym"
         molsym_mol = molsym.Molecule.from_psi4_molecule(mol)
-        molsym_mol.tol = 1e-3
         symtext = molsym.Symtext.from_molecule(molsym_mol)
         molsym_mol = molsym_mol.transform(symtext.rotate_to_std)
 
         cart_coords = molsym.salcs.CartesianCoordinates(symtext)
 
-        salcs = molsym.salcs.ProjectionOp(symtext, cart_coords)
-        #salcs = molsym.salcs.ProjectionOp(symtext, cart_coords, project_Eckart=False)
+        if t_project and r_project:
+            project_eckart = True
+        elif not t_project and not r_project:
+            project_eckart = False
+        elif t_project:
+            project_eckart = "translational"
+        else:
+            project_eckart = "rotational"
+        salcs = molsym.salcs.ProjectionOp(symtext, cart_coords, project_Eckart=project_eckart)
 
         salcs.sort_to('blocks')
         ref_geom = symtext.mol.coords
@@ -329,7 +335,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
             n_salc = len(salcs)
             n_irrep = len(symtext.irreps)
     else:
-        engine = "CdSalcs" 
+        displacement_space = "CdSalc"
         salc_list = core.CdSalcList(mol, method_allowed_irreps, t_project, r_project)
         n_atom = mol.natom()
         n_irrep = salc_list.nirrep()
@@ -341,6 +347,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
             info += f"    Number of irreps is {n_irrep}.\n"
         info += "    Number of {!s}SALCs is {:d}.\n".format("" if method_allowed_irreps != 0x1 else "symmetric ",
                                                             n_salc)
+        info += f"    Displacement space: {displacement_space}.\n"
         info += f"    Translations projected? {t_project:d}. Rotations projected? {r_project:d}.\n"
         core.print_out(info)
         logger.info(info)
@@ -379,7 +386,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
 
     # Populate salc_indices_pi for all irreps.
     # * Python error if iterate through `salc_list`
-    if engine == "molsym":
+    if displacement_space == "molsym":
         if method_allowed_irreps == 1:
             salc_indices_pi[0] = salcs.salcs_by_irrep[0]
         else:
@@ -388,8 +395,6 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
                 for h, irrep in enumerate(symtext.irreps):
                     salc_indices_pi[h] = salc_indices_pi[h][: len(salc_indices_pi[h]) // irrep.d]
     else:
-        for I in range(len(salc_list)):
-            salc_list[I].print_out()
         for i in range(len(salc_list)):
             salc_indices_pi[salc_list[i].irrep_index()].append(i)    
 
@@ -414,18 +419,17 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
                 salc_indices_pi[h].clear()
     #TODO Fix n_disp_pi for MolSym because it is iterating over salcs, not irreps. Not summing correctly
     n_disp_pi = []
-    if engine == "molsym":
+    if displacement_space == "molsym":
         asym_list = []
         for i, salc in enumerate(salcs):
             asym_list.append(molsym.salcs.salc_tools.maps_to_negative(symtext, salc))
-        for h, salcs_h in enumerate(salcs.salcs_by_irrep):
+        
+        for h, salcs_h in enumerate(salc_indices_pi):
             n_disp = 0
-            for s in range(0, len(salcs_h) // symtext.irreps[h].d):
-                salc = salcs_h[s]
+            for salc in salcs_h:
                 n_disp += 2 if not molsym.salcs.salc_tools.maps_to_negative(symtext, salcs[salc]) else 1
             if mode == "2_0":
-                # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
-                n_disp += (len(salcs_h) // symtext.irreps[h].d) * ((len(salcs_h) // symtext.irreps[h].d) - 1) // 2 * len(disps["off"])
+                n_disp += len(salcs_h) * (len(salcs_h) - 1) // 2 * len(disps["off"])
             n_disp_pi.append(n_disp)
     else:
         for irrep, indices in enumerate(salc_indices_pi):
@@ -451,12 +455,12 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         "n_irrep": n_irrep,
         "n_salc": n_salc,
         "n_atom": n_atom,
-        "salc_list": [salcs, symtext, asym_list] if engine == "molsym" else salc_list,
+        "salc_list": [salcs, symtext, asym_list] if displacement_space == "molsym" else salc_list,
         "salc_indices_pi": salc_indices_pi,
         "disps": disps,
         "project_translations": t_project,
         "project_rotations": r_project,
-        "engine": engine,
+        "displacement_space": displacement_space,
     })
     return data
 
@@ -513,7 +517,7 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
         Number of points to evaluate at for each displacement basis vector. Count
         includes the central reference point.
 
-    engine : {'CdSalc', 'molsym'}
+    displacement_space : {'CdSalc', 'molsym'}
         A string specifying the vector space in which displacements are performed.
 
     project_translations : bool
@@ -592,7 +596,6 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
             "size": data["step_size"]
         },
         "stencil_size": data["stencil_size"],
-        "engine": "CdSALC",
         "project_translations": data["project_translations"],
         "project_rotations": data["project_rotations"],
         "molecule": mol.to_schema(dtype=2, units='Bohr'),
@@ -616,7 +619,7 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
         for index in active_indices:
             # Displace along the diagonal.
             # Remember that the totally symmetric irrep has special displacements.
-            if data["engine"] == "molsym":
+            if data["displacement_space"] == "molsym":
                 asym_list = data["salc_list"][2]
                 for val in data["disps"]["sym_irr" if asym_list[index] == 0 else "asym_irr"]:
                     append_geoms((index, ), val)
@@ -735,7 +738,7 @@ def assemble_gradient_from_energies(findifrec: Dict) -> np.ndarray:
         logger.info(info)
 
     # Transform the gradient from mass-weighted SALCs to non-mass-weighted Cartesians
-    if data["engine"] == "molsym":
+    if data["displacement_space"] == "molsym":
         salcs = data["salc_list"][0]
         salc_indices_TSIR = data["salc_indices_pi"][0]
         B = salcs.basis_transformation_matrix[:,:len(salc_indices_TSIR)].T
@@ -902,12 +905,8 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
         for j in range(1, max_disp + 1):
             dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
             dipole[salc_index, max_disp + j - 1] = displacements[f"{salc_index}: {j}"]["dipole"]
-    if data["engine"] == "molsym":
-        if core.get_option("FINDIF", "molsym"):
-            try:
-                import molsym
-            except ImportError:
-                print("Download & install MolSym at: https://github.com/NASymmetry/MolSym")
+    if data["displacement_space"] == "molsym":
+        import molsym
         symtext = data["salc_list"][1]
         salc_list = data["salc_list"][0]  # contains SALC displacement objects
         max_disp = (findifrec["stencil_size"] - 1) // 2  # e.g., 1 for 3-point
@@ -937,7 +936,7 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
                         dipole[salc_index, max_disp - j] = neg_dip
                         dipole[salc_index, max_disp + j - 1] = pos_dip
             # 2. Exploit degeneracy by rotating dipoles for *all* degenerate SALCs
-                if core.get_option("FINDIF", "EXPLOIT_DEGENERACY"):
+                if core.get_option("FINDIF", "MOLSYM_EXPLOIT_DEGENERACY"):
                     irrep = symtext.irreps[h]
                     test_array = np.array([[1, 0, 2],[0, 1, 2]])
                     if irrep.d > 1:
@@ -990,7 +989,7 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
                     dipole[:, 3]) / (12.0 * findifrec["step"]["size"])
 
     # Transform the dipole derivates from mass-weighted SALCs to non-mass-weighted Cartesians
-    if data["engine"] == "molsym":
+    if data["displacement_space"] == "molsym":
         B = data["salc_list"][0].basis_transformation_matrix.T
     else:
         B = np.asarray(data["salc_list"].matrix())
@@ -1077,13 +1076,8 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
     # gradients at the positive displacements.
     
 
-    if data["engine"] == "molsym":
-        if core.get_option("FINDIF", "molsym"):
-            try:
-                import molsym
-            except ImportError:
-                print("Download & install MolSym at: https://github.com/NASymmetry/MolSym")
-
+    if data["displacement_space"] == "molsym":
+        import molsym
         salcs = data["salc_list"][0]   # container holding SALC objects
         symtext = data["salc_list"][1]
         max_disp = (findifrec["stencil_size"] - 1) // 2
@@ -1195,12 +1189,12 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
 
     H_pi = []
     B_pi = []
-    if data["engine"] == "molsym":
+    if data["displacement_space"] == "molsym":
         irrep_lbls = [irrep.symbol for irrep in symtext.irreps]
     else:
         irrep_lbls = mol.irrep_labels()
     massweighter = np.repeat(massweighter, 3)
-    if data["engine"] == "molsym":
+    if data["displacement_space"] == "molsym":
         for h in range(data["n_irrep"]):
             n_disp = data["n_disp_pi"][h]
             salc_indices = data["salc_indices_pi"][h]
@@ -1231,7 +1225,7 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
                 H_block = (grads_adapted[::4] - 8*grads_adapted[1::4] + 8*grads_adapted[2::4] - grads_adapted[3::4]) / (12.0 * findifrec["step"]["size"])
 
             # Apply symmetry processing
-            if core.get_option("FINDIF", "EXPLOIT_DEGENERACY"):
+            if core.get_option("FINDIF", "MOLSYM_EXPLOIT_DEGENERACY"):
                 #Duplicate degenerate blocks of the Hessian along the diagonal
                 H_block = np.kron(np.eye(symtext.irreps[h].d), H_block)
             H_pi.append(_process_hessian_symmetry_block(H_block, B, massweighter, irrep_lbls[h], data["print_lvl"]))
@@ -1317,7 +1311,7 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
     massweighter = np.repeat([mol.mass(a) for a in range(data["n_atom"])], 3)**(-0.5)
     B_pi = []
     H_pi = []
-    if data["engine"] == "molsym":
+    if data["displacement_space"] == "molsym":
         #TODO This won't change the label that is printed to the console, see qcdb/vib.py
         symtext = data["salc_list"][1]
         asym_list = data["salc_list"][2]
@@ -1340,7 +1334,7 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
         # For asymmetric irreps, the energy at a + disp is the same as at a - disp
         # Just reuse the - disp energy for the + disp energy
 
-        if data["engine"] == "molsym":
+        if data["displacement_space"] == "molsym":
             for i, salc_index in enumerate(salc_indices):
                 for j in range(1, max_disp + 1):
                     E[i, max_disp - j] = displacements[f"{salc_index}: {-j}"]["energy"]
@@ -1384,9 +1378,9 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
                           12 * ref_energy) / (12 * findifrec["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
-        if data["engine"] == "molsym" and core.get_option("FINDIF", "EXPLOIT_DEGENERACY"):
+        if data["displacement_space"] == "molsym" and core.get_option("FINDIF", "MOLSYM_EXPLOIT_DEGENERACY"):
             H_irr = np.kron(np.eye(symtext.irreps[h].d), H_irr)
-        if data["engine"] == "molsym":
+        if data["displacement_space"] == "molsym":
             salcs = data["salc_list"][0]
             B_pi.append(salcs.basis_transformation_matrix[:,salcs.salcs_by_irrep[h]].T)
         else:

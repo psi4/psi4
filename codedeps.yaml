@@ -1598,20 +1598,17 @@ data:
 
   - project: molsym
     use:
-      added: "1.11"
+      added: "1.12"
       required: false
-      required_note: "Allows modular symmetry package for finite difference."
-      buildable: true
+      required_note: "Allows modular symmetry package for finite difference driver."
+      buildable: false
       buildtime: false
       cms: true
-    repository:
-      host: github
-      account: NASymmetry
-      name: MolSym
-      commit: f9f93d1  # TODO tag: v0.5.1
-      githttps: true
-    cmake:
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
       name: molsym
-      constraint: null  # "ATLEAST 0.5.1"
-      target: null
-    conda: null
+      constraint: ">=1.1.0"
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
