@@ -1959,32 +1959,51 @@ def scf_helper(name, post_scf=True, **kwargs):
     # we can use os.path.isfile to query whether the file exists before attempting to read
     read_filename = scf_wfn.get_scratch_filename(180) + '.npy'
     if ((core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename)):
-        old_wfn = core.Wavefunction.from_file(read_filename)
+        if isinstance(scf_wfn, core.ComplexWavefunction):
+            old_wfn = core.ComplexWavefunction.from_file(read_filename)
 
-        Ca_occ = old_wfn.Ca_subset("SO", "OCC")
-        Cb_occ = old_wfn.Cb_subset("SO", "OCC")
+            if old_wfn.molecule().schoenflies_symbol() != scf_molecule.schoenflies_symbol():
+                raise ValidationError("Cannot compute projection of different symmetries.")
 
-        if old_wfn.molecule().schoenflies_symbol() != scf_molecule.schoenflies_symbol():
-            raise ValidationError("Cannot compute projection of different symmetries.")
+            if old_wfn.basisset().name() != scf_wfn.basisset().name():
+                raise NotImplementedError(
+                    "CGHF READ guess with basis projection is not implemented "
+                    f"(checkpoint basis '{old_wfn.basisset().name()}' vs "
+                    f"'{scf_wfn.basisset().name()}'). Same-basis READ only for now."
+                )
 
-        if old_wfn.basisset().name() == scf_wfn.basisset().name():
             core.print_out(f"  Reading orbitals from file {read_filename}, no projection.\n\n")
-            scf_wfn.guess_Ca(Ca_occ)
-            scf_wfn.guess_Cb(Cb_occ)
+            C_full = old_wfn.C().to_array()
+            nocc = old_wfn.nelec()
+            C_occ = core.ComplexMatrix.from_array(C_full[:, :nocc], name="C guess")
+            scf_wfn.guess_C(C_occ)
         else:
-            core.print_out(f"  Reading orbitals from file {read_filename}, projecting to new basis.\n\n")
-            core.print_out("  Computing basis projection from %s to %s\n\n" % (old_wfn.basisset().name(), scf_wfn.basisset().name()))
+            old_wfn = core.Wavefunction.from_file(read_filename)
 
-            pCa = scf_wfn.basis_projection(Ca_occ, old_wfn.nalphapi(), old_wfn.basisset(), scf_wfn.basisset())
-            pCb = scf_wfn.basis_projection(Cb_occ, old_wfn.nbetapi(), old_wfn.basisset(), scf_wfn.basisset())
-            scf_wfn.guess_Ca(pCa)
-            scf_wfn.guess_Cb(pCb)
+            Ca_occ = old_wfn.Ca_subset("SO", "OCC")
+            Cb_occ = old_wfn.Cb_subset("SO", "OCC")
 
-        # Strip off headers to only get R, RO, U, CU
-        old_ref = old_wfn.name().replace("KS", "").replace("HF", "")
-        new_ref = scf_wfn.name().replace("KS", "").replace("HF", "")
-        if old_ref != new_ref:
-            scf_wfn.reset_occ_ = True
+            if old_wfn.molecule().schoenflies_symbol() != scf_molecule.schoenflies_symbol():
+                raise ValidationError("Cannot compute projection of different symmetries.")
+
+            if old_wfn.basisset().name() == scf_wfn.basisset().name():
+                core.print_out(f"  Reading orbitals from file {read_filename}, no projection.\n\n")
+                scf_wfn.guess_Ca(Ca_occ)
+                scf_wfn.guess_Cb(Cb_occ)
+            else:
+                core.print_out(f"  Reading orbitals from file {read_filename}, projecting to new basis.\n\n")
+                core.print_out("  Computing basis projection from %s to %s\n\n" % (old_wfn.basisset().name(), scf_wfn.basisset().name()))
+
+                pCa = scf_wfn.basis_projection(Ca_occ, old_wfn.nalphapi(), old_wfn.basisset(), scf_wfn.basisset())
+                pCb = scf_wfn.basis_projection(Cb_occ, old_wfn.nbetapi(), old_wfn.basisset(), scf_wfn.basisset())
+                scf_wfn.guess_Ca(pCa)
+                scf_wfn.guess_Cb(pCb)
+
+            # Strip off headers to only get R, RO, U, CU
+            old_ref = old_wfn.name().replace("KS", "").replace("HF", "")
+            new_ref = scf_wfn.name().replace("KS", "").replace("HF", "")
+            if old_ref != new_ref:
+                scf_wfn.reset_occ_ = True
 
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
         core.print_out(f"\n !!!  Unable to find file {read_filename}, defaulting to SAD guess. !!!\n\n")
@@ -2004,6 +2023,11 @@ def scf_helper(name, post_scf=True, **kwargs):
 
 
     if cast:
+        if isinstance(scf_wfn, core.ComplexWavefunction):
+            raise NotImplementedError(
+                "CGHF basis cast-up / projection is not implemented. "
+                "Use the same basis for the cast-up guess or disable BASIS_GUESS."
+            )
         core.print_out("\n  Computing basis projection from %s to %s\n\n" % (ref_wfn.basisset().name(), base_wfn.basisset().name()))
         if ref_wfn.basisset().n_ecp_core() != base_wfn.basisset().n_ecp_core():
             raise ValidationError("Projecting from basis ({}) with ({}) ECP electrons to basis ({}) with ({}) ECP electrons will be a disaster. Select a compatible cast-up basis with `set guess_basis YOUR_BASIS_HERE`.".format(

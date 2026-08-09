@@ -350,3 +350,34 @@ def test_cghf_compute_E():
     assert wfn.get_energies("Two-Electron") == pytest.approx(two_electron_E, abs=1e-10)
 
 
+def test_cghf_manual_guess_C():
+    """Supply occupied spinor MOs via guess_C (NumPy → ComplexMatrix) without a checkpoint file.
+
+    When guess_C is set, CGHF::guess uses those orbitals regardless of the GUESS keyword.
+    Rows must be spin-blocked (2 * nso); columns are the occupied MOs (nelec for closed shell).
+    """
+    # Reference orbitals from a core-Hamiltonian diagonalization
+    ref = _core_guess_cghf()
+    ref.form_D()
+    nocc = int(sum(ref.nelecpi()))
+    C_occ_ref = ref.C().to_array()[:, :nocc]
+    D_ref = ref.D().to_array()
+    E_ref = ref.compute_initial_E()
+
+    # Fresh wavefunction: inject the same occupied MOs manually
+    wfn = _build_cghf(_h2_c1(), s_orthogonalization="SYMMETRIC")
+    wfn.form_H()
+    wfn.form_Shalf()
+    wfn.guess_C(psi4.core.ComplexMatrix.from_array(C_occ_ref, name="manual Cocc"))
+    wfn.guess()  # GUESS=core in options, but guess_C_ takes priority
+
+    C = wfn.C().to_array()
+    D = wfn.D().to_array()
+
+    np.testing.assert_allclose(C[:, :nocc], C_occ_ref, atol=1e-12)
+    np.testing.assert_allclose(D, D_ref, atol=1e-12)
+    assert int(sum(wfn.nelecpi())) == nocc
+    assert wfn.compute_initial_E() == pytest.approx(E_ref, abs=1e-12)
+    # Density must be Cocc Cocc^H, not the full (uninitialized virtual) C
+    np.testing.assert_allclose(D, C_occ_ref @ C_occ_ref.conj().T, atol=1e-12)
+

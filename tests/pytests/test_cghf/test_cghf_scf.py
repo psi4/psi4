@@ -52,3 +52,67 @@ def test_cghf_sad_guess():
     e = psi4.energy("scf", molecule=mol)
     assert type(e) == float
     assert e == pytest.approx(REFERENCE_ENERGY, abs=1e-6)
+
+
+def test_cghf_read_guess():
+    """Same-basis CGHF READ: checkpoint from a converged SCF restarts in one iteration."""
+    mol = psi4.geometry("""
+    0 1
+        H
+        H 1 0.74
+    symmetry c1
+    """)
+    psi4.set_options({
+        "basis": "cc-pVDZ",
+        "reference": "cghf",
+        "guess": "core",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+        "diis": False,
+        "scf_initial_accelerator": "none",
+    })
+    e0, wfn = psi4.energy("scf", molecule=mol, return_wfn=True, write_orbitals="pytest_cghf_mos")
+    assert e0 == pytest.approx(REFERENCE_ENERGY, abs=1e-6)
+
+    psi4.core.clean()
+    psi4.set_options({
+        "basis": "cc-pVDZ",
+        "reference": "cghf",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+        "diis": False,
+        "scf_initial_accelerator": "none",
+        "maxiter": 1,
+    })
+    e1 = psi4.energy("scf", molecule=mol, restart_file="pytest_cghf_mos")
+    assert e1 == pytest.approx(REFERENCE_ENERGY, abs=1e-6)
+
+
+def test_cghf_read_guess_basis_projection_nyi():
+    """Cross-basis CGHF READ should raise until spinor basis_projection exists."""
+    mol = psi4.geometry("""
+    0 1
+        H
+        H 1 0.74
+    symmetry c1
+    """)
+    psi4.set_options({
+        "basis": "sto-3g",
+        "reference": "cghf",
+        "guess": "core",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+        "diis": False,
+        "scf_initial_accelerator": "none",
+    })
+    psi4.energy("scf", molecule=mol, write_orbitals="pytest_cghf_sto3g")
+
+    psi4.core.clean()
+    psi4.set_options({
+        "basis": "cc-pVDZ",
+        "reference": "cghf",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+    })
+    with pytest.raises(NotImplementedError, match="basis projection"):
+        psi4.energy("scf", molecule=mol, restart_file="pytest_cghf_sto3g")
