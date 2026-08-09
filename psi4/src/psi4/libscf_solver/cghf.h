@@ -95,14 +95,16 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     SharedComplexMatrix T_;
     /// The 1e potential energy matrix
     SharedComplexMatrix V_;
-    /// The orthogonalization matrix
+    /// The orthogonalization matrix (not the Lagrangian)
     SharedComplexMatrix X_;
 
-    /// No DFT potential matrices
     /// Temporary matrices
     SharedComplexMatrix G_;
     SharedComplexMatrix J_;
     SharedComplexMatrix K_;
+
+    /// Occupied (or full) spinor MO guess from a previous computation / READ
+    SharedComplexMatrix guess_C_;
 
     void common_init();
 
@@ -149,6 +151,9 @@ class CGHF : public ComplexWavefunction, public BaseHF {
 
     /// Form the guess (guarantees C, D, and E)
     void guess();
+
+    /// Supply occupied (or full) spinor MOs for READ / cast-up style guesses
+    void guess_C(SharedComplexMatrix C) { guess_C_ = C; }
 
     /// Sets nelecpi_ from orbital energies (Aufbau)
     void find_occupation();

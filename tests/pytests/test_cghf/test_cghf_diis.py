@@ -193,6 +193,7 @@ def test_cghf_diis_converges_co():
         "scf_type": "direct",
         "df_scf_guess": False,
         "scf_initial_accelerator": "none",
+        "orbital_optimizer_package": "internal",
     })
     e_cghf = psi4.energy("scf", molecule=mol)
 
@@ -219,6 +220,7 @@ def test_cghf_aediis_converges_co(accelerator):
         "scf_type": "direct",
         "df_scf_guess": False,
         "scf_initial_accelerator": accelerator,
+        "orbital_optimizer_package": "internal",
     })
     e_cghf = psi4.energy("scf", molecule=mol)
 
@@ -245,6 +247,7 @@ def test_cghf_co_does_not_converge_without_diis():
         "df_scf_guess": False,
         "diis": False,
         "scf_initial_accelerator": "none",
+        "orbital_optimizer_package": "internal",
         "maxiter": 20,
     })
     with pytest.raises(SCFConvergenceError):
