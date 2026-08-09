@@ -608,6 +608,7 @@ void export_wavefunction(py::module& m) {
         .def("set_sad_fitting_basissets", &scf::CGHF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
         .def("guess", &scf::CGHF::guess, "Form SCF guess.")
+        .def("guess_C", &scf::CGHF::guess_C, "Sets the spinor MO coefficient guess matrix (occupied columns).")
         .def("find_occupation", &scf::CGHF::find_occupation, "Determine orbital occupations from orbital energies.")
         .def("reset_occupation", &scf::CGHF::reset_occupation,
              "Reset occupations after SAD guess (no-op for CGHF).")

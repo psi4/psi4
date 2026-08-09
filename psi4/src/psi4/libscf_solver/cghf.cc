@@ -345,7 +345,46 @@ void CGHF::guess() {
     double guess_E;
     std::string guess_type = options_.get_str("GUESS");
 
-    if (guess_type == "CORE") {
+    if ((guess_type == "READ") && !guess_C_) {
+        outfile->Printf("\nWarning! Guess was READ without C set, switching to CORE!\n");
+        outfile->Printf("           This option should have been configured at the driver level.\n\n");
+        guess_type = "CORE";
+    }
+
+    if (guess_C_) {
+        if (print_) outfile->Printf("  SCF Guess: Orbitals guess was supplied from a previous computation.\n\n");
+
+        if (guess_C_->nirrep() != nirrep_) {
+            throw PSIEXCEPTION(
+                "Number of irreps of the input orbitals do not match number of irreps of the wavefunction.");
+        }
+
+        // Full C_ sized to current orthog basis; copy leading occupied columns from guess
+        C_ = std::make_shared<ComplexMatrix>("MO coefficients", X_->rowspi(), nmopi_);
+        C_->zero();
+
+        for (int h = 0; h < nirrep_; h++) {
+            const int nso_spin = X_->rowdim(h);
+            const int nocc = guess_C_->coldim(h);
+            if (guess_C_->rowdim(h) != nso_spin) {
+                throw PSIEXCEPTION("Nso of the guess orbitals do not match Nso of the wavefunction.");
+            }
+            if (nocc > nmopi_[h]) {
+                throw PSIEXCEPTION("Guess has more occupied orbitals than available MOs.");
+            }
+            nelecpi_[h] = nocc;
+            for (int i = 0; i < nso_spin; i++) {
+                for (int j = 0; j < nocc; j++) {
+                    C_->set(h, i, j, guess_C_->get(h, i, j));
+                }
+            }
+        }
+
+        form_D();
+        iteration_ = -1;
+        guess_E = compute_initial_E();
+
+    } else if (guess_type == "CORE") {
         if (print_) outfile->Printf("  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
 
         (*F_) = (*H_); // Try the core Hamiltonian as the Fock Matrix
@@ -364,7 +403,7 @@ void CGHF::guess() {
         sad_ = true;
         guess_E = compute_initial_E();
     } else {
-        throw PSIEXCEPTION("CGHF '" + guess_type + "' GUESS not implemented. Use 'CORE' or 'SAD'.");
+        throw PSIEXCEPTION("CGHF '" + guess_type + "' GUESS not implemented. Use 'CORE', 'SAD', or 'READ'.");
     }
 
     energies_["Total Energy"] = 0.0;  // don't use this guess in our convergence checks
