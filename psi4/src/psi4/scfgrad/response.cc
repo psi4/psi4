@@ -867,7 +867,24 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
             // Same applies to these terms.  There are already hooks to compute c and d vectors, and store them on disk,
             // so we should make better use of those intermediates between the second derivative integrals and these
             // first derivative terms needed for the Fock matrix derivatives.
+            //
+            // The (A|mn) build writes disjoint aux-function columns per P, so it
+            // threads over P with per-thread engines without any reduction. (The
+            // perturbation-batched derivative loops below stay serial: they
+            // accumulate into per-perturbation Fock-derivative matrices whose
+            // batch size max_a is already sized to fill ~90% of memory, so
+            // per-thread duplication is not memory-safe; threading them well
+            // needs a memory-guarded per-thread-accumulator redesign.)
+            int nthreads = Process::environment.get_n_threads();
+            std::vector<std::shared_ptr<TwoBodyAOInt>> Amn_ints(nthreads);
+            Amn_ints[0] = std::shared_ptr<TwoBodyAOInt>(Pmnfactory->eri(2));
+            for (int t = 1; t < nthreads; ++t) Amn_ints[t] = std::shared_ptr<TwoBodyAOInt>(Amn_ints[0]->clone());
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
             for (int P = 0; P < nauxshell; ++P) {
+                int thread = 0;
+#ifdef _OPENMP
+                thread = omp_get_thread_num();
+#endif
                 int nP = auxiliary_->shell(P).nfunction();
                 int oP = auxiliary_->shell(P).function_index();
                 for (int M = 0; M < nshell; ++M) {
@@ -877,8 +894,8 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                         int nN = basisset_->shell(N).nfunction();
                         int oN = basisset_->shell(N).function_index();
 
-                        Pmnint->compute_shell(P, 0, M, N);
-                        const double* buffer = Pmnint->buffer();
+                        Amn_ints[thread]->compute_shell(P, 0, M, N);
+                        const double* buffer = Amn_ints[thread]->buffer();
 
                         for (int p = oP; p < oP+nP; p++) {
                             for (int m = oM; m < oM+nM; m++) {
@@ -3673,7 +3690,22 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
         // Same applies to these terms.  There are already hooks to compute c and d vectors, and store them on disk,
         // so we should make better use of those intermediates between the second derivative integrals and these
         // first derivative terms needed for the Fock matrix derivatives.
+        //
+        // The (A|mn) build writes disjoint aux-function columns per P, so it
+        // threads over P with per-thread engines without any reduction. (The
+        // perturbation-batched derivative loops below stay serial: their batch
+        // size max_a is sized to fill ~90% of memory, so per-thread duplication
+        // of the accumulators is not memory-safe.)
+        int nthreads = Process::environment.get_n_threads();
+        std::vector<std::shared_ptr<TwoBodyAOInt>> Amn_ints(nthreads);
+        Amn_ints[0] = std::shared_ptr<TwoBodyAOInt>(Pmnfactory->eri(2));
+        for (int t = 1; t < nthreads; ++t) Amn_ints[t] = std::shared_ptr<TwoBodyAOInt>(Amn_ints[0]->clone());
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         for (int P = 0; P < nauxshell; ++P){
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
             int nP = auxiliary_->shell(P).nfunction();
             int oP = auxiliary_->shell(P).function_index();
             for(int M = 0; M < nshell; ++M){
@@ -3683,8 +3715,8 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     int nN = basisset_->shell(N).nfunction();
                     int oN = basisset_->shell(N).function_index();
 
-                    Pmnint->compute_shell(P,0,M,N);
-                    const double* buffer = Pmnint->buffers()[0];
+                    Amn_ints[thread]->compute_shell(P,0,M,N);
+                    const double* buffer = Amn_ints[thread]->buffers()[0];
 
                     for (int p = oP; p < oP+nP; p++) {
                         for (int m = oM; m < oM+nM; m++) {
