@@ -2710,7 +2710,6 @@ SharedMatrix RV::compute_hessian() {
     // ==> Build the target Hessian Matrix <==
     int natom = primary_->molecule()->natom();
     auto H = std::make_shared<Matrix>("XC Hessian", 3 * natom, 3 * natom);
-    auto Hp = H->pointer();
 
     // ==> Thread info <==
     int rank = 0;
@@ -2746,10 +2745,20 @@ SharedMatrix RV::compute_hessian() {
         Q_temp.push_back(std::make_shared<Vector>("Quadrature Tempt", max_points));
     }
 
+    // ==> Per-thread Hessian accumulators (reduced after the block loop) <==
+    // Each thread writes into its own 3N x 3N Hessian to avoid a data race on
+    // the shared target; the block loop scatters to global atom indices, so
+    // each local copy spans the whole molecule.
+    std::vector<SharedMatrix> H_local;
+    for (size_t i = 0; i < num_threads_; i++) {
+        H_local.push_back(std::make_shared<Matrix>("XC Hessian Temp", 3 * natom, 3 * natom));
+    }
+
     auto QT = std::make_shared<Vector>("Quadrature Temp", max_points);
     const auto& blocks = grid_->blocks();
 
     // => Master Loop <=
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < blocks.size(); Q++) {
         // ==> Get thread info <==
 #ifdef _OPENMP
@@ -2760,6 +2769,7 @@ SharedMatrix RV::compute_hessian() {
         auto fworker = functional_workers_[rank];
         auto pworker = point_workers_[rank];
         auto V2p = V_local[rank]->pointer();
+        auto Hp = H_local[rank]->pointer();
         auto Dp = pworker->D_scratch()[0]->pointer();
         auto tmpHXX = pworker->D_scratch()[0]->clone();
         auto tmpHXY = pworker->D_scratch()[0]->clone();
@@ -3540,6 +3550,9 @@ SharedMatrix RV::compute_hessian() {
         point_workers_[i]->set_deriv(old_deriv);
     }
     functional_->set_deriv(old_func_deriv);
+
+    // Reduce the per-thread Hessian contributions into the target Hessian.
+    for (const auto& hl : H_local) H->add(hl);
 
     // RKS
     H->scale(2.0);
@@ -6674,7 +6687,6 @@ SharedMatrix UV::compute_hessian() {
     // ==> Build the target Hessian Matrix <==
     int natom = primary_->molecule()->natom();
     auto H = std::make_shared<Matrix>("XC Hessian", 3 * natom, 3 * natom);
-    auto Hp = H->pointer();
 
     // ==> Thread info <==
     int rank = 0;
@@ -6710,10 +6722,20 @@ SharedMatrix UV::compute_hessian() {
         Q_temp.push_back(std::make_shared<Vector>("Quadrature Tempt", max_points));
     }
 
+    // ==> Per-thread Hessian accumulators (reduced after the block loop) <==
+    // Each thread writes into its own 3N x 3N Hessian to avoid a data race on
+    // the shared target; the block loop scatters to global atom indices, so
+    // each local copy spans the whole molecule.
+    std::vector<SharedMatrix> H_local;
+    for (size_t i = 0; i < num_threads_; i++) {
+        H_local.push_back(std::make_shared<Matrix>("XC Hessian Temp", 3 * natom, 3 * natom));
+    }
+
     auto QT = std::make_shared<Vector>("Quadrature Temp", max_points);
     const auto& blocks = grid_->blocks();
 
     // => Master Loop <=
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < blocks.size(); Q++) {
         // ==> Get thread info <==
 #ifdef _OPENMP
@@ -6724,6 +6746,7 @@ SharedMatrix UV::compute_hessian() {
         auto fworker = functional_workers_[rank];
         auto pworker = point_workers_[rank];
         auto V2p = V_local[rank]->pointer();
+        auto Hp = H_local[rank]->pointer();
         auto Dap = pworker->D_scratch()[0]->pointer();
         auto Dbp = pworker->D_scratch()[1]->pointer();
         auto tmpHXX = pworker->D_scratch()[0]->clone();
@@ -8185,6 +8208,9 @@ SharedMatrix UV::compute_hessian() {
         point_workers_[i]->set_deriv(old_deriv);
     }
     functional_->set_deriv(old_func_deriv);
+
+    // Reduce the per-thread Hessian contributions into the target Hessian.
+    for (const auto& hl : H_local) H->add(hl);
 
     H->hermitivitize();
 //    H->print_out();
