@@ -205,7 +205,12 @@ void export_fock(py::module &m) {
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
-                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return scf::SADGuess(basis, atomic_bases, Process::environment.options); })
+                    // Return by shared_ptr, not by value: SADGuess owns a std::unique_ptr<JK> and
+                    // declares a destructor, so it is neither copyable nor movable. pybind11 3.x wraps
+                    // the factory in detail::function_ref, whose constructor requires
+                    // is_convertible<return_type, Ret> -- and is_convertible<SADGuess, SADGuess> is
+                    // false for a non-movable, non-copyable type, so the by-value form fails to build.
+                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return std::make_shared<scf::SADGuess>(basis, atomic_bases, Process::environment.options); })
         .def("compute_guess", &scf::SADGuess::compute_guess)
         .def("set_print", &scf::SADGuess::set_print)
         .def("set_debug", &scf::SADGuess::set_debug)
