@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import List
@@ -12,6 +13,7 @@ import psi4
 
 __all__ = [
     "hardware_nvidia_gpu",
+    "nvidia_compute_capability",
     "using",
     "uusing",
     "ctest_labeler",
@@ -43,7 +45,10 @@ def is_nvidia_gpu_present():
             # who knows?
             return False
         else:
-            return gpu_dfcc.cudaGetDeviceCount() > 0
+            try:
+                return gpu_dfcc.cudaGetDeviceCount() > 0
+            except AttributeError:
+                return False
     else:
         try:
             ngpu = len(GPUtil.getGPUs())
@@ -52,6 +57,33 @@ def is_nvidia_gpu_present():
             return False
         else:
             return ngpu > 0
+
+
+def nvidia_compute_capability():
+    """Return the min/max visible NVIDIA GPU compute capabilities, or None."""
+    try:
+        completed = subprocess.run(
+            ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+
+    capabilities = []
+    for line in completed.stdout.splitlines():
+        try:
+            major, minor = line.strip().split(".", maxsplit=1)
+            capabilities.append((int(major), int(minor)))
+        except ValueError:
+            pass
+
+    if not capabilities:
+        return None
+
+    return min(capabilities), max(capabilities)
 
 
 # Figure out what is imported
@@ -99,6 +131,7 @@ _programs = {
     "pandas": which_import("pandas", return_bool=True),
     "cuest": psi4.addons("cuest"),
     "pycuest": which_import("cuest", return_bool=True),
+    "cuda_cc8": (cc := nvidia_compute_capability()) is not None and cc[1] >= (8, 0),
 }
 
 
@@ -124,7 +157,10 @@ _using_cache = {}
 def _using(program: str) -> None:
 
     if program not in _using_cache:
-        import_message = f"Not detecting module {program}. Install package if necessary to enable tests."
+        if program == "cuda_cc8":
+            import_message = f"Not detecting Nvidia GPU (8.0). Switch hardware to enable tests."
+        else:
+            import_message = f"Not detecting module {program}. Install package if necessary to enable tests."
         skip = pytest.mark.skipif(has_program(program) is False, reason=import_message)
         general = pytest.mark.addon
         particular = getattr(pytest.mark, program)
