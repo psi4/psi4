@@ -1608,13 +1608,13 @@ data:
     repository: null
     cmake:
       name: cuEST
-      constraint: null
+      constraint: "0.1"
       target: cuEST::cuEST
       components: null
     conda:
       channel: conda-forge
       name: libcuest-dev
-      constraint: null
+      constraint: "=0.1"
       #aux_build_names:
       #  - libcublas-dev
       #  - libcusolver-dev

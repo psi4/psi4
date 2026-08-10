@@ -1,5 +1,5 @@
 if(ENABLE_cuEST)
-    find_package(cuEST CONFIG QUIET)
+    find_package(cuEST 0.1 CONFIG QUIET)  # edit in codedeps
 
     if(NOT cuEST_FOUND)
         find_package(cuEST MODULE QUIET)
@@ -17,5 +17,6 @@ if(ENABLE_cuEST)
         add_library(cuest_external INTERFACE)  # dummy
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: cuEST${ColourReset}")
     add_library(cuest_external INTERFACE)  # dummy
 endif()

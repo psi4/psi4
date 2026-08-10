@@ -45,6 +45,7 @@ __geoms = {
 @pytest.mark.smoke
 @pytest.mark.quick
 @uusing("cuest")
+@uusing("cuda_cc8")
 @pytest.mark.parametrize("inp", [
 
     # This does not work - the aux basis must be spherical for cuEST.  The
