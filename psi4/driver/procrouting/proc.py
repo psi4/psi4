@@ -1801,6 +1801,21 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("""  PE geometry must align with POTFILE keyword: """
                        """resetting coordinates with fixed origin and orientation.\n""")
 
+    if core.get_option('SCF', 'REFERENCE') == 'CGHF':
+        user_sym = scf_molecule.symmetry_from_input()
+        if user_sym and user_sym != 'c1':
+            raise ValidationError(
+                f"CGHF does not make use of molecular symmetry: "
+                f"use symmetry c1 (or remove symmetry specification), not {user_sym}.")
+
+        c1_molecule = scf_molecule.clone()
+        c1_molecule.reset_point_group('c1')
+        c1_molecule.update_geometry()
+
+        scf_molecule = c1_molecule
+        core.print_out("""  CGHF does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+
     # SCF Banner data
     banner = kwargs.pop('banner', None)
     bannername = name

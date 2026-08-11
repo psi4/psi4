@@ -75,13 +75,7 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         return max(gradient_a.absmax(), gradient_b.absmax())
 
 def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
-    F = self.F()
-    D = self.D()
-    S = self.S().to_array()
-
-    # form_FDSmSDF isn't implemented for CGHF yet; compute FDS-SDF in NumPy and wrap the
-    # result into a ComplexMatrix only so it can be handed to DIIS.
-    gradient_arr = F.to_array() @ D.to_array() @ S - S @ D.to_array() @ F.to_array()
+    gradient = self.form_FDSmSDF(self.F(), self.D())
 
     if save_fock:
         if not self.initialized_diis_manager_:
@@ -92,20 +86,20 @@ def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> floa
                                       storage_policy, False, engines=diis_engine_helper(self))
             self.initialized_diis_manager_ = True
 
-        entry = {"target": [F]}
+        entry = {"target": [self.F()]}
         if core.get_option('SCF', 'DIIS'):
-            entry["error"] = [core.ComplexMatrix.from_array(gradient_arr, name="CGHF DIIS error")]
+            entry["error"] = [gradient]
         aediis = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR')
         if aediis != "NONE":
-            entry["densities"] = [D]
+            entry["densities"] = [self.D()]
             if aediis == "EDIIS":
                 entry["energy"] = [self.compute_E()]
         self.diis_manager_.add_entry(entry)
 
     if self.options().get_bool("DIIS_RMS_ERROR"):
-        return float(np.sqrt(np.mean(np.abs(gradient_arr) ** 2)))
+        return gradient.rms()
     else:
-        return float(np.max(np.abs(gradient_arr)))
+        return gradient.absmax()
 
 def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     # Only the inact-act, inact-vir, and act-vir rotations are non-redundant

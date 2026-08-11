@@ -115,6 +115,123 @@ def test_complexmatrix_to_array_multiblock():
 
 
 # ---------------------------------------------------------------------------
+#   GEMM operations
+# ---------------------------------------------------------------------------
+
+
+def test_doublet_aH_b_conjugation():
+    """Verify that doublet<true, false>(A, I) computes conjugate-transpose A."""
+    rng = np.random.default_rng(19)
+    n = 4
+
+    A_np = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    I_np = np.eye(n, dtype=np.complex128)
+
+    A_cm = psi4.core.ComplexMatrix.from_array(A_np, name="A")
+    I_cm = psi4.core.ComplexMatrix.from_array(I_np, name="I")
+
+    result = psi4.core._doublet_aH_b(A_cm, I_cm).to_array()
+
+    A_H = A_np.conj().T
+
+    assert np.allclose(result, A_H, atol=1e-14)
+
+
+def test_doublet_atypical_shapes():
+    """Test linalg::doublet<true, false> edge cases where a tile is zero or not allocated."""
+    A_cm = psi4.core.ComplexMatrix("A", [1, 4, 3], [4, 0, 2])
+    B_cm = psi4.core.ComplexMatrix("B", [1, 4, 3], [3, 0, 5])
+
+    result = psi4.core._doublet_aH_b(A_cm, B_cm).to_array()
+
+    assert result[0].shape == (4, 3)
+    assert result[1].shape == (0, 0)
+    assert result[2].shape == (2, 5)
+
+
+# ---------------------------------------------------------------------------
+#  diagonalize
+# ---------------------------------------------------------------------------
+
+
+def _inv_sqrt_hermitian(M):
+    """Inverse matrix square root of a Hermitian positive-definite matrix M.
+    By the spectral theorem, this matrix exists and is unique.
+    Given  M := U @ diag(s) @ U^H,   M^{-1/2} = U @ diag(1/sqrt(s)) @ U^H"""
+    s, U = np.linalg.eigh(M)
+    assert np.all(s > 0), "M must be positive-definite"
+    return U @ np.diag(1.0 / np.sqrt(s)) @ U.conj().T
+
+
+def test_complexmatrix_diagonalize_hermitian():
+    """diagonalize(F, X) diagonalizes X^H @ F @ X.
+
+    The function returns (evals, U^H) where U^H has eigenvectors as columns
+    and satisfies U^H @ (X^H @ F @ X) @ U = diag(evals).
+
+    S is kept real-symmetric (like the physical overlap matrix).
+    """
+    rng = np.random.default_rng(42)
+    n = 4
+
+    # Hermitian F
+    A = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    F_np = A + A.conj().T
+
+    # Real-symmetric positive-definite S, then orthogonalizer X = S^{-1/2}
+    B = rng.normal(size=(n, n))
+    S_np = B @ B.T
+    X_np = _inv_sqrt_hermitian(S_np)
+
+    F_cm = psi4.core.ComplexMatrix.from_array(F_np, name="F")
+    X_cm = psi4.core.ComplexMatrix.from_array(X_np, name="X")
+
+    evals_vec, evecs_cm = psi4.core.diagonalize(F_cm, X_cm)
+
+    evals_np = np.asarray(evals_vec.array_interface()[0])
+    evecs_np = evecs_cm.to_array()  # U^H (eigenvectors as columns)
+
+    # Forth = X^H @ F @ X; verify  U^H @ Forth @ U = diag(evals)
+    Forth_np = X_np @ F_np @ X_np  # X is real-symmetric, so X^H = X^T = X
+    residual = evecs_np.conj().T @ Forth_np @ evecs_np - np.diag(evals_np)
+    np.testing.assert_allclose(residual, 0.0, atol=1e-10)
+
+
+def test_complexmatrix_diagonalize_multi_block():
+    """diagonalize works across multiple irrep blocks."""
+    rng = np.random.default_rng(99)
+    sizes = [2, 3]
+
+    F_cm = psi4.core.ComplexMatrix("F", sizes)
+    X_cm = psi4.core.ComplexMatrix("X", sizes)
+
+    for h, n in enumerate(sizes):
+        # Hermitian F per block
+        A = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+        F_blk = A + A.conj().T
+        F_cm.array_interface()[h][:] = F_blk
+
+        # Real-symmetric positive-definite S -> orthogonalizer X = S^{-1/2}
+        B = rng.normal(size=(n, n))
+        S_blk = B @ B.T
+        X_cm.array_interface()[h][:] = _inv_sqrt_hermitian(S_blk)
+
+    evals_vec, evecs_cm = psi4.core.diagonalize(F_cm, X_cm)
+
+    evals_arrs = evals_vec.array_interface()
+    evecs_blocks = evecs_cm.to_array()  # list of U_h^H per block
+    for h in range(len(sizes)):
+        evals_np_blk = np.asarray(evals_arrs[h])
+        evecs_blk = evecs_blocks[h]  # U^H
+        F_blk = F_cm.to_array()[h]
+        X_blk = X_cm.to_array()[h]  # real-symmetric, so X^H = X
+
+        Forth_blk = X_blk @ F_blk @ X_blk
+        residual = evecs_blk.conj().T @ Forth_blk @ evecs_blk - np.diag(evals_np_blk)
+        np.testing.assert_allclose(residual, 0.0, atol=1e-10)
+
+
+# ---------------------------------------------------------------------------
 #  axpy
 # ---------------------------------------------------------------------------
 
