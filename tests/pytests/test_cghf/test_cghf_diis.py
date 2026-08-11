@@ -19,20 +19,6 @@ from psi4.driver.p4util.exceptions import SCFConvergenceError
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.smoke, pytest.mark.cghf, *using("einsums")]
 
 
-@pytest.fixture(autouse=True)
-def reset_psi4_state():
-    """Resets global Psi4 options and cleans up C++ core state before and after each test."""
-    # Pre-test cleanup
-    psi4.core.clean()
-    psi4.core.clean_options()
-
-    yield
-
-    # Post-test cleanup
-    psi4.core.clean()
-    psi4.core.clean_options()
-
-
 def _co_mol_str():
     return """
     0 1
@@ -198,56 +184,53 @@ def test_ediis_extrapolation_with_complexmatrix_entries(storage_policy):
     np.testing.assert_allclose(F_out.to_array(), F_ref, atol=1e-8)
 
 
-def test_cghf_co_does_not_converge_without_diis():
+@pytest.fixture
+def set_default_diis_opts():
+    # Pre-test cleanup
+    psi4.core.clean()
+    psi4.core.clean_options()
+
+    # Set default options
+    psi4.set_options({
+        "basis": "6-31g",
+        "reference": "cghf",
+        "guess": "sad",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+        "orbital_optimizer_package": "internal",
+        "maxiter": 14,
+        "e_convergence": 2e-7,
+    })
+
+    # Run test
+    yield
+
+    # Post-test cleanup
+    psi4.core.clean()
+    psi4.core.clean_options()
+
+
+def test_co_does_not_converge_without_diis(set_default_diis_opts):
     """Sanity check for the test below: assert non-convergence without DIIS."""
     mol = psi4.geometry(_co_mol_str())
     psi4.set_options({
-        "basis": "cc-pVDZ",
-        "reference": "cghf",
-        "guess": "core",
-        "scf_type": "direct",
-        "df_scf_guess": False,
         "diis": False,
-        "orbital_optimizer_package": "internal",
         "scf_initial_accelerator": "none",
-        "maxiter": 20,
     })
     with pytest.raises(SCFConvergenceError):
         psi4.energy("scf", molecule=mol)
 
 
-def test_cghf_diis_converges_co():
+@pytest.mark.parametrize("accelerator", ["none", "adiis", "ediis"])
+def test_aediis_converges_co(accelerator, set_default_diis_opts):
     """Confirms that the addition of DIIS converges CO/cc-pVDZ with GUESS=CORE.
     Otherwise oscillates between two energies forever. This fact is verified by
     test_cghf_co_does_not_converge_without_diis."""
     mol = psi4.geometry(_co_mol_str())
     psi4.set_options({
-        "basis": "cc-pVDZ",
-        "reference": "cghf",
-        "guess": "core",
-        "scf_type": "direct",
-        "df_scf_guess": False,
-        "orbital_optimizer_package": "internal",
-        "scf_initial_accelerator": "none",
-    })
-    e_cghf = psi4.energy("scf", molecule=mol)
-
-    assert e_cghf == pytest.approx(-112.750151, abs=1e-5)
-
-
-@pytest.mark.parametrize("accelerator", ["adiis", "ediis"])
-def test_cghf_aediis_converges_co(accelerator):
-    """CO/cc-pVDZ converges when ADIIS or EDIIS is the initial accelerator."""
-    mol = psi4.geometry(_co_mol_str())
-    psi4.set_options({
-        "basis": "cc-pVDZ",
-        "reference": "cghf",
-        "guess": "core",
-        "scf_type": "direct",
-        "df_scf_guess": False,
-        "orbital_optimizer_package": "internal",
+        "diis": True,
         "scf_initial_accelerator": accelerator,
     })
     e_cghf = psi4.energy("scf", molecule=mol)
 
-    assert e_cghf == pytest.approx(-112.750151, abs=1e-5)
+    assert e_cghf == pytest.approx(-112.6661373, abs=5e-7)

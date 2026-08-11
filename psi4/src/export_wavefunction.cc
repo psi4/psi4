@@ -418,7 +418,23 @@ void export_wavefunction(py::module& m) {
              "(name, block_sizes) constructor).")
         .def("product_trace", &ComplexMatrix::product_trace, "other"_a,
              "Replicates einsum('ij,ji->', self, other)")
-        .def("conjT", &ComplexMatrix::conjT, "Returns the conjugate transpose of this ComplexMatrix.");
+        .def("conjT", &ComplexMatrix::conjT, "Returns the conjugate transpose of this ComplexMatrix.")
+        .def("rms", &ComplexMatrix::rms, "Returns sqrt(mean(|z|^2)) over the declared tile grid.")
+        .def("absmax", &ComplexMatrix::absmax, "Returns the maximum |z| over allocated diagonal tiles.");
+
+    m.def("diagonalize", &linalg::diagonalize, "F"_a, "X"_a,
+          "Diagonalize a Hermitian ComplexMatrix F with metric X.\n\n"
+          "Forms Forth = X^H @ F @ X, diagonalizes it with a Hermitian eigensolver,\n"
+          "and returns (eigenvalues: Vector, U^H: ComplexMatrix) where U^H has\n"
+          "eigenvectors as columns.  The caller typically computes MO coefficients\n"
+          "as C = X @ U^H.  X should be real (e.g. S^{-1/2} of the overlap matrix).");
+
+    m.def("_doublet_aH_b",
+          static_cast<ComplexMatrix (*)(const ComplexMatrix&, const ComplexMatrix&)>(
+              &linalg::doublet<true, false>),
+          "A"_a, "B"_a,
+          "Compute A^H @ B (intended: conjugate-transpose of A times B).\n"
+          "Exposed for testing the Einsums gemm conjugation convention.");
 
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
             "ComplexWavefunction", "ComplexWavefunction class docstring")
@@ -612,6 +628,8 @@ void export_wavefunction(py::module& m) {
         .def("find_occupation", &scf::CGHF::find_occupation, "Determine orbital occupations from orbital energies.")
         .def("reset_occupation", &scf::CGHF::reset_occupation,
              "Reset occupations after SAD guess (no-op for CGHF).")
+        .def("same_a_b_orbs", [](scf::CGHF& self) { return false; }, "Alpha and beta orbitals are equated? (always returns False for CGHF)")
+        .def("same_a_b_dens", [](scf::CGHF& self) { return false; }, "Alpha and beta densities are equated? (always returns False for CGHF)")
         .def("finalize", &scf::CGHF::finalize, "Clean up temporary data after SCF.")
         .def("jk", &scf::CGHF::jk, "Returns the internal JK object.")
         .def("set_jk", &scf::CGHF::set_jk, "Sets the internal JK object !expert.")
@@ -622,7 +640,13 @@ void export_wavefunction(py::module& m) {
         .def("get_G", &scf::CGHF::get_G, "Returns the G (J-K) matrix (spin-blocked).")
         .def("get_J", &scf::CGHF::get_J, "Returns the Coulomb matrix (spin-blocked).")
         .def("get_K", &scf::CGHF::get_K, "Returns the exchange matrix (spin-blocked).")
-        .def("openorbital_scf", &scf::CGHF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer");
+        .def("openorbital_scf", &scf::CGHF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer")
+        .def("spin_square", &scf::CGHF::spin_square,
+             "Returns (S^2, multiplicity) for the complex GHF wavefunction.")
+        .def("check_phases", &scf::CGHF::check_phases,
+             "Fix MO column phases in place so the first significant AO coefficient is real and positive.")
+        .def("form_FDSmSDF", &scf::CGHF::form_FDSmSDF,
+             "Forms the SCF residual FDS-SDF in the X-orthogonal basis.", "Fso"_a, "Dso"_a);
 
 #else
     py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", py::multiple_inheritance(),

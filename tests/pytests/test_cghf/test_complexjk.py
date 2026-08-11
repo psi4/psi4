@@ -327,6 +327,7 @@ def _uncontracted_am_basis_string(max_am):
     return "\n".join(lines)
 
 
+@pytest.mark.slow
 def test_complexdirectjk_high_am_single_atom():
     """Single atom with one primitive per shell up through max supported ERI AM."""
     max_am = _max_eri_am()

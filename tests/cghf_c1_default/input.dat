@@ -1,0 +1,35 @@
+#! Simply test that a user need not specify ``symmetry C1`` for CGHF reference.
+
+molecule h2 {
+0 1
+   H
+   H 1 .5
+}
+
+set {
+    basis sto-3g
+    reference cghf
+    scf_type direct
+    df_scf_guess false
+}
+
+_, wfn = energy('scf', return_wfn=True)
+mol = wfn.molecule()
+assert mol.schoenflies_symbol() == 'c1'
+
+molecule h2 {
+0 1
+   H
+   H 1 .5
+symmetry d2h
+}
+
+try:
+    _, wfn = energy('scf', return_wfn=True)
+    threw = False
+except Exception as e:
+    print(e)
+    threw = True
+
+compare(True, threw, "Explicitly setting non-C1 symmetry for CGHF reference should throw.")
+

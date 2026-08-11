@@ -36,6 +36,7 @@
 #include "psi4/libpsi4util/exception.h"
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 namespace psi {
@@ -201,6 +202,16 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     SharedComplexMatrix get_G() const { return G_; }
     SharedComplexMatrix get_J() const { return J_; }
     SharedComplexMatrix get_K() const { return K_; }
+
+    /// Compute ⟨S²⟩ and multiplicity (2S+1) for the complex GHF determinant.
+    /// Returns {spin_square, multiplicity}.
+    std::tuple<double, double> spin_square() const;
+
+    /// Fix MO column phases in place: first |C_μp| > 1e-3 becomes real and positive.
+    void check_phases();
+
+    /// AO DIIS residual FDS − SDF, transformed to the X-orthogonal basis (X^H e X).
+    SharedComplexMatrix form_FDSmSDF(SharedComplexMatrix Fso, SharedComplexMatrix Dso);
 };
 
 #endif  // USING_Einsums
