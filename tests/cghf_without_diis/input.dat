@@ -1,6 +1,6 @@
 #! CGHF test for running CO without DIIS -- assert SCF does NOT converge
 
-reference_e = -112.750151
+reference_e = -112.6661373
 
 molecule co {
 0 1
@@ -10,20 +10,21 @@ symmetry C1
 }
 
 set = {
-    basis                   cc-pVDZ
+    basis                   6-31g
     reference               cghf
-    guess                   core
+    guess                   sad
     scf_type                direct
     df_scf_guess            false
     diis                    false
     scf_initial_accelerator none
-    maxiter                 20
+    maxiter                 14
+    e_convergence           5e-7
     orbital_optimizer_package internal
 }
 
-# Interestingly, M-Intel forces OOO which doesn't respect diis or scf_initial_accelerator
-# options. I have to explicitly change orbital_optimizer_package because the default
-# gets changed in the CI.
+# Interestingly, M-Intel forces OOO which doesn't respect diis or
+# scf_initial_accelerator options. I have to explicitly change
+# orbital_optimizer_package because the default gets changed in the CI.
 
 try:
     energy('scf')
@@ -31,4 +32,12 @@ try:
 except SCFConvergenceError:
     converged = False
 
-compare_values(not converged, True, "SCF should NOT converge without DIIS")
+compare(True, not converged, "SCF should NOT converge without DIIS") #TEST
+
+set = {
+    diis true
+}
+
+calculated_e = energy('scf')
+
+compare_values(reference_e, calculated_e, 6, "Converged total E")    #TEST

@@ -734,34 +734,8 @@ def scf_finalize_energy(self):
         self.compute_spin_contamination()
         self.frac_renormalize()
     else:
-        ovlp = self.mintshelper().so_overlap().to_array()
-        nelec = self.nelec()
-        mo_coeff = self.C().to_array()
-        nao = ovlp.shape[0]
-        assert 2 * nao == mo_coeff.shape[0]
-        mo_a = mo_coeff[:nao, :nelec]
-        mo_b = mo_coeff[nao:, :nelec]
-
-
-        saa = mo_a.conj().T @ ovlp @ mo_a
-        sbb = mo_b.conj().T @ ovlp @ mo_b
-        sab = mo_a.conj().T @ ovlp @ mo_b
-        sba = sab.conj().T
-
-        nocc_a = saa.trace()
-        nocc_b = sbb.trace()
-
-        ssxy = (nocc_a+nocc_b) * .5
-        ssxy+= sba.trace() * sab.trace() - np.einsum('ij,ji->', sba, sab)
-        ssz  = (nocc_a+nocc_b) * .25
-        ssz += (nocc_a-nocc_b)**2 * .25
-        tmp  = saa - sbb
-        ssz -= np.einsum('ij,ji', tmp, tmp) * .25
-        ss = (ssxy + ssz).real
-        s = np.sqrt(ss+.25) - .5
-
-        core.print_out(f"   @S^2:              {ss:17.9f}\n")
-        core.print_out(f"   @2S+1:             {s:17.9f}\n\n")
+        self.check_phases()
+        self.spin_square()
     reference = core.get_option("SCF", "REFERENCE")
 
     energy = self.get_energies("Total Energy")
@@ -975,10 +949,10 @@ core.CGHF.print_energies = scf_print_energies
 core.CGHF.print_preiterations = scf_print_preiterations
 core.CGHF.iteration_energies = []
 
-def noop(*args, **kwargs):
+def _noop(*args, **kwargs):
     pass
-core.CGHF.save_density_and_energy = noop
-core.CGHF.clear_external_potentials = noop
+core.CGHF.save_density_and_energy = _noop
+core.CGHF.clear_external_potentials = _noop
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
@@ -1034,11 +1008,7 @@ def _validate_diis(self):
 
     """
 
-    if isinstance(self, core.ComplexWavefunction):
-        restricted_open = False
-    else:
-        restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
-
+    restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
     aediis_active = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR') != "NONE" and not restricted_open
 
     if aediis_active:

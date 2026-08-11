@@ -32,21 +32,93 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/dimension.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 
 // For outfile in ComplexMatrix::print()
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <algorithm>
+#include <cmath>
+
 #ifdef USING_Einsums
 #include <Einsums/TensorAlgebra.hpp>
-#include <Einsums/LinearAlgebra.hpp>
 #endif
 
 namespace psi {
 
 #ifdef USING_Einsums
 
-std::shared_ptr<ComplexMatrix> ComplexMatrix::clone() const { return std::make_shared<ComplexMatrix>(*this); }
+// Dereferencing a SharedMatrix requires Matrix to be fully qualified. To save
+// compilation time, complexmatrix.h includes don't require matrix.h as well.
+// Thus, SharedMatrix dereference is put here where matrix.h is included.
+ComplexMatrix::ComplexMatrix(const std::shared_ptr<Matrix>& A)
+    : ComplexMatrix(*A) {}
+
+// Static helper for Matrix-valued constructor.
+ComplexMatrix::TiledT ComplexMatrix::matrix_to_tiled_tensor(const Matrix& M) {
+    const auto& rowspi = M.rowspi().blocks();
+    const auto& colspi = M.colspi().blocks();
+    const auto& name = M.name();
+    TiledT T{name, rowspi, colspi};
+    for (int h = 0; h < M.nirrep(); h++) {
+        BlockT& Tb = T.tile(h, h);
+        for (int i = 0; i < rowspi[h]; i++) {
+            for (int j = 0; j < colspi[h]; j++) {
+                Tb(i, j) = M.get(h, i, j);
+            }
+        }
+    }
+    return T;
+}
+
+// Public static method to create spin-blocked ComplexMatrix from Matrix.
+// Each irrep becomes: A --> [[A, 0], [0, A]].as_type(complex)
+SharedComplexMatrix ComplexMatrix::spin_blocked_from(const Matrix& A) {
+    const int nirrep = A.nirrep();
+    Dimension row_dim(nirrep);
+    Dimension col_dim(nirrep);
+
+    for (int h = 0; h < nirrep; h++) {
+        row_dim[h] = A.rowspi(h) * 2;
+        col_dim[h] = A.colspi(h) * 2;
+    }
+
+    auto B = std::make_shared<ComplexMatrix>(A.name(), row_dim, col_dim);
+    B->zero();
+
+    for (int h = 0; h < nirrep; h++) {
+        const int r_ = A.rowspi(h);
+        const int c_ = A.colspi(h);
+        for (int i = 0; i < r_; i++) {
+            for (int j = 0; j < c_; j++) {
+				B->set(h, i, j, A(h, i, j));
+				B->set(h, i + r_, j + c_, A(h, i, j));
+            }
+        }
+    }
+
+    return B;
+}
+
+SharedComplexMatrix ComplexMatrix::spin_blocked_from(const SharedMatrix& A) {
+    return ComplexMatrix::spin_blocked_from(*A);
+}
+
+// Same as above, but you pass in the SharedComplexMatrix.
+void ComplexMatrix::copy_matrix_to_spin_blocked(const Matrix& A, SharedComplexMatrix& B) {
+    for (int h = 0; h < A.nirrep(); h++) {
+        const int r_ = A.rowspi(h);
+        const int c_ = A.colspi(h);
+        for (int i = 0; i < r_; i++) {
+            for (int j = 0; j < c_; j++) {
+				B->set(h, i, j, A(h, i, j));
+				B->set(h, i + r_, j + c_, A(h, i, j));
+            }
+        }
+    }
+}
 
 #ifdef USING_OpenOrbitalOptimizer
 arma::cx_mat ComplexMatrix::to_armadillo_matrix(int h) {
@@ -109,7 +181,6 @@ double ComplexMatrix::vector_dot(const ComplexMatrix& other) const {
     return total.real();
 }
 
-// np.einsum("ij,ji->", this, other)
 std::complex<double> ComplexMatrix::product_trace(const ComplexMatrix& other) const {
     std::complex<double> E;
 
@@ -118,6 +189,53 @@ std::complex<double> ComplexMatrix::product_trace(const ComplexMatrix& other) co
                            other.tensor_);
 
     return E;
+}
+
+std::complex<double> ComplexMatrix::trace() const {
+    std::complex<double> tr{0.0, 0.0};
+    for (int h = 0; h < tensor_.grid_size(0); h++) {
+        if (!tensor_.has_tile(h, h)) continue;
+        const auto& tile = tensor_.tile(h, h);
+        for (int i = 0; i < tensor_.tile_size(0)[h]; i++) {
+            tr += tile(i, i);
+        }
+    }
+    return tr;
+}
+
+double ComplexMatrix::rms() const {
+    double sum = 0.0;
+    long terms = 0;
+    for (int h = 0; h < nirrep(); ++h) {
+        const int nr = rowdim(h);
+        const int nc = coldim(h);
+        terms += static_cast<long>(nr) * nc;
+        if (!tensor_.has_tile(h, h) || nr == 0 || nc == 0) continue;
+        const auto& A = tensor_.tile(h, h);
+        for (int i = 0; i < nr; ++i) {
+            for (int j = 0; j < nc; ++j) {
+                sum += std::norm(A(i, j));
+            }
+        }
+    }
+    if (terms == 0) return 0.0;
+    return std::sqrt(sum / static_cast<double>(terms));
+}
+
+double ComplexMatrix::absmax() const {
+    double max = 0.0;
+
+    // Gets all filled tiles, unfilled are zeros
+    for (const auto& [dims, tile] : tensor_.tiles()) {
+        const auto& [nrow, ncol] = dims;
+        for (int i = 0; i < nrow; ++i) {
+            for (int j = 0; j < ncol; ++j) {
+                max = std::max(max, std::abs(tile(i, j)));
+            }
+        }
+    }
+
+    return max;
 }
 
 // Raw per-tile complex sub-blocks to a PSIO file, mirroring Matrix::save with
@@ -130,6 +248,7 @@ void ComplexMatrix::save(std::shared_ptr<PSIO>& psio, size_t fileno) {
         if (!tensor_.has_tile(h, h) || tensor_.has_zero_size(h, h)) continue;
         auto& t = tensor_.tile(h, h);
         std::string entry = tensor_.name() + " Tile " + std::to_string(h);
+#pragma message("Dangerous einsums tensor pointer operation used! A different solution is needed!")
         psio->write_entry(fileno, entry, (char*)t.data(), sizeof(std::complex<double>) * t.size());
     }
 
@@ -143,9 +262,10 @@ void ComplexMatrix::load(std::shared_ptr<PSIO>& psio, size_t fileno) {
     if (!already_open) psio->open(fileno, PSIO_OPEN_OLD);
 
     for (int h = 0; h < static_cast<int>(tensor_.grid_size(0)); ++h) {
-        if (tensor_.tile_size(0)[h] == 0 || tensor_.tile_size(1)[h] == 0) continue;
+        if (tensor_.has_zero_size(h, h)) continue;
         auto& t = tensor_.tile(h, h);  // lazily allocated to the declared size
         std::string entry = tensor_.name() + " Tile " + std::to_string(h);
+#pragma message("Dangerous einsums tensor pointer operation used! A different solution is needed!")
         psio->read_entry(fileno, entry, (char*)t.data(), sizeof(std::complex<double>) * t.size());
     }
 
@@ -184,6 +304,46 @@ SharedComplexMatrix ComplexMatrix::conjT() const {
 
     return temp;
 }
+
+namespace linalg {
+
+std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(
+        const ComplexMatrix& F_, const ComplexMatrix& X_) {
+
+    // Form F' = X'FX for canonical orthogonalization
+    auto Forth = triplet<true, false, false>(X_, F_, X_);
+    Forth.set_name("Orthogonalized Fock");
+
+    Dimension nmopi_ = X_.colspi();
+    auto epsilon_ = std::make_shared<Vector>("Orbital energies", nmopi_);
+
+    for (int h = 0; h < Forth.nirrep(); h++) {
+        // Do not diagonalize 0x0 matrix
+        if (nmopi_[h] == 0) continue;
+
+
+        einsums::Tensor<double, 1> evals("Fock evals", nmopi_[h]);
+        evals.zero();
+
+        // C' = eig(F')
+        // Hermitian eigensolver one block at a time
+        einsums::linear_algebra::heev<true>(&Forth.get(h), &evals);
+
+        double last_value = - std::numeric_limits<double>::infinity();
+        for (int m = 0; m < nmopi_[h]; m++) {
+            const double& current_value = evals(m);
+            if (last_value > current_value + 1e-16) throw PSIEXCEPTION("CGHF Orbitals are not ordered!");
+            epsilon_->set(h, m, current_value);
+            last_value = current_value;
+        }
+    }
+
+    // heev retuns the wrong side, so we need to take the conjugate transpose for the proper eigenvectors
+    SharedComplexMatrix temp = Forth.conjT();
+    return std::make_tuple(epsilon_, temp);
+}
+
+}  // namespace linalg
 
 #endif  // USING_Einsums
 

@@ -35,53 +35,20 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/complexmatrix.h"
-#include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libfock/ComplexJK.h"
 #include "psi4/libfock/v.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #ifdef USING_OpenOrbitalOptimizer
 #include <openorbitaloptimizer/scfsolver.hpp>
 #include <any>
 #endif
 
-// TODO: REMOVE THESE
-#include <Einsums/LinearAlgebra.hpp>
-#include <Einsums/TensorAlgebra.hpp>
-
-namespace {
-
-// Takes an nsopi_-shaped square SharedMatrix and copies to 2 (two) diagonal
-// blocks **per irrep** into each tile of the provided ComplexMatrix.
-void copy_matrix_to_complex(const psi::Matrix& A, psi::ComplexMatrix& B) {
-    const int nirrep = A.nirrep();
-    psi::Dimension row_dim(nirrep);
-    psi::Dimension col_dim(nirrep);
-
-    for (int h = 0; h < nirrep; h++) {
-        row_dim[h] = A.rowspi(h) * 2;
-        col_dim[h] = A.colspi(h) * 2;
-    }
-
-    B = psi::ComplexMatrix{B.name(), row_dim, col_dim};
-    B.zero();
-
-    for (int h = 0; h < nirrep; h++) {
-        const int r_ = A.rowspi(h);
-        const int c_ = A.colspi(h);
-        for (int i = 0; i < r_; i++) {
-            for (int j = 0; j < c_; j++) {
-				B.set(h, i, j, A(h, i, j));
-				B.set(h, i + r_, j + c_, A(h, i, j));
-            }
-        }
-    }
-}
-
-}
+#include <cmath>
+#include <complex>
 
 namespace psi {
 namespace scf {
@@ -113,6 +80,8 @@ void CGHF::common_init() {
         throw PSIEXCEPTION("CGHF currently supports only C1 symmetry. Set symmetry c1 in the molecule block.");
     }
 
+    if (options_.get_int("MOM_START") != 0) throw PSIEXCEPTION("MOM not available for CGHF.");
+
     // DFT stuff (would typically go in subclass_init)
     setup_potential();
 
@@ -140,10 +109,10 @@ void CGHF::common_init() {
     K_->zero();
 
     // We don't know the sizes of these until nmopi_ fills in form_Shalf();
-    S_ = std::make_shared<ComplexMatrix>(); S_->set_name("Overlap");
-    X_ = std::make_shared<ComplexMatrix>(); X_->set_name("Orthogonalization");
+    S_ = std::make_shared<ComplexMatrix>("Overlap");
+    X_ = std::make_shared<ComplexMatrix>("Orthogonalization");
     // C_ is resized in form_C once X_ is known
-    C_ = std::make_shared<ComplexMatrix>(); C_->set_name("MO coefficients");
+    C_ = std::make_shared<ComplexMatrix>("MO coefficients");
 
     // How much stuff shall we echo to the user?
     if (options_["PRINT"].has_changed()) print_ = options_.get_int("PRINT");
@@ -173,10 +142,7 @@ void CGHF::common_init() {
         outfile->Printf("  ==> Algorithm <==\n\n");
         outfile->Printf("  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
         outfile->Printf("  DIIS %s.\n", options_.get_bool("DIIS") ? "enabled" : "disabled");
-        if ((options_.get_int("MOM_START") != 0) && (options_["MOM_OCC"].size() != 0))  // TROUBLE, NOT SET YET?
-            outfile->Printf("  Excited-state MOM enabled.\n");
-        else
-            outfile->Printf("  MOM %s.\n", (options_.get_int("MOM_START") == 0) ? "disabled" : "enabled");
+        outfile->Printf("  MOM not available for Complex SCF.\n");
         outfile->Printf("  Fractional occupation %s.\n", (options_.get_int("FRAC_START") == 0) ? "disabled" : "enabled");
         outfile->Printf("  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
         outfile->Printf("  Energy threshold   = %3.2e\n", options_.get_double("E_CONVERGENCE"));
@@ -280,8 +246,8 @@ void CGHF::form_H() {
     SharedMatrix T_real = mintshelper()->so_kinetic();
     SharedMatrix V_real = mintshelper()->so_potential();
 
-    copy_matrix_to_complex(*T_real, *T_);
-    copy_matrix_to_complex(*V_real, *V_);
+    T_ = ComplexMatrix::spin_blocked_from(T_real);
+    V_ = ComplexMatrix::spin_blocked_from(V_real);
 
     if (debug_ > 2) T_->print("outfile");
     if (debug_ > 2) V_->print("outfile");
@@ -336,9 +302,9 @@ void CGHF::form_Shalf() {
         }
     }
 
-    // Create the correct sized quantities now.
-    copy_matrix_to_complex(*S_temp, *S_);
-    copy_matrix_to_complex(*X_temp, *X_);
+    // Create the correctly sized complex quantities now.
+    S_ = ComplexMatrix::spin_blocked_from(S_temp);
+    X_ = ComplexMatrix::spin_blocked_from(X_temp);
 }
 
 void CGHF::guess() {
@@ -387,7 +353,7 @@ void CGHF::guess() {
     } else if (guess_type == "CORE") {
         if (print_) outfile->Printf("  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
 
-        (*F_) = (*H_); // Try the core Hamiltonian as the Fock Matrix
+        F_->add(*H_); // Try the core Hamiltonian as the Fock Matrix
         form_initial_C(); // calls only CGHF::form_C()
         form_D();
         guess_E = compute_initial_E();
@@ -423,7 +389,7 @@ void CGHF::compute_SAD_guess() {
     guess->compute_guess();
 
     // Spin-restricted SAD: Da == Db → block-diagonal spinor density [[Da,0],[0,Da]]
-    copy_matrix_to_complex(*guess->Da(), *D_);
+    D_ = ComplexMatrix::spin_blocked_from(guess->Da());
 
     // Embed Cholesky factors as temporary occupied spinors for form_G on SAD iter 0:
     // Ca in alpha spatial block (cols [0, nchol)), Cb in beta block (cols [nchol, 2*nchol)).
@@ -494,37 +460,11 @@ double CGHF::compute_E() {
 void CGHF::form_C(double shift) {
     if (shift != 0.0) throw PSIEXCEPTION("Level shifting not available for CGHF.");
 
-    // Form F' = X'FX for canonical orthogonalization
-    auto Forth = linalg::triplet<true, false, false>(X_, F_, X_);
-    Forth->set_name("Orthogonalized Fock");
+    auto [evals, evecs] = linalg::diagonalize(*F_, *X_);
+    epsilon_ = evals;
 
-    // Form C' = eig(F')
-    epsilon_ = std::make_shared<Vector>("Orbital energies", nmopi_);
-
-    for (int h = 0; h < nirrep_; h++) {
-        // Do not diagonalize 0x0 matrix
-        if (nmopi_[h] == 0) continue;
-
-        auto evals = einsums::Tensor<double, 1>("Fock evals", nmopi_[h]);
-        evals.zero();
-
-        // Hermitian eigensolver one block at a time
-        einsums::linear_algebra::heev<true>(&Forth->get(h), &evals);
-
-        double last_value = - std::numeric_limits<double>::infinity();
-        for (int m = 0; m < nmopi_[h]; m++) {
-            const double& current_value = evals(m);
-            if (last_value > current_value + 1e-16) throw PSIEXCEPTION("CGHF Orbitals are not ordered!");
-            epsilon_->set(h, m, current_value);
-            last_value = current_value;
-        }
-    }
-
-    // heev retuns the wrong side, so we need to take the conjugate transpose for the proper eigenvectors
-    auto temp = Forth->conjT();
-
-    // Form C_ := X_ @ C' (temp)
-    C_ = linalg::doublet<false, false>(X_, temp);
+    // Form C_ := X_ @ C' (evecs)
+    C_ = linalg::doublet<false, false>(X_, evecs);
     C_->set_name("MO coefficients");
 
     find_occupation();
@@ -557,20 +497,22 @@ void CGHF::find_occupation() {
 }
 
 void CGHF::form_D() {
-    D_->zero();
+    // Build C_occ: the occupied-column submatrix of the spinor coefficient matrix.
+    // C_ is (2*nsopi_) × (2*nsopi_), nelecpi_ occupied spinor columns per irrep.
+    auto C_occ = std::make_shared<ComplexMatrix>("C_occ", C_->rowspi(), nelecpi_);
+
     for (int h = 0; h < nirrep_; ++h) {
         int nso = C_->rowdim(h);
-        int nocc = static_cast<int>(nelecpi_[h]);
+        int nocc = nelecpi_[h];
         if (!nso || !nocc) continue;
 
-        auto const& C_h = C_->get(h);
-        auto& D_h = D_->get(h);
-
-        // D_h = C_occ * C_occ^H using the leading occupied columns (lda = full MO stride)
-        einsums::blas::gemm('n', 'c', nso, nso, nocc, std::complex<double>{1.0}, C_h.data(),
-                            static_cast<int>(C_h.stride(0)), C_h.data(), static_cast<int>(C_h.stride(0)),
-                            std::complex<double>{0.0}, D_h.data(), static_cast<int>(D_h.stride(0)));
+        // Copy occupied columns: C_occ(h) = C(h)[:, :nocc]
+        C_occ->get(h) = C_->get(h)(einsums::All, einsums::Range{0, nocc});
     }
+
+    // D = C_occ * C_occ^H   (conjugate-transpose via doublet<false, true>)
+    D_ = linalg::doublet<false, true>(C_occ, C_occ);
+    D_->set_name("Density");
 
     if (debug_ > 0) {
         outfile->Printf("in CGHF::form_D:\n");
@@ -827,6 +769,96 @@ void CGHF::openorbital_scf() {
     // Compute the energy
     compute_E();
 #endif
+}
+
+std::tuple<double, double> CGHF::spin_square() const {
+    // Spatial SO overlap (not spin-blocked). Alpha/beta blocks of C_ share this metric.
+    ComplexMatrix S{mintshelper()->so_overlap()};
+    S.set_name("S (spatial)");
+
+    // Occupied alpha / beta MO coefficients from the spinor C_ (rows: [α; β]).
+    ComplexMatrix Ca("Ca occ", nsopi_, nelecpi_);
+    ComplexMatrix Cb("Cb occ", nsopi_, nelecpi_);
+    for (int h = 0; h < nirrep_; h++) {
+        const int nso = nsopi_[h];
+        const int nocc = nelecpi_[h];
+        if (!nso || !nocc) continue;
+        for (int i = 0; i < nso; i++) {
+            for (int j = 0; j < nocc; j++) {
+                Ca.set(h, i, j, C_->get(h, i, j));
+                Cb.set(h, i, j, C_->get(h, i + nso, j));
+            }
+        }
+    }
+
+    // Sσστ = Cσ^H S Cτ
+    auto Saa = linalg::triplet<true, false, false>(Ca, S, Ca);
+    auto Sbb = linalg::triplet<true, false, false>(Cb, S, Cb);
+    auto Sab = linalg::triplet<true, false, false>(Ca, S, Cb);
+    auto Sba = linalg::triplet<true, false, false>(Cb, S, Ca);
+
+    const auto nocc_a = Saa.trace();
+    const auto nocc_b = Sbb.trace();
+
+    // ⟨S+S- + S-S+⟩/2 contribution
+    std::complex<double> ssxy = (nocc_a + nocc_b) * 0.5;
+    ssxy += Sba.trace() * Sab.trace() - Sba.product_trace(Sab);
+
+    // ⟨Sz²⟩ contribution
+    std::complex<double> ssz = (nocc_a + nocc_b) * 0.25;
+    ssz += (nocc_a - nocc_b) * (nocc_a - nocc_b) * 0.25;
+    ComplexMatrix tmp = Saa;
+    tmp.subtract(Sbb);
+    ssz -= tmp.product_trace(tmp) * 0.25;
+
+    const double ss = (ssxy + ssz).real();
+    const double s = std::sqrt(ss + 0.25) - 0.5;
+    const double multiplicity = 2.0 * s + 1.0;
+
+    if (ss < 5e-10) {
+        outfile->Printf("   @S^2:              0\n");
+        outfile->Printf("   @2S+1:             1\n\n");
+    } else {
+        outfile->Printf("   @S^2:              %17.9f\n", ss);
+        outfile->Printf("   @2S+1:             %17.9f\n\n", multiplicity);
+    }
+
+    return std::make_tuple(ss, multiplicity);
+}
+
+void CGHF::check_phases() {
+    // Complex counterpart of HF::check_phases: for each MO column, find the first
+    // significant AO coefficient and multiply the column by conj(c)/|c| so that
+    // element is real and positive. For real orbitals this reduces to a ±1 flip.
+    for (int h = 0; h < nirrep_; ++h) {
+        const int nso = C_->rowdim(h);
+        const int nmo = C_->coldim(h);
+        for (int p = 0; p < nmo; ++p) {
+            for (int mu = 0; mu < nso; ++mu) {
+                const auto c = C_->get(h, mu, p);
+                if (std::abs(c) > 1.0E-3) {
+                    const auto phase = std::conj(c) / std::abs(c);
+                    for (int nu = 0; nu < nso; ++nu) {
+                        C_->set(h, nu, p, C_->get(h, nu, p) * phase);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+SharedComplexMatrix CGHF::form_FDSmSDF(SharedComplexMatrix Fso, SharedComplexMatrix Dso) {
+    // FDS - SDF in the (spin-blocked) SO basis, then project with X like HF::form_FDSmSDF /
+    // the OOO DIIS error (X^H e X). For Hermitian F, D, S this matches (FDS) - (FDS)^H.
+    auto FDSmSDF = linalg::triplet<false, false, false>(Fso, Dso, S_);
+    auto SDF = linalg::triplet<false, false, false>(S_, Dso, Fso);
+    FDSmSDF->subtract(*SDF);
+    FDSmSDF->set_name("FDS-SDF");
+
+    auto orthog = linalg::triplet<true, false, false>(X_, FDSmSDF, X_);
+    orthog->set_name("Orthogonal FDS-SDF");
+    return orthog;
 }
 
 }  // namespace scf
