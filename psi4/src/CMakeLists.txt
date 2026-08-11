@@ -100,6 +100,13 @@ target_include_directories(core
     $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
   )
 
+# USING_cuEST changes the layout of public classes such as BasisSet and
+# MintsHelper. Downstream plugins must compile those headers with the same
+# definition as core or they will use an incompatible C++ ABI.
+if(TARGET cuEST::cuEST)
+  target_compile_definitions(core INTERFACE USING_cuEST)
+endif()
+
 install(TARGETS core
         EXPORT "psi4Targets"
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
