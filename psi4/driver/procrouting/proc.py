@@ -1434,9 +1434,6 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")
-    if reference == "CGHF" and not extras.addons("einsums"):
-        raise ValidationError(
-            "CGHF requires Einsums. Recompile with -DENABLE_Einsums=ON.")
     if reference in ["RHF", "RKS"]:
         wfn = core.RHF(ref_wfn, superfunc)
     elif reference == "ROHF":
@@ -1922,13 +1919,9 @@ def scf_helper(name, post_scf=True, **kwargs):
     # the FIRST scf call
     if cast:
         # Cast is a special case
-        if core.get_option('SCF', 'REFERENCE') == 'CGHF':
-            if not extras.addons("einsums"):
-                raise ValidationError(
-                    "CGHF requires Einsums. Recompile with -DENABLE_Einsums=ON.")
-            base_wfn = core.ComplexWavefunction.build(scf_molecule, core.get_global_option('BASIS'))
-        else:
-            base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
+        base_wfn = core.BaseWavefunction.build(
+            scf_molecule, core.get_global_option('BASIS'),
+            reference=core.get_option('SCF', 'REFERENCE'))
         core.print_out("\n         ---------------------------------------------------------\n")
         if banner:
             core.print_out("         " + banner.center(58))
@@ -1957,13 +1950,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out('\n')
 
     # the SECOND scf call
-    if core.get_option('SCF', 'REFERENCE') == 'CGHF':
-        if not extras.addons("einsums"):
-            raise ValidationError(
-                "CGHF requires Einsums. Recompile with -DENABLE_Einsums=ON.")
-        base_wfn = core.ComplexWavefunction.build(scf_molecule, core.get_global_option('BASIS'))
-    else:
-        base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
+    base_wfn = core.BaseWavefunction.build(
+        scf_molecule, core.get_global_option('BASIS'),
+        reference=core.get_option('SCF', 'REFERENCE'))
     if banner:
         core.print_out("\n         ---------------------------------------------------------\n")
         core.print_out("         " + banner.center(58))
