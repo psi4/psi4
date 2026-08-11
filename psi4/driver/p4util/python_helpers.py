@@ -208,9 +208,10 @@ def _core_wavefunction_build(
         mol: core.Molecule,
         basis: Union[None, str, core.BasisSet] = None,
         *,
+        reference: Optional[str] = None,
         quiet: bool = False,
     ) -> core.BaseWavefunction:
-    """Build a wavefunction from minimal inputs, molecule and basis set.
+    """Build a Wavefunction or ComplexWavefunction from minimal inputs.
 
     Shared by :class:`~psi4.core.Wavefunction` and
     :class:`~psi4.core.ComplexWavefunction` via
@@ -224,12 +225,26 @@ def _core_wavefunction_build(
         Basis set for which to build the wavefunction instance. If a
         :class:`BasisSet`, taken as-is. If a string, taken as a name for the
         primary basis. If None, name taken from :term:`BASIS <BASIS (MINTS)>`.
+    reference
+        Optional SCF reference string (e.g. ``"RHF"``, ``"CGHF"``).
+        When provided, selects the wavefunction class automatically:
+        ``"CGHF"`` builds :class:`~psi4.core.ComplexWavefunction`,
+        anything else builds :class:`~psi4.core.Wavefunction`.
+        When ``None`` (default), ``cls`` must be a concrete subclass
+        (calling ``BaseWavefunction.build()`` directly raises).
     quiet
         When True, do not print to the output file.
 
     """
-    if cls is core.BaseWavefunction:
-        raise TypeError("Cannot build BaseWavefunction directly; use Wavefunction or ComplexWavefunction.")
+    if reference is not None:
+        if reference == "CGHF":
+            cls = core.ComplexWavefunction
+        else:
+            cls = core.Wavefunction
+    elif cls is core.BaseWavefunction:
+        raise TypeError("Cannot build BaseWavefunction directly; "
+                        "use Wavefunction or ComplexWavefunction, "
+                        "or pass reference= to auto-select.")
 
     if basis is None:
         basis = core.BasisSet.build(mol, quiet=quiet)
