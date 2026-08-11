@@ -134,6 +134,7 @@ class PSI_API BaseJK {
 
     /// Overriden by subclasses of JK/ComplexJK
     // TODO: investigate if JK::memory_estimate and all of its derived variants could be made const
+    // Probably requires refactoring DFHelper and MemDFJK first.
     virtual size_t memory_estimate() = 0;
 
     /// Destructor
