@@ -1615,10 +1615,11 @@ data:
       channel: conda-forge
       name: libcuest-dev
       constraint: "=0.1"
-      #aux_build_names:
-      #  - libcublas-dev
-      #  - libcusolver-dev
-      #  - cuda-cudart-dev
+      aux_build_names:
+        - cuda-compiler
+        - libcublas-dev
+        - libcusolver-dev
+        - cuda-cudart-dev
       skip_win: true
       skip_mac: true
       cmake:
