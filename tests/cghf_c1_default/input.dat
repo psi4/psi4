@@ -15,7 +15,7 @@ set {
 
 _, wfn = energy('scf', return_wfn=True)
 mol = wfn.molecule()
-assert mol.schoenflies_symbol() == 'c1'
+compare('c1', mol.schoenflies_symbol(), "CGHF energy should downgrade symmetry to C1.")
 
 molecule h2 {
 0 1
