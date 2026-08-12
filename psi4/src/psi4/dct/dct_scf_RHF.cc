@@ -30,6 +30,7 @@
 #include "psi4/psifiles.h"
 
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
@@ -108,11 +109,6 @@ double DCTSolver::update_scf_density_RHF(bool damp) {
 void DCTSolver::process_so_ints_RHF() {
     dct_timer_on("DCTSolver::process_so_ints");
 
-    IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, int_tolerance_, 1, 1);
-
-    Label *lblptr = iwl->labels();
-    Value *valptr = iwl->values();
-
     double *Da = init_array(ntriso_);
     double *Ga = init_array(ntriso_);
 
@@ -133,7 +129,7 @@ void DCTSolver::process_so_ints_RHF() {
     int Gc, Gd;
     int pqArr, qpArr, rsArr, srArr, qrArr, rqArr;
     int qsArr, sqArr, psArr, spArr, prArr, rpArr;
-    int offset, labelIndex, p, q, r, s, h, counter;
+    int offset, p, q, r, s, h, counter;
     int **pq_row_start, **CD_row_start, **Cd_row_start, **cd_row_start;
     dpdbuf4 tau_temp, lambda;
     dpdbuf4 tau1_AO_ab, tau2_AO_ab;
@@ -194,16 +190,14 @@ void DCTSolver::process_so_ints_RHF() {
         }
     }
 
-    bool lastBuffer;
-    do {
-        lastBuffer = iwl->last_buffer();
-        for (int index = 0; index < iwl->buffer_count(); ++index) {
-            labelIndex = 4 * index;
-            p = std::abs((int)lblptr[labelIndex++]);
-            q = (int)lblptr[labelIndex++];
-            r = (int)lblptr[labelIndex++];
-            s = (int)lblptr[labelIndex++];
-            value = (double)valptr[index];
+    IWLReader eri(psio_, PSIF_SO_TEI);
+    for (const auto &integral : eri) {
+        {
+            p = std::abs(integral.p);
+            q = integral.q;
+            r = integral.r;
+            s = integral.s;
+            value = integral.value;
             if (buildTensors) {
                 AO_contribute(&tau1_AO_ab, &tau2_AO_ab, p, q, r, s, value);
                 ++counter;
@@ -358,11 +352,8 @@ void DCTSolver::process_so_ints_RHF() {
                     Ga[spArr] -= Da[rqArr] * value;
                 }
             }
-        } /* end loop through current buffer */
-        if (!lastBuffer) iwl->fetch();
-    } while (!lastBuffer);
-    iwl->set_keep_flag(true);
-    delete iwl;
+        }
+    } /* end loop over SO integrals */
     if (buildTensors) {
         if (print_ > 1) {
             outfile->Printf("Processed %d SO integrals each for AB\n", counter);

@@ -38,7 +38,8 @@
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
@@ -61,12 +62,7 @@ void BL2_AO(int L_irr) {
     int **T2_cd_row_start, **T2_pq_row_start, offset, cd, pq;
     dpdbuf4 tau, t2, tau1_AO, tau2_AO;
     psio_address next;
-    struct iwlbuf InBuf;
-    int idx, p, q, r, s, filenum;
-    int lastbuf;
-    double value, tolerance = 1e-14;
-    Value *valptr;
-    Label *lblptr;
+    int filenum;
 
     nirreps = moinfo.nirreps;
     orbspi = moinfo.orbspi;
@@ -116,42 +112,17 @@ void BL2_AO(int L_irr) {
         global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
-    iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-    lblptr = InBuf.labels;
-    valptr = InBuf.values;
-    lastbuf = InBuf.lastbuf;
-
-    for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-        p = std::abs((int)lblptr[idx++]);
-        q = (int)lblptr[idx++];
-        r = (int)lblptr[idx++];
-        s = (int)lblptr[idx++];
-
-        value = (double)valptr[InBuf.idx];
-
-        /*    outfile->Printf( "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
-
-        AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 1);
-    }
-    while (!lastbuf) {
-        iwl_buf_fetch(&InBuf);
-        lastbuf = InBuf.lastbuf;
-        for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-            p = std::abs((int)lblptr[idx++]);
-            q = (int)lblptr[idx++];
-            r = (int)lblptr[idx++];
-            s = (int)lblptr[idx++];
-
-            value = (double)valptr[InBuf.idx];
-
-            /*      outfile->Printf( "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
-
+    {
+        IWLReader eri(_default_psio_lib_, PSIF_SO_TEI);
+        for (const auto &integral : eri) {
+            int p = std::abs(integral.p);
+            int q = integral.q;
+            int r = integral.r;
+            int s = integral.s;
+            double value = integral.value;
             AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 1);
         }
     }
-
-    iwl_buf_close(&InBuf, 1);
 
     for (h = 0; h < nirreps; h++) {
         global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
@@ -197,42 +168,17 @@ void BL2_AO(int L_irr) {
         global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
-    iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-    lblptr = InBuf.labels;
-    valptr = InBuf.values;
-    lastbuf = InBuf.lastbuf;
-
-    for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-        p = std::abs((int)lblptr[idx++]);
-        q = (int)lblptr[idx++];
-        r = (int)lblptr[idx++];
-        s = (int)lblptr[idx++];
-
-        value = (double)valptr[InBuf.idx];
-
-        /*    outfile->Printf( "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
-
-        AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 1);
-    }
-    while (!lastbuf) {
-        iwl_buf_fetch(&InBuf);
-        lastbuf = InBuf.lastbuf;
-        for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-            p = std::abs((int)lblptr[idx++]);
-            q = (int)lblptr[idx++];
-            r = (int)lblptr[idx++];
-            s = (int)lblptr[idx++];
-
-            value = (double)valptr[InBuf.idx];
-
-            /*      outfile->Printf( "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
-
+    {
+        IWLReader eri(_default_psio_lib_, PSIF_SO_TEI);
+        for (const auto &integral : eri) {
+            int p = std::abs(integral.p);
+            int q = integral.q;
+            int r = integral.r;
+            int s = integral.s;
+            double value = integral.value;
             AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 1);
         }
     }
-
-    iwl_buf_close(&InBuf, 1);
 
     for (h = 0; h < nirreps; h++) {
         global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
@@ -278,42 +224,17 @@ void BL2_AO(int L_irr) {
         global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
-    iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-    lblptr = InBuf.labels;
-    valptr = InBuf.values;
-    lastbuf = InBuf.lastbuf;
-
-    for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-        p = std::abs((int)lblptr[idx++]);
-        q = (int)lblptr[idx++];
-        r = (int)lblptr[idx++];
-        s = (int)lblptr[idx++];
-
-        value = (double)valptr[InBuf.idx];
-
-        /*    outfile->Printf( "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
-
-        AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 0);
-    }
-    while (!lastbuf) {
-        iwl_buf_fetch(&InBuf);
-        lastbuf = InBuf.lastbuf;
-        for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-            p = std::abs((int)lblptr[idx++]);
-            q = (int)lblptr[idx++];
-            r = (int)lblptr[idx++];
-            s = (int)lblptr[idx++];
-
-            value = (double)valptr[InBuf.idx];
-
-            /*      outfile->Printf( "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
-
+    {
+        IWLReader eri(_default_psio_lib_, PSIF_SO_TEI);
+        for (const auto &integral : eri) {
+            int p = std::abs(integral.p);
+            int q = integral.q;
+            int r = integral.r;
+            int s = integral.s;
+            double value = integral.value;
             AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 0);
         }
     }
-
-    iwl_buf_close(&InBuf, 1);
 
     for (h = 0; h < nirreps; h++) {
         global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);

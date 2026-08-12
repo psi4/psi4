@@ -37,7 +37,7 @@
 #include "psi4/pragma.h"
 #include <memory>
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/psifiles.h"
@@ -130,35 +130,25 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep) {
 
     // Read all the (frozen + non-frozen) TEI in Pitzer order
     // and store them in a in-core block-matrix
-    size_t lastbuf, inbuf, fi;
     size_t elements = 0;
-    struct iwlbuf ERIIN;
-    iwl_buf_init(&ERIIN, PSIF_MO_TEI, 0.0, 1, 1);
-    do {
-        lastbuf = ERIIN.lastbuf;
-        inbuf = ERIIN.inbuf;
-        fi = 0;
-        for (size_t index = 0; index < inbuf; index++) {
-            // Compute the [pq] index for this pqrs combination
-            size_t p = std::abs(ERIIN.labels[fi]);
-            size_t q = ERIIN.labels[fi + 1];
-            size_t r = ERIIN.labels[fi + 2];
-            size_t s = ERIIN.labels[fi + 3];
-            double value = ERIIN.values[index];
-            int irrep = pair_index->get_tuple_irrep(p, q);
-            // Fill in only the blocks that fit
-            if ((first_irrep <= irrep) && (irrep <= last_irrep)) {
-                size_t pq = pair_index->get_tuple_rel_index(p, q);
-                size_t rs = pair_index->get_tuple_rel_index(r, s);
-                size_t pqrs = INDEX(pq, rs);
-                tei_mo_temp[irrep][pqrs] = value;
-            }
-            fi += 4;
-            elements++;
+    IWLReader eri(_default_psio_lib_, PSIF_MO_TEI);
+    for (const auto& integral : eri) {
+        // Compute the [pq] index for this pqrs combination
+        size_t p = std::abs(integral.p);
+        size_t q = integral.q;
+        size_t r = integral.r;
+        size_t s = integral.s;
+        double value = integral.value;
+        int irrep = pair_index->get_tuple_irrep(p, q);
+        // Fill in only the blocks that fit
+        if ((first_irrep <= irrep) && (irrep <= last_irrep)) {
+            size_t pq = pair_index->get_tuple_rel_index(p, q);
+            size_t rs = pair_index->get_tuple_rel_index(r, s);
+            size_t pqrs = INDEX(pq, rs);
+            tei_mo_temp[irrep][pqrs] = value;
         }
-        if (!lastbuf) iwl_buf_fetch(&ERIIN);
-    } while (!lastbuf);
-    iwl_buf_close(&ERIIN, 1);
+        elements++;
+    }
 
     outfile->Printf(" (%lu non-zero integrals)", (size_t)elements);
 
