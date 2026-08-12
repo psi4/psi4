@@ -32,6 +32,9 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/petitelist.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libqt/qt.h"
 
 #include <Einsums/BLAS.hpp>
@@ -48,9 +51,13 @@ ComplexJK::~ComplexJK() {}
 
 void ComplexJK::common_init() {
     do_csam_ = false;
-    // Not sure if I need this yet
-    // std::shared_ptr<IntegralFactory> integral =
-    //     std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+
+    // Set up AO2USO matrix for symmetry handling
+    std::shared_ptr<IntegralFactory> integral =
+        std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+    auto pet = std::make_shared<PetiteList>(primary_, integral);
+    AO2USO_ = std::make_shared<Matrix>(pet->aotoso());
+    c1_ = (AO2USO_->nirrep() > 1);
 }
 
 std::shared_ptr<ComplexJK> ComplexJK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
@@ -184,18 +191,66 @@ void ComplexJK::compute() {
         lr_symmetric_ = false;
     }
 
-    // input_symmetry_cast_map_ not needed for C1
+    // Figure out the symmetry and which codes will stay in C1 symmetry
+    input_symmetry_cast_map_.clear();
+    for (size_t i = 0; i < C_left_.size(); i++) {
+        if (C_left_[i]->nirrep() != C_right_[i]->nirrep()) {
+            throw PSIEXCEPTION("ComplexJK: C_left/C_right irrep mismatch!");
+        }
+
+        if ((AO2USO_->nirrep() == 1) && (C_left_[i]->nirrep() == 1)) {
+            // Everything in C1, nothing to do
+            input_symmetry_cast_map_.push_back(false);
+        } else if (C_left_[i]->nirrep() == AO2USO_->nirrep()) {
+            // We match symmetry, does this code use C1?
+            if (C1()) {
+                input_symmetry_cast_map_.push_back(true);
+            } else {
+                input_symmetry_cast_map_.push_back(false);
+            }
+        } else if ((C_left_[i]->nirrep() == 1) && C1()) {
+            // Code uses C1, nothing to do
+            input_symmetry_cast_map_.push_back(false);
+        } else {
+            throw PSIEXCEPTION("ComplexJK: Input orbital irrep mismatch!");
+        }
+    }
 
     // Construct the densities
     timer_on("JK: D");
     compute_D();
     timer_off("JK: D");
 
-    allocate_JK();
+    bool need_cast = !input_symmetry_cast_map_.empty() &&
+                     std::any_of(input_symmetry_cast_map_.begin(), input_symmetry_cast_map_.end(),
+                                [](bool v) { return v; });
+
+    if (need_cast) {
+        timer_on("JK: USO2AO");
+        USO2AO();
+        timer_off("JK: USO2AO");
+    } else {
+        allocate_JK();
+        // When not casting, the AO pointers alias the SO objects
+        D_ao_ = D_;
+        J_ao_ = J_;
+        K_ao_ = K_;
+    }
 
     timer_on("JK: JK");
     compute_JK();
     timer_off("JK: JK");
+
+    if (need_cast) {
+        timer_on("JK: AO2USO");
+        AO2USO();
+        timer_off("JK: AO2USO");
+    }
+
+    // Clear AO aliases so they don't hold refs
+    D_ao_.clear();
+    J_ao_.clear();
+    K_ao_.clear();
 
     if (debug_ > 6) {
         for (size_t N = 0; N < C_left_.size(); N++) {
@@ -209,6 +264,181 @@ void ComplexJK::compute() {
 
     if (lr_symmetric_) {
         C_right_.clear();
+    }
+}
+
+void ComplexJK::USO2AO() {
+    // Allocate D_ao_, J_ao_, K_ao_
+    int nao = AO2USO_->rowspi()[0];
+    int nirrep = AO2USO_->nirrep();
+
+    D_ao_.clear();
+    J_ao_.clear();
+    K_ao_.clear();
+
+    for (size_t N = 0; N < D_.size(); N++) {
+        D_ao_.push_back(std::make_shared<ComplexMatrix>("D (AO)", nao, nao));
+        D_ao_[N]->zero();
+    }
+
+    for (size_t N = 0; N < D_.size() && do_J_; N++) {
+        J_ao_.push_back(std::make_shared<ComplexMatrix>("J (AO)", nao, nao));
+    }
+
+    for (size_t N = 0; N < D_.size() && do_K_; N++) {
+        K_ao_.push_back(std::make_shared<ComplexMatrix>("K (AO)", nao, nao));
+    }
+
+    // Transform each D from SO (symmetry-blocked) to AO (C1)
+    for (size_t N = 0; N < D_.size(); N++) {
+        if (!input_symmetry_cast_map_[N]) {
+            // Already C1 — just copy the single block
+            D_ao_[N]->get(0) = D_[N]->get(0);
+            continue;
+        }
+
+        // D_ao = sum_h U[h] * D_so[h] * U[h]^T
+        using einsums::blas::gemm;
+        for (int h = 0; h < nirrep; h++) {
+            int nsol = AO2USO_->colspi()[h];
+            if (nsol == 0) continue;
+
+            if (D_[N]->rowdim(h) == 0) continue;
+
+            const auto& D_so = D_[N]->get(h);
+            const auto& U_h = AO2USO_->pointer(h);
+
+            // temp (nsol x nao) = D_so (nsol x nsol) * U_h^T (nsol x nao)
+            // Since U_h is real, we need to copy U_h^T into a complex temp
+            int nsor = AO2USO_->colspi()[h];
+            einsums::Tensor<std::complex<double>, 2> temp("temp", nsol, nao);
+            for (int i = 0; i < nsol; i++) {
+                for (int j = 0; j < nao; j++) {
+                    temp(i, j) = std::complex<double>(U_h[j][i], 0.0);  // U_h is (nao x nsol), transpose
+                }
+            }
+
+            // temp (nsol x nao) = D_so * temp
+            einsums::Tensor<std::complex<double>, 2> temp2("temp2", nsol, nao);
+            gemm('n', 'n', nsol, nao, nsor,
+                 std::complex<double>{1.0}, D_so.data(), static_cast<int>(D_so.stride(0)),
+                 temp.data(), static_cast<int>(temp.stride(0)),
+                 std::complex<double>{0.0}, temp2.data(), static_cast<int>(temp2.stride(0)));
+
+            // D_ao += U_h * temp2
+            auto& D_ao_block = D_ao_[N]->get(0);
+            einsums::Tensor<std::complex<double>, 2> U_complex("U_c", nao, nsol);
+            for (int i = 0; i < nao; i++) {
+                for (int j = 0; j < nsol; j++) {
+                    U_complex(i, j) = std::complex<double>(U_h[i][j], 0.0);
+                }
+            }
+
+            einsums::Tensor<std::complex<double>, 2> contrib("contrib", nao, nao);
+            gemm('n', 'n', nao, nao, nsol,
+                 std::complex<double>{1.0}, U_complex.data(), static_cast<int>(U_complex.stride(0)),
+                 temp2.data(), static_cast<int>(temp2.stride(0)),
+                 std::complex<double>{0.0}, contrib.data(), static_cast<int>(contrib.stride(0)));
+
+            // Add contribution
+            for (int i = 0; i < nao; i++) {
+                for (int j = 0; j < nao; j++) {
+                    D_ao_block(i, j) += contrib(i, j);
+                }
+            }
+        }
+    }
+
+    // Allocate SO J/K (these will be filled by AO2USO later)
+    allocate_JK();
+}
+
+void ComplexJK::AO2USO() {
+    int nao = AO2USO_->rowspi()[0];
+    int nirrep = AO2USO_->nirrep();
+
+    for (size_t N = 0; N < D_.size(); N++) {
+        if (!input_symmetry_cast_map_[N]) {
+            // Already C1 — just copy back
+            if (do_J_ && N < J_ao_.size() && N < J_.size()) {
+                J_[N]->get(0) = J_ao_[N]->get(0);
+            }
+            if (do_K_ && N < K_ao_.size() && N < K_.size()) {
+                K_[N]->get(0) = K_ao_[N]->get(0);
+            }
+            continue;
+        }
+
+        using einsums::blas::gemm;
+        for (int h = 0; h < nirrep; h++) {
+            int nsol = AO2USO_->colspi()[h];
+            if (nsol == 0) continue;
+
+            const auto& U_h = AO2USO_->pointer(h);
+            int nsor = nsol;
+
+            if (do_J_ && N < J_ao_.size() && N < J_.size()) {
+                const auto& J_ao_block = J_ao_[N]->get(0);
+
+                // temp (nao x nsor) = J_ao (nao x nao) * U_h (nao x nsor)
+                einsums::Tensor<std::complex<double>, 2> U_comp("U_c", nao, nsor);
+                for (int i = 0; i < nao; i++) {
+                    for (int j = 0; j < nsor; j++) {
+                        U_comp(i, j) = std::complex<double>(U_h[i][j], 0.0);
+                    }
+                }
+
+                einsums::Tensor<std::complex<double>, 2> temp("temp", nao, nsor);
+                gemm('n', 'n', nao, nsor, nao,
+                     std::complex<double>{1.0}, J_ao_block.data(), static_cast<int>(J_ao_block.stride(0)),
+                     U_comp.data(), static_cast<int>(U_comp.stride(0)),
+                     std::complex<double>{0.0}, temp.data(), static_cast<int>(temp.stride(0)));
+
+                // J_so[h] = U_h^T * temp
+                einsums::Tensor<std::complex<double>, 2> U_comp_T("U_cT", nsol, nao);
+                for (int i = 0; i < nsol; i++) {
+                    for (int j = 0; j < nao; j++) {
+                        U_comp_T(i, j) = std::complex<double>(U_h[j][i], 0.0);
+                    }
+                }
+
+                auto& J_so_h = J_[N]->get(h);
+                gemm('n', 'n', nsol, nsor, nao,
+                     std::complex<double>{1.0}, U_comp_T.data(), static_cast<int>(U_comp_T.stride(0)),
+                     temp.data(), static_cast<int>(temp.stride(0)),
+                     std::complex<double>{0.0}, J_so_h.data(), static_cast<int>(J_so_h.stride(0)));
+            }
+
+            if (do_K_ && N < K_ao_.size() && N < K_.size()) {
+                const auto& K_ao_block = K_ao_[N]->get(0);
+
+                einsums::Tensor<std::complex<double>, 2> U_comp("U_c", nao, nsor);
+                for (int i = 0; i < nao; i++) {
+                    for (int j = 0; j < nsor; j++) {
+                        U_comp(i, j) = std::complex<double>(U_h[i][j], 0.0);
+                    }
+                }
+
+                einsums::Tensor<std::complex<double>, 2> temp("temp", nao, nsor);
+                gemm('n', 'n', nao, nsor, nao,
+                     std::complex<double>{1.0}, K_ao_block.data(), static_cast<int>(K_ao_block.stride(0)),
+                     U_comp.data(), static_cast<int>(U_comp.stride(0)),
+                     std::complex<double>{0.0}, temp.data(), static_cast<int>(temp.stride(0)));
+
+                einsums::Tensor<std::complex<double>, 2> U_comp_T("U_cT", nsol, nao);
+                for (int i = 0; i < nsol; i++) {
+                    for (int j = 0; j < nao; j++) {
+                        U_comp_T(i, j) = std::complex<double>(U_h[j][i], 0.0);
+                    }
+                }
+
+                auto& K_so_h = K_[N]->get(h);
+                gemm('n', 'n', nsol, nsor, nao,
+                     std::complex<double>{1.0}, U_comp_T.data(), static_cast<int>(U_comp_T.stride(0)),
+                     temp.data(), static_cast<int>(temp.stride(0)),
+                     std::complex<double>{0.0}, K_so_h.data(), static_cast<int>(K_so_h.stride(0)));
+            }
+        }
     }
 }
 

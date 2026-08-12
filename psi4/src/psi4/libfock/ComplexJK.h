@@ -36,6 +36,7 @@
 #include "psi4/pragma.h"
 #include "psi4/libfock/basejk.h"
 #include "psi4/libmints/complexmatrix.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
@@ -116,7 +117,19 @@ class PSI_API ComplexJK : public BaseJK {
 
     /// The meaning of C1 is slightly twisted here. C1()==true implies USO2AO
     /// But since we excpect C1 symm regardless, no such transforms are required.
-    bool C1() const override { return false; }
+    bool C1() const override { return c1_; }
+    bool c1_ = false;
+
+    /// AO-to-SO transformation matrix (real, from PetiteList)
+    std::shared_ptr<Matrix> AO2USO_;
+
+    /// Symmetry-cast flags per density index (true = input was symmetry-blocked)
+    std::vector<bool> input_symmetry_cast_map_;
+
+    /// AO-basis (C1) copies of quantities for the USO2AO/AO2USO flow
+    std::vector<SharedComplexMatrix> D_ao_;
+    std::vector<SharedComplexMatrix> J_ao_;
+    std::vector<SharedComplexMatrix> K_ao_;
 
     // => Architecture-Level State Variables (Spatial Symmetry) <= //
 
@@ -135,6 +148,11 @@ class PSI_API ComplexJK : public BaseJK {
 
     /// Allocate J_/K_
     void allocate_JK() override;
+
+    /// Transform D_ from SO to AO (C1) basis
+    void USO2AO() override;
+    /// Transform J_ao_/K_ao_ back to SO basis
+    void AO2USO() override;
 
     /// Function that sets a number of flags and allocates memory.
     void common_init() override;
