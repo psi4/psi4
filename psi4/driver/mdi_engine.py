@@ -62,7 +62,11 @@ except ImportError:
 try:
     from mpi4py import MPI
     use_mpi4py = True
-except ImportError:
+except Exception:
+    # mpi4py is optional and only used for MDI runs. Catch any failure, not
+    # just ImportError: mpi4py >= 4 dlopens libmpi at import time to probe the
+    # MPI ABI and raises RuntimeError (not ImportError) when no MPI runtime is
+    # present, which would otherwise abort "import psi4" entirely.
     use_mpi4py = False
 
 
