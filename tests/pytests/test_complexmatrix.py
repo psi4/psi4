@@ -5,7 +5,7 @@ import psi4
 from addons import using
 from psi4.driver.p4util.exceptions import ValidationError
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.cghf, *using("einsums")]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, *using("einsums")]
 
 
 def test_complexmatrix_constructor_zeroed():
