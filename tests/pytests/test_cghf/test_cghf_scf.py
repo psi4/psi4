@@ -88,6 +88,45 @@ def test_cghf_read_guess():
     assert e1 == pytest.approx(REFERENCE_ENERGY, abs=1e-6)
 
 
+def test_cghf_guess_C_kwarg():
+    """CGHF direct guess_C kwarg: a plain NumPy array of occupied spinor MOs,
+    handed straight to energy(), reproduces a converged calculation in one
+    iteration -- no checkpoint file or manually-built Wavefunction needed."""
+    mol = psi4.geometry("""
+    0 1
+        H
+        H 1 0.74
+    symmetry c1
+    """)
+    psi4.set_options({
+        "basis": "cc-pVDZ",
+        "reference": "cghf",
+        "guess": "core",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+        "diis": False,
+        "scf_initial_accelerator": "none",
+    })
+    e0, wfn0 = psi4.energy("scf", molecule=mol, return_wfn=True)
+    assert e0 == pytest.approx(REFERENCE_ENERGY, abs=1e-6)
+
+    nocc = wfn0.nelec()
+    C_occ = wfn0.C().to_array()[:, :nocc]  # plain NumPy array, not a ComplexMatrix
+
+    psi4.core.clean()
+    psi4.set_options({
+        "basis": "cc-pVDZ",
+        "reference": "cghf",
+        "scf_type": "direct",
+        "df_scf_guess": False,
+        "diis": False,
+        "scf_initial_accelerator": "none",
+        "maxiter": 1,
+    })
+    e1 = psi4.energy("scf", molecule=mol, guess_C=C_occ)
+    assert e1 == pytest.approx(REFERENCE_ENERGY, abs=1e-6)
+
+
 def test_cghf_read_guess_basis_projection_nyi():
     """Cross-basis CGHF READ should raise until spinor basis_projection exists."""
     mol = psi4.geometry("""

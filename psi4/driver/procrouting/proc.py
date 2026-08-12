@@ -1759,6 +1759,10 @@ def scf_helper(name, post_scf=True, **kwargs):
     if ref_wfn is not None:
         raise ValidationError("Cannot seed an SCF calculation with a reference wavefunction ('ref_wfn' kwarg).")
 
+    # Directly-supplied guess orbitals (NumPy array, psi4.core.Matrix/ComplexMatrix,
+    # or (Ca, Cb) tuple thereof).
+    guess_C = kwargs.pop('guess_c', None)
+
     # decide if we keep the checkpoint file
     _chkfile = kwargs.get('write_orbitals', True)
     write_checkpoint_file = False
@@ -1958,6 +1962,31 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("         " + banner.center(58))
 
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
+
+    # Apply any directly-supplied guess orbitals. The C++ HF::guess()/CGHF::guess()
+    # always prefer guess_Ca_/guess_C_ over the GUESS keyword once set, so this works
+    # regardless of the GUESS option's value and takes priority over GUESS=READ below.
+    # A single array/Matrix/ComplexMatrix is occupied MOs (spin-blocked spinors for
+    # CGHF; alpha-only for a restricted real reference). A (Ca, Cb) tuple supplies
+    # independent alpha/beta occupied MOs for unrestricted/restricted-open references.
+    if guess_C is not None:
+        core.print_out("  SCF guess: user-supplied orbitals (guess_C kwarg).\n\n")
+        if isinstance(scf_wfn, core.ComplexWavefunction):
+            if not isinstance(guess_C, core.ComplexMatrix):
+                guess_C = core.ComplexMatrix.from_array(guess_C, name="C guess")
+            scf_wfn.guess_C(guess_C)
+        elif isinstance(guess_C, tuple):
+            guess_Ca, guess_Cb = guess_C
+            if not isinstance(guess_Ca, core.Matrix):
+                guess_Ca = core.Matrix.from_array(guess_Ca, name="Ca guess")
+            if not isinstance(guess_Cb, core.Matrix):
+                guess_Cb = core.Matrix.from_array(guess_Cb, name="Cb guess")
+            scf_wfn.guess_Ca(guess_Ca)
+            scf_wfn.guess_Cb(guess_Cb)
+        else:
+            if not isinstance(guess_C, core.Matrix):
+                guess_C = core.Matrix.from_array(guess_C, name="Ca guess")
+            scf_wfn.guess_Ca(guess_C)
 
     # The wfn from_file routine adds the npy suffix if needed, but we add it here so that
     # we can use os.path.isfile to query whether the file exists before attempting to read
