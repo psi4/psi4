@@ -1764,17 +1764,11 @@ core.del_variable = _core_del_variable
 core.variables = _core_variables
 
 
-# Scalar QCVariables live on BaseWavefunction; array merge is type-aware above.
 core.BaseWavefunction.has_variable = _core_wavefunction_has_variable
 core.BaseWavefunction.variable = _core_wavefunction_variable
 core.BaseWavefunction.variables = _core_wavefunction_variables
 core.BaseWavefunction.set_variable = _core_wavefunction_set_variable
 core.BaseWavefunction.del_variable = _core_wavefunction_del_variable
-
-# ComplexWavefunction shares the scalar QCVariable path with Wavefunction
-# (set_scalar_variable lives on BaseWavefunction). Array branches still expect
-# Matrix; ComplexMatrix-aware helpers can replace these as needed.
-core.ComplexWavefunction.set_variable = _core_wavefunction_set_variable
 
 # removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
 # core.get_variable
