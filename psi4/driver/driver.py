@@ -129,6 +129,20 @@ def energy(name, **kwargs):
 
         Existing files to be renamed and copied for calculation restart, e.g. a serialized wfn or module-specific binary data.
 
+    :type guess_C: :py:class:`numpy.ndarray`, :py:class:`~psi4.core.Matrix`, :py:class:`~psi4.core.ComplexMatrix`, tuple
+    :param guess_C: SCF-only. Occupied MO coefficient guess, applied directly to the wavefunction
+        in memory -- no checkpoint file needed. Takes priority over
+        the :term:`GUESS <GUESS (SCF)>` keyword, regardless of its value.
+
+        A single dense (C1) array, list of per-irrep arrays, or :py:class:`~psi4.core.Matrix`/
+        :py:class:`~psi4.core.ComplexMatrix` gives the occupied orbitals for a restricted real
+        reference (alpha mirrored to beta) or for CGHF (``REFERENCE CGHF``; spin-blocked occupied
+        spinors, shape (2*nso, nelec)). A ``(Ca, Cb)`` *tuple* gives independent occupied
+        alpha/beta orbitals for an unrestricted or restricted-open real reference -- a bare
+        Python ``tuple`` is reserved for this pairing, so a symmetric single guess with
+        multiple irreps should be given as a :py:class:`~psi4.core.Matrix` or a ``list`` of
+        per-irrep arrays.
+
     .. _`table:energy_gen`:
 
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
