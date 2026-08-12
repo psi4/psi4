@@ -1322,10 +1322,24 @@ void DFJKGrad::compute_hessian() {
     auto dc = std::make_shared<Matrix>("dc[x][A] = (mn|A)^x D[m][n]",  3*natoms, np);
     double **dcp = dc->pointer();
 
-    auto dAa_ij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*na*na);
-    double **dAa_ijp = dAa_ij->pointer();
-    auto dAb_ij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*nb*nb);
-    double **dAb_ijp = dAb_ij->pointer();
+    // Exchange (K) intermediates. These dominate the Hessian's memory
+    // (each is 3*natom * naux * nocc^2 doubles) and Matrix zeroes its storage
+    // on construction, so allocating them touches the pages. Only build them
+    // when exact exchange is actually present (pure functionals leave do_K_
+    // false), and only build the beta copies when the orbitals differ --
+    // otherwise a pure meta-GGA Hessian pointlessly reserves several GB and
+    // can drive the process into swap. Their uses below are already guarded by
+    // do_K_ / same_ab, so the pointers stay null when unused.
+    SharedMatrix dAa_ij, dAb_ij;
+    double **dAa_ijp = nullptr, **dAb_ijp = nullptr;
+    if (do_K_) {
+        dAa_ij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*na*na);
+        dAa_ijp = dAa_ij->pointer();
+        if (!same_ab) {
+            dAb_ij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*nb*nb);
+            dAb_ijp = dAb_ij->pointer();
+        }
+    }
 
     auto d = std::make_shared<Vector>("d[A] = Minv[A][B] C[B]", np);
     double *dp = d->pointer();
@@ -1333,10 +1347,16 @@ void DFJKGrad::compute_hessian() {
     double **ddp = dd->pointer();
     auto de = std::make_shared<Matrix>("de[x][A] = (A|B)^x d[B] ", 3*natoms, np);
     double **dep = de->pointer();
-    auto dea_ij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*na*na);
-    double **dea_ijp = dea_ij->pointer();
-    auto deb_ij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*nb*nb);
-    double **deb_ijp = deb_ij->pointer();
+    SharedMatrix dea_ij, deb_ij;
+    double **dea_ijp = nullptr, **deb_ijp = nullptr;
+    if (do_K_) {
+        dea_ij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*na*na);
+        dea_ijp = dea_ij->pointer();
+        if (!same_ab) {
+            deb_ij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*nb*nb);
+            deb_ijp = deb_ij->pointer();
+        }
+    }
 
     // Build some integral factories
     auto Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
