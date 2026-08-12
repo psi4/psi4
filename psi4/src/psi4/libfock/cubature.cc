@@ -2780,6 +2780,22 @@ class NuclearWeightMgr {
     double **amatrix_;
     ////
 
+    // Reusable per-point scratch for the weight derivative routines. A
+    // NuclearWeightMgr is constructed locally per grid block per thread (see
+    // MolecularGrid::compute_weight_{gradient,hessian}), so these mutable
+    // buffers are never shared between threads. Hoisting them here avoids
+    // reallocating O(natom^2)/O(natom^2 * 9) storage on every grid point.
+    mutable std::vector<double> s_dist_;
+    mutable std::vector<std::array<double, 3>> s_u_;
+    mutable std::vector<double> s_sval_, s_schain_, s_s2chain_, s_muval_;
+    mutable std::vector<char> s_clipped_;
+    mutable std::vector<double> s_prod_, s_prodnz_;
+    mutable std::vector<int> s_nzero_, s_jzero0_, s_jzero1_;
+    mutable std::vector<double> s_g0_, s_g1_, s_g2_, s_g3_;  // (3 natom) accumulators
+    mutable std::vector<double> s_H0_, s_H1_, s_H2_;         // (3 natom)^2, Hessian only
+    /// Lazily size the scratch buffers to the current molecule (idempotent).
+    void ensure_scratch(bool need_hess) const;
+
     inline double distToAtom(MassPoint mp, int A) const {
         return sqrt((mp.x - molecule_->x(A)) * (mp.x - molecule_->x(A)) +
                     (mp.y - molecule_->y(A)) * (mp.y - molecule_->y(A)) +
@@ -2987,6 +3003,35 @@ double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratm
     return numerator / denominator;
 }
 
+void NuclearWeightMgr::ensure_scratch(bool need_hess) const {
+    const size_t n = molecule_->natom();
+    const size_t n2 = n * n;
+    const size_t n3 = 3 * n;
+    if (s_dist_.size() != n) {
+        s_dist_.resize(n);
+        s_u_.resize(n);
+        s_sval_.resize(n2);
+        s_schain_.resize(n2);
+        s_muval_.resize(n2);
+        s_clipped_.resize(n2);
+        s_prod_.resize(n);
+        s_prodnz_.resize(n);
+        s_nzero_.resize(n);
+        s_jzero0_.resize(n);
+        s_jzero1_.resize(n);
+        s_g0_.resize(n3);
+        s_g1_.resize(n3);
+        s_g2_.resize(n3);
+        s_g3_.resize(n3);
+    }
+    if (need_hess && s_H0_.size() != n3 * n3) {
+        s_s2chain_.resize(n2);
+        s_H0_.resize(n3 * n3);
+        s_H1_.resize(n3 * n3);
+        s_H2_.resize(n3 * n3);
+    }
+}
+
 double NuclearWeightMgr::computeNuclearWeightGradient(MassPoint mp, int A, double stratmannCutoff,
                                                        double* grad) const {
     int natom = molecule_->natom();
@@ -2997,9 +3042,11 @@ double NuclearWeightMgr::computeNuclearWeightGradient(MassPoint mp, int A, doubl
 
     double (*stepFunction)(double) = (scheme_ == STRATMANN) ? StratmannStepFunction : BeckeStepFunction;
 
+    ensure_scratch(false);
+
     // Distances and unit vectors from every atom to the point.
-    std::vector<double> dist(natom);
-    std::vector<std::array<double, 3>> u(natom);
+    auto& dist = s_dist_;
+    auto& u = s_u_;
     for (int l = 0; l < natom; l++) {
         double dx = mp.x - molecule_->x(l);
         double dy = mp.y - molecule_->y(l);
@@ -3015,8 +3062,11 @@ double NuclearWeightMgr::computeNuclearWeightGradient(MassPoint mp, int A, doubl
 
     // Cell functions s(nu_ij) and the chain factor ds/dmu = s'(nu) (1 - 2 a mu),
     // with the Stratmann/SBECKE plateaus handled by vanishing derivatives.
-    std::vector<double> sval(natom * natom), schain(natom * natom), muval(natom * natom);
-    std::vector<char> clipped(natom * natom, 0);
+    auto& sval = s_sval_;
+    auto& schain = s_schain_;
+    auto& muval = s_muval_;
+    auto& clipped = s_clipped_;
+    std::fill(clipped.begin(), clipped.end(), 0);
     for (int i = 0; i < natom; i++) {
         for (int j = 0; j < natom; j++) {
             if (i == j) continue;
@@ -3059,8 +3109,10 @@ double NuclearWeightMgr::computeNuclearWeightGradient(MassPoint mp, int A, doubl
     }
 
     // Cell products with explicit zero handling (Stratmann zeros are exact).
-    std::vector<double> prod(natom), prodnz(natom);
-    std::vector<int> nzero(natom), jzero(natom);
+    auto& prod = s_prod_;
+    auto& prodnz = s_prodnz_;
+    auto& nzero = s_nzero_;
+    auto& jzero = s_jzero0_;
     double Z = 0.0;
     for (int i = 0; i < natom; i++) {
         double pnz = 1.0;
@@ -3113,8 +3165,11 @@ double NuclearWeightMgr::computeNuclearWeightGradient(MassPoint mp, int A, doubl
     };
 
     // dprod_i/dR_C accumulated for the numerator (i == A) and the sum Z.
-    std::vector<double> dnum(3 * natom, 0.0), dZ(3 * natom, 0.0);
-    std::vector<double> dpi(3 * natom);
+    auto& dnum = s_g0_;
+    auto& dZ = s_g1_;
+    auto& dpi = s_g2_;
+    std::fill(dnum.begin(), dnum.end(), 0.0);
+    std::fill(dZ.begin(), dZ.end(), 0.0);
     for (int i = 0; i < natom; i++) {
         if (nzero[i] > 1) continue;
         std::fill(dpi.begin(), dpi.end(), 0.0);
@@ -3151,8 +3206,10 @@ double NuclearWeightMgr::computeNuclearWeightHessian(MassPoint mp, int A, double
 
     double (*stepFunction)(double) = (scheme_ == STRATMANN) ? StratmannStepFunction : BeckeStepFunction;
 
-    std::vector<double> dist(natom);
-    std::vector<std::array<double, 3>> u(natom);
+    ensure_scratch(true);
+
+    auto& dist = s_dist_;
+    auto& u = s_u_;
     for (int l = 0; l < natom; l++) {
         double dx = mp.x - molecule_->x(l);
         double dy = mp.y - molecule_->y(l);
@@ -3170,8 +3227,12 @@ double NuclearWeightMgr::computeNuclearWeightHessian(MassPoint mp, int A, double
     // schain = ds/dmu = s'(nu) (1 - 2 a mu), s2chain = d2s/dmu2 =
     // s''(nu) (1 - 2 a mu)^2 - 2 a s'(nu), with the Stratmann/SBECKE
     // plateaus handled by vanishing derivatives.
-    std::vector<double> sval(natom * natom), schain(natom * natom), s2chain(natom * natom), muval(natom * natom);
-    std::vector<char> clipped(natom * natom, 0);
+    auto& sval = s_sval_;
+    auto& schain = s_schain_;
+    auto& s2chain = s_s2chain_;
+    auto& muval = s_muval_;
+    auto& clipped = s_clipped_;
+    std::fill(clipped.begin(), clipped.end(), 0);
     for (int i = 0; i < natom; i++) {
         for (int j = 0; j < natom; j++) {
             if (i == j) continue;
@@ -3224,8 +3285,11 @@ double NuclearWeightMgr::computeNuclearWeightHessian(MassPoint mp, int A, double
     }
 
     // Cell products tracking up to TWO exactly-vanishing factors.
-    std::vector<double> prod(natom), prodnz(natom);
-    std::vector<int> nzero(natom), jzero0(natom), jzero1(natom);
+    auto& prod = s_prod_;
+    auto& prodnz = s_prodnz_;
+    auto& nzero = s_nzero_;
+    auto& jzero0 = s_jzero0_;
+    auto& jzero1 = s_jzero1_;
     double Z = 0.0;
     for (int i = 0; i < natom; i++) {
         double pnz = 1.0;
@@ -3338,8 +3402,17 @@ double NuclearWeightMgr::computeNuclearWeightHessian(MassPoint mp, int A, double
         }
     };
 
-    std::vector<double> gnum(n3, 0.0), gZ(n3, 0.0), gi(n3), ti(n3);
-    std::vector<double> Hnum(n3 * n3, 0.0), HZ(n3 * n3, 0.0), Hi(n3 * n3);
+    auto& gnum = s_g0_;
+    auto& gZ = s_g1_;
+    auto& gi = s_g2_;
+    auto& ti = s_g3_;
+    auto& Hnum = s_H0_;
+    auto& HZ = s_H1_;
+    auto& Hi = s_H2_;
+    std::fill(gnum.begin(), gnum.end(), 0.0);
+    std::fill(gZ.begin(), gZ.end(), 0.0);
+    std::fill(Hnum.begin(), Hnum.end(), 0.0);
+    std::fill(HZ.begin(), HZ.end(), 0.0);
     std::vector<double> d1(6), d1b(6), Bii(9), Bij(9), Bjj(9);
 
     for (int i = 0; i < natom; i++) {
