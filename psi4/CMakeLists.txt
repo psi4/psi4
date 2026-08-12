@@ -394,6 +394,7 @@ install(
     # below place extra files the ctests-run-as-pytests need
     PATTERN "adcc/formaldehyde-pe-adc1/fa_6w.pot"
     PATTERN "adcc/formaldehyde-pe-adc2/fa_6w.pot"
+    PATTERN "cghf_li3/li3_cocc_guess.dat"
     PATTERN "ci-property/grid.dat"
     PATTERN "scf-property/grid.dat"
     PATTERN "mp2-property/grid.dat"
