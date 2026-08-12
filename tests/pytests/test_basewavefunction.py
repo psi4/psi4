@@ -5,7 +5,7 @@ import psi4
 from addons import using
 from os.path import isfile
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.cghf, *using("einsums")]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, *using("einsums")]
 
 
 @pytest.fixture
