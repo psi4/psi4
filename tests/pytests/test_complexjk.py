@@ -4,7 +4,7 @@ import numpy as np
 import psi4
 from addons import using
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.cghf, *using("einsums")]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, *using("einsums")]
 
 
 def _random_complex(shape, rng):
