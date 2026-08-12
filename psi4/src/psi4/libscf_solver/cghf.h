@@ -107,7 +107,7 @@ class CGHF : public ComplexWavefunction, public BaseHF {
     /// Occupied (or full) spinor MO guess from a previous computation / READ
     SharedComplexMatrix guess_C_;
 
-    void common_init();
+    void common_init() override;
 
     /// Fills real SADGuess into D_/C_
     void compute_SAD_guess();

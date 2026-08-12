@@ -498,7 +498,7 @@ class PSI_API DiskJK : public JK {
     void postiterations() override;
 
     /// Common initialization
-    void common_init();
+    void common_init() override;
 
    public:
     // => Constructors < = //
@@ -559,7 +559,7 @@ class PSI_API PKJK : public JK {
     void postiterations() override;
 
     /// Common initialization
-    void common_init();
+    void common_init() override;
 
     /// Total number of SOs
     int nso_;
@@ -664,7 +664,7 @@ class PSI_API DirectJK : public JK {
                   std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
 
     /// Common initialization
-    void common_init();
+    void common_init() override;
 
     /**
     * Return number of ERI shell quartets computed during the JK build process.
@@ -834,7 +834,7 @@ class PSI_API DiskDFJK : public JK {
     void postiterations() override;
 
     /// Common initialization
-    void common_init();
+    void common_init() override;
 
     bool is_core();
     size_t memory_temp() const;
@@ -1035,7 +1035,7 @@ class PSI_API MemDFJK : public JK {
     void postiterations() override;
 
     /// Common initialization
-    void common_init();
+    void common_init() override;
 
    public:
     // => Constructors < = //
@@ -1156,7 +1156,7 @@ class PSI_API CompositeJK : public JK {
     void incfock_postiter();
 
     /// Common initialization
-    void common_init();
+    void common_init() override;
 
     /**
     * Return number of ERI shell quartets computed during the JK build process.
