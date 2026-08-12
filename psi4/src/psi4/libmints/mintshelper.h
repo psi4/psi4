@@ -35,12 +35,6 @@
 
 #include <vector>
 
-#ifdef USING_Einsums
-#include <Einsums/Tensor/BlockTensor.hpp>
-#include <Einsums/Tensor/Tensor.hpp>
-#include <Einsums/Tensor/TiledTensor.hpp>
-#endif
-
 namespace psi {
 
 class CdSalcList;
@@ -348,26 +342,6 @@ class PSI_API MintsHelper {
 #endif
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
-#ifdef USING_Einsums
-    /// Copy a totally-symmetric, square, symmetry-blocked Matrix into an owning
-    /// einsums::BlockTensor<double, 2> (one diagonal block per irrep).
-    einsums::BlockTensor<double, 2> block_from_matrix(SharedMatrix mat, const std::string& name);
-    /// SO overlap integrals as an owning BlockTensor<double, 2>.
-    einsums::BlockTensor<double, 2> so_overlap_einsums(bool include_perturbations = true);
-    /// SO kinetic integrals as an owning BlockTensor<double, 2>.
-    einsums::BlockTensor<double, 2> so_kinetic_einsums(bool include_perturbations = true);
-    /// SO potential (nuclear attraction) integrals as an owning BlockTensor<double, 2>.
-    einsums::BlockTensor<double, 2> so_potential_einsums(bool include_perturbations = true);
-    /// SO two-electron integrals (pq|rs), chemists' notation, as a rank-4 TiledTensor.
-    /// Tiles are the symmetry-allowed irrep quadruples; each axis is tiled by the
-    /// SO-per-irrep dimension. Absent tiles are rigorously zero and not stored.
-    einsums::TiledTensor<double, 4> so_eri_tiled();
-    /// AO two-electron integrals (pq|rs), chemists' notation, as a dense rank-4
-    /// Tensor. AO integrals carry no point-group symmetry, so a dense tensor is
-    /// the natural representation. Built shell-batched via compute_shell. N^4
-    /// storage — not recommended for large systems.
-    einsums::Tensor<double, 4> ao_eri_einsums();
-#endif
     /// Vector SO Dipole Integrals
     std::vector<SharedMatrix> so_dipole() const;
     /// Vector SO Nabla Integrals
