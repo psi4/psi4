@@ -137,7 +137,7 @@ class HF : public Wavefunction, public BaseHF {
     void print_occupation();
 
     /// Common initializer
-    void common_init();
+    void common_init() override;
     /// Part of the common initializer that runs after subclass specific tasks
     void subclass_init();
     /// Construct the DFT potential.

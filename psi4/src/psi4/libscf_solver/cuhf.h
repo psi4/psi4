@@ -85,7 +85,7 @@ class CUHF final : public HF {
 
     void compute_spin_contamination() override;
 
-    void common_init();
+    void common_init() override;
     void setup_potential() override;
 
    public:
