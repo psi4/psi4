@@ -4925,6 +4925,24 @@ void MolecularGrid::block(int max_points, int min_points, double max_radius) {
     }
 }
 
+std::shared_ptr<NuclearWeightMgr> MolecularGrid::nuclear_weight_mgr(int thread) const {
+    // Build one manager per thread the first time we are asked (inside the
+    // OpenMP block loop), so the molecule geometry is not rebuilt per block.
+    std::call_once(nuc_mgr_once_, [this]() {
+        int nthread = 1;
+#ifdef _OPENMP
+        nthread = omp_get_num_threads();
+#endif
+        if (nthread < 1) nthread = 1;
+        nuc_mgr_pool_.resize(nthread);
+        for (auto& m : nuc_mgr_pool_) m = std::make_shared<NuclearWeightMgr>(molecule_, options_.nucscheme);
+    });
+    if (thread >= 0 && thread < static_cast<int>(nuc_mgr_pool_.size())) return nuc_mgr_pool_[thread];
+    // Thread id outside the pool (e.g. a larger team than the first call):
+    // fall back to a private manager so correctness never depends on the guess.
+    return std::make_shared<NuclearWeightMgr>(molecule_, options_.nucscheme);
+}
+
 void MolecularGrid::compute_weight_gradient(std::shared_ptr<BlockOPoints> block, SharedMatrix out) const {
     // Total derivative dw_g/dR_C of the quadrature weights of a block whose
     // points ride their parent atom: the atomic (radial x angular) factor is
@@ -4936,7 +4954,12 @@ void MolecularGrid::compute_weight_gradient(std::shared_ptr<BlockOPoints> block,
     if (out->rowdim() < 3 * natom || out->coldim() < npoints) {
         throw PSIEXCEPTION("compute_weight_gradient: output matrix too small.");
     }
-    NuclearWeightMgr mgr(molecule_, options_.nucscheme);
+    int thread = 0;
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#endif
+    auto mgr_ptr = nuclear_weight_mgr(thread);
+    NuclearWeightMgr& mgr = *mgr_ptr;
     double stratmannCutoff = mgr.GetStratmannCutoff(A);
     double* xp = block->x();
     double* yp = block->y();
@@ -4985,7 +5008,12 @@ void MolecularGrid::compute_weight_hessian(std::shared_ptr<BlockOPoints> block, 
     if (escal->dim() < npoints) {
         throw PSIEXCEPTION("compute_weight_hessian: scalar vector too small.");
     }
-    NuclearWeightMgr mgr(molecule_, options_.nucscheme);
+    int thread = 0;
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#endif
+    auto mgr_ptr = nuclear_weight_mgr(thread);
+    NuclearWeightMgr& mgr = *mgr_ptr;
     double stratmannCutoff = mgr.GetStratmannCutoff(A);
     double* xp = block->x();
     double* yp = block->y();
