@@ -51,7 +51,7 @@ class RHF : public HF {
 
     double compute_initial_E() override;
 
-    void common_init();
+    void common_init() override;
     void setup_potential() override;
 
    public:

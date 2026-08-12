@@ -84,32 +84,6 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 #include <pybind11/functional.h>
-#include <pybind11/numpy.h>
-
-namespace {
-
-#ifdef USING_Einsums
-
-/// NumPy views for an ComplexMatrix (einsums TiledTensor).
-py::list tiled_tensor_array_interface(psi::ComplexMatrix& tt) {
-    using ValueT = std::complex<double>;
-    py::list ret;
-    for (int h = 0; h < tt.nirrep(); ++h) {
-        auto& tile = tt.get(h); // allocates tiles if missing
-        const auto r = static_cast<py::ssize_t>(tile.dim(0));
-        const auto c = static_cast<py::ssize_t>(tile.dim(1));
-        ValueT* ptr = (r != 0 && c != 0) ? tile.data() : nullptr;
-        std::vector<py::ssize_t> shape{r, c};
-        std::vector<py::ssize_t> strides{static_cast<py::ssize_t>(tile.stride(0) * sizeof(ValueT)),
-                                         static_cast<py::ssize_t>(tile.stride(1) * sizeof(ValueT))};
-        ret.append(py::array(py::dtype::of<ValueT>(), shape, strides, ptr, py::cast(&tt)));
-    }
-    return ret;
-}
-
-#endif  // USING_Einsums
-
-}  // namespace
 
 void export_wavefunction(py::module& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
@@ -355,87 +329,7 @@ void export_wavefunction(py::module& m) {
              "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
-    // ComplexMatrix is einsums::TiledTensor<complex<double>, 2>. NumPy conversion
-    // (to_array/from_array) lives in Python (p4util/numpy_helper.py) and is built on the
-    // array_interface method below, mirroring the real Matrix class in export_mints.cc.
-    // Diagonal tiles tile(h, h) play the role of BlockTensor::block(h); tiles may be
-    // rectangular when row and column grids differ (e.g. occupied-only MO coefficients).
 #ifdef USING_Einsums
-    py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
-                                                             "Complex blocked matrix (einsums TiledTensor).")
-        .def(py::init([](const std::string& name, const std::vector<size_t>& block_sizes) {
-                 // One size list --> same tiling on both axes (square diagonal tiles).
-                 Dimension dim({block_sizes.begin(), block_sizes.end()});
-                 auto mat = std::make_shared<ComplexMatrix>(name, dim);
-                 for (int h = 0; h < static_cast<int>(block_sizes.size()); ++h) {
-                     (void)mat->get(h);  // allocate + zero diagonal tiles
-                 }
-                 return mat;
-             }),
-             "name"_a, "block_sizes"_a,
-             "Construct a ComplexMatrix with one square diagonal tile per entry in block_sizes.")
-        .def(py::init([](const std::string& name, const std::vector<size_t>& row_sizes,
-                         const std::vector<size_t>& col_sizes) {
-                 if (row_sizes.size() != col_sizes.size()) {
-                     throw py::value_error(
-                         "ComplexMatrix: row_sizes and col_sizes must have the same number of irreps.");
-                 }
-                 Dimension row_dim({row_sizes.begin(), row_sizes.end()});
-                 Dimension col_dim({col_sizes.begin(), col_sizes.end()});
-                 auto mat = std::make_shared<ComplexMatrix>(name, row_dim, col_dim);
-                 for (int h = 0; h < static_cast<int>(row_sizes.size()); ++h) {
-                     (void)mat->get(h);
-                 }
-                 return mat;
-             }),
-             "name"_a, "row_sizes"_a, "col_sizes"_a,
-             "Construct a ComplexMatrix with diagonal tiles of shape (row_sizes[h], col_sizes[h]).")
-        .def("nirrep", [](const ComplexMatrix& m) { return m.nirrep(); }, "Returns number of tiles")
-        .def("rowdim", static_cast<Dimension (ComplexMatrix::*)() const>(&ComplexMatrix::rowspi),
-             py::return_value_policy::copy, // TODO: make sure this is the correct return policy
-             "Per-irrep row tile sizes as a Dimension (C1 returns size-1 Dimension).")
-        .def("coldim", static_cast<Dimension (ComplexMatrix::*)() const>(&ComplexMatrix::colspi),
-             py::return_value_policy::copy,
-             "Per-irrep column tile sizes as a Dimension.")
-        .def("array_interface", &tiled_tensor_array_interface, py::return_value_policy::reference_internal,
-             "List of per-irrep diagonal-tile NumPy views sharing the tensor's memory.")
-        .def_property("name", [](const ComplexMatrix& m) { return m.name(); },
-                      [](ComplexMatrix& m, const std::string& name) { m.set_name(name); },
-                      "The name of this ComplexMatrix.")
-        .def("zero", &ComplexMatrix::zero, "Zeros out the tensor (drops all tile storage).")
-        .def("clone", &ComplexMatrix::clone, "Returns a deep copy of this ComplexMatrix.")
-        .def("axpy", &ComplexMatrix::axpy, "alpha"_a, "other"_a,
-             "In-place self += alpha * other (diagonal tiles only).")
-        .def("subtract", &ComplexMatrix::subtract, "other"_a,
-             "In-place self -= other (diagonal tiles only).")
-        .def("vector_dot", &ComplexMatrix::vector_dot, "other"_a,
-             "Re(Tr(self^H other)), summed over diagonal tiles (Hermitian inner product).")
-        .def("save", &ComplexMatrix::save, "psio"_a, "fileno"_a,
-             "Saves diagonal tiles as raw complex sub-blocks to a PSIO file.")
-        .def("load", &ComplexMatrix::load, "psio"_a, "fileno"_a,
-             "Loads diagonal tiles as raw complex sub-blocks from a PSIO file. The "
-             "ComplexMatrix must already have the correct tile grid (e.g. from the "
-             "(name, block_sizes) constructor).")
-        .def("product_trace", &ComplexMatrix::product_trace, "other"_a,
-             "Replicates einsum('ij,ji->', self, other)")
-        .def("conjT", &ComplexMatrix::conjT, "Returns the conjugate transpose of this ComplexMatrix.")
-        .def("rms", &ComplexMatrix::rms, "Returns sqrt(mean(|z|^2)) over the declared tile grid.")
-        .def("absmax", &ComplexMatrix::absmax, "Returns the maximum |z| over allocated diagonal tiles.");
-
-    m.def("diagonalize", &linalg::diagonalize, "F"_a, "X"_a,
-          "Diagonalize a Hermitian ComplexMatrix F with metric X.\n\n"
-          "Forms Forth = X^H @ F @ X, diagonalizes it with a Hermitian eigensolver,\n"
-          "and returns (eigenvalues: Vector, U^H: ComplexMatrix) where U^H has\n"
-          "eigenvectors as columns.  The caller typically computes MO coefficients\n"
-          "as C = X @ U^H.  X should be real (e.g. S^{-1/2} of the overlap matrix).");
-
-    m.def("_doublet_aH_b",
-          static_cast<ComplexMatrix (*)(const ComplexMatrix&, const ComplexMatrix&)>(
-              &linalg::doublet<true, false>),
-          "A"_a, "B"_a,
-          "Compute A^H @ B (intended: conjugate-transpose of A times B).\n"
-          "Exposed for testing the Einsums gemm conjugation convention.");
-
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
             "ComplexWavefunction", "ComplexWavefunction class docstring")
         .def(py::init<>())
@@ -484,8 +378,6 @@ void export_wavefunction(py::module& m) {
 
 #else
     // Type-only stubs so Python monkey-patches and isinstance checks still resolve.
-    py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
-                                                             "Complex blocked matrix (requires Einsums).");
     py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m, "ComplexWavefunction",
                                                                                             "ComplexWavefunction (requires Einsums)")
         .def(py::init<>())
