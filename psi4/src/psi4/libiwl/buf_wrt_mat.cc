@@ -30,17 +30,24 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
 #include <cmath>
-#include "psi4/libciomr/libciomr.h"
+#include <memory>
+#include <algorithm>
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/libpsi4util/PsiOutStream.h"
+#include "iwl_impl.h"
+
 namespace psi {
 
-#define MAX0(a, b) (((a) > (b)) ? (a) : (b))
-#define MIN0(a, b) (((a) < (b)) ? (a) : (b))
-#define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
+using iwl_impl::check_label_fits;
+
+namespace {
+
+inline int packed_index(int i, int j, const int *ioff) {
+    return (i > j) ? (ioff[i] + j) : (ioff[j] + i);
+}
+
+}  // namespace
 
 /*!
 ** iwl_buf_wrt_mat()
@@ -72,49 +79,46 @@ namespace psi {
 */
 void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast, int sfirst, int slast, int *reorder,
                        int reorder_offset, int printflag, int *ioff, std::string out) {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    int idx, r, s, R, S, rtr, str;
-    int ij, kl;
-    double value;
-    Label *lblptr;
-    Value *valptr;
+    std::shared_ptr<PsiOutStream> printer = printflag ? ((out == "outfile") ? outfile : std::make_shared<PsiOutStream>(out))
+                                                      : nullptr;
 
-    lblptr = labels_;
-    valptr = values_;
+    const int ij = packed_index(ptr, qtr, ioff);
 
-    ij = INDEX(ptr, qtr);
+    for (int r = rfirst, R = 0; r <= rlast; r++, R++) {
+        const int rtr = reorder[r] - reorder_offset;
 
-    for (r = rfirst, R = 0; r <= rlast; r++, R++) {
-        rtr = reorder[r] - reorder_offset;
+        for (int s = sfirst, S = 0; s <= slast && s <= r; s++, S++) {
+            const int str = reorder[s] - reorder_offset;
+            const int kl = packed_index(rtr, str, ioff);
+            const double value = mat[R][S];
 
-        for (s = sfirst, S = 0; s <= slast && s <= r; s++, S++) {
-            str = reorder[s] - reorder_offset;
+            if (ij < kl) continue;
+            if (std::fabs(value) <= cutoff_) continue;
 
-            kl = INDEX(rtr, str);
+            const int p_out = std::max(ptr, qtr);
+            const int q_out = std::min(ptr, qtr);
+            const int r_out = std::max(rtr, str);
+            const int s_out = std::min(rtr, str);
+            check_label_fits(p_out, q_out, r_out, s_out);
 
-            value = mat[R][S];
+            int idx = 4 * idx_;
+            labels_[idx + 0] = static_cast<Label>(p_out);
+            labels_[idx + 1] = static_cast<Label>(q_out);
+            labels_[idx + 2] = static_cast<Label>(r_out);
+            labels_[idx + 3] = static_cast<Label>(s_out);
+            values_[idx_] = static_cast<Value>(value);
 
-            if (ij >= kl && std::fabs(value) > cutoff_) {
-                idx = 4 * idx_;
-                lblptr[idx++] = (Label)MAX0(ptr, qtr);
-                lblptr[idx++] = (Label)MIN0(ptr, qtr);
-                lblptr[idx++] = (Label)MAX0(rtr, str);
-                lblptr[idx++] = (Label)MIN0(rtr, str);
-                valptr[idx_] = (Value)value;
+            idx_++;
 
-                idx_++;
+            if (idx_ == ints_per_buf_) {
+                lastbuf_ = 0;
+                inbuf_ = idx_;
+                put();
+                idx_ = 0;
+            }
 
-                if (idx_ == ints_per_buf_) {
-                    lastbuf_ = 0;
-                    inbuf_ = idx_;
-                    put();
-                    idx_ = 0;
-                }
-
-                if (printflag) printer->Printf(">%d %d %d %d [%d] [%d] = %20.10f\n", ptr, qtr, rtr, str, ij, kl, value);
-
-            } /* end if (std::fabs(value) > Buf->cutoff) ... */
-        }     /* end loop over s */
-    }         /* end loop over r */
+            if (printflag) printer->Printf(">%d %d %d %d [%d] [%d] = %20.10f\n", ptr, qtr, rtr, str, ij, kl, value);
+        }
+    }
 }
 }
