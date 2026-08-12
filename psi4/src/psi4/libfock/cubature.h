@@ -38,6 +38,8 @@
 
 #include <cstdint>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <vector>
 
 namespace psi {
@@ -50,6 +52,7 @@ class BlockOPoints;
 class RadialGrid;
 class SphericalGrid;
 class Options;
+class NuclearWeightMgr;
 
 // This is an auxiliary structure used internally by the grid-builder class.
 // Apparently, for performance reasons, it is not good for the final molecular grid
@@ -108,6 +111,16 @@ class MolecularGrid {
     std::shared_ptr<BasisExtents> extents_;
     /// BasisSet from extents_
     std::shared_ptr<BasisSet> primary_;
+
+    /// Per-thread nuclear weight managers, built once and reused across grid
+    /// blocks (each holds the shared molecule geometry plus its own private
+    /// scratch, so they are constructed T times rather than once per block).
+    mutable std::vector<std::shared_ptr<NuclearWeightMgr>> nuc_mgr_pool_;
+    mutable std::once_flag nuc_mgr_once_;
+    /// Return the calling thread's weight manager, sizing the pool on first
+    /// use to the enclosing OpenMP team; falls back to a fresh manager if the
+    /// thread id is outside the pool.
+    std::shared_ptr<NuclearWeightMgr> nuclear_weight_mgr(int thread) const;
 
     /// Sieve and block
     void postProcess(std::shared_ptr<BasisExtents> extents, int max_points, int min_points, double max_radius);
