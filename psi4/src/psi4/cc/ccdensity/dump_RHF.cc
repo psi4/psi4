@@ -32,7 +32,7 @@
 */
 #include <cstdio>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
@@ -75,7 +75,7 @@ namespace ccdensity {
 ** TDC, last updated 2/08
 */
 
-void dump_RHF(struct iwlbuf *OutBuf, const struct RHO_Params& rho_params) {
+void dump_RHF(IWLWriter &OutBuf, const struct RHO_Params& rho_params) {
     int nirreps, nmo, nfzv;
     int h, row, col, p, q, r, s;
     dpdbuf4 G;

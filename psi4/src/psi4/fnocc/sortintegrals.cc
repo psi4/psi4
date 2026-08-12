@@ -31,7 +31,7 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/process.h"
@@ -43,7 +43,7 @@ struct integral {
     size_t ind;
     double val;
 };
-void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt, Options &options);
+void SortAllIntegrals(IWLReader &eri, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt, Options &options);
 void klcd_terms_incore(double val, size_t pq, size_t rs, size_t p, size_t q, size_t r, size_t s, size_t o, size_t v,
                        double *klcd);
 void ijkl_terms(double val, size_t pq, size_t rs, size_t p, size_t q, size_t r, size_t s, size_t o, size_t &nijkl,
@@ -100,8 +100,7 @@ void SortBlockNewNew(size_t *nelem, size_t blockdim, struct integral *buffer, do
 namespace psi {
 namespace fnocc {
 void SortIntegrals(int nfzc, int nfzv, int norbs, int ndoccact, int nvirt, Options &options) {
-    struct iwlbuf Buf;
-    iwl_buf_init(&Buf, PSIF_MO_TEI, 0.0, 1, 1);
+    IWLReader eri(_default_psio_lib_, PSIF_MO_TEI);
 
     outfile->Printf("\n");
     outfile->Printf("        **********************************************************\n");
@@ -112,26 +111,18 @@ void SortIntegrals(int nfzc, int nfzv, int norbs, int ndoccact, int nvirt, Optio
     outfile->Printf("\n");
     outfile->Printf("\n");
 
-    SortAllIntegrals(&Buf, nfzc, nfzv, norbs, ndoccact, nvirt, options);
-
-    iwl_buf_close(&Buf, 1);
+    SortAllIntegrals(eri, nfzc, nfzv, norbs, ndoccact, nvirt, options);
 }
-void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt, Options &options) {
+void SortAllIntegrals(IWLReader &eri, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt, Options &options) {
     double val;
     size_t o = ndoccact;
     size_t v = nvirt;
     size_t fstact = nfzc;
     size_t lstact = norbs - nfzv;
 
-    size_t lastbuf;
-    Label *lblptr;
-    Value *valptr;
-    size_t nocc, idx, p, q, r, s, pq, rs, pqrs;
+        size_t nocc, idx, p, q, r, s, pq, rs, pqrs;
 
-    lblptr = Buf->labels;
-    valptr = Buf->values;
 
-    lastbuf = Buf->lastbuf;
 
     // buckets for integrals:
     struct integral *ijkl, *klcd, *akjc, **abci1, **abci3;
@@ -331,11 +322,11 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
     /**
       * first buffer (read in when Buf was initialized)
       */
-    for (idx = 4 * Buf->idx; Buf->idx < Buf->inbuf; Buf->idx++) {
-        p = (size_t)lblptr[idx++];
-        q = (size_t)lblptr[idx++];
-        r = (size_t)lblptr[idx++];
-        s = (size_t)lblptr[idx++];
+    for (const auto &integral : eri) {
+        p = (size_t)integral.p;
+        q = (size_t)integral.q;
+        r = (size_t)integral.r;
+        s = (size_t)integral.s;
 
         if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
         if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
@@ -357,7 +348,7 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
         // which type of integral?
 
         if (nocc == 4) {
-            val = (double)valptr[Buf->idx];
+            val = integral.value;
             ijkl_terms(val, pq, rs, p, q, r, s, o, nijkl, ijkl);
 
             if (nijkl >= nelem) {
@@ -369,7 +360,7 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
                 nijkl = 0;
             }
         } else if (nocc == 3) {
-            val = (double)valptr[Buf->idx];
+            val = integral.value;
             ijak_terms(val, p, q, r, s, o, v, nijak, ijak);
             if (nijak >= nelem) {
                 psio->open(PSIF_DCC_IJAK, PSIO_OPEN_OLD);
@@ -389,7 +380,7 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
                 nijak2 = 0;
             }
         } else if (nocc == 2) {
-            val = (double)valptr[Buf->idx];
+            val = integral.value;
 
             if ((p < o && q >= o) || (p >= o && q < o)) {
                 klcd_terms(val, pq, rs, p, q, r, s, o, v, nklcd, klcd);
@@ -414,7 +405,7 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
                 }
             }
         } else if (nocc == 1) {
-            val = (double)valptr[Buf->idx];
+            val = integral.value;
             abci1_terms_new(val, p, q, r, s, o, v, nabci1, totalnabci1, abci1, ov3filesize, bucketsize, abci1_addr,
                             PSIF_DCC_SORT_START + 2 * nfiles, ov3nfiles);
             abci3_terms_new(val, p, q, r, s, o, v, nabci3, totalnabci3, abci3, ov3filesize, bucketsize, abci3_addr,
@@ -422,118 +413,11 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
             abci5_terms_new(val, p, q, r, s, o, v, nabci5, totalnabci5, abci5, ov3filesize, bucketsize, abci5_addr,
                             PSIF_DCC_SORT_START + 2 * nfiles + 2 * ov3nfiles, ov3nfiles);
         } else if (nocc == 0) {
-            val = (double)valptr[Buf->idx];
+            val = integral.value;
             abcd1_terms_new(val, pq, rs, p, q, r, s, o, v, nabcd1, totalnabcd1, abcd1, filesize, bucketsize, abcd1_addr,
                             nfiles);
             abcd2_terms_new(val, pq, rs, p, q, r, s, o, v, nabcd2, totalnabcd2, abcd2, filesize, bucketsize, abcd2_addr,
                             nfiles);
-        }
-    }
-
-    /**
-      * now do the same for the rest of the buffers
-      */
-    while (!lastbuf) {
-        iwl_buf_fetch(Buf);
-        lastbuf = Buf->lastbuf;
-        for (idx = 4 * Buf->idx; Buf->idx < Buf->inbuf; Buf->idx++) {
-            p = (size_t)lblptr[idx++];
-            q = (size_t)lblptr[idx++];
-            r = (size_t)lblptr[idx++];
-            s = (size_t)lblptr[idx++];
-
-            if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-            if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-            p -= fstact;
-            q -= fstact;
-            r -= fstact;
-            s -= fstact;
-
-            pq = Position(p, q);
-            rs = Position(r, s);
-            pqrs = Position(pq, rs);
-
-            nocc = 0;
-            if (p < o) nocc++;
-            if (q < o) nocc++;
-            if (r < o) nocc++;
-            if (s < o) nocc++;
-
-            // which type of integral?
-
-            if (nocc == 4) {
-                val = (double)valptr[Buf->idx];
-                ijkl_terms(val, pq, rs, p, q, r, s, o, nijkl, ijkl);
-
-                if (nijkl >= nelem) {
-                    psio->open(PSIF_DCC_IJKL, PSIO_OPEN_OLD);
-                    psio->write(PSIF_DCC_IJKL, "E2ijkl", (char *)&ijkl[0], nijkl * sizeof(struct integral), ijkl_addr,
-                                &ijkl_addr);
-                    psio->close(PSIF_DCC_IJKL, 1);
-                    totalnijkl += nijkl;
-                    nijkl = 0;
-                }
-            } else if (nocc == 3) {
-                val = (double)valptr[Buf->idx];
-                ijak_terms(val, p, q, r, s, o, v, nijak, ijak);
-                if (nijak >= nelem) {
-                    psio->open(PSIF_DCC_IJAK, PSIO_OPEN_OLD);
-                    psio->write(PSIF_DCC_IJAK, "E2ijak", (char *)&ijak[0], nijak * sizeof(struct integral), ijak_addr,
-                                &ijak_addr);
-                    psio->close(PSIF_DCC_IJAK, 1);
-                    totalnijak += nijak;
-                    nijak = 0;
-                }
-                ijak2_terms(val, p, q, r, s, o, v, nijak2, ijak2);
-                if (nijak2 >= nelem) {
-                    psio->open(PSIF_DCC_IJAK2, PSIO_OPEN_OLD);
-                    psio->write(PSIF_DCC_IJAK2, "E2ijak2", (char *)&ijak2[0], nijak2 * sizeof(struct integral),
-                                ijak2_addr, &ijak2_addr);
-                    psio->close(PSIF_DCC_IJAK2, 1);
-                    totalnijak2 += nijak2;
-                    nijak2 = 0;
-                }
-            } else if (nocc == 2) {
-                val = (double)valptr[Buf->idx];
-
-                if ((p < o && q >= o) || (p >= o && q < o)) {
-                    klcd_terms(val, pq, rs, p, q, r, s, o, v, nklcd, klcd);
-
-                    if (nklcd >= nelem) {
-                        psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
-                        psio->write(PSIF_DCC_IAJB, "E2iajb", (char *)&klcd[0], nklcd * sizeof(struct integral),
-                                    klcd_addr, &klcd_addr);
-                        psio->close(PSIF_DCC_IAJB, 1);
-                        totalnklcd += nklcd;
-                        nklcd = 0;
-                    }
-                } else {
-                    akjc_terms(val, p, q, r, s, o, v, nakjc, akjc);
-
-                    if (nakjc >= nelem) {
-                        psio->open(PSIF_DCC_IJAB, PSIO_OPEN_OLD);
-                        psio->write(PSIF_DCC_IJAB, "E2ijab", (char *)&akjc[0], nakjc * sizeof(struct integral),
-                                    akjc_addr, &akjc_addr);
-                        psio->close(PSIF_DCC_IJAB, 1);
-                        totalnakjc += nakjc;
-                        nakjc = 0;
-                    }
-                }
-            } else if (nocc == 1) {
-                val = (double)valptr[Buf->idx];
-                abci1_terms_new(val, p, q, r, s, o, v, nabci1, totalnabci1, abci1, ov3filesize, bucketsize, abci1_addr,
-                                PSIF_DCC_SORT_START + 2 * nfiles, ov3nfiles);
-                abci3_terms_new(val, p, q, r, s, o, v, nabci3, totalnabci3, abci3, ov3filesize, bucketsize, abci3_addr,
-                                PSIF_DCC_SORT_START + 2 * nfiles + ov3nfiles, ov3nfiles);
-                abci5_terms_new(val, p, q, r, s, o, v, nabci5, totalnabci5, abci5, ov3filesize, bucketsize, abci5_addr,
-                                PSIF_DCC_SORT_START + 2 * nfiles + 2 * ov3nfiles, ov3nfiles);
-            } else if (nocc == 0) {
-                val = (double)valptr[Buf->idx];
-                abcd1_terms_new(val, pq, rs, p, q, r, s, o, v, nabcd1, totalnabcd1, abcd1, filesize, bucketsize,
-                                abcd1_addr, nfiles);
-                abcd2_terms_new(val, pq, rs, p, q, r, s, o, v, nabcd2, totalnabcd2, abcd2, filesize, bucketsize,
-                                abcd2_addr, nfiles);
-            }
         }
     }
     outfile->Printf("done.\n\n");
@@ -2333,22 +2217,16 @@ void Sort_OV3_LowMemory(long int memory, long int o, long int v) {
 /**
   * OVOV in-core integral sort.  requires o^2v^2 doubles
   */
-void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt) {
+void SortOVOV(IWLReader &eri, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt) {
     double val;
     size_t o = ndoccact;
     size_t v = nvirt;
     size_t fstact = nfzc;
     size_t lstact = norbs - nfzv;
 
-    size_t lastbuf;
-    Label *lblptr;
-    Value *valptr;
-    size_t nocc, idx, p, q, r, s, pq, rs;
+        size_t nocc, idx, p, q, r, s, pq, rs;
 
-    lblptr = Buf->labels;
-    valptr = Buf->values;
 
-    lastbuf = Buf->lastbuf;
 
     // available memory:
     size_t memory = Process::environment.get_memory();
@@ -2369,11 +2247,11 @@ void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, i
     /**
       * first buffer (read in when Buf was initialized)
       */
-    for (idx = 4 * Buf->idx; Buf->idx < Buf->inbuf; Buf->idx++) {
-        p = (size_t)lblptr[idx++];
-        q = (size_t)lblptr[idx++];
-        r = (size_t)lblptr[idx++];
-        s = (size_t)lblptr[idx++];
+    for (const auto &integral : eri) {
+        p = (size_t)integral.p;
+        q = (size_t)integral.q;
+        r = (size_t)integral.r;
+        s = (size_t)integral.s;
 
         if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
         if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
@@ -2387,37 +2265,8 @@ void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, i
 
         if (pq > rs) continue;
 
-        val = (double)valptr[Buf->idx];
+        val = integral.value;
         klcd_terms_incore(val, pq, rs, p, q, r, s, o, v, klcd);
-    }
-
-    /**
-      * now do the same for the rest of the buffers
-      */
-    while (!lastbuf) {
-        iwl_buf_fetch(Buf);
-        lastbuf = Buf->lastbuf;
-        for (idx = 4 * Buf->idx; Buf->idx < Buf->inbuf; Buf->idx++) {
-            p = (size_t)lblptr[idx++];
-            q = (size_t)lblptr[idx++];
-            r = (size_t)lblptr[idx++];
-            s = (size_t)lblptr[idx++];
-
-            if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-            if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-            p -= fstact;
-            q -= fstact;
-            r -= fstact;
-            s -= fstact;
-
-            pq = Position(p, q);
-            rs = Position(r, s);
-
-            if (pq > rs) continue;
-
-            val = (double)valptr[Buf->idx];
-            klcd_terms_incore(val, pq, rs, p, q, r, s, o, v, klcd);
-        }
     }
 
     /**

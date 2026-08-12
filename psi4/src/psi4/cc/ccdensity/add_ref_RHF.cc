@@ -31,7 +31,7 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -40,7 +40,7 @@
 namespace psi {
 namespace ccdensity {
 
-void add_ref_RHF(struct iwlbuf *OutBuf) {
+void add_ref_RHF(IWLWriter &OutBuf) {
     int mo_offset = 0;
     for (int h = 0; h < moinfo.nirreps; h++) {
         auto clsd_h = moinfo.frdocc[h] + moinfo.clsdpi[h];
@@ -50,10 +50,10 @@ void add_ref_RHF(struct iwlbuf *OutBuf) {
             moinfo.opdm.add(h, i, i, 2);
             // Two electron closed-shell
             auto qt_i = moinfo.pitzer2qt[i + mo_offset];
-            iwl_buf_wrt_val(OutBuf, qt_i, qt_i, qt_i, qt_i, 1.0, 0, "outfile", 0);
+            OutBuf.write(qt_i, qt_i, qt_i, qt_i, 1.0);
             for (int qt_j = 0; qt_j < qt_i; qt_j++) {
-                iwl_buf_wrt_val(OutBuf, qt_i, qt_i, qt_j, qt_j, 2.0, 0, "outfile", 0);
-                iwl_buf_wrt_val(OutBuf, qt_i, qt_j, qt_j, qt_i, -1.0, 0, "outfile", 0);
+                OutBuf.write(qt_i, qt_i, qt_j, qt_j, 2.0);
+                OutBuf.write(qt_i, qt_j, qt_j, qt_i, -1.0);
             }
         }
         // One electron open-shell. Had better be zero.

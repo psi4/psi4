@@ -35,7 +35,6 @@
 #include <cstring>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libqt/qt.h"

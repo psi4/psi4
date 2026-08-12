@@ -31,7 +31,9 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_reader.h"
+#include "psi4/libiwl/iwl_writer.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -41,83 +43,26 @@
 namespace psi {
 namespace ccdensity {
 
-void classify(int p, int q, int r, int s, double value, struct iwlbuf *ABuf, struct iwlbuf *BBuf, struct iwlbuf *CBuf,
-              struct iwlbuf *DBuf, struct iwlbuf *EBuf, struct iwlbuf *FBuf);
+void classify(int p, int q, int r, int s, double value, IWLWriter &ABuf, IWLWriter &BBuf, IWLWriter &CBuf,
+              IWLWriter &DBuf, IWLWriter &EBuf, IWLWriter &FBuf);
 
 void distribute() {
-    double tolerance;
-    struct iwlbuf InBuf;
-    struct iwlbuf ABuf, BBuf, CBuf, DBuf, EBuf, FBuf;
-    int lastbuf;
-    Value *valptr;
-    Label *lblptr;
-    int idx, p, q, r, s;
-    double value;
+    double tolerance = params.tolerance;
 
-    tolerance = params.tolerance;
+    IWLWriter ABuf(_default_psio_lib_, 90, tolerance);
+    IWLWriter BBuf(_default_psio_lib_, 91, tolerance);
+    IWLWriter CBuf(_default_psio_lib_, 92, tolerance);
+    IWLWriter DBuf(_default_psio_lib_, 93, tolerance);
+    IWLWriter EBuf(_default_psio_lib_, 94, tolerance);
+    IWLWriter FBuf(_default_psio_lib_, 95, tolerance);
 
-    iwl_buf_init(&InBuf, PSIF_MO_TEI, tolerance, 1, 1);
-    iwl_buf_init(&ABuf, 90, tolerance, 0, 0);
-    iwl_buf_init(&BBuf, 91, tolerance, 0, 0);
-    iwl_buf_init(&CBuf, 92, tolerance, 0, 0);
-    iwl_buf_init(&DBuf, 93, tolerance, 0, 0);
-    iwl_buf_init(&EBuf, 94, tolerance, 0, 0);
-    iwl_buf_init(&FBuf, 95, tolerance, 0, 0);
-
-    /* Run through the buffer that's already available */
-    lblptr = InBuf.labels;
-    valptr = InBuf.values;
-    lastbuf = InBuf.lastbuf;
-
-    for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-        p = (int)lblptr[idx++];
-        q = (int)lblptr[idx++];
-        r = (int)lblptr[idx++];
-        s = (int)lblptr[idx++];
-
-        value = (double)valptr[InBuf.idx];
-
+    IWLReader eri(_default_psio_lib_, PSIF_MO_TEI);
+    for (const auto &integral : eri) {
         /* Check integral into each class */
-        classify(p, q, r, s, value, &ABuf, &BBuf, &CBuf, &DBuf, &EBuf, &FBuf);
-
-        /*    outfile->Printf( "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
-
-    } /* end loop through current buffer */
-
-    /* Now run through the rest of the buffers in the file */
-    while (!lastbuf) {
-        iwl_buf_fetch(&InBuf);
-        lastbuf = InBuf.lastbuf;
-
-        for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-            p = (int)lblptr[idx++];
-            q = (int)lblptr[idx++];
-            r = (int)lblptr[idx++];
-            s = (int)lblptr[idx++];
-
-            value = (double)valptr[InBuf.idx];
-
-            /* Check integral into each class */
-            classify(p, q, r, s, value, &ABuf, &BBuf, &CBuf, &DBuf, &EBuf, &FBuf);
-
-            /*      outfile->Printf( "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
-
-        } /* end loop through current buffer */
-    }     /* end loop over reading buffers */
-
-    iwl_buf_close(&InBuf, 1);
-    iwl_buf_flush(&ABuf, 1);
-    iwl_buf_flush(&BBuf, 1);
-    iwl_buf_flush(&CBuf, 1);
-    iwl_buf_flush(&DBuf, 1);
-    iwl_buf_flush(&EBuf, 1);
-    iwl_buf_flush(&FBuf, 1);
-    iwl_buf_close(&ABuf, 1);
-    iwl_buf_close(&BBuf, 1);
-    iwl_buf_close(&CBuf, 1);
-    iwl_buf_close(&DBuf, 1);
-    iwl_buf_close(&EBuf, 1);
-    iwl_buf_close(&FBuf, 1);
+        classify(integral.p, integral.q, integral.r, integral.s, integral.value, ABuf, BBuf, CBuf, DBuf, EBuf,
+                 FBuf);
+    }
+    // IWLReader/IWLWriter close (and the writers flush the last buffer) on scope exit.
 }
 
 }  // namespace ccdensity

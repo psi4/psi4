@@ -27,6 +27,8 @@
  */
 
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
+#include "psi4/libiwl/iwl_writer.h"
 
 #include "occwave.h"
 #include "defines.h"
@@ -41,40 +43,24 @@ void OCCWave::tei_sort_iabc() {
     /********************************************************************************************/
     /************************** sort chem -> phys ***********************************************/
     /********************************************************************************************/
-    struct iwlbuf AA;
-    iwl_buf_init(&AA, PSIF_OCC_IABC, cutoff, 0, 0);
-
-    IWL ERIIN(psio_.get(), PSIF_MO_TEI, 0.0, 1, 1);
-    int ilsti, nbuf, index, fi;
-    double value = 0;
+    IWLWriter out(psio_, PSIF_OCC_IABC, cutoff);
 
     if (print_ > 2) outfile->Printf("\n writing <ia|bc>... \n");
-    do {
-        ilsti = ERIIN.last_buffer();
-        nbuf = ERIIN.buffer_count();
+    IWLReader eri(psio_, PSIF_MO_TEI);
+    for (const auto &integral : eri) {
+        int i = std::abs(integral.p);
+        int j = integral.q;
+        int k = integral.r;
+        int l = integral.s;
+        double value = integral.value;
 
-        fi = 0;
-        for (int idx = 0; idx < nbuf; idx++) {
-            int i = ERIIN.labels()[fi];
-            i = std::abs(i);
-            int j = ERIIN.labels()[fi + 1];
-            int k = ERIIN.labels()[fi + 2];
-            int l = ERIIN.labels()[fi + 3];
-            value = ERIIN.values()[idx];
-            fi += 4;
-
-            // Make sure we are dealing with the (ia|bc) type integrals
-            if (i < nooA && j >= nooA && k >= nooA && l >= nooA) {
-                iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, "outfile", 0);
-                if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, "outfile", 0);
-            }
+        // Make sure we are dealing with the (ia|bc) type integrals
+        if (i < nooA && j >= nooA && k >= nooA && l >= nooA) {
+            out.write(i, k, j, l, value);
+            if (k > l) out.write(i, l, j, k, value);
         }
-        if (!ilsti) ERIIN.fetch();
-
-    } while (!ilsti);
-
-    iwl_buf_flush(&AA, 1);
-    iwl_buf_close(&AA, 1);
+    }
+    // `out` flushes the last buffer and closes (keeping the file) on scope exit.
 
     /*
             // Test reading
