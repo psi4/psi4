@@ -424,7 +424,7 @@ void export_wavefunction(py::module& m) {
         .def_property("attempt_number_", &scf::BaseHF::attempt_number, &scf::BaseHF::set_attempt_number,
                       "Current macroiteration (1-indexed) for stability analysis");
 
-    py::class_<scf::HF, Wavefunction, scf::BaseHF, std::shared_ptr<scf::HF>>(m, "HF", py::multiple_inheritance(), "docstring")
+    py::class_<scf::HF, scf::BaseHF, Wavefunction, std::shared_ptr<scf::HF>>(m, "HF", py::multiple_inheritance(), "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_FDSmSDF", &scf::HF::form_FDSmSDF, "Forms the residual of SCF theory")
         .def("guess", &scf::HF::guess, "Forms the guess (guarantees C, D, and E)")
@@ -509,7 +509,7 @@ void export_wavefunction(py::module& m) {
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
 #ifdef USING_Einsums
-    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", py::multiple_inheritance(), "docstring")
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, scf::BaseHF, ComplexWavefunction>(m, "CGHF", py::multiple_inheritance(), "docstring")
         .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("V_potential", &scf::CGHF::V_potential, "Returns the internal DFT V object.")
         .def("set_sad_basissets", &scf::CGHF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")

@@ -931,24 +931,16 @@ def scf_print_preiterations(self,small=False):
 
 
 # Bind functions to core classes
-core.HF.initialize = scf_initialize
-core.HF.initialize_jk = initialize_jk
-core.HF.iterations = scf_iterate
-core.HF.compute_energy = scf_compute_energy
-core.HF.finalize_energy = scf_finalize_energy
-core.HF.print_energies = scf_print_energies
-core.HF.print_preiterations = scf_print_preiterations
-core.HF.iteration_energies = []
+core.BaseHF.initialize = scf_initialize
+core.BaseHF.initialize_jk = initialize_jk
+core.BaseHF.iterations = scf_iterate
+core.BaseHF.compute_energy = scf_compute_energy
+core.BaseHF.finalize_energy = scf_finalize_energy
+core.BaseHF.print_energies = scf_print_energies
+core.BaseHF.print_preiterations = scf_print_preiterations
+core.BaseHF.iteration_energies = []
 
-core.CGHF.initialize = scf_initialize
-core.CGHF.initialize_jk = initialize_jk
-core.CGHF.iterations = scf_iterate
-core.CGHF.compute_energy = scf_compute_energy
-core.CGHF.finalize_energy = scf_finalize_energy
-core.CGHF.print_energies = scf_print_energies
-core.CGHF.print_preiterations = scf_print_preiterations
-core.CGHF.iteration_energies = []
-
+# Damping update and external potentials are not implemented for CGHF.
 def _noop(*args, **kwargs):
     pass
 core.CGHF.save_density_and_energy = _noop
