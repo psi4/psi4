@@ -395,6 +395,14 @@ double UHF::compute_E() {
     }
 #endif
 
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (options_.get_bool("USE_CUEST")) {
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
     double exchange_E = 0.0;
     if (functional_->is_x_hybrid()) {
         exchange_E -= alpha * Da_->vector_dot(Ka_);
@@ -651,6 +659,14 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (options_.get_bool("USE_CUEST")) {
         alpha = 1.0;
         beta = 1.0;
     }
@@ -1335,6 +1351,14 @@ void UHF::openorbital_scf() {
       // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
       alpha = 1.0;
       beta = 1.0;
+    }
+#endif
+
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (options_.get_bool("USE_CUEST")) {
+        alpha = 1.0;
+        beta = 1.0;
     }
 #endif
 
