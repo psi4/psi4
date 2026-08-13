@@ -50,7 +50,7 @@ namespace scf {
 #ifndef USING_Einsums
 
 /*! Stub CGHF: constructors throw unless Psi4 is built with Einsums. */
-class CGHF : public ComplexWavefunction, public BaseHF {
+class CGHF : public BaseHF, public ComplexWavefunction {
    public:
     CGHF(std::shared_ptr<ComplexWavefunction> /*ref_wfn*/, std::shared_ptr<SuperFunctional> functional)
         : ComplexWavefunction(), BaseHF(functional) {
@@ -76,7 +76,7 @@ class CGHF : public ComplexWavefunction, public BaseHF {
 
 #else
 
-class CGHF : public ComplexWavefunction, public BaseHF {
+class CGHF : public BaseHF, public ComplexWavefunction {
    protected:
     // Prefer BaseHF's copies over BaseWavefunction's for these names.
     using BaseHF::nelectron_;
