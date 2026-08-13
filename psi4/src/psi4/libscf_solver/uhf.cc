@@ -242,7 +242,7 @@ void UHF::form_G() {
         Kb_->zero();
     }
 
-    if (functional_->is_x_lrc()) {
+    if (functional_->is_x_lrc() && !options_.get_bool("USE_CUEST")) { // if using cuEST, wK is encapsulated in K
         if (jk_->get_wcombine()) {
             Ga_->axpy(-1.0, wKa_);
             Gb_->axpy(-1.0, wKb_);

@@ -238,7 +238,7 @@ void RHF::form_G() {
         K_->zero();
     }
 
-    if (functional_->is_x_lrc()) {
+    if (functional_->is_x_lrc() && !options_.get_bool("USE_CUEST")) { // if using cuEST, wK is encapsulated in K
         if (jk_->get_wcombine()) {
             G_->axpy(-1.0, wK_);
         } else {
