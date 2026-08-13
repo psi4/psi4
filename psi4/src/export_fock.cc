@@ -33,6 +33,7 @@
 #include "psi4/lib3index/denominator.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/lib3index/dfhelper.h"
+#include "psi4/lib3index/local_qia.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
@@ -41,39 +42,11 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libscf_solver/sad.h"
 
-#ifdef USING_Einsums
-#include <Einsums/Tensor/RuntimeTensor.hpp>
-#include <algorithm>
-#endif
 
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-#ifdef USING_Einsums
-namespace {
-// Reshape a flat DF block (naux x d2*d3, the matrix is row-major in p,q) into a
-// dense rank-3 einsums::RuntimeTensor (naux, d2, d3). DF integrals carry no
-// point-group symmetry, so a dense tensor (not a tiled one) is the natural
-// representation — and a dense RuntimeTensor is sliceable in Python, which the
-// pair/batch-driven DF correlation methods need. A directly-constructed
-// row-major RuntimeTensor matches the matrix's row-major layout, so each
-// auxiliary row copies contiguously.
-einsums::RuntimeTensor<double> df_block_to_tensor(const std::string &name, SharedMatrix M, int d2, int d3) {
-    const int    naux = M->nrow();
-    einsums::RuntimeTensor<double> T(
-        name, std::vector<size_t>{static_cast<size_t>(naux), static_cast<size_t>(d2), static_cast<size_t>(d3)},
-        /*row_major=*/true);
-    double      *td   = T.data();
-    double     **Mp   = M->pointer();
-    const size_t ncol = static_cast<size_t>(d2) * static_cast<size_t>(d3);
-    for (int Q = 0; Q < naux; ++Q) {
-        std::copy(Mp[Q], Mp[Q] + ncol, td + static_cast<size_t>(Q) * ncol);
-    }
-    return T;
-}
-} // namespace
-#endif
 
 void export_fock(py::module &m) {
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
@@ -145,28 +118,6 @@ void export_fock(py::module &m) {
         .def("Qvv", &DFTensor::Qvv, "doctsring")
         .def("Imo", &DFTensor::Imo, "doctsring")
         .def("Idfmo", &DFTensor::Idfmo, "doctsring")
-#ifdef USING_Einsums
-        // einsums variants of the 3-index blocks: dense rank-3
-        // einsums::RuntimeTensor (naux, d2, d3). DF carries no point-group
-        // symmetry, so these are plain dense tensors (sliceable for the
-        // pair/batch-driven DF correlation methods). Same fitted integrals as
-        // the matrix accessors.
-        .def(
-            "Qso_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|pq) SO", self.Qso(), self.nbf(), self.nbf()); },
-            "AO DF 3-index (Q|pq) as a dense rank-3 einsums RuntimeTensor (naux, nbf, nbf)")
-        .def(
-            "Qmo_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|pq) MO", self.Qmo(), self.nmo(), self.nmo()); },
-            "MO DF 3-index (Q|pq) as a dense rank-3 einsums RuntimeTensor (naux, nmo, nmo)")
-        .def(
-            "Qoo_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|ij) OO", self.Qoo(), self.naocc(), self.naocc()); },
-            "occ-occ DF 3-index as a dense rank-3 einsums RuntimeTensor (naux, naocc, naocc)")
-        .def(
-            "Qov_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|ia) OV", self.Qov(), self.naocc(), self.navir()); },
-            "occ-vir DF 3-index as a dense rank-3 einsums RuntimeTensor (naux, naocc, navir)")
-        .def(
-            "Qvv_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|ab) VV", self.Qvv(), self.navir(), self.navir()); },
-            "vir-vir DF 3-index as a dense rank-3 einsums RuntimeTensor (naux, navir, navir)")
-#endif
         ;
 
     py::class_<FittingMetric, std::shared_ptr<FittingMetric>>(m, "FittingMetric", "docstring")
@@ -221,10 +172,17 @@ void export_fock(py::module &m) {
         .def("get_method", &DFHelper::get_method)
         .def("set_subalgo", &DFHelper::set_subalgo)
         .def("get_AO_size", &DFHelper::get_AO_size)
+        .def("get_AO_tensor", &DFHelper::get_AO_tensor,
+             "Raw, Schwarz-screened three-index AO integrals (Q|mn) as a (naux, nbf * nbf) matrix. No "
+             "fitting metric is applied, so these are the integrals rather than B tensors, which is what a "
+             "method fitting per domain rather than globally needs. Requires in-core AO integrals and the "
+             "DIRECT or DIRECT_iaQ method; STORE contracts the metric in as it builds.")
         .def("set_nthreads", &DFHelper::set_nthreads)
         .def("hold_met", &DFHelper::hold_met)
         .def("set_schwarz_cutoff", &DFHelper::set_schwarz_cutoff)
         .def("get_schwarz_cutoff", &DFHelper::get_schwarz_cutoff)
+        .def("set_metric_pow", &DFHelper::set_metric_pow)
+        .def("get_metric_pow", &DFHelper::get_metric_pow)
         .def("set_AO_core", &DFHelper::set_AO_core)
         .def("get_AO_core", &DFHelper::get_AO_core)
         .def("set_MO_core", &DFHelper::set_MO_core)
@@ -242,6 +200,61 @@ void export_fock(py::module &m) {
         .def("get_tensor_shape", &DFHelper::get_tensor_shape)
         .def("get_tensor", take_string(&DFHelper::get_tensor))
         .def("get_tensor", tensor_access3(&DFHelper::get_tensor));
+
+    // Domain-restricted three-index builder for local correlation methods.
+    py::class_<LocalQiaBuilder, std::shared_ptr<LocalQiaBuilder>>(m, "LocalQiaBuilder",
+        "Three-index integrals (Q|iu) built only where a local method will read them.\n\n"
+        "Same quantity a density-fitted method half-transforms out of the AO integrals, with no "
+        "fitting metric applied, because a local method fits per domain rather than globally. What "
+        "differs from DFHelper or MintsHelper is that the caller declares, per atom of the "
+        "auxiliary basis, which LMO and PAO columns it will read against that atom's auxiliary "
+        "functions; nothing outside that demand is computed, and neither are the AO integrals it "
+        "does not imply.")
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(), "primary"_a, "aux"_a)
+        .def("set_nthreads", &LocalQiaBuilder::set_nthreads,
+             "Threads for the auxiliary-shell loop. Defaults to the process thread count, so an "
+             "unset builder still uses the machine psi4 was told about.")
+        .def("nthreads", &LocalQiaBuilder::nthreads)
+        .def("set_ints_tolerance", &LocalQiaBuilder::set_ints_tolerance,
+             "Shell-pair screening on the AO integrals, in the units of DLPNO_AO_INTS_TOL: a shell "
+             "pair is skipped when max (Q|Q) times the Schwarz factor falls below tol^2. This is "
+             "the controlled screening - the error goes to zero with the tolerance - and zero or "
+             "negative turns it off entirely.")
+        .def("ints_tolerance", &LocalQiaBuilder::ints_tolerance)
+        .def("set_coef_tolerance_lmo", &LocalQiaBuilder::set_coef_tolerance_lmo,
+             "T_CUT_CLMO: an atom enters the LMO-side domain when a requested LMO has a "
+             "coefficient above this on one of its functions. Unlike the integral tolerance this "
+             "is an approximation rather than a screening - it drops transform contributions, not "
+             "just negligible integrals. Negative admits everything.")
+        .def("coef_tolerance_lmo", &LocalQiaBuilder::coef_tolerance_lmo)
+        .def("set_coef_tolerance_pao", &LocalQiaBuilder::set_coef_tolerance_pao,
+             "T_CUT_CPAO: the same for the PAO-side domain.")
+        .def("coef_tolerance_pao", &LocalQiaBuilder::coef_tolerance_pao)
+        .def("set_bp_refit", &LocalQiaBuilder::set_bp_refit,
+             "Refit the LMO coefficients onto each restricted basis-function domain before "
+             "transforming (Boughton and Pulay 1992 JCC, eq. 3). On by default: it is what lets "
+             "the coefficient screening be aggressive without the dropped tail costing accuracy. "
+             "Off transforms with the plain coefficient slice, which is what an exactness check "
+             "against a dense reference wants.")
+        .def("bp_refit", &LocalQiaBuilder::bp_refit)
+        .def("set_domains", &LocalQiaBuilder::set_domains, "atom_to_lmos"_a, "atom_to_paos"_a,
+             "The demand: two lists per atom of the auxiliary basis, naming the LMO and PAO "
+             "columns that will be read against that atom's auxiliary functions. Atom indices "
+             "follow the auxiliary basis's molecule and both lists must cover every atom; an atom "
+             "given empty lists is skipped and answers with None. Each list's own ordering is "
+             "preserved in the output, so it can be used directly to scatter.")
+        .def("compute", &LocalQiaBuilder::compute, "C_lmo"_a, "C_pao"_a, "S"_a = SharedMatrix(),
+             "Build the declared blocks. C_lmo is (nbf, nlmo) and C_pao is (nbf, npao) in the "
+             "primary basis; S is the AO overlap, read only when the refit is on. Returns one "
+             "matrix per auxiliary atom of shape (naux on that atom, len(lmos) * len(paos)), the "
+             "second axis row-major in (lmo, pao) with the caller's list ordering, and None for "
+             "atoms with an empty domain or no auxiliary functions.")
+        .def("atom_aux_ranges", &LocalQiaBuilder::atom_aux_ranges,
+             "The [first, last) auxiliary function range of each atom, which is where that atom's "
+             "block belongs in a full-size tensor.")
+        .def("last_shell_pair_counts", &LocalQiaBuilder::last_shell_pair_counts,
+             "(computed, offered) AO shell pairs from the last compute(): what the integral "
+             "screening actually skipped, against what the domains alone asked for.");
 
     py::class_<MemDFJK, std::shared_ptr<MemDFJK>, JK>(m, "MemDFJK", "docstring")
         .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");

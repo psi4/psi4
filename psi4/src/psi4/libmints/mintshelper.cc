@@ -34,9 +34,6 @@
 #include "psi4/libmints/molecule.h"
 
 #include "psi4/libmints/matrix.h"
-#ifdef USING_Einsums
-#include <Einsums/Tensor/TiledRuntimeTensor.hpp>
-#endif
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
@@ -62,6 +59,7 @@
 #include <cmath>
 #include <iostream>
 #include <list>
+#include <array>
 #include <map>
 #include <memory>
 #include <set>
@@ -1404,28 +1402,28 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
     return cached_oe_ints_[p];
 }
 
-#ifdef USING_Einsums
 namespace {
-// Fills a rank-4 einsums::TiledRuntimeTensor with SO two-electron integrals
-// (pq|rs), Mulliken/chemists' notation. TwoBodySOInt emits each integral once
-// in canonical (8-fold-reduced) form; we scatter it into all eight
-// permutation-equivalent positions so the resulting tensor is fully dense
-// within each symmetry-allowed block. Tiles are keyed by the (p,q,r,s) irrep
-// quadruple and created lazily — only symmetry-allowed, non-empty blocks ever
-// materialize. materialize() is idempotent and zero-initializes on first call,
-// so block entries the functor never visits remain true zeros.
-class TiledSOERIFiller {
-    einsums::TiledRuntimeTensor<double> &T_;
+// Fills the symmetry-allowed irrep-quadruple blocks of the SO two-electron
+// integrals (pq|rs), Mulliken/chemists' notation. TwoBodySOInt emits each
+// integral once in canonical (8-fold-reduced) form; we scatter it into all
+// eight permutation-equivalent positions so each block is fully dense. Blocks
+// are keyed by the (p,q,r,s) irrep quadruple and created lazily -- only
+// symmetry-allowed, non-empty blocks ever materialize. Each block is a
+// zero-initialized (d1*d2, d3*d4) row-major Matrix over the within-irrep
+// compound indices (p*d2+q, r*d4+s).
+class BlockedSOERIFiller {
+    std::map<std::array<int, 4>, SharedMatrix> &blocks_;
+    const Dimension &sopi_;
 
     void put(int hp, int p, int hq, int q, int hr, int r, int hs, int s, double v) {
-        auto &tile = T_.tile({hp, hq, hr, hs});
-        tile.materialize();
-        tile(std::vector<size_t>{static_cast<size_t>(p), static_cast<size_t>(q), static_cast<size_t>(r),
-                                 static_cast<size_t>(s)}) = v;
+        auto &blk = blocks_[{hp, hq, hr, hs}];
+        if (!blk) blk = std::make_shared<Matrix>("SO ERI block", sopi_[hp] * sopi_[hq], sopi_[hr] * sopi_[hs]);
+        blk->set(p * sopi_[hq] + q, r * sopi_[hs] + s, v);
     }
 
   public:
-    explicit TiledSOERIFiller(einsums::TiledRuntimeTensor<double> &T) : T_(T) {}
+    BlockedSOERIFiller(std::map<std::array<int, 4>, SharedMatrix> &blocks, const Dimension &sopi)
+        : blocks_(blocks), sopi_(sopi) {}
 
     // Argument order matches TwoBodySOInt's functor convention: four absolute SO
     // indices (unused here), then (irrep, within-irrep) for each of p,q,r,s, then
@@ -1443,111 +1441,27 @@ class TiledSOERIFiller {
 };
 } // namespace
 
-einsums::TiledRuntimeTensor<double> MintsHelper::tiled_from_matrix(SharedMatrix mat, const std::string &name) {
-    const int        nirrep = mat->nirrep();
-    const Dimension &rowspi = mat->rowspi();
-    const Dimension &colspi = mat->colspi();
-    const int        sym    = mat->symmetry();
-
-    // One tile partition per axis, from the per-irrep row/column dimensions.
-    std::vector<int> rows(nirrep), cols(nirrep);
-    for (int h = 0; h < nirrep; ++h) {
-        rows[h] = rowspi[h];
-        cols[h] = colspi[h];
-    }
-
-    einsums::TiledRuntimeTensor<double> T(name, {rows, cols}, /*row_major=*/true);
-
-    // Block h has rowspi[h] rows and colspi[h ^ sym] columns; it lives at tile
-    // (h, h ^ sym). For a totally-symmetric operator (sym == 0) this is the
-    // block-diagonal (h, h).
-    for (int h = 0; h < nirrep; ++h) {
-        const int hc = h ^ sym;
-        if (rowspi[h] == 0 || colspi[hc] == 0) continue;
-        auto &tile = T.tile({h, hc});
-        tile.materialize();
-        for (int r = 0; r < rowspi[h]; ++r) {
-            for (int c = 0; c < colspi[hc]; ++c) {
-                tile(std::vector<size_t>{static_cast<size_t>(r), static_cast<size_t>(c)}) = mat->get(h, r, c);
-            }
-        }
-    }
-    return T;
-}
-
-einsums::TiledRuntimeTensor<double> MintsHelper::so_overlap_tiled() { return tiled_from_matrix(so_overlap(), "SO Overlap"); }
-
-einsums::TiledRuntimeTensor<double> MintsHelper::so_kinetic_tiled() { return tiled_from_matrix(so_kinetic(), "SO Kinetic"); }
-
-einsums::TiledRuntimeTensor<double> MintsHelper::so_potential_tiled() { return tiled_from_matrix(so_potential(), "SO Potential"); }
-
-einsums::TiledRuntimeTensor<double> MintsHelper::so_eri_tiled() {
-    const int       nirrep   = sobasis_->nirrep();
-    const Dimension sopi_dim = sobasis_->dimension();
-    std::vector<int> sopi(nirrep);
-    for (int h = 0; h < nirrep; ++h) sopi[h] = sopi_dim[h];
-
-    // Rank-4 tensor tiled by SO-per-irrep on every axis. A tile (the irrep
-    // quadruple p,q,r,s) is created only when an integral lands in it, i.e. for
-    // symmetry-allowed blocks whose direct product is totally symmetric.
-    einsums::TiledRuntimeTensor<double> T("SO ERI", {sopi, sopi, sopi, sopi}, /*row_major=*/true);
-
+std::vector<std::pair<std::vector<int>, SharedMatrix>> MintsHelper::so_eri_blocked() {
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb(1);
     tb[0]      = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
     auto soeri = std::make_shared<TwoBodySOInt>(tb, integral_);
 
-    TiledSOERIFiller filler(T);
+    const Dimension sopi = sobasis_->dimension();
+    std::map<std::array<int, 4>, SharedMatrix> blocks;
+    BlockedSOERIFiller filler(blocks, sopi);
     soeri->compute_integrals(filler);
-    return T;
-}
 
-einsums::RuntimeTensor<double> MintsHelper::ao_eri_einsums() {
-    auto                      ints = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
-    std::shared_ptr<BasisSet> bs1  = ints->basis1();
-    std::shared_ptr<BasisSet> bs2  = ints->basis2();
-    std::shared_ptr<BasisSet> bs3  = ints->basis3();
-    std::shared_ptr<BasisSet> bs4  = ints->basis4();
-    const size_t              nbf1 = bs1->nbf();
-    const size_t              nbf2 = bs2->nbf();
-    const size_t              nbf3 = bs3->nbf();
-    const size_t              nbf4 = bs4->nbf();
-
-    // Dense, row-major, zero-initialized rank-4 tensor; write straight into its
-    // backing buffer at the row-major flat index for speed.
-    einsums::RuntimeTensor<double> T("AO ERI", std::vector<size_t>{nbf1, nbf2, nbf3, nbf4}, /*row_major=*/true);
-    double                        *data = T.data();
-
-    // Shell-batched fill: compute one shell quartet at a time and scatter its
-    // contiguous buffer into the tensor (same loop structure as ao_helper).
-    for (int M = 0; M < bs1->nshell(); ++M) {
-        for (int N = 0; N < bs2->nshell(); ++N) {
-            for (int P = 0; P < bs3->nshell(); ++P) {
-                for (int Q = 0; Q < bs4->nshell(); ++Q) {
-                    ints->compute_shell(M, N, P, Q);
-                    const double *buffer = ints->buffer();
-                    const size_t  om     = bs1->shell(M).function_index();
-                    const size_t  on     = bs2->shell(N).function_index();
-                    const size_t  op     = bs3->shell(P).function_index();
-                    const size_t  oq     = bs4->shell(Q).function_index();
-                    size_t        index  = 0;
-                    for (int m = 0; m < bs1->shell(M).nfunction(); ++m) {
-                        for (int n = 0; n < bs2->shell(N).nfunction(); ++n) {
-                            for (int p = 0; p < bs3->shell(P).nfunction(); ++p) {
-                                for (int q = 0; q < bs4->shell(Q).nfunction(); ++q, ++index) {
-                                    data[(((om + m) * nbf2 + (on + n)) * nbf3 + (op + p)) * nbf4 + (oq + q)] =
-                                        buffer[index];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    // Deterministic (lexicographic) order; the quadruple crosses to Python as a
+    // plain list, so callers see a list of ([hp, hq, hr, hs], Matrix) pairs.
+    std::vector<std::pair<std::vector<int>, SharedMatrix>> out;
+    out.reserve(blocks.size());
+    for (auto &entry : blocks) {
+        out.emplace_back(std::vector<int>(entry.first.begin(), entry.first.end()), entry.second);
     }
-    return T;
+    return out;
 }
 
-einsums::RuntimeTensor<double> MintsHelper::mo_bra_half_transform_einsums(SharedMatrix C1, SharedMatrix C2) {
+SharedMatrix MintsHelper::mo_bra_half_transform(SharedMatrix C1, SharedMatrix C2) {
     // (pq|ls) = sum_{mn} C1[m,p] C2[n,q] (mn|ls)  — chemists' notation.
     //
     // Integral-direct first-half (bra) transform. Each significant ket shell-pair
@@ -1575,14 +1489,15 @@ einsums::RuntimeTensor<double> MintsHelper::mo_bra_half_transform_einsums(Shared
     const size_t n1 = static_cast<size_t>(C1->colspi()[0]);
     const size_t n2 = static_cast<size_t>(C2->colspi()[0]);
     if (static_cast<size_t>(C1->rowspi()[0]) != nbf1 || static_cast<size_t>(C2->rowspi()[0]) != nbf2) {
-        throw PSIEXCEPTION("mo_bra_half_transform_einsums: C1/C2 row dimensions must match the bra AO basis (C1 single-irrep)");
+        throw PSIEXCEPTION("mo_bra_half_transform: C1/C2 row dimensions must match the bra AO basis (C1 single-irrep)");
     }
     double **C1p = C1->pointer();
     double **C2p = C2->pointer();
 
-    // Dense, row-major output (n1, n2, nbf3, nbf4); write straight into the buffer.
-    einsums::RuntimeTensor<double> H("MO bra half-transform", std::vector<size_t>{n1, n2, nbf3, nbf4}, /*row_major=*/true);
-    double                        *Hdata = H.data();
+    // Dense output: the rank-4 (n1, n2, nbf3, nbf4) row-major array flattened to a
+    // (n1*n2, nbf3*nbf4) Matrix; write straight into its contiguous buffer.
+    auto H = std::make_shared<Matrix>("MO bra half-transform", static_cast<int>(n1 * n2), static_cast<int>(nbf3 * nbf4));
+    double *Hdata = H->pointer()[0];
 
     // Per-thread integral engines (clone pattern, as elsewhere in this file).
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb(nthread_);
@@ -1595,7 +1510,7 @@ einsums::RuntimeTensor<double> MintsHelper::mo_bra_half_transform_einsums(Shared
     // ~4x fewer compute_shell calls. Requires the bra (resp. ket) AO bases to
     // match, which they do for the primary-basis ERI used here.
     if (bs1 != bs2 || bs3 != bs4) {
-        throw PSIEXCEPTION("mo_bra_half_transform_einsums: permutational symmetry assumes matching bra/ket bases");
+        throw PSIEXCEPTION("mo_bra_half_transform: permutational symmetry assumes matching bra/ket bases");
     }
 
     // Significant, unique (P>=Q) ket shell-pairs are the unit of parallel work;
@@ -1677,7 +1592,6 @@ einsums::RuntimeTensor<double> MintsHelper::mo_bra_half_transform_einsums(Shared
     }
     return H;
 }
-#endif
 
 void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
     std::string perturb_with = options_.get_str("PERTURB_WITH");
