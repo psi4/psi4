@@ -64,7 +64,7 @@ class ROHF : public HF {
 
     void format_guess() override;
 
-    void common_init() override;
+    void common_init();
     void setup_potential() override;
 
    public:
