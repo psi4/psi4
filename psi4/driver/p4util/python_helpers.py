@@ -1333,7 +1333,7 @@ def _core_variable(key: str) -> Union[float, core.Matrix, np.ndarray]:
         raise KeyError(f"psi4.core.variable: Requested variable '{key}' was not set!\n")
 
 
-def _core_wavefunction_variable(self: core.BaseWavefunction, key: str) -> Union[float, core.Matrix, np.ndarray]:
+def _core_wavefunction_variable(self: core.BaseWavefunction, key: str) -> Union[float, core.Matrix, core.ComplexMatrix, np.ndarray]:
     """Return copy of scalar or array :ref:`QCVariable <sec:appendices:qcvars>`
     *key* from *self*.
 
@@ -1452,7 +1452,7 @@ def _core_wavefunction_set_variable(self: core.Wavefunction, key: str, val: Unio
         if `val` is an array but `key` already exists as a scalar variable.
 
     """
-    if isinstance(val, core.Matrix):
+    if isinstance(val, core.Matrix) or isinstance(val, core.ComplexMatrix):
         if self.has_scalar_variable(key):
             raise ValidationError("psi4.core.BaseWavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
@@ -1536,7 +1536,7 @@ def _core_variables(include_deprecated_keys: bool = False) -> Dict[str, Union[fl
     return dicary
 
 
-def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
+def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, core.ComplexMatrix, np.ndarray]]:
     """Return all scalar or array :ref:`QCVariables <sec:appendices:qcvars>`
     from *self*.
 
@@ -1557,8 +1557,10 @@ def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) ->
           are returned as :class:`~numpy.ndarray` of natural dimensionality.
         - Other real array variables are returned as :py:class:`~psi4.core.Matrix` and
           may have an extra dimension with symmetry information.
+        - ComplexMatrix array variables are omitted until NumPy export exists.
+
     """
-    dicary: Dict[str, Union[float, core.Matrix, np.ndarray]] = dict(self.scalar_variables())
+    dicary: Dict[str, Union[float, core.Matrix, core.ComplexMatrix, np.ndarray]] = dict(self.scalar_variables())
     array_vars = getattr(self, "array_variables", None)
     if array_vars is not None:
         for k, v in array_vars().items():
