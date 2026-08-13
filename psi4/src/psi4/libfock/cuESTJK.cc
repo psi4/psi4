@@ -122,6 +122,30 @@ void cuESTJK::preiterations()
     cuestDFIntPlanParameters_t dfint_params;
     CHECK_CUEST(cuestParametersCreate(CUEST_DFINTPLAN_PARAMETERS, reinterpret_cast<void**>(&dfint_params)));
 
+    //Set omega params if applicable 
+    if (do_wK_) {
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_DFINTPLAN_PARAMETERS, 
+            dfint_params,
+            CUEST_DFINTPLAN_PARAMETERS_EXCHANGE_FRACTION,
+            &omega_alpha_,
+            sizeof(double)));
+
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_DFINTPLAN_PARAMETERS, 
+            dfint_params,
+            CUEST_DFINTPLAN_PARAMETERS_LRC_EXCHANGE_FRACTION,
+            &omega_beta_,
+            sizeof(double)));
+
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_DFINTPLAN_PARAMETERS, 
+            dfint_params,
+            CUEST_DFINTPLAN_PARAMETERS_LRC_EXCHANGE_OMEGA,
+            &omega_,
+            sizeof(double)));
+    }
+
     CHECK_CUEST(cuestDFIntPlanCreateWorkspaceQuery(cuest_handle,
         cuest_primary_basis_, cuest_auxiliary_basis_, cuest_pair_list_,
         dfint_params, persistentWorkspaceDescriptor, temporaryWorkspaceDescriptor, nullptr));

@@ -227,6 +227,13 @@ void UHF::form_G() {
     }
 #endif
 
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
     if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
