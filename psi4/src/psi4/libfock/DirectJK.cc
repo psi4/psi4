@@ -45,11 +45,9 @@
 #include "psi4/liboptions/liboptions.h"
 
 #include <algorithm>
-#include <limits>
+#include <utility>
 #include <ranges>
 #include <span>
-#include <sstream>
-#include <unordered_set>
 #include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
