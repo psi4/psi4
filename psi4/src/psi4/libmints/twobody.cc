@@ -170,6 +170,13 @@ double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
     return D_max;
 }
 
+double TwoBodyAOInt::shell_pair_max_density(int i, int M, int N) const {
+    if (i > max_dens_shell_pair_.size()) {
+        throw PSIEXCEPTION("Index out of bounds for TwoBodyAOInt::shell_pair_max_density");
+    }
+    return max_dens_shell_pair_[i][M * nshell_ + N];
+}
+
 // Haser 1989 Equations 6 to 14
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 

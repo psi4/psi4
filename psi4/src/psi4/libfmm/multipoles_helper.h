@@ -40,6 +40,7 @@
 #include <tuple>
 #include <vector>
 #include <unordered_map>
+#include <cmath>
 
 namespace psi {
 
@@ -79,7 +80,12 @@ static int m_addr(int m) {
     }
 }
 
-extern double factorial(int n);
+// TODO: change name when Andy is more emotionally stable
+static double chud_factorial(const uint64_t n) {
+    double result = 1.0;
+    for (int i = 2; i <= n; ++i) result *= i;
+    return result;
+}
 
 class PSI_API MultipoleRotationFactory {
 

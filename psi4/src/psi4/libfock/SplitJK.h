@@ -156,7 +156,7 @@ class PSI_API SplitJK {
 /// Reference is https://doi.org/10.1039/B204199P
 class PSI_API DirectDFJ : public SplitJK {
     // => Density Fitting Stuff <= //
-
+   protected:
     /// Auxiliary basis set
     std::shared_ptr<BasisSet> auxiliary_;
     /// Coulomb Metric
@@ -254,8 +254,6 @@ class DirectCFMM : public SplitJK {
   protected:
    /// The CFMMTree object used to compute the CFMM integrals
    std::shared_ptr<CFMMTree> cfmmtree_;
-   /// Builds the integrals (CFMMTree) for the DirectCFMM class
-   void build_ints() override;
 
   public:
    /**
@@ -274,13 +272,13 @@ class DirectCFMM : public SplitJK {
     * @param D The list of AO density matrixes to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
     * @param J The list of AO J matrices to build (Same size as D)
     */
-   void build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) override;
+   void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp, std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
    /**
     * @brief Prints information regarding CFMM run
     * 
     */
-   void print_header() override;
+   void print_header() const override;
 
    /**
     * Return number of ERI shell quartets computed during the SplitJK build process.
@@ -318,13 +316,13 @@ class DFCFMM : public DirectDFJ {
     * @param D The list of AO density matrixes to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
     * @param J The list of AO J matrices to build (Same size as D)
     */
-   void build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) override;
+   void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp, std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
    /**
     * @brief Prints information regarding DFCFMM run
     * 
     */
-   void print_header() override;
+   void print_header() const override;
 
    /**
     * Return number of ERI shell quartets computed during the SplitJK build process.
