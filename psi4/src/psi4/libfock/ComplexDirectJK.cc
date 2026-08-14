@@ -40,6 +40,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <ranges>
 
 namespace psi {
 
@@ -162,6 +163,26 @@ void ComplexDirectJK::compute_JK() {
     }
 }
 
+namespace {
+
+// Helper method to remove the indexing maddness. Produces iterable list of iterators.
+// Converts Something like starts = [0,1,4,5] into [[0, 1), [1, 4), [4, 5)].
+auto partition(std::span<const std::size_t> starts) {
+return std::views::iota(std::size_t{0}, starts.size() - 1)
+     | std::views::transform([starts](std::size_t i) {
+           return std::views::iota(starts[i], starts[i + 1]);
+       });
+}
+
+auto partition_with_idx(std::span<const std::size_t> starts) {
+return std::views::iota(std::size_t{0}, starts.size() - 1)
+     | std::views::transform([starts](std::size_t i) {
+           return std::pair{i, std::views::iota(starts[i], starts[i + 1])};
+       });
+}
+
+}
+
 // The template allows for us to provide the most optimized method at compile time
 // using constexpr. No longer using scratch matrices. Benchmarking shows this
 // being only marginally faster (<5%), but the code smells less.
@@ -172,121 +193,161 @@ void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, cons
     if constexpr(FillJ) J->zero();
     if constexpr(FillK) K->zero();
 
+    // => Helpers <= //
+
+    auto nfunctions_in_shell = [this](const size_t& shell_idx) {
+        return this->primary_->shell(shell_idx).nfunction();
+    };
+
+    auto function_index_of_shell = [this](const size_t& shell_idx) {
+        return this->primary_->shell(shell_idx).function_index();
+    };
+
+
     // => Atomic Task Blocking <= //
-    // One task = all shells on one atom. Shells stay in basis order (identity map).
+    // One task = all shells on one center. Shells stay in basis order (identity map).
 
-    const int nshell = primary_->nshell();
-    std::vector<int> task_shells;
-    std::vector<int> task_starts;
+    // shell index that starts each center
+    std::vector<size_t> center_starts;
+    // boundaries of each partition
+    std::vector<size_t> center_offsets;
 
-    int atomic_ind = -1;
-    for (int P = 0; P < nshell; P++) {
-        if (primary_->shell(P).ncenter() > atomic_ind) {
-            task_starts.push_back(P);
-            atomic_ind++;
+    {
+        // Total number of shells for all centers
+        const int nshell = primary_->nshell();
+
+        int atomic_ind = -1;
+
+        size_t total_nfuncs = 0;
+        center_offsets.push_back(0);
+        for (int P = 0; P < nshell; P++) {
+            const auto& shell = primary_->shell(P);
+
+            total_nfuncs += shell.nfunction();
+            center_offsets.push_back(total_nfuncs);
+
+            if (shell.ncenter() > atomic_ind) {
+                center_starts.push_back(P);
+                atomic_ind++;
+            }
         }
-        task_shells.push_back(P);
-    }
-    task_starts.push_back(nshell);
-
-    const size_t ntask = task_starts.size() - 1;
-
-    std::vector<int> task_offsets;
-    task_offsets.push_back(0);
-    for (int P2 = 0; P2 < nshell; P2++) {
-        task_offsets.push_back(task_offsets[P2] + primary_->shell(task_shells[P2]).nfunction());
+        center_starts.push_back(nshell);
     }
 
-    size_t max_task = 0;
-    for (size_t task = 0; task < ntask; task++) {
+    // Number of centers (atoms and ghosts)
+    const size_t ncenter = center_starts.size() - 1;
+
+    // largest number of functions for any center.
+    size_t max_nfuncs_per_center = 0;
+    for (auto centers : partition(center_starts)) {
         size_t size = 0;
-        for (int P2 = task_starts[task]; P2 < task_starts[task + 1]; P2++) {
-            size += primary_->shell(task_shells[P2]).nfunction();
+        for (size_t shell : centers) {
+            size += primary_->shell(shell).nfunction();
         }
-        max_task = std::max(max_task, size);
+        max_nfuncs_per_center = std::max(max_nfuncs_per_center, size);
     }
 
     // Significant atom-task pairs (PQ|-- full, no uniqueness yet)
-    std::vector<std::pair<int, int>> task_pairs;
-    for (size_t Ptask = 0; Ptask < ntask; Ptask++) {
-        for (size_t Qtask = 0; Qtask < ntask; Qtask++) {
-            bool found = false;
-            for (int P2 = task_starts[Ptask]; P2 < task_starts[Ptask + 1]; P2++) {
-                for (int Q2 = task_starts[Qtask]; Q2 < task_starts[Qtask + 1]; Q2++) {
-                    if (ints->shell_pair_significant(task_shells[P2], task_shells[Q2])) {
-                        found = true;
-                        task_pairs.emplace_back(Ptask, Qtask);
+    std::vector<std::pair<size_t, size_t>> significant_pairs;
+    for (auto [P_center_idx, P_shells] : partition_with_idx(center_starts)) {
+        for (auto [Q_center_idx, Q_shells] : partition_with_idx(center_starts)) {
+            bool found_significant_pair = false;
+            for (size_t P_shell : P_shells) {
+                for (size_t Q_shell : Q_shells) {
+                    if (ints->shell_pair_significant(P_shell, Q_shell)) {
+                        found_significant_pair = true;
+                        significant_pairs.emplace_back(P_center_idx, Q_center_idx);
                         break;
                     }
                 }
-                if (found) break;
+                if (found_significant_pair) break;
             }
         }
     }
-    const size_t ntask_pair = task_pairs.size();
 
     // Local AO blocks for the current atom quartet: J_PQ and K_PR
-    ComplexT JT("JT", max_task, max_task);
-    ComplexT KT("KT", max_task, max_task);
+    ComplexT JT("JT", max_nfuncs_per_center, max_nfuncs_per_center);
+    ComplexT KT("KT", max_nfuncs_per_center, max_nfuncs_per_center);
 
     size_t computed_shells = 0L;
 
-    for (size_t task_pq = 0; task_pq < ntask_pair; task_pq++) {
-        for (size_t task_rs = 0; task_rs < ntask_pair; task_rs++) {
-            const int Ptask = task_pairs[task_pq].first;
-            const int Qtask = task_pairs[task_pq].second;
-            const int Rtask = task_pairs[task_rs].first;
-            const int Stask = task_pairs[task_rs].second;
+    for (const auto [Ptask, Qtask] : significant_pairs) {
+        for (const auto [Rtask, Stask] : significant_pairs) {
+            // auto shells_on_center = [&](size_t task) {
+            //     return std::views::iota(center_starts[task], center_starts[task+1])
+            //         | std::views::transform([&](size_t shell_idx){
+            //             return std::pair{shell_idx, center_offsets[shell_idx] - center_offsets[center_starts[task]]};
+            //     });
+            // };
+            // Returns a view of shell indices for given center idx.
+            auto shells_on_center = [&](size_t task) {
+                return std::views::iota(center_starts[task], center_starts[task+1]);
+            };
 
-            const int P2start = task_starts[Ptask];
-            const int Q2start = task_starts[Qtask];
-            const int R2start = task_starts[Rtask];
-            const int S2start = task_starts[Stask];
+            // Global shell index for Ptask. 0 means the first shell of the first atom.
+            const int P2start = center_starts[Ptask];
+            const int Q2start = center_starts[Qtask];
+            const int R2start = center_starts[Rtask];
+            const int S2start = center_starts[Stask];
 
-            const int nPtask = task_starts[Ptask + 1] - P2start;
-            const int nQtask = task_starts[Qtask + 1] - Q2start;
-            const int nRtask = task_starts[Rtask + 1] - R2start;
-            const int nStask = task_starts[Stask + 1] - S2start;
+            // Number of shells that will be processed for this atom (Ptask)
+            const int nPtask = center_starts[Ptask + 1] - P2start;
+            const int nQtask = center_starts[Qtask + 1] - Q2start;
+            const int nRtask = center_starts[Rtask + 1] - R2start;
+            const int nStask = center_starts[Stask + 1] - S2start;
 
             if constexpr(FillJ) JT.zero();
             if constexpr(FillK) KT.zero();
 
             bool touched = false;
 
-            for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
-                for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
-                    const int P = task_shells[P2];
-                    const int Q = task_shells[Q2];
-                    if (!ints->shell_pair_significant(P, Q)) continue;
+            // Process the shells
+            // for (auto [P2, Poff2] : shells_on_center(Ptask) ) {
+            //     for (auto [Q2, Qoff2] : shells_on_center(Qtask) ) {
+            //         if (!ints->shell_pair_significant(P2, Q2)) continue;
+            //
+            //         for (auto [R2, Roff2] : shells_on_center(Rtask)) {
+            //             for (auto [S2, Soff2] : shells_on_center(Stask)) {
 
-                    for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
-                        for (int S2 = S2start; S2 < S2start + nStask; S2++) {
-                            const int R = task_shells[R2];
-                            const int S = task_shells[S2];
-                            if (!ints->shell_pair_significant(R, S)) continue;
-                            if (!ints->shell_significant(P, Q, R, S)) continue;
+            for (auto P2 : shells_on_center(Ptask) ) {
+                for (auto Q2 : shells_on_center(Qtask) ) {
+                    if (!ints->shell_pair_significant(P2, Q2)) continue;
 
-                            if (ints->compute_shell(P, Q, R, S) == 0) continue;
+                    for (auto R2 : shells_on_center(Rtask)) {
+                        for (auto S2 : shells_on_center(Stask)) {
+
+                            if (!ints->shell_pair_significant(R2, S2)) continue;
+                            if (!ints->shell_significant(P2, Q2, R2, S2)) continue;
+
+                            // Compute ERI
+                            if (ints->compute_shell(P2, Q2, R2, S2) == 0) continue;
+
                             const double* buf = ints->buffer();
+
+                            // Don't forget to like, share, subscribe and increment that variable
                             computed_shells++;
 
-                            const int Psize = primary_->shell(P).nfunction();
-                            const int Qsize = primary_->shell(Q).nfunction();
-                            const int Rsize = primary_->shell(R).nfunction();
-                            const int Ssize = primary_->shell(S).nfunction();
-                            const int Poff = primary_->shell(P).function_index();
-                            const int Qoff = primary_->shell(Q).function_index();
-                            const int Roff = primary_->shell(R).function_index();
-                            const int Soff = primary_->shell(S).function_index();
-                            const int Poff2 = task_offsets[P2] - task_offsets[P2start];
-                            const int Qoff2 = task_offsets[Q2] - task_offsets[Q2start];
-                            const int Roff2 = task_offsets[R2] - task_offsets[R2start];
+                            const size_t Psize = nfunctions_in_shell(P2);
+                            const size_t Qsize = nfunctions_in_shell(Q2);
+                            const size_t Rsize = nfunctions_in_shell(R2);
+                            const size_t Ssize = nfunctions_in_shell(S2);
+
+                            // Global basis function index. 0 means the first function
+                            // of the first shell of the first atom. aka AO index.
+                            const size_t Qoff = function_index_of_shell(Q2);
+                            const size_t Roff = function_index_of_shell(R2);
+                            const size_t Soff = function_index_of_shell(S2);
+
+                            // Number of basis functions since P2start
+                            const int Poff2 = center_offsets[P2] - center_offsets[P2start];
+                            const int Qoff2 = center_offsets[Q2] - center_offsets[Q2start];
+                            const int Roff2 = center_offsets[R2] - center_offsets[R2start];
 
                             touched = true;
-                            for (int p = 0; p < Psize; p++) {
-                                for (int q = 0; q < Qsize; q++) {
-                                    for (int r = 0; r < Rsize; r++) {
-                                        for (int s = 0; s < Ssize; s++) {
+                            for (size_t p = 0; p < Psize; p++) {
+                                for (size_t q = 0; q < Qsize; q++) {
+                                    for (size_t r = 0; r < Rsize; r++) {
+                                        for (size_t s = 0; s < Ssize; s++) {
                                             const double I = *buf++;
                                             if constexpr(FillJ)
                                                 JT(p + Poff2, q + Qoff2) += D(r + Roff, s + Soff) * I;
@@ -307,14 +368,14 @@ void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, cons
             if constexpr(FillJ) {
                 for (int P2 = 0; P2 < nPtask; P2++) {
                     for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                        const int P = task_shells[P2start + P2];
-                        const int Q = task_shells[Q2start + Q2];
+                        const int P = P2start + P2;
+                        const int Q = Q2start + Q2;
                         const int Psize = primary_->shell(P).nfunction();
                         const int Qsize = primary_->shell(Q).nfunction();
                         const int Poff = primary_->shell(P).function_index();
                         const int Qoff = primary_->shell(Q).function_index();
-                        const int Poff2 = task_offsets[P2start + P2] - task_offsets[P2start];
-                        const int Qoff2 = task_offsets[Q2start + Q2] - task_offsets[Q2start];
+                        const int Poff2 = center_offsets[P2start + P2] - center_offsets[P2start];
+                        const int Qoff2 = center_offsets[Q2start + Q2] - center_offsets[Q2start];
                         for (int p = 0; p < Psize; p++) {
                             for (int q = 0; q < Qsize; q++) {
                                 (*J)(p + Poff, q + Qoff) += JT(p + Poff2, q + Qoff2);
@@ -327,14 +388,14 @@ void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, cons
             if constexpr(FillK) {
                 for (int P2 = 0; P2 < nPtask; P2++) {
                     for (int R2 = 0; R2 < nRtask; R2++) {
-                        const int P = task_shells[P2start + P2];
-                        const int R = task_shells[R2start + R2];
+                        const int P = P2start + P2;
+                        const int R = R2start + R2;
                         const int Psize = primary_->shell(P).nfunction();
                         const int Rsize = primary_->shell(R).nfunction();
                         const int Poff = primary_->shell(P).function_index();
                         const int Roff = primary_->shell(R).function_index();
-                        const int Poff2 = task_offsets[P2start + P2] - task_offsets[P2start];
-                        const int Roff2 = task_offsets[R2start + R2] - task_offsets[R2start];
+                        const int Poff2 = center_offsets[P2start + P2] - center_offsets[P2start];
+                        const int Roff2 = center_offsets[R2start + R2] - center_offsets[R2start];
                         for (int p = 0; p < Psize; p++) {
                             for (int r = 0; r < Rsize; r++) {
                                 (*K)(p + Poff, r + Roff) += KT(p + Poff2, r + Roff2);
