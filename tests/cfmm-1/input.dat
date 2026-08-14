@@ -13,14 +13,13 @@ molecule mol {
 }
 
 set {
-    scf_type linear
+    scf_type cfmm+linK
+    guess core
     basis aug-cc-pVDZ
     ints_tolerance 1.0e-10
     e_convergence 1.0e-10
     d_convergence 1.0e-6
-    screening density
-    incfock true
-    cfmm_order 21
+    cfmm_order 10
 }
 
 test_energy = energy('scf')

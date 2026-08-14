@@ -149,7 +149,7 @@ void CompositeJK::common_init() {
         }
 
     } else if (j_type == "CFMM") {
-        j_algo_ = std::make_shared<CFMM>(primary_, options_);
+        j_algo_ = std::make_shared<DirectCFMM>(primary_, options_);
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     }
@@ -322,7 +322,11 @@ void CompositeJK::compute_JK() {
     if (do_J_) {
         timer_on("CompositeJK: " + j_algo_->name());
 
-        j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
+        if (j_algo_->name() == "DirectCFMM") {
+            j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["4-Center"]);
+        } else {
+            j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
+        }
 
         if (get_bench()) {
             computed_shells_per_iter_["Triplets"].push_back(j_algo_->num_computed_shells());
