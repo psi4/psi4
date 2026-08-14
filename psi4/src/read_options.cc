@@ -190,8 +190,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC F12");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
-    different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
+    different calculation types. TODO: THIS IS NOT SUSTAINABLE FOR COMPOSITE METHODS!!! TIS EVIL -*/
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ CFMM DFCFMM DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK CFMM+COSX CFMM+LINK CFMM+SNLINK DFCFMM+COSX DFCFMM+LINK DFCFMM+SNLINK");
+
 #ifdef USING_OpenOrbitalOptimizer
     /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
@@ -1659,6 +1660,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- For |globals__orbital_optimizer_package| = `OOO`, restart ODA steps when DIIS hasn't
         improved energy for this many SCF iterations. This option is temporary. -*/
         options.add_int("OOO_ODA_RESTART_STEPS", 10);
+
+        /*- SUBSECTION Continuous Fast Multipole Method (CFMM) -*/
+
+        /*- The maximum multipole order to use in the CFMM algorithm -*/
+        options.add_int("CFMM_ORDER", 10);
+        /*- The maximum tree depth to use in the CFMM algorithm (Must be at least 3) -*/
+        options.add_int("CFMM_GRAIN", 4);
+        /*- CFMM Extent Tolerance (for well-separated) -*/
+        options.add_double("CFMM_EXTENT_TOLERANCE", 1.0e-10);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 

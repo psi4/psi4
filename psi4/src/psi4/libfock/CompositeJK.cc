@@ -124,10 +124,15 @@ void CompositeJK::common_init() {
 
     // => Set up separate J algorithm <= //
 
-    // DF-DirJ
-    if (j_type == "DFDIRJ") {
+    // DF-DirJ or DFCFMM (both need 3-center DF integrals)
+    if (j_type == "DFDIRJ" || j_type == "DFCFMM") {
+        
         // initialize SplitJK algo
-        j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
+        if (j_type == "DFDIRJ") {
+            j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
+        } else {
+            j_algo_ = std::make_shared<DFCFMM>(primary_, auxiliary_, options_);
+        }
 
         // initialize 3-Center ERIs
         eri_computers_["3-Center"].emplace({});
@@ -142,6 +147,9 @@ void CompositeJK::common_init() {
         for(int rank = 1; rank < nthreads_; rank++) {
             eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
         }
+
+    } else if (j_type == "CFMM") {
+        j_algo_ = std::make_shared<CFMM>(primary_, options_);
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     }

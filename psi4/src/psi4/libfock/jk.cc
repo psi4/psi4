@@ -73,7 +73,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
                                  Options& options, std::string jk_type) {
 
     // check if algorithm is composite
-    std::array<std::string, 3> composite_algos = { "DFDIRJ", "COSX", "LINK" };
+    std::array<std::string, 3> composite_algos = { "DFDIRJ", "CFMM", "DFCFMM", "COSX", "LINK", "SNLINK" };
     bool is_composite = std::any_of(
       composite_algos.cbegin(),
       composite_algos.cend(),
@@ -83,6 +83,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     // exit calculation if density screening is selected for incompatible JK algo
     bool do_density_screen = options.get_str("SCREENING") == "DENSITY";
 
+    // TODO: DO NOT WORRY ABOUT DENSITY SCREENING WITH CFMM and DFCFMM RIGHT NOW, THEY HANDLE IT THEIR OWN WAY
+    // IN THE FUTURE, IT MAY BE HELPFUL TO UNIFY
     std::array<std::string, 3> can_do_density_screen = { "DIRECT", "DFDIRJ+LINK", "DFDIRJ" };
     bool is_compatible_density_screen = std::any_of(
         can_do_density_screen.cbegin(),
