@@ -279,6 +279,12 @@ void cuest_init() {
         ));
         CHECK_CUEST(cuestCreate(handle_parameters, &cuest_handle));
         CHECK_CUEST(cuestParametersDestroy(CUEST_HANDLE_PARAMETERS, handle_parameters));
+        if (!options_.get_bool("CUEST_MIXED_PRECISION")) {
+            CHECK_CUEST(cuestSetMathMode(
+            cuest_handle,
+            CUEST_NATIVE_FP64_MATH_MODE
+            ));
+        }
     } catch (...) {
         cuest_cleanup_noexcept();
         throw;

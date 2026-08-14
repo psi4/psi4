@@ -171,6 +171,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Whether to enable NVIDIA cuEST GPU acceleration (requires CUDA and cuEST libraries) -*/
     options.add_bool("USE_CUEST", false);
 
+    /*- Whether to allow GPU calculations to use mixed precision (requires CUDA and cuEST libraries) -*/
+    options.add_bool("CUEST_MIXED_PRECISION", true);
+
     // Note that case-insensitive options are only functional as
     //   globals, not as module-level, and should be defined sparingly
 
