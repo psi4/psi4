@@ -50,7 +50,6 @@
 #include <span>
 #include <sstream>
 #include <unordered_set>
-#include <utility>
 #include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -425,20 +424,20 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     bool build_K = (!K.empty());
 
     if (!build_J && !build_K) return;
-
+    
     timer_on("build_JK_matrices()");
 
     // => Zeroing... <= //
-
+    
     // Ideally, this wouldnt be here at all
     // It would be better covered in incfock_setup()
     // But removing this causes a couple of tests to fail for some reason
-
+    
     if (!do_incfock_iter_) {
         for (auto& Jmat : J) {
             Jmat->zero();
         }
-
+    
         for (auto& Kmat : K) {
             Kmat->zero();
         }
@@ -498,10 +497,10 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     // => Welcome to the jungle <= //
 
     {
-        int atomic_ind = -1;
+        shell_to_basis.push_back(0);
 
         size_t total_nfuncs = 0;
-        shell_to_basis.push_back(0);
+        int atomic_ind = -1;
         for (int P = 0; P < nshell; P++) {
             const auto& shell = primary_->shell(P);
 
@@ -563,7 +562,6 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         }
     }
     size_t n_pair = significant_pairs.size();
-    size_t n_pair2 = n_pair * n_pair;
 
     // => Intermediate Buffers <= //
 
@@ -584,7 +582,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     std::vector<std::vector<SharedMatrix>> KT;
     if (build_K) {
         for (int thread = 0; thread < nthread; thread++) {
-            std::vector<SharedMatrix> K2;
+            std::vector<SharedMatrix > K2;
             for (size_t ind = 0; ind < D.size(); ind++) {
                 // The factor of 4 or 8 comes from exploiting ERI permutational symmetry
                 K2.push_back(std::make_shared<Matrix>("KT", (lr_symmetric_ ? 4 : 8) * max_nfuncs_per_center,
@@ -593,7 +591,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
             KT.push_back(K2);
         }
     }
-
+    
     // => Benchmarks <= //
 
     num_computed_shells_ = 0L;
@@ -601,15 +599,11 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
 // ==> Master Task Loop <== //
 
-#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
-    for (size_t task = 0L; task < n_pair2; task++) {
-        size_t pq_pair = task / n_pair;
-        size_t rs_pair = task % n_pair;
-
-        size_t Patom = significant_pairs[pq_pair].first;
-        size_t Qatom = significant_pairs[pq_pair].second;
-        size_t Ratom = significant_pairs[rs_pair].first;
-        size_t Satom = significant_pairs[rs_pair].second;
+#pragma omp parallel for num_threads(nthread) schedule(dynamic) collapse(2) reduction(+ : computed_shells)
+    for (size_t pq_pair = 0; pq_pair < n_pair; ++pq_pair) {
+    for (size_t rs_pair = 0; rs_pair < n_pair; ++rs_pair) {
+        auto [Patom, Qatom] = significant_pairs[pq_pair];
+        auto [Ratom, Satom] = significant_pairs[rs_pair];
 
         // GOTCHA! Thought this should be RStask > PQtask, but
         // H2/3-21G: Task (10|11) gives valid quartets (30|22) and (31|22)
@@ -671,7 +665,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         // if (thread == 0) timer_on("JK: GEMV");
                         for (size_t ind = 0; ind < D.size(); ind++) {
                             double** Dp = D[ind]->pointer();
-                            double** JTp;
+                            double** JTp; 
                             if (build_J) JTp = JT[thread][ind]->pointer();
                             double** KTp;
                             if (build_K) KTp = KT[thread][ind]->pointer();
@@ -765,7 +759,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                                                         prefactor * (Dp[r + Rao][p + Pao]) * (*buffer2);
                                                 }
                                             }
-
+                                            
                                             buffer2++;
                                         }
                                     }
@@ -783,15 +777,15 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
         // => Stripe out <= //
         if (build_J) {
-            for (auto& JTmat : JT[thread]) {
+	    for (auto& JTmat : JT[thread]) {
                 JTmat->scale(2.0);
-            }
+	    }
         }
-
+        
         if (build_K && lr_symmetric_) {
-            for (auto& KTmat : KT[thread]) {
+	    for (auto& KTmat : KT[thread]) {
                 KTmat->scale(2.0);
-            }
+	    }
         }
 
         // if (thread == 0) timer_on("JK: Atomic");
@@ -805,7 +799,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                 JTp = JT[thread][ind]->pointer();
                 Jp = J[ind]->pointer();
             }
-
+            
             if (build_K) {
                 KTp = KT[thread][ind]->pointer();
                 Kp = K[ind]->pointer();
@@ -979,6 +973,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         }  // End stripe out
         // if (thread == 0) timer_off("JK: Atomic");
 
+    }
     }  // End master task list
 
     for (auto& Jmat : J) {
