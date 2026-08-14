@@ -145,7 +145,7 @@ jobs:
     runs-on: ${{ matrix.cfg.runs-on }}
     defaults:
       run:
-        shell: bash -el {0}
+        shell: bash -l {0}
 
     steps:
 
@@ -244,7 +244,7 @@ jobs:
         echo "::endgroup::"
 
     - name: Setup Conda
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: p4build
         environment-file: env_p4build.yaml
@@ -259,31 +259,6 @@ jobs:
       run: |
         conda info
         conda list
-
-    - name: Diagnose Conda compiler activation
-      run: |
-        printenv
-        echo "=== activated environment ==="
-        env | grep -E '^(CONDA_TOOLCHAIN_HOST|CC|CXX|FC)=' || true
-
-        echo
-        echo "=== conda info --json env_vars ==="
-        python - <<'PY'
-        import json
-        import os
-        import subprocess
-
-        info = json.loads(
-            subprocess.check_output(["conda", "info", "--json"], text=True)
-        )
-
-        print("os.environ CONDA_TOOLCHAIN_HOST =",
-              os.environ.get("CONDA_TOOLCHAIN_HOST"))
-        print("conda info CONDA_TOOLCHAIN_HOST =",
-              info.get("env_vars", {}).get("CONDA_TOOLCHAIN_HOST"))
-        PY
-        conda activate p4build
-        printenv
 
     - name: Special Config - Force testing OpenOrbitalOptimizer
       if: "(matrix.cfg.label == 'Conda Clang (M-Intel)')"
