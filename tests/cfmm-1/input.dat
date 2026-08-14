@@ -1,0 +1,27 @@
+#! RHF CFMM+LinK Algorithm test for water
+
+ref_energy = -76.04125669409474 # TEST (Compare to plain direct with CSAM Screening)
+
+molecule mol {
+    0 1
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    scf_type linear
+    basis aug-cc-pVDZ
+    ints_tolerance 1.0e-10
+    e_convergence 1.0e-10
+    d_convergence 1.0e-6
+    screening density
+    incfock true
+    cfmm_order 21
+}
+
+test_energy = energy('scf')
+psi4.compare_values(ref_energy, test_energy, 9, "HF Energy (CFMM+LinK)")

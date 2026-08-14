@@ -57,6 +57,7 @@ PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libfmm/fmm_tree.h"
 
 namespace psi {
 class MinimalInterface;
@@ -76,8 +77,8 @@ class DFTGrid;
  * framework.
  *
  * Current algorithms in place:
- * J: DF-DirJ
- * K: COSX, LinK
+ * J: DF-DirJ, CFMM, DFCFMM
+ * K: COSX, LinK, snLinK
  *
  */
 class PSI_API SplitJK {
@@ -247,6 +248,93 @@ class PSI_API LinK : public SplitJK {
     * print name of method
     */
     std::string name() override { return "LinK"; }
+};
+
+class DirectCFMM : public SplitJK {
+  protected:
+   /// The CFMMTree object used to compute the CFMM integrals
+   std::shared_ptr<CFMMTree> cfmmtree_;
+   /// Builds the integrals (CFMMTree) for the DirectCFMM class
+   void build_ints() override;
+
+  public:
+   /**
+    * @brief Construct a new DirectCFMM object
+    * 
+    * @param primary The primary basis set used in DirectDFJ
+    * @param options The options object
+    */
+   DirectCFMM(std::shared_ptr<BasisSet> primary, Options& options);
+
+   /**
+    * @author Andy Jiang, Andy Simmonett, David Poole, Georgia Tech, April 2022
+    *
+    * @brief Builds the J matrix according to the CFMM Algorithm (integral direct exact 4-center ERIs)
+    * 
+    * @param D The list of AO density matrixes to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
+    * @param J The list of AO J matrices to build (Same size as D)
+    */
+   void build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) override;
+
+   /**
+    * @brief Prints information regarding CFMM run
+    * 
+    */
+   void print_header() override;
+
+   /**
+    * Return number of ERI shell quartets computed during the SplitJK build process.
+    */
+   size_t num_computed_shells() override;
+
+   /**
+    * print name of method
+    */
+   std::string name() override { return "DirectCFMM"; }
+};
+
+class DFCFMM : public DirectDFJ {
+  protected:
+   /// CFMMTree used to calculate the three-center integrals
+   std::shared_ptr<CFMMTree> df_cfmm_tree_;
+   /// The gamma intermediate used in the DirectDFJ Algorithm
+   std::vector<SharedMatrix> gamma;
+
+  public:
+   /**
+    * @brief Construct a new DFCFMM object
+    * 
+    * @param primary The primary basis set used in DFCFMM
+    * @param auxiliary The auxiliary basis set used in DFCFMM
+    * @param options The options object
+    */
+   DFCFMM(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+
+   /**
+    * @author Andy Jiang and David Poole, Georgia Tech, May 2022
+    *
+    * @brief Builds the J matrix using CFMM-Accelerated DFJ Algorithm
+    * 
+    * @param D The list of AO density matrixes to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
+    * @param J The list of AO J matrices to build (Same size as D)
+    */
+   void build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) override;
+
+   /**
+    * @brief Prints information regarding DFCFMM run
+    * 
+    */
+   void print_header() override;
+
+   /**
+    * Return number of ERI shell quartets computed during the SplitJK build process.
+    */
+   size_t num_computed_shells() override;
+
+   /**
+    * print name of method
+    */
+   std::string name() override { return "DFCFMM"; }
 };
 
 /**

@@ -1217,8 +1217,8 @@ class PSI_API MemDFJK : public JK {
  * JK implementation framework enabling arbitrary mixing and matching
  * of separate J and K construction algorithms.
  * Current algorithms in place (via SplitJK):
- * J: DF-DirJ
- * K: COSX, LinK
+ * J: DF-DirJ, DirectCFMM, DFCFMM (welcome to the club, linear-scaling)
+ * K: COSX, LinK, snLinK
  *
  */
 class PSI_API CompositeJK : public JK {
