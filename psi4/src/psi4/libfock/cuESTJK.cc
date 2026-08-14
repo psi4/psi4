@@ -165,6 +165,13 @@ void cuESTJK::preiterations()
     CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
 
+    if (!options_.get_bool("CUEST_MIXED_PRECISION")) {
+        CHECK_CUEST(cuestSetMathMode(
+            cuest_handle,
+            CUEST_NATIVE_FP64_MATH_MODE
+        ));
+    }
+
     initialized_ = true;
 }
 
