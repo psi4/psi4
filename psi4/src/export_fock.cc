@@ -29,6 +29,7 @@
 #include "psi4/pybind11.h"
 
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/ComplexJK.h"
 #include "psi4/libfock/soscf.h"
 #include "psi4/lib3index/denominator.h"
 #include "psi4/lib3index/dftensor.h"
@@ -103,6 +104,40 @@ void export_fock(py::module &m) {
         .def("wK", &JK::wK, py::return_value_policy::reference_internal)
         .def("D", &JK::D, py::return_value_policy::reference_internal)
         .def("print_header", &JK::print_header, "Prints information about the type and config of the JK object into the output file. Print verbosity may depend on the value of JK::print\\_.");
+
+    py::class_<ComplexJK, BaseJK, std::shared_ptr<ComplexJK>>(m, "ComplexJK",
+                                                              "Complex-orbital counterpart to JK for J/K builds")
+#ifdef USING_Einsums
+        .def_static("build_JK",
+                    [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {
+                        return ComplexJK::build_JK(basis, aux, Process::environment.options);
+                    })
+        .def_static("build_JK",
+                    [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux, bool do_wK, size_t doubles) {
+                        return ComplexJK::build_JK(basis, aux, Process::environment.options, do_wK, doubles);
+                    })
+        .def("memory_estimate", &ComplexJK::memory_estimate)
+        .def("C_clear",
+             [](ComplexJK &jk) {
+                 jk.C_left().clear();
+                 jk.C_right().clear();
+             })
+        .def("C_add",
+             [](ComplexJK &jk, SharedComplexMatrix Cl) {
+                 jk.C_left().push_back(Cl);
+                 jk.C_right().push_back(Cl);
+             })
+        .def("C_left_add", [](ComplexJK &jk, SharedComplexMatrix Cl) { jk.C_left().push_back(Cl); })
+        .def("C_right_add", [](ComplexJK &jk, SharedComplexMatrix Cr) { jk.C_right().push_back(Cr); })
+        .def("compute_D", &ComplexJK::compute_D,
+             "Form D = C_left @ C_right.H (per irrep) from currently queued C matrices.")
+        .def("J", &ComplexJK::J, py::return_value_policy::reference_internal)
+        .def("K", &ComplexJK::K, py::return_value_policy::reference_internal)
+        .def("D", &ComplexJK::D, py::return_value_policy::reference_internal)
+        .def("print_header", &ComplexJK::print_header,
+             "Prints information about the type and config of the ComplexJK object into the output file.")
+#endif
+        ;
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
