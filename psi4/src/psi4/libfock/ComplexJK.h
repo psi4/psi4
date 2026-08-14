@@ -275,12 +275,12 @@ class PSI_API ComplexDirectJK : public ComplexJK {
 
     /// Actually do the JK
     using ComplexT = einsums::Tensor<std::complex<double>, 2>;
-    /// Atom-blocked J/K build
-    template<bool, bool>
+    /// Atom-blocked J/K build. \p SpinBlocked selects between a plain complex
+    /// density (false, nbf x nbf) and a generalized (CGHF) spin-blocked density
+    /// (true, 2 nbf x 2 nbf) at compile time, with no runtime branching in the
+    /// hot loops.
+    template<bool FillJ, bool FillK, bool SpinBlocked = false>
     void build_JK_matrices(std::shared_ptr<TwoBodyAOInt>, const ComplexT&, ComplexT* = nullptr, ComplexT* = nullptr);
-    /// Atom-blocked J/K build for spin-blocked density
-    template<bool, bool>
-    void build_JK_matrices_spin_blocked(std::shared_ptr<TwoBodyAOInt>, const ComplexT&, ComplexT* = nullptr, ComplexT* = nullptr);
 
   public:
     // => Constructors < = //
