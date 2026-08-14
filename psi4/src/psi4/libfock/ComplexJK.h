@@ -278,6 +278,9 @@ class PSI_API ComplexDirectJK : public ComplexJK {
     /// Atom-blocked J/K build
     template<bool, bool>
     void build_JK_matrices(std::shared_ptr<TwoBodyAOInt>, const ComplexT&, ComplexT* = nullptr, ComplexT* = nullptr);
+    /// Atom-blocked J/K build for spin-blocked density
+    template<bool, bool>
+    void build_JK_matrices_spin_blocked(std::shared_ptr<TwoBodyAOInt>, const ComplexT&, ComplexT* = nullptr, ComplexT* = nullptr);
 
   public:
     // => Constructors < = //
