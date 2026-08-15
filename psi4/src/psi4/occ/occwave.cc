@@ -167,7 +167,7 @@ void OCCWave::common_init() {
     // Figure out REF
     if (reference == "RHF" || reference == "RKS")
         reference_ = "RESTRICTED";
-    else if (reference == "UHF" || reference == "UKS" || reference == "ROHF")
+    else if (reference == "UHF" || reference == "UKS" || reference == "ROHF" || reference == "ROKS")
         reference_ = "UNRESTRICTED";
 
     if (!psio_) {

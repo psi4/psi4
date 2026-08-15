@@ -1,0 +1,445 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.12a1.dev13 
+
+                         Git: Rev {kk/roks} 48e4589 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Saturday, 15 August 2026 12:16PM
+
+    Process ID: 24558
+    Host:       constlike.local
+    PSIDATADIR: /Users/stan/Codebase/psi4_dir/multiSCF/build/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶,
+                d̶f̶t̶d̶3̶, d̶f̶t̶d̶4̶, d̶k̶h̶, e̶c̶p̶i̶n̶t̶, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶,
+                g̶a̶u̶x̶c̶, g̶c̶p̶, g̶d̶m̶a̶, g̶e̶o̶m̶e̶t̶r̶i̶c̶, g̶p̶u̶_̶d̶f̶c̶c̶,
+                i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶, l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶,
+                o̶o̶o̶, o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶,
+                p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶, p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, qcmanybody, r̶e̶s̶p̶,
+                s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶, v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DF-MP2 with ROKS-B3LYP reference for the methyl radical CH3.
+
+molecule ch3 {
+0 2
+C  0.0  0.0  0.0
+H  1.0  0.0  0.0
+H -0.5  0.866  0.0
+H -0.5 -0.866  0.0
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_mp2 cc-pvdz-ri
+  scf_type df
+  mp2_type df
+  reference roks
+  e_convergence 1e-10
+  d_convergence 1e-10
+}
+
+# Psi4 values, ROKS-B3LYP/cc-pVDZ, e_convergence and d_convergence 1e-10.
+roks_scf_ref = -39.818423034027
+roks_mp2_corr_ref = -0.178036691059
+roks_mp2_total_ref = -39.996459725086
+
+roks_scf, roks_wfn = energy('b3lyp', return_wfn=True)
+
+roks_mp2 = energy('mp2', ref_wfn=roks_wfn)
+roks_mp2_corr = variable("MP2 CORRELATION ENERGY")
+roks_mp2_total = variable("MP2 TOTAL ENERGY")
+
+compare_values(roks_scf_ref, roks_scf, 8, "ROKS-B3LYP SCF energy")           #TEST
+compare_values(roks_mp2_corr_ref, roks_mp2_corr, 6, "ROKS DF-MP2 correlation energy")  #TEST
+compare_values(roks_mp2_total_ref, roks_mp2_total, 6, "ROKS DF-MP2 total energy")      #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on constlike.local
+*** at Sat Aug 15 12:16:41 2026
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   138 file /Users/stan/Codebase/psi4_dir/multiSCF/build/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-4 entry H          line    22 file /Users/stan/Codebase/psi4_dir/multiSCF/build/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             ROKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000    -0.000000000000    -0.000000000000    12.000000000000
+         H            0.000000000000    -0.000000000000     1.000000000000     1.007825032230
+         H            0.000000000000    -0.866000000000    -0.500000000000     1.007825032230
+         H            0.000000000000     0.866000000000    -0.500000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     11.15182  B =     11.15116  C =      5.57574 [cm^-1]
+  Rotational constants: A = 334323.01794  B = 334303.40432  C = 167156.60542 [MHz]
+  Nuclear repulsion =   10.441904757892257
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 15
+    Number of basis functions: 29
+    Number of Cartesian functions: 30
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => LibXC <=
+
+    Version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+
+   => Composite Functional: B3LYP <= 
+
+    B3LYP Hyb-GGA Exchange-Correlation Functional
+
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch.,  J. Phys. Chem. 98, 11623 (1994) (10.1021/j100096a001)
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
+
+   => Correlation Functionals <=
+
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
+
+   => LibXC Density Thresholds  <==
+
+    XC_HYB_GGA_XC_B3LYP:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    Blocking Scheme        =         OCTREE
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          87663
+    Total Blocks           =            702
+    Max Points             =            256
+    Max Functions          =             29
+    Weights Tolerance      =       1.00E-15
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry C          line   121 file /Users/stan/Codebase/psi4_dir/multiSCF/build/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-4 entry H          line    51 file /Users/stan/Codebase/psi4_dir/multiSCF/build/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.292 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               298
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 51
+    Number of basis functions: 139
+    Number of Cartesian functions: 156
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Cached 100.0% of DFT collocation blocks in 0.075 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.3629798105E-02.
+  Reciprocal condition number of the overlap matrix is 5.3558749572E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         29      29 
+   -------------------------
+    Total      29      29
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-ROKS iter SAD:   -39.41446775206478   -3.94145e+01   0.00000e+00 
+   @DF-ROKS iter   1:   -39.69857258613490   -2.84105e-01   1.19121e-02 DIIS
+   @DF-ROKS iter   2:   -39.70957042811801   -1.09978e-02   1.13335e-02 DIIS
+   @DF-ROKS iter   3:   -39.81840370248079   -1.08833e-01   1.19658e-04 DIIS
+   @DF-ROKS iter   4:   -39.81842204339475   -1.83409e-05   3.35624e-05 DIIS
+   @DF-ROKS iter   5:   -39.81842303212385   -9.88729e-07   1.22366e-06 DIIS
+   @DF-ROKS iter   6:   -39.81842303402203   -1.89819e-09   6.56787e-08 DIIS
+   @DF-ROKS iter   7:   -39.81842303402586   -3.82272e-12   1.40395e-09 DIIS
+   @DF-ROKS iter   8:   -39.81842303402590   -4.97380e-14   2.16035e-10 DIIS
+   @DF-ROKS iter   9:   -39.81842303402588    2.13163e-14   5.20502e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Nalpha   =    5.0000006368 ; deviation = 6.368e-07
+      Nbeta    =    3.9999999235 ; deviation = -7.649e-08
+      Ntotal   =    9.0000005603 ; deviation = 5.603e-07 
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -10.166864     2A     -0.687767     3A     -0.430831  
+       4A     -0.430830  
+
+    Singly Occupied:                                                      
+
+       5A     -0.143375  
+
+    Virtual:                                                              
+
+       6A      0.095618     7A      0.159042     8A      0.159044  
+       9A      0.433817    10A      0.433826    11A      0.507872  
+      12A      0.556244    13A      0.710655    14A      0.710662  
+      15A      0.887986    16A      0.995679    17A      0.995685  
+      18A      1.419104    19A      1.527142    20A      1.527164  
+      21A      1.573863    22A      1.673210    23A      1.917858  
+      24A      1.917864    25A      2.240673    26A      2.240697  
+      27A      2.732092    28A      2.732127    29A      2.743694  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     1 ]
+    NA   [     5 ]
+    NB   [     4 ]
+
+  @DF-ROKS Final Energy:   -39.81842303402588
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             10.4419047578922566
+    One-Electron Energy =                 -73.0266408092271178
+    Two-Electron Energy =                  28.0940220294985608
+    DFT Exchange-Correlation Energy =      -5.3277090121895885
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -39.8184230340258836
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.0000038            0.0000000           -0.0000038
+ Magnitude           :                                                    0.0000038
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on constlike.local at Sat Aug 15 12:16:42 2026
+Module time:
+	user time   =       1.01 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.01 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+Scratch directory: /tmp/
+
+*** tstart() called on constlike.local
+*** at Sat Aug 15 12:16:42 2026
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //               DFMP2               //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry C          line   159 file /Users/stan/Codebase/psi4_dir/multiSCF/build/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-4 entry H          line    19 file /Users/stan/Codebase/psi4_dir/multiSCF/build/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+
+	 --------------------------------------------------------
+	                          DF-MP2                         
+	      2nd-Order Density-Fitted Moller-Plesset Theory     
+	          ROHF-MBPT(2) Wavefunction,   1 Threads         
+	                                                         
+	        Rob Parrish, Justin Turney, Andy Simmonett,      
+	           Ed Hohenstein, and C. David Sherrill          
+	 --------------------------------------------------------
+
+	 --------------------------------------------------------
+	                 NBF =    29, NAUX =    98
+	 --------------------------------------------------------
+	   CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+	   ALPHA       0       5       5      24      24       0
+	    BETA       0       4       4      25      25       0
+	 --------------------------------------------------------
+
+	-----------------------------------------------------------
+	 ==================> DF-MP2 Energies <==================== 
+	-----------------------------------------------------------
+	 Reference Energy          =     -39.8184230340258836 [Eh]
+	 Singles Energy            =      -0.0010446344020108 [Eh]
+	 Same-Spin Energy          =      -0.0351477090975447 [Eh]
+	 Opposite-Spin Energy      =      -0.1418443475601995 [Eh]
+	 Correlation Energy        =      -0.1780366910597550 [Eh]
+	 Total Energy              =     -39.9964597250856357 [Eh]
+	-----------------------------------------------------------
+	 ================> DF-SCS-MP2 Energies <================== 
+	-----------------------------------------------------------
+	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
+	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+	 SCS Same-Spin Energy      =      -0.0117159030325149 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1702132170722394 [Eh]
+	 SCS Correlation Energy    =      -0.1829737545067651 [Eh]
+	 SCS Total Energy          =     -40.0013967885326451 [Eh]
+	-----------------------------------------------------------
+
+
+*** tstop() called on constlike.local at Sat Aug 15 12:16:42 2026
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.05 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    ROKS-B3LYP SCF energy.................................................................PASSED
+    ROKS DF-MP2 correlation energy........................................................PASSED
+    ROKS DF-MP2 total energy..............................................................PASSED
+
+    Psi4 stopped on: Saturday, 15 August 2026 12:16PM
+    Psi4 wall time for execution: 0:00:01.13
+
+*** Psi4 exiting successfully. Buy a developer a beer!

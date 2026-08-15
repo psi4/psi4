@@ -1,0 +1,19 @@
+#! OMP2.5 cc-pVDZ gradient with ROKS-B3LYP initial guess for the NO radical
+
+# Gradient matches the ROHF reference; orbital optimization removes the dependence on the DFT guess
+# Reference: omp2p5-grad2 test (ROHF)
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  reference roks
+  guess gwh
+}
+
+grad = gradient('omp2.5', dft_functional='b3lyp')
+

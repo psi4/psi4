@@ -200,7 +200,7 @@ This final equation corresponds to the usual Newton-Raphson step.
 
 The REMP hybrid perturbation theory is a constrained mixture of the |MollerPlesset| perturbation theory and the
 Retaining the Excitation degree perturbation theory([Fink:2006:RE]_, [Behnle:2019:REMP]_).
-The mixing ratio is determined by the parameter :math':`A`:
+The mixing ratio is determined by the parameter :math:`A`:
 
 .. math::
    \widehat{H}^{(0)}_\text{REMP} = (1-A)\widehat{H}^{(0)}_\text{RE} + A\widehat{H}^{(0)}_\text{MP}
@@ -226,7 +226,8 @@ Convergence Problems
 
 For problematic open-shell systems, we recommend to use the ROHF or DFT orbitals as an initial guess for orbital-optimized methods. Both ROHF and 
 DFT orbitals may provide better initial guesses than UHF orbitals, hence convergence may be significantly speeded up with ROHF or DFT orbitals. 
-In order to use ROHF orbitals, simply ``set reference rohf``. For DFT orbitals, ``set reference uks`` and ``set dft_functional b3lyp``. Of
+In order to use ROHF orbitals, simply ``set reference rohf``. For DFT orbitals, ``set reference uks`` (or ``set reference roks`` for a
+restricted open-shell guess) and ``set dft_functional b3lyp``. Of
 course users can use any DFT functional available in |PSIfour|.
 
 .. _`sec:occ_oo_mtds`:
@@ -270,29 +271,33 @@ these methods may default to implementations in :ref:`other modules
 
 .. table:: Spin-Component-Scaled Orbital-Optimized MP capabilities of OCC/DFOCC modules
 
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | name                    | calls method                                                 |  Energy              | Gradient             |
-    +=========================+==============================================================+======================+======================+
-    | scs-omp3                | Spin-Component Scaled Orbital-Optimized MP3                  | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | sos-omp3                | Spin-Opposite Scaled Orbital-Optimized MP3                   | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | scs(n)-omp3             | A special version of SCS-OMP3 for nucleobase interactions    | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | scs-omp3-vdw            | A special version of SCS-OMP3 (from ethene dimers)           | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | scs-omp2                | Spin-Component Scaled Orbital-Optimized MP2                  | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | sos-omp2                | Spin-Opposite Scaled Orbital-Optimized MP2                   | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | scs(n)-omp2             | A special version of SCS-OMP2 for nucleobase interactions    | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | scs-omp2-vdw            | A special version of SCS-OMP2 (from ethene dimers)           | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
-    | sos-pi-omp2             | A special version of SOS-OMP2 for :math:`\pi`-systems        | RHF/UHF/ROHF/RKS/UKS | ---                  |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | name                    | calls method                                                 |  Energy\ [#f1]_           | Gradient             |
+    +=========================+==============================================================+===========================+======================+
+    | scs-omp3                | Spin-Component Scaled Orbital-Optimized MP3                  | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | sos-omp3                | Spin-Opposite Scaled Orbital-Optimized MP3                   | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | scs(n)-omp3             | A special version of SCS-OMP3 for nucleobase interactions    | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | scs-omp3-vdw            | A special version of SCS-OMP3 (from ethene dimers)           | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | scs-omp2                | Spin-Component Scaled Orbital-Optimized MP2                  | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | sos-omp2                | Spin-Opposite Scaled Orbital-Optimized MP2                   | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | scs(n)-omp2             | A special version of SCS-OMP2 for nucleobase interactions    | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | scs-omp2-vdw            | A special version of SCS-OMP2 (from ethene dimers)           | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+    | sos-pi-omp2             | A special version of SOS-OMP2 for :math:`\pi`-systems        | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
+    +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+
+.. [#f1] These references supply the initial guess only. The orbital optimization itself
+   runs in a restricted or unrestricted orbital basis, so a DFT guess leaves no trace in
+   the converged energy.
 
 .. comment    | scs-ocepa               | Spin-Component Scaled Orbital-Optimized CEPA                 | RHF/UHF/ROHF/RKS/UKS | ---                  |
 .. comment    | sos-ocepa               | Spin-Opposite Scaled Orbital-Optimized CEPA                  | RHF/UHF/ROHF/RKS/UKS | ---                  |

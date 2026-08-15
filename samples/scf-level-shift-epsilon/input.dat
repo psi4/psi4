@@ -1,0 +1,47 @@
+#! The level shift must not leak into the orbital energies. Here the shift is kept
+#! switched on all the way to convergence (level_shift_cutoff far below d_convergence),
+#! so for every reference the converged orbital energies must reproduce those of an
+#! unshifted computation.
+
+import numpy as np
+
+molecule h2o {
+0 1
+O
+H 1 0.96
+H 1 0.96 2 104.5
+symmetry c1
+}
+
+molecule oh {
+0 2
+O
+H 1 0.98
+symmetry c1
+}
+
+psi4.set_options({'basis': 'cc-pvdz',
+                  'scf_type': 'pk',
+                  'e_convergence': 10,
+                  'd_convergence': 8})
+
+
+def converged_epsilon(method, mol, reference, level_shift):
+    psi4.set_options({'reference': reference,
+                      'level_shift': level_shift,
+                      'level_shift_cutoff': 1.0e-12})
+    e, wfn = energy(method, molecule=mol, return_wfn=True)
+    psi4.core.clean()
+    return e, np.array(wfn.epsilon_a().to_array()), np.array(wfn.epsilon_b().to_array())
+
+
+for method, mol, reference, label in [('scf', h2o, 'rhf', 'RHF'),
+                                      ('scf', oh, 'uhf', 'UHF'),
+                                      ('scf', oh, 'rohf', 'ROHF'),
+                                      ('scf', oh, 'cuhf', 'CUHF'),
+                                      ('b3lyp', h2o, 'rks', 'RKS'),
+                                      ('b3lyp', oh, 'uks', 'UKS'),
+                                      ('b3lyp', oh, 'rohf', 'ROKS')]:
+    e_ref, eps_a_ref, eps_b_ref = converged_epsilon(method, mol, reference, 0.0)
+    e_shift, eps_a_shift, eps_b_shift = converged_epsilon(method, mol, reference, 0.5)
+

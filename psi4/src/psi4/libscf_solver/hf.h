@@ -220,6 +220,10 @@ class HF : public Wavefunction {
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
 
+    /** Overwrites eps with the unshifted orbital energies eps_p = (C^T F C)_pp, for orbitals C
+        obtained by diagonalizing a level-shifted F */
+    void remove_level_shift(const SharedMatrix& F, const SharedMatrix& C, std::shared_ptr<Vector>& eps);
+
     /** Form Fia (for DIIS) **/
     virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, const Dimension& noccpi);
 

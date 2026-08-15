@@ -30,4 +30,4 @@
 .. [#c1] Algorithm type selection keyword below. Values to the right: conventional ``CV``, density-fitted ``DF``, and Cholesky-decomposed ``CD``.
 .. [#c2] Active orbital values to the right: all-electron ``A`` and frozen-core ``F``.
 .. [#c3] Finite difference gradients are not marked explicitly by "∷", but the capability can be gleaned from the energy availability.
-.. [#c10] Also available for DFT references RKS/UKS
+.. [#c10] Also available for DFT references RKS/ROKS/UKS

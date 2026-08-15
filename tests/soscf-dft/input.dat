@@ -1,4 +1,5 @@
-#! Triple and Singlet Oxygen energy SOSCF, also tests non-symmetric density matrices
+#! Triple and Singlet Oxygen energy SOSCF, also tests non-symmetric density matrices;
+#! ROKS across the functional classes, and an OH radical with a degenerate SOMO that DIIS cannot resolve
 
 #### UHF Triplet Oxygen energy, triplet
 molecule mol {
@@ -31,6 +32,43 @@ pbe_triplet_energy = -150.2859202265797478  #TEST
 compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'wB97X-D N iter')  #TEST
 compare_values(pbe_triplet_energy, pbe_uhf_energy, 6, 'wB97X-D Triplet Energy')  #TEST
 
+#### ROKS Triplet Oxygen energy, triplet
+
+set reference roks
+
+svwn_roks_energy = energy('SVWN')
+svwn_roks_triplet_energy = -149.5834571444027006  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'ROKS SVWN N iter')  #TEST
+compare_values(svwn_roks_triplet_energy, svwn_roks_energy, 6, 'ROKS SVWN Triplet Energy')  #TEST
+
+pbe_roks_energy = energy('pbe')
+pbe_roks_triplet_energy = -150.1911165756233686  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'ROKS PBE N iter')  #TEST
+compare_values(pbe_roks_triplet_energy, pbe_roks_energy, 6, 'ROKS PBE Triplet Energy')  #TEST
+
+b3lyp_roks_energy = energy('B3LYP')
+b3lyp_roks_triplet_energy = -150.3301674912309238  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'ROKS B3LYP N iter')  #TEST
+compare_values(b3lyp_roks_triplet_energy, b3lyp_roks_energy, 6, 'ROKS B3LYP Triplet Energy')  #TEST
+
+wb97xd_roks_energy = energy('wB97X-D')
+wb97xd_roks_triplet_energy = -150.2817034754717440  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'ROKS wB97X-D N iter')  #TEST
+compare_values(wb97xd_roks_triplet_energy, wb97xd_roks_energy, 6, 'ROKS wB97X-D Triplet Energy')  #TEST
+
+# Non-DF case, which takes the other branch of the ROHF Hessian-vector product
+set scf_type pk
+
+b3lyp_roks_energy = energy('B3LYP')
+b3lyp_roks_triplet_energy = -150.3301450041322767  #TEST
+compare_values(b3lyp_roks_triplet_energy, b3lyp_roks_energy, 6, 'PK-ROKS B3LYP Triplet Energy')  #TEST
+
+wb97xd_roks_energy = energy('wB97X-D')
+wb97xd_roks_triplet_energy = -150.2813814904041294  #TEST
+compare_values(wb97xd_roks_triplet_energy, wb97xd_roks_energy, 6, 'PK-ROKS wB97X-D Triplet Energy')  #TEST
+
+set scf_type df
+
 #### RHF Singlet Oxygen energy, singlet
 molecule mol {
     0 1
@@ -58,3 +96,32 @@ pbe_singlet_energy = -150.22359531811128  #TEST
 compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'wB97X-D N iter')  #TEST
 compare_values(pbe_singlet_energy, pbe_rhf_energy, 6, 'wB97X-D Singlet Energy')  #TEST
 
+#### ROKS on a radical with a degenerate SOMO
+# OH is a 2-Pi radical, so its SOMO sits in a two-fold degenerate pi shell and the
+# solution is reached only by rotating docc into socc -- the block of the ROHF
+# parameterization whose exchange-correlation response this exercises. SOSCF needs 7
+# macroiterations for SVWN and 8 for PBE, hence the bound of 10 rather than 8 below.
+
+molecule oh {
+    0 2
+    O
+    H 1 0.98
+    symmetry c1
+}
+
+set {
+    reference roks
+    scf_type df
+    dft_radial_points 99
+    dft_spherical_points 590
+}
+
+svwn_oh_energy = energy('SVWN')
+svwn_oh_ref = -75.3343191021  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 10, 'ROKS SVWN degenerate SOMO N iter')  #TEST
+compare_values(svwn_oh_ref, svwn_oh_energy, 6, 'ROKS SVWN degenerate SOMO Energy')  #TEST
+
+pbe_oh_energy = energy('PBE')
+pbe_oh_ref = -75.6439593965  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 10, 'ROKS PBE degenerate SOMO N iter')  #TEST
+compare_values(pbe_oh_ref, pbe_oh_energy, 6, 'ROKS PBE degenerate SOMO Energy')  #TEST

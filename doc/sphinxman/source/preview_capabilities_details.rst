@@ -145,7 +145,7 @@
 .. [#d1] Algorithm type selection keyword below. Values to the right: conventional ``CV``, density-fitted ``DF``, and Cholesky-decomposed ``CD``.
 .. [#d2] Active orbital values to the right: all-electron ``A`` and frozen-core ``F``.
 .. [#d3] Finite difference gradients are only marked explicitly by "∷" for overall (not per-method) lines and when at least one case has analytic gradients implemented, but the capability can be gleaned from the energy availability.
-.. [#d10] Also available for DFT references RKS/UKS
+.. [#d10] Also available for DFT references RKS/ROKS/UKS
 .. [#d11] Arbitrary-order *n* through DETCI is inefficient byproduct of CI
 .. [#d12] Analytic gradients for conventional all-electron RHF/UHF computations can be requested through |globals__qc_module|\ ``=ccenergy``, but their scaling is best suited to small molecules.
 .. [#d13] a-CCSD(T) also known as CCSD(aT), Lambda-CCSD(T), and CCSD(T)_L

@@ -313,12 +313,14 @@ void CUHF::form_C(double shift) {
         auto shifted_F = Fa_->clone();
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
+        remove_level_shift(Fa_, Ca_, epsilon_a_);
 
         Cvir = Cb_subset("SO", "VIR");
         SCvir = linalg::doublet(S_, Cvir, false, false);
         shifted_F->copy(Fb_);
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Cb_, epsilon_b_);
+        remove_level_shift(Fb_, Cb_, epsilon_b_);
     }
     find_occupation();
     if (debug_) {

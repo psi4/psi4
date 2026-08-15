@@ -1,0 +1,47 @@
+#! ROKS on open-shell systems across functional classes, with a UKS value for contrast
+
+set scf_type df
+set e_convergence 9
+set d_convergence 8
+
+molecule li {
+0 2
+Li
+symmetry c1
+}
+
+set basis 6-31G
+set reference roks
+
+e = energy('b3lyp', molecule=li)
+
+set scf_type direct
+
+e = energy('cam-b3lyp', molecule=li)
+
+# promotes to ROKS for a DFT functional; tests 4 and 5 inherit that setting.
+molecule oswater {
+1 2
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+}
+
+set basis aug-cc-pvdz
+set scf_type pk
+set dft_spherical_points 590
+set dft_radial_points 99
+set reference rohf
+
+e = energy('b3lyp', molecule=oswater)
+
+set scf_type direct
+
+e = energy('cam-b3lyp', molecule=oswater)
+
+e = energy('wb97x', molecule=oswater)
+
+set reference uks
+set scf_type pk
+
+e_uks = energy('b3lyp', molecule=oswater)

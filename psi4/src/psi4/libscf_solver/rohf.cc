@@ -83,6 +83,8 @@ void ROHF::common_init() {
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
     Ka_ = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_ = SharedMatrix(factory_->create_matrix("K beta"));
+    wKa_ = SharedMatrix(factory_->create_matrix("wK alpha"));
+    wKb_ = SharedMatrix(factory_->create_matrix("wK beta"));
     Ga_ = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_ = SharedMatrix(factory_->create_matrix("G beta"));
     Dt_ = SharedMatrix(factory_->create_matrix("Total SCF density"));
@@ -404,6 +406,7 @@ void ROHF::form_C(double shift) {
         // Add in the Fock itself and diagonalize
         shifted_F->add(soFeff_);
         shifted_F->diagonalize(Ct_, epsilon_a_);
+        remove_level_shift(soFeff_, Ct_, epsilon_a_);
     }
     // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
@@ -483,25 +486,55 @@ double ROHF::compute_initial_E() { return nuclearrep_ + Dt_->vector_dot(H_); }
 double ROHF::compute_E() {
     double one_electron_E = Dt_->vector_dot(H_);
     double kinetic_E = Dt_->vector_dot(T_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Ga_) + Db_->vector_dot(Gb_));
+
+    // E_J = 2 Tr[Dt Jdocc] + Tr[Dt Jsocc], Dt = Da + Db (Jdocc = J[0] from docc, Jsocc = J[1] from socc)
+    SharedMatrix Jdocc = jk_->J()[0];
+    SharedMatrix Jsocc = jk_->J()[1];
+    double coulomb_E = 2.0 * Dt_->vector_dot(Jdocc);
+    coulomb_E += Da_->vector_dot(Jsocc);
+    coulomb_E += Db_->vector_dot(Jsocc);
+
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+
+    double exchange_E = 0.0;
+    if (functional_->is_x_hybrid()) {
+        exchange_E -= alpha * Da_->vector_dot(Ka_);
+        exchange_E -= alpha * Db_->vector_dot(Kb_);
+    }
+
+    if (functional_->is_x_lrc()) {
+        if (jk_->get_do_wK() && jk_->get_wcombine()) {
+            exchange_E -= Da_->vector_dot(wKa_);
+            exchange_E -= Db_->vector_dot(wKb_);
+        } else {
+            exchange_E -= beta * Da_->vector_dot(wKa_);
+            exchange_E -= beta * Db_->vector_dot(wKb_);
+        }
+    }
+
+    double two_electron_E = 0.5 * (coulomb_E + exchange_E);
+
+    double XC_E = 0.0;
+    double VV10_E = 0.0;
+    if (functional_->needs_xc()) {
+        XC_E = potential_->quadrature_values()["FUNCTIONAL"];
+        VV10_E = potential_->quadrature_values()["VV10"];
+    }
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["Kinetic"] = kinetic_E;
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = two_electron_E;
-    energies_["XC"] = 0.0;
-    energies_["VV10_E"] = 0.0;
-    energies_["-D"] = 0.0;
+    energies_["XC"] = XC_E;
+    energies_["VV10"] = VV10_E;
+    energies_["-D"] = scalar_variable("-D Energy");
 
-    double Eelec = one_electron_E + two_electron_E;
-    double Etotal = nuclearrep_ + Eelec;
+    double Etotal = nuclearrep_ + one_electron_E + two_electron_E + XC_E + VV10_E + energies_["-D"];
     return Etotal;
 }
 
 void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
-    if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
-    }
     // Index reference
     // left = IAJB + IAjb, right = iajb + iaJB
     // i = docc, a = socc, p = pure virtual
@@ -569,14 +602,39 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         }
     }
 
+    // => Exchange-correlation response <= //
+    // Uses the same rotation densities as the Coulomb/exchange terms below:
+    //   Dx_a = Cocc  x[o,pvir] Cpvir^T   (alpha rotations, docc + socc -> pvir)
+    //   Dx_b = Cdocc x[docc,v] Cvir^T    (beta rotations,  docc -> socc + pvir)
+    std::vector<SharedMatrix> Vx;
+    if (functional_->needs_xc()) {
+        auto Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, docc});
+        auto Cpvir = Ca_->get_block({dim_zero, nsopi_}, {occpi, nmopi_});
+
+        auto Dx_a = linalg::triplet(Cocc, x->get_block({dim_zero, occpi}, {socc, virpi}), Cpvir, false, false, true);
+        auto Dx_b = linalg::triplet(Cdocc, x->get_block({dim_zero, docc}, {dim_zero, virpi}), Cvir, false, false, true);
+
+        Vx.push_back(std::make_shared<Matrix>("Vx alpha", nsopi_, nsopi_));
+        Vx.push_back(std::make_shared<Matrix>("Vx beta", nsopi_, nsopi_));
+        potential_->compute_Vx({Dx_a, Dx_b}, Vx);
+    }
+
     // => Two electron part <= //
+    const double alpha = functional_->x_alpha();
+    const double beta = functional_->x_beta();
+
     auto& Cl = jk_->C_left();
     auto& Cr = jk_->C_right();
     Cl.clear();
     Cr.clear();
 
-    // If scf_type is DF we can do some extra JK voodo
-    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || (options_.get_str("SCF_TYPE") == "CD")) {
+    // Check actual JK object type (not SCF_TYPE option) to select correct Hx algorithm
+    std::string jk_name = jk_->name();
+    bool use_df_hx = (jk_name.find("DF") != std::string::npos) || (jk_name == "CDJK");
+    if (print_ > 2) {
+        outfile->Printf("    ROHF::Hx JK type: %s, using %s path\n", jk_name.c_str(), use_df_hx ? "DF" : "Direct");
+    }
+    if (use_df_hx) {
         auto Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, docc});
         Cdocc->set_name("Cdocc");
 
@@ -625,7 +683,8 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
 
         jk_->compute();
 
-        // Just in case someone only clears out Cleft and gets very strange errors
+
+        // Clear both C_left and C_right; leaving either stale causes confusing JK errors.
         Cl.clear();
         Cr.clear();
         Cdocc.reset();
@@ -636,24 +695,42 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
 
         const auto& J = jk_->J();
         const auto& K = jk_->K();
+        const auto& wK = jk_->wK();
 
-        // Collect left terms
+        // The Coulomb response is spin-independent: J[Dx_a] + J[Dx_b] = 2 J[D0] + J[D1] + J[D2]
         J[0]->scale(2.0);
         J[0]->add(J[1]);
         J[0]->add(J[2]);
         J[1]->copy(J[0]);
 
-        K[2]->add(K[0]);
-        K[0]->add(K[1]);
+        // Exchange-correlation carries the same weight as the Coulomb term, one spin block each
+        if (functional_->needs_xc()) {
+            J[0]->add(Vx[0]);
+            J[1]->add(Vx[1]);
+        }
 
-        K[0]->scale(0.5);
-        J[0]->subtract(K[0]);
-        J[0]->subtract(K[0]->transpose());
+        if (functional_->is_x_hybrid()) {
+            // Same-spin exchange only: K[Dx_a] = K[D0] + K[D1], K[Dx_b] = K[D0] + K[D2]
+            K[2]->add(K[0]);
+            K[0]->add(K[1]);
 
-        // Collect right terms
-        K[2]->scale(0.5);
-        J[1]->subtract(K[2]);
-        J[1]->subtract(K[2]->transpose());
+            J[0]->axpy(-0.5 * alpha, K[0]);
+            J[0]->axpy(-0.5 * alpha, K[0]->transpose());
+
+            J[1]->axpy(-0.5 * alpha, K[2]);
+            J[1]->axpy(-0.5 * alpha, K[2]->transpose());
+        }
+
+        if (functional_->is_x_lrc()) {
+            wK[2]->add(wK[0]);
+            wK[0]->add(wK[1]);
+
+            J[0]->axpy(-0.5 * beta, wK[0]);
+            J[0]->axpy(-0.5 * beta, wK[0]->transpose());
+
+            J[1]->axpy(-0.5 * beta, wK[2]);
+            J[1]->axpy(-0.5 * beta, wK[2]->transpose());
+        }
 
         // Transform to MO basis and add to exsisting
         auto half_trans = std::make_shared<Matrix>("half_trans temp space", occpi, nsopi_);
@@ -702,7 +779,8 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
 
         jk_->compute();
 
-        // Just in case someone only clears out Cleft and gets very strange errors
+
+        // Clear both C_left and C_right; leaving either stale causes confusing JK errors.
         Cl.clear();
         Cr.clear();
         Cr_a.reset();
@@ -711,19 +789,34 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
 
         const auto& J = jk_->J();
         const auto& K = jk_->K();
+        const auto& wK = jk_->wK();
 
-        // Collect left terms
+        // The Coulomb response is spin-independent: both blocks get J[Dx_a] + J[Dx_b]
         J[0]->add(J[1]);
         J[1]->copy(J[0]);
 
-        K[0]->scale(0.5);
-        J[0]->subtract(K[0]);
-        J[0]->subtract(K[0]->transpose());
+        // Exchange-correlation carries the same weight as the Coulomb term, one spin block each
+        if (functional_->needs_xc()) {
+            J[0]->add(Vx[0]);
+            J[1]->add(Vx[1]);
+        }
 
-        // Collect right terms
-        K[1]->scale(0.5);
-        J[1]->subtract(K[1]);
-        J[1]->subtract(K[1]->transpose());
+        if (functional_->is_x_hybrid()) {
+            // Same-spin exchange only
+            J[0]->axpy(-0.5 * alpha, K[0]);
+            J[0]->axpy(-0.5 * alpha, K[0]->transpose());
+
+            J[1]->axpy(-0.5 * alpha, K[1]);
+            J[1]->axpy(-0.5 * alpha, K[1]->transpose());
+        }
+
+        if (functional_->is_x_lrc()) {
+            J[0]->axpy(-0.5 * beta, wK[0]);
+            J[0]->axpy(-0.5 * beta, wK[0]->transpose());
+
+            J[1]->axpy(-0.5 * beta, wK[1]);
+            J[1]->axpy(-0.5 * beta, wK[1]->transpose());
+        }
 
         // Transform to MO basis and add to exsisting
         auto half_trans = std::make_shared<Matrix>("half_trans temp space", occpi, nsopi_);
@@ -932,17 +1025,29 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
     return fock_builds;
 }
 
+void ROHF::form_V() {
+    potential_->set_D({Da_, Db_});
+    potential_->compute_V({Va_, Vb_});
+}
+
 void ROHF::form_G() {
+    if (functional_->needs_xc()) {
+        form_V();
+        Ga_->copy(Va_);
+        Gb_->copy(Vb_);
+    } else {
+        Ga_->zero();
+        Gb_->zero();
+    }
+
     Dimension dim_zero(nirrep_, "Zero Dim");
 
     auto& C = jk_->C_left();
     C.clear();
 
-    // Push back docc orbitals
     SharedMatrix Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, nbetapi_});
     C.push_back(Cdocc);
 
-    // Push back socc orbitals
     SharedMatrix Csocc = Ca_->get_block({dim_zero, nsopi_}, {nbetapi_, nalphapi_});
     C.push_back(Csocc);
 
@@ -952,17 +1057,51 @@ void ROHF::form_G() {
     // Pull the J and K matrices off
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
-    Ga_->copy(J[0]);
-    Ga_->scale(2.0);
+    const std::vector<SharedMatrix>& wK = jk_->wK();
+
+    // Ga_ and Gb_ both get 2 J[0] + J[1] (J[0] = docc Coulomb, J[1] = socc Coulomb)
+    Ga_->axpy(2.0, J[0]);
     Ga_->add(J[1]);
+    Gb_->axpy(2.0, J[0]);
+    Gb_->add(J[1]);
 
-    Ka_->copy(K[0]);
-    Ka_->add(K[1]);
-    Kb_ = K[0];
+    // Ka = K[0] + K[1] (docc + socc), Kb = K[0] (docc only)
+    if (functional_->is_x_hybrid()) {
+        Ka_->copy(K[0]);
+        Ka_->add(K[1]);
+        Kb_->copy(K[0]);
+    }
 
-    Gb_->copy(Ga_);
-    Ga_->subtract(Ka_);
-    Gb_->subtract(Kb_);
+    // Same docc/socc split as Ka_/Kb_ for the range-separated exchange
+    if (functional_->is_x_lrc()) {
+        wKa_->copy(wK[0]);
+        wKa_->add(wK[1]);
+        wKb_->copy(wK[0]);
+    }
+
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+        Ga_->axpy(-alpha, Ka_);
+        Gb_->axpy(-alpha, Kb_);
+    } else {
+        Ka_->zero();
+        Kb_->zero();
+    }
+
+    if (functional_->is_x_lrc()) {
+        if (jk_->get_wcombine()) {
+            Ga_->axpy(-1.0, wKa_);
+            Gb_->axpy(-1.0, wKb_);
+        } else {
+            Ga_->axpy(-beta, wKa_);
+            Gb_->axpy(-beta, wKb_);
+        }
+    } else {
+        wKa_->zero();
+        wKb_->zero();
+    }
 }
 
 bool ROHF::stability_analysis() {
@@ -1328,7 +1467,14 @@ void ROHF::compute_SAD_guess(bool natorb) {
 
 void ROHF::setup_potential() {
     if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
+        Va_ = SharedMatrix(factory_->create_matrix("V alpha"));
+        Vb_ = SharedMatrix(factory_->create_matrix("V beta"));
+
+        // UV (unrestricted V) matches ROHF's separate alpha/beta densities
+        potential_ = std::make_shared<UV>(functional_, basisset_, options_);
+        potential_->initialize();
+    } else {
+        potential_ = nullptr;
     }
 }
 
