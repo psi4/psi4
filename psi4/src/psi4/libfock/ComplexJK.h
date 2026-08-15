@@ -276,7 +276,7 @@ class PSI_API ComplexDirectJK : public ComplexJK {
     /// Actually do the JK
     using ComplexT = einsums::Tensor<std::complex<double>, 2>;
     /// Atom-blocked J/K build
-    template<bool, bool>
+    template<bool, bool, bool>
     void build_JK_matrices(std::shared_ptr<TwoBodyAOInt>, const ComplexT&, ComplexT* = nullptr, ComplexT* = nullptr);
 
   public:
