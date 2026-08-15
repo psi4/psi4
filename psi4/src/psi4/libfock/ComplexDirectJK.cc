@@ -39,9 +39,9 @@
 #include <complex>
 #include <optional>
 #include <string>
+#include <span>
 #include <utility>
 #include <vector>
-#include <ranges>
 
 namespace psi {
 
@@ -125,22 +125,44 @@ void ComplexDirectJK::compute_JK() {
 
 namespace {
 
+// Minimal integer range [first, last) used in range-for loops. This replaces
+// std::views::iota, which fails to compile under clang with libstdc++ < 13.
+// Whenever Psi4's minimum GCC version is bumped to at least 14, we should
+// revert back to using std::views::iota.
+struct integer_range {
+    std::size_t first;
+    std::size_t last;
+
+    struct iterator {
+        std::size_t value;
+        std::size_t operator*() const { return value; }
+        iterator& operator++() { ++value; return *this; }
+        bool operator==(const iterator& other) const { return value == other.value; }
+        bool operator!=(const iterator& other) const { return value != other.value; }
+    };
+
+    iterator begin() const { return {first}; }
+    iterator end() const { return {last}; }
+};
+
 // Helper method to remove the indexing madness. Produces iterable list of iterators.
 // Converts Something like [0,1,4,5] into [[0, 1), [1, 4), [4, 5)].
 auto partition(std::span<const std::size_t> atom_to_shell) {
-return std::views::iota(std::size_t{0}, atom_to_shell.size() - 1)
-     | std::views::transform([atom_to_shell](std::size_t atom) {
-           return std::views::iota(atom_to_shell[atom], atom_to_shell[atom + 1]);
-       });
+    std::vector<integer_range> result;
+    result.reserve(atom_to_shell.size());
+    for (std::size_t atom = 0; atom + 1 < atom_to_shell.size(); ++atom)
+        result.push_back(integer_range{atom_to_shell[atom], atom_to_shell[atom + 1]});
+    return result;
 }
 
 // Like above but enumerated. Converts Something like [0,1,4,5] into
 //   [{0, [0, 1)}, {1, [1, 4)}, {2, [4, 5)}].
 auto partition_with_idx(std::span<const std::size_t> atom_to_shell) {
-return std::views::iota(std::size_t{0}, atom_to_shell.size() - 1)
-     | std::views::transform([atom_to_shell](std::size_t atom) {
-           return std::pair{atom, std::views::iota(atom_to_shell[atom], atom_to_shell[atom + 1])};
-       });
+    std::vector<std::pair<std::size_t, integer_range>> result;
+    result.reserve(atom_to_shell.size());
+    for (std::size_t atom = 0; atom + 1 < atom_to_shell.size(); ++atom)
+        result.emplace_back(atom, integer_range{atom_to_shell[atom], atom_to_shell[atom + 1]});
+    return result;
 }
 
 }
@@ -224,7 +246,7 @@ void ComplexDirectJK::build_JK_matrices(std::shared_ptr<TwoBodyAOInt> ints, cons
 
     // Returns a view of shell indices for given center idx.
     auto shells_on_center = [&atom_to_shell](size_t task) {
-        return std::views::iota(atom_to_shell[task], atom_to_shell[task+1]);
+        return integer_range{atom_to_shell[task], atom_to_shell[task + 1]};
     };
 
     // => Welcome to the jungle <=
