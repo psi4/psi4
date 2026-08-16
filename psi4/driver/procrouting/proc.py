@@ -1902,7 +1902,9 @@ def scf_helper(name, post_scf=True, **kwargs):
     # the FIRST scf call
     if cast:
         # Cast is a special case
-        base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
+        base_wfn = core.BaseWavefunction.build(
+            scf_molecule, core.get_global_option('BASIS'),
+            reference=core.get_option('SCF', 'REFERENCE'))
         core.print_out("\n         ---------------------------------------------------------\n")
         if banner:
             core.print_out("         " + banner.center(58))
@@ -1931,7 +1933,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out('\n')
 
     # the SECOND scf call
-    base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
+    base_wfn = core.BaseWavefunction.build(
+        scf_molecule, core.get_global_option('BASIS'),
+        reference=core.get_option('SCF', 'REFERENCE'))
     if banner:
         core.print_out("\n         ---------------------------------------------------------\n")
         core.print_out("         " + banner.center(58))
