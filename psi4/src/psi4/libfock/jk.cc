@@ -85,7 +85,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     // TODO: DO NOT WORRY ABOUT DENSITY SCREENING WITH CFMM and DFCFMM RIGHT NOW, THEY HANDLE IT THEIR OWN WAY
     // IN THE FUTURE, IT MAY BE HELPFUL TO UNIFY
-    std::array<std::string, 3> can_do_density_screen = { "DIRECT", "DFDIRJ+LINK", "DFDIRJ" };
+    std::array<std::string, 7> can_do_density_screen = { "DIRECT", "DFDIRJ+LINK", "DFDIRJ", "CFMM+LINK", "CFMM", "DFCFMM+LINK", "DFCFMM" };
     bool is_compatible_density_screen = std::any_of(
         can_do_density_screen.cbegin(),
         can_do_density_screen.cend(),
