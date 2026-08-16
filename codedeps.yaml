@@ -50,7 +50,7 @@ data:
     conda:
       channel: conda-forge
       name: c-compiler
-      constraint: null
+      constraint: "<2"
       cmake:
         # {CMAKE_CXX_COMPILER_ID}_{Conda_platform}
         GNU_linux-64:
@@ -94,7 +94,7 @@ data:
     conda:
       channel: conda-forge
       name: cxx-compiler
-      constraint: null
+      constraint: "<2"
       aux_build_names:
         linux-64:
           - "//dpcpp_linux-64"
@@ -147,7 +147,7 @@ data:
     conda:
       channel: conda-forge
       name: fortran-compiler
-      constraint: null
+      constraint: "<2"
       skip_win: true
       skip_win_note: "Presently pulls in an old Flang."
       aux_build_names:

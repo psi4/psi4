@@ -100,30 +100,25 @@ def scf_compute_energy(self):
     return scf_energy
 
 
-def _build_jk(wfn, memory):
-    jk = core.JK.build(wfn.get_basisset("ORBITAL"),
-                       aux=wfn.get_basisset("DF_BASIS_SCF"),
-                       do_wK=wfn.functional().is_x_lrc(),
-                       memory=memory)
-    return jk
-
-
 def initialize_jk(self, memory, jk=None):
 
     functional = self.functional()
     if jk is None:
-        jk = _build_jk(self, memory)
+        jk = self.build_jk(memory)
 
     self.set_jk(jk)
 
     jk.set_print(self.get_print())
     jk.set_memory(memory)
     jk.set_do_K(functional.is_x_hybrid())
-    jk.set_do_wK(functional.is_x_lrc())
-    jk.set_omega(functional.x_omega())
 
-    jk.set_omega_alpha(functional.x_alpha())
-    jk.set_omega_beta(functional.x_beta())
+    # core.ComplexJK does not support any of these yet.
+    if isinstance(jk, core.JK):
+        jk.set_do_wK(functional.is_x_lrc())
+        jk.set_omega(functional.x_omega())
+
+        jk.set_omega_alpha(functional.x_alpha())
+        jk.set_omega_beta(functional.x_beta())
 
     jk.initialize()
     jk.print_header()
@@ -150,12 +145,12 @@ def scf_initialize(self):
 
     # Change allocation for collocation matrices based on DFT type
     initialize_jk_obj = False
-    if isinstance(self.jk(), core.JK):
+    if isinstance(self.jk(), core.BaseJK):
         core.print_out("\nRe-using passed JK object instead of rebuilding\n")
         jk = self.jk()
     else:
         initialize_jk_obj = True
-        jk = _build_jk(self, total_memory)
+        jk = self.build_jk(total_memory)
     jk_size = jk.memory_estimate()
 
     # Give remaining to collocation
@@ -915,15 +910,15 @@ def scf_print_preiterations(self,small=False):
         core.print_out("   -------------------------\n\n")
 
 
-# Bind functions to core.HF class
-core.HF.initialize = scf_initialize
-core.HF.initialize_jk = initialize_jk
-core.HF.iterations = scf_iterate
-core.HF.compute_energy = scf_compute_energy
-core.HF.finalize_energy = scf_finalize_energy
-core.HF.print_energies = scf_print_energies
-core.HF.print_preiterations = scf_print_preiterations
-core.HF.iteration_energies = []
+# Bind functions to core.BaseHF class
+core.BaseHF.initialize = scf_initialize
+core.BaseHF.initialize_jk = initialize_jk
+core.BaseHF.iterations = scf_iterate
+core.BaseHF.compute_energy = scf_compute_energy
+core.BaseHF.finalize_energy = scf_finalize_energy
+core.BaseHF.print_energies = scf_print_energies
+core.BaseHF.print_preiterations = scf_print_preiterations
+core.BaseHF.iteration_energies = []
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
@@ -1082,7 +1077,7 @@ def _validate_soscf():
 
     return enabled
 
-core.HF.validate_diis = _validate_diis
+core.BaseHF.validate_diis = _validate_diis
 
 def efp_field_fn(xyz):
     """Callback function for PylibEFP to compute electric field from electrons

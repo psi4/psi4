@@ -16,6 +16,7 @@ list(APPEND sources
   sobasis.cc
   cartesianiter.cc
   basisset.cc
+  basewavefunction.cc
   wavefunction.cc
   irrep.cc
   fjt.cc
@@ -117,6 +118,13 @@ else()
 endif()
 
 # Conditionally add sources that depend on optional dependencies
+if(TARGET Einsums::Einsums)
+  target_sources(mints
+    PRIVATE
+      complexmatrix.cc
+    )
+endif()
+
 if(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
