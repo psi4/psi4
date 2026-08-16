@@ -14,7 +14,6 @@ molecule mol {
 
 set {
     scf_type cfmm+linK
-    guess core
     basis aug-cc-pVDZ
     ints_tolerance 1.0e-10
     e_convergence 1.0e-10
