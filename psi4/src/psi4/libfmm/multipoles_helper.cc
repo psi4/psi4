@@ -431,7 +431,7 @@ void RealSolidHarmonics::add(const std::shared_ptr<RealSolidHarmonics>& rsh) {
 }
 
 double RealSolidHarmonics::dot(const RealSolidHarmonics& rsh) {
-    double result;
+    double result = 0.0;
     for (int l = 0; l <= lmax_; l++) {
         for (int mu = 0; mu < 2*l+1; mu++) {
             result += Ylm_[l][mu] * rsh.Ylm_[l][mu];
