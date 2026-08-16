@@ -106,26 +106,26 @@ SharedComplexMatrix expm(const ComplexMatrix& A, std::complex<double> c = {1});
  *  \class ComplexMatrix
  *  \brief Complex blocked matrix backed by an einsums TiledTensor.
  *
- *  Wraps ``einmsums::TiledTensor<std::complex<double>, 2>`` as a private member
- *  and provides familiar API, similar to the (completely independent) ``Matrix``
- *  class. Tiles are analogous to irrep blocks in ``Matrix``, but TiledTensors
- *  allow tiles to be created on-demand, anywhere on the predefined grid.
+ *  Wraps `einmsums::TiledTensor<std::complex<double>, 2>` as a private member
+ *  and provides familiar API, similar to the (completely independent) Matrix
+ *  class. Tiles are analogous to irrep blocks in Matrix, but a TiledTensor
+ *  allows tiles to be created on-demand, anywhere on the predefined grid.
  *  This grid is set at the constructor by rowspi and optionally colspi. Like
- *  ``Matrix``, the number of irreps in each dimension is assumed to be equal.
- *  Unlike ``Matrix``, we assume at the ctor: ``rowspi.n() == colspi.n()``.
+ *  Matrix, the number of irreps in each dimension is assumed to be equal.
+ *  Unlike Matrix, we assume at the ctor: `rowspi.n() == colspi.n()`.
  *
- *  TiledTensors work differently to ``Matrix``. Memory is handled by the
- *  object. When you call ``zero()`` the tiles are emptied, not actually set to
- *  zero. When you try to ``get()`` a tile, the tile is allocated and returns
- *  zeros. When you ``get()`` a specific value in an uninitialized tile, the
+ *  TiledTensors work differently to Matrix. Memory is handled by the
+ *  object. When you call `zero()` the tiles are emptied, not actually set to
+ *  zero. When you try to `get()` a tile, the tile is allocated and returns
+ *  zeros. When you `get()` a specific value in an uninitialized tile, the
  *  tile may or may not be allocated, but a zero is always returned.
  *
  *  Adds operations needed by DIIS and the Python layer: clone, axpy, subtract,
  *  vector_dot, save, and load.
  *
- *  Einsums::TiledTensor handles its own memory and follows the rule of five.
- *  Same thing with Dimension. This means that we don't need custom
- *  copy constructors, operators, destructors, etc. The compiler defaults implicitly
+ *  Einsums::TiledTensor handles its own memory and follows the rule of three.
+ *  Therefore, we don't need custom copy constructors, copy assignment operators,
+ *  destructors, or default constructors. The compiler implicitly generates them.
  */
 class PSI_API ComplexMatrix {
    public:
@@ -224,12 +224,12 @@ class PSI_API ComplexMatrix {
 
     /// In-place add
     void add(const ComplexMatrix& other) { tensor_ += other; }
-    /// Arithmetic operator ``+=``. Einsums asserts the dimensions at runtime.
+    /// Arithmetic operator `+=`. Einsums asserts the dimensions at runtime.
     void operator+=(const ComplexMatrix& other) { tensor_ += other; }
 
     /// In-place subtract
     void subtract(const ComplexMatrix& other) { tensor_ -= other; }
-    /// Arithmetic operator ``-=``. Einsums asserts the dimensions at runtime.
+    /// Arithmetic operator `-=`. Einsums asserts the dimensions at runtime.
     void operator-=(const ComplexMatrix& other) { tensor_ -= other; }
 
     /// Re(Tr(self^H other)), summed over diagonal tiles.
@@ -258,9 +258,9 @@ class PSI_API ComplexMatrix {
     /// Load diagonal tiles as raw complex sub-blocks from a PSIO file.
     void load(std::shared_ptr<PSIO>& psio, size_t fileno);
 
-    /// Get the name, used for ``print()`` and Einsums runtime errors.
+    /// Get the name, used for ComplexMatrix::print and Einsums runtime errors.
     const std::string& name() const { return tensor_.name(); }
-    /// Set the name, used for ``print()`` and Einsums runtime errors.
+    /// Set the name, used for ComplexMatrix::print and Einsums runtime errors.
     void set_name(const std::string& s) { tensor_.set_name(s); }
 
     /// Python-compatible printer.
@@ -278,12 +278,8 @@ class PSI_API ComplexMatrix {
     /// Returns dimension of column tile for given irrep.
     int coldim(const int& h = 0) const { return tensor_.tile_size(1)[h]; }
 
-    // Unlike Matrix, ComplexMatrix does not have an internal rowspi_ function to return.
-    // The lifetime of the reference in `Matrix::rowspi()` lasts as long as the
-    // Matrix instance. Here, we have to create a Dimension then return it.
-    // The Dimension lifetime is extended *only* by assigning it to a variable.
-    // const Dimension would force a copy (not move) so Dimension is preferred.
-
+    /// Dimension object representing the rows. Unlike Matrix, ComplexMatrix
+    /// does not have an internal rowspi_ to return.
     Dimension rowspi() const { return Dimension(tensor_.tile_size(0)); }
     int rowspi(const int& h) const { return rowdim(h); }
     Dimension colspi() const { return Dimension(tensor_.tile_size(1)); }
@@ -300,7 +296,7 @@ class PSI_API ComplexMatrix {
     void zero() { tensor_.zero(); }
 
     /// @{
-    /// Returns the h'th irrep as ``einsums::Tensor<std::complex<double>, 2>`` type.
+    /// Returns the h'th irrep as `einsums::Tensor<std::complex<double>, 2>` type.
     BlockT& get(const int& h) { return tensor_.tile(h, h); }
     const BlockT& get(const int& h) const { return tensor_.tile(h, h); }
     BlockT& operator[](const int& h) { return tensor_.tile(h, h); }
@@ -319,9 +315,9 @@ class PSI_API ComplexMatrix {
      */
     ValueT get(const int& h, const int& m, const int& n) const { return tensor_.tile(h, h)(m, n); }
 
-    /// Returns a ``std::complex<double>&`` reference to element at position (h, i, j).
+    /// Returns a reference to value at position (h, i, j).
     ValueT& operator()(const int& h, const int& i, const int& j) { return tensor_.tile(h, h)(i, j); }
-    /// Returns a ``const std::complex<double>&`` reference to element at position (h, i, j).
+    /// Returns a reference to value at position (h, i, j).
     const ValueT& operator()(const int& h, const int& i, const int& j) const { return tensor_.tile(h, h)(i, j); }
 
     /**
@@ -335,9 +331,9 @@ class PSI_API ComplexMatrix {
     void set(const int& h, const int& m, const int& n, const ValueT& value) { tensor_.tile(h, h)(m, n) = value; }
 
 #ifdef USING_OpenOrbitalOptimizer
-    /// Returns an Armadillo complex matrix for irrep block ``h``
+    /// Returns an Armadillo complex matrix for irrep block `h`
     arma::cx_mat to_armadillo_matrix(int h = 0);
-    /// Copies data from an Armadillo complex matrix into irrep block ``h``
+    /// Copies data from an Armadillo complex matrix into irrep block `h`
     void from_armadillo_matrix(const arma::cx_mat& m, int h = 0);
 #endif
 
@@ -348,11 +344,6 @@ class PSI_API ComplexMatrix {
     friend ComplexMatrix linalg::triplet(const ComplexMatrix&, const ComplexMatrix&, const ComplexMatrix&,
                                          bool, bool, bool);
 };
-
-namespace linalg {
-
-
-}  // namespace linalg
 
 #else  // !USING_Einsums
 
