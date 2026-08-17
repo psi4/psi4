@@ -248,6 +248,11 @@ SharedMatrix SCFDeriv::compute_gradient()
 #ifndef USING_cuEST
     std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, mintshelper_);
 #else
+    // In order to expose range-seperated functioinals through cuEST, cuest_df_plan_ was passed alpha, beta, and omega in cuESTJK.cc.
+    // These quantities must be reset here, as the gradient computation re-uses the same cuest_df_plan_ and thus already implicitly carries alpha, beta.
+    alpha = 1.0;
+    beta = 1.0;
+
     std::shared_ptr<JKGrad> jk;
     if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos && options_.get_bool("USE_CUEST") && !functional_->is_x_lrc()) {
         if (!jk_) {
@@ -292,16 +297,8 @@ SharedMatrix SCFDeriv::compute_gradient()
     }
 #endif
 
-#ifdef USING_cuEST
-    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
-    if (options_.get_bool("USE_CUEST")) {
-        alpha = 1.0;
-        beta = 1.0;
-    }
-#endif
-
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
-    gradients_["Coulomb"] = jk_gradients["Coulomb"];
+    gradients_["Coulomb"] = jk_gradients["Coulomb"]; // cuEST packs the combined J/K gradient into this buffer, gradients_["Exchange"] remains a zero matrix
     if (functional_->is_x_hybrid()) {
         gradients_["Exchange"] = jk_gradients["Exchange"];
         gradients_["Exchange"]->scale(-alpha);

@@ -3090,7 +3090,7 @@ void cuESTJKGrad::compute_gradient() {
         cudaMemcpy(d_C, Ca_row_major.data(), sizeof(double) * na * nao, cudaMemcpyHostToDevice);
 
         std::shared_ptr<cuESTJK> cuest_jk = std::dynamic_pointer_cast<cuESTJK>(jk_);
-        cuestDFIntPlan_t cuest_df_plan = cuest_jk->cuest_df_plan();
+        cuestDFIntPlan_t cuest_df_plan = cuest_jk->cuest_df_plan(); // The df_plan configured in cuESTJK.cc is re-used for nuclear gradient computations!
         
         CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
             cuest_handle,
