@@ -35,7 +35,7 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_misc(py::module &m) {
+void export_misc(py::module_ &m) {
     m.def("timer_on", timer_on, "label"_a, "Start timer with *label*. Needs to be paired with :func:`psi4.core.timer_off`.");
     m.def("timer_off", timer_off, "label"_a, "Stop timer with *label*.");
     m.def("tstart", tstart, "Start module-level timer. Only one active at once.");
