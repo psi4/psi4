@@ -292,6 +292,14 @@ SharedMatrix SCFDeriv::compute_gradient()
     }
 #endif
 
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (options_.get_bool("USE_CUEST")) {
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
     gradients_["Coulomb"] = jk_gradients["Coulomb"];
     if (functional_->is_x_hybrid()) {
