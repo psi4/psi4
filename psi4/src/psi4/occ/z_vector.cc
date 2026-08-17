@@ -458,8 +458,8 @@ void OCCWave::z_vector() {
         }
 
         // Build Zmatrix
-        ZmatA = std::make_shared<Matrix>("Alpha Z-Matrix", nirrep_, nmopi_, nmopi_);
-        ZmatB = std::make_shared<Matrix>("Beta Z-Matrix", nirrep_, nmopi_, nmopi_);
+        ZmatA = std::make_shared<Matrix>("Alpha Z-Matrix", nmopi_, nmopi_);
+        ZmatB = std::make_shared<Matrix>("Beta Z-Matrix", nmopi_, nmopi_);
         for (int x = 0; x < nidpA; x++) {
             int a = idprowA[x];
             int i = idpcolA[x];

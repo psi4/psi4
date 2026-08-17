@@ -45,7 +45,7 @@ void OCCWave::gfock_ea() {
     //===========================================================================================
     if (reference_ == "RESTRICTED") {
         // Initialize
-        Ftilde = std::make_shared<Matrix>("MO-basis GFM-EA", nirrep_, nmopi_, nmopi_);
+        Ftilde = std::make_shared<Matrix>("MO-basis GFM-EA", nmopi_, nmopi_);
         Ftilde->zero();
         Ftilde->add(HmoA);
         Ftilde->scale(2.0);

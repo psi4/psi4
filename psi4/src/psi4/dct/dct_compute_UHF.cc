@@ -261,7 +261,7 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
 }
 
 void DCTSolver::run_twostep_dct_orbital_updates() {
-    auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    auto tmp = std::make_shared<Matrix>("temp", nsopi_, nsopi_);
 
     // Set up DIIS
     DIISManager scfDiisManager(maxdiis_, "DCT DIIS Orbitals", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
@@ -339,7 +339,7 @@ void DCTSolver::run_simult_dct() {
         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
         "\t*---------------------------------------------------------------------------------*\n");
 
-    auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    auto tmp = std::make_shared<Matrix>("temp", nsopi_, nsopi_);
     // Set up the DIIS manager
     DIISManager diisManager(maxdiis_, "DCT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
