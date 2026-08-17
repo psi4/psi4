@@ -159,7 +159,7 @@ void OCCWave::z_vector() {
         if (print_ > 2) zvectorA->print();
 
         // Build Zmatrix
-        ZmatA = std::make_shared<Matrix>("Alpha Z-Matrix", nirrep_, nmopi_, nmopi_);
+        ZmatA = std::make_shared<Matrix>("Alpha Z-Matrix", nmopi_, nmopi_);
         for (int x = 0; x < nidpA; x++) {
             int a = idprowA[x];
             int i = idpcolA[x];

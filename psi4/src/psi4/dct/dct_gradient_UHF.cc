@@ -1357,8 +1357,8 @@ void DCTSolver::compute_orbital_response_intermediates() {
 // Returns RMS of the orbital response vector
 double DCTSolver::update_orbital_response() {
     dpdfile2 X_ia, X_ai, z_ia, zI_ai, zI_ia, r_ia;
-    auto a_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Alpha)", nirrep_, naoccpi_, navirpi_);
-    auto b_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Beta)", nirrep_, nboccpi_, nbvirpi_);
+    auto a_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Alpha)", naoccpi_, navirpi_);
+    auto b_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Beta)", nboccpi_, nbvirpi_);
 
     // Alpha spin
     global_dpd_->file2_init(&zI_ia, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "zI <O|V>");
