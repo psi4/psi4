@@ -813,10 +813,10 @@ void DCTSolver::build_tau_U() {
         bocc_tau_.zero();
         bvir_tau_.zero();
         // Diagonalize and take a square root
-        auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-        auto bocc_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
-        auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
-        auto bvir_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
+        auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", naoccpi_, naoccpi_);
+        auto bocc_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Occupied)", nboccpi_, nboccpi_);
+        auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", navirpi_, navirpi_);
+        auto bvir_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Virtual)", nbvirpi_, nbvirpi_);
         auto aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", naoccpi_);
         auto bocc_evals = std::make_shared<Vector>("Eigenvalues (Beta Occupied)", nboccpi_);
         auto avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", navirpi_);
