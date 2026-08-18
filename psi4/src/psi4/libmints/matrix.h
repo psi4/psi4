@@ -234,20 +234,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     Matrix(const std::string& name, int rows, int cols);
 
     /**
-     * Contructs a Matrix from a dpdfile2
-     *
-     * @param inFile dpdfile2 object to replicate (must already be initialized).
-     */
-    Matrix(dpdfile2* inFile);
-
-    /**
-     * Contructs a Matrix from a dpdbuf4
-     *
-     * @param inBuf dpdbuf4 object to replicate (must already be initialized).
-     */
-    Matrix(dpdbuf4* inBuf);
-
-    /**
      * Constructor using Dimension objects to define order and dimensionality.
      *
      * @param name Name of the matrix.
@@ -269,15 +255,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /**
      * Constructor using Dimension objects to define order and dimensionality.
      *
-     * @param rows Dimension object providing row information.
-     * @param cols Singular value. All blocks have same number of columns.
-     * @param symmetry overall symmetry of the data.
-     */
-    Matrix(const Dimension& rows, const int cols, int symmetry = 0);
-
-    /**
-     * Constructor using Dimension objects to define order and dimensionality.
-     *
      * @param name Name of the matrix.
      * @param rows Dimension object providing row information.
      * @param cols Singular value. All blocks have same number of columns.
@@ -288,12 +265,12 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /**
      * Constructor using Dimension objects to define order and dimensionality.
      *
-     * @param name Name of the matrix.
-     * @param rows Singular value. All blocks have same number of rows.
-     * @param cols Dimension object providing column information.
+     * @param rows Dimension object providing row information.
+     * @param cols Singular value. All blocks have same number of columns.
      * @param symmetry overall symmetry of the data.
      */
-    Matrix(const int rows, const Dimension& cols, int symmetry = 0);
+    Matrix(const Dimension& rows, const int cols, int symmetry = 0)
+        : Matrix("", rows, cols, symmetry) {};
 
     /**
      * Constructor using Dimension objects to define order and dimensionality.
@@ -305,6 +282,29 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     Matrix(const std::string& name, const int rows, const Dimension& cols, int symmetry = 0);
 
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param rows Singular value. All blocks have same number of rows.
+     * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const int rows, const Dimension& cols, int symmetry = 0)
+        : Matrix("", rows, cols, symmetry) {};
+
+    /**
+     * Contructs a Matrix from a dpdfile2
+     *
+     * @param inFile dpdfile2 object to replicate (must already be initialized).
+     */
+    Matrix(dpdfile2* inFile);
+
+    /**
+     * Contructs a Matrix from a dpdbuf4
+     *
+     * @param inBuf dpdbuf4 object to replicate (must already be initialized).
+     */
+    Matrix(dpdbuf4* inBuf);
 
     /// Destructor, frees memory
     virtual ~Matrix();
