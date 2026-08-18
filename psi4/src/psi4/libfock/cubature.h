@@ -393,8 +393,12 @@ class BlockOPoints {
     /// Bounding radius of the BlockOPoints
     double R_;
 
-    /// Parent atom of this BlockOPoints. -1 indicated none has been set.
-    size_t parent_atom_ = -1;
+    /// Sentinel for parent_atom_ when set_parent_atom() has not been called.
+    /// SIZE_MAX is what `size_t(-1)` produces; we name it so the check below
+    /// is unambiguous and survives a future change to the member's type.
+    static constexpr size_t no_parent_atom_ = static_cast<size_t>(-1);
+    /// Parent atom of this BlockOPoints, or no_parent_atom_ if unset.
+    size_t parent_atom_ = no_parent_atom_;
 
     /// Populate significant functions given information in extents
     void populate();
@@ -422,7 +426,7 @@ class BlockOPoints {
     void set_parent_atom(size_t atom) { parent_atom_ = atom; };
     /// Parent atom if the current block
     size_t parent_atom() const {
-        if (parent_atom_ >= 0) {
+        if (parent_atom_ != no_parent_atom_) {
             return parent_atom_;
         } else {
             throw PSIEXCEPTION("BlockOPoints: no parent atom set! Wrong blockscheme?");
