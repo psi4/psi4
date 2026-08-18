@@ -70,20 +70,11 @@ extern int str_to_int(const std::string &s);
 
 extern double str_to_double(const std::string &s);
 
-Matrix::Matrix() {
-    matrix_ = nullptr;
-    nirrep_ = 0;
-    symmetry_ = 0;
-}
-
 Matrix::Matrix(const std::string &name, int symmetry)
-    : matrix_(nullptr), nirrep_(0), name_(name), symmetry_(symmetry) {}
+    : name_(name), symmetry_(symmetry) {}
 
-Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
-    matrix_ = nullptr;
-    nirrep_ = c.nirrep_;
-    symmetry_ = c.symmetry_;
-    name_ = c.name();
+Matrix::Matrix(const Matrix &c)
+    : rowspi_(c.rowspi_), colspi_(c.colspi_), nirrep_(c.nirrep_), symmetry_(c.symmetry_), name_(c.name_) {
     alloc();
     copy_from(c.matrix_);
 }
@@ -101,88 +92,46 @@ Matrix &Matrix::operator=(const Matrix &c) {
     return *this;
 }
 
-Matrix::Matrix(const SharedMatrix &c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
-    matrix_ = nullptr;
-    nirrep_ = c->nirrep_;
-    symmetry_ = c->symmetry_;
-    name_ = c->name();
-    alloc();
-    copy_from(c->matrix_);
-}
+Matrix::Matrix(const SharedMatrix &c)
+    : Matrix(*c) {}
 
-Matrix::Matrix(const Matrix *c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
-    matrix_ = nullptr;
-    nirrep_ = c->nirrep_;
-    symmetry_ = c->symmetry_;
-    name_ = c->name();
-    alloc();
-    copy_from(c->matrix_);
-}
+Matrix::Matrix(const Matrix *c)
+    : Matrix(*c) {}
 
 Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
-    : rowspi_(l_nirreps), colspi_(l_nirreps) {
-    matrix_ = nullptr;
-    nirrep_ = l_nirreps;
-    symmetry_ = symmetry;
-    rowspi_ = l_rowspi;
-    colspi_ = l_colspi;
-    alloc();
-}
+    : Matrix("", l_nirreps, l_rowspi, l_colspi, symmetry) {}
 
 Matrix::Matrix(const std::string &name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
-    : rowspi_(l_nirreps), colspi_(l_nirreps), name_(name) {
-    matrix_ = nullptr;
-    nirrep_ = l_nirreps;
-    symmetry_ = symmetry;
-    rowspi_ = l_rowspi;
-    colspi_ = l_colspi;
+    : nirrep_(l_nirreps), symmetry_(symmetry), name_(name), matrix_(nullptr),
+      rowspi_(std::vector<int>(l_rowspi, l_rowspi + l_nirreps)),
+      colspi_(std::vector<int>(l_colspi, l_colspi + l_nirreps)) {
     alloc();
 }
 
-Matrix::Matrix(const std::string &name, int rows, int cols) : rowspi_(1), colspi_(1), name_(name) {
-    matrix_ = nullptr;
-    nirrep_ = 1;
-    symmetry_ = 0;
-    rowspi_[0] = rows;
-    colspi_[0] = cols;
+Matrix::Matrix(const std::string &name, int rows, int cols)
+    : rowspi_(std::vector<int>{rows}), colspi_(std::vector<int>{cols}), name_(name),
+      nirrep_(1), symmetry_(0), matrix_(nullptr) {
     alloc();
 }
 
-Matrix::Matrix(int rows, int cols) : rowspi_(1), colspi_(1) {
-    matrix_ = nullptr;
-    nirrep_ = 1;
-    symmetry_ = 0;
-    rowspi_[0] = rows;
-    colspi_[0] = cols;
+Matrix::Matrix(int rows, int cols)
+    : Matrix("", rows, cols) {}
+
+Matrix::Matrix(int nirrep, int rows, const int *colspi)
+    : nirrep_(nirrep), matrix_(nullptr), symmetry_(0), rowspi_(std::vector<int>(nirrep, rows)),
+      colspi_(std::vector<int>(colspi, colspi + nirrep)) {
     alloc();
 }
 
-Matrix::Matrix(int nirrep, int rows, const int *colspi) : rowspi_(nirrep), colspi_(nirrep) {
-    matrix_ = nullptr;
-    symmetry_ = 0;
-    nirrep_ = nirrep;
-    for (int i = 0; i < nirrep_; ++i) {
-        rowspi_[i] = rows;
-        colspi_[i] = colspi[i];
-    }
+Matrix::Matrix(int nirrep, const int *rowspi, int cols)
+    : nirrep_(nirrep), matrix_(nullptr), symmetry_(0), colspi_(std::vector<int>(nirrep, cols)),
+      rowspi_(std::vector<int>(rowspi, rowspi + nirrep)) {
     alloc();
 }
 
-Matrix::Matrix(int nirrep, const int *rowspi, int cols) : rowspi_(nirrep), colspi_(nirrep) {
-    matrix_ = nullptr;
-    symmetry_ = 0;
-    nirrep_ = nirrep;
-    for (int i = 0; i < nirrep_; ++i) {
-        rowspi_[i] = rowspi[i];
-        colspi_[i] = cols;
-    }
-    alloc();
-}
-
-Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &cols, int symmetry) {
-    name_ = name;
-    matrix_ = nullptr;
-    symmetry_ = symmetry;
+Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &cols, int symmetry)
+    : name_(name), matrix_(nullptr), symmetry_(symmetry) {
+    // Oh brother, this code stinks!
 
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
@@ -206,43 +155,18 @@ Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &
     alloc();
 }
 
-Matrix::Matrix(const Dimension &rows, const Dimension &cols, int symmetry) {
-    matrix_ = nullptr;
-    symmetry_ = symmetry;
-
-    // This will happen in PetiteList::aotoso()
-    if (rows.n() == 1) {
-        nirrep_ = cols.n();
-        rowspi_ = Dimension(nirrep_);
-        colspi_ = Dimension(nirrep_);
-        for (int i = 0; i < nirrep_; ++i) {
-            rowspi_[i] = rows[0];
-            colspi_[i] = cols[i];
-        }
-    } else {
-        nirrep_ = rows.n();
-        rowspi_ = Dimension(nirrep_);
-        colspi_ = Dimension(nirrep_);
-        for (int i = 0; i < nirrep_; ++i) {
-            rowspi_[i] = rows[i];
-            colspi_[i] = cols[i];
-        }
-    }
-
-    alloc();
-}
+Matrix::Matrix(const Dimension &rows, const Dimension &cols, int symmetry)
+    : Matrix("", rows, cols, symmetry) {}
 
 Matrix::Matrix(const std::string &name, const Dimension& rows, const int cols, int symmetry)
-    : nirrep_(rows.n()), rowspi_(rows), colspi_(Dimension(std::vector<int>(nirrep_, cols))), name_(name) {
-    matrix_ = nullptr;
-    symmetry_ = symmetry;
+    : nirrep_(rows.n()), rowspi_(rows), colspi_(Dimension(std::vector<int>(nirrep_, cols))),
+      name_(name), matrix_(nullptr), symmetry_(symmetry) {
     alloc();
 }
 
 Matrix::Matrix(const std::string &name, const int rows, const Dimension& cols, int symmetry)
-    : nirrep_(cols.n()), rowspi_(Dimension(std::vector<int>(nirrep_, rows))), colspi_(cols), name_(name) {
-    matrix_ = nullptr;
-    symmetry_ = symmetry;
+    : nirrep_(cols.n()), rowspi_(Dimension(std::vector<int>(nirrep_, rows))), colspi_(cols),
+    name_(name), matrix_(nullptr), symmetry_(symmetry) {
     alloc();
 }
 

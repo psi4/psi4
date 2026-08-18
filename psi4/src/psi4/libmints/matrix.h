@@ -137,9 +137,9 @@ void free(double** Block);
 class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
    protected:
     /// Matrix data
-    double*** matrix_;
+    double*** matrix_ = nullptr;
     /// Number of irreps
-    int nirrep_;
+    int nirrep_ = 0;
     /// Rows per irrep array. Element "h" is associated with matrix block h.
     Dimension rowspi_;
     /// Columns per irrep array. Element "h" is associated with matrix block h ^ symmetry_.
@@ -147,7 +147,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// Name of the matrix
     std::string name_;
     /// Symmetry of this matrix (in most cases this will be 0 [totally symmetric])
-    int symmetry_;
+    int symmetry_ = 0;
 
     /// Allocates matrix_
     void alloc();
@@ -164,7 +164,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
 
    public:
     /// Default constructor, zeros everything out
-    Matrix();
+    Matrix() = default;
     /**
      * Constructor, zeros everything out, sets name_
      *
