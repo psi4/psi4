@@ -56,6 +56,10 @@
 #include "psi4/libmints/siminteri.h"
 #endif
 
+#ifdef USING_libcint
+#include "psi4/libmints/libcinteri.h"
+#endif
+
 using namespace psi;
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
@@ -216,18 +220,28 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
 #ifdef USING_simint
     if (deriv == 0 && integral_package == "SIMINT") return  std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
 #endif
+#ifdef USING_libcint
+    if (deriv == 0 && integral_package == "LIBCINT") return std::make_unique<LibcintERI>(this, deriv, use_shell_pairs, needs_exchange);
+#endif
     if (integral_package == "LIBINT2") return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
     if (deriv > 0 && integral_package != "LIBINT2")
         outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT")
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with `-D ENABLE_simint=ON`.\nFalling back to Libint");
+    if (integral_package == "LIBCINT")
+        outfile->Printf("Chosen integral package " + integral_package +
+                        " unavailable.\nRecompile with `-D ENABLE_libcint=ON`.\nFalling back to Libint");
     throw PSIEXCEPTION("No ERI object to return.");
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+#ifdef USING_libcint
+    if (deriv == 0 && integral_package == "LIBCINT")
+        return std::make_unique<LibcintErfERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+#endif
     if (integral_package == "LIBINT2")
         return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
     throw PSIEXCEPTION("No ERI object to return.");
@@ -236,6 +250,10 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+#ifdef USING_libcint
+    if (deriv == 0 && integral_package == "LIBCINT")
+        return std::make_unique<LibcintErfComplementERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+#endif
     if (integral_package == "LIBINT2")
         return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
     throw PSIEXCEPTION("No ERI object to return.");
