@@ -2717,8 +2717,7 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     }
 
     // Create temporary matrix of proper size.
-    std::vector<int> rowspi = {a->nrow()};
-    Matrix temp(rowspi, transformer->colspi());
+    Matrix temp(nirrep(), a->nrow(), transformer->colspi());
 
     char ta = 'n';
     char tb = 'n';
