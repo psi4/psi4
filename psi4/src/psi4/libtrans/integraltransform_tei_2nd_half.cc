@@ -61,10 +61,10 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
     SharedMatrix c4a = aMOCoefficients_[s4->label()];
     SharedMatrix c4b = bMOCoefficients_[s4->label()];
     // And the number of orbitals per irrep
-    int *aOrbsPI3 = aOrbsPI_[s3->label()];
-    int *bOrbsPI3 = bOrbsPI_[s3->label()];
-    int *aOrbsPI4 = aOrbsPI_[s4->label()];
-    int *bOrbsPI4 = bOrbsPI_[s4->label()];
+    const auto& aOrbsPI3 = aOrbsPI_[s3->label()];
+    const auto& bOrbsPI3 = bOrbsPI_[s3->label()];
+    const auto& aOrbsPI4 = aOrbsPI_[s4->label()];
+    const auto& bOrbsPI4 = bOrbsPI_[s4->label()];
     // The reindexing arrays
     int *aIndex1 = aIndices_[s1->label()];
     int *bIndex1 = bIndices_[s1->label()];
