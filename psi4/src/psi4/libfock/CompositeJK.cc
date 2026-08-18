@@ -318,6 +318,9 @@ void CompositeJK::compute_JK() {
 
     // => Perform matrix calculations <= //
 
+    size_t computed_triplets = 0L;
+    size_t computed_quartets = 0L;
+
     // Coulomb Matrix
     if (do_J_) {
         timer_on("CompositeJK: " + j_algo_->name());
@@ -329,7 +332,11 @@ void CompositeJK::compute_JK() {
         }
 
         if (get_bench()) {
-            computed_shells_per_iter_["Triplets"].push_back(j_algo_->num_computed_shells());
+            if (j_algo_->name() == "DirectCFMM") {
+                computed_quartets += j_algo_->num_computed_shells();
+            } else {
+                computed_triplets += j_algo_->num_computed_shells();
+            }
         }
  
         timer_off("CompositeJK: " + j_algo_->name());
@@ -347,7 +354,7 @@ void CompositeJK::compute_JK() {
         k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
 
         if (get_bench()) {
-            computed_shells_per_iter_["Quartets"].push_back(k_algo_->num_computed_shells());
+            computed_quartets += k_algo_->num_computed_shells();
         }
 
         if (k_algo_->name() == "COSX") {
@@ -356,6 +363,13 @@ void CompositeJK::compute_JK() {
         }
 
         timer_off("CompositeJK: " + k_algo_->name());
+    }
+
+    if (get_bench()) {
+        if (computed_shells_per_iter_.count("Triplets")) {
+            computed_shells_per_iter_["Triplets"].push_back(computed_triplets);
+        }
+        computed_shells_per_iter_["Quartets"].push_back(computed_quartets);
     }
 
     // => Finalize Incremental Fock if required <= //
