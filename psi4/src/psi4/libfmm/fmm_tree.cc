@@ -957,8 +957,8 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                     const double* pqrs2 = pqrs;
 
                     if (!touched) {
-                        ::memset((void*)(&JTp[0L * max_alloc]), '\0', max_alloc * sizeof(double));
-                        ::memset((void*)(&JTp[1L * max_alloc]), '\0', max_alloc * sizeof(double));
+                        std::memset(static_cast<void*>(&JTp[0L * max_alloc]), 0, max_alloc * sizeof(double));
+                        std::memset(static_cast<void*>(&JTp[1L * max_alloc]), 0, max_alloc * sizeof(double));
                     }
 
                     // Contraction into box shell pairs to improve parallel performance
