@@ -39,6 +39,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libfmm/multipoles_helper.h"
 
+#include <cstddef>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -261,6 +262,8 @@ class PSI_API CFMMTree {
       bool density_screening_;
       // ERI Screening Tolerance
       double ints_tolerance_;
+      // Number of exact near-field shell quartets or triplets evaluated by the most recent build.
+      size_t num_computed_shells_ = 0L;
 
       // => Functions called ONLY once <= //
 
@@ -325,6 +328,8 @@ class PSI_API CFMMTree {
       int nlevels() { return nlevels_; }
       // Returns the max multipole AM
       int lmax() { return lmax_; }
+      // Returns the number of exact near-field shell quartets or triplets evaluated by the most recent build.
+      size_t num_computed_shells() const { return num_computed_shells_; }
       // Flip the contraction type (for DF integrals)
       void df_set_contraction(ContractionType contraction_type);
       // Print the CFMM Tree out

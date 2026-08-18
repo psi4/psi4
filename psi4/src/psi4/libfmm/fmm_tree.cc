@@ -1034,6 +1034,8 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         } // end nf_box
     } // end primary shell-pair tasks
 
+    num_computed_shells_ = computed_shells;
+
     if (bench_) {
         auto mode = std::ostream::app;
         auto printer = PsiOutStream("bench.dat", mode);
@@ -1099,7 +1101,9 @@ void CFMMTree::build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints
         }
     }
 
-#pragma omp parallel for num_threads(nthread_) schedule(guided)
+    size_t computed_shells = 0L;
+
+#pragma omp parallel for num_threads(nthread_) schedule(guided) reduction(+ : computed_shells)
     for (int task = 0; task < auxiliary_shellpair_tasks_.size(); task++) {
 
         int P = auxiliary_shellpair_tasks_[task].first;
@@ -1124,6 +1128,7 @@ void CFMMTree::build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints
                 double screen_val = density_shell_pair_maxp[U][V] * density_shell_pair_maxp[U][V] *
                                     metric_shell_diagonal_max[P] * ints[thread]->shell_pair_value(U, V);
                 if (screen_val < ints_tolerance_ * ints_tolerance_) continue;
+                computed_shells++;
 
                 int u_start = primary_->shell(U).start();
                 int num_u = primary_->shell(U).nfunction();
@@ -1158,6 +1163,8 @@ void CFMMTree::build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints
             } // UV shells
         } // NF Boxes
     } // task
+
+    num_computed_shells_ = computed_shells;
 
     timer_off("DF CFMM: Near Field Gamma P");
 }
@@ -1212,7 +1219,9 @@ void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
         }
     }
 
-#pragma omp parallel for schedule(guided)
+    size_t computed_shells = 0L;
+
+#pragma omp parallel for schedule(guided) reduction(+ : computed_shells)
     for (int task = 0; task < primary_shellpair_tasks_.size(); task++) {
 
         int U = primary_shellpair_tasks_[task].first;
@@ -1245,6 +1254,7 @@ void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
                 double screen_val = auxiliary_shell_max[Q] * auxiliary_shell_max[Q] *
                                     metric_shell_diagonal_max[Q] * ints[thread]->shell_pair_value(U, V);
                 if (screen_val < ints_tolerance_ * ints_tolerance_) continue;
+                computed_shells++;
 
                 int q_start = auxiliary_->shell(Q).start();
                 int num_q = auxiliary_->shell(Q).nfunction();
@@ -1281,6 +1291,8 @@ void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
             JT[thread][i]->zero();
         }
     } // end task
+
+    num_computed_shells_ = computed_shells;
 
     timer_off("DF CFMM: Near Field J");
 }
@@ -1345,6 +1357,8 @@ void CFMMTree::build_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
                         const std::vector<double>& metric_shell_diagonal_max) {
 
     timer_on("CFMMTree: J");
+
+    num_computed_shells_ = 0L;
 
     // J is additive here. CompositeJK controls whether a full build begins
     // from zero or an incremental build retains the accumulated matrix. The

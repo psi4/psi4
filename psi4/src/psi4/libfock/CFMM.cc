@@ -15,6 +15,7 @@ void DirectCFMM::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std:
     timer_on("CFMM: J");
 
     cfmmtree_->build_J(eri_computers, D, J);
+    num_computed_shells_ = cfmmtree_->num_computed_shells();
 
     timer_off("CFMM: J");
 }
@@ -30,8 +31,7 @@ void DirectCFMM::print_header() const {
 }
 
 size_t DirectCFMM::num_computed_shells() {
-    // TODO: Implement this
-    return 0;
+    return num_computed_shells_;
 }
 
 DFCFMM::DFCFMM(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, 
@@ -68,6 +68,7 @@ void DFCFMM::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     // Build gammaP = (P|uv)Duv
     df_cfmm_tree_->df_set_contraction(ContractionType::DF_AUX_PRI);
     df_cfmm_tree_->build_J(eri_computers, D, gamma, J_metric_shell_diag);
+    const size_t computed_triplets_first_contraction = df_cfmm_tree_->num_computed_shells();
 
     // Solve for gammaQ => (P|Q)*gammaQ = gammaP
     for (int i = 0; i < D.size(); i++) {
@@ -80,6 +81,9 @@ void DFCFMM::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     // Build Juv = (uv|Q) * gammaQ
     df_cfmm_tree_->df_set_contraction(ContractionType::DF_PRI_AUX);
     df_cfmm_tree_->build_J(eri_computers, gamma, J, J_metric_shell_diag);
+    const size_t computed_triplets_second_contraction = df_cfmm_tree_->num_computed_shells();
+
+    num_computed_shells_ = computed_triplets_first_contraction + computed_triplets_second_contraction;
 
     timer_off("DFCFMM: J");
 }
@@ -96,8 +100,7 @@ void DFCFMM::print_header() const {
 }
 
 size_t DFCFMM::num_computed_shells() {
-    //TODO implement
-    return 0;
+    return num_computed_shells_;
 }
 
 }
