@@ -185,6 +185,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
+    PSI_DEPRECATED("Matrix construction via int* is being deprecated and will be removed as soon as 1.13.")
     Matrix(int nirrep, const int* rowspi, const int* colspi, int symmetry = 0);
     /**
      * Constructor, sets name_, and sets up the matrix
@@ -194,6 +195,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
+    PSI_DEPRECATED("Matrix construction via int* is being deprecated and will be removed as soon as 1.13.")
     Matrix(const std::string& name, int nirrep, const int* rowspi, const int* colspi, int symmetry = 0);
     /**
      * Constructor, forms non-standard matrix.
@@ -201,6 +203,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param rows Singular value. All blocks have same number of rows.
      * @param colspi Array of length nirreps. Defines blocking scheme for columns.
      */
+    PSI_DEPRECATED("Matrix construction via int* is being deprecated and will be removed as soon as 1.13.")
     Matrix(int nirrep, int rows, const int* colspi);
 
     /**
@@ -209,6 +212,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param rowspi Array of length nirreps. Defines blocking scheme for rows.
      * @param cols Singular value. All blocks have same number of columns.
      */
+    PSI_DEPRECATED("Matrix construction via int* is being deprecated and will be removed as soon as 1.13.")
     Matrix(int nirrep, const int* rowspi, int cols);
 
     /**
@@ -261,6 +265,46 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param symmetry overall symmetry of the data.
      */
     Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
+
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param rows Dimension object providing row information.
+     * @param cols Singular value. All blocks have same number of columns.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const Dimension& rows, const int cols, int symmetry = 0);
+
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param name Name of the matrix.
+     * @param rows Dimension object providing row information.
+     * @param cols Singular value. All blocks have same number of columns.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const std::string& name, const Dimension& rows, const int cols, int symmetry = 0);
+
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param name Name of the matrix.
+     * @param rows Singular value. All blocks have same number of rows.
+     * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const int rows, const Dimension& cols, int symmetry = 0);
+
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param name Name of the matrix.
+     * @param rows Singular value. All blocks have same number of rows.
+     * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const std::string& name, const int rows, const Dimension& cols, int symmetry = 0);
+
 
     /// Destructor, frees memory
     virtual ~Matrix();
