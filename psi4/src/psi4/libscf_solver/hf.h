@@ -324,6 +324,9 @@ class HF : public Wavefunction {
 
     /// Compute energy for the iteration.
     virtual double compute_E();
+    /// Evaluate DFT energy components on the current density for a target functional.
+    virtual std::map<std::string, double> evaluate_fixed_density_dft_energy(
+        std::shared_ptr<SuperFunctional> functional);
 
     /** Applies second-order convergence acceleration */
     virtual int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print);

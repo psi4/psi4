@@ -365,6 +365,86 @@ double RHF::compute_E() {
 
     return Etotal;
 }
+
+std::map<std::string, double> RHF::evaluate_fixed_density_dft_energy(std::shared_ptr<SuperFunctional> functional) {
+    if (!functional) {
+        throw PSIEXCEPTION("RHF::evaluate_fixed_density_dft_energy: Target functional is null.");
+    }
+    if (!jk_) {
+        throw PSIEXCEPTION("RHF::evaluate_fixed_density_dft_energy: JK object is not available.");
+    }
+
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+    const std::vector<SharedMatrix>& wK = jk_->wK();
+
+    // In normal usage these are already present from the converged orbital-stage SCF.
+    if (J.empty() || !J[0]) {
+        std::vector<SharedMatrix>& C = jk_->C_left();
+        C.clear();
+        C.push_back(Ca_subset("SO", "OCC"));
+        jk_->compute();
+    }
+
+    if (J.empty() || !J[0]) {
+        throw PSIEXCEPTION("RHF::evaluate_fixed_density_dft_energy: JK object did not produce J.");
+    }
+    const auto& Jmat = J[0];
+
+    double XC_E = 0.0;
+    double VV10_E = 0.0;
+    if (functional->needs_xc()) {
+        auto potential = VBase::build_V(basisset_, functional, options_, "RV");
+        potential->initialize();
+        potential->set_D({Da_});
+        auto V = Da_->clone();
+        V->zero();
+        potential->compute_V({V});
+        auto quad = potential->quadrature_values();
+        if (quad.count("FUNCTIONAL")) XC_E = quad["FUNCTIONAL"];
+        if (quad.count("VV10")) VV10_E = quad["VV10"];
+        potential->finalize();
+    }
+
+    const double one_electron_E = 2.0 * Da_->vector_dot(H_);
+    const double coulomb_E = 2.0 * Da_->vector_dot(Jmat);
+
+    double exchange_E = 0.0;
+    const double alpha = functional->x_alpha();
+    const double beta = functional->x_beta();
+
+    if (functional->is_x_hybrid()) {
+        if (K.empty() || !K[0]) {
+            throw PSIEXCEPTION("RHF::evaluate_fixed_density_dft_energy: JK object did not produce K for hybrid functional.");
+        }
+        exchange_E -= alpha * Da_->vector_dot(K[0]);
+    }
+    if (functional->is_x_lrc()) {
+        if (wK.empty() || !wK[0]) {
+            throw PSIEXCEPTION("RHF::evaluate_fixed_density_dft_energy: JK object did not produce wK for LRC functional.");
+        }
+        if (jk_->get_do_wK() && jk_->get_wcombine()) {
+            exchange_E -= Da_->vector_dot(wK[0]);
+        } else {
+            exchange_E -= beta * Da_->vector_dot(wK[0]);
+        }
+    }
+
+    const double dashD_E = has_scalar_variable("-D Energy") ? scalar_variable("-D Energy") : 0.0;
+    const double total_E = nuclearrep_ + one_electron_E + coulomb_E + exchange_E + XC_E + VV10_E + dashD_E;
+
+    return {
+        {"Nuclear", nuclearrep_},
+        {"One-Electron", one_electron_E},
+        {"Coulomb", coulomb_E},
+        {"Exchange", exchange_E},
+        {"XC", XC_E},
+        {"VV10", VV10_E},
+        {"-D", dashD_E},
+        {"Total", total_E},
+    };
+}
+
 std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
     // This is a bypass for C1 input
     std::vector<bool> c1_input_;
