@@ -1,3 +1,31 @@
+/*
+ * @BEGIN LICENSE
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2026 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This file is part of Psi4.
+ *
+ * Psi4 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * Psi4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along
+ * with Psi4; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
+ */
+
 #include "psi4/pragma.h"
 
 #include "psi4/libfmm/multipoles_helper.h"
@@ -16,16 +44,12 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include <cassert>
-#include <functional>
-#include <memory>
-#include <tuple>
-#include <vector>
-#include <cmath>
 #include <algorithm>
+#include <cmath>
+#include <memory>
 #include <unordered_map>
 #include <utility>
-#include <sstream>
+#include <vector>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -33,59 +57,65 @@
 
 namespace psi {
 
-double sign(double x) {
-    if (std::abs(x) < 1.0e-8) {
+// The tree traversal and the separation of direct near-field interactions from
+// multipole far-field interactions follow the continuous fast multipole method
+// (CFMM): White et al., Chem. Phys. Lett. 230, 8 (1994),
+// doi:10.1016/0009-2614(94)01128-1, and White et al., Chem. Phys. Lett. 253,
+// 268 (1996), doi:10.1016/0009-2614(96)00175-3.
+
+static double axis_sign(double coordinate) {
+    if (std::abs(coordinate) < 1.0e-8) {
         return 0.0;
-    } else if (x < 0) {
+    } else if (coordinate < 0) {
         return -1.0;
     } else {
         return 1.0;
     }
 }
 
-ShellPair::ShellPair(std::shared_ptr<BasisSet>& bs1, std::shared_ptr<BasisSet>& bs2, std::pair<int, int> pair_index, 
+ShellPair::ShellPair(std::shared_ptr<BasisSet>& bs1, std::shared_ptr<BasisSet>& bs2, std::pair<int, int> pair_index,
                      std::shared_ptr<HarmonicCoefficients>& mpole_coefs, double cfmm_extent_tol) {
     bs1_ = bs1;
     bs2_ = bs2;
     pair_index_ = pair_index;
 
-    const GaussianShell& Pshell = bs1_->shell(pair_index.first);
-    const GaussianShell& Qshell = bs2_->shell(pair_index.second);
+    const GaussianShell& P_shell = bs1_->shell(pair_index.first);
+    const GaussianShell& Q_shell = bs2_->shell(pair_index.second);
 
-    Vector3 pcenter = Pshell.center();
-    Vector3 qcenter = Qshell.center();
+    Vector3 P_center = P_shell.center();
+    Vector3 Q_center = Q_shell.center();
 
     center_ = Vector3(0.0, 0.0, 0.0);
     exp_ = INFINITY;
 
-    int nprim_p = Pshell.nprimitive();
-    int nprim_q = Qshell.nprimitive();
+    int nprim_p = P_shell.nprimitive();
+    int nprim_q = Q_shell.nprimitive();
     for (int pp = 0; pp < nprim_p; pp++) {
-        double pcoef = Pshell.coef(pp);
-        double pexp = Pshell.exp(pp);
+        double P_exponent = P_shell.exp(pp);
         for (int qp = 0; qp < nprim_q; qp++) {
-            double qcoef = Qshell.coef(qp);
-            double qexp = Qshell.exp(qp);
+            double Q_exponent = Q_shell.exp(qp);
 
-            const double pq_exp = std::abs(pexp + qexp);
-            Vector3 pq_center = (pexp * pcenter + qexp * qcenter) / pq_exp;
+            const double product_exponent = std::abs(P_exponent + Q_exponent);
+            Vector3 product_center =
+                (P_exponent * P_center + Q_exponent * Q_center) / product_exponent;
 
-            center_ += pq_center;
-            exp_ = std::min(exp_, pq_exp);
+            center_ += product_center;
+            exp_ = std::min(exp_, product_exponent);
         }
     }
     center_ /= (nprim_p * nprim_q);
+    // The Gaussian-product center is obtained from the Gaussian product
+    // theorem. The radial extent is the radius at which the diffuse envelope
+    // exp(-exp_ * r^2 / 2) reaches cfmm_extent_tol; this extent controls the
+    // CFMM near-/far-field partition described by White et al. (1994).
     extent_ = std::sqrt(-2.0 * std::log(cfmm_extent_tol) / exp_);
 
     mpole_coefs_ = mpole_coefs;
 
 }
 
-void ShellPair::calculate_mpoles(Vector3 box_center, std::shared_ptr<OneBodyAOInt>& s_ints, 
+void ShellPair::calculate_mpoles(Vector3 box_center, std::shared_ptr<OneBodyAOInt>& s_ints,
                                  std::shared_ptr<OneBodyAOInt>& mpole_ints, int lmax) {
-    
-    // number of total multipoles to compute, -1 since the overlap is not computed
-    int nmpoles = (lmax + 1) * (lmax + 2) * (lmax + 3) / 6 - 1;
 
     int P = pair_index_.first;
     int Q = pair_index_.second;
@@ -98,24 +128,30 @@ void ShellPair::calculate_mpoles(Vector3 box_center, std::shared_ptr<OneBodyAOIn
     mpole_ints->compute_shell(P, Q);
     const double* mbuffer = mpole_ints->buffers()[0];
 
-    const GaussianShell& Pshell = bs1_->shell(P);
-    const GaussianShell& Qshell = bs2_->shell(Q);
+    const GaussianShell& P_shell = bs1_->shell(P);
+    const GaussianShell& Q_shell = bs2_->shell(Q);
 
-    int p_start = Pshell.start();
-    int num_p = Pshell.nfunction();
+    int p_start = P_shell.start();
+    int num_p = P_shell.nfunction();
 
-    int q_start = Qshell.start();
-    int num_q = Qshell.nfunction();
+    int q_start = Q_shell.start();
+    int num_q = Q_shell.nfunction();
 
     for (int p = p_start; p < p_start + num_p; p++) {
         int dp = p - p_start;
         for (int q = q_start; q < q_start + num_q; q++) {
             int dq = q - q_start;
 
-            std::shared_ptr<RealSolidHarmonics> pq_mpoles = std::make_shared<RealSolidHarmonics>(lmax, box_center, Regular);
+            auto pair_multipoles = std::make_shared<RealSolidHarmonics>(lmax, box_center, Regular);
 
-            pq_mpoles->add(0, 0, sbuffer[dp * num_q + dq]);
+            pair_multipoles->add(0, 0, sbuffer[dp * num_q + dq]);
 
+            // Convert Cartesian AO multipole integrals to real regular solid
+            // harmonics. The moment definition is Eq. (49) of Reine et al.,
+            // WIREs Comput. Mol. Sci. 2, 290 (2012), doi:10.1002/wcms.78;
+            // normalization and phase conventions follow Helgaker, Jorgensen,
+            // and Olsen, Molecular Electronic-Structure Theory (Wiley, 2000),
+            // doi:10.1002/9781119019572, pp. 412-414.
             int running_index = 0;
             for (int l = 1; l <= lmax; l++) {
                 int l_ncart = ncart(l);
@@ -123,26 +159,29 @@ void ShellPair::calculate_mpoles(Vector3 box_center, std::shared_ptr<OneBodyAOIn
                     int mu = m_addr(m);
                     std::unordered_map<int, double>& mpole_terms = mpole_coefs_->get_terms(l, mu);
 
-                    int powdex = 0;
+                    int cartesian_component = 0;
                     for (int ii = 0; ii <= l; ii++) {
                         int a = l - ii;
                         for (int jj = 0; jj <= ii; jj++) {
                             int b = ii - jj;
                             int c = jj;
-                            int ind = a * l_ncart * l_ncart + b * l_ncart + c;
+                            int cartesian_index = a * l_ncart * l_ncart + b * l_ncart + c;
 
-                            if (mpole_terms.count(ind)) {
-                                double coef = mpole_terms[ind];
-                                int abcindex = powdex + running_index;
-                                pq_mpoles->add(l, mu, pow(-1.0, (double) l+1) * coef * mbuffer[abcindex * num_p * num_q + dp * num_q + dq]);
+                            if (mpole_terms.count(cartesian_index)) {
+                                double coefficient = mpole_terms[cartesian_index];
+                                int integral_index = cartesian_component + running_index;
+                                pair_multipoles->add(
+                                    l, mu,
+                                    pow(-1.0, (double)l + 1) * coefficient *
+                                        mbuffer[integral_index * num_p * num_q + dp * num_q + dq]);
                             }
-                            powdex += 1;
+                            cartesian_component += 1;
                         } // end jj
                     } // end ii
                 } // end m loop
                 running_index += l_ncart;
             } // end l
-            mpoles_.push_back(pq_mpoles);
+            mpoles_.push_back(pair_multipoles);
         } // end q
     } // end p
 
@@ -151,7 +190,7 @@ void ShellPair::calculate_mpoles(Vector3 box_center, std::shared_ptr<OneBodyAOIn
 CFMMBox::CFMMBox(std::shared_ptr<CFMMBox> parent, std::vector<std::shared_ptr<ShellPair>> primary_shell_pairs,
                 std::vector<std::shared_ptr<ShellPair>> auxiliary_shell_pairs, Vector3 origin, double length,
                 int level, int lmax, int ws) {
-                  
+
     parent_ = parent;
     primary_shell_pairs_ = primary_shell_pairs;
     auxiliary_shell_pairs_ = auxiliary_shell_pairs;
@@ -162,11 +201,6 @@ CFMMBox::CFMMBox(std::shared_ptr<CFMMBox> parent, std::vector<std::shared_ptr<Sh
     lmax_ = lmax;
     ws_ = ws;
     ws_max_ = ws;
-
-    nthread_ = 1;
-#ifdef _OPENMP
-    nthread_ = Process::environment.get_n_threads();
-#endif
 
 }
 
@@ -202,7 +236,7 @@ void CFMMBox::make_children() {
         if (child_ws > diffuse_child_max_ws) diffuse_child_max_ws = child_ws;
     }
 
-    // ket_shell_pairs_ will be empty if bra and ket are the same
+    // auxiliary_shell_pairs_ is empty for a direct primary-basis contraction.
     for (std::shared_ptr<ShellPair> shell_pair : auxiliary_shell_pairs_) {
         Vector3 sp_center = shell_pair->get_center();
         double x = sp_center[0];
@@ -253,13 +287,13 @@ void CFMMBox::set_regions() {
                 int ref_ws = (ws_max_ + child->ws_max_) / 2;
 
                 Vector3 Rab = child->center_ - center_;
-                double dx = sign(Rab[0]);
-                double dy = sign(Rab[1]);
-                double dz = sign(Rab[2]);
+                double dx = axis_sign(Rab[0]);
+                double dy = axis_sign(Rab[1]);
+                double dz = axis_sign(Rab[2]);
 
                 Rab = Rab - length_ * Vector3(dx, dy, dz);
                 double rab = std::sqrt(Rab.dot(Rab));
-                
+
                 if (rab <= length_ * ref_ws) {
                     near_field_.push_back(child);
                 } else {
@@ -284,10 +318,11 @@ void CFMMBox::add_parent_far_field_contribution() {
     std::shared_ptr<CFMMBox> parent = parent_.lock();
 
     if (parent) {
-        // Add the parent's far field contribution
+        // Downward pass: translate the parent's irregular local expansion to
+        // the child center, then accumulate it in the child's local expansion.
         for (int N = 0; N < Vff_.size(); N++) {
-            auto parent_cont = parent->Vff_[N]->translate(center_);
-            Vff_[N]->add(parent_cont);
+            auto parent_contribution = parent->Vff_[N]->translate(center_);
+            Vff_[N]->add(parent_contribution);
         }
     }
 }
@@ -313,7 +348,7 @@ void CFMMBox::compute_multipoles(const std::vector<SharedMatrix>& D, Contraction
     std::shared_ptr<BasisSet> bs2 = ref_shell_pairs[0]->bs2();
     int nbf = (is_primary) ? bs1->nbf() : 1;
 
-    // Compute and contract the ket multipoles with the density matrix to get box multipoles
+    // Leaf-level upward pass: contract shell-pair moments with the density.
     for (const auto& sp : ref_shell_pairs) {
 
         std::vector<std::shared_ptr<RealSolidHarmonics>>& sp_mpoles = sp->get_mpoles();
@@ -340,10 +375,10 @@ void CFMMBox::compute_multipoles(const std::vector<SharedMatrix>& D, Contraction
                 for (int q = q_start; q < q_start + num_q; q++) {
                     int dq = q - q_start;
 
-                    std::shared_ptr<RealSolidHarmonics> basis_mpole = sp_mpoles[dp * num_q + dq]->copy();
-                    
-                    basis_mpole->scale(prefactor * Dp[p * nbf + q]);
-                    mpoles_[N]->add(basis_mpole);
+                    std::shared_ptr<RealSolidHarmonics> basis_multipole = sp_mpoles[dp * num_q + dq]->copy();
+
+                    basis_multipole->scale(prefactor * Dp[p * nbf + q]);
+                    mpoles_[N]->add(basis_multipole);
                 } // end q
             } // end p
         } // end N
@@ -353,6 +388,9 @@ void CFMMBox::compute_multipoles(const std::vector<SharedMatrix>& D, Contraction
 void CFMMBox::compute_mpoles_from_children() {
 
     int nmat = 0;
+    // Upward pass: translate each child's regular expansion to the parent
+    // center and accumulate it. This is the multipole-to-multipole step of the
+    // CFMM hierarchy described by White et al. (1994, 1996).
     for (std::shared_ptr<CFMMBox> child : children_) {
         nmat = std::max(nmat, (int)child->mpoles_.size());
     }
@@ -371,13 +409,13 @@ void CFMMBox::compute_mpoles_from_children() {
     for (std::shared_ptr<CFMMBox> child : children_) {
         if (child->nshell_pair() == 0) continue;
         for (int N = 0; N < nmat; N++) {
-            std::shared_ptr<RealSolidHarmonics> child_mpoles = child->mpoles_[N]->translate(center_);
-            mpoles_[N]->add(child_mpoles);
+            std::shared_ptr<RealSolidHarmonics> child_multipoles = child->mpoles_[N]->translate(center_);
+            mpoles_[N]->add(child_multipoles);
         }
     }
 }
 
-CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) 
+CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
                     : primary_(primary), auxiliary_(auxiliary), options_(options) {
 
     if (primary && auxiliary) {
@@ -387,15 +425,15 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
     } else if (auxiliary) {
         contraction_type_ = ContractionType::METRIC;
     } else {
-        throw PSIEXCEPTION("No basis sets inputted into CFMMTree constructor!");
+        throw PSIEXCEPTION("CFMMTree requires a primary and/or auxiliary basis set.");
     }
 
     molecule_ = primary_->molecule();
     nlevels_ = options_.get_int("CFMM_GRAIN");
     if (nlevels_ <= 2) {
-        throw PSIEXCEPTION("Too little boxes! Why do you wanna do CFMM with Direct SCF?");
+        throw PSIEXCEPTION("CFMM_GRAIN must be at least 3.");
     } else if (nlevels_ >= 6) {
-        throw PSIEXCEPTION("Too many boxes! You memory hog.");
+        throw PSIEXCEPTION("CFMM_GRAIN must not exceed 5.");
     }
     lmax_ = options_.get_int("CFMM_ORDER");
 
@@ -407,7 +445,7 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
     print_ = options_.get_int("PRINT");
     bench_ = options_.get_int("BENCH");
 
-    density_screening_ = (options_.get_str("SCREENING") == "DENSITY"); 
+    density_screening_ = (options_.get_str("SCREENING") == "DENSITY");
     ints_tolerance_ = options_.get_double("INTS_TOLERANCE");
 
     int num_boxes = (nlevels_ == 1) ? 1 : (0.5 * std::pow(16, nlevels_) + 7) / 15;
@@ -450,7 +488,7 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
         size_t ket_nshell_pairs = ints_ket_shell_pairs.size();
         primary_shell_pairs_.resize(ket_nshell_pairs);
 
-#pragma omp parallel for 
+#pragma omp parallel for
         for (size_t pair_index = 0; pair_index < ket_nshell_pairs; pair_index++) {
             const auto& pair = ints_ket_shell_pairs[pair_index];
             primary_shell_pairs_[pair_index] = std::make_shared<ShellPair>(primary_, primary_, pair, mpole_coefs_, cfmm_extent_tol);
@@ -475,10 +513,10 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
 
 void CFMMTree::df_set_contraction(ContractionType contraction_type) {
     if (contraction_type_ != ContractionType::DF_PRI_AUX && contraction_type_ != ContractionType::DF_AUX_PRI) {
-        throw PSIEXCEPTION("Cannot reset contraction type on non 3-index DF CFMM Trees");
+        throw PSIEXCEPTION("Cannot reset the contraction type of a non-three-index DF CFMM tree.");
     }
     if (contraction_type == ContractionType::DIRECT || contraction_type == ContractionType::METRIC) {
-        throw PSIEXCEPTION("Cannot reset DF contraction type to Non-DF contraction");
+        throw PSIEXCEPTION("Cannot reset a DF CFMM tree to a non-DF contraction type.");
     }
     contraction_type_ = contraction_type;
 }
@@ -494,7 +532,7 @@ void CFMMTree::sort_leaf_boxes() {
         if (box->nshell_pair() > 0) sorted_leaf_boxes_.push_back(box);
     }
 
-    auto box_compare = [](const std::shared_ptr<CFMMBox> &a, 
+    auto box_compare = [](const std::shared_ptr<CFMMBox> &a,
                                 const std::shared_ptr<CFMMBox> &b) { return a->nshell_pair() > b->nshell_pair(); };
 
     std::sort(sorted_leaf_boxes_.begin(), sorted_leaf_boxes_.end(), box_compare);
@@ -629,6 +667,10 @@ void CFMMTree::setup_shellpair_info() {
 
 bool CFMMTree::shell_significant(int P, int Q, int R, int S, std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
                              const std::vector<SharedMatrix>& D) {
+    // Density screening multiplies the Schwarz shell-quartet bound by the
+    // largest relevant density block. This is the direct-SCF screening strategy
+    // of Haser and Ahlrichs, J. Comput. Chem. 10, 104 (1989),
+    // doi:10.1002/jcc.540100111, expressed through Psi4's integral engine.
     if (density_screening_) {
         double D_PQ = 0.0;
         double D_RS = 0.0;
@@ -681,7 +723,7 @@ void CFMMTree::calculate_shellpair_multipoles(bool is_primary) {
 
     timer_on("CFMMTree: Shell-Pair Multipole Ints");
 
-    // Build the multipole integrals of the bra basis
+    // Build multipole integrals for the selected primary or auxiliary basis.
     std::vector<std::shared_ptr<OneBodyAOInt>> sints;
     std::vector<std::shared_ptr<OneBodyAOInt>> mpints;
 
@@ -724,16 +766,15 @@ void CFMMTree::calculate_shellpair_multipoles(bool is_primary) {
 void CFMMTree::calculate_multipoles(const std::vector<SharedMatrix>& D) {
     timer_on("CFMMTree: Box Multipoles");
 
-    // Compute mpoles for leaf nodes
+    // Build density-contracted regular expansions in the leaf boxes.
 #pragma omp parallel
     {
 #pragma omp for
         for (int bi = 0; bi < sorted_leaf_boxes_.size(); bi++) {
-            auto& box = sorted_leaf_boxes_[bi];
             sorted_leaf_boxes_[bi]->compute_multipoles(D, contraction_type_);
         }
 
-        // Calculate mpoles for higher level boxes
+        // Upward pass: aggregate leaf moments into successively coarser boxes.
         for (int level = nlevels_ - 2; level >= 0; level -= 1) {
             int start, end;
             if (level == 0) {
@@ -746,7 +787,6 @@ void CFMMTree::calculate_multipoles(const std::vector<SharedMatrix>& D) {
 
 #pragma omp for
             for (int bi = start; bi < end; bi++) {
-                auto& box = tree_[bi];
                 if (tree_[bi]->nshell_pair() == 0) continue;
                 tree_[bi]->compute_mpoles_from_children();
             }
@@ -762,6 +802,9 @@ void CFMMTree::compute_far_field() {
 
 #pragma omp parallel
     {
+        // Interaction pass: convert the regular multipoles of each local
+        // far-field source box into an irregular local expansion at the target.
+        // Downward pass: propagate the parent local expansion to its children.
         for (int level = 0; level < nlevels_; level++) {
             const auto& all_box_pairs = lff_task_pairs_per_level_[level];
 #pragma omp for
@@ -792,29 +835,34 @@ void CFMMTree::compute_far_field() {
 
 }
 
-void CFMMTree::build_nf_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+void CFMMTree::build_nf_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
                           const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J,
-			  const std::vector<double>& Jmet_max) {
+                          const std::vector<double>& metric_shell_diagonal_max) {
     if (contraction_type_ == ContractionType::DIRECT) build_nf_direct_J(ints, D, J);
-    else if (contraction_type_ == ContractionType::DF_AUX_PRI) build_nf_gamma_P(ints, D, J, Jmet_max);
-    else if (contraction_type_ == ContractionType::DF_PRI_AUX) build_nf_df_J(ints, D, J, Jmet_max);
+    else if (contraction_type_ == ContractionType::DF_AUX_PRI)
+        build_nf_gamma_P(ints, D, J, metric_shell_diagonal_max);
+    else if (contraction_type_ == ContractionType::DF_PRI_AUX)
+        build_nf_df_J(ints, D, J, metric_shell_diagonal_max);
     else if (contraction_type_ == ContractionType::METRIC) build_nf_metric(ints, D, J);
 }
 
-void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
                           const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) {
 
     timer_on("CFMMTree: Near Field Direct J");
 
-    int nshell = primary_->nshell();
-    int natom = molecule_->natom();
+    // Explicitly evaluate the near-field part of
+    //     J_pq = sum_rs (pq|rs) D_rs.
+    // The complementary, well-separated part is supplied by the CFMM
+    // multipole expansion; see White et al. (1994, 1996).
 
+    int nshell = primary_->nshell();
     // Maximum space (r_nbf * s_nbf) to allocate per task
     size_t max_alloc = 0;
 
     // A map of the function (num_r * num_s) offsets per shell-pair in a box pair
     std::unordered_map<int, int> offsets;
-    
+
     int start = (nlevels_ == 1) ? 0 : (0.5 * std::pow(16, nlevels_-1) + 7) / 15;
     int end = (nlevels_ == 1) ? 1 : (0.5 * std::pow(16, nlevels_) + 7) / 15;
 
@@ -833,7 +881,7 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         max_alloc = std::max((size_t) RSoff, max_alloc);
     }
 
-    // Make intermediate buffers (for threading purposes and take advantage of 8-fold perm sym)
+    // Thread-local accumulation buffers exploit eightfold ERI permutational symmetry.
     std::vector<std::vector<std::vector<double>>> JT;
     for (int thread = 0; thread < nthread_; thread++) {
         std::vector<std::vector<double>> J2;
@@ -844,7 +892,7 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         JT.push_back(J2);
     }
 
-    // Benchmark Number of Computed Shells
+    // Number of computed shell quartets for optional benchmark reporting.
     size_t computed_shells = 0L;
 
 #pragma omp parallel for schedule(guided) reduction(+ : computed_shells)
@@ -865,7 +913,7 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
-        
+
         for (const auto& nf_box : primary_shellpair_to_nf_boxes_[task]) {
             auto& RSshells = nf_box->get_primary_shell_pairs();
 
@@ -874,10 +922,10 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                 auto RS = RSsh->get_shell_pair_index();
                 int R = RS.first;
                 int S = RS.second;
-                    
+
                 if (R * nshell + S > P * nshell + Q) continue;
                 if (!shell_significant(P, Q, R, S, ints, D)) continue;
-                
+
                 if (ints[thread]->compute_shell(P, Q, R, S) == 0) continue;
                 computed_shells++;
 
@@ -900,11 +948,10 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                 const double* pqrs = ints[thread]->buffer();
 
                 for (int N = 0; N < D.size(); N++) {
-                    double** Jp = J[N]->pointer();
                     double** Dp = D[N]->pointer();
                     double* JTp = JT[thread][N].data();
                     const double* pqrs2 = pqrs;
-                        
+
                     if (!touched) {
                         ::memset((void*)(&JTp[0L * max_alloc]), '\0', max_alloc * sizeof(double));
                         ::memset((void*)(&JTp[1L * max_alloc]), '\0', max_alloc * sizeof(double));
@@ -938,10 +985,9 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
             } // end RSshells
             if (!touched) continue;
 
-            // = > Stripeout < = //
+            // Accumulate the thread-local shell blocks into J.
             for (int N = 0; N < D.size(); N++) {
                 double** Jp = J[N]->pointer();
-                double** Dp = D[N]->pointer();
                 double* JTp = JT[thread][N].data();
 
                 double* J1p = &JTp[0L * max_alloc];
@@ -951,29 +997,29 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                     int dp = p - p_start;
                     for (int q = q_start; q < q_start + num_q; q++) {
                         int dq = q - q_start;
-                            
+
                         int pq = dp * num_q + dq;
 #pragma omp atomic
                         Jp[p][q] += J1p[pq];
                     }
                 }
-            
+
                 for (const auto& RSsh : RSshells) {
                     std::pair<int, int> RS = RSsh->get_shell_pair_index();
                     int R = RS.first;
                     int S = RS.second;
 
                     int RSoff = offsets[R * nshell + S];
-                
+
                     const GaussianShell& Rshell = primary_->shell(R);
                     const GaussianShell& Sshell = primary_->shell(S);
-                
+
                     int r_start = Rshell.start();
                     int num_r = Rshell.nfunction();
 
                     int s_start = Sshell.start();
                     int num_s = Sshell.nfunction();
-                
+
                     for (int r = r_start; r < r_start + num_r; r++) {
                         int dr = r - r_start;
                         for (int s = s_start; s < s_start + num_s; s++) {
@@ -985,9 +1031,8 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                     }
                 }
             }
-            // => End Stripeout <= //
         } // end nf_box
-    } // end atom_tasks
+    } // end primary shell-pair tasks
 
     if (bench_) {
         auto mode = std::ostream::app;
@@ -995,7 +1040,7 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         double computed_fraction = ((double) computed_shells) / possible_shells;
-        printer.Printf("CFMM Near Field: Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", 
+        printer.Printf("CFMM Near Field: Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n",
                         computed_shells, possible_shells, computed_fraction);
     }
 
@@ -1003,43 +1048,51 @@ void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 }
 
 void CFMMTree::build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
-                      const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J,
-		      const std::vector<double>& Jmet_max) {
+                                const std::vector<SharedMatrix>& densities,
+                                std::vector<SharedMatrix>& gamma_p,
+                                const std::vector<double>& metric_shell_diagonal_max) {
     timer_on("DF CFMM: Near Field Gamma P");
 
-    // => Zeroing needs to be done here... since J = Gamma_{P} in this context
-    for (int ind = 0; ind < D.size(); ind++) {
-        J[ind]->zero();
+    // First density-fitting contraction:
+    //     gamma_P = sum_uv (P|uv) D_uv.
+    // Together with build_nf_df_J, this implements the two three-index
+    // contractions used by DF-CFMM; see Sodt, Subotnik, and Head-Gordon,
+    // J. Chem. Phys. 125, 194109 (2006), doi:10.1063/1.2370949, and Lazarski,
+    // Burow, and Sierka, J. Chem. Theory Comput. 11, 3029 (2015),
+    // doi:10.1021/acs.jctc.5b00252.
+    // gamma_P is a scratch intermediate, so it must be reset for every build.
+    for (size_t ind = 0; ind < densities.size(); ind++) {
+        gamma_p[ind]->zero();
     }
 
-    // => Sizing <= //
     int pri_nshell = primary_->nshell();
-    int aux_nshell = auxiliary_->nshell();
-    int nmat = D.size();
 
-    // check that Jmet_max is not empty is density screening is enabled
-    if (density_screening_ && Jmet_max.empty()) {
-        throw PSIEXCEPTION("CFMMTree::build_nf_gamma_P was called with density screening enabled, but Jmet is NULL. Check your arguments to build_J.");
+    // The density-weighted screening bound also requires the maximum diagonal
+    // metric value for each auxiliary shell.
+    if (density_screening_ && metric_shell_diagonal_max.empty()) {
+        throw PSIEXCEPTION(
+            "CFMMTree::build_nf_gamma_P requires metric-shell bounds when density screening is enabled.");
     }
 
-    // maximum values of Density matrix for primary shell pair block UV
+    // Maximum density magnitude in each primary shell-pair block UV.
     // TODO: Integrate this more smoothly into current density screening framework
-    Matrix D_max(pri_nshell, pri_nshell);
-    auto D_maxp = D_max.pointer();
+    Matrix density_shell_pair_max(pri_nshell, pri_nshell);
+    auto density_shell_pair_maxp = density_shell_pair_max.pointer();
 
-    for(size_t U = 0; U < pri_nshell; U++) {
+    for (size_t U = 0; U < pri_nshell; U++) {
         int u_start = primary_->shell(U).start();
         int num_u = primary_->shell(U).nfunction();
 
-        for(size_t V = 0; V < pri_nshell; V++) {
-	    int v_start = primary_->shell(V).start();
+        for (size_t V = 0; V < pri_nshell; V++) {
+            int v_start = primary_->shell(V).start();
             int num_v = primary_->shell(V).nfunction();
 
-            for(size_t i = 0; i < D.size(); i++) {
-                auto Dp = D[i]->pointer();
-                for(size_t u = u_start; u < u_start + num_u; u++) {
-                    for(size_t v = v_start; v < v_start + num_v; v++) {
-                        D_maxp[U][V] = std::max(D_maxp[U][V], std::abs(Dp[u][v]));
+            for (size_t i = 0; i < densities.size(); i++) {
+                auto Dp = densities[i]->pointer();
+                for (size_t u = u_start; u < u_start + num_u; u++) {
+                    for (size_t v = v_start; v < v_start + num_v; v++) {
+                        density_shell_pair_maxp[U][V] =
+                            std::max(density_shell_pair_maxp[U][V], std::abs(Dp[u][v]));
                     }
                 }
             }
@@ -1068,9 +1121,10 @@ void CFMMTree::build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints
                 int U = UV.first;
                 int V = UV.second;
 
-                double screen_val = D_maxp[U][V] * D_maxp[U][V] * Jmet_max[P] * ints[thread]->shell_pair_value(U,V);
-                if (screen_val < ints_tolerance_*ints_tolerance_) continue; 
-	
+                double screen_val = density_shell_pair_maxp[U][V] * density_shell_pair_maxp[U][V] *
+                                    metric_shell_diagonal_max[P] * ints[thread]->shell_pair_value(U, V);
+                if (screen_val < ints_tolerance_ * ints_tolerance_) continue;
+
                 int u_start = primary_->shell(U).start();
                 int num_u = primary_->shell(U).nfunction();
 
@@ -1083,35 +1137,22 @@ void CFMMTree::build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints
                 double prefactor = 2.0;
                 if (U == V) prefactor *= 0.5;
 
-                for (int i = 0; i < D.size(); i++) {
-                    double** Dp = D[i]->pointer();
-                    double *Puv = const_cast<double *>(buffer);
-                    double *gamp = J[i]->pointer()[0];
+                for (int i = 0; i < densities.size(); i++) {
+                    double** Dp = densities[i]->pointer();
+                    double* three_index_integrals = const_cast<double*>(buffer);
+                    double* gamma_data = gamma_p[i]->pointer()[0];
 
-                    /*
-                    for (int p = p_start; p < p_start + num_p; p++) {
-                        int dp = p - p_start;
-                        for (int u = u_start; u < u_start + num_u; u++) {
-                            int du = u - u_start;
-                            for (int v = v_start; v < v_start + num_v; v++) {
-                                int dv = v - v_start;
-                                gamp[p] += prefactor * (*Puv) * Dp[u][v];
-                                Puv++;
-                            }
-                        }
-                    }
-                    */
-
-                    std::vector<double> Dbuff(num_u * num_v, 0.0);
-                    double* Dbp = Dbuff.data();
+                    std::vector<double> density_block(num_u * num_v, 0.0);
+                    double* density_block_data = density_block.data();
 
                     for (int u = u_start; u < u_start + num_u; u++) {
                         for (int v = v_start; v < v_start + num_v; v++) {
-                            *(Dbp) = Dp[u][v];
-                            Dbp++;
+                            *density_block_data = Dp[u][v];
+                            density_block_data++;
                         }
                     }
-                    C_DGEMV('N', num_p, num_u * num_v, prefactor, Puv, num_u * num_v, Dbuff.data(), 1, 1.0, &(gamp[p_start]), 1);
+                    C_DGEMV('N', num_p, num_u * num_v, prefactor, three_index_integrals, num_u * num_v,
+                            density_block.data(), 1, 1.0, &(gamma_data[p_start]), 1);
 
                 } // end i
             } // UV shells
@@ -1120,25 +1161,28 @@ void CFMMTree::build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints
 
     timer_off("DF CFMM: Near Field Gamma P");
 }
-      
+
 void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
-                      const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J,
-		      const std::vector<double>& Jmet_max) {
+                             const std::vector<SharedMatrix>& auxiliary_coefficients,
+                             std::vector<SharedMatrix>& J,
+                             const std::vector<double>& metric_shell_diagonal_max) {
     timer_on("DF CFMM: Near Field J");
 
-    // => Sizing <= //
+    // Second density-fitting contraction:
+    //     J_uv = sum_Q (uv|Q) gamma_Q.
+    // The near-field integral contraction here is completed by the far-field
+    // multipole contribution in build_ff_J.
 
     int pri_nshell = primary_->nshell();
     int aux_nshell = auxiliary_->nshell();
-    int nbf = primary_->nbf();
-    int nmat = D.size();
+    int nmat = auxiliary_coefficients.size();
 
     int max_nbf_per_shell = 0;
     for (int P = 0; P < pri_nshell; P++) {
         max_nbf_per_shell = std::max(max_nbf_per_shell, primary_->shell(P).nfunction());
     }
 
-    // => J buffers (to satisfy DGEMM)
+    // Thread-local J buffers used by the BLAS contraction.
     std::vector<std::vector<SharedMatrix>> JT;
 
     for (int thread = 0; thread < nthread_; thread++) {
@@ -1150,19 +1194,20 @@ void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
         JT.push_back(J2);
     }
 
-    // check that Jmet_max is not empty is density screening is enabled
-    if (density_screening_ && Jmet_max.empty()) {
-        throw PSIEXCEPTION("CFMMTree::build_nf_gamma_P was called with density screening enabled, but Jmet is NULL. Check your arguments to build_J.");
+    if (density_screening_ && metric_shell_diagonal_max.empty()) {
+        throw PSIEXCEPTION(
+            "CFMMTree::build_nf_df_J requires metric-shell bounds when density screening is enabled.");
     }
 
-    // set up D_max for screening purposes
-    std::vector<double> D_max(aux_nshell, 0.0);
-    for(size_t i = 0; i < D.size(); i++) {
+    // Maximum auxiliary-coefficient magnitude in each auxiliary shell.
+    std::vector<double> auxiliary_shell_max(aux_nshell, 0.0);
+    for (size_t i = 0; i < auxiliary_coefficients.size(); i++) {
         for (int P = 0; P < aux_nshell; P++) {
             int p_start = auxiliary_->shell(P).start();
             int num_p = auxiliary_->shell(P).nfunction();
             for (int p = p_start; p < p_start + num_p; p++) {
-                D_max[P] = std::max(D_max[P], std::abs(D[i]->get(p,0)));
+                auxiliary_shell_max[P] =
+                    std::max(auxiliary_shell_max[P], std::abs(auxiliary_coefficients[i]->get(p, 0)));
             }
         }
     }
@@ -1197,9 +1242,10 @@ void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
 
                 int Q = Qsh->get_shell_pair_index().first;
 
-		double screen_val = D_max[Q] * D_max[Q] * Jmet_max[Q] * ints[thread]->shell_pair_value(U,V);
-                if (screen_val < ints_tolerance_*ints_tolerance_) continue; 
-	
+                double screen_val = auxiliary_shell_max[Q] * auxiliary_shell_max[Q] *
+                                    metric_shell_diagonal_max[Q] * ints[thread]->shell_pair_value(U, V);
+                if (screen_val < ints_tolerance_ * ints_tolerance_) continue;
+
                 int q_start = auxiliary_->shell(Q).start();
                 int num_q = auxiliary_->shell(Q).nfunction();
 
@@ -1207,34 +1253,21 @@ void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
 
                 const double* buffer = ints[thread]->buffer();
 
-                for (int i = 0; i < D.size(); i++) {
-                    double* JTp = JT[thread][i]->pointer()[0];
-                    double* Dp = D[i]->pointer()[0];
-                    double* Quv = const_cast<double *>(buffer);
+                for (int i = 0; i < auxiliary_coefficients.size(); i++) {
+                    double* j_buffer = JT[thread][i]->pointer()[0];
+                    double* auxiliary_data = auxiliary_coefficients[i]->pointer()[0];
+                    double* three_index_integrals = const_cast<double*>(buffer);
 
-                    /*
-                    for (int q = q_start; q < q_start + num_q; q++) {
-                        int dq = q - q_start;
-                        for (int u = u_start; u < u_start + num_u; u++) {
-                            int du = u - u_start;
-                            for (int v = v_start; v < v_start + num_v; v++) {
-                                int dv = v - v_start;
-                                JTp[du * num_v + dv] += prefactor * (*Quv) * Dp[q];
-                                Quv++;
-                            }
-                        }
-                    }
-                    */
-
-                    C_DGEMV('T', num_q, num_u * num_v, prefactor, Quv, num_u * num_v, &(Dp[q_start]), 1, 1.0, JTp, 1);
+                    C_DGEMV('T', num_q, num_u * num_v, prefactor, three_index_integrals, num_u * num_v,
+                            &(auxiliary_data[q_start]), 1, 1.0, j_buffer, 1);
 
                 } // end i
             } // end Qsh
         } // end nf box
 
-        // => Stripeout >= //
+        // Accumulate the thread-local buffer into the output matrix.
 
-        for (int i = 0; i < D.size(); i++) {
+        for (int i = 0; i < auxiliary_coefficients.size(); i++) {
             double* JTp = JT[thread][i]->pointer()[0];
             double** Jp = J[i]->pointer();
             for (int u = u_start; u < u_start + num_u; u++) {
@@ -1254,7 +1287,7 @@ void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
 
 void CFMMTree::build_nf_metric(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
                       const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) {
-    throw PSIEXCEPTION("Not implemented. Leave me alone. I'm tired. -Andy Jiang");
+    throw PSIEXCEPTION("The CFMM auxiliary-metric contraction is not implemented.");
 }
 
 void CFMMTree::build_ff_J(std::vector<SharedMatrix>& J) {
@@ -1307,18 +1340,15 @@ void CFMMTree::build_ff_J(std::vector<SharedMatrix>& J) {
     timer_off("CFMMTree: Far Field J");
 }
 
-void CFMMTree::build_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+void CFMMTree::build_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
                         const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J,
-			const std::vector<double>& Jmet_max) {
+                        const std::vector<double>& metric_shell_diagonal_max) {
 
     timer_on("CFMMTree: J");
 
-    // Zero the J matrix
-    /*
-    for (int ind = 0; ind < D.size(); ind++) {
-        J[ind]->zero();
-    }
-    */
+    // J is additive here. CompositeJK controls whether a full build begins
+    // from zero or an incremental build retains the accumulated matrix. The
+    // gamma_P scratch intermediate is reset locally in build_nf_gamma_P.
 
     // Update the densities
     if (density_screening_ && contraction_type_ == ContractionType::DIRECT) {
@@ -1332,10 +1362,10 @@ void CFMMTree::build_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
     compute_far_field();
 
     // Compute near field J and far field J
-    build_nf_J(ints, D, J, Jmet_max);
+    build_nf_J(ints, D, J, metric_shell_diagonal_max);
     build_ff_J(J);
 
-    // Hermitivitize J matrix afterwards
+    // Hermitize the square primary-basis result after accumulation.
     if (contraction_type_ == ContractionType::DIRECT || (contraction_type_ == ContractionType::DF_PRI_AUX)) {
         for (int ind = 0; ind < D.size(); ind++) {
             J[ind]->hermitivitize();
@@ -1348,8 +1378,8 @@ void CFMMTree::build_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
 void CFMMTree::print_out() {
     for (int bi = 0; bi < tree_.size(); bi++) {
         std::shared_ptr<CFMMBox> box = tree_[bi];
-        auto sp = box->get_primary_shell_pairs();
-        int nshells = sp.size();
+        const auto& shell_pairs = box->get_primary_shell_pairs();
+        int nshells = shell_pairs.size();
         int level = box->get_level();
         int ws = box->get_ws();
         if (nshells > 0) {
@@ -1358,4 +1388,4 @@ void CFMMTree::print_out() {
     }
 }
 
-} // end namespace psi
+}  // namespace psi

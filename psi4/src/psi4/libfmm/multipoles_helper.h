@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef libfmm_mpoles_helper_H
-#define libfmm_mpoles_helper_H
+#ifndef PSI4_LIBFMM_MULTIPOLES_HELPER_H
+#define PSI4_LIBFMM_MULTIPOLES_HELPER_H
 
 #include "psi4/pragma.h"
 
@@ -35,61 +35,55 @@
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/matrix.h"
 
-#include <functional>
-#include <memory>
-#include <tuple>
-#include <vector>
-#include <unordered_map>
+#include <algorithm>
 #include <cmath>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 
 namespace psi {
 
-enum SolidHarmonicsType {Regular, Irregular};
+enum SolidHarmonicsType { Regular, Irregular };
 
-// Copied stuff from libmints/solidharmonics.cc
+// Indexing conventions shared with libmints/solidharmonics.cc.
 static inline int npure(int l) { return 2 * l + 1; }
 static inline int icart(int a, int b, int c) { return (((((a + b + c + 1) << 1) - a) * (a + 1)) >> 1) - b - 1; }
 static inline int ipure(int, int m) { return m < 0 ? 2 * -m : (m == 0 ? 0 : 2 * m - 1); }
 
-// Some more helper functions
-static inline int ncart(int l) { return (l+1)*(l+2)/2; }
+static inline int ncart(int l) { return (l + 1) * (l + 2) / 2; }
 
-// Some more useful Helper Functions
-static double choose(int n, int r) {
+static inline double choose(int n, int r) {
     if (r < 0 || r > n) {
         return 0.0;
     }
-    int small = std::min(n, n-r);
+    int small = std::min(n, n - r);
     double nCr = 1.0;
     for (int t = 0; t < small; t++) {
         nCr *= n;
-        nCr /= (t+1);
+        nCr /= (t + 1);
         n -= 1;
     }
     return nCr;
 }
 
-static int m_addr(int m) {
+static inline int m_addr(int m) {
     /*- Return the unsigned (array) address of m -*/
     if (m <= 0) {
         // 0, 1s, 2s, 3s, ...
-        return 2*(-m);
+        return 2 * (-m);
     } else {
         // 1c, 2c, 3c, ...
-        return 2*m-1;
+        return 2 * m - 1;
     }
 }
 
-static double cfmm_factorial(const double n) {
-    return std::tgamma(n+1.0);
+static inline double cfmm_factorial(const double n) {
+    return std::tgamma(n + 1.0);
 }
 
 class PSI_API MultipoleRotationFactory {
 
     protected:
-      Vector3 R_a_;
-      Vector3 R_b_;
-
       // New Z axis in rotated frame of reference
       SharedMatrix Uz_;
 
@@ -103,7 +97,7 @@ class PSI_API MultipoleRotationFactory {
       double V(int l, int m, int M);
       double W(int l, int m, int M);
       double P(int i, int l, int mu, int M);
-      
+
     inline double u(int l, int m, int M) {
         if (std::abs(M) < l) {
             return std::sqrt((double)(l+m)*(l-m) /((l+M)*(l-M)));
@@ -134,7 +128,7 @@ class PSI_API MultipoleRotationFactory {
 
     public:
       // Constructor
-      MultipoleRotationFactory(Vector3 R_a, Vector3 R_b, int lmax);
+      MultipoleRotationFactory(Vector3 source_center, Vector3 target_center, int lmax);
 
       SharedMatrix get_D(int l);
 
@@ -142,20 +136,21 @@ class PSI_API MultipoleRotationFactory {
 
 class PSI_API HarmonicCoefficients {
     protected:
-      // Ylm[l][m] = sum (coeff * x^a * y^b * z^c), stores a tuple of (coeff, a, b, c), normalized according to Stone's convention
+      // Ylm[l][m] = sum(coeff * x^a * y^b * z^c). Each map stores a flattened
+      // Cartesian exponent index -> coefficient and uses Stone's normalization.
       std::vector<std::vector<std::unordered_map<int, double>>> mpole_terms_;
-      // Helgaker Rs terms (used in generating mpole_terms_)
+      // Cosine-like real regular-solid-harmonic coefficients.
       std::vector<std::vector<std::unordered_map<int, double>>> Rc_;
-      // Helgaker Rc terms (used in generating mpole_terms_)
+      // Sine-like real regular-solid-harmonic coefficients.
       std::vector<std::vector<std::unordered_map<int, double>>> Rs_;
       // Maximum angular momentum
       int lmax_;
       // Regular or Irregular?
       SolidHarmonicsType type_;
 
-      // Compute terms if it were regular
+      // Compute regular-solid-harmonic terms.
       void compute_terms_regular();
-      // Compute terms if it were irregular
+      // Compute irregular-solid-harmonic terms.
       void compute_terms_irregular();
 
     public:
@@ -163,9 +158,9 @@ class PSI_API HarmonicCoefficients {
       HarmonicCoefficients(int lmax, SolidHarmonicsType type);
       // Returns a reference to the terms
       std::unordered_map<int, double>& get_terms(int l, int mu) { return mpole_terms_[l][mu]; }
-    
+
 };
-    
+
 class PSI_API RealSolidHarmonics {
 
     protected:
@@ -178,9 +173,9 @@ class PSI_API RealSolidHarmonics {
       // Center of the Harmonics
       Vector3 center_;
 
-      // Return a translated copy of the multipoles if it were regular
+      // Return a translated copy of a regular expansion.
       std::shared_ptr<RealSolidHarmonics> translate_regular(Vector3 new_center);
-      // Return a translated copy of the multipoles if it were irregular
+      // Return a translated copy of an irregular expansion.
       std::shared_ptr<RealSolidHarmonics> translate_irregular(Vector3 new_center);
 
     public:
@@ -190,31 +185,31 @@ class PSI_API RealSolidHarmonics {
       // Returns a copy of a RealSolidHarmonics object
       std::shared_ptr<RealSolidHarmonics> copy();
       // Adds two harmonics together
-      void add(const RealSolidHarmonics& rsh);
-      void add(const std::shared_ptr<RealSolidHarmonics>& rsh);
-      // Element-wise multiplication of two multtipoles
-      double dot(const RealSolidHarmonics& rsh);
-      double dot(const std::shared_ptr<RealSolidHarmonics>& rsh);
+      void add(const RealSolidHarmonics& other);
+      void add(const std::shared_ptr<RealSolidHarmonics>& other);
+      // Contract two multipole expansions element by element.
+      double dot(const RealSolidHarmonics& other);
+      double dot(const std::shared_ptr<RealSolidHarmonics>& other);
       // Scale the harmonics by a constant
-      void scale(double val);
+      void scale(double factor);
       // Adds to a specific harmonic term
       void add(int l, int mu, double val) { Ylm_[l][mu] += val; }
       // Get a specific multipole term
       double get(int l, int mu) { return Ylm_[l][mu]; }
-      
+
       // Returns a reference of Ylm, to be computed by something else
       std::vector<std::vector<double>>& get_multipoles() { return Ylm_; }
 
       // Get an "internuclear" interaction tensor between two points separated by a distance R
-      SharedVector build_T_spherical(int la, int lb, double R);
+      SharedVector build_T_spherical(int la, int lb, double distance);
 
       // Translate the solid harmonics
       std::shared_ptr<RealSolidHarmonics> translate(const Vector3& new_center);
-      // Calulate the far field effect this multipole series would have on another
+      // Calculate the far-field potential generated by this multipole expansion.
       std::shared_ptr<RealSolidHarmonics> far_field_vector(const Vector3& far_center);
 
 }; // End RealSolidHarmonics class
 
 } // namespace psi
 
-#endif
+#endif  // PSI4_LIBFMM_MULTIPOLES_HELPER_H
