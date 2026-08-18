@@ -55,12 +55,12 @@ static inline int ipure(int, int m) { return m < 0 ? 2 * -m : (m == 0 ? 0 : 2 * 
 static inline int ncart(int l) { return (l+1)*(l+2)/2; }
 
 // Some more useful Helper Functions
-static int choose(int n, int r) {
+static double choose(int n, int r) {
     if (r < 0 || r > n) {
-        return 0;
+        return 0.0;
     }
     int small = std::min(n, n-r);
-    int nCr = 1;
+    double nCr = 1.0;
     for (int t = 0; t < small; t++) {
         nCr *= n;
         nCr /= (t+1);
@@ -80,11 +80,8 @@ static int m_addr(int m) {
     }
 }
 
-// TODO: change name when Andy is more emotionally stable
-static double chud_factorial(const uint64_t n) {
-    double result = 1.0;
-    for (int i = 2; i <= n; ++i) result *= i;
-    return result;
+static double cfmm_factorial(const double n) {
+    return std::tgamma(n+1.0);
 }
 
 class PSI_API MultipoleRotationFactory {

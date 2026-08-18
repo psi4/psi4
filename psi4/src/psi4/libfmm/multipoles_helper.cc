@@ -369,9 +369,9 @@ void HarmonicCoefficients::compute_terms_regular() {
 
             if ((mu == 0) || (mu % 2 == 1)) {
                 if (mu == 0) {
-                    prefactor = chud_factorial(l);
+                    prefactor = cfmm_factorial(l);
                 } else {
-                    prefactor = std::pow(-1.0, (double) m) * std::sqrt(2.0 * chud_factorial(l-m) * chud_factorial(l+m));
+                    prefactor = std::pow(-1.0, (double) m) * std::sqrt(2.0 * cfmm_factorial(l-m) * cfmm_factorial(l+m));
                 }
                 for (const std::pair<int, double>& rpair : Rc_[l][m]) {
                     int ind = rpair.first;
@@ -381,7 +381,7 @@ void HarmonicCoefficients::compute_terms_regular() {
                 }
 
             } else {
-                prefactor = std::pow(-1.0, (double) m) * std::sqrt(2.0 * chud_factorial(l-m) * chud_factorial(l+m));
+                prefactor = std::pow(-1.0, (double) m) * std::sqrt(2.0 * cfmm_factorial(l-m) * cfmm_factorial(l+m));
                 for (const std::pair<int, double>& rpair : Rs_[l][-m]) {
                     int ind = rpair.first;
                     double coef = rpair.second;
