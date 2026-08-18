@@ -232,6 +232,26 @@ Matrix::Matrix(const Dimension &rows, const Dimension &cols, int symmetry) {
     alloc();
 }
 
+Matrix::Matrix(const Dimension& rows, const int cols, int symmetry)
+    : Matrix("", rows, cols, symmetry) {}
+
+Matrix::Matrix(const std::string &name, const Dimension& rows, const int cols, int symmetry)
+    : nirrep_(rows.n()), rowspi_(rows), colspi_(Dimension(std::vector<int>(nirrep_, cols))), name_(name) {
+    matrix_ = nullptr;
+    symmetry_ = symmetry;
+    alloc();
+}
+
+Matrix::Matrix(const int rows, const Dimension& cols, int symmetry)
+    : Matrix("", rows, cols, symmetry) {}
+
+Matrix::Matrix(const std::string &name, const int rows, const Dimension& cols, int symmetry)
+    : nirrep_(cols.n()), rowspi_(Dimension(std::vector<int>(nirrep_, rows))), colspi_(cols), name_(name) {
+    matrix_ = nullptr;
+    symmetry_ = symmetry;
+    alloc();
+}
+
 Matrix::Matrix(dpdfile2 *inFile)
     : rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps), name_(inFile->label) {
     global_dpd_->file2_mat_init(inFile);
