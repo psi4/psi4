@@ -1,5 +1,4 @@
-
-#! RHF Interaction Energy test for water dimer (DirectDFJ + LinK)
+#! RHF energy test for water dimer (different composite methods)
 
 molecule mol {
   0 1
@@ -26,6 +25,7 @@ set {
 }
 
 ref_energy = energy('scf', bsse_type='nocp')
+clean()
 
 set {
   scf_type dfdirj+link
@@ -35,7 +35,8 @@ set {
   linK_ints_tolerance 1.0e-12
 }
 
-test_energy = energy('scf', bsse_type='nocp')
+dfj_energy = energy('scf', bsse_type='nocp')
+clean()
 
 set {
   scf_type cfmm+link
@@ -45,6 +46,7 @@ set {
   linK_ints_tolerance 1.0e-12
 }
 cfmm_energy = energy('scf', bsse_type='nocp')
+clean()
 
 set {
   scf_type dfcfmm+link
@@ -55,7 +57,8 @@ set {
   cfmm_order 21
 }
 dfcfmm_energy = energy('scf', bsse_type='nocp')
+clean()
 
-psi4.compare_values(ref_energy, test_energy, 6, "SCF Int Energy (DirectDFJ+LinK)")
+psi4.compare_values(ref_energy, dfj_energy, 6, "SCF Int Energy (DirectDFJ+LinK)")
 psi4.compare_values(ref_energy, cfmm_energy, 6, "SCF Int Energy (CFMM+LinK)")
-psi4.compare_values(cfmm_energy, dfcfmm_energy, 9, "SCF Int Energy (DFCFMM vs DirectDFJ Comparison)")
+psi4.compare_values(dfj_energy, dfcfmm_energy, 9, "SCF Int Energy (DFCFMM vs DirectDFJ Comparison)")

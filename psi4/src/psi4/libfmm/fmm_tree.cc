@@ -1007,6 +1007,11 @@ void CFMMTree::build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints
 		      const std::vector<double>& Jmet_max) {
     timer_on("DF CFMM: Near Field Gamma P");
 
+    // => Zeroing needs to be done here... since J = Gamma_{P} in this context
+    for (int ind = 0; ind < D.size(); ind++) {
+        J[ind]->zero();
+    }
+
     // => Sizing <= //
     int pri_nshell = primary_->nshell();
     int aux_nshell = auxiliary_->nshell();
@@ -1309,9 +1314,11 @@ void CFMMTree::build_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
     timer_on("CFMMTree: J");
 
     // Zero the J matrix
+    /*
     for (int ind = 0; ind < D.size(); ind++) {
         J[ind]->zero();
     }
+    */
 
     // Update the densities
     if (density_screening_ && contraction_type_ == ContractionType::DIRECT) {
