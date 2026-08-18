@@ -157,7 +157,7 @@ class PSI_API HarmonicCoefficients {
       // Constructor
       HarmonicCoefficients(int lmax, SolidHarmonicsType type);
       // Returns a reference to the terms
-      std::unordered_map<int, double>& get_terms(int l, int mu) { return mpole_terms_[l][mu]; }
+      const std::unordered_map<int, double>& get_terms(int l, int mu) const { return mpole_terms_[l][mu]; }
 
 };
 

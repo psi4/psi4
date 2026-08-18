@@ -29,13 +29,14 @@
 #include "psi4/pragma.h"
 
 #include "psi4/libfmm/multipoles_helper.h"
-#include "psi4/libfmm/fmm_tree.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 
 #include <cmath>
+#include <limits>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -49,9 +50,15 @@ namespace psi {
 // 184101 (2014), doi:10.1063/1.4873920, describe the corresponding rotation
 // of spherical-harmonic multipoles into a quasi-internal frame.
 MultipoleRotationFactory::MultipoleRotationFactory(Vector3 source_center, Vector3 target_center, int lmax) {
+    if (lmax < 0) {
+        throw PSIEXCEPTION("MultipoleRotationFactory requires a nonnegative maximum angular momentum.");
+    }
     lmax_ = lmax;
     Vector3 displacement = source_center - target_center;
     double distance = displacement.norm();
+    if (distance <= std::numeric_limits<double>::epsilon()) {
+        throw PSIEXCEPTION("MultipoleRotationFactory requires distinct source and target centers.");
+    }
 
     Vector3 z_axis = displacement / distance;
     Vector3 x_axis_seed(z_axis);
@@ -178,6 +185,9 @@ SharedMatrix MultipoleRotationFactory::get_D(int l) {
 }
 
 HarmonicCoefficients::HarmonicCoefficients(int lmax, SolidHarmonicsType type) {
+    if (lmax < 0) {
+        throw PSIEXCEPTION("HarmonicCoefficients requires a nonnegative maximum angular momentum.");
+    }
     lmax_ = lmax;
     type_ = type;
 
@@ -433,6 +443,9 @@ void HarmonicCoefficients::compute_terms_regular() {
 }
 
 RealSolidHarmonics::RealSolidHarmonics(int lmax, Vector3 center, SolidHarmonicsType type) {
+    if (lmax < 0) {
+        throw PSIEXCEPTION("RealSolidHarmonics requires a nonnegative maximum angular momentum.");
+    }
     lmax_ = lmax;
     center_ = center;
     type_ = type;
@@ -492,8 +505,16 @@ void RealSolidHarmonics::scale(double factor) {
 }
 
 std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::translate(const Vector3& new_center) {
-    if (type_ == Regular) return translate_regular(new_center);
-    if (type_ == Irregular) return translate_irregular(new_center);
+    if ((new_center - center_).norm() <= std::numeric_limits<double>::epsilon()) return copy();
+
+    switch (type_) {
+        case Regular:
+            return translate_regular(new_center);
+        case Irregular:
+            return translate_irregular(new_center);
+        default:
+            throw PSIEXCEPTION("RealSolidHarmonics has an invalid solid-harmonic type.");
+    }
 }
 
 std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::translate_irregular(Vector3 new_center) {
@@ -623,6 +644,9 @@ std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::translate_regular(Vector
 // equivalent to Watson et al.,
 // J. Chem. Phys. 121, 2915 (2004), doi:10.1063/1.1771639, Eqs. (60)-(72).
 SharedVector RealSolidHarmonics::build_T_spherical(int la, int lb, double distance) {
+    if (distance <= std::numeric_limits<double>::epsilon()) {
+        throw PSIEXCEPTION("The solid-harmonic interaction tensor requires nonzero separation.");
+    }
     int lmin = std::min(la, lb);
     SharedVector interaction_tensor = std::make_shared<Vector>(2 * lmin + 1);
     double denominator = std::pow(distance, (double)la + lb + 1);
@@ -642,6 +666,9 @@ std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::far_field_vector(const V
 
     Vector3 displacement = far_center - center_;
     double distance = displacement.norm();
+    if (distance <= std::numeric_limits<double>::epsilon()) {
+        throw PSIEXCEPTION("A far-field expansion requires distinct source and target centers.");
+    }
 
     auto far_field = std::make_shared<RealSolidHarmonics>(lmax_, far_center, Irregular);
     auto rotation_factory = std::make_shared<MultipoleRotationFactory>(far_center, center_, lmax_);

@@ -351,7 +351,7 @@ class PSI_API JK {
     /// Zero out all J, K, and wK matrices
     void zero();
     /**
-    * Return number of ERI shell quartets computed during the JK build process.
+    * Return number of ERI shell tuples computed during the JK build process.
     */
     virtual size_t num_computed_shells();
 
@@ -1217,7 +1217,7 @@ class PSI_API MemDFJK : public JK {
  * JK implementation framework enabling arbitrary mixing and matching
  * of separate J and K construction algorithms.
  * Current algorithms in place (via SplitJK):
- * J: DF-DirJ, DirectCFMM, DFCFMM (welcome to the club, linear-scaling)
+ * J: DF-DirJ, CFMM, DFCFMM
  * K: COSX, LinK, snLinK
  *
  */
@@ -1279,7 +1279,7 @@ class PSI_API CompositeJK : public JK {
     void common_init();
 
     /**
-    * Return number of ERI shell quartets computed during the JK build process.
+    * Return the total number of ERI shell triplets and quartets computed during the JK build process.
     */
     size_t num_computed_shells() override;
 
@@ -1305,7 +1305,9 @@ class PSI_API CompositeJK : public JK {
     void clear_D_prev() { D_prev_.clear();}
 
     // => Knobs <= //
-    std::string name() override { return j_algo_->name() + "+" + k_algo_->name(); }
+    std::string name() override {
+        return k_algo_ ? j_algo_->name() + "+" + k_algo_->name() : j_algo_->name();
+    }
  
     /**
     * Set to do K tasks
@@ -1337,4 +1339,3 @@ class PSI_API CompositeJK : public JK {
 }
 
 #endif
-

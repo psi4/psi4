@@ -236,9 +236,9 @@ class PSI_API TwoBodyAOInt {
     }
     // the value of the bound for pair m and n
     double shell_pair_value(int m, int n) { return shell_pair_values_[m * nshell_ + n]; };
-    /// Return the maximum density matrix element per shell pair. Maximum is over density matrices, if multiple set
+    /// Maximum absolute density over all registered density matrices for shell pair (M,N)
     double shell_pair_max_density(int M, int N) const;
-    /// Returns the maximum density matrix element per shell pair for the (i'th) density matrix, if multiple set
+    /// Maximum absolute density for density matrix i and shell pair (M,N)
     double shell_pair_max_density(int i, int M, int N) const;
 
     /// For a given PQ shellpair index, what's the first RS pair that should be processed such

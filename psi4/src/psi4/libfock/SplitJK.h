@@ -106,7 +106,7 @@ class PSI_API SplitJK {
     /// Left-right symmetric?
     bool lr_symmetric_;
 
-    /// Number of ERI shell quartets computed, i.e., not screened out
+    /// Number of ERI shell tuples computed, i.e., not screened out
     size_t num_computed_shells_;
 
    public:
@@ -136,7 +136,7 @@ class PSI_API SplitJK {
     virtual void print_header() const = 0;
 
     /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
+    * Return number of ERI shell tuples computed during the SplitJK build process.
     */
     virtual size_t num_computed_shells();
 
@@ -188,7 +188,7 @@ class PSI_API DirectDFJ : public SplitJK {
     void print_header() const override;
 
     /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
+    * Return number of ERI shell triplets computed during the SplitJK build process.
     */
     size_t num_computed_shells() override;
 
@@ -250,7 +250,7 @@ class PSI_API LinK : public SplitJK {
     std::string name() override { return "LinK"; }
 };
 
-class DirectCFMM : public SplitJK {
+class PSI_API DirectCFMM : public SplitJK {
   protected:
    /// The CFMMTree object used to compute the CFMM integrals
    std::shared_ptr<CFMMTree> cfmmtree_;
@@ -259,7 +259,7 @@ class DirectCFMM : public SplitJK {
    /**
     * @brief Construct a new DirectCFMM object
     * 
-    * @param primary The primary basis set used in DirectDFJ
+    * @param primary The primary basis set used in DirectCFMM
     * @param options The options object
     */
    DirectCFMM(std::shared_ptr<BasisSet> primary, Options& options);
@@ -269,7 +269,7 @@ class DirectCFMM : public SplitJK {
     *
     * @brief Builds the J matrix according to the CFMM Algorithm (integral direct exact 4-center ERIs)
     * 
-    * @param D The list of AO density matrixes to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
+    * @param D The list of AO density matrices to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
     * @param J The list of AO J matrices to build (Same size as D)
     */
    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp, std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
@@ -288,15 +288,17 @@ class DirectCFMM : public SplitJK {
    /**
     * print name of method
     */
-   std::string name() override { return "DirectCFMM"; }
+   std::string name() override { return "CFMM"; }
 };
 
-class DFCFMM : public DirectDFJ {
+class PSI_API DFCFMM : public DirectDFJ {
   protected:
    /// CFMMTree used to calculate the three-center integrals
    std::shared_ptr<CFMMTree> df_cfmm_tree_;
-   /// The gamma intermediate used in the DirectDFJ Algorithm
-   std::vector<SharedMatrix> gamma;
+   /// Auxiliary-space intermediate used by the two DFCFMM contractions
+   std::vector<SharedMatrix> gamma_;
+   /// Maximum diagonal Coulomb-metric element in each auxiliary shell
+   std::vector<double> J_metric_shell_diag_;
 
   public:
    /**
@@ -313,7 +315,7 @@ class DFCFMM : public DirectDFJ {
     *
     * @brief Builds the J matrix using CFMM-Accelerated DFJ Algorithm
     * 
-    * @param D The list of AO density matrixes to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
+    * @param D The list of AO density matrices to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
     * @param J The list of AO J matrices to build (Same size as D)
     */
    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp, std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
@@ -325,7 +327,7 @@ class DFCFMM : public DirectDFJ {
    void print_header() const override;
 
    /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
+    * Return number of ERI shell triplets computed during the SplitJK build process.
     */
    size_t num_computed_shells() override;
 

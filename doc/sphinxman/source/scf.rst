@@ -920,10 +920,12 @@ options:
 
 Both CFMM Coulomb builders support density-matrix screening
 (|globals__screening| set to ``DENSITY``) and incremental Fock construction
-(|scf__incfock| set to ``TRUE``). As for other screened Fock builds, results
-for diffuse basis sets or unusually tight accuracy targets should be checked by
-tightening the CFMM controls or by comparison with a less approximate Coulomb
-builder.
+(|scf__incfock| set to ``TRUE``). For ``DFCFMM``, any enabled screening mode
+uses density-weighted three-center bounds in both density-fitting contractions;
+setting |globals__screening| to ``NONE`` disables these bounds. As for other
+screened Fock builds, results for diffuse basis sets or unusually tight
+accuracy targets should be checked by tightening the CFMM controls or by
+comparison with a less approximate Coulomb builder.
 
 .. _`sec:scfcosx`:
 
