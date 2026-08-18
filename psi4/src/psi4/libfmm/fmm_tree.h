@@ -51,7 +51,9 @@ class Options;
 enum class ContractionType {
     DIRECT,
     DF_AUX_PRI,
-    DF_PRI_AUX
+    DF_PRI_AUX,
+    /// Reserved for a future CFMM-accelerated auxiliary Coulomb-metric contraction.
+    METRIC
 };
 
 class PSI_API ShellPair {
@@ -303,6 +305,10 @@ class PSI_API CFMMTree {
       void build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
                          const std::vector<SharedMatrix>& auxiliary_coefficients, std::vector<SharedMatrix>& J,
                          const std::vector<double>& metric_shell_diagonal_max);
+      // Planned auxiliary-metric contraction. The explicit implementation
+      // marker is retained so this future CFMM feature remains visible.
+      void build_nf_metric(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
+                           const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J);
       // Build far-field J (long-range multipole interactions)
       void build_ff_J(std::vector<SharedMatrix>& J);
 
@@ -311,8 +317,9 @@ class PSI_API CFMMTree {
                              const std::vector<SharedMatrix>& D);
 
     public:
-      /// Constructor (automatically sets up the tree). The primary basis is
-      /// required; a non-null auxiliary basis selects the DF contractions.
+      /// Constructor (automatically sets up the tree). A primary basis selects
+      /// direct or DF contractions; an auxiliary-only tree reserves the future
+      /// auxiliary-metric contraction path.
       CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
 
       // Build the J matrix of CFMMTree
