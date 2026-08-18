@@ -420,15 +420,17 @@ void CFMMBox::compute_mpoles_from_children() {
 CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
                     : primary_(primary), auxiliary_(auxiliary), options_(options) {
 
-    if (!primary) {
-        throw PSIEXCEPTION("CFMMTree requires a primary basis set.");
-    } else if (auxiliary) {
+    if (primary && auxiliary) {
         contraction_type_ = ContractionType::DF_AUX_PRI;
-    } else {
+    } else if (primary) {
         contraction_type_ = ContractionType::DIRECT;
+    } else if (auxiliary) {
+        contraction_type_ = ContractionType::METRIC;
+    } else {
+        throw PSIEXCEPTION("CFMMTree requires a primary and/or auxiliary basis set.");
     }
 
-    molecule_ = primary_->molecule();
+    molecule_ = primary_ ? primary_->molecule() : auxiliary_->molecule();
     nlevels_ = options_.get_int("CFMM_GRAIN");
     if (nlevels_ <= 2) {
         throw PSIEXCEPTION("CFMM_GRAIN must be at least 3.");
@@ -468,6 +470,8 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
         factory = std::make_shared<IntegralFactory>(primary_);
     } else if (contraction_type_ == ContractionType::DF_AUX_PRI) {
         factory = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    } else if (contraction_type_ == ContractionType::METRIC) {
+        factory = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
     }
 
     std::shared_ptr<TwoBodyAOInt> shellpair_int = std::shared_ptr<TwoBodyAOInt>(factory->eri());
@@ -508,8 +512,10 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
     setup_regions();
     setup_local_far_field_task_pairs();
     setup_shellpair_info();
-    calculate_shellpair_multipoles(true);
-    if (contraction_type_ == ContractionType::DF_AUX_PRI) calculate_shellpair_multipoles(false);
+    if (contraction_type_ == ContractionType::DIRECT || contraction_type_ == ContractionType::DF_AUX_PRI)
+        calculate_shellpair_multipoles(true);
+    if (contraction_type_ == ContractionType::METRIC || contraction_type_ == ContractionType::DF_AUX_PRI)
+        calculate_shellpair_multipoles(false);
 
     timer_off("CFMMTree: Setup");
 
@@ -520,7 +526,7 @@ void CFMMTree::df_set_contraction(ContractionType contraction_type) {
     if (contraction_type_ != ContractionType::DF_PRI_AUX && contraction_type_ != ContractionType::DF_AUX_PRI) {
         throw PSIEXCEPTION("Cannot reset the contraction type of a non-three-index DF CFMM tree.");
     }
-    if (contraction_type == ContractionType::DIRECT) {
+    if (contraction_type == ContractionType::DIRECT || contraction_type == ContractionType::METRIC) {
         throw PSIEXCEPTION("Cannot reset a DF CFMM tree to a non-DF contraction type.");
     }
     contraction_type_ = contraction_type;
@@ -848,6 +854,8 @@ void CFMMTree::build_nf_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
         build_nf_gamma_P(ints, D, J, metric_shell_diagonal_max);
     else if (contraction_type_ == ContractionType::DF_PRI_AUX)
         build_nf_df_J(ints, D, J, metric_shell_diagonal_max);
+    else if (contraction_type_ == ContractionType::METRIC)
+        build_nf_metric(ints, D, J);
 }
 
 void CFMMTree::build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
@@ -1310,6 +1318,13 @@ void CFMMTree::build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
     num_computed_shells_ = computed_shells;
 
     timer_off("DF CFMM: Near Field J");
+}
+
+void CFMMTree::build_nf_metric(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
+                               const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) {
+    // This path is deliberately retained as the integration point for a
+    // future CFMM-accelerated auxiliary Coulomb-metric contraction.
+    throw PSIEXCEPTION("The CFMM auxiliary-metric contraction is not implemented.");
 }
 
 void CFMMTree::build_ff_J(std::vector<SharedMatrix>& J) {
