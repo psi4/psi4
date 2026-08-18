@@ -190,7 +190,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC F12");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
-    different calculation types. TODO: THIS IS NOT SUSTAINABLE FOR COMPOSITE METHODS!!! TIS EVIL -*/
+    different calculation types. Composite J+K choices are currently
+    enumerated explicitly. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ CFMM DFCFMM DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK CFMM+COSX CFMM+LINK CFMM+SNLINK DFCFMM+COSX DFCFMM+LINK DFCFMM+SNLINK");
 
 #ifdef USING_OpenOrbitalOptimizer
@@ -1663,11 +1664,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION Continuous Fast Multipole Method (CFMM) -*/
 
-        /*- The maximum multipole order to use in the CFMM algorithm -*/
+        /*- The nonnegative maximum multipole order to use in the CFMM algorithm -*/
         options.add_int("CFMM_ORDER", 10);
         /*- The maximum tree depth to use in the CFMM algorithm (Must be at least 3) -*/
         options.add_int("CFMM_GRAIN", 4);
-        /*- CFMM Extent Tolerance (for well-separated) -*/
+        /*- CFMM shell-pair extent tolerance for well-separated interactions; must lie between zero and one -*/
         options.add_double("CFMM_EXTENT_TOLERANCE", 1.0e-10);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/

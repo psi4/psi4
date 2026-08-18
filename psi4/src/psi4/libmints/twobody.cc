@@ -163,6 +163,9 @@ double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
     if (max_dens_shell_pair_.empty()) {
         throw PSIEXCEPTION("The density matrix has not been set in the TwoBodyAOInt class!");
     }
+    if (M < 0 || N < 0 || M >= nshell_ || N >= nshell_) {
+        throw PSIEXCEPTION("Shell index out of bounds for TwoBodyAOInt::shell_pair_max_density");
+    }
     double D_max = 0.0;
     for (const auto& matrix_max_per_pair: max_dens_shell_pair_) {
         D_max = std::max(D_max, matrix_max_per_pair[M * nshell_ + N]);
@@ -171,8 +174,11 @@ double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
 }
 
 double TwoBodyAOInt::shell_pair_max_density(int i, int M, int N) const {
-    if (i > max_dens_shell_pair_.size()) {
-        throw PSIEXCEPTION("Index out of bounds for TwoBodyAOInt::shell_pair_max_density");
+    if (i < 0 || static_cast<size_t>(i) >= max_dens_shell_pair_.size()) {
+        throw PSIEXCEPTION("Density index out of bounds for TwoBodyAOInt::shell_pair_max_density");
+    }
+    if (M < 0 || N < 0 || M >= nshell_ || N >= nshell_) {
+        throw PSIEXCEPTION("Shell index out of bounds for TwoBodyAOInt::shell_pair_max_density");
     }
     return max_dens_shell_pair_[i][M * nshell_ + N];
 }
