@@ -19,6 +19,7 @@ list(APPEND sources
   jk.cc
   points.cc
   sap.cc
+  gauxc_interface.cc
   snLinK.cc
   solver.cc
   soscf.cc
