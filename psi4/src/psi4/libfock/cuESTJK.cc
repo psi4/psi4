@@ -165,6 +165,36 @@ void cuESTJK::preiterations()
     CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
 
+    // Set J & K compute parameters
+    // CHECK_CUEST(cuestParametersConfigure(
+    //     CUEST_DFCOULOMBCOMPUTE_PARAMETERS, 
+    //     cuest_coulomb_compute_params_,
+    //     CUEST_DFCOULOMBCOMPUTE_PARAMETERS_FFLOAT_USAGE_MODE,
+    //     &ffloat_usage_mode_, // can be one of three values
+    //     sizeof(bool))); // not sure what attribute type is yet
+
+    // CHECK_CUEST(cuestParametersConfigure(
+    //     CUEST_DFCOULOMBCOMPUTE_PARAMETERS, 
+    //     cuest_coulomb_compute_params_,
+    //     CUEST_DFCOULOMBCOMPUTE_PARAMETERS_JIT_USAGE_MODE, 
+    //     &jit_usage_mode_,
+    //     sizeof(double)));
+
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
+        cuest_exchange_compute_params_,
+        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_SLICE_COUNT,
+        &options.get_int("CUEST_DFK_SLICES"),
+        sizeof(int32_t)));
+
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, 
+        cuest_exchange_compute_params_,
+        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_MODULUS_COUNT,
+        &options.get_int("CUEST_DFK_MODULI"),
+        sizeof(int32_t)));
+
+    // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off
     if (!options_.get_bool("CUEST_MIXED_PRECISION")) {
         CHECK_CUEST(cuestSetMathMode(
             cuest_handle,
