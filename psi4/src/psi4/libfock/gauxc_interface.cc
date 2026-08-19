@@ -70,6 +70,19 @@ GauXC::RadialQuad to_gauxc_radial_scheme(const std::string& psi4_name) {
     return it->second;
 }
 
+GauXC::XCWeightAlg to_gauxc_weight_scheme(const std::string& psi4_name) {
+    static const std::unordered_map<std::string, GauXC::XCWeightAlg> map = {
+        {"BECKE", GauXC::XCWeightAlg::Becke},
+        {"STRATMANN", GauXC::XCWeightAlg::SSF},
+    };
+    auto it = map.find(psi4_name);
+    if (it == map.end()) {
+        throw PSIEXCEPTION("Nuclear partition scheme '" + psi4_name +
+                           "' has no GauXC equivalent. Supported by the GauXC path: BECKE, STRATMANN.");
+    }
+    return it->second;
+}
+
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(
     const std::shared_ptr<BasisSet> psi4_basisset, int gauxc_max_am) {
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());

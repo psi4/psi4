@@ -58,6 +58,10 @@ GauXC::PruningScheme to_gauxc_pruning_scheme(const std::string& psi4_name);
 /// GauXC enum. Throws PSIEXCEPTION if GauXC has no equivalent.
 GauXC::RadialQuad to_gauxc_radial_scheme(const std::string& psi4_name);
 
+/// Maps a Psi4 DFT_NUCLEAR_SCHEME value to the GauXC atomic partition weight scheme.
+/// Throws for values GauXC does not implement.
+GauXC::XCWeightAlg to_gauxc_weight_scheme(const std::string& psi4_name);
+
 /// Permutation between Psi4's Gaussian-ordered and GauXC's CCA-ordered
 /// spherical harmonics.
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(
