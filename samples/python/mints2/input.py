@@ -116,8 +116,5 @@ psi4.set_options({
     'e_convergence': 11,
     'scf_type': 'pk'})
  
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 8, "d_convergence": 8})
-
 scfenergy = psi4.energy('scf')
 

@@ -5,30 +5,29 @@ channels:
 dependencies:
     # build
   - c-compiler
-  - clangdev=17.0.6           # req'd with cxx-compiler; Avoid omp problem with v19, v20.
   - cmake
   - cxx-compiler
-  - libgcc<14.3               # req'd with cxx-compiler; Avoid 'specified procedure could not be found' DLL error.
   - ninja
     # non-qc buildtime required
   - blas-devel                # req'd with libblas
   - eigen                     # req'd with libint
-  - intel-openmp
   - libblas=*=*mkl
   - libboost-headers          # req'd with libint
+  - llvm-openmp
   - numpy
   - pip                       # req'd with python; Package installer not strictly needed but needs to be tied to this python if used.
   - pybind11
   - python
+  - python-gil                # req'd with python; Safety of free-threading uncertain, so avoid for now.
     # qc buildtime required
   - gau2grid
   #- psi4::libint              # opt'l with libint; Optionally for linux-64, an AM=7 build is available here.
   - libint
   - libxc-c
-  - optking
-  - qcelemental
-  - qcengine
-  - qcmanybody>=0.5.1
+  - optking>=0.5.0
+  - qcelemental>=0.50.4
+  - qcengine>=0.50.0
+  - qcmanybody>=0.7.1
     # buildtime optional
   - dkh
   - integratorxx
@@ -38,21 +37,21 @@ dependencies:
     # runtime required
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental
-  - pydantic>=1.10.17,<3      # req'd with qcelemental; Allow uniform access to Pydantic v1 API.
+  - pydantic>=2.11.0,<3       # req'd with qcelemental; For Py v3.14, require Pydantic v2.12.
   - scipy
   - setuptools                # req'd with qcelemental; Needed for qcelemental cmake detection.
     # runtime optional
   - basis_set_exchange
-  - dftd3-python>=1.0
-  - dftd4-python
+  - dftd3-python>=1.3.0
+  - dftd4-python>=4.1.0
   - gcp-correction
   - geometric
   - i-pi==3.1.0
   - pygdma
   - pylibefp
-  - pymdi
-  - resp
-  - toml                      # req'd with dftd4-python
+  - pymdi=*=*nompi*
+  - toml                      # req'd with dftd4-python; Needed for qcengine/dftd4-python interface.
     # test
+  - pandas
   - pytest
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.

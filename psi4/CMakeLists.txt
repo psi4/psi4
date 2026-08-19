@@ -1,9 +1,12 @@
-cmake_minimum_required(VERSION 3.19...4.0)
+cmake_minimum_required(VERSION 3.19...4.2)
 cmake_policy(SET CMP0094 NEW)
 if (POLICY CMP0167)
     # L2 not prepared for BoostConfig instead of FindBoost
     cmake_policy(SET CMP0167 OLD)
 endif ()
+if (POLICY CMP0190)
+    cmake_policy(SET CMP0190 OLD)
+endif()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -137,7 +140,7 @@ if(${ENABLE_libefp})
     #list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using pylibefp${ColourReset}: ${_loc} (version ${pylibefp_VERSION})")
 else()
-    message(STATUS "Disabled libefp ${libefp_DIR} ${pylibefp_DIR}")
+    message(STATUS "Disabled libefp ${libefp_DIR} ${pylibefp_DIR} (deferrable to runtime)")
 endif()
 
 if(${ENABLE_Einsums})
@@ -180,7 +183,7 @@ if(${ENABLE_gdma})
     get_property(_loc TARGET gdma::pygdma PROPERTY LOCATION)
     message(STATUS "${Cyan}Found gdma${ColourReset}: ${_loc} (version ${gdma_VERSION})")
 else()
-    message(STATUS "Disabled gdma ${gdma_DIR}")
+    message(STATUS "Disabled gdma ${gdma_DIR} (deferrable to runtime)")
 endif()
 
 find_package(Libint2 2.8.1 CONFIG REQUIRED  # edit in codedeps
@@ -206,7 +209,7 @@ if(${ENABLE_mdi})
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using mdi${ColourReset}: ${_loc} (version ${mdi_VERSION})")
 else()
-    message(STATUS "Disabled MDI ${mdi_DIR}")
+    message(STATUS "Disabled MDI ${mdi_DIR} (deferrable to runtime)")
 endif ()
 
 if(${ENABLE_OpenOrbitalOptimizer})

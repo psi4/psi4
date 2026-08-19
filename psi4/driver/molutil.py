@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -71,6 +71,7 @@ def _molecule_from_string(cls,
                          fix_com=None,
                          fix_orientation=None,
                          fix_symmetry=None,
+                         nonphysical=False,
                          return_dict=False,
                          enable_qm=True,
                          enable_efp=True,
@@ -84,6 +85,7 @@ def _molecule_from_string(cls,
         fix_com=fix_com,
         fix_orientation=fix_orientation,
         fix_symmetry=fix_symmetry,
+        nonphysical=nonphysical,
         return_processed=False,
         enable_qm=enable_qm,
         enable_efp=enable_efp,

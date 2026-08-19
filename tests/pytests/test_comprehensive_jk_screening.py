@@ -4,21 +4,33 @@ import itertools
 from utils import compare, compare_integers, compare_values
 from addons import using
 
-pytestmark = [pytest.mark.psi, pytest.mark.api] 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 @pytest.mark.parametrize(
-    "scf_type", [ 
-        pytest.param("PK"), 
-        pytest.param("DIRECT"), 
-        pytest.param("OUT_OF_CORE"), 
-        pytest.param("DISK_DF"), 
-        pytest.param("MEM_DF"), 
-        pytest.param("DFDIRJ+LINK"), 
-        pytest.param("DFDIRJ+COSX"),
-        pytest.param("DFDIRJ+SNLINK", marks=using('gauxc')),
+    "scf_type,scf_subtype", [
+        # avoid redundant combinations of type and subtype
+        pytest.param("PK", "INCORE"),
+        pytest.param("PK", "OUT_OF_CORE"),
+        pytest.param("PK", "YOSHIMINE_OUT_OF_CORE"),
+        pytest.param("PK", "REORDER_OUT_OF_CORE"),
+
+        pytest.param("DIRECT", "AUTO"),
+
+        pytest.param("OUT_OF_CORE", "AUTO"),
+
+        pytest.param("DISK_DF", "INCORE"),
+        pytest.param("DISK_DF", "OUT_OF_CORE"),
+
+        pytest.param("MEM_DF", "INCORE"),
+        pytest.param("MEM_DF", "OUT_OF_CORE"),
+
+        pytest.param("DFDIRJ+LINK", "AUTO"),
+
+        pytest.param("DFDIRJ+COSX", "AUTO"),
+
+        pytest.param("DFDIRJ+SNLINK", "AUTO", marks=using('gauxc')),
     ]
 )
-@pytest.mark.parametrize("scf_subtype", [ "AUTO", "INCORE", "OUT_OF_CORE", "YOSHIMINE_OUT_OF_CORE", "REORDER_OUT_OF_CORE" ])
 @pytest.mark.parametrize("screening", [ "SCHWARZ", "DENSITY", "CSAM", "NONE" ])
 def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
     """Checks the energy values computed by different JK methods using different
@@ -59,14 +71,6 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
         "df_basis_scf": "cc-pvtz-jkfit",
         "print": 2,
     })
- 
-    #== skip redundant option combinations based on type/subtype combination ==#   
-    if scf_type not in [ "PK", "DISK_DF", "MEM_DF"] and scf_subtype != "AUTO":
-        pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: redundant test') 
-    elif scf_type in [ "PK", "DISK_DF", "MEM_DF"] and scf_subtype == "AUTO":
-        pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: redundant test') 
-    elif scf_type in [ "DISK_DF", "MEM_DF"] and scf_subtype in [ "YOSHIMINE_OUT_OF_CORE", "REORDER_OUT_OF_CORE" ]:
-        pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: redundant test') 
 
     #== certain combinations of SCF_TYPE and SCREENING should throw an exception by design ==#
     should_throw = False

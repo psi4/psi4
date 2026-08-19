@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -47,27 +47,35 @@
 #include <omp.h>
 #endif
 
-using namespace psi;
-
 namespace psi {
 
 CDJK::CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance)
     : DiskDFJK(primary, primary, options), cholesky_tolerance_(cholesky_tolerance) {}
-CDJK::~CDJK() {}
-void CDJK::initialize_JK_disk() { throw PsiException("Disk algorithm for CD JK not implemented.", __FILE__, __LINE__); }
+
+void CDJK::initialize_JK_disk() { throw PSIEXCEPTION("Disk algorithm for CD JK not implemented."); }
+
+void CDJK::set_do_wK(const bool do_wK) {
+    if (do_wK)
+        throw PSIEXCEPTION(
+            "CDJK (Coulomb and exchange via Cholesky decomposition) does not support range-separated (wK) exchange.");
+    DiskDFJK::set_do_wK(do_wK);
+}
+
 size_t CDJK::memory_estimate() {
     // Size is unknown until actual evaluation
-    size_t nbf = primary_->nbf();
-
+    const size_t nbf = primary_->nbf();
     // Assume cholesky index is ~4x of nbf.
     return nbf * nbf * nbf * 4;
 }
 
 void CDJK::initialize_JK_core() {
     timer_on("CD: cholesky decomposition");
-    auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
-    int ntri = cderi_->function_pairs().size();
+    IntegralFactory factory(primary_, primary_, primary_, primary_);
+    // Integral engine for computing CD integrals.
+    // Note that this is shallow-const, the engine itself is mutable, only the shared_ptr isn't.
+    const std::shared_ptr<TwoBodyAOInt> cderi = factory.eri();
+    
+    int ntri = cderi->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
     /// Ugur needs ncholesky_ in NAUX (SCF), but it can also be read from disk
@@ -84,7 +92,7 @@ void CDJK::initialize_JK_core() {
     }
 
     /// If user does not want to read from disk, recompute the cholesky integrals
-    auto Ch = std::make_shared<CholeskyERI>(cderi_, 0.0, cholesky_tolerance_,
+    auto Ch = std::make_shared<CholeskyERI>(cderi, 0.0, cholesky_tolerance_,
                                             memory_);
     Ch->choleskify();
     ncholesky_ = Ch->Q();
@@ -94,7 +102,7 @@ void CDJK::initialize_JK_core() {
     /// Kinda silly to check for memory after you perform CD.
     /// Most likely redundant as cholesky also checks for memory.
     if (memory_ < ((size_t)sizeof(double) * three_memory + (size_t)sizeof(double) * ncholesky_ * nbf * nbf))
-        throw PsiException("Not enough memory for CD.", __FILE__, __LINE__);
+        throw PSIEXCEPTION("Not enough memory for CD.");
 
     std::shared_ptr<Matrix> L = Ch->L();
     double** Lp = L->pointer();
@@ -104,7 +112,7 @@ void CDJK::initialize_JK_core() {
 
     double** Qmnp = Qmn_->pointer();
 
-    const std::vector<long int>& schwarz_fun_pairs = cderi_->function_pairs_to_dense();
+    const std::vector<long int>& schwarz_fun_pairs = cderi->function_pairs_to_dense();
 
     timer_on("CD: schwarz");
     for (size_t mu = 0; mu < nbf; mu++) {
@@ -145,14 +153,9 @@ void CDJK::manage_JK_core() {
 void CDJK::print_header() const {
     if (print_) {
         outfile->Printf("  ==> CDJK: Cholesky-decomposed J/K Matrices <==\n\n");
-
         outfile->Printf("    J tasked:             %11s\n", (do_J_ ? "Yes" : "No"));
         outfile->Printf("    K tasked:             %11s\n", (do_K_ ? "Yes" : "No"));
         outfile->Printf("    wK tasked:            %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) {
-            throw PsiException("no wk for scf_type cd.", __FILE__, __LINE__);
-            // outfile->Printf( "    Omega:                %11.3E\n", omega_);
-        }
         outfile->Printf("    OpenMP threads:       %11d\n", omp_nthread_);
         outfile->Printf("    Integrals threads:    %11d\n", df_ints_num_threads_);
         outfile->Printf("    Memory [MiB]:         %11ld\n", (memory_ * 8L) / (1024L * 1024L));
@@ -162,5 +165,8 @@ void CDJK::print_header() const {
         outfile->Printf("    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
         outfile->Printf("    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
+    if (do_wK_)
+        throw PSIEXCEPTION(
+            "CDJK (Coulomb and exchange via Cholesky decomposition) does not support range-separated (wK) exchange.");
 }
 }  // namespace psi

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -48,7 +48,7 @@ void DFOCC::dfgrad() {
     tstart();
     tpdm_tilde();
     back_trans();
-    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
+    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nso_, nso_);
     GFao->to_shared_matrix(W);
     Lagrangian_ = W;
 }  // end dfgrad

@@ -1,0 +1,101 @@
+#! MBIS regression test on CH3I with iodine
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [-0.285761], 
+ [-0.115352],
+ [ 0.133773],
+ [ 0.133667],
+ [ 0.133667]])
+
+dipoles_ref = psi4.Matrix.from_list([ #TEST
+[ 0.000000,   -0.000025,    0.034895],
+[-0.000000,    0.000012,   -0.055731], 
+[ 0.000000,    0.057461,   -0.015360], 
+[ 0.049682,   -0.028815,   -0.015398], 
+[-0.049682,   -0.028815,   -0.015398]])
+
+quadrupoles_ref = psi4.Matrix.from_list([ #TEST
+[ -4.612059652117,   0.000000006147,  -0.000000012366,  -4.611861973185,   0.000124296076,  -4.595821567929], 
+[-20.891648437392,  -0.000000000296,   0.000000415585, -20.891510157265,   0.000023017699, -18.765455304858],
+[ -0.435446042668,  -0.000000000613,   0.000000000243,  -0.426946513692,   0.001944290637,  -0.440825888326],
+[ -0.429129614781,  -0.003682609082,   0.001681954564,  -0.433311537122,  -0.00097024928,   -0.440832410374],
+[ -0.429129638111,   0.003682608202,  -0.001681954929,  -0.433311560854,  -0.000970249769,  -0.440832438915]])
+
+octupoles_ref = psi4.Matrix.from_list([ #TEST
+[ 0.000000005899,  0.165294958982, -0.063634983828,  0.000000001988,   0.000000011174,  0.000000021407, -0.16561766348,  -0.063696652923, -0.000182848203, -0.557348441859], 
+[-0.000000274722, -0.003370300569, -0.661179859117, -0.000000091058,  -0.000000011384,  0.000000483263,  0.003468086717, -0.661409916611,  0.000078929813,  3.009593392671],
+[ 0.000000000618,  0.032822936712, -0.000238302214,  0.000000000126,   0.000000000406,  0.000000001085,  0.061266107583,  0.004752318421,  0.014462533584, -0.027716523394],  
+[ 0.061015993966, -0.002486520881,  0.00348820673,   0.020305689023,  -0.002167045812,  0.01248028605,  -0.04470734848,   0.000994108933, -0.007271629306, -0.027779099417],
+[-0.061015996145, -0.002486521119,  0.003488209686, -0.020305689666,   0.002167046687, -0.012480285498, -0.044707350736,  0.00099411182,  -0.007271630242, -0.027779092657]])
+
+avols_ref = psi4.Matrix.from_list([ # TEST
+[ 32.867406794043],
+[156.503920871771],
+[  2.254043264385],
+[  2.254056458555],
+[  2.254056579634]])
+
+vratios_ref = psi4.Matrix.from_list([
+[1.000198231807],
+[0.790436806471],
+[0.308542610116],
+[0.308544416188],
+[0.308544432761]])
+
+vwidths_ref = psi4.Matrix.from_list([ # TEST
+[0.503045],
+[0.697250],
+[0.358590],
+[0.358575],
+[0.358575]])
+
+vcharges_ref = psi4.Matrix.from_list([ # TEST
+[-4.655022],
+[-5.951511],
+[-0.866227],
+[-0.866333],
+[-0.866333]])
+
+molecule mol {
+  0 1
+  C 0.000000 0.000000 0.000000
+  I 0.000000 0.000000 2.105000
+  H 0.000000 0.937000 -0.297000
+  H 0.811000 -0.469000 -0.297000
+  H -0.811000 -0.469000 -0.297000
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 4
+}
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-CONV
+    psi4.set_options({"d_convergence": 3e-8})
+set scf_properties ['MBIS_CHARGES', 'MBIS_VOLUME_RATIOS']
+
+e, wfn = energy('hf/def2-SVP', return_wfn=True)
+
+charges = wfn.array_variable('MBIS CHARGES').to_array()
+dipoles = wfn.array_variable('MBIS DIPOLES')
+quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
+
+compare_values(0.0, np.sum(charges), 5, "CH3I MBIS total charge")  #TEST
+compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
+compare_matrices(avols_ref, avols, 3e-5, "MBIS Radial Moments <r^3>")    #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vcharges_ref, vcharges, 5, "MBIS Valence Charges")   #TEST
+compare_matrices(vratios_ref, vratios, 5, "MBIS Volume Ratios")      #TEST

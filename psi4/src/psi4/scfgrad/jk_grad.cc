@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1322,10 +1322,24 @@ void DFJKGrad::compute_hessian() {
     auto dc = std::make_shared<Matrix>("dc[x][A] = (mn|A)^x D[m][n]",  3*natoms, np);
     double **dcp = dc->pointer();
 
-    auto dAa_ij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*na*na);
-    double **dAa_ijp = dAa_ij->pointer();
-    auto dAb_ij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*nb*nb);
-    double **dAb_ijp = dAb_ij->pointer();
+    // Exchange (K) intermediates. These dominate the Hessian's memory
+    // (each is 3*natom * naux * nocc^2 doubles) and Matrix zeroes its storage
+    // on construction, so allocating them touches the pages. Only build them
+    // when exact exchange is actually present (pure functionals leave do_K_
+    // false), and only build the beta copies when the orbitals differ --
+    // otherwise a pure meta-GGA Hessian pointlessly reserves several GB and
+    // can drive the process into swap. Their uses below are already guarded by
+    // do_K_ / same_ab, so the pointers stay null when unused.
+    SharedMatrix dAa_ij, dAb_ij;
+    double **dAa_ijp = nullptr, **dAb_ijp = nullptr;
+    if (do_K_) {
+        dAa_ij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*na*na);
+        dAa_ijp = dAa_ij->pointer();
+        if (!same_ab) {
+            dAb_ij = std::make_shared<Matrix>("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*nb*nb);
+            dAb_ijp = dAb_ij->pointer();
+        }
+    }
 
     auto d = std::make_shared<Vector>("d[A] = Minv[A][B] C[B]", np);
     double *dp = d->pointer();
@@ -1333,17 +1347,32 @@ void DFJKGrad::compute_hessian() {
     double **ddp = dd->pointer();
     auto de = std::make_shared<Matrix>("de[x][A] = (A|B)^x d[B] ", 3*natoms, np);
     double **dep = de->pointer();
-    auto dea_ij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*na*na);
-    double **dea_ijp = dea_ij->pointer();
-    auto deb_ij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*nb*nb);
-    double **deb_ijp = deb_ij->pointer();
+    SharedMatrix dea_ij, deb_ij;
+    double **dea_ijp = nullptr, **deb_ijp = nullptr;
+    if (do_K_) {
+        dea_ij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*na*na);
+        dea_ijp = dea_ij->pointer();
+        if (!same_ab) {
+            deb_ij = std::make_shared<Matrix>("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*nb*nb);
+            deb_ijp = deb_ij->pointer();
+        }
+    }
 
     // Build some integral factories
     auto Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
     auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_,
                                                        BasisSet::zero_ao_basis_set());
-    std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
-    std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
+    // Per-thread integral engines (the deriv-2 object also serves the deriv0/1
+    // calls). Mirrors DFJKGrad::compute_gradient so the shell loops below can
+    // be threaded over the auxiliary index.
+    int nthread = df_ints_num_threads_;
+    std::vector<std::shared_ptr<TwoBodyAOInt>> Pmnints(nthread), PQints(nthread);
+    Pmnints[0] = std::shared_ptr<TwoBodyAOInt>(Pmnfactory->eri(2));
+    PQints[0] = std::shared_ptr<TwoBodyAOInt>(PQfactory->eri(2));
+    for (int t = 1; t < nthread; t++) {
+        Pmnints[t] = std::shared_ptr<TwoBodyAOInt>(Pmnints[0]->clone());
+        PQints[t] = std::shared_ptr<TwoBodyAOInt>(PQints[0]->clone());
+    }
     auto Amn = std::make_shared<Matrix>("(A|mn)", np, nso*nso);
     auto Aa_mi = std::make_shared<Matrix>("(A|mi)", np, nso*na);
     auto Aa_ij = std::make_shared<Matrix>("(A|ij)", np, na*na);
@@ -1372,7 +1401,12 @@ void DFJKGrad::compute_hessian() {
     double **Bb_mnp = Bb_mn->pointer();
     double **Db_PQp = Db_PQ->pointer();
 
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (int P = 0; P < nauxshell; ++P) {
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         for (int M = 0; M < nshell; ++M) {
@@ -1382,8 +1416,8 @@ void DFJKGrad::compute_hessian() {
                 int nN = primary_->shell(N).nfunction();
                 int oN = primary_->shell(N).function_index();
 
-                Pmnint->compute_shell(P, 0, M, N);
-                const double* buffer = Pmnint->buffer();
+                Pmnints[thread]->compute_shell(P, 0, M, N);
+                const double* buffer = Pmnints[thread]->buffer();
 
                 for (int p = oP; p < oP+nP; p++) {
                     for (int m = oM; m < oM+nM; m++) {
@@ -1456,12 +1490,21 @@ void DFJKGrad::compute_hessian() {
 
     int maxp = auxiliary_->max_function_per_shell();
     int maxm = primary_->max_function_per_shell();
-    auto Ta = std::make_shared<Matrix>("Ta", maxp, maxm*na);
-    double **Tap = Ta->pointer();
-    auto Tb = std::make_shared<Matrix>("Tb", maxp, maxm*nb);
-    double **Tbp = Tb->pointer();
+    // Per-thread scratch for the K intermediates below.
+    std::vector<std::shared_ptr<Matrix>> Ta_vec(nthread), Tb_vec(nthread);
+    for (int t = 0; t < nthread; t++) {
+        Ta_vec[t] = std::make_shared<Matrix>("Ta", maxp, maxm*na);
+        Tb_vec[t] = std::make_shared<Matrix>("Tb", maxp, maxm*nb);
+    }
 
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (int P = 0; P < nauxshell; ++P) {
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+        double **Tap = Ta_vec[thread]->pointer();
+        double **Tbp = Tb_vec[thread]->pointer();
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1486,9 +1529,9 @@ void DFJKGrad::compute_hessian() {
                 int ny = 3 * Ncenter + 1;
                 int nz = 3 * Ncenter + 2;
 
-                Pmnint->compute_shell_deriv1(P, 0, M, N);
-                const double* buffer = Pmnint->buffer();
-                const auto& buffers = Pmnint->buffers();
+                Pmnints[thread]->compute_shell_deriv1(P, 0, M, N);
+                const double* buffer = Pmnints[thread]->buffer();
+                const auto& buffers = Pmnints[thread]->buffers();
                 const double* PxBuf = buffers[0];
                 const double* PyBuf = buffers[1];
                 const double* PzBuf = buffers[2];
@@ -1612,7 +1655,12 @@ void DFJKGrad::compute_hessian() {
     // dd[x][A] = dc[x][B] Minv[B][A]
     C_DGEMM('N', 'N', 3 * natoms, np, np, 1.0, dcp[0], np, PQp[0], np, 0.0, ddp[0], np);
 
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (int P = 0; P < nauxshell; ++P) {
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1631,8 +1679,8 @@ void DFJKGrad::compute_hessian() {
 
             //size_t stride = static_cast<size_t>(Pncart) * Qncart;
 
-            PQint->compute_shell_deriv1(P, 0, Q, 0);
-            const auto& buffers = PQint->buffers();
+            PQints[thread]->compute_shell_deriv1(P, 0, Q, 0);
+            const auto& buffers = PQints[thread]->buffers();
             const double* Pxbuf = buffers[0];
             const double* Pybuf = buffers[1];
             const double* Pzbuf = buffers[2];
@@ -1677,7 +1725,24 @@ void DFJKGrad::compute_hessian() {
         }
     }
 
+    // Per-thread Hessian accumulators for the two second-derivative integral
+    // loops below (loops write to the shared J/K Hessian, indexed by atom
+    // coordinate pairs, so they cannot be partitioned by the auxiliary index).
+    // Reduced into hessians_ after the second loop, before the serial tail.
+    std::vector<std::shared_ptr<Matrix>> JHess_local(nthread), KHess_local(nthread);
+    for (int t = 0; t < nthread; t++) {
+        JHess_local[t] = std::make_shared<Matrix>("JHess local", 3 * natom, 3 * natom);
+        KHess_local[t] = std::make_shared<Matrix>("KHess local", 3 * natom, 3 * natom);
+    }
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (int P = 0; P < nauxshell; ++P) {
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+        double** JHessp = JHess_local[thread]->pointer();
+        double** KHessp = KHess_local[thread]->pointer();
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1702,8 +1767,8 @@ void DFJKGrad::compute_hessian() {
                 int ny = 3 * Ncenter + 1;
                 int nz = 3 * Ncenter + 2;
 
-                Pmnint->compute_shell_deriv2(P, 0, M, N);
-                const auto& buffers = Pmnint->buffers();
+                Pmnints[thread]->compute_shell_deriv2(P, 0, M, N);
+                const auto& buffers = Pmnints[thread]->buffers();
                 const double* PxPxBuf = buffers[0];
                 const double* PxPyBuf = buffers[1];
                 const double* PxPzBuf = buffers[2];
@@ -1980,7 +2045,14 @@ void DFJKGrad::compute_hessian() {
         }
     }
 
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (int P = 0; P < nauxshell; ++P) {
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+        double** JHessp = JHess_local[thread]->pointer();
+        double** KHessp = KHess_local[thread]->pointer();
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1997,8 +2069,8 @@ void DFJKGrad::compute_hessian() {
             int Qy = 3 * Qcenter + 1;
             int Qz = 3 * Qcenter + 2;
 
-            PQint->compute_shell_deriv2(P, 0, Q, 0);
-            const auto& buffers = PQint->buffers();
+            PQints[thread]->compute_shell_deriv2(P, 0, Q, 0);
+            const auto& buffers = PQints[thread]->buffers();
             const double* PxPxBuf = buffers[0];
             const double* PxPyBuf = buffers[1];
             const double* PxPzBuf = buffers[2];
@@ -2138,6 +2210,14 @@ void DFJKGrad::compute_hessian() {
                 }
             }
         }
+    }
+
+    // Reduce the per-thread second-derivative integral Hessians into the
+    // totals before the serial tail (symmetrization + intermediate stitching)
+    // resumes using the shared JHessp/KHessp pointers.
+    for (auto& h : JHess_local) hessians_["Coulomb"]->add(h);
+    if (do_K_) {
+        for (auto& h : KHess_local) hessians_["Exchange"]->add(h);
     }
 
     // Add permutational symmetry components missing from the above

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -103,23 +103,20 @@ from .metadata import __version__, version_formatter
 # A few extraneous functions
 from .extras import get_input_directory, addons, test, set_output_file
 from psi4.core import variable, set_variable
+from .driver.schema_wrapper import run_qcschema
 
 # Python portions of compiled-in Add-Ons
 # * Note that this is a "battening down the hatches" for the many
 #   rather than letting PYTHONPATH rule for the few.
 import sys
-if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PCMSolver
+_enabled_choice = ("1", "ON", "YES", "TRUE", "Y")
+if "@ENABLE_PCMSolver@".upper() in _enabled_choice:  # PCMSolver
     sys.path.insert(1, r"@PCMSolver_PYMOD@")
-if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
-    sys.path.insert(1, r"@cppe_PYMOD@")
-if "@ENABLE_ddx@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pyddx
-    sys.path.insert(1, r"@pyddx_PYMOD@")
-if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
-    sys.path.insert(1, r"@pylibefp_PYMOD@")
-if "@ENABLE_gdma@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # gdma
+if "@ENABLE_libefp@".upper() in _enabled_choice:  # pylibefp
+    sys.path.insert(1, str(Path(r"@PY_pylibefp@").resolve().parent))
+if "@ENABLE_gdma@".upper() in _enabled_choice:  # gdma
     sys.path.insert(1, r"@gdma_PYMOD@")
-if "@ENABLE_bse@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # bse
-    sys.path.insert(1, r"@bse_PYMOD@")
+del _enabled_choice
 
 # Create a custom logger
 import logging

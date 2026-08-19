@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,7 +32,6 @@ from .constants import *
 # isort: split
 
 from . import aliases, diatomic, frac, gaussian_n
-from . import schema_wrapper as json_wrapper  # Deprecate in 1.4
 from . import schema_wrapper as schema_wrapper
 from . import wrapper_autofrag, wrapper_database
 from .driver import *

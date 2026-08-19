@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -94,7 +94,7 @@ void export_fock(py::module &m) {
         .def("D", &JK::D, py::return_value_policy::reference_internal)
         .def("computed_shells_per_iter", py::overload_cast<>(&JK::computed_shells_per_iter), "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during each compute call.")
         .def("computed_shells_per_iter", py::overload_cast<const std::string&>(&JK::computed_shells_per_iter), "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during each compute call.")
-        .def("print_header", &JK::print_header, "docstring");
+        .def("print_header", &JK::print_header, "Prints information about the type and config of the JK object into the output file. Print verbosity may depend on the value of JK::print\\_.");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
@@ -230,7 +230,12 @@ void export_fock(py::module &m) {
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
-                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return scf::SADGuess(basis, atomic_bases, Process::environment.options); })
+                    // Return by shared_ptr, not by value: SADGuess owns a std::unique_ptr<JK> and
+                    // declares a destructor, so it is neither copyable nor movable. pybind11 3.x wraps
+                    // the factory in detail::function_ref, whose constructor requires
+                    // is_convertible<return_type, Ret> -- and is_convertible<SADGuess, SADGuess> is
+                    // false for a non-movable, non-copyable type, so the by-value form fails to build.
+                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return std::make_shared<scf::SADGuess>(basis, atomic_bases, Process::environment.options); })
         .def("compute_guess", &scf::SADGuess::compute_guess)
         .def("set_print", &scf::SADGuess::set_print)
         .def("set_debug", &scf::SADGuess::set_debug)

@@ -66,5 +66,6 @@ if(${ENABLE_Einsums})
         set(Einsums_DIR ${STAGED_INSTALL_PREFIX}/${_einsums_dir} CACHE PATH "path to internally built EinsumsConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: einsums${ColourReset}")
     add_library(einsums_external INTERFACE)  # dummy
 endif()

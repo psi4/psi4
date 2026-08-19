@@ -2,11 +2,11 @@
 
 import numpy as np
 import psi4
-import json
+import pprint
 
 # Generate JSON data
 json_data = {
-  "schema_name": "qc_schema_input",
+  "schema_name": "qcschema_input",
   "schema_version": 1,
   "molecule": {
     "geometry": [
@@ -120,12 +120,19 @@ expected_properties = {
 }
 
 
-## with deprecated `run_json`
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    tol = 5
+else:
+    tol = 2.e-5
 
-json_ret = psi4.json_wrapper.run_json(json_data)
+## with removed `run_json`
 
-
-
+try:
+    json_ret = psi4.schema_wrapper.run_json(json_data)
+except psi4.driver.p4util.exceptions.UpgradeHelper:
+    psi4.compare(True, True, "run_json failed")
+else:
+    psi4.compare(True, False, "run_json failed")
 
 
 ## with current `run_qcschema`
@@ -143,7 +150,9 @@ expected_return_result["quadrupole"] = np.array(expected_return_result["quadrupo
 expected_return_result["wiberg_lowdin_indices"] = np.array(expected_return_result["wiberg_lowdin_indices"]).reshape((3, 3))
 expected_return_result["mayer_indices"] = np.array(expected_return_result["mayer_indices"]).reshape((3, 3))
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
+json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
+
+pprint.pprint(json_ret, width=200)
 
 # can't write msgpack arrays to json
 

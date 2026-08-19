@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2025 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -105,6 +105,8 @@ installing |PSIfour|. More detail is given :ref:`here
     >>> make install
     # -or- general
     >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
+    # add `which psi4` and `import psi4` to envvars
+    >>> eval $(stage/bin/psi4 --psiapi)
 
 
 .. _`faq:builddetailed`:
@@ -163,6 +165,7 @@ How to build, test, and install Psi4, in detail
 
     >>> cd {objdir}
     >>> cmake --build . -j`getconf _NPROCESSORS_ONLN`
+    >>> eval $(stage/bin/psi4 --psiapi)
 
 **5. Test**
 
@@ -240,8 +243,6 @@ build system will automatically download and build.
 * QCEngine |w---w| `[what is QCEngine?] <https://molssi.github.io/QCEngine/>`_ (March 2019; added by v1.4)
 
 * optking |w---w| `[what is optking] <https://optking.readthedocs.io/en/latest/>`_ (runtime dependency, required at build-time) 
-
-* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (August 2025; added by v1.10; runtime dependency, required at build-time)
 
 Additionally, there are runtime-only dependencies:
 
@@ -373,6 +374,8 @@ Additionally, there are runtime-loaded capabilities:
 * MDI |w---w| https://github.com/MolSSI-MDI/MDI_Library
 
 * :ref:`ddx <sec:ddx>` |w---w| https://github.com/ddsolvation/ddx
+
+* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (July 2026 - optional by v1.12; August 2025 - added required by v1.10; runtime dependency, optional at build-time)
 
 
 .. _`faq:condapsi4dev`:

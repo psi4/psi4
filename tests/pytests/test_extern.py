@@ -392,4 +392,3 @@ def test_extern_points_diffuse(ep, anskey):
 
     ene = psi4.energy("hf/6-31G*", molecule=water, external_potentials=ep)
     psi4.compare_values(ans[anskey]["energy"], ene, 6, anskey)
-

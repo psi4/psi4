@@ -266,7 +266,7 @@ def test_mp2d():
     }
 
     jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
-    jrec = jrec.dict()
+    jrec = jrec.model_dump()
 
     assert psi4.compare_values(expected, jrec['extras']['qcvars']['CURRENT ENERGY'], 7, 'E')
     assert psi4.compare_values(expected, jrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'], 7, 'disp E')
@@ -569,6 +569,10 @@ def _test_scf5():
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet PK RHF energy')
 
     psi4.set_options({'scf__scf_type': 'direct'})
+    # dtype = 2  # for test_addons_qcschema.py
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="scf", molecule=singlet_o2, dtype=dtype)
+    # print(f'    jatin[{dtype}] = """{atin.serialize("json")}"""')
+    # assert 0
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Direct RHF energy')
 
@@ -596,6 +600,10 @@ def _test_scf5():
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Disk UHF energy')
 
     psi4.set_options({'scf__scf_type': 'df'})
+    # dtype = 2  # for test_addons_qcschema.py
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="scf", molecule=singlet_o2, dtype=dtype)
+    # print(f'    jatin[{dtype}] = """{atin.serialize("json")}"""')
+    # assert 0
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_df, E, 6, 'Singlet DF UHF energy')
 
@@ -659,6 +667,10 @@ def _test_scf5():
 
     psi4.set_options({'scf__scf_type': 'out_of_core'})
     E = psi4.energy('scf', molecule=triplet_o2)
+    # dtype = 2  # for test_addons_qcschema.py
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="scf", molecule=triplet_o2, dtype=dtype)
+    # print(f'    jatin[{dtype}] = """{atin.serialize("json")}"""')
+    # assert 0
     assert psi4.compare_values(Eref_rohf_can, E, 6, 'Triplet Disk ROHF energy')
     psi4.core.clean()
 
@@ -706,7 +718,7 @@ def test_openorbitaloptimizer():
     _test_scf5()
 
 
-def test_run_json():
+def test_run_qcschema_1():
     """json/energy"""
 
     import numpy as np
@@ -727,8 +739,11 @@ def test_run_json():
         "keywords": {}
     }
 
-    with pytest.warns(FutureWarning) as err:
-        json_ret = psi4.json_wrapper.run_json(json_input)
+    # with pytest.warns(FutureWarning) as err:
+    with pytest.raises(psi4.UpgradeHelper) as err:
+        json_ret = psi4.schema_wrapper.run_json(json_input)
+
+    json_ret = psi4.schema_wrapper.run_qcschema(json_input, return_dict=True)
 
     assert psi4.compare_integers(True, json_ret["success"], "Success")
     assert psi4.compare_values(-5.474227786274896, json_ret["properties"]["return_energy"], 4, "SCF ENERGY")
@@ -739,29 +754,31 @@ def test_run_json():
     assert psi4.compare_arrays(bench_gradient, cgradient, 4, "SCF RETURN GRADIENT")
 
 
-def test_run_qcschema():
+def test_run_qcschema_2():
     """json/energy"""
 
     import numpy as np
 
     # Generate JSON data
     json_input = {
-        "schema_name": "qc_schema_input",
-        "schema_version": 1,
+        "schema_name": "qcschema_atomic_input",
+        "schema_version": 2,
         "molecule": {
             "symbols": ["He", "He"],
             "geometry": [0, 0, -1, 0, 0, 1]
         },
+        "specification": {
         "driver": "gradient",
         "model": {
             "method": "SCF",
             "basis": "sto-3g"
         },
         "keywords": {}
+        }
     }
 
-    json_ret = psi4.json_wrapper.run_qcschema(json_input)
-    print(json_ret.dict())
+    json_ret = psi4.schema_wrapper.run_qcschema(json_input)
+    print(json_ret.model_dump())
 
     assert psi4.compare(True, json_ret.success, "Success")
     assert psi4.compare_values(-5.474227786274896, json_ret.properties.return_energy, 4, "SCF ENERGY")
@@ -896,7 +913,7 @@ def test_gpu_dfcc():
 
 
 
-@pytest.mark.nbody
+@uusing("qcmanybody")
 @uusing("dftd3")
 @uusing("gcp")
 def test_grimme_3c():
@@ -1438,9 +1455,10 @@ def test_dftd4():
     psi4.energy('b3lyp-d2')
     assert psi4.compare_values(ref_pbe_d2[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
 
-    psi4.set_options({"dft_dispersion_parameters": [1.0,  0.722, 1.217, 14.0]})
-    psi4.energy('b3lyp-d3')
-    assert psi4.compare_values(ref_pbe_d3zero[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')
+    if "dftd3" in psi4.addons():
+        psi4.set_options({"dft_dispersion_parameters": [1.0,  0.722, 1.217, 14.0]})
+        psi4.energy('b3lyp-d3')
+        assert psi4.compare_values(ref_pbe_d3zero[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')
 
     psi4.set_options({"dft_dispersion_parameters": [0.38574991, 4.80688534, 16.0, 1.0, 0.95948085, 1.0]})  # pbe-d4
     psi4.energy('b3lyp-d4')
@@ -1603,17 +1621,3 @@ def test_pyeinsums_gemm(a, b, c, dtype, array):
     for i in range(a):
         for j in range(c):
             assert C[i, j] == pytest.approx(C_actual[i, j])
-
-
-if __name__ == "__main__":
-    test_sapt0d4(
-    {
-        's8': 0.738,
-        'a1': 0.095,
-        'a2': 3.637,
-        's6': 1.000,
-        's9': 0.000,
-        "d4_variant": "d4bj2b",
-        "disp_energy": -0.0017167422058899998,
-    },
-    )

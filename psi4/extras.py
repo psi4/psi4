@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -180,6 +180,7 @@ _addons_ = {
     "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
     "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
     "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),
+    "qcmanybody": which_import("qcmanybody", return_bool=True),
 }
 
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -195,9 +195,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return jk;
 
     } else {
-        std::stringstream message;
-        message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
-        throw PSIEXCEPTION(message.str());
+        throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type '" + jk_type + "'");
     }
 }
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,

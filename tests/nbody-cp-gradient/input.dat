@@ -74,7 +74,7 @@ set d_convergence 9
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
     tol = 1.e-8
 else:
-    tol = 7.e-8  # perhaps 5.e-8 after sqrt
+    tol = 5.e-8
 
 # compute nbody
 if distributed:

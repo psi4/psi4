@@ -40,5 +40,6 @@ if(${ENABLE_OpenOrbitalOptimizer})
         set(OpenOrbitalOptimizer_DIR ${STAGED_INSTALL_PREFIX}/${_ooo_dir} CACHE PATH "path to internally built OpenOrbitalOptimizerConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: OpenOrbitalOptimizer${ColourReset}")
     add_library(openorbitaloptimizer_external INTERFACE)  # dummy
 endif()

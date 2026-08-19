@@ -102,3 +102,11 @@ grad_embpot.add(grad_nuc)
 
 compare_matrices(grad_analytic, grad_embpot, 5, "Gradient with analytic point charge embedding vs. with numerical EMBPOT embedding") #TEST
 compare_values(e_analytic, e_embpot, 6, "Energy with analytic point charge embedding vs. with numerical EMBPOT embedding")  #TEST
+
+ene_ref = -76.0194112288343  #TEST
+grad_ref = ([
+        [-6.82055788e-03, -4.91941583e-07, -1.37359568e-02],
+        [ 1.97327569e-03,  1.21536585e-02,  8.95300981e-03],
+        [ 1.97320516e-03, -1.21531649e-02,  8.95261948e-03]])
+compare_values(ene_ref, e_analytic, 6, "fixed compare ene")  #TEST
+compare_values(grad_ref, grad_analytic, 5e-5, "fixed compare grad")  #TEST

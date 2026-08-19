@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -153,6 +153,8 @@ class PSI_API MintsHelper {
      *  \param include_pure_transform Is either kFromCartesianAO or kFromBF.
      */
     std::shared_ptr<PetiteList> petite_list(bool include_pure_transform) const;
+    /// Returns CartAO->AO (cartesian->BF) transformation matrix of shape (nbf, nao).
+    SharedMatrix cartao_to_ao_transform() const;
     /// Basis set being used.
     std::shared_ptr<BasisSet> basisset() const;
     /// SO basis set being used.
