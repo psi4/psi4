@@ -31,6 +31,7 @@
 #include "points.h"
 #include "dft_integrators.h"
 #include "sap.h"
+#include "GauXCV.h"
 
 #include "psi4/libfunctional/LibXCfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -119,16 +120,25 @@ void VBase::common_init() {
 std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::shared_ptr<SuperFunctional> functional,
                                       Options& options, const std::string& type) {
     std::shared_ptr<VBase> v;
+    const bool use_gauxc = options.get_str("DFT_V_ALGORITHM") == "GAUXC";
     if (type == "RV") {
         if (!functional->is_unpolarized()) {
             throw PSIEXCEPTION("Passed in functional was polarized for RV reference.");
         }
-        v = std::make_shared<RV>(functional, primary, options);
+        if (use_gauxc) {
+            v = std::make_shared<GauXCRV>(functional, primary, options);
+        } else {
+            v = std::make_shared<RV>(functional, primary, options);
+        }
     } else if (type == "UV") {
         if (functional->is_unpolarized()) {
             throw PSIEXCEPTION("Passed in functional was unpolarized for UV reference.");
         }
-        v = std::make_shared<UV>(functional, primary, options);
+        if (use_gauxc) {
+            v = std::make_shared<GauXCUV>(functional, primary, options);
+        } else {
+            v = std::make_shared<UV>(functional, primary, options);
+        }
     } else if (type == "SAP") {
         v = std::make_shared<SAP>(functional, primary, options);
     } else {

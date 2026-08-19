@@ -1039,7 +1039,8 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void RHF::setup_potential() {
     if (functional_->needs_xc()) {
-        potential_ = std::make_shared<RV>(functional_, basisset_, options_);
+        potential_ = std::dynamic_pointer_cast<RV>(
+            VBase::build_V(basisset_, functional_, options_, "RV"));
         potential_->initialize();
     } else {
         potential_ = nullptr;

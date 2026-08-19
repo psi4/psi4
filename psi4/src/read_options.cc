@@ -192,6 +192,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
+    /*- Algorithm for the DFT exchange-correlation quadrature.
+    ``INTERNAL`` uses Psi4's own grid code; ``GAUXC`` delegates to the GauXC library,
+    which can execute on GPUs. -*/
+    options.add_str("DFT_V_ALGORITHM", "INTERNAL", "INTERNAL GAUXC");
+    /*- Execute the GauXC-based XC quadrature on a GPU. Requires a device-enabled GauXC build. -*/
+    options.add_bool("DFT_V_USE_GPU", false);
+    /*- Proportion (in %) of available GPU memory to allocate to the GauXC XC quadrature. !expert -*/
+    options.add_int("DFT_V_GPU_MEM", 90);
 #ifdef USING_OpenOrbitalOptimizer
     /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
