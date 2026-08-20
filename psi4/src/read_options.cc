@@ -173,9 +173,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Whether to allow GPU calculations to use mixed precision emulation (requires CUDA and cuEST libraries) -*/
     options.add_bool("CUEST_MIXED_PRECISION", true);
     /*- Tune # of Ozaki Slices in emulated DF K computations (requires CUDA and cuEST libraries) -*/
-    options.add_int("CUEST_DFK_SLICES", true);
+    options.add_int("CUEST_DFK_SLICES", 5);
     /*- Tune # of Ozaki Moduli in emulated DF K computations (requires CUDA and cuEST libraries) -*/
-    options.add_int("CUEST_DFK_MODULI", true);
+    options.add_int("CUEST_DFK_MODULI", 8);
 
     // Note that case-insensitive options are only functional as
     //   globals, not as module-level, and should be defined sparingly
