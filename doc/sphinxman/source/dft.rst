@@ -488,6 +488,26 @@ On CPU, which backend is faster depends strongly on system size: for small
 basis sets the internal code wins, while from roughly cc-pVTZ upwards GauXC is
 about twice as fast (glycine, 16 threads, (75,302) grid).
 
+GPU execution
+^^^^^^^^^^^^^
+
+Setting |scf__dft_v_use_gpu| runs the quadrature on the GPU. This requires a
+GauXC installation built with device support (``-Dgauxc_ENABLE_GPU=ON``, plus
+CUDA); a CPU-only GauXC silently ignores the request. |scf__dft_v_gpu_mem|
+caps the fraction of device memory GauXC may reserve.
+
+The GPU path reproduces the GauXC CPU results to all printed digits for LDA,
+GGA, meta-GGA, global hybrid and range-separated hybrid functionals, for both
+RKS and UKS.
+
+Whether it is *faster* is a property of the card rather than of the code. The
+quadrature is double precision end to end, and NVIDIA restricts double
+precision throughput on consumer and inference cards to 1/32 or 1/64 of single
+precision. On such a card a many-core CPU will win. Datacenter parts
+(P100, V100, A100, H100) run double precision at 1/2 and are the sensible
+target. Note also that GauXC requires compute capability 6.0 or newer, and
+that CUDA 13 dropped Pascal support, so Pascal cards need CUDA 12.x.
+
 .. _`sec:grid-selection`:
 
 Grid Selection
