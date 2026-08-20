@@ -88,8 +88,8 @@ cuESTJK::cuESTJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 
     condition_ = options.get_double("DF_FITTING_CONDITION");
     pq_threshold_ = options.get_double("INTS_TOLERANCE");
-    dfk_slices_ = options.get_int("CUEST_DFK_SLICES");
-    dfk_moduli_ = options.get_int("CUEST_DFK_MODULI");
+    dfk_slices_ = static_cast<uint64_t>(options.get_int("CUEST_DFK_SLICES"));
+    dfk_moduli_ = static_cast<uint64_t>(options.get_int("CUEST_DFK_MODULI"));
 }
 
 cuESTJK::~cuESTJK() {
@@ -168,33 +168,19 @@ void cuESTJK::preiterations()
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
 
     // Set J & K compute parameters
-    // CHECK_CUEST(cuestParametersConfigure(
-    //     CUEST_DFCOULOMBCOMPUTE_PARAMETERS, 
-    //     cuest_coulomb_compute_params_,
-    //     CUEST_DFCOULOMBCOMPUTE_PARAMETERS_FFLOAT_USAGE_MODE,
-    //     &ffloat_usage_mode_, // can be one of three values
-    //     sizeof(bool))); // not sure what attribute type is yet
-
-    // CHECK_CUEST(cuestParametersConfigure(
-    //     CUEST_DFCOULOMBCOMPUTE_PARAMETERS, 
-    //     cuest_coulomb_compute_params_,
-    //     CUEST_DFCOULOMBCOMPUTE_PARAMETERS_JIT_USAGE_MODE, 
-    //     &jit_usage_mode_,
-    //     sizeof(double)));
-
     CHECK_CUEST(cuestParametersConfigure(
         CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
         cuest_exchange_compute_params_,
         CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_SLICE_COUNT,
         &dfk_slices_,
-        sizeof(int32_t)));
+        sizeof(uint64_t)));
 
     CHECK_CUEST(cuestParametersConfigure(
         CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, 
         cuest_exchange_compute_params_,
         CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_MODULUS_COUNT,
         &dfk_moduli_,
-        sizeof(int32_t)));
+        sizeof(uint64_t)));
 
     // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off
     if (!options_.get_bool("CUEST_MIXED_PRECISION")) {
