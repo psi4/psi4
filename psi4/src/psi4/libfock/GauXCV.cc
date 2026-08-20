@@ -84,7 +84,11 @@ GauXCEngine::GauXCEngine(std::shared_ptr<SuperFunctional> functional, std::share
     }
 
 #if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
-    if (primary_->has_puream()) {
+    // The permutation only repairs the ordering *within* solid-harmonic shells, which differs
+    // between Psi4's Gaussian ordering and the CCA ordering GauXC expects. Once the basis is
+    // handed to GauXC in Cartesian form there is no solid-harmonic ordering left to repair, and
+    // the permutation would also be sized for the spherical (smaller) dimension, so skip it.
+    if (primary_->has_puream() && !force_cartesian_) {
         permutation_matrix_ = gauxc_interface::generate_permutation_matrix(primary_, gauxc_max_am);
     }
 #endif
