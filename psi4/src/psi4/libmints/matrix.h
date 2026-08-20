@@ -173,6 +173,10 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     Matrix(const Matrix& copy);
     /// Copy assignment operator.
     Matrix& operator=(const Matrix& copy);
+    /// Move constructor.
+    Matrix(Matrix&& move) noexcept;
+    /// Move assignment operator.
+    Matrix& operator=(Matrix&& move) noexcept;
     /// Explicit \c shared_ptr copy constructor.
     explicit Matrix(const SharedMatrix& copy);
     /// Explicit pointer copy constructor.

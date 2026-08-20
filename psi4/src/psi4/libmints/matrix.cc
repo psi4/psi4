@@ -79,7 +79,7 @@ Matrix::Matrix(const Matrix &c)
     copy_from(c.matrix_);
 }
 
-Matrix &Matrix::operator=(const Matrix &c) {
+Matrix& Matrix::operator=(const Matrix &c) {
     release();
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
@@ -88,6 +88,29 @@ Matrix &Matrix::operator=(const Matrix &c) {
     colspi_ = c.colspi_;
     alloc();
     copy_from(c.matrix_);
+
+    return *this;
+}
+
+Matrix::Matrix(Matrix&& m) noexcept
+    : rowspi_(std::move(m.rowspi_)), colspi_(std::move(m.colspi_)), nirrep_(m.nirrep_), matrix_(m.matrix_),
+      symmetry_(m.symmetry_), name_(m.name_), numpy_shape_(std::move(m.numpy_shape_)) {
+    // Copy pointer to data then nullify the previous pointer to prevent double free.
+    m.matrix_ = nullptr;
+}
+
+Matrix& Matrix::operator=(Matrix&& m) noexcept {
+    release();
+    nirrep_ = m.nirrep_;
+    symmetry_ = m.symmetry_;
+    name_ = m.name_;
+    rowspi_ = std::move(m.rowspi_);
+    colspi_ = std::move(m.colspi_);
+    numpy_shape_ = std::move(m.numpy_shape_);
+
+    // Copy pointer to data then nullify the previous pointer to prevent double free.
+    matrix_ = m.matrix_;
+    m.matrix_ = nullptr;
 
     return *this;
 }
