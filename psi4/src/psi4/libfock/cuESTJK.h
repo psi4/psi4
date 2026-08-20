@@ -53,6 +53,8 @@ class PSI_API cuESTJK : public JK {
 
     double condition_;
     double pq_threshold_;
+    int32_t dfk_slices_;
+    int32_t dfk_moduli_;
 
     bool initialized_;
 
