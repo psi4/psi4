@@ -1045,9 +1045,12 @@ if the instability still exists. For more attempts, set |scf__max_attempts|;
 the default value of 1 is recommended. In case the SCF ends up in the same minimum, modification
 of |scf__follow_step_scale| is recommended over increasing |scf__max_attempts|.
 
-.. note:: Setting the option |scf__stability_analysis| to ``FOLLOW`` is only avalible for UHF. When using
-   RHF and ROHF instabilities can be checked, but not followed. If you want to attempt to find a lower energy solution
-   you should re-run the calculation with |scf__reference| set to ``UHF``.
+.. note:: Setting the option |scf__stability_analysis| to ``FOLLOW`` is available for UHF and RHF.
+   For UHF, ``FOLLOW`` follows internal UHF :math:`\rightarrow` UHF instabilities. For RHF, ``FOLLOW``
+   follows singlet internal (RHF :math:`\rightarrow` RHF) instabilities only; triplet external
+   (RHF :math:`\rightarrow` UHF) instabilities can be checked but not followed on an RHF wavefunction.
+   If a triplet instability is detected, rerun the calculation with |scf__reference| set to ``UHF``
+   to find the lower-energy unrestricted solution. ``FOLLOW`` is not yet available for ROHF or CUHF.
 
 The main algorithm available in |PSIfour| is the Direct Inversion algorithm. It can *only*
 work with |globals__scf_type| ``PK``, and it explicitly builds the full electronic Hessian
@@ -1068,7 +1071,7 @@ analysis. The capabilities of both algorithms are summarized below:
     +------------------+------------------+----------------------------------------------+---------------------------+---------------------+
     |     Algorithm    | |scf__reference| |     Stability checked                        | |scf__stability_analysis| | |globals__scf_type| |
     +==================+==================+==============================================+===========================+=====================+
-    |                  |       RHF        | Internal, External (:math:`\rightarrow` UHF) | ``CHECK``                 |   PK only           |
+    |                  |       RHF        | Internal, External (:math:`\rightarrow` UHF) | ``CHECK`` or ``FOLLOW``   |   PK only           |
     +                  +------------------+----------------------------------------------+---------------------------+---------------------+
     | Direct Inversion |       ROHF       | Internal                                     | ``CHECK``                 |   PK only           |
     +------------------+------------------+----------------------------------------------+---------------------------+---------------------+
