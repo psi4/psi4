@@ -88,8 +88,8 @@ cuESTJK::cuESTJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 
     condition_ = options.get_double("DF_FITTING_CONDITION");
     pq_threshold_ = options.get_double("INTS_TOLERANCE");
-    dfk_slices_ = static_cast<uint64_t>(options.get_int("CUEST_DFK_SLICES"));
-    dfk_moduli_ = static_cast<uint64_t>(options.get_int("CUEST_DFK_MODULI"));
+    dfk_slices_ = options.get_int("CUEST_DFK_SLICES");
+    dfk_moduli_ = options.get_int("CUEST_DFK_MODULI");
 }
 
 cuESTJK::~cuESTJK() {
