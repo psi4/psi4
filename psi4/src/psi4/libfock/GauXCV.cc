@@ -121,6 +121,16 @@ GauXCEngine::GauXCEngine(std::shared_ptr<SuperFunctional> functional, std::share
     if (kernels.empty()) {
         throw PSIEXCEPTION("GauXC XC quadrature: SuperFunctional carries no exchange-correlation ingredients.");
     }
+    if (functional->needs_vv10()) {
+        throw PSIEXCEPTION(
+            "DFT_V_ALGORITHM=GAUXC does not support the VV10 non-local correlation kernel. "
+            "Use DFT_V_ALGORITHM=INTERNAL for this functional.");
+    }
+    if (functional->needs_grac()) {
+        throw PSIEXCEPTION(
+            "DFT_V_ALGORITHM=GAUXC does not support GRAC asymptotic corrections. "
+            "Use DFT_V_ALGORITHM=INTERNAL for this functional.");
+    }
 
     ExchCXX::HybCoeffs hyb;
     hyb.alpha = functional->x_alpha();
@@ -234,7 +244,60 @@ GauXCUV::GauXCUV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<Ba
 GauXCUV::~GauXCUV() {}
 
 void GauXCUV::compute_V(std::vector<SharedMatrix> ret) {
-    throw PSIEXCEPTION("DFT_V_ALGORITHM=GAUXC is not implemented yet.");
+#ifdef USING_gauxc
+    timer_on("GauXCUV: Form V");
+    if ((D_AO_.size() != 2) || (ret.size() != 2)) {
+        throw PSIEXCEPTION("GauXCUV: UKS should have two D/V Matrices");
+    }
+    if (functional_->needs_grac()) {
+        throw PSIEXCEPTION("GauXCUV: UKS cannot compute GRAC corrections.");
+    }
+
+    // GauXC's UKS entry point takes the scalar and the spin-magnetization
+    // density, Ps = Da + Db and Pz = Da - Db. See GauXC's reference host work
+    // driver, which forms rho_+/- as 0.5*(rho_s +/- rho_z).
+    GauXCEngine::matrix_type Da = engine().to_gauxc_density(D_AO_[0]);
+    GauXCEngine::matrix_type Db = engine().to_gauxc_density(D_AO_[1]);
+    GauXCEngine::matrix_type Ps = Da + Db;
+    GauXCEngine::matrix_type Pz = Da - Db;
+
+    auto [exc, vxc_s, vxc_z] = engine().integrator().eval_exc_vxc(Ps, Pz);
+
+    // Chain rule inverse of the density combination above.
+    GauXCEngine::matrix_type Va = vxc_s + vxc_z;
+    GauXCEngine::matrix_type Vb = vxc_s - vxc_z;
+
+    auto Va_AO = std::make_shared<Matrix>("Va AO Temp", nbf_, nbf_);
+    auto Vb_AO = std::make_shared<Matrix>("Vb AO Temp", nbf_, nbf_);
+    engine().from_gauxc_potential(Va, Va_AO);
+    engine().from_gauxc_potential(Vb, Vb_AO);
+
+    if (AO2USO_) {
+        ret[0]->apply_symmetry(Va_AO, AO2USO_);
+        ret[1]->apply_symmetry(Vb_AO, AO2USO_);
+    } else {
+        ret[0]->copy(Va_AO);
+        ret[1]->copy(Vb_AO);
+    }
+
+    quad_values_["FUNCTIONAL"] = exc;
+    quad_values_["VV10"] = 0.0;
+    quad_values_["RHO_A"] = 0.0;
+    quad_values_["RHO_AX"] = 0.0;
+    quad_values_["RHO_AY"] = 0.0;
+    quad_values_["RHO_AZ"] = 0.0;
+    quad_values_["RHO_B"] = 0.0;
+    quad_values_["RHO_BX"] = 0.0;
+    quad_values_["RHO_BY"] = 0.0;
+    quad_values_["RHO_BZ"] = 0.0;
+
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
+        throw PSIEXCEPTION("GauXCUV: Integrated DFT functional to get NaN.");
+    }
+    timer_off("GauXCUV: Form V");
+#else
+    throw PSIEXCEPTION("DFT_V_ALGORITHM=GAUXC requires Psi4 built with ENABLE_gauxc=ON.");
+#endif
 }
 
 void GauXCUV::print_header() const { UV::print_header(); }
