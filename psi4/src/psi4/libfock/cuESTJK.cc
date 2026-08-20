@@ -88,6 +88,8 @@ cuESTJK::cuESTJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 
     condition_ = options.get_double("DF_FITTING_CONDITION");
     pq_threshold_ = options.get_double("INTS_TOLERANCE");
+    dfk_slices_ = options.get_int("CUEST_DFK_SLICES");
+    dfk_moduli_ = options.get_int("CUEST_DFK_MODULI");
 }
 
 cuESTJK::~cuESTJK() {
@@ -184,14 +186,14 @@ void cuESTJK::preiterations()
         CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
         cuest_exchange_compute_params_,
         CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_SLICE_COUNT,
-        &options.get_int("CUEST_DFK_SLICES"),
+        &dfk_slices_,
         sizeof(int32_t)));
 
     CHECK_CUEST(cuestParametersConfigure(
         CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, 
         cuest_exchange_compute_params_,
         CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_MODULUS_COUNT,
-        &options.get_int("CUEST_DFK_MODULI"),
+        &dfk_moduli_,
         sizeof(int32_t)));
 
     // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off
