@@ -450,11 +450,48 @@ implemented in |PSIfour| for correctness. If you find an error in a DFT
 functional or have a request for a new functional, please let us know on our
 forum or GitHub page.
 
+.. _`sec:xc-quadrature-backend`:
+
+Exchange-Correlation Quadrature Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The numerical integration of the exchange-correlation potential is selected
+with |scf__dft_v_algorithm|:
+
+``INTERNAL`` (default)
+    |PSIfour|'s own grid code. Supports every functional |PSIfour| knows,
+    including VV10 non-local correlation and GRAC asymptotic corrections.
+
+``GAUXC``
+    Delegates the quadrature to the `GauXC <https://github.com/wavefunction91/GauXC>`_
+    library. Requires |PSIfour| built with ``ENABLE_gauxc=ON``. Supports RKS
+    and UKS with LDA, GGA, meta-GGA, global hybrid and range-separated hybrid
+    functionals. GauXC additionally offers GPU execution, enabled with
+    |scf__dft_v_use_gpu|.
+
+The ``GAUXC`` backend does *not* support VV10 or GRAC and rejects those
+functionals with an explicit message. It also requires grid settings that have
+a GauXC counterpart: |scf__dft_pruning_scheme| must be ``ROBUST``, ``TREUTLER``
+or ``NONE``, |scf__dft_radial_scheme| must be ``TREUTLER``, ``MURA`` or ``EM``,
+and |scf__dft_nuclear_scheme| must be ``BECKE`` or ``STRATMANN``.
+
+Note that GauXC partitions atomic weights with the Stratmann-Scuseria-Frisch
+scheme, whereas the |PSIfour| default is Treutler. When comparing the two
+backends numerically, set ``DFT_NUCLEAR_SCHEME STRATMANN`` on both sides;
+otherwise the difference is dominated by the partitioning, not the quadrature.
+
+Both backends agree to better than 1e-6 :math:`E_h` on total energies. The
+residual difference stems from how the two libraries sieve grid points and
+weights, and shrinks as the grid is refined.
+
+On CPU, which backend is faster depends strongly on system size: for small
+basis sets the internal code wins, while from roughly cc-pVTZ upwards GauXC is
+about twice as fast (glycine, 16 threads, (75,302) grid).
+
 .. _`sec:grid-selection`:
 
 Grid Selection
 ~~~~~~~~~~~~~~
-
 |PSIfour| uses the standard Lebedev-Laikov spherical quadratures in concert with a
 number of radial quadratures and atomic partitioning schemes. 
 The default grid in |PSIfour| is a Lebedev-Treutler (75,302) grid with a Treutler
