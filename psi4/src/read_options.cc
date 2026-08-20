@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -172,16 +172,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     // Note that case-insensitive options are only functional as
     //   globals, not as module-level, and should be defined sparingly
 
-    /*- Base filename for text files written by PSI, such as the
-    MOLDEN output file, the Hessian file, the internal coordinate file,
-    etc. Use the add_str_i function to make this string case sensitive. -*/
+    /*- Base filename (case sensitive) for text files written by PSI, such as the
+    MOLDEN output file, the Hessian file, the internal coordinate file, etc. -*/
     options.add_str_i("WRITER_FILE_LABEL", "");
     /*- The density fitting basis to use in coupled cluster computations. -*/
     options.add_str("DF_BASIS_CC", "");
     /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here.
        The code does NOT help you out in any way! !expert -*/
     options.add_bool("EXTERNAL_POTENTIAL_SYMMETRY", false);
-    /*- Text to be passed directly into CFOUR input files. May contain
+    /*- Text (case sensitive) to be passed directly into CFOUR input files. May contain
     molecule, options, percent blocks, etc. Access through ``cfour {...}``
     block. -*/
     options.add_str_i("LITERAL_CFOUR", "");
@@ -261,7 +260,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Useful when comparing analytic and grid-based methods. !expert -*/
     options.add_bool("ZORA_NR_DEBUG", false);
 
-    /*- Directory to which to write cube files. Default is the input file
+    /*- Directory (case sensitive) to which to write cube files. Default is the input file
     directory. -*/
     options.add_str_i("CUBEPROP_FILEPATH", ".");
 
@@ -342,7 +341,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
         options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
-        /*- Name of the PCMSolver input file as parsed by pcmsolver.py !expert -*/
+        /*- Name of the PCMSolver input file (case sensitive) as parsed by pcmsolver.py !expert -*/
         options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
         /*- PCM-CCSD algorithm type. -*/
         options.add_str("PCM_CC_TYPE", "PTE", "PTE");
@@ -432,7 +431,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     if (name == "PE" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable embedding model (PE) computations. -*/
 
-        /*- Name of the potential file OR contents of potential file to be written anonymously on-the-fly. -*/
+        /*- Name of the potential file (case sensitive) OR contents of potential file to be written anonymously on-the-fly. -*/
         options.add_str_i("POTFILE", "potfile.pot");
         /*- Threshold for induced moments convergence -*/
         options.add_double("INDUCED_CONVERGENCE", 1e-8);
@@ -1259,7 +1258,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("FISAPT_DO_FSAPT", true);
         /*- Do F-SAPT Dispersion? -*/
         options.add_bool("FISAPT_DO_FSAPT_DISP", true);
-        /*- Filepath to drop F-SAPT data within input file directory. To avoid files being written, set to 'none' -*/
+        /*- Filepath (case sensitive) to drop F-SAPT data within input file directory. To avoid files being written, set to 'none'. -*/
         options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/"); 
         /*- Do F-SAPT exchange scaling? (ratio of S^\infty to S^2) -*/
         options.add_bool("FISAPT_FSAPT_EXCH_SCALE", true);
@@ -1269,7 +1268,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("FISAPT_FSAPT_IND_RESPONSE", false);
         /*- Do sSAPT0 exchange-scaling with F-SAPT -*/
         options.add_bool("SSAPT0_SCALE", false);
-        /*- Filepath to drop sSAPT0 exchange-scaling F-SAPT data within input file directory -*/
+        /*- Filepath (case sensitive) to drop sSAPT0 exchange-scaling F-SAPT data within input file directory. -*/
         options.add_str_i("FISAPT_FSSAPT_FILEPATH", "s-fsapt/");
 
         // => CubicScalarGrid options <= //
@@ -1287,7 +1286,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Plot a scalar-field analysis -*/
         options.add_bool("FISAPT_DO_PLOT", false);
-        /*- Filepath to drop scalar data within input file directory -*/
+        /*- Filepath (case sensitive) to drop scalar data within input file directory. -*/
         options.add_str_i("FISAPT_PLOT_FILEPATH", "plot/");
 
         // => Localization Tech <= //
@@ -1657,6 +1656,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("OOO_DIIS_RESTART_FACTOR", 1.0e-4);
         /*- For |globals__orbital_optimizer_package| = `OOO`, use optimal damping when max error bigger than this. -*/
         options.add_double("OOO_OPTIMAL_DAMPING_THRESHOLD", 1.0);
+        /*- For |globals__orbital_optimizer_package| = `OOO`, restart ODA steps when DIIS hasn't
+        improved energy for this many SCF iterations. This option is temporary. -*/
+        options.add_int("OOO_ODA_RESTART_STEPS", 10);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1684,7 +1686,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
            directions -*/
         options.add("PERTURB_DIPOLE", new ArrayType());
         /*- The operator used to perturb the Hamiltonian, if requested.  DIPOLE_X, DIPOLE_Y and DIPOLE_Z will be
-            removed in favor of the DIPOLE option in the future -*/
+            removed in favor of the DIPOLE option in the future. SPHERE is also deprecated. -*/
         options.add_str("PERTURB_WITH", "DIPOLE", "DIPOLE DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
         /*- An ExternalPotential (built by Python or nullptr/None) -*/
         options.add_bool("EXTERN", false);
@@ -2877,183 +2879,185 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /* Alphabetized so I can check for missing keywords more easily against sorted model */
 
-        /*- :py:attr:`~optking.v1.optparams.OptParams.accept_symmetry_breaking` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.accept_symmetry_breaking` -*/
         options.add_bool("ACCEPT_SYMMETRY_BREAKING", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.add_auxiliary_bonds` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.add_auxiliary_bonds` -*/
         options.add_bool("ADD_AUXILIARY_BONDS", true);
         // Undocumented. Inactive currently
         options.add_double("ALG_GEOM_MAXITER", 50);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.auxiliary_bond_factor` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.auxiliary_bond_factor` -*/
         options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_dx_conv` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.bt_dx_conv` -*/
         options.add_double("BT_DX_CONV", 1e-7);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_dx_rms_change_conv` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.bt_dx_rms_change_conv` -*/
         options.add_double("BT_DX_RMS_CHANGE_CONV", 1e-12);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_max_iter` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.bt_max_iter` -*/
         options.add_double("BT_MAX_ITER", 25);
         // Undocumented. Should be switching to this instead of linear_algebra_tol
         options.add_double("BT_PINV_RCOND", 1e-6);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.full_hess_every` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.full_hess_every` -*/
         options.add_bool("CART_HESS_READ", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.conjugate_gradient_type` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.conjugate_gradient_type` -*/
         options.add_str("CONJUGATE_GRADIENT_TYPE", "");
-        /*- :py:attr:`consecutive_backsteps <optking.v1.optparams.OptParams.consecutive_backsteps_allowed>` -*/
+        /*- :py:attr:`consecutive_backsteps <optking.v2.optparams.OptParams.consecutive_backsteps_allowed>` -*/
         options.add_int("CONSECUTIVE_BACKSTEPS", 0);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.covalent_connect` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.covalent_connect` -*/
         options.add_double("COVALENT_CONNECT", 1.3);
         /*- Expected in an upcoming release. -*/
         options.add_str("CUSTOM_COORDS", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.dynamic_level` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.dynamic_level` -*/
         options.add_int("DYNAMIC_LEVEL", 0);
-        /*- :py:attr:`dynamic_level_max <optking.v1.optparams.OptParams.dynamic_lvl_max>` -*/
+        /*- :py:attr:`dynamic_level_max <optking.v2.optparams.OptParams.dynamic_lvl_max>` -*/
         options.add_int("DYNAMIC_LEVEL_MAX", 6);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ensure_bt_convergence` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ensure_bt_convergence` -*/
         options.add_bool("ENSURE_BT_CONVERGENCE", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_bend` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ext_force_bend` -*/
         options.add_str("EXT_FORCE_BEND", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_cartesian` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ext_force_cartesian` -*/
         options.add_str("EXT_FORCE_CARTESIAN", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_dihedral` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ext_force_dihedral` -*/
         options.add_str("EXT_FORCE_DIHEDRAL", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_distance` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ext_force_distance` -*/
         options.add_str("EXT_FORCE_DISTANCE", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_oofp` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ext_force_oofp` -*/
         options.add_str("EXT_FORCE_OOFP", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ensure_bt_convergence` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ensure_bt_convergence` -*/
         options.add_bool("FLEXIBLE_G_CONVERGENCE", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.frag_mode` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.frag_mode` -*/
         options.add_str("FRAG_MODE", "SINGLE");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.frag_ref_atoms` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.frag_ref_atoms` -*/
         options.add("FRAG_REF_ATOMS", new ArrayType());
-        /*- :py:attr:`~optking.v1.optparams.OptParams.freeze_all_dihedrals` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.freeze_all_dihedrals` -*/
         options.add_bool("FREEZE_ALL_DIHEDRALS", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.freeze_intrafrag` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.freeze_intrafrag` -*/
         options.add_bool("FREEZE_INTRAFRAG", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_bend` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.frozen_bend` -*/
         options.add_str("FROZEN_BEND", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_cartesian` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.frozen_cartesian` -*/
         options.add_str("FROZEN_CARTESIAN", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_dihedral` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.frozen_dihedral` -*/
         options.add_str("FROZEN_DIHEDRAL", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_distance` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.frozen_distance` -*/
         options.add_str("FROZEN_DISTANCE", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_oofp` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.frozen_oofp` -*/
         options.add_str("FROZEN_OOFP", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.full_hess_every` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.full_hess_every` -*/
         options.add_int("FULL_HESS_EVERY", -1);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.geom_maxiter` -*/
         options.add_int("GEOM_MAXITER", 50);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.g_convergence` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.g_convergence` -*/
         options.add_str("G_CONVERGENCE", "QCHEM");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.hessian_file` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.hessian_file` -*/
         options.add_str_i("HESSIAN_FILE", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.hess_update` -*/
         options.add_str("HESS_UPDATE", "BFGS");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.hess_update_limit` -*/
         options.add_bool("HESS_UPDATE_LIMIT", true);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit_max` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.hess_update_limit_max` -*/
         options.add_double("HESS_UPDATE_LIMIT_MAX", 1.00);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit_scale` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.hess_update_limit_scale` -*/
         options.add_double("HESS_UPDATE_LIMIT_SCALE", 0.50);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_use_last` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.hess_update_use_last` -*/
         options.add_int("HESS_UPDATE_USE_LAST", 4);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.h_bond_connect` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.h_bond_connect` -*/
         options.add_double("H_BOND_CONNECT", 4.3);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.h_guess_every` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.h_guess_every` -*/
         options.add_bool("H_GUESS_EVERY", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_collinear_tol` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.interfrag_collinear_tol` -*/
         options.add_double("INTERFRAG_COLLINEAR_TOL", 0.01);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_coords` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.interfrag_coords` -*/
         options.add_str("INTERFRAG_COORDS", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_dist_inv` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.interfrag_dist_inv` -*/
         options.add_bool("INTERFRAG_DIST_INV", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_hess` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.interfrag_hess` -*/
         options.add_str("INTERFRAG_HESS", "DEFAULT");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_mode` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.interfrag_mode` -*/
         options.add_str("INTERFRAG_MODE", "FIXED");
-        /*- :py:attr:`interfrag_step_limit <optking.v1.optparams.OptParams.interfrag_trust>` -*/
+        /*- :py:attr:`interfrag_step_limit <optking.v2.optparams.OptParams.interfrag_trust>` -*/
         options.add_double("INTERFRAG_STEP_LIMIT", 0.5);
-        /*- :py:attr:`interfrag_step_limit_max <optking.v1.optparams.OptParams.interfrag_trust_max>` -*/
+        /*- :py:attr:`interfrag_step_limit_max <optking.v2.optparams.OptParams.interfrag_trust_max>` -*/
         options.add_double("INTERFRAG_STEP_LIMIT_MAX", 1.0);
-        /*- :py:attr:`interfrag_step_limit_min <optking.v1.optparams.OptParams.interfrag_trust_min>` -*/
+        /*- :py:attr:`interfrag_step_limit_min <optking.v2.optparams.OptParams.interfrag_trust_min>` -*/
         options.add_double("INTERFRAG_STEP_LIMIT_MIN", 0.001);
-        /*- :py:attr:`intrafrag_step_limit <optking.v1.optparams.OptParams.intrafrag_trust>` -*/
+        /*- :py:attr:`intrafrag_step_limit <optking.v2.optparams.OptParams.intrafrag_trust>` -*/
         options.add_double("INTRAFRAG_STEP_LIMIT", 0.5);
-        /*- :py:attr:`intrafrag_step_limit_min <optking.v1.optparams.OptParams.intrafrag_trust_min>` -*/
+        /*- :py:attr:`intrafrag_step_limit_min <optking.v2.optparams.OptParams.intrafrag_trust_min>` -*/
         options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
-        /*- :py:attr:`intrafrag_step_limit_max <optking.v1.optparams.OptParams.intrafrag_trust_min>` -*/
+        /*- :py:attr:`intrafrag_step_limit_max <optking.v2.optparams.OptParams.intrafrag_trust_min>` -*/
         options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_convergence` -*/
+        /*- :py:attr:`intrafrag_hess <optking.v2.optparams.OptParams.intrafrag_hess>` -*/
+        options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE LINDH LINDH_SIMPLE");
+        /*- :py:attr:`~optking.v2.optparams.OptParams.irc_convergence` -*/
         options.add_double("IRC_CONVERGENCE", -0.7);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_direction` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.irc_direction` -*/
         options.add_str("IRC_DIRECTION", "FORWARD");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_mode` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.irc_mode` -*/
         options.add_str("IRC_MODE", "NORMAL");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_points` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.irc_points` -*/
         options.add_int("IRC_POINTS", 20);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_step_size` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.irc_step_size` -*/
         options.add_double("IRC_STEP_SIZE", 0.2);
         /*- Threshold to ignore small values when inverting matrices -*/
         options.add_double("LINEAR_ALGEBRA_TOL", 1e-10);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.linear_bend_threshold` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.linear_bend_threshold` -*/
         options.add_double("LINEAR_BEND_THRESHOLD", 3.05);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.linesearch` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.linesearch` -*/
         options.add_bool("LINESEARCH", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.linesearch_step` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.linesearch_step` -*/
         options.add_double("LINESEARCH_STEP", 0.2);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_disp` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.conv_max_disp` -*/
         options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_DE` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.conv_max_DE` -*/
         options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_force` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.conv_max_force` -*/
         options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.opt_coordinates` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.opt_coordinates` -*/
         options.add_str("OPT_COORDINATES", "INTERNAL");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.opt_type` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.opt_type` -*/
         options.add_str("OPT_TYPE", "MIN");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.print_trajectory_xyz_file` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.print_trajectory_xyz_file` -*/
         options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_bend` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ranged_bend` -*/
         options.add_str("RANGED_BEND", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_cartesian` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ranged_cartesian` -*/
         options.add_str("RANGED_CARTESIAN", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_dihedral` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ranged_dihedral` -*/
         options.add_str("RANGED_DIHEDRAL", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_distance` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ranged_distance` -*/
         options.add_str("RANGED_DISTANCE", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_oofp` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.ranged_oofp` -*/
         options.add_str("RANGED_OOFP", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_follow_root` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.rfo_follow_root` -*/
         options.add_bool("RFO_FOLLOW_ROOT", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_normalization_max` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.rfo_normalization_max` -*/
         options.add_double("RFO_NORMALIZATION_MAX", 100);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_root` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.rfo_root` -*/
         options.add_int("RFO_ROOT", 0);
-        /*- :py:attr:`rms_disp_g_convergence <optking.v1.optparams.OptParams.conv_rms_disp>` -*/
+        /*- :py:attr:`rms_disp_g_convergence <optking.v2.optparams.OptParams.conv_rms_disp>` -*/
         options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
-        /*- :py:attr:`rms_force_g_convergence <optking.v1.optparams.OptParams.conv_rms_force>` -*/
+        /*- :py:attr:`rms_force_g_convergence <optking.v2.optparams.OptParams.conv_rms_force>` -*/
         options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.rsrfo_alpha_max` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.rsrfo_alpha_max` -*/
         options.add_double("RSRFO_ALPHA_MAX", 1e8);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.sd_hessian` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.sd_hessian` -*/
         options.add_str("SD_HESSIAN", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.simple_step_scaling` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.simple_step_scaling` -*/
         options.add_bool("SIMPLE_STEP_SCALING", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.steepest_descent_type` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.steepest_descent_type` -*/
         options.add_str("STEEPEST_DESCENT_TYPE", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.step_type` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.step_type` -*/
         options.add_str("STEP_TYPE", "RFO");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.test_B` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.test_B` -*/
         options.add_bool("TEST_B", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.test_derivative_B` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.test_derivative_B` -*/
         options.add_bool("TEST_DERIVATIVE_B", false);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.unfreeze_dihedrals` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.unfreeze_dihedrals` -*/
         options.add_str("UNFREEZE_DIHEDRALS", "");
-        /*- :py:attr:`~optking.v1.optparams.OptParams.v3d_tors_angle_lim` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.v3d_tors_angle_lim` -*/
         options.add_double("V3D_TORS_ANGLE_LIM", 0.017);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.v3d_tors_cos_tol` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.v3d_tors_cos_tol` -*/
         options.add_double("V3D_TORS_COS_TOL", 1e-10);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.write_trajectory` -*/
+        /*- :py:attr:`~optking.v2.optparams.OptParams.write_trajectory` -*/
         options.add_bool("WRITE_TRAJECTORY", false);
 
         /* The following keywords are Psi4 specific and therfore included in autodoc */
@@ -3082,17 +3086,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do write a gradient output file?  If so, the filename will end in
         .grad, and the prefix is determined by |globals__writer_file_label|
         (if set), or else by the name of the output file plus the name of
-        the current molecule. -*/
+        the current molecule. This keyword applies to both analytic and
+        finite-difference gradient computations. -*/
         options.add_bool("GRADIENT_WRITE", false);
         /*- Do write a hessian output file?  If so, the filename will end in
         .hess, and the prefix is determined by |globals__writer_file_label|
         (if set), or else by the name of the output file plus the name of
-        the current molecule. -*/
+        the current molecule. This keyword applies to both analytic and
+        finite-difference Hessian computations. When a frequency analysis
+        is requested, a JSON file with extension .vibrec is also written
+        according to the same filename pattern. -*/
         options.add_bool("HESSIAN_WRITE", false);
         /*- Do write a file containing the normal modes in Molden format?
-       If so, the filename will end in .molden_normal_modes, and the prefix is
-       determined by |globals__writer_file_label| (if set), or else by the name
-       of the output file plus the name of the current molecule. -*/
+        If so, the filename will end in .molden_normal_modes, and the prefix is
+        determined by |globals__writer_file_label| (if set), or else by the name
+        of the output file plus the name of the current molecule. This keyword
+        applies to both analytic and finite-difference frequency analyses. -*/
         options.add_bool("NORMAL_MODES_WRITE", false);
         /*- Do discount rotational degrees of freedom in a finite difference
         frequency calculation. Turned off at non-stationary geometries and
@@ -4058,7 +4067,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly :py:attr:`~optking.v1.optparams.OptParams.full_hess_every`. -*/
+        particularly :py:attr:`~optking.v2.optparams.OptParams.full_hess_every`. -*/
         options.add_int("CFOUR_EVAL_HESS", 0);
 
         /*- Specifies in CC calculations using mrcc the excitation level if
@@ -4230,7 +4239,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly :py:attr:`~optking.v1.optparams.OptParams.g_convergence` =CFOUR,
+        particularly :py:attr:`~optking.v2.optparams.OptParams.g_convergence` =CFOUR,
         which should be equivalent except for different internal coordinate definitions. -*/
         options.add_int("CFOUR_GEO_CONV", 5);
 
@@ -4239,7 +4248,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly :py:attr:`intrafrag_step_limit <optking.v1.optparams.OptParams.intrafrag_trust>`. -*/
+        particularly :py:attr:`intrafrag_step_limit <optking.v2.optparams.OptParams.intrafrag_trust>`. -*/
         options.add_int("CFOUR_GEO_MAXSTEP", 300);
 
         /*- Specifies the used geometry optimization methods. The following
@@ -4261,7 +4270,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter`. -*/
+        particularly :py:attr:`~optking.v2.optparams.OptParams.geom_maxiter`. -*/
         options.add_int("CFOUR_GEO_MAXCYC", 50);
 
         /*- Specifies whether gauge-including atomic orbitals are used (ON)
@@ -4409,8 +4418,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly :py:attr:`~optking.v1.optparams.OptParams.opt_type`
-        and :py:attr:`~optking.v1.optparams.OptParams.step_type`. -*/
+        particularly :py:attr:`~optking.v2.optparams.OptParams.opt_type`
+        and :py:attr:`~optking.v2.optparams.OptParams.step_type`. -*/
         options.add_str("CFOUR_METHOD", "SINGLE_POINT", "NR RFA TS MANR SINGLE_POINT");
 
         /*- Specifies the type of MRCC calculation. MK performs a MR-CC

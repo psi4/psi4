@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -460,7 +460,7 @@ def energy(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("energy", lowername, molecule, **kwargs)
     logger.debug('ENERGY PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -529,7 +529,7 @@ def energy(name, **kwargs):
             shutil.copy(item, targetfile)
 
     logger.info(f"Compute energy(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
-    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", False))))
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", True))))
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return energy(): {core.variable('CURRENT ENERGY')}")
 
@@ -609,7 +609,7 @@ def gradient(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("gradient", lowername, molecule, **kwargs)
     logger.debug('GRADIENT PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -642,7 +642,7 @@ def gradient(name, **kwargs):
 
     # Perform the gradient calculation
     logger.info(f"Compute gradient(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
-    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", True))))
     wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return gradient(): {core.variable('CURRENT ENERGY')}")
     logger.info(nppp(wfn.gradient().np))
@@ -768,7 +768,7 @@ def properties(*args, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("properties", lowername, molecule, **kwargs)
     logger.debug('PROPERTIES PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -794,7 +794,7 @@ def properties(*args, **kwargs):
     optstash = driver_util.negotiate_convergence_criterion(("prop", "prop"), lowername, return_optstash=True)
 
     logger.info(f"Compute properties(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
-    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", True))))
     wfn = procedures["properties"][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return properties(): {core.variable('CURRENT ENERGY')}")
 
@@ -1212,7 +1212,7 @@ def optimize(name, **kwargs):
     if core.get_option('OPTKING', 'OPT_RESTART'):
         # Recreate all of optking's internal classes to restart an optimization
         # This has not been well tested - Experimental
-        opt_object = optking.opt_helper.CustomHelper(molecule)
+        opt_object = optking.opt_helper.CustomHelper(molecule, dtype=2)
         with open(f"{core.get_writer_file_prefix(molecule.name())}.1.dat", 'r') as f:
             stashed_opt = json.load(f)
         opt_object.from_dict(stashed_opt)
@@ -1222,7 +1222,7 @@ def optimize(name, **kwargs):
         params = p4util.prepare_options_for_modules()
         optimizer_params = {k: v.get('value') for k, v in params.pop("OPTKING").items() if v.get('has_changed')}
         optimizer_params.update(kwargs.get("optimizer_keywords", {}))
-        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
+        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params, dtype=2)
 
     initial_sym = molecule.schoenflies_symbol()
     # Use optking's value so that validation can change value (e.g. IRC_POINTS sets max_iter based on number of points)
@@ -1435,7 +1435,7 @@ def hessian(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("hessian", lowername, molecule, **kwargs)
     logger.debug('HESSIAN PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -1483,7 +1483,7 @@ def hessian(name, **kwargs):
 
     # We have the desired method. Do it.
     logger.info(f"Compute hessian(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
-    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", True))))
     core.print_out("""hessian() will perform analytic frequency computation.\n""")
     wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return hessian(): {wfn.energy()}")
@@ -1682,7 +1682,7 @@ def vibanal_wfn(
     geom = np.asarray(mol.geometry())
     symbols = [mol.symbol(at) for at in range(mol.natom())]
 
-    vibrec = {'molecule': mol.to_dict(np_out=False), 'hessian': nmwhess.tolist()}
+    vibrec = {'molecule': mol.to_dict(np_out=False, quiet=True), 'hessian': nmwhess.tolist()}
 
     if molecule is not None:
         molecule.update_geometry()
@@ -2089,7 +2089,7 @@ def tdscf(wfn, **kwargs):
 
 
 def fsapt_analysis(
-    source: Union[str, core.Wavefunction, qcelemental.models.AtomicResult],
+    source: Union[str, core.Wavefunction, qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult],
     fragments_a: Dict,
     fragments_b: Dict,
     pdb_dir: str = None,
@@ -2155,7 +2155,7 @@ def fsapt_analysis(
                     f.write(f"{k} {' '.join([str(i) for i in v])}\n")
         return fsapt.run_from_output(dirname=source)
 
-    elif isinstance(source, qcelemental.models.AtomicResult):
+    elif isinstance(source, (qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult)):
         if print_output:
             print("Running fsapt_analysis through QCVariables extracted from schema")
         atomic_results = source
@@ -2167,7 +2167,7 @@ def fsapt_analysis(
         atomic_results = None
         wfn = source
     else:
-        raise ValidationError("fsapt_analysis requires a string, AtomicResult, or Wavefunction as input")
+        raise ValidationError(f"fsapt_analysis requires a string, AtomicResult, or Wavefunction as input, not {type(source)=}")
 
 
     return fsapt.run_fsapt_analysis(

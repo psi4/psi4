@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -115,6 +115,14 @@ class PSI_API Dimension {
     void fill(int v);
 
     void print() const;
+
+    // Forward underlying vector's iterators
+    // This allows for range-based for loops:
+    //    for (auto h : nsopi_) { ... }
+    auto begin() noexcept { return blocks_.begin(); }
+    auto end() noexcept { return blocks_.end(); }
+    auto begin() const noexcept { return blocks_.begin(); }
+    auto end() const noexcept { return blocks_.end(); }
 
     // Only used for python
     const int& get(size_t i) const { return blocks_[i]; }

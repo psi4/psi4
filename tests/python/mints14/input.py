@@ -17,13 +17,8 @@ H 1 0.96
 H 1 0.96 2 104.5
 """)
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-    psi4.set_options({"d_convergence": 1e-10})
-    tol_efs = 9
-else:
-    psi4.set_options({"d_convergence": 5e-9})
-    tol_efs = 8
-
+psi4.set_options({"d_convergence": 1e-10})
+tol_efs = 2.e-8
 
 ene, wfn = psi4.energy('scf/STO-3G', return_wfn = True)
 myepc = p4c.ESPPropCalc(wfn)

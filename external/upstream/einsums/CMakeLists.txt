@@ -1,5 +1,5 @@
 if(${ENABLE_Einsums})
-    find_package(Einsums 1.1.2 CONFIG)  # edit in codedeps
+    find_package(Einsums 1.1.3 CONFIG)  # edit in codedeps
 
     if(TARGET Einsums::Einsums)
         get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
@@ -32,7 +32,7 @@ if(${ENABLE_Einsums})
         ExternalProject_Add(einsums_external
             DEPENDS lapack_external
                     hdf5_external
-            URL https://github.com/Einsums/Einsums/archive/v1.1.2.tar.gz  # edit in codedeps
+            URL https://github.com/Einsums/Einsums/archive/v1.1.3.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -66,5 +66,6 @@ if(${ENABLE_Einsums})
         set(Einsums_DIR ${STAGED_INSTALL_PREFIX}/${_einsums_dir} CACHE PATH "path to internally built EinsumsConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: einsums${ColourReset}")
     add_library(einsums_external INTERFACE)  # dummy
 endif()

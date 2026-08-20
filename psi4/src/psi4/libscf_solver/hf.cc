@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -550,25 +550,25 @@ void HF::form_H() {
             int nso = 0;
             for (int h = 0; h < nirrep_; h++) nso += nsopi_[h];
             int nao = basisset_->nao();
+            int nbf = basisset_->nbf();
 
             // Set up AO->SO transformation matrix (u)
             MintsHelper helper(basisset_, options_, 0);
-            SharedMatrix aotoso = helper.petite_list(true)->aotoso();
+            SharedMatrix aotoso = helper.petite_list(false)->aotoso();
+            SharedMatrix cart_to_ao = helper.cartao_to_ao_transform();
             Matrix u(nao, nso);
-            int offset = 0;
+            auto up = u.pointer();
+            auto cart_to_aop = cart_to_ao->pointer();
 
+            int offset = 0;
             for (int h = 0; h < nirrep_; h++) {
-                // These loops should be vectorized for a (small) efficiency gain.
-                for (int j = 0; j < aotoso->coldim(h); j++) {
-                    for (int i = 0; i < nao; i++) {
-                        u.set(i, j + offset, aotoso->get(h, i, j));
-                    }
-                }
-                offset += aotoso->coldim(h);
+                int nsol = aotoso->coldim(h);
+                if (!nsol) continue;
+                C_DGEMM('T', 'N', nao, nsol, nbf, 1.0, cart_to_aop[0], nao, aotoso->pointer(h)[0], nsol, 0.0,
+                        &(up[0][offset]), nso);
+                offset += nsol;
             }
 
-            Vector phi_ao(nao);
-            Vector phi_so(nso);
             Matrix V_eff(nso, nso);
 
             if (dipole_field_type_ == embpot) {
@@ -584,6 +584,7 @@ void HF::form_H() {
                                        std::to_string(npoints*5*8) + " bytes > " + std::to_string(memory_) + " bytes");
                 }
                 outfile->Printf("  npoints = %zu\n", npoints);
+                std::vector<double> phi_so(nso, 0);
                 double x, y, z, w, v;
                 double max = 0;
                 for (size_t k = 0; k < npoints; k++) {
@@ -594,7 +595,7 @@ void HF::form_H() {
                     }
                     if (std::fabs(v) > max) max = std::fabs(v);
 
-                    basisset_->compute_phi(phi_so.pointer(), x, y, z);
+                    basisset_->compute_phi(phi_so.data(), x, y, z);
                     for (int i = 0; i < nso; i++) {
                         for (int j = 0; j < nso; j++) {
                             V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
@@ -607,7 +608,10 @@ void HF::form_H() {
 
             }  // embpot
             else if (dipole_field_type_ == dx) {
-                dx_read(V_eff.pointer(), phi_ao.pointer(), phi_so.pointer(), nao, nso, u.pointer());
+                std::vector<double> phi_ao(nao, 0);
+                std::vector<double> phi_so(nso, 0);
+
+                dx_read(V_eff.pointer(), phi_ao.data(), phi_so.data(), nao, nso, u.pointer());
 
             }  // dx file
             else if (dipole_field_type_ == sphere) {
@@ -622,6 +626,7 @@ void HF::form_H() {
                 outfile->Printf("  Number of colatitude integration points = %d\n", theta_points_);
                 outfile->Printf("  Number of azimuthal integration points  = %d\n", phi_points_);
 
+                std::vector<double> phi_so(nso, 0);
                 double r_step = thickness_ / r_points_;         // bohr
                 double theta_step = 2 * pc_pi / theta_points_;  // 1 degree in radians
                 double phi_step = 2 * pc_pi / phi_points_;      // 1 degree in radians
@@ -636,9 +641,7 @@ void HF::form_H() {
 
                             double jacobian = weight * r * r * sin(theta);
 
-                            basisset_->compute_phi(phi_ao.pointer(), x, y, z);
-
-                            phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
+                            basisset_->compute_phi(phi_so.data(), x, y, z);
 
                             for (int i = 0; i < nso; i++)
                                 for (int j = 0; j < nso; j++)
@@ -958,7 +961,7 @@ void HF::compute_sapgau_guess() {
   // Build auxiliary basis set object
   auto sap_basis = get_basisset("SAPGAU");
   // Do the SAP magic to the basis
-  sap_basis->convert_sap_contraction();
+  sap_basis->negative_gaussian_normalization_to_coefficients();
 
   auto zero_basis = BasisSet::zero_ao_basis_set();
   auto nsap = sap_basis->nbf();

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -830,13 +830,36 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                 std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
             auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_,
                                                                BasisSet::zero_ao_basis_set());
-            std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
-            std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
             int np = auxiliary_->nbf();
             int nso = basisset_->nbf();
             int nauxshell = auxiliary_->nshell();
             int nshell = basisset_->nshell();
             int maxp = auxiliary_->max_function_per_shell();
+
+            // Re-budget the perturbation batch for the threaded derivative loops
+            // below. Each of the nthreads worker threads keeps a private copy of
+            // the batch accumulators (nso^2 per in-core perturbation) plus an
+            // nP x nso^2 K-scratch, on top of the shared dGmats. Shrink max_a so
+            // that all the per-thread copies fit inside the 0.9*memory budget;
+            // the min(3*natom) cap keeps a single batch for small molecules.
+            int nthreads = Process::environment.get_n_threads();
+            {
+                size_t df_mem = 0.9 * memory_ / 8L;
+                size_t fixed = (size_t)nthreads * maxp * (size_t)nso * nso;
+                df_mem = (df_mem > 2 * fixed) ? df_mem - fixed : df_mem / 2;
+                size_t new_max_a = df_mem / ((size_t)(1 + nthreads) * (size_t)nso * nso);
+                // Batches must be atom-aligned: the loops mark a whole atom
+                // in-core when any of its perturbations falls in the batch and
+                // then write all three of its Fock derivatives, so max_a has to
+                // be a positive multiple of 3.
+                new_max_a = (new_max_a / 3) * 3;
+                if (new_max_a < 3) new_max_a = 3;
+                if (new_max_a > (size_t)(3 * natom)) new_max_a = 3 * natom;
+                max_a = new_max_a;
+                dGmats.clear();
+                for (size_t a = 0; a < max_a; ++a)
+                    dGmats.push_back(std::make_shared<Matrix>("G derivative contribution", nso, nso));
+            }
 
             auto Amn = std::make_shared<Matrix>("(A|mn)", np, nso * nso);
             auto Ami = std::make_shared<Matrix>("(A|mi)", np, nso * nocc);
@@ -867,7 +890,24 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
             // Same applies to these terms.  There are already hooks to compute c and d vectors, and store them on disk,
             // so we should make better use of those intermediates between the second derivative integrals and these
             // first derivative terms needed for the Fock matrix derivatives.
+            //
+            // The (A|mn) build writes disjoint aux-function columns per P, so it
+            // threads over P with per-thread engines without any reduction. The
+            // perturbation-batched metric and (A|mn)^x derivative loops below are
+            // threaded too: they accumulate into per-perturbation Fock-derivative
+            // matrices keyed by shell centers (not partitioned by P), so each
+            // thread scatters into a private copy of the batch and the copies are
+            // reduced into dGmats afterward. max_a was shrunk above to keep those
+            // per-thread copies within the memory budget.
+            std::vector<std::shared_ptr<TwoBodyAOInt>> Amn_ints(nthreads);
+            Amn_ints[0] = std::shared_ptr<TwoBodyAOInt>(Pmnfactory->eri(2));
+            for (int t = 1; t < nthreads; ++t) Amn_ints[t] = std::shared_ptr<TwoBodyAOInt>(Amn_ints[0]->clone());
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
             for (int P = 0; P < nauxshell; ++P) {
+                int thread = 0;
+#ifdef _OPENMP
+                thread = omp_get_thread_num();
+#endif
                 int nP = auxiliary_->shell(P).nfunction();
                 int oP = auxiliary_->shell(P).function_index();
                 for (int M = 0; M < nshell; ++M) {
@@ -877,8 +917,8 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                         int nN = basisset_->shell(N).nfunction();
                         int oN = basisset_->shell(N).function_index();
 
-                        Pmnint->compute_shell(P, 0, M, N);
-                        const double* buffer = Pmnint->buffer();
+                        Amn_ints[thread]->compute_shell(P, 0, M, N);
+                        const double* buffer = Amn_ints[thread]->buffer();
 
                         for (int p = oP; p < oP+nP; p++) {
                             for (int m = oM; m < oM+nM; m++) {
@@ -911,6 +951,27 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
             for (int p = 0; p < np; ++p)
                 C_DGEMM('t', 'n', nso, nso, nso, 1.0, Dap[0], nso, Bmnp[p], nso, 0.0, pTmn[p], nso);
 
+            // Per-thread integral engines, batch accumulators, and scratch for the
+            // threaded metric and (A|mn)^x derivative loops. Each thread scatters
+            // its P contributions into a private copy of the batch (dG_thread) via
+            // its own pdG map; the copies are reduced into dGmats after the loops.
+            std::vector<std::shared_ptr<TwoBodyAOInt>> PQ_ints(nthreads), Pmn_ints(nthreads);
+            PQ_ints[0] = std::shared_ptr<TwoBodyAOInt>(PQfactory->eri(2));
+            Pmn_ints[0] = std::shared_ptr<TwoBodyAOInt>(Pmnfactory->eri(2));
+            for (int t = 1; t < nthreads; ++t) {
+                PQ_ints[t] = std::shared_ptr<TwoBodyAOInt>(PQ_ints[0]->clone());
+                Pmn_ints[t] = std::shared_ptr<TwoBodyAOInt>(Pmn_ints[0]->clone());
+            }
+            std::vector<std::vector<SharedMatrix>> dG_thread(nthreads);
+            std::vector<std::vector<double**>> pdG_thread(nthreads, std::vector<double**>(3 * natom));
+            std::vector<SharedMatrix> TempP_thread(nthreads), TempPmn_thread(nthreads);
+            for (int t = 0; t < nthreads; ++t) {
+                for (size_t a = 0; a < max_a; ++a)
+                    dG_thread[t].push_back(std::make_shared<Matrix>("G deriv thread", nso, nso));
+                TempP_thread[t] = std::make_shared<Matrix>("Temp[P] thread", 9, maxp);
+                TempPmn_thread[t] = std::make_shared<Matrix>("Temp[P][mn] thread", maxp, nso * nso);
+            }
+
             for (int A = 0; A < 3 * natom; A += max_a) {
                 int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
 
@@ -922,8 +983,25 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                     pdG[A + a] = dGmats[a]->pointer();
                     dGmats[a]->zero();
                 }
+                // Map each thread's private accumulator copies onto the in-core
+                // perturbations and zero them for this batch.
+                for (int t = 0; t < nthreads; ++t) {
+                    std::fill(pdG_thread[t].begin(), pdG_thread[t].end(), (double**)nullptr);
+                    for (int a = 0; a < nA; a++) {
+                        pdG_thread[t][A + a] = dG_thread[t][a]->pointer();
+                        dG_thread[t][a]->zero();
+                    }
+                }
 
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int P = 0; P < nauxshell; ++P) {
+                    int thread = 0;
+#ifdef _OPENMP
+                    thread = omp_get_thread_num();
+#endif
+                    auto& pdG = pdG_thread[thread];
+                    double** pTempP = TempP_thread[thread]->pointer();
+                    double** pTmpPmn = TempPmn_thread[thread]->pointer();
                     int nP = auxiliary_->shell(P).nfunction();
                     int oP = auxiliary_->shell(P).function_index();
                     int Pcenter = auxiliary_->shell(P).ncenter();
@@ -943,8 +1021,8 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
 
                         if (!pert_incore[Pcenter] && !pert_incore[Qcenter]) continue;
 
-                        PQint->compute_shell_deriv1(P, 0, Q, 0);
-                        const auto& buffers = PQint->buffers();
+                        PQ_ints[thread]->compute_shell_deriv1(P, 0, Q, 0);
+                        const auto& buffers = PQ_ints[thread]->buffers();
                         const double* PxBuf = buffers[0];
                         const double* PyBuf = buffers[1];
                         const double* PzBuf = buffers[2];
@@ -1023,7 +1101,14 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                     }
                 }
 
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int P = 0; P < nauxshell; ++P) {
+                    int thread = 0;
+#ifdef _OPENMP
+                    thread = omp_get_thread_num();
+#endif
+                    auto& pdG = pdG_thread[thread];
+                    double** pTempP = TempP_thread[thread]->pointer();
                     int nP = auxiliary_->shell(P).nfunction();
                     int oP = auxiliary_->shell(P).function_index();
                     int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1051,8 +1136,8 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
 
                             if (!pert_incore[Pcenter] && !pert_incore[Mcenter] && !pert_incore[Ncenter]) continue;
 
-                            Pmnint->compute_shell_deriv1(P, 0, M, N);
-                            const auto& buffers = Pmnint->buffers();
+                            Pmn_ints[thread]->compute_shell_deriv1(P, 0, M, N);
+                            const auto& buffers = Pmn_ints[thread]->buffers();
                             const double* PxBuf = buffers[0];
                             const double* PyBuf = buffers[1];
                             const double* PzBuf = buffers[2];
@@ -1202,6 +1287,11 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                         }
                     }
                 }
+
+                // Reduce the per-thread batch accumulators into the shared dGmats.
+                for (int a = 0; a < nA; ++a)
+                    for (int t = 0; t < nthreads; ++t)
+                        dGmats[a]->add(dG_thread[t][a]);
 
                 for (int a = 0; a < nA; ++a) {
                     // Symmetrize the derivative Fock contributions
@@ -3636,13 +3726,33 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
 
         auto Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
         auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
-        std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
-        std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
         int np = auxiliary_->nbf();
         int nso = basisset_->nbf();
         int nauxshell = auxiliary_->nshell();
         int nshell = basisset_->nshell();
         int maxp = auxiliary_->max_function_per_shell();
+
+        // Re-budget the perturbation batch for the threaded derivative loops
+        // below so each thread's private accumulator copies fit in memory
+        // (see RSCFDeriv::hessian_response for the rationale).
+        int nthreads = Process::environment.get_n_threads();
+        {
+            size_t df_mem = 0.9 * memory_ / 8L;
+            size_t fixed = (size_t)nthreads * maxp * (size_t)nso * nso;
+            df_mem = (df_mem > 2 * fixed) ? df_mem - fixed : df_mem / 2;
+            size_t new_max_a = df_mem / ((size_t)(1 + nthreads) * (size_t)nso * nso);
+            // Batches must be atom-aligned: the loops mark a whole atom in-core
+            // when any of its perturbations falls in the batch and then write all
+            // three of its Fock derivatives, so max_a has to be a positive
+            // multiple of 3.
+            new_max_a = (new_max_a / 3) * 3;
+            if (new_max_a < 3) new_max_a = 3;
+            if (new_max_a > (size_t)(3 * natom)) new_max_a = 3 * natom;
+            max_a = new_max_a;
+            dGmats.clear();
+            for (size_t a = 0; a < max_a; ++a)
+                dGmats.push_back(std::make_shared<Matrix>("G derivative contribution", nso, nso));
+        }
 
         auto Amn = std::make_shared<Matrix>("(A|mn)", np, nso*nso);
         auto Ami = std::make_shared<Matrix>("(A|mi)", np, nso*nocc);
@@ -3673,7 +3783,22 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
         // Same applies to these terms.  There are already hooks to compute c and d vectors, and store them on disk,
         // so we should make better use of those intermediates between the second derivative integrals and these
         // first derivative terms needed for the Fock matrix derivatives.
+        //
+        // The (A|mn) build writes disjoint aux-function columns per P, so it
+        // threads over P with per-thread engines without any reduction. The
+        // perturbation-batched metric and (A|mn)^x derivative loops below are
+        // threaded too, each thread scattering into a private copy of the batch
+        // that is reduced into dGmats afterward; max_a was shrunk above to keep
+        // those copies within the memory budget.
+        std::vector<std::shared_ptr<TwoBodyAOInt>> Amn_ints(nthreads);
+        Amn_ints[0] = std::shared_ptr<TwoBodyAOInt>(Pmnfactory->eri(2));
+        for (int t = 1; t < nthreads; ++t) Amn_ints[t] = std::shared_ptr<TwoBodyAOInt>(Amn_ints[0]->clone());
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         for (int P = 0; P < nauxshell; ++P){
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
             int nP = auxiliary_->shell(P).nfunction();
             int oP = auxiliary_->shell(P).function_index();
             for(int M = 0; M < nshell; ++M){
@@ -3683,8 +3808,8 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     int nN = basisset_->shell(N).nfunction();
                     int oN = basisset_->shell(N).function_index();
 
-                    Pmnint->compute_shell(P,0,M,N);
-                    const double* buffer = Pmnint->buffers()[0];
+                    Amn_ints[thread]->compute_shell(P,0,M,N);
+                    const double* buffer = Amn_ints[thread]->buffers()[0];
 
                     for (int p = oP; p < oP+nP; p++) {
                         for (int m = oM; m < oM+nM; m++) {
@@ -3711,6 +3836,25 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
         for(int p = 0; p < np; ++p)
             C_DGEMM('t', 'n', nso, nso, nso, 1.0, D1p[0], nso, Bmnp[p], nso, 0.0, pTmn[p], nso);
 
+        // Per-thread integral engines, batch accumulators, and scratch for the
+        // threaded metric and (A|mn)^x derivative loops (see the restricted
+        // hessian_response for the layout).
+        std::vector<std::shared_ptr<TwoBodyAOInt>> PQ_ints(nthreads), Pmn_ints(nthreads);
+        PQ_ints[0] = std::shared_ptr<TwoBodyAOInt>(PQfactory->eri(2));
+        Pmn_ints[0] = std::shared_ptr<TwoBodyAOInt>(Pmnfactory->eri(2));
+        for (int t = 1; t < nthreads; ++t) {
+            PQ_ints[t] = std::shared_ptr<TwoBodyAOInt>(PQ_ints[0]->clone());
+            Pmn_ints[t] = std::shared_ptr<TwoBodyAOInt>(Pmn_ints[0]->clone());
+        }
+        std::vector<std::vector<SharedMatrix>> dG_thread(nthreads);
+        std::vector<std::vector<double**>> pdG_thread(nthreads, std::vector<double**>(3 * natom));
+        std::vector<SharedMatrix> TempP_thread(nthreads), TempPmn_thread(nthreads);
+        for (int t = 0; t < nthreads; ++t) {
+            for (size_t a = 0; a < max_a; ++a)
+                dG_thread[t].push_back(std::make_shared<Matrix>("G deriv thread", nso, nso));
+            TempP_thread[t] = std::make_shared<Matrix>("Temp[P] thread", 9, maxp);
+            TempPmn_thread[t] = std::make_shared<Matrix>("Temp[P][mn] thread", maxp, nso*nso);
+        }
 
         for (int A = 0; A < 3 * natom; A+=max_a) {
             int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
@@ -3723,8 +3867,25 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                 pdG[A+a] = dGmats[a]->pointer();
                 dGmats[a]->zero();
             }
+            // Map each thread's private accumulator copies onto the in-core
+            // perturbations and zero them for this batch.
+            for (int t = 0; t < nthreads; ++t) {
+                std::fill(pdG_thread[t].begin(), pdG_thread[t].end(), (double**)nullptr);
+                for (int a = 0; a < nA; a++){
+                    pdG_thread[t][A+a] = dG_thread[t][a]->pointer();
+                    dG_thread[t][a]->zero();
+                }
+            }
 
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
             for (int P = 0; P < nauxshell; ++P){
+                int thread = 0;
+#ifdef _OPENMP
+                thread = omp_get_thread_num();
+#endif
+                auto& pdG = pdG_thread[thread];
+                double** pTempP = TempP_thread[thread]->pointer();
+                double** pTmpPmn = TempPmn_thread[thread]->pointer();
                 int nP = auxiliary_->shell(P).nfunction();
                 int oP = auxiliary_->shell(P).function_index();
                 int Pcenter = auxiliary_->shell(P).ncenter();
@@ -3744,8 +3905,8 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     if(!pert_incore[Pcenter] && !pert_incore[Qcenter])
                         continue;
 
-                    PQint->compute_shell_deriv1(P,0,Q,0);
-                    const auto& buffers = PQint->buffers();
+                    PQ_ints[thread]->compute_shell_deriv1(P,0,Q,0);
+                    const auto& buffers = PQ_ints[thread]->buffers();
                     const double* PxBuf = buffers[0];
                     const double* PyBuf = buffers[1];
                     const double* PzBuf = buffers[2];
@@ -3815,7 +3976,14 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
             }
 
 
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
             for (int P = 0; P < nauxshell; ++P){
+                int thread = 0;
+#ifdef _OPENMP
+                thread = omp_get_thread_num();
+#endif
+                auto& pdG = pdG_thread[thread];
+                double** pTempP = TempP_thread[thread]->pointer();
                 int nP = auxiliary_->shell(P).nfunction();
                 int oP = auxiliary_->shell(P).function_index();
                 int Pcenter = auxiliary_->shell(P).ncenter();
@@ -3845,8 +4013,8 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                                 !pert_incore[Ncenter])
                             continue;
 
-                        Pmnint->compute_shell_deriv1(P,0,M,N);
-                        const auto& buffers = Pmnint->buffers();
+                        Pmn_ints[thread]->compute_shell_deriv1(P,0,M,N);
+                        const auto& buffers = Pmn_ints[thread]->buffers();
                         const double* PxBuf = buffers[0];
                         const double* PyBuf = buffers[1];
                         const double* PzBuf = buffers[2];
@@ -3963,6 +4131,11 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     }
                 }
             }
+
+            // Reduce the per-thread batch accumulators into the shared dGmats.
+            for (int a = 0; a < nA; ++a)
+                for (int t = 0; t < nthreads; ++t)
+                    dGmats[a]->add(dG_thread[t][a]);
 
             for(int a = 0; a < nA; ++a){
                 // Symmetrize the derivative Fock contributions

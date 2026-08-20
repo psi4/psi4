@@ -65,6 +65,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/fold_UHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_frozen.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_moinfo.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/globals.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_params.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_rho_params.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_td_params.cc

@@ -11,6 +11,7 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 @uusing("qcfractal")
 @uusing("qcportal")
+@uusing("qcmanybody")
 @pytest.mark.cbs
 @pytest.mark.smoke
 @pytest.mark.quick

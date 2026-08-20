@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -53,6 +53,7 @@ DiskJK::DiskJK(std::shared_ptr<BasisSet> primary, Options& options) : JK(primary
 DiskJK::~DiskJK() {}
 void DiskJK::common_init() {}
 size_t DiskJK::memory_estimate() {
+    // TODO: return an accurate value.
     return 0; // Effectively zero
 }
 void DiskJK::print_header() const {

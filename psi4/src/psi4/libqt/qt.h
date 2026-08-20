@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,8 +38,10 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"
@@ -81,6 +83,20 @@ void parallel_timer_off(const std::string& key, int thread_rank);
 void start_skip_timers();
 void stop_skip_timers();
 void clean_timers();
+
+struct TimerRecord {
+    std::string timer_id;
+    std::string parent_id;
+    std::string timer_name;
+    std::vector<std::string> timer_path;
+    int level;
+    double wall_time;
+    double user_time;
+    double system_time;
+    size_t n_calls;
+};
+PSI_API
+std::vector<TimerRecord> get_timer_records();
 
 int cc_excited(const char* wfn);
 int cc_excited(std::string wfn);

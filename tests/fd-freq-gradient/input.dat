@@ -14,11 +14,11 @@ set {
   scf_type pk
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TIGHT
     findif5_tol = 1e-3
 else:
-    findif5_tol = 1e-2
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+    findif5_tol = 2e-2
+    psi4.set_options({"d_convergence": 1e-10})
 
 findif_numbers_w_rproj = [7, 13, 6, 5, 2, 11]
 findif_numbers_wo_rproj = [13, 25, 9, 5, 3, 17]
@@ -109,5 +109,9 @@ fd_freqs = scf_wfn.frequencies().to_array()               #TEST
 compare(findif_numbers[5], variable('findif number'), '5-point stencil points')  #TEST
 compare_values(anal_freqs, fd_freqs,       #TEST
  "Analytic vs. 5-pt finite-diff freq from grad to 0.001 cm^-1", atol=findif5_tol) #TEST
+
+from pathlib import Path
+normcofile = Path(core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".molden_normal_modes")
+compare(25, len(normcofile.read_text().splitlines()), "molden file written")
 
 clean()

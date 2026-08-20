@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -443,11 +443,24 @@ SharedMatrix SCFDeriv::compute_hessian()
         double** Vp = hessians_["Potential"]->pointer();
 
         // Potential energy derivatives
-        std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
-        const auto& shell_pairs = Vint->shellpairs();
+        int nthreads = Process::environment.get_n_threads();
+        std::vector<std::shared_ptr<OneBodyAOInt>> Vints(nthreads);
+        for (int t = 0; t < nthreads; ++t) Vints[t] = std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(2));
+        const auto& shell_pairs = Vints[0]->shellpairs();
         size_t n_pairs = shell_pairs.size();
 
+        // Per-thread Hessian accumulators, reduced after the shell-pair loop.
+        int vdim = hessians_["Potential"]->rowdim();
+        std::vector<SharedMatrix> Vp_local(nthreads);
+        for (int t = 0; t < nthreads; ++t) Vp_local[t] = std::make_shared<Matrix>("Potential Hess local", vdim, vdim);
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         for (size_t p = 0; p < n_pairs; ++p) {
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
+            double** Vp_t = Vp_local[thread]->pointer();
             auto P = shell_pairs[p].first;
             auto Q = shell_pairs[p].second;
             const GaussianShell& s1 = basisset_->shell(P);
@@ -469,8 +482,8 @@ SharedMatrix SCFDeriv::compute_hessian()
 #if DEBUGINTS
             outfile->Printf("AM1 %d AM2 %d a1 %f a2 %f center1 %d center2 %d\n", s1.am(), s2.am(), s1.exp(0), s2.exp(0), s1.ncenter(), s2.ncenter());
 #endif
-            Vint->compute_shell_deriv2(P, Q);
-            const auto &buffers = Vint->buffers();
+            Vints[thread]->compute_shell_deriv2(P, Q);
+            const auto &buffers = Vints[thread]->buffers();
 
             std::vector<double> Dvals;
             // find the D values against which this batch will be contracted
@@ -485,8 +498,9 @@ SharedMatrix SCFDeriv::compute_hessian()
                 const double *buffer = buffers[i];
                 Hvals.push_back(std::inner_product(Dvals.begin(), Dvals.end(), buffer, 0.0));
             }
-            process_buffers(Vp, Hvals, aP, aQ, natom, P==Q, true);
+            process_buffers(Vp_t, Hvals, aP, aQ, natom, P==Q, true);
         }
+        for (int t = 0; t < nthreads; ++t) hessians_["Potential"]->add(Vp_local[t]);
         // Symmetrize the result
         int dim = hessians_["Potential"]->rowdim();
         for (int row = 0; row < dim; ++row){
@@ -814,12 +828,25 @@ SharedMatrix SCFDeriv::compute_hessian()
         double** Tp = hessians_["Kinetic"]->pointer();
 
         // Kinetic energy derivatives
-        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
+        int nthreads = Process::environment.get_n_threads();
+        std::vector<std::shared_ptr<OneBodyAOInt>> Tints(nthreads);
+        for (int t = 0; t < nthreads; ++t) Tints[t] = std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic(2));
 
-        const auto& shell_pairs = Tint->shellpairs();
+        const auto& shell_pairs = Tints[0]->shellpairs();
         size_t n_pairs = shell_pairs.size();
 
+        // Per-thread Hessian accumulators, reduced after the shell-pair loop.
+        int tdim = hessians_["Kinetic"]->rowdim();
+        std::vector<SharedMatrix> Tp_local(nthreads);
+        for (int t = 0; t < nthreads; ++t) Tp_local[t] = std::make_shared<Matrix>("Kinetic Hess local", tdim, tdim);
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         for (size_t p = 0; p < n_pairs; ++p) {
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
+            double** Tp_t = Tp_local[thread]->pointer();
             auto P = shell_pairs[p].first;
             auto Q = shell_pairs[p].second;
             const GaussianShell& s1 = basisset_->shell(P);
@@ -834,8 +861,8 @@ SharedMatrix SCFDeriv::compute_hessian()
             int oQ = s2.function_index();
             int aQ = s2.ncenter();
 
-            Tint->compute_shell_deriv2(P, Q);
-            const auto &buffers = Tint->buffers();
+            Tints[thread]->compute_shell_deriv2(P, Q);
+            const auto &buffers = Tints[thread]->buffers();
 
             std::vector<double> Dvals;
             // find the D values against which this batch will be conctracted
@@ -849,8 +876,9 @@ SharedMatrix SCFDeriv::compute_hessian()
             for (const double *buffer : buffers) {
                 Hvals.push_back(std::inner_product(Dvals.begin(), Dvals.end(), buffer, 0.0));
             }
-            process_buffers(Tp, Hvals, aP, aQ, natom, P==Q, false);
+            process_buffers(Tp_t, Hvals, aP, aQ, natom, P==Q, false);
         }
+        for (int t = 0; t < nthreads; ++t) hessians_["Kinetic"]->add(Tp_local[t]);
         // Symmetrize the result
         int dim = hessians_["Kinetic"]->rowdim();
         for (int row = 0; row < dim; ++row){
@@ -898,12 +926,25 @@ SharedMatrix SCFDeriv::compute_hessian()
         double** Sp = hessians_["Overlap"]->pointer();
 
         // Overlap derivatives
-        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(2));
+        int nthreads = Process::environment.get_n_threads();
+        std::vector<std::shared_ptr<OneBodyAOInt>> Sints(nthreads);
+        for (int t = 0; t < nthreads; ++t) Sints[t] = std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap(2));
 
-        const auto& shell_pairs = Sint->shellpairs();
+        const auto& shell_pairs = Sints[0]->shellpairs();
         size_t n_pairs = shell_pairs.size();
 
+        // Per-thread Hessian accumulators, reduced after the shell-pair loop.
+        int sdim = hessians_["Overlap"]->rowdim();
+        std::vector<SharedMatrix> Sp_local(nthreads);
+        for (int t = 0; t < nthreads; ++t) Sp_local[t] = std::make_shared<Matrix>("Overlap Hess local", sdim, sdim);
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         for (size_t p = 0; p < n_pairs; ++p) {
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
+            double** Sp_t = Sp_local[thread]->pointer();
             auto P = shell_pairs[p].first;
             auto Q = shell_pairs[p].second;
             const GaussianShell& s1 = basisset_->shell(P);
@@ -918,8 +959,8 @@ SharedMatrix SCFDeriv::compute_hessian()
             int Py = 3 * aP + 1;
             int Pz = 3 * aP + 2;
 
-            Sint->compute_shell_deriv2(P, Q);
-            const auto &buffers = Sint->buffers();
+            Sints[thread]->compute_shell_deriv2(P, Q);
+            const auto &buffers = Sints[thread]->buffers();
 
             std::vector<double> Wvals;
             // find the W values against which this batch will be contracted
@@ -934,8 +975,9 @@ SharedMatrix SCFDeriv::compute_hessian()
                 const double *buffer = buffers[i];
                 Hvals.push_back(std::inner_product(Wvals.begin(), Wvals.end(), buffer, 0.0));
             }
-            process_buffers(Sp, Hvals, aP, aQ, natom, P==Q, false);
+            process_buffers(Sp_t, Hvals, aP, aQ, natom, P==Q, false);
         }
+        for (int t = 0; t < nthreads; ++t) hessians_["Overlap"]->add(Sp_local[t]);
         // Symmetrize the result
         int dim = hessians_["Overlap"]->rowdim();
         for (int row = 0; row < dim; ++row){

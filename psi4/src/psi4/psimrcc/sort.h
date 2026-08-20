@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,7 +54,9 @@ class CCMatrix;
 #ifndef INDEX
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 #endif
+#ifndef four
 #define four(i, j, k, l) INDEX(INDEX(i, j), INDEX(k, l))
+#endif
 
 enum SortAlgorithm { out_of_core_sort, mrpt2_sort };
 

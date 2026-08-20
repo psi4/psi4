@@ -45,8 +45,8 @@ set {
     basis 6-31G*
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+    psi4.set_options({"d_convergence": 1e-10})
 
 fd_grad = gradient('scf', molecule=water, dertype=0, external_potentials=external_potentials)
 fd_ener = psi4.variable('CURRENT ENERGY')

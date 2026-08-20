@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -252,6 +252,38 @@ def check_consistency(func_dictionary):
                 )
 
 
+def libxc_functionals_in_dictionary(func_dictionary):
+    """The LibXC functional names (``XC_``-prefixed, exactly as handed to LibXC
+    by :py:func:`build_superfunctional_from_dictionary`) that a functional
+    definition depends on: the ``xc_functionals`` special case, the
+    ``x_functionals``/``c_functionals`` components, and a GGA borrowed for exact
+    exchange via ``x_hf``/``use_libxc``."""
+    names = []
+    if "xc_functionals" in func_dictionary:
+        names += [("XC_" + key).upper() for key in func_dictionary["xc_functionals"]]
+    if "x_functionals" in func_dictionary:
+        names += [("XC_" + key).upper() for key in func_dictionary["x_functionals"]]
+    if "x_hf" in func_dictionary and "use_libxc" in func_dictionary["x_hf"]:
+        names.append(("XC_" + func_dictionary["x_hf"]["use_libxc"]).upper())
+    if "c_functionals" in func_dictionary:
+        names += [("XC_" + key).upper() for key in func_dictionary["c_functionals"]]
+    return names
+
+
+def unavailable_libxc_functionals(func_dictionary):
+    """Of the LibXC functionals a definition needs, those absent from the linked
+    LibXC build (e.g. renamed or newly added between LibXC versions)."""
+    return [name for name in libxc_functionals_in_dictionary(func_dictionary)
+            if not core.LibXCFunctional.available(name)]
+
+
+def functional_available(func_dictionary):
+    """Whether every LibXC functional a definition needs is present in the
+    linked LibXC build. A functional that references a missing method cannot be
+    built, so it must not be registered as an available method."""
+    return not unavailable_libxc_functionals(func_dictionary)
+
+
 def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restricted):
     """
     This returns a (core.SuperFunctional, dispersion) tuple based on the requested name.
@@ -260,6 +292,16 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
 
     # Sanity check first, raises ValidationError if something is wrong
     check_consistency(func_dictionary)
+
+    # Every LibXC piece this functional needs must be present in the linked
+    # LibXC build; otherwise the C++ constructor aborts mid-build. Fail early
+    # with an actionable message naming the missing method(s) instead.
+    missing = unavailable_libxc_functionals(func_dictionary)
+    if missing:
+        raise ValidationError(
+            f"SCF: functional '{func_dictionary.get('name', '?')}' requires LibXC "
+            f"functional(s) {missing} not present in the linked LibXC build; the "
+            f"method is unavailable in this LibXC version.")
 
     # Either process the "xc_functionals" special case
     if "xc_functionals" in func_dictionary:

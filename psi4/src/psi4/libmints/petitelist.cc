@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -294,11 +294,17 @@ void SOCoefficients::delete_zeros() {
 PetiteList::PetiteList(const std::shared_ptr<BasisSet> &gbs, const std::shared_ptr<IntegralFactory> &ints,
                        bool include_pure_transform)
     : basis_(gbs), integral_(ints.get()), include_pure_transform_(include_pure_transform) {
+    if (include_pure_transform_) {
+        outfile->Printf("  WARNING: PetiteList(include_pure_transform=True) is deprecated and may be removed as soon as v1.13.\n    Use PetiteList(include_pure_transform=False) followed by MintsHelper.cartao_to_ao_transform() instead.\n");
+    }
     init();
 }
 
 PetiteList::PetiteList(const std::shared_ptr<BasisSet> &gbs, const IntegralFactory *ints, bool include_pure_transform)
     : basis_(gbs), integral_(ints), include_pure_transform_(include_pure_transform) {
+    if (include_pure_transform_) {
+        outfile->Printf("  WARNING: PetiteList(include_pure_transform=True) is deprecated and may be removed as soon as v1.13.\n    Use PetiteList(include_pure_transform=False) followed by MintsHelper.cartao_to_ao_transform() instead.\n");
+    }
     init();
 }
 

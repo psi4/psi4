@@ -1,5 +1,5 @@
 if(${ENABLE_OpenOrbitalOptimizer})
-    find_package(OpenOrbitalOptimizer 0.2 CONFIG)
+    find_package(OpenOrbitalOptimizer 0.3 CONFIG)  # edit in codedeps
 
     if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
         get_property(_loc TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer PROPERTY LOCATION)
@@ -22,7 +22,7 @@ if(${ENABLE_OpenOrbitalOptimizer})
 
         ExternalProject_Add(openorbitaloptimizer_external
             DEPENDS lapack_external
-            URL https://github.com/SusiLehtola/OpenOrbitalOptimizer/archive/v0.2.0.tar.gz  # edit in codedeps
+            URL https://github.com/SusiLehtola/OpenOrbitalOptimizer/archive/v0.3.0.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -40,5 +40,6 @@ if(${ENABLE_OpenOrbitalOptimizer})
         set(OpenOrbitalOptimizer_DIR ${STAGED_INSTALL_PREFIX}/${_ooo_dir} CACHE PATH "path to internally built OpenOrbitalOptimizerConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: OpenOrbitalOptimizer${ColourReset}")
     add_library(openorbitaloptimizer_external INTERFACE)  # dummy
 endif()

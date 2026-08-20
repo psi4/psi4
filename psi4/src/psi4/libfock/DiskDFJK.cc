@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -469,19 +469,23 @@ void DiskDFJK::preiterations() {
 }
 
 void DiskDFJK::compute_JK() {
-
     // zero out J, K, and wK matrices
     zero();
-
     max_nocc_ = max_nocc();
     max_rows_ = max_rows();
 
     if (do_J_ || do_K_) {
         initialize_temps();
-        if (is_core_)
+        if (is_core_) {
+            if (!Qmn_ || Qmn_.use_count() == 0) {
+                throw PSIEXCEPTION(
+                    "DiskDFJK(in-core mode) tried to compute J or K in compute_JK with a Qmn_ that does not point to a "
+                    "Matrix object!");
+            }
             manage_JK_core();
-        else
+        } else {
             manage_JK_disk();
+        }
         free_temps();
     }
 
@@ -500,6 +504,7 @@ void DiskDFJK::compute_JK() {
         }
     }
 }
+
 void DiskDFJK::postiterations() {
     Qmn_.reset();
     Qlmn_.reset();
@@ -1657,6 +1662,9 @@ void DiskDFJK::rebuild_wK_disk() {
     // No need to close
 }
 void DiskDFJK::manage_JK_core() {
+    if (!Qmn_ || Qmn_.use_count() == 0)
+        throw PSIEXCEPTION(
+            "DiskDFJK(in-core mode) tried to manage_JK_core with a Qmn_ that does not point to a Matrix object!");
     for (int Q = 0; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
         if (do_J_) {

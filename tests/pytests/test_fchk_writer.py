@@ -60,13 +60,12 @@ def test_uhf_fchk(inp2, datadir):
         'r_convergence': 1e-10,
         'pcg_convergence': 1e-10,
     })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
         dens_tol = 9
         fchk_tol = 1.e-8
     else:
         dens_tol = 3.e-8
-        fchk_tol = 2.e-6
-        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+        fchk_tol = 2.e-7
     FCHK_file = f"uhf-{inp2['name']}.fchk"
     reference_file = datadir.join(f"uhf-{inp2['name']}.ref")
     psi4.set_options(inp2['options'])
@@ -101,13 +100,12 @@ def test_rhf_fchk(inp, datadir):
         'r_convergence': 1e-10,
         'pcg_convergence': 1e-10,
     })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
         dens_tol = 9
         fchk_tol = 1.e-8
     else:
         dens_tol = 3.e-8
-        fchk_tol = 5.e-7
-        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+        fchk_tol = 2.e-7
     FCHK_file = f"rhf-{inp['name']}.fchk"
     reference_file = datadir.join(f"rhf-{inp['name']}.ref")
     psi4.set_options(inp['options'])

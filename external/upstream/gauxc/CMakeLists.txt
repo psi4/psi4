@@ -79,6 +79,7 @@ if(${ENABLE_gauxc})
                    -DOpenMP_CXX_FLAGS:STRING=${OpenMP_CXX_FLAGS}
                    -DOpenMP_omp_LIBRARY=${OpenMP_omp_LIBRARY}
                    -DOpenMP_gomp_LIBRARY=${OpenMP_gomp_LIBRARY}
+                   -DOpenMP_iomp5_LIBRARY=${OpenMP_iomp5_LIBRARY}
                    -DOpenMP_pthread_LIBRARY=${OpenMP_pthread_LIBRARY}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
@@ -98,5 +99,6 @@ if(${ENABLE_gauxc})
         set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: gauxc${ColourReset}")
     add_library(gauxc_external INTERFACE)  # dummy
 endif()

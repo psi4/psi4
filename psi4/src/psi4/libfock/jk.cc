@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -195,9 +195,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return jk;
 
     } else {
-        std::stringstream message;
-        message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
-        throw PSIEXCEPTION(message.str());
+        throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type '" + jk_type + "'");
     }
 }
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
@@ -212,14 +210,20 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // Build exact estimate via Schwarz metrics
         auto jk = build_JK(primary, auxiliary, options, "MEM_DF");
         jk->set_do_wK(do_wK);
-        if (jk->memory_estimate() < doubles) {
+        size_t memdfjk_memory = jk->memory_estimate();
+
+        if (memdfjk_memory < doubles) {
             return jk;
         }
         jk.reset();
 
+        outfile->Printf("  MemDFJK Memory: AOs need %.3f GiB; user supplied %.3f GiB.\n",
+                    memdfjk_memory * 8 / (1024 * 1024 * 1024.0),
+                    doubles * 8 / (1024 * 1024 * 1024.0));
+        outfile->Printf("  MemDFJK requires too much memory. DiskDFJK algorithm will be used.\n\n");
+       
         // Use Disk DFJK
         return build_JK(primary, auxiliary, options, "DISK_DF");
-
     } else {  // otherwise it has already been set
         return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
     }

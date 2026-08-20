@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -421,18 +421,15 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
             core.set_local_option("SCF", key, val)
         # Need to get the initial and cation to estimate ionization energy for
         # GRAC shift
-        mol_qcel_dict = molecule.to_schema(dtype=2)
+        mol_qcel_dict = molecule.to_schema(dtype=3)
         del mol_qcel_dict["fragment_charges"]
         del mol_qcel_dict["fragment_multiplicities"]
         del mol_qcel_dict["molecular_multiplicity"]
         given_charge = mol_qcel_dict["molecular_charge"]
 
-        mol_qcel = qcel.models.Molecule(**mol_qcel_dict)
-        mol_given = core.Molecule.from_schema(mol_qcel.dict())
-
+        mol_given = core.Molecule.from_schema(mol_qcel_dict)
         mol_qcel_dict["molecular_charge"] += 1
-        mol_qcel = qcel.models.Molecule(**mol_qcel_dict)
-        mol_cation = core.Molecule.from_schema(mol_qcel.dict())
+        mol_cation = core.Molecule.from_schema(mol_qcel_dict)
 
         core.print_out(f"\n\n  ==> GRAC {label} Given Molecule: charge={mol_given.molecular_charge()} mult={mol_given.multiplicity()} <==\n\n")
         try:

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -407,8 +407,8 @@ class PSI_API BasisSet {
     void move_atom(int atom, const Vector3 &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
-    // Converts the contraction to match the SAP approach.
-    void convert_sap_contraction();
+    // Remove normalization from an s-function and negate.
+    void negative_gaussian_normalization_to_coefficients();
     
    private:
     /// Helper functions for frozen core to reduce LOC

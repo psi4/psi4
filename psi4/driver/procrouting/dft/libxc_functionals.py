@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -28,6 +28,8 @@
 """
 List of XC functionals
 """
+
+from psi4 import core
 
 funcs = []
 
@@ -61,7 +63,13 @@ funcs.append({"name": "mPWLYP1W"       , "xc_functionals": {"GGA_XC_MPWLYP1W"   
 funcs.append({"name": "PBELYP1W"       , "xc_functionals": {"GGA_XC_PBELYP1W"           : {}}})
 funcs.append({"name": "MOHLYP"         , "xc_functionals": {"GGA_XC_MOHLYP"             : {}}})
 funcs.append({"name": "MOHLYP2"        , "xc_functionals": {"GGA_XC_MOHLYP2"            : {}}})
-funcs.append({"name": "TH-FL"          , "xc_functionals": {"GGA_XC_TH_FL"              : {}}})
+# TH-FL was reclassified from GGA_XC_TH_FL to LDA_XC_TH_FL in Libxc 7.1. List
+# both spellings and register whichever the linked Libxc provides (the runtime
+# availability gate drops the absent one), so TH-FL works on either version.
+for _th_fl in ("LDA_XC_TH_FL", "GGA_XC_TH_FL"):
+    if core.LibXCFunctional.available("XC_" + _th_fl):
+        funcs.append({"name": "TH-FL"      , "xc_functionals": {_th_fl                    : {}}})
+        break
 funcs.append({"name": "TH-FC"          , "xc_functionals": {"GGA_XC_TH_FC"              : {}}})
 funcs.append({"name": "TH-FCFO"        , "xc_functionals": {"GGA_XC_TH_FCFO"            : {}}})
 funcs.append({"name": "TH-FCO"         , "xc_functionals": {"GGA_XC_TH_FCO"             : {}}})

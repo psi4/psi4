@@ -174,7 +174,7 @@ for method in Eref["Singlet"]["Composite"].keys():
     E = energy('scf')
     ans = Eref["Singlet"]["Composite"][method]
     if isinstance(ans, dict):
-        ans = ans["INTERNAL"]  # no OOO for CUHF
+        ans = ans["INTERNAL"]  # no OOO for CUHF  # KP-LOGIC
     compare_values(ans, E, 6, f'Singlet {method} CUHF energy') #TEST
 
 activate(triplet_o2)

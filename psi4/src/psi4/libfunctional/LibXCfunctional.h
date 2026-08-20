@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -73,6 +73,13 @@ class LibXCFunctional : public Functional {
     LibXCFunctional(std::string xc_name, bool unpolarized);
     ~LibXCFunctional() override;
 
+    /// Is a functional of this name present in the linked LibXC build? `xc_name`
+    /// is the same "XC_..." string accepted by the constructor. This only looks
+    /// the name up (it does not build the functional), so it is safe to probe
+    /// names that may be absent -- e.g. functionals renamed or added between
+    /// LibXC versions.
+    static bool available(const std::string& xc_name);
+
     void compute_functional(const std::map<std::string, SharedVector>& in,
                             const std::map<std::string, SharedVector>& out, int npoints, int deriv) override;
 
@@ -86,6 +93,7 @@ class LibXCFunctional : public Functional {
     void set_density_cutoff(double cut) override;
     void set_omega(double omega);
     void set_tweak(std::map<std::string, double>, bool);
+    // Name, Kind, Coefficient for each functional in the superfunctional
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
     // Make queries to libxc

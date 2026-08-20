@@ -27,46 +27,14 @@ list(APPEND sources
   )
 
 psi4_add_module(lib fock sources)
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
+    target_precompile_headers(fock REUSE_FROM psio)
+endif()
 
-target_compile_definitions(fock
-  PRIVATE
-    "restrict=${RESTRICT_KEYWORD}"
-    $<$<BOOL:${ENABLE_GTFOCK}>:ENABLE_GTFOCK>
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
+# example for turning off unity build for a directory while developint
+# set_property(TARGET fock PROPERTY UNITY_BUILD OFF)
 
 target_link_libraries(fock
   PRIVATE
-    gau2grid::gg
     pybind11::headers
-    Libint2::cxx  # for <libint2/config.h>
   )
-
-if(TARGET gauxc::gauxc)
-  target_compile_definitions(fock
-    PUBLIC
-      USING_gauxc
-    )
-  target_link_libraries(fock
-    PUBLIC 
-      gauxc::gauxc 
-    )
-endif()
-
-if(TARGET IntegratorXX::IntegratorXX)
-  target_link_libraries(fock
-    PRIVATE
-      IntegratorXX::IntegratorXX
-    )
-endif()
-
-if(TARGET BrianQC::static_wrapper)
-  target_compile_definitions(fock
-    PUBLIC
-      USING_BrianQC
-    )
-  target_include_directories(fock
-    PUBLIC
-      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
