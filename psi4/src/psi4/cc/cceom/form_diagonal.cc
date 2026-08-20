@@ -271,7 +271,7 @@ void form_diagonal(int C_irr) {
 
         global_dpd_->file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
         global_dpd_->file2_mat_init(&DIA);
-        {
+        { // Note: DIA stands for alpha spins
             const Dimension& aoccpi = moinfo.aoccpi;
             for (h = 0; h < nirreps; h++) {
                 for (i = 0; i < aoccpi[h]; i++)
@@ -284,7 +284,7 @@ void form_diagonal(int C_irr) {
 
         global_dpd_->file2_init(&Dia, PSIF_EOM_D, C_irr, 2, 3, "Dia");
         global_dpd_->file2_mat_init(&Dia);
-        {
+        { // Note: Dia stands for beta spins
             const Dimension& bvirtpi = moinfo.bvirtpi;
             for (h = 0; h < nirreps; h++) {
                 for (i = 0; i < boccpi[h]; i++)
