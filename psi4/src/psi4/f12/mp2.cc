@@ -376,7 +376,8 @@ double MP2F12::compute_energy() {
     if (print_ > 1) {
         einsums::profile::report("timer_mp2f12.dat", false);
     }
-    einsums::profile::finalize();
+// TODO undo comment when understand how to avoid double-finalize with pyeinsums
+//    einsums::profile::finalize();
     timer_off("MP2-F12 Compute Energy");
 
     // Typically you would build a new wavefunction and populate it with data
@@ -811,7 +812,8 @@ double DiskMP2F12::compute_energy() {
     if (print_ > 1) {
         einsums::profile::report("timer_mp2f12.dat", false);
     }
-    einsums::profile::finalize();
+// TODO undo comment when understand how to avoid double-finalize with pyeinsums
+//    einsums::profile::finalize();
 
     // Typically you would build a new wavefunction and populate it with data
     return E_mp2f12_;
