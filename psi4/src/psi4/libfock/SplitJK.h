@@ -57,6 +57,7 @@ PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libfmm/fmm_tree.h"
 
 namespace psi {
 class MinimalInterface;
@@ -76,8 +77,8 @@ class DFTGrid;
  * framework.
  *
  * Current algorithms in place:
- * J: DF-DirJ
- * K: COSX, LinK
+ * J: DF-DirJ, CFMM, DFCFMM
+ * K: COSX, LinK, snLinK
  *
  */
 class PSI_API SplitJK {
@@ -105,7 +106,7 @@ class PSI_API SplitJK {
     /// Left-right symmetric?
     bool lr_symmetric_;
 
-    /// Number of ERI shell quartets computed, i.e., not screened out
+    /// Number of ERI shell tuples computed, i.e., not screened out
     size_t num_computed_shells_;
 
    public:
@@ -135,7 +136,7 @@ class PSI_API SplitJK {
     virtual void print_header() const = 0;
 
     /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
+    * Return number of ERI shell tuples computed during the SplitJK build process.
     */
     virtual size_t num_computed_shells();
 
@@ -155,7 +156,7 @@ class PSI_API SplitJK {
 /// Reference is https://doi.org/10.1039/B204199P
 class PSI_API DirectDFJ : public SplitJK {
     // => Density Fitting Stuff <= //
-
+   protected:
     /// Auxiliary basis set
     std::shared_ptr<BasisSet> auxiliary_;
     /// Coulomb Metric
@@ -187,7 +188,7 @@ class PSI_API DirectDFJ : public SplitJK {
     void print_header() const override;
 
     /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
+    * Return number of ERI shell triplets computed during the SplitJK build process.
     */
     size_t num_computed_shells() override;
 
@@ -247,6 +248,93 @@ class PSI_API LinK : public SplitJK {
     * print name of method
     */
     std::string name() override { return "LinK"; }
+};
+
+class PSI_API DirectCFMM : public SplitJK {
+  protected:
+   /// The CFMMTree object used to compute the CFMM integrals
+   std::shared_ptr<CFMMTree> cfmmtree_;
+
+  public:
+   /**
+    * @brief Construct a new DirectCFMM object
+    * 
+    * @param primary The primary basis set used in DirectCFMM
+    * @param options The options object
+    */
+   DirectCFMM(std::shared_ptr<BasisSet> primary, Options& options);
+
+   /**
+    * @author Andy Jiang, Andy Simmonett, David Poole, Georgia Tech, April 2022
+    *
+    * @brief Builds the J matrix according to the CFMM Algorithm (integral direct exact 4-center ERIs)
+    * 
+    * @param D The list of AO density matrices to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
+    * @param J The list of AO J matrices to build (Same size as D)
+    */
+   void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp, std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+
+   /**
+    * @brief Prints information regarding CFMM run
+    * 
+    */
+   void print_header() const override;
+
+   /**
+    * Return number of ERI shell quartets computed during the SplitJK build process.
+    */
+   size_t num_computed_shells() override;
+
+   /**
+    * print name of method
+    */
+   std::string name() override { return "CFMM"; }
+};
+
+class PSI_API DFCFMM : public DirectDFJ {
+  protected:
+   /// CFMMTree used to calculate the three-center integrals
+   std::shared_ptr<CFMMTree> df_cfmm_tree_;
+   /// Auxiliary-space intermediate used by the two DFCFMM contractions
+   std::vector<SharedMatrix> gamma_;
+   /// Maximum diagonal Coulomb-metric element in each auxiliary shell
+   std::vector<double> J_metric_shell_diag_;
+
+  public:
+   /**
+    * @brief Construct a new DFCFMM object
+    * 
+    * @param primary The primary basis set used in DFCFMM
+    * @param auxiliary The auxiliary basis set used in DFCFMM
+    * @param options The options object
+    */
+   DFCFMM(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+
+   /**
+    * @author Andy Jiang and David Poole, Georgia Tech, May 2022
+    *
+    * @brief Builds the J matrix using CFMM-Accelerated DFJ Algorithm
+    * 
+    * @param D The list of AO density matrices to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
+    * @param J The list of AO J matrices to build (Same size as D)
+    */
+   void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp, std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+
+   /**
+    * @brief Prints information regarding DFCFMM run
+    * 
+    */
+   void print_header() const override;
+
+   /**
+    * Return number of ERI shell triplets computed during the SplitJK build process.
+    */
+   size_t num_computed_shells() override;
+
+   /**
+    * print name of method
+    */
+   std::string name() override { return "DFCFMM"; }
 };
 
 /**

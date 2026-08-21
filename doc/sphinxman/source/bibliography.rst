@@ -833,3 +833,22 @@ Bibliography
    *J. Chem. Phys.* **152**, 184102 (2020)
    https://doi.org/10.1063/5.0004997
 
+.. [White:1994:8]
+   C. A. White, B. G. Johnson, P. M. W. Gill, and M. Head-Gordon,
+   *Chem. Phys. Lett.* **230**, 8-16 (1994).
+   https://doi.org/10.1016/0009-2614(94)01128-1
+
+.. [White:1996:268]
+   C. A. White, B. G. Johnson, P. M. W. Gill, and M. Head-Gordon,
+   *Chem. Phys. Lett.* **253**, 268-278 (1996).
+   https://doi.org/10.1016/0009-2614(96)00175-3
+
+.. [Sodt:2006:194109]
+   A. Sodt, J. E. Subotnik, and M. Head-Gordon,
+   *J. Chem. Phys.* **125**, 194109 (2006).
+   https://doi.org/10.1063/1.2370949
+
+.. [Lazarski:2015:3029]
+   R. Łazarski, A. M. Burow, and M. Sierka,
+   *J. Chem. Theory Comput.* **11**, 3029-3041 (2015).
+   https://doi.org/10.1021/acs.jctc.5b00252

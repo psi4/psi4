@@ -83,13 +83,10 @@ void CompositeJK::common_init() {
     
     // derive separate J+K algorithms from scf_type
     auto jk_type = options_.get_str("SCF_TYPE");
-    auto j_type = jk_type.substr(0, jk_type.find("+"));
-    auto k_type = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
-
-    // occurs if no composite K algorithm was specified; useful for LDA/GGA DFT runs
-    if (k_type == j_type) {
-      k_type = "NONE";
-    }
+    const auto separator = jk_type.find("+");
+    const auto j_type = jk_type.substr(0, separator);
+    const std::string k_type =
+        (separator == std::string::npos) ? std::string("NONE") : jk_type.substr(separator + 1);
 
     // other options
     auto screening_type = options_.get_str("SCREENING");
@@ -124,10 +121,15 @@ void CompositeJK::common_init() {
 
     // => Set up separate J algorithm <= //
 
-    // DF-DirJ
-    if (j_type == "DFDIRJ") {
+    // DF-DirJ or DFCFMM (both need 3-center DF integrals)
+    if (j_type == "DFDIRJ" || j_type == "DFCFMM") {
+        
         // initialize SplitJK algo
-        j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
+        if (j_type == "DFDIRJ") {
+            j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
+        } else {
+            j_algo_ = std::make_shared<DFCFMM>(primary_, auxiliary_, options_);
+        }
 
         // initialize 3-Center ERIs
         eri_computers_["3-Center"].emplace({});
@@ -142,6 +144,9 @@ void CompositeJK::common_init() {
         for(int rank = 1; rank < nthreads_; rank++) {
             eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
         }
+
+    } else if (j_type == "CFMM") {
+        j_algo_ = std::make_shared<DirectCFMM>(primary_, options_);
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     }
@@ -263,6 +268,8 @@ void CompositeJK::compute_JK() {
     // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
     if (do_wK_) throw PSIEXCEPTION("CompositeJK algorithms do not support wK integrals yet!");
 
+    num_computed_shells_ = 0L;
+
     // set compute()-specific parameters
     j_algo_->set_lr_symmetric(lr_symmetric_);
     
@@ -280,7 +287,7 @@ void CompositeJK::compute_JK() {
         // Do IFB on this iteration?
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
 
-        if (k_algo_->name() == "sn-LinK") {
+        if (k_algo_ && k_algo_->name() == "sn-LinK") {
             auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
             k_algo_derived->set_incfock_iter(do_incfock_iter_);
         }
@@ -310,14 +317,25 @@ void CompositeJK::compute_JK() {
 
     // => Perform matrix calculations <= //
 
+    size_t computed_triplets = 0L;
+    size_t computed_quartets = 0L;
+
     // Coulomb Matrix
     if (do_J_) {
         timer_on("CompositeJK: " + j_algo_->name());
 
-        j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
+        if (j_algo_->name() == "CFMM") {
+            j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["4-Center"]);
+        } else {
+            j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
+        }
 
         if (get_bench()) {
-            computed_shells_per_iter_["Triplets"].push_back(j_algo_->num_computed_shells());
+            if (j_algo_->name() == "CFMM") {
+                computed_quartets += j_algo_->num_computed_shells();
+            } else {
+                computed_triplets += j_algo_->num_computed_shells();
+            }
         }
  
         timer_off("CompositeJK: " + j_algo_->name());
@@ -335,7 +353,7 @@ void CompositeJK::compute_JK() {
         k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
 
         if (get_bench()) {
-            computed_shells_per_iter_["Quartets"].push_back(k_algo_->num_computed_shells());
+            computed_quartets += k_algo_->num_computed_shells();
         }
 
         if (k_algo_->name() == "COSX") {
@@ -344,6 +362,14 @@ void CompositeJK::compute_JK() {
         }
 
         timer_off("CompositeJK: " + k_algo_->name());
+    }
+
+    if (get_bench()) {
+        if (computed_shells_per_iter_.count("Triplets")) {
+            computed_shells_per_iter_["Triplets"].push_back(computed_triplets);
+        }
+        computed_shells_per_iter_["Quartets"].push_back(computed_quartets);
+        num_computed_shells_ = computed_triplets + computed_quartets;
     }
 
     // => Finalize Incremental Fock if required <= //
@@ -362,7 +388,7 @@ void CompositeJK::postiterations() {}
 // => Method-specific knobs go here <= //
 
 void CompositeJK::set_COSX_grid(std::string current_grid) { 
-    if (k_algo_->name() == "COSX") {
+    if (k_algo_ && k_algo_->name() == "COSX") {
         auto k_algo_derived = std::dynamic_pointer_cast<COSK>(k_algo_); 
         k_algo_derived->set_grid(current_grid); 
     } else {
@@ -371,7 +397,7 @@ void CompositeJK::set_COSX_grid(std::string current_grid) {
 }
 
 std::string CompositeJK::get_COSX_grid() { 
-    if (k_algo_->name() == "COSX") {
+    if (k_algo_ && k_algo_->name() == "COSX") {
         auto k_algo_derived = std::dynamic_pointer_cast<COSK>(k_algo_); 
         return k_algo_derived->get_grid(); 
     } else {
@@ -380,7 +406,7 @@ std::string CompositeJK::get_COSX_grid() {
 }
 
 int CompositeJK::get_snLinK_max_am() { 
-    if (k_algo_->name() == "sn-LinK") {
+    if (k_algo_ && k_algo_->name() == "sn-LinK") {
         auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
         return k_algo_derived->get_max_am(); 
     } else {
