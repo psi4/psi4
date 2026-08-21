@@ -161,6 +161,8 @@ GRTAGS
 Pipfile.lock
 pytest_output.dat
 pytest_output.log
-AGENTS.md
 profile.txt
 fsapt
+
+AGENTS.local.md
+.agents.local.md
