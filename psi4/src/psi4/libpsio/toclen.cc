@@ -55,16 +55,16 @@ size_t PSIO::toclen(const size_t unit) {
     return (len);
 }
 
-/// @brief Seek the stream of the vol[0] of a unit to its beginning
+/// @brief Seek the stream of the file backing a unit to its beginning
 /// @param unit : file unit number to rewind
 void PSIO::rewind_toclen(const size_t unit) {
     if (!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
-    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto stream = psio_unit[unit].vol.stream;
     const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
     const int saved_errno = errno;
     if (errcod == -1) {
         const std::string errmsg =
-            psio_compose_err_msg("LSEEK failed.", "Cannot seek vol[0] to its beginning", unit, saved_errno);
+            psio_compose_err_msg("LSEEK failed.", "Cannot seek to the beginning of file", unit, saved_errno);
         psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
     }
 }
@@ -81,7 +81,7 @@ size_t PSIO::rd_toclen(const size_t unit) {
     rewind_toclen(unit);
     // Read the value
     size_t len;
-    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto stream = psio_unit[unit].vol.stream;
     const auto errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
     const int saved_errno = errno;
     if (errcod != sizeof(size_t)) {
@@ -103,7 +103,7 @@ void PSIO::wt_toclen(const size_t unit, const size_t len) {
     // Seek to the beginning
     rewind_toclen(unit);
     // Write the value
-    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto stream = psio_unit[unit].vol.stream;
     const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
     const int saved_errno = errno;
     if (errcod != sizeof(size_t)) {

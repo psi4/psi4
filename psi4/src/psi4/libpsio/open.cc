@@ -36,16 +36,13 @@
 #include <cstring>
 #include <cstdlib>
 #include <string>
-#include <map>
-#include <sstream>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
 namespace psi {
 
 void PSIO::open(size_t unit, int status) {
-    size_t i;
-    char *name, *path;
+    char *name;
     psio_ud* this_unit;
 
     /* check for too large unit */
@@ -53,65 +50,34 @@ void PSIO::open(size_t unit, int status) {
 
     this_unit = &(psio_unit[unit]);
 
-    /* Get number of volumes to stripe across */
-    this_unit->numvols = get_numvols(unit);
-    if (this_unit->numvols > PSIO_MAXVOL) psio_error(unit, PSIO_ERROR_MAXVOL);
-    if (!(this_unit->numvols)) this_unit->numvols = 1;
-
     /* Check to see if this unit is already open */
-    for (i = 0; i < this_unit->numvols; i++) {
-        if (this_unit->vol[i].stream != -1) psio_error(unit, PSIO_ERROR_REOPEN);
-    }
+    if (this_unit->vol.stream != -1) psio_error(unit, PSIO_ERROR_REOPEN);
 
     /* Get the file name prefix */
     get_filename(unit, &name);
 
-    // Check if any files will have the same name
+    /* Build the file name and open the file */
     {
-        using std::string;
-        typedef std::map<string, int> Names;
-        Names names;
-        for (i = 0; i < this_unit->numvols; i++) {
-            std::ostringstream oss;
-            get_volpath(unit, i, &path);
-            oss << path << name << "." << unit;
-            const std::string fullpath = oss.str();
-            typedef Names::const_iterator citer;
-            citer n = names.find(fullpath);
-            if (n != names.end()) psio_error(unit, PSIO_ERROR_IDENTVOLPATH);
-            names[fullpath] = 1;
-            free(path);
-        }
-    }
+        std::string spath = PSIOManager::shared_object()->get_file_path(unit);
+        const char* path = spath.c_str();
 
-    /* Build the name for each volume and open the file */
-    for (i = 0; i < this_unit->numvols; i++) {
-        char* fullpath;
-        get_volpath(unit, i, &path);
-
-        // A bit of a hack in psio open at the moment, breaks volumes and some error checking
-        std::string spath2 = PSIOManager::shared_object()->get_file_path(unit);
-        const char* path2 = spath2.c_str();
-
-        fullpath = (char*)malloc((strlen(path2) + strlen(name) + 80) * sizeof(char));
-        sprintf(fullpath, "%s%s.%zu", path2, name, unit);
-        this_unit->vol[i].path = strdup(fullpath);
+        char* fullpath = (char*)malloc((strlen(path) + strlen(name) + 80) * sizeof(char));
+        sprintf(fullpath, "%s%s.%zu", path, name, unit);
+        this_unit->vol.path = strdup(fullpath);
         free(fullpath);
 
         /* Register the file */
-        PSIOManager::shared_object()->open_file(std::string(this_unit->vol[i].path), unit);
+        PSIOManager::shared_object()->open_file(std::string(this_unit->vol.path), unit);
 
-        /* Now open the volume */
+        /* Now open the file */
         if (status == PSIO_OPEN_OLD) {
-            this_unit->vol[i].stream = SYSTEM_OPEN(this_unit->vol[i].path, PSIO_OPEN_OLD_FLAGS, PERMISSION_MODE);
+            this_unit->vol.stream = SYSTEM_OPEN(this_unit->vol.path, PSIO_OPEN_OLD_FLAGS, PERMISSION_MODE);
         } else if (status == PSIO_OPEN_NEW) {
-            this_unit->vol[i].stream = SYSTEM_OPEN(this_unit->vol[i].path, PSIO_OPEN_NEW_FLAGS, PERMISSION_MODE);
+            this_unit->vol.stream = SYSTEM_OPEN(this_unit->vol.path, PSIO_OPEN_NEW_FLAGS, PERMISSION_MODE);
         } else
             psio_error(unit, PSIO_ERROR_OSTAT);
 
-        if (this_unit->vol[i].stream == -1) psio_error(unit, PSIO_ERROR_OPEN);
-
-        free(path);
+        if (this_unit->vol.stream == -1) psio_error(unit, PSIO_ERROR_OPEN);
     }
 
     if (status == PSIO_OPEN_OLD)
@@ -130,78 +96,32 @@ void PSIO::open(size_t unit, int status) {
 // Mirrors PSIO::open() but just check to see if the file is there
 // status needs is assumed PSIO_OPEN_OLD if this is called
 bool PSIO::exists(size_t unit) {
-    size_t i;
-    char *name, *path;
+    char *name;
     psio_ud* this_unit;
 
     if (unit > PSIO_MAXUNIT) psio_error(unit, PSIO_ERROR_MAXUNIT);
 
     this_unit = &(psio_unit[unit]);
 
-    /* Get number of volumes to stripe across */
-    this_unit->numvols = get_numvols(unit);
-    if (this_unit->numvols > PSIO_MAXVOL) psio_error(unit, PSIO_ERROR_MAXVOL);
-    if (!(this_unit->numvols)) this_unit->numvols = 1;
-
-    /* Check to see if this unit is already open, if so, should be good.
-       If every volume has a sream value other than -1, it's open */
-    bool already_open = true;
-    for (i = 0; i < this_unit->numvols; i++) {
-        if (this_unit->vol[i].stream == -1) already_open = false;
-    }
-    if (already_open) return (true);
+    /* If the unit is already open, the file exists */
+    if (this_unit->vol.stream != -1) return (true);
 
     /* Get the file name prefix */
     get_filename(unit, &name);
-    // printf("%s\n",name);
 
-    // Check if any files will have the same name
-    {
-        using std::string;
-        typedef std::map<string, int> Names;
-        Names names;
-        for (i = 0; i < this_unit->numvols; i++) {
-            std::ostringstream oss;
-            get_volpath(unit, i, &path);
-            oss << path << name << "." << unit;
-            const std::string fullpath = oss.str();
-            typedef Names::const_iterator citer;
-            citer n = names.find(fullpath);
-            if (n != names.end()) psio_error(unit, PSIO_ERROR_IDENTVOLPATH);
-            names[fullpath] = 1;
-            free(path);
-        }
-    }
+    /* Build the file name and test whether it can be opened */
+    std::string spath = PSIOManager::shared_object()->get_file_path(unit);
+    const char* path = spath.c_str();
 
-    /* Build the name for each volume and open the file */
-    bool file_exists = true;
-    for (i = 0; i < this_unit->numvols; i++) {
-        char* fullpath;
-        int stream;
-        get_volpath(unit, i, &path);
+    char* fullpath = (char*)malloc((strlen(path) + strlen(name) + 80) * sizeof(char));
+    sprintf(fullpath, "%s%s.%zu", path, name, unit);
 
-        // A bit of a hack in psio open at the moment, breaks volumes and some error checking
-        std::string spath2 = PSIOManager::shared_object()->get_file_path(unit);
-        const char* path2 = spath2.c_str();
+    int stream = SYSTEM_OPEN(fullpath, O_RDWR);
+    const bool file_exists = (stream != -1);
+    /* and close it again, if opening worked */
+    if (stream != -1) SYSTEM_CLOSE(stream);
 
-        fullpath = (char*)malloc((strlen(path2) + strlen(name) + 80) * sizeof(char));
-        sprintf(fullpath, "%s%s.%zu", path2, name, unit);
-
-        /* Now open the volume */
-        stream = SYSTEM_OPEN(fullpath, O_RDWR);
-        /* and close it again, if opening worked */
-        if (stream != -1) {
-            SYSTEM_CLOSE(stream);
-        }
-
-        if (stream == -1) {
-            file_exists = false;
-        }
-
-        free(path);
-        free(fullpath);
-    }
-
+    free(fullpath);
     free(name);
     return (file_exists);
 }
