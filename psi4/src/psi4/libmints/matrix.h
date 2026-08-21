@@ -262,6 +262,14 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
+    /**
+     * Constructor for a 1D matrix from Eigen.
+     *
+     * @param eigen_mat The Eigen matrix whose contents and dimensions will be copied.
+     * @param name An optional name for the Matrix.
+     */
+    Matrix(const Eigen::MatrixXd& eigen_mat, const std::string& name = "");
+
     /// Destructor, frees memory
     virtual ~Matrix();
 
