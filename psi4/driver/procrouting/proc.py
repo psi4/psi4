@@ -37,6 +37,7 @@ import shutil
 import subprocess
 import sys
 import warnings
+import time
 from typing import Dict, List, Union
 
 import numpy as np
@@ -1796,6 +1797,20 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("""  PE geometry must align with POTFILE keyword: """
                        """resetting coordinates with fixed origin and orientation.\n""")
 
+    # cuEST GPU-accelerated DFT (the XC potential/grid code path) does not yet
+    # support symmetry-adapted (non-C1) wavefunctions; only the JK (HF exchange)
+    # part of cuEST is symmetry-safe. Force C1 whenever cuEST is requested unless HF.
+    # This builds upon REFERENCE set by scf_set_reference_local that uses needs_xc().
+    _cuest_needs_c1 = (core.get_option("SCF", "USE_CUEST") and core.get_option('SCF', 'REFERENCE').endswith("KS"))
+    if _cuest_needs_c1 and scf_molecule.schoenflies_symbol() != 'c1':
+        c1_molecule = scf_molecule.clone()
+        c1_molecule.reset_point_group('c1')
+        c1_molecule.update_geometry()
+
+        scf_molecule = c1_molecule
+        core.print_out("""  cuEST GPU acceleration does not yet support molecular symmetry for DFT: """
+                       """further calculations in C1 point group.\n""")
+
     # SCF Banner data
     banner = kwargs.pop('banner', None)
     bannername = name
@@ -1931,12 +1946,14 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out('\n')
 
     # the SECOND scf call
+    _t_driver0 = time.perf_counter()
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
     if banner:
         core.print_out("\n         ---------------------------------------------------------\n")
         core.print_out("         " + banner.center(58))
 
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
+    _t_driver1 = time.perf_counter()
 
     # The wfn from_file routine adds the npy suffix if needed, but we add it here so that
     # we can use os.path.isfile to query whether the file exists before attempting to read
@@ -2015,6 +2032,10 @@ def scf_helper(name, post_scf=True, **kwargs):
         pcm_print_level = core.get_option('SCF', "PRINT")
         scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
 
+    # cuEST PCM preparation
+    if core.get_option('SCF', 'CUEST_PCM'):
+        scf_wfn.set_cuestPCM(core.cuestPCM(core.get_options(), scf_wfn.mintshelper()))
+
     # DDPCM preparation
     if core.get_option('SCF', 'DDX'):
         if not solvent._have_ddx:
@@ -2044,7 +2065,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("  Using user-supplied JK object.\n")
         scf_wfn.set_jk(jk_obj)
 
+    _t_driver2 = time.perf_counter()
     e_scf = scf_wfn.compute_energy()
+    _t_driver3 = time.perf_counter()
     for obj in [core, scf_wfn]:
         # set_variable("SCF TOTAL ENERGY")  # P::e SCF
         for pv in ["SCF TOTAL ENERGY", "CURRENT ENERGY", "CURRENT REFERENCE ENERGY"]:
@@ -2103,6 +2126,14 @@ def scf_helper(name, post_scf=True, **kwargs):
         filename = scf_wfn.get_scratch_filename(180)
         scf_wfn.to_file(filename)
         extras.register_numpy_file(filename) # retain with -m (messy) option
+
+    _t_driver4 = time.perf_counter()
+    core.print_out("\n  ==> SCF Driver Timing <==\n\n")
+    core.print_out("    Wfn.build:       %7.3fs\n" % (_t_driver1 - _t_driver0))
+    core.print_out("    Wfn factory:     %7.3fs\n" % (_t_driver2 - _t_driver1))
+    core.print_out("    compute_energy:  %7.3fs\n" % (_t_driver3 - _t_driver2))
+    core.print_out("    Post-SCF:        %7.3fs\n" % (_t_driver4 - _t_driver3))
+    core.print_out("    Total driver:    %7.3fs\n\n" % (_t_driver4 - _t_driver0))
 
     if do_timer:
         core.tstop()
@@ -2854,6 +2885,18 @@ def run_scf_gradient(name, **kwargs):
 
     optstash = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
+    # cuESTJKGrad reuses the SCF JK object (specifically its cuEST DF integral
+    # plan) rather than rebuilding integrals from scratch.  HF::finalize() resets
+    # jk_ to null by default (SAVE_JK=False), so SCFDeriv would receive a null
+    # JK pointer and segfault inside build_cuESTJKGrad.  Preserve the JK object
+    # across finalization so compute_gradient() can access it.
+    optstash_jk = None
+    if core.get_option('SCF', 'USE_CUEST') and \
+            'DF' in core.get_global_option('SCF_TYPE') and \
+            not core.get_option('SCF', 'SAVE_JK'):
+        optstash_jk = p4util.OptionsState(['SCF', 'SAVE_JK'])
+        core.set_local_option('SCF', 'SAVE_JK', True)
+
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
@@ -2881,6 +2924,8 @@ def run_scf_gradient(name, **kwargs):
         core.set_variable(k, v)
 
     optstash.restore()
+    if optstash_jk is not None:
+        optstash_jk.restore()
     return ref_wfn
 
 

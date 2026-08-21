@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #include <cstdio>
 #include <iomanip>
@@ -59,6 +62,13 @@
 #include "psi4/libqt/qt.h"
 
 #include "python_data_type.h"
+
+#ifdef USING_cuEST
+#include "cuest.h"
+#include "psi4/libfock/cuESTCommon.h"
+#include <cusolverDn.h>
+#include <cuda_runtime.h>
+#endif
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -137,6 +147,164 @@ void handleBrianOption(bool value) {
 }
 #endif
 
+#ifdef USING_cuEST
+#include <cuest.h>
+
+cusolverDnHandle_t cusolver_handle = 0;
+cublasHandle_t cublas_handle = 0;
+cuestHandle_t cuest_handle = 0;
+cudaStream_t stream_handle = 0;
+
+void cuest_cleanup_noexcept() {
+    if (cuest_handle != 0) {
+        cuestDestroy(cuest_handle);
+        cuest_handle = 0;
+    }
+    if (cusolver_handle != 0) {
+        cusolverDnDestroy(cusolver_handle);
+        cusolver_handle = 0;
+    }
+    if (cublas_handle != 0) {
+        cublasDestroy(cublas_handle);
+        cublas_handle = 0;
+    }
+    if (stream_handle != 0) {
+        cudaStreamDestroy(stream_handle);
+        stream_handle = 0;
+    }
+}
+
+void cuest_init() {
+    if (stream_handle != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize the stream_handle when it hasn't been released\n");
+    }
+    if (cublas_handle != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize the cublas_handle when it hasn't been released\n");
+    }
+    if (cusolver_handle != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize the cusolver_handle when it hasn't been released\n");
+    }
+    if (cuest_handle != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize the cuEST module when it hasn't been released\n");
+    }
+
+    int device_count = 0;
+    cudaError_t cuda_err = cudaGetDeviceCount(&device_count);
+    if (cuda_err != cudaSuccess) {
+        throw PSIEXCEPTION(std::string("cuEST requested, but CUDA device discovery failed: ") +
+                           cudaGetErrorString(cuda_err));
+    }
+    if (device_count == 0) {
+        throw PSIEXCEPTION("cuEST requested, but no CUDA-capable GPU was found.");
+    }
+
+    int device_id = 0;
+    cuda_err = cudaGetDevice(&device_id);
+    if (cuda_err != cudaSuccess) {
+        throw PSIEXCEPTION(std::string("cuEST requested, but cudaGetDevice failed: ") +
+                           cudaGetErrorString(cuda_err));
+    }
+    if (device_id < 0 || device_id >= device_count) {
+        throw PSIEXCEPTION("cuEST requested, but CUDA reported an invalid active device.");
+    }
+
+    cudaDeviceProp props;
+    cuda_err = cudaGetDeviceProperties(&props, device_id);
+    if (cuda_err != cudaSuccess) {
+        throw PSIEXCEPTION(std::string("cuEST requested, but cudaGetDeviceProperties failed: ") +
+                           cudaGetErrorString(cuda_err));
+    }
+    if (props.major < 8) {
+        std::ostringstream msg;
+        msg << "cuEST requires an NVIDIA GPU with compute capability 8.0 or higher; device " << device_id << " ("
+            << props.name << ") has compute capability " << props.major << "." << props.minor << ".";
+        throw PSIEXCEPTION(msg.str());
+    }
+
+    // Unlike the failure paths above, nothing previously reported which GPU
+    // was actually selected on success. On a multi-GPU node this is the only
+    // thing that tells a user (short of externally polling nvidia-smi) which
+    // physical device cuEST landed on -- e.g. via CUDA_VISIBLE_DEVICES/the
+    // job scheduler, cuEST always uses whichever is "the current device"
+    // (logical index 0 by default) and never scans device_count for others.
+    outfile->Printf("  cuEST initializing on GPU device %d of %d visible (%s), compute capability %d.%d\n",
+                    device_id, device_count, props.name, props.major, props.minor);
+
+    // Everything below this point can fail partway through (CUDA, cuBLAS,
+    // cuSOLVER, or cuEST's own CHECK_CUEST-wrapped calls). Any such failure
+    // must not leave stream_handle/cublas_handle/cusolver_handle non-null
+    // while cuest_handle stays null -- that combination would permanently
+    // "poison" cuest_init() for the rest of the process, since the
+    // reinitialize guards at the top of this function would trip on the very
+    // next attempt even after what may have been a transient failure.
+    try {
+        cudaError_t stream_err = cudaStreamCreate(&stream_handle);
+        if (stream_err != cudaSuccess) {
+            throw PSIEXCEPTION(std::string("cudaStreamCreate failed in cuest_init: ") +
+                               cudaGetErrorString(stream_err));
+        }
+        cublasStatus_t cublas_status = cublasCreate(&cublas_handle);
+        if (cublas_status != CUBLAS_STATUS_SUCCESS) {
+            throw PSIEXCEPTION("cublasCreate failed in cuest_init");
+        }
+        cusolverStatus_t cusolver_status = cusolverDnCreate(&cusolver_handle);
+        if (cusolver_status != CUSOLVER_STATUS_SUCCESS) {
+            throw PSIEXCEPTION("cusolverDnCreate failed in cuest_init");
+        }
+        cublasSetStream(cublas_handle, stream_handle);
+        cusolverDnSetStream(cusolver_handle, stream_handle);
+        // Declare & create the cuEST parameters and handle with reasonable defaults. Destroy param promptly.
+        cuestHandleParameters_t handle_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_HANDLE_PARAMETERS, &handle_parameters));
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_HANDLE_PARAMETERS,
+            handle_parameters,
+            CUEST_HANDLE_PARAMETERS_CUDASTREAM,
+            &stream_handle,
+            sizeof(stream_handle)
+        ));
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_HANDLE_PARAMETERS,
+            handle_parameters,
+            CUEST_HANDLE_PARAMETERS_CUBLAS,
+            &cublas_handle,
+            sizeof(cublas_handle)
+        ));
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_HANDLE_PARAMETERS,
+            handle_parameters,
+            CUEST_HANDLE_PARAMETERS_CUSOLVER,
+            &cusolver_handle,
+            sizeof(cusolver_handle)
+        ));
+        CHECK_CUEST(cuestCreate(handle_parameters, &cuest_handle));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_HANDLE_PARAMETERS, handle_parameters));
+    } catch (...) {
+        cuest_cleanup_noexcept();
+        throw;
+    }
+}
+
+void cuest_release() {
+    if (cuest_handle == 0) {
+        throw PSIEXCEPTION("Attempting to release the cuEST module when it hasn't been initialized\n");
+    }
+    cuest_cleanup_noexcept();
+}
+
+namespace psi {
+namespace cuest_common {
+
+void ensure_cuest_initialized() {
+    if (cuest_handle == 0) {
+        cuest_init();
+    }
+}
+
+}  // namespace cuest_common
+}  // namespace psi
+#endif
+
 // Python helper wrappers
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
@@ -148,6 +316,7 @@ void export_mints(py::module&);
 void export_misc(py::module&);
 void export_oeprop(py::module&);
 void export_pcm(py::module&);
+void export_cuestpcm(py::module&);
 void export_plugins(py::module&);
 void export_psio(py::module&);
 void export_wavefunction(py::module&);
@@ -1159,6 +1328,10 @@ void psi4_python_module_finalize() {
     }
 #endif
 
+#ifdef USING_cuEST
+    if (cuest_handle != 0) { cuest_release(); }
+#endif
+
 #ifdef INTEL_Fortran_ENABLED
     for_rtl_finish_();
 #endif
@@ -1236,6 +1409,10 @@ PYBIND11_MODULE(core, core) {
 #ifdef USING_PCMSolver
     // PCM
     export_pcm(core);
+#endif
+#ifdef USING_cuEST
+    // cuEST PCM
+    export_cuestpcm(core);
 #endif
 
     // CubeProperties

@@ -54,6 +54,7 @@ protected:
     std::shared_ptr<VBase> potential_;
     std::map<std::string, SharedMatrix> gradients_;
     std::map<std::string, SharedMatrix> hessians_;
+    std::shared_ptr<JK> jk_;
 
 public:
     SCFDeriv(std::shared_ptr<scf::HF> ref_wfn, Options& options);

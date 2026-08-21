@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #ifndef HF_H
 #define HF_H
@@ -63,6 +66,11 @@ class HF : public Wavefunction {
     SharedMatrix Vb_;
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
+#ifdef USING_cuEST
+    /// Device copy of X
+    std::vector<double *> d_X_;
+#endif
+
     /// List of external potentials to add to Fock matrix and updated at every iteration
     /// e.g. PCM potential
     std::vector<SharedMatrix> external_potentials_;

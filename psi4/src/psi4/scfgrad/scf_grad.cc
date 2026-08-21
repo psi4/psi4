@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #include "scf_grad.h"
 
@@ -59,6 +62,10 @@
 
 #include "jk_grad.h"
 
+#ifdef USING_cuEST
+#include "psi4/libpsipcm/cuestpcm.h"
+#endif
+
 #ifdef USING_BrianQC
 
 #include <brian_types.h>
@@ -88,7 +95,7 @@ SCFDeriv::SCFDeriv(std::shared_ptr<scf::HF> ref_wfn, Options& options) :
         hessians_["-D Hessian"] = ref_wfn->array_variable("-D Hessian");
         hessians_["-D Hessian"]->set_name("-D Hessian");
     }
-
+    jk_ = ref_wfn->jk();
 }
 SCFDeriv::~SCFDeriv()
 {
@@ -164,8 +171,10 @@ SharedMatrix SCFDeriv::compute_gradient()
     if (functional_->needs_xc()) {
         if (options_.get_str("REFERENCE") == "RKS") {
             potential_->set_D({Da_});
+            potential_->set_Cocc({Ca_occ});
         } else {
             potential_->set_D({Da_, Db_});
+            potential_->set_Cocc({Ca_occ, Cb_occ});
         }
     }
 
@@ -193,6 +202,16 @@ SharedMatrix SCFDeriv::compute_gradient()
         gradients_["External Potential"] = external_pot_->computePotentialGradients(basisset_, Dt);
         timer_off("Grad: External");
     }  // end external
+
+    // => PCM Gradient <= //
+    timer_on("Grad: PCM");
+#ifdef USING_cuEST
+    if (options_.get_bool("CUEST_PCM")) {
+        gradient_terms.push_back("PCM");
+        gradients_["PCM"] = this->get_cuestPCM()->compute_PCM_gradient(Dt);
+    }
+#endif
+    timer_off("Grad: PCM");
 
     // => Overlap Gradient <= //
     timer_on("Grad: S");
@@ -223,7 +242,24 @@ SharedMatrix SCFDeriv::compute_gradient()
     // => Two-Electron Gradient <= //
     timer_on("Grad: JK");
 
-    auto jk = JKGrad::build_JKGrad(1, mintshelper_);
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+    
+#ifndef USING_cuEST
+    std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, mintshelper_);
+#else
+    std::shared_ptr<JKGrad> jk;
+    if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos && options_.get_bool("USE_CUEST") && !functional_->is_x_lrc()) {
+        if (!jk_) {
+            throw PSIEXCEPTION(
+                "cuESTJKGrad requires the SCF JK object to be preserved across finalization. "
+                "Set the SAVE_JK option to True before running the SCF calculation.");
+        }
+        jk = JKGrad::build_cuESTJKGrad(1, jk_, -alpha, -beta);
+    } else {
+        jk = JKGrad::build_JKGrad(1, mintshelper_);
+    }
+#endif
     jk->set_memory((size_t) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca_occ);
@@ -247,9 +283,6 @@ SharedMatrix SCFDeriv::compute_gradient()
 
     jk->print_header();
     jk->compute_gradient();
-    
-    double alpha = functional_->x_alpha();
-    double beta = functional_->x_beta();
     
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
@@ -305,7 +338,6 @@ SharedMatrix SCFDeriv::compute_gradient()
     } else {
         gradients_["Total"]->print_atom_vector();
     }
-
 
     return gradients_["Total"];
 }

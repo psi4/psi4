@@ -173,7 +173,6 @@ void RHF::form_V() {
     // std::vector<SharedMatrix> & C = potential_->C();
     // C.clear();
     // C.push_back(Ca_subset("SO", "OCC"));
-
     // // Run the potential object
     // potential_->compute();
 
@@ -181,6 +180,7 @@ void RHF::form_V() {
     // const std::vector<SharedMatrix> & V = potential_->V();
     // Va_ = V[0];
     potential_->set_D({Da_});
+    potential_->set_Cocc({Ca_subset("AO", "OCC")});
     potential_->compute_V({Va_});
     Vb_ = Va_;
 }
@@ -191,7 +191,6 @@ void RHF::form_G() {
     } else {
         G_->zero();
     }
-
     /// Push the C matrix on
     std::vector<SharedMatrix>& C = jk_->C_left();
     C.clear();
