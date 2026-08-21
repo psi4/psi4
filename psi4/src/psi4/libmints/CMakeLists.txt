@@ -16,6 +16,7 @@ list(APPEND sources
   sobasis.cc
   cartesianiter.cc
   basisset.cc
+  basewavefunction.cc
   wavefunction.cc
   irrep.cc
   fjt.cc
