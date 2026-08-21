@@ -812,6 +812,7 @@ SharedMatrix Matrix::to_block_sharedmatrix() const {
     return ret;
 }
 
+
 void Matrix::print_mat(const double *const *const a, int m, int n, std::string out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
 
