@@ -36,8 +36,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#ifdef _OPENMP
-#endif
 
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"

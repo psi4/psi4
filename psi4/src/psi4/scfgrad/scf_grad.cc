@@ -29,8 +29,6 @@
 #include "scf_grad.h"
 
 #include <numeric>
-#ifdef _OPENMP
-#endif
 
 #include "psi4/libqt/qt.h"
 #ifdef USING_ecpint

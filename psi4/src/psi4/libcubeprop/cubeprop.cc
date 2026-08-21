@@ -41,9 +41,6 @@
 
 #include <tuple>
 
-#ifdef _OPENMP
-#endif
-
 namespace psi {
 
 CubeProperties::CubeProperties(SharedWavefunction wfn) : options_(Process::environment.options) {

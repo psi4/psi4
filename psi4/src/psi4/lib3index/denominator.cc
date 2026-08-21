@@ -46,11 +46,7 @@
 
 // MKL Header
 #ifdef USING_LAPACK_MKL
-#endif
-
-// OpenMP Header
-//_OPENMP is defined by the compiler if it exists
-#ifdef _OPENMP
+#include <mkl.h>
 #endif
 
 namespace psi {

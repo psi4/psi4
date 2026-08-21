@@ -42,8 +42,6 @@
 #include <vector>
 #include <map>
 #include <cctype>
-#ifdef _OPENMP
-#endif
 
 using namespace psi;
 

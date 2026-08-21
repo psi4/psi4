@@ -29,10 +29,6 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
-#ifdef _OPENMP
-#else
-#define omp_get_wtime() 0.0
-#endif
 
 #include "blas.h"
 #include "ccsd.h"

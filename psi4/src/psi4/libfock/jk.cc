@@ -40,8 +40,6 @@
 
 #include <sstream>
 #include <vector>
-#ifdef _OPENMP
-#endif
 
 using namespace psi;
 

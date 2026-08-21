@@ -41,6 +41,7 @@
 #include <algorithm>
 
 #ifdef _OPENMP
+#include <omp.h>
 #endif
 
 namespace psi {

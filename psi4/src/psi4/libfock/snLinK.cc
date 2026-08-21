@@ -42,9 +42,6 @@
 #include "psi4/pybind11.h"
 
 #include <vector>
-#ifdef _OPENMP
-#endif
-
 
 using namespace psi;
 namespace py = pybind11;

@@ -31,9 +31,6 @@
 #include "psi4/libmints/matrix.h"
 #include "dfocc.h"
 
-#ifdef _OPENMP
-#endif
-
 using namespace psi;
 
 namespace psi {

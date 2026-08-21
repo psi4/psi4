@@ -37,9 +37,6 @@
 #include "dfocc.h"
 #include "tensors.h"
 
-#ifdef _OPENMP
-#endif
-
 using namespace psi;
 
 namespace psi {

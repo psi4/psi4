@@ -36,8 +36,6 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/twobody.h"
-#ifdef _OPENMP
-#endif
 
 namespace psi {
 

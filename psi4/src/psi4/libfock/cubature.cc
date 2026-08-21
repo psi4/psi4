@@ -49,6 +49,7 @@
 #include <cassert>
 
 #ifdef _OPENMP
+#include <omp.h>
 #endif
 
 #ifdef USING_BrianQC

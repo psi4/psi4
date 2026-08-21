@@ -36,9 +36,6 @@
 
 #include "jk.h"
 
-#ifdef _OPENMP
-#endif
-
 namespace psi {
 
 CDJK::CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance)

@@ -31,8 +31,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libqt/qt.h"
 #ifdef _OPENMP
-#else
-#define omp_get_wtime() 0.0
+#include <omp.h>
 #endif
 
 #include "blas.h"

@@ -32,10 +32,6 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psifiles.h"
-#ifdef _OPENMP
-#else
-#define omp_get_wtime() 0.0
-#endif
 
 #include "blas.h"
 #include "ccsd.h"

@@ -44,9 +44,6 @@
 
 #include "hf.h"
 
-#ifdef _OPENMP
-#endif
-
 using namespace psi;
 
 namespace psi {

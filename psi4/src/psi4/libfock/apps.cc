@@ -48,9 +48,6 @@
 
 #include <sstream>
 
-#ifdef _OPENMP
-#endif
-
 namespace psi {
 
 RBase::RBase(SharedWavefunction ref_wfn, Options& options, bool use_symmetry)

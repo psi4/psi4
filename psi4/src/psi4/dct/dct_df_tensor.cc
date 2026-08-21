@@ -34,6 +34,7 @@
 #include "psi4/libdpd/dpd.h"
 
 #ifdef _OPENMP
+#include <omp.h>
 #endif
 
 namespace psi {

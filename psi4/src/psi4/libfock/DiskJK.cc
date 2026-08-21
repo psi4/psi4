@@ -38,8 +38,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/mintshelper.h"
-#ifdef _OPENMP
-#endif
 
 using namespace psi;
 

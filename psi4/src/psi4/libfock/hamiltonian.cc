@@ -38,9 +38,6 @@
 
 #include <sstream>
 
-#ifdef _OPENMP
-#endif
-
 namespace psi {
 
 Hamiltonian::Hamiltonian(std::shared_ptr<JK> jk) : jk_(jk) { common_init(); }

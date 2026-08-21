@@ -35,10 +35,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/sobasis.h"
 
-#ifdef _OPENMP
-#include "psi4/libpsi4util/process.h"
-#endif
-
 using namespace psi;
 
 namespace psi {
