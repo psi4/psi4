@@ -58,7 +58,7 @@ void count_ijk() {
         occ_off = moinfo.occ_off;
         nijk = 0;
         {
-            const Dimension& occpi = moinfo.occpi;
+            const auto& occpi = moinfo.occpi;
             for (Gi = 0; Gi < nirreps; Gi++) {
                 for (Gj = 0; Gj < nirreps; Gj++) {
                     for (Gk = 0; Gk < nirreps; Gk++) {
@@ -84,7 +84,7 @@ void count_ijk() {
         outfile->Printf("\n    Number of ijk index combinations:   %14d\n", nijk);
 
         if (params.dertype == 1) {
-            const Dimension& virtpi = moinfo.virtpi;
+            const auto& virtpi = moinfo.virtpi;
             vir_off = moinfo.vir_off;
             nabc = 0;
             for (Ga = 0; Ga < nirreps; ++Ga) {
@@ -104,9 +104,9 @@ void count_ijk() {
         }  // dertype==1
 
     } else if (params.ref == 2) { /** UHF **/
-        const Dimension& aoccpi = moinfo.aoccpi;
+        const auto& aoccpi = moinfo.aoccpi;
         aocc_off = moinfo.aocc_off;
-        const Dimension& boccpi = moinfo.boccpi;
+        const auto& boccpi = moinfo.boccpi;
         bocc_off = moinfo.bocc_off;
 
         outfile->Printf("\n    Number of ijk index combinations:\n");
@@ -212,9 +212,9 @@ void count_ijk() {
         outfile->Printf("    Spin Case ABB:                      %14d\n", nijk);
 
         if (params.dertype == 1) {
-            const Dimension& avirtpi = moinfo.avirtpi;
+            const auto& avirtpi = moinfo.avirtpi;
             avir_off = moinfo.avir_off;
-            const Dimension& bvirtpi = moinfo.bvirtpi;
+            const auto& bvirtpi = moinfo.bvirtpi;
             bvir_off = moinfo.bvir_off;
 
             outfile->Printf("\n    Number of abc index combinations:\n");
