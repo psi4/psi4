@@ -2900,7 +2900,6 @@ def run_scf_hessian(name, **kwargs):
     badint = core.get_global_option('SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
     if badref or badint:
         raise ValidationError("Only RHF/UHF/RKS/UKS Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
-
     if hasattr(ref_wfn, "_disp_functor"):
         disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule(), ref_wfn)
         ref_wfn.set_variable("-D Hessian", disp_hess)
