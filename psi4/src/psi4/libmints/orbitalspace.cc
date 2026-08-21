@@ -210,7 +210,7 @@ OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpac
     SharedMatrix O12 = OrbitalSpace::overlap(space1, space2);
 
     // Half-transform to RIBS
-    auto C12 = std::make_shared<Matrix>("C12", space1.C()->colspi(), space2.C()->colspi());
+    auto C12 = std::make_shared<Matrix>("C12", space1.C()->rowspi(), space2.C()->colspi());
     C12->gemm(false, false, 1.0, O12, space2.C(), 0.0);
 
     // SVD of MO overlap matrix
