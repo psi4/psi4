@@ -123,27 +123,32 @@ void cuESTJK::preiterations()
     // DF Int Plan List
     cuestDFIntPlanParameters_t dfint_params;
     CHECK_CUEST(cuestParametersCreate(CUEST_DFINTPLAN_PARAMETERS, reinterpret_cast<void**>(&dfint_params)));
+    
+    // Psi4 and cuEST both represent exact exchange as alpha / r + beta erf(omega r) / r.
+    double exchange_fraction = omega_alpha_;
+    double lrc_exchange_fraction = omega_beta_;
+    double lr_exchange_omega = omega_;
 
     //Set omega params if applicable 
     CHECK_CUEST(cuestParametersConfigure(
         CUEST_DFINTPLAN_PARAMETERS, 
         dfint_params,
         CUEST_DFINTPLAN_PARAMETERS_EXCHANGE_FRACTION,
-        &omega_alpha_,
+        &exchange_fraction,
         sizeof(double)));
 
     CHECK_CUEST(cuestParametersConfigure(
         CUEST_DFINTPLAN_PARAMETERS, 
         dfint_params,
         CUEST_DFINTPLAN_PARAMETERS_LRC_EXCHANGE_FRACTION,
-        &omega_beta_,
+        &lrc_exchange_fraction,
         sizeof(double)));
 
     CHECK_CUEST(cuestParametersConfigure(
         CUEST_DFINTPLAN_PARAMETERS, 
         dfint_params,
         CUEST_DFINTPLAN_PARAMETERS_LRC_EXCHANGE_OMEGA,
-        &omega_,
+        &lr_exchange_omega,
         sizeof(double)));
 
     CHECK_CUEST(cuestDFIntPlanCreateWorkspaceQuery(cuest_handle,

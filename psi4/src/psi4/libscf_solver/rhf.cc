@@ -204,7 +204,12 @@ void RHF::form_G() {
     const std::vector<SharedMatrix>& K = jk_->K();
     const std::vector<SharedMatrix>& wK = jk_->wK();
     J_ = J[0];
-    if (functional_->is_x_hybrid()) {
+#ifdef USING_cuEST
+    const bool use_cuest = options_.get_bool("USE_CUEST");
+#else
+    const bool use_cuest = false;
+#endif
+    if (functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) {
         K_ = K[0];
     }
     if (functional_->is_x_lrc()) {
@@ -226,19 +231,20 @@ void RHF::form_G() {
 
 #ifdef USING_cuEST
     // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
-    if (options_.get_bool("USE_CUEST")) {
+    if (use_cuest) {
         alpha = 1.0;
         beta = 1.0;
     }
 #endif
 
-    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+    if ((functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) &&
+        !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         G_->axpy(-alpha, K_);
     } else {
         K_->zero();
     }
 
-    if (functional_->is_x_lrc() && !options_.get_bool("USE_CUEST")) { // if using cuEST, wK is encapsulated in K
+    if (functional_->is_x_lrc() && !use_cuest) { // if using cuEST, wK is encapsulated in K
         if (jk_->get_wcombine()) {
             G_->axpy(-1.0, wK_);
         } else {
@@ -331,6 +337,12 @@ double RHF::compute_E() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
+#ifdef USING_cuEST
+    const bool use_cuest = options_.get_bool("USE_CUEST");
+#else
+    const bool use_cuest = false;
+#endif
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -341,16 +353,16 @@ double RHF::compute_E() {
 
 #ifdef USING_cuEST
     // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
-    if (options_.get_bool("USE_CUEST")) {
+    if (use_cuest) {
         alpha = 1.0;
         beta = 1.0;
     }
 #endif
 
-    if (functional_->is_x_hybrid()) {
+    if (functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) {
         exchange_E -= alpha * Da_->vector_dot(K_);
     }
-    if (functional_->is_x_lrc()) {
+    if (functional_->is_x_lrc() && !use_cuest) {
         if (jk_->get_do_wK() && jk_->get_wcombine()) {
             exchange_E -= Da_->vector_dot(wK_);
         } else {
