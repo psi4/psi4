@@ -1,63 +1,45 @@
 #! DFT Functional Test
 #! all values update for new BraggSlater radii
 
-# This input doubles as the cuEST GPU regression: test_input.py reruns it with
-# _PSI4_USE_CUEST set.  The cuEST leg differs in three ways, all forced by the
-# interface rather than chosen, so it carries its own reference values:
-#
-#   * cuESTJK is density-fitted only (jk.cc builds it for MEM_DF/DISK_DF), so
-#     SCF_TYPE must be DF here rather than the DIRECT used below.
-#   * cuEST reproduces regular Psi4 to ~1e-9 only under Stratmann nuclear
-#     partitioning.  With the default scheme the meta-GGA drifts to ~5e-5,
-#     which is far outside the 7-decimal comparison used throughout.
-#   * range-separated functionals are skipped.  cuESTJK::compute_JK() computes
-#     J and K but never wK, and nothing checks do_wK_, so a long-range-corrected
-#     functional silently converges 1-2 Eh off rather than failing.  Restore
-#     wB97/wB97X here once cuEST grows wK support.
+# 0 1 RKS #TEST
+E11 = -74.93570606347603 #TEST 
+E12 = -75.31971360008332 #TEST 
+E13 = -75.31853611933933 #TEST 
+E14 = -75.31282274643111 #TEST 
+E15 = -75.29768003935945 #TEST 
+E16 = -75.34987955338264 #TEST 
+E17 = -75.32103345264673 #TEST
+E18 = -74.736724053      #TEST
 
-cuest = os.environ.get("_PSI4_USE_CUEST", False)
+# 0 1 UKS #TEST
+E21 = -74.93570606347605  #TEST 
+E22 = -75.3197136000833   #TEST 
+E23 = -75.31853611933931  #TEST 
+E24 = -75.31282274643114  #TEST 
+E25 = -75.29768003935943  #TEST 
+E26 = -75.34987955338258  #TEST 
+E27 = -75.32103345264672  #TEST
+E28 = -74.736724053      #TEST
 
-functionals = ["svwn", "b3lyp", "wB97", "wB97X", "b86bpbe", "pw86pbe", "m05", "spw92"]
-if cuest:
-    functionals = [f for f in functionals if f not in ("wB97", "wB97X")]
+# 1 2 UKS #TEST
+E31 = -74.56540667586837 #TEST 
+E32 = -74.96751877141122 #TEST 
+E33 = -74.97093141849327 #TEST 
+E34 = -74.96327627707228 #TEST 
+E35 = -74.94731071406106 #TEST 
+E36 = -74.99933219020076 #TEST 
+E37 = -74.97000549873393 #TEST
+E38 = -74.387079031      #TEST
 
-# Reference energies, keyed (block number, functional).  Both sets are from
-# regular (non-cuEST) Psi4: the first with SCF_TYPE DIRECT, the second with the
-# DF/Stratmann setup the cuEST leg requires.
-if cuest:
-    refs = {                                                                    #TEST
-        (1, "svwn"):    -74.9361457674, (1, "b3lyp"):   -75.3200834739,         #TEST
-        (1, "b86bpbe"): -75.2981206541, (1, "pw86pbe"): -75.3503184102,         #TEST
-        (1, "m05"):     -75.3214214214, (1, "spw92"):   -74.7371639178,         #TEST
-        (2, "svwn"):    -74.9361457674, (2, "b3lyp"):   -75.3200834739,         #TEST
-        (2, "b86bpbe"): -75.2981206541, (2, "pw86pbe"): -75.3503184102,         #TEST
-        (2, "m05"):     -75.3214214214, (2, "spw92"):   -74.7371639178,         #TEST
-        (3, "svwn"):    -74.5658273814, (3, "b3lyp"):   -74.9678744373,         #TEST
-        (3, "b86bpbe"): -74.9477314548, (3, "pw86pbe"): -74.9997520073,         #TEST
-        (3, "m05"):     -74.9703623086, (3, "spw92"):   -74.3874998062,         #TEST
-        (4, "svwn"):    -74.4319601928, (4, "b3lyp"):   -74.8158925335,         #TEST
-        (4, "b86bpbe"): -74.7908482778, (4, "pw86pbe"): -74.8450791750,         #TEST
-        (4, "m05"):     -74.8016980089, (4, "spw92"):   -74.2143762266,         #TEST
-    }                                                                           #TEST
-else:
-    refs = {                                                                    #TEST
-        (1, "svwn"):    -74.93570606347603, (1, "b3lyp"):   -75.31971360008332, #TEST
-        (1, "wB97"):    -75.31853611933933, (1, "wB97X"):   -75.31282274643111, #TEST
-        (1, "b86bpbe"): -75.29768003935945, (1, "pw86pbe"): -75.34987955338264, #TEST
-        (1, "m05"):     -75.32103345264673, (1, "spw92"):   -74.736724053,      #TEST
-        (2, "svwn"):    -74.93570606347605, (2, "b3lyp"):   -75.3197136000833,  #TEST
-        (2, "wB97"):    -75.31853611933931, (2, "wB97X"):   -75.31282274643114, #TEST
-        (2, "b86bpbe"): -75.29768003935943, (2, "pw86pbe"): -75.34987955338258, #TEST
-        (2, "m05"):     -75.32103345264672, (2, "spw92"):   -74.736724053,      #TEST
-        (3, "svwn"):    -74.56540667586837, (3, "b3lyp"):   -74.96751877141122, #TEST
-        (3, "wB97"):    -74.97093141849327, (3, "wB97X"):   -74.96327627707228, #TEST
-        (3, "b86bpbe"): -74.94731071406106, (3, "pw86pbe"): -74.99933219020076, #TEST
-        (3, "m05"):     -74.97000549873393, (3, "spw92"):   -74.387079031,      #TEST
-        (4, "svwn"):    -74.43141959776361, (4, "b3lyp"):   -74.81544253378009, #TEST
-        (4, "wB97"):    -74.80110016231545, (4, "wB97X"):   -74.79778372673233, #TEST
-        (4, "b86bpbe"): -74.79030500240235, (4, "pw86pbe"): -74.84453707167198, #TEST
-        (4, "m05"):     -74.80126203682434, (4, "spw92"):   -74.213835345,      #TEST
-    }                                                                           #TEST
+# -1 2 UKS #TEST
+E41 = -74.43141959776361 #TEST
+E42 = -74.81544253378009 #TEST
+E43 = -74.80110016231545 #TEST
+E44 = -74.79778372673233 #TEST
+E45 = -74.79030500240235 #TEST
+E46 = -74.84453707167198 #TEST
+E47 = -74.80126203682434 #TEST
+E48 = -74.213835345      #TEST
 
 molecule h2o {
 0 1
@@ -68,12 +50,98 @@ no_com
 no_reorient
 }
 
+set {
+    print 2
+    basis sto-3g
+    scf_type direct
+    dft_spherical_points 302
+    dft_radial_points 99
+    reference rks
+    e_convergence 1.e-8
+    d_convergence 1.e-8
+}
+
+V11 = energy('scf', dft_functional="svwn")
+compare_values(E11, V11, 7, "RKS  0 1    SVWN Energy") #TEST
+
+V12 = energy('scf', dft_functional="b3lyp")
+compare_values(E12, V12, 7, "RKS  0 1   B3LYP Energy") #TEST
+
+V13 = energy('scf', dft_functional="wB97")
+compare_values(E13, V13, 7, "RKS  0 1    wB97 Energy") #TEST
+
+V14 = energy('scf', dft_functional="wB97X")
+compare_values(E14, V14, 7, "RKS  0 1   wB97X Energy") #TEST
+
+V15 = energy('scf', dft_functional="b86bpbe")
+compare_values(E15, V15, 7, "RKS  0 1 B86BPBE Energy") #TEST
+
+V16 = energy('scf', dft_functional="pw86pbe")
+compare_values(E16, V16, 7, "RKS  0 1 PW86PBE Energy") #TEST
+
+V17 = energy('scf', dft_functional="m05")
+compare_values(E17, V17, 7, "RKS  0 1     M05 Energy") #TEST
+
+V18 = energy('scf', dft_functional="spw92")
+compare_values(E18, V18, 7, "RKS  0 1   SPW92 Energy") #TEST
+
+set scf_type direct
+set reference uks
+
+V21 = energy('scf', dft_functional="svwn")
+compare_values(E21, V21, 7, "UKS  0 1    SVWN Energy") #TEST
+
+V22 = energy('scf', dft_functional="b3lyp")
+compare_values(E22, V22, 7, "UKS  0 1   B3LYP Energy") #TEST
+
+V23 = energy('scf', dft_functional="wB97")
+compare_values(E23, V23, 7, "UKS  0 1    wB97 Energy") #TEST
+
+V24 = energy('scf', dft_functional="wB97X")
+compare_values(E24, V24, 7, "UKS  0 1   wB97X Energy") #TEST
+
+V25 = energy('scf', dft_functional="b86bpbe")
+compare_values(E25, V25, 7, "UKS  0 1 B86BPBE Energy") #TEST
+
+V26 = energy('scf', dft_functional="pw86pbe")
+compare_values(E26, V26, 7, "UKS  0 1 PW86PBE Energy") #TEST
+
+V27 = energy('scf', dft_functional="m05")
+compare_values(E27, V27, 7, "UKS  0 1     M05 Energy") #TEST
+
+V28 = energy('scf', dft_functional="spw92")
+compare_values(E28, V28, 7, "UKS  0 1   SPW92 Energy") #TEST
+
 molecule h2op {
 1 2
 O
 H 1 1.0
 H 1 1.0 2 104.5
 }
+
+V31 = energy('scf', dft_functional="svwn")
+compare_values(E31, V31, 7, "UKS  1 2    SVWN Energy") #TEST
+
+V32 = energy('scf', dft_functional="b3lyp")
+compare_values(E32, V32, 7, "UKS  1 2   B3LYP Energy") #TEST
+
+V33 = energy('scf', dft_functional="wB97")
+compare_values(E33, V33, 7, "UKS  1 2    wB97 Energy") #TEST
+
+V34 = energy('scf', dft_functional="wB97X")
+compare_values(E34, V34, 7, "UKS  1 2   wB97X Energy") #TEST
+
+V35 = energy('scf', dft_functional="b86bpbe")
+compare_values(E35, V35, 7, "UKS  1 2 B86BPBE Energy") #TEST
+
+V36 = energy('scf', dft_functional="pw86pbe")
+compare_values(E36, V36, 7, "UKS  1 2 PW86PBE Energy") #TEST
+
+V37 = energy('scf', dft_functional="m05")
+compare_values(E37, V37, 7, "UKS  1 2     M05 Energy") #TEST
+
+V38 = energy('scf', dft_functional="spw92")
+compare_values(E38, V38, 7, "UKS  0 1   SPW92 Energy") #TEST
 
 molecule h2om {
 -1 2
@@ -82,39 +150,28 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-set {
-    print 2
-    basis sto-3g
-    dft_spherical_points 302
-    dft_radial_points 99
-    reference rks
-    e_convergence 1.e-8
-    d_convergence 1.e-8
-}
+set guess sad
 
-if cuest:
-    psi4.set_options({
-        "use_cuest": True,
-        "scf_type": "df",
-        "df_basis_scf": "def2-universal-JKFIT",
-        "dft_nuclear_scheme": "stratmann",
-    })
-else:
-    psi4.set_options({"scf_type": "direct"})
+V41 = energy('scf', dft_functional="svwn")
+compare_values(E41, V41, 7, "UKS -1 2    SVWN Energy") #TEST
 
-# (block, label, molecule, reference, guess)
-blocks = [
-    (1, "RKS  0 1", h2o,  "rks", None),
-    (2, "UKS  0 1", h2o,  "uks", None),
-    (3, "UKS  1 2", h2op, "uks", None),
-    (4, "UKS -1 2", h2om, "uks", "sad"),
-]
+V42 = energy('scf', dft_functional="b3lyp")
+compare_values(E42, V42, 7, "UKS -1 2   B3LYP Energy") #TEST
 
-for block, label, mol, reference, guess in blocks:
-    psi4.set_options({"reference": reference})
-    if guess:
-        psi4.set_options({"guess": guess})
+V43 = energy('scf', dft_functional="wB97")
+compare_values(E43, V43, 7, "UKS -1 2    wB97 Energy") #TEST
 
-    for func in functionals:
-        val = energy('scf', dft_functional=func, molecule=mol)
-        compare_values(refs[(block, func)], val, 7, f"{label} {func.upper():>7} Energy")  #TEST
+V44 = energy('scf', dft_functional="wB97X")
+compare_values(E44, V44, 7, "UKS -1 2   wB97X Energy") #TEST
+
+V45 = energy('scf', dft_functional="b86bpbe")
+compare_values(E45, V45, 7, "UKS -1 2 B86BPBE Energy") #TEST
+
+V46 = energy('scf', dft_functional="pw86pbe")
+compare_values(E46, V46, 7, "UKS -1 2 PW86PBE Energy") #TEST
+
+V47 = energy('scf', dft_functional="m05")
+compare_values(E47, V47, 7, "UKS -1 2     M05 Energy") #TEST
+
+V48 = energy('scf', dft_functional="spw92")
+compare_values(E48, V48, 7, "UKS -1 2   SPW92 Energy") #TEST
