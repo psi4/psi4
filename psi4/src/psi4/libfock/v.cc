@@ -1850,6 +1850,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
                         libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        const double component_scale = functional->alpha();
+
                         if (libxc_functional == nullptr) {
                             throw PSIEXCEPTION("RV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
                         }
@@ -4237,6 +4239,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                     // => Exchange contribution(s) <= //
                     for (const auto& functional : functional_->x_functionals()) {
                         libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        const double component_scale = functional->alpha();
+
                         if (libxc_functional == nullptr) {
                             throw PSIEXCEPTION("UV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
                         }
@@ -6174,6 +6178,8 @@ SharedMatrix UV::compute_gradient() {
                     // => Exchange contribution(s) <= //
                     for (const auto& functional : functional_->x_functionals()) {
                         libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        const double component_scale = functional->alpha();
+                        
                         if (libxc_functional == nullptr) {
                             throw PSIEXCEPTION("UV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
                         }
