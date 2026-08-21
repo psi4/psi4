@@ -1602,6 +1602,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                     // => Exchange contribution(s) <= //
                     for (const auto& functional : functional_->x_functionals()) {
                         libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        const double component_scale = functional->alpha();
+
                         if (libxc_functional == nullptr) {
                             throw PSIEXCEPTION("RV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
                         }
@@ -1617,8 +1619,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f[i])) nan_found = true;
                             if (!std::isfinite(p_f_rho[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
                             }
                         }
                     }
@@ -1641,8 +1643,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f[i])) nan_found = true;
                             if (!std::isfinite(p_f_rho[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
                             }
                         }
                     }
@@ -1715,9 +1717,9 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_rho[i])) nan_found = true;
                             if (!std::isfinite(p_f_gamma[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
+                                p_full_f_gamma[i] += component_scale * p_f_gamma[i];
                             }
                         }
                     }
@@ -1743,9 +1745,9 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_rho[i])) nan_found = true;
                             if (!std::isfinite(p_f_gamma[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
+                                p_full_f_gamma[i] += component_scale * p_f_gamma[i];
                             }
                         }
                     }
@@ -1838,10 +1840,10 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_gamma[i])) nan_found = true;
                             if (!std::isfinite(p_f_tau[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                                p_full_f_tau[i] += p_f_tau[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
+                                p_full_f_gamma[i] += component_scale * p_f_gamma[i];
+                                p_full_f_tau[i] += component_scale * p_f_tau[i];
                             }
                         }
                     }
@@ -1872,10 +1874,10 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_gamma[i])) nan_found = true;
                             if (!std::isfinite(p_f_tau[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                                p_full_f_tau[i] += p_f_tau[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
+                                p_full_f_gamma[i] += component_scale * p_f_gamma[i];
+                                p_full_f_tau[i] += component_scale * p_f_tau[i];
                             }
                         }
                     }
@@ -2930,8 +2932,8 @@ SharedMatrix RV::compute_gradient() {
                             if (!std::isfinite(p_f[i])) nan_found = true;
                             if (!std::isfinite(p_f_rho[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
                             }
                         }
                     }
@@ -2954,8 +2956,8 @@ SharedMatrix RV::compute_gradient() {
                             if (!std::isfinite(p_f[i])) nan_found = true;
                             if (!std::isfinite(p_f_rho[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
                             }
                         }
                     }
@@ -3028,9 +3030,9 @@ SharedMatrix RV::compute_gradient() {
                             if (!std::isfinite(p_f_rho[i])) nan_found = true;
                             if (!std::isfinite(p_f_gamma[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
+                                p_full_f_gamma[i] += component_scale * p_f_gamma[i];
                             }
                         }
                     }
@@ -3056,9 +3058,9 @@ SharedMatrix RV::compute_gradient() {
                             if (!std::isfinite(p_f_rho[i])) nan_found = true;
                             if (!std::isfinite(p_f_gamma[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
+                                p_full_f_gamma[i] += component_scale * p_f_gamma[i];
                             }
                         }
                     }
@@ -3151,10 +3153,10 @@ SharedMatrix RV::compute_gradient() {
                             if (!std::isfinite(p_f_gamma[i])) nan_found = true;
                             if (!std::isfinite(p_f_tau[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                                p_full_f_tau[i] += p_f_tau[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
+                                p_full_f_gamma[i] += component_scale * p_f_gamma[i];
+                                p_full_f_tau[i] += component_scale * p_f_tau[i];
                             }
                         }
                     }
@@ -3185,10 +3187,10 @@ SharedMatrix RV::compute_gradient() {
                             if (!std::isfinite(p_f_gamma[i])) nan_found = true;
                             if (!std::isfinite(p_f_tau[i])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                                p_full_f_tau[i] += p_f_tau[i];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[i] += component_scale * p_f_rho[i];
+                                p_full_f_gamma[i] += component_scale * p_f_gamma[i];
+                                p_full_f_tau[i] += component_scale * p_f_tau[i];
                             }
                         }
                     }
@@ -4251,9 +4253,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
                             if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
                             }
                         }
                     }
@@ -4277,9 +4279,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
                             if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
                             }
                         }
                     }
@@ -4373,12 +4375,12 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
                             if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
+                                p_full_f_gamma[3 * i + 0] += component_scale * p_f_gamma[3 * i + 0];
+                                p_full_f_gamma[3 * i + 1] += component_scale * p_f_gamma[3 * i + 1];
+                                p_full_f_gamma[3 * i + 2] += component_scale * p_f_gamma[3 * i + 2];
                             }
                         }
                     }
@@ -4407,12 +4409,12 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
                             if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
+                                p_full_f_gamma[3 * i + 0] += component_scale * p_f_gamma[3 * i + 0];
+                                p_full_f_gamma[3 * i + 1] += component_scale * p_f_gamma[3 * i + 1];
+                                p_full_f_gamma[3 * i + 2] += component_scale * p_f_gamma[3 * i + 2];
                             }
                         }
                     }
@@ -4533,14 +4535,14 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_tau[2 * i + 0])) nan_found = true;
                             if (!std::isfinite(p_f_tau[2 * i + 1])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                                p_full_f_tau[2 * i + 0] += p_f_tau[2 * i + 0];
-                                p_full_f_tau[2 * i + 1] += p_f_tau[2 * i + 1];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
+                                p_full_f_gamma[3 * i + 0] += component_scale * p_f_gamma[3 * i + 0];
+                                p_full_f_gamma[3 * i + 1] += component_scale * p_f_gamma[3 * i + 1];
+                                p_full_f_gamma[3 * i + 2] += component_scale * p_f_gamma[3 * i + 2];
+                                p_full_f_tau[2 * i + 0] += component_scale * p_f_tau[2 * i + 0];
+                                p_full_f_tau[2 * i + 1] += component_scale * p_f_tau[2 * i + 1];
                             }
                         }
                     }
@@ -4578,14 +4580,14 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             if (!std::isfinite(p_f_tau[2 * i + 0])) nan_found = true;
                             if (!std::isfinite(p_f_tau[2 * i + 1])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                                p_full_f_tau[2 * i + 0] += p_f_tau[2 * i + 0];
-                                p_full_f_tau[2 * i + 1] += p_f_tau[2 * i + 1];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
+                                p_full_f_gamma[3 * i + 0] += component_scale * p_f_gamma[3 * i + 0];
+                                p_full_f_gamma[3 * i + 1] += component_scale * p_f_gamma[3 * i + 1];
+                                p_full_f_gamma[3 * i + 2] += component_scale * p_f_gamma[3 * i + 2];
+                                p_full_f_tau[2 * i + 0] += component_scale * p_f_tau[2 * i + 0];
+                                p_full_f_tau[2 * i + 1] += component_scale * p_f_tau[2 * i + 1];
                             }
                         }
                     }
@@ -6188,9 +6190,9 @@ SharedMatrix UV::compute_gradient() {
                             if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
                             if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
                             }
                         }
                     }
@@ -6214,9 +6216,9 @@ SharedMatrix UV::compute_gradient() {
                             if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
                             if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
                             }
                         }
                     }
@@ -6310,12 +6312,12 @@ SharedMatrix UV::compute_gradient() {
                             if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
                             if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
+                                p_full_f_gamma[3 * i + 0] += component_scale * p_f_gamma[3 * i + 0];
+                                p_full_f_gamma[3 * i + 1] += component_scale * p_f_gamma[3 * i + 1];
+                                p_full_f_gamma[3 * i + 2] += component_scale * p_f_gamma[3 * i + 2];
                             }
                         }
                     }
@@ -6344,12 +6346,12 @@ SharedMatrix UV::compute_gradient() {
                             if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
                             if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
+                                p_full_f_gamma[3 * i + 0] += component_scale * p_f_gamma[3 * i + 0];
+                                p_full_f_gamma[3 * i + 1] += component_scale * p_f_gamma[3 * i + 1];
+                                p_full_f_gamma[3 * i + 2] += component_scale * p_f_gamma[3 * i + 2];
                             }
                         }
                     }
@@ -6470,14 +6472,14 @@ SharedMatrix UV::compute_gradient() {
                             if (!std::isfinite(p_f_tau[2 * i + 0])) nan_found = true;
                             if (!std::isfinite(p_f_tau[2 * i + 1])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                                p_full_f_tau[2 * i + 0] += p_f_tau[2 * i + 0];
-                                p_full_f_tau[2 * i + 1] += p_f_tau[2 * i + 1];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
+                                p_full_f_gamma[3 * i + 0] += component_scale * p_f_gamma[3 * i + 0];
+                                p_full_f_gamma[3 * i + 1] += component_scale * p_f_gamma[3 * i + 1];
+                                p_full_f_gamma[3 * i + 2] += component_scale * p_f_gamma[3 * i + 2];
+                                p_full_f_tau[2 * i + 0] += component_scale * p_f_tau[2 * i + 0];
+                                p_full_f_tau[2 * i + 1] += component_scale * p_f_tau[2 * i + 1];
                             }
                         }
                     }
@@ -6515,14 +6517,14 @@ SharedMatrix UV::compute_gradient() {
                             if (!std::isfinite(p_f_tau[2 * i + 0])) nan_found = true;
                             if (!std::isfinite(p_f_tau[2 * i + 1])) nan_found = true;
                             if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                                p_full_f_tau[2 * i + 0] += p_f_tau[2 * i + 0];
-                                p_full_f_tau[2 * i + 1] += p_f_tau[2 * i + 1];
+                                p_full_f[i] += component_scale * p_f[i];
+                                p_full_f_rho[2 * i + 0] += component_scale * p_f_rho[2 * i + 0];
+                                p_full_f_rho[2 * i + 1] += component_scale * p_f_rho[2 * i + 1];
+                                p_full_f_gamma[3 * i + 0] += component_scale * p_f_gamma[3 * i + 0];
+                                p_full_f_gamma[3 * i + 1] += component_scale * p_f_gamma[3 * i + 1];
+                                p_full_f_gamma[3 * i + 2] += component_scale * p_f_gamma[3 * i + 2];
+                                p_full_f_tau[2 * i + 0] += component_scale * p_f_tau[2 * i + 0];
+                                p_full_f_tau[2 * i + 1] += component_scale * p_f_tau[2 * i + 1];
                             }
                         }
                     }
