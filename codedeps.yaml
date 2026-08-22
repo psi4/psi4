@@ -720,7 +720,7 @@ data:
     conda:
       channel: conda-forge
       name: gcp-correction
-      constraint: null
+      constraint: "=2.3.2"
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
