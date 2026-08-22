@@ -30,8 +30,6 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libmints/mintshelper.h"
 #include "MOInfo.h"
 #include "globals.h"

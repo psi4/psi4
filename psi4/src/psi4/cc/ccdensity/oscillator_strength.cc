@@ -30,8 +30,6 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
 #include <cmath>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libmints/matrix.h"

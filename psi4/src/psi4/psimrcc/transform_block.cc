@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <cmath>
 
 
 #define CCTRANSFORM_USE_BLAS

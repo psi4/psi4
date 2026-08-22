@@ -31,8 +31,6 @@
     \brief Calculates the one- and two-electron CC energies using the
     coresponding one- and two-particle density matrices.
 */
-#include <cstdio>
-#include <cstring>
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"

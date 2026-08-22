@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdio>
 
 #include "blas.h"
 #include "matrix.h"

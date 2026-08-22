@@ -31,8 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include "psi4/liboptions/liboptions.h"
 #include "MOInfo.h"
 #include "Params.h"

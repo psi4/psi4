@@ -30,8 +30,6 @@
     \ingroup CCENERGY
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "Params.h"

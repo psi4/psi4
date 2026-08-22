@@ -30,8 +30,6 @@
     \ingroup CCENERGY
     \brief Compute eq. 8 of Stanton et al., J. Chem. Phys. 94, 4334-4345 (1991)
 */
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "Params.h"
