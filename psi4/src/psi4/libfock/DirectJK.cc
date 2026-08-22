@@ -45,9 +45,9 @@
 #include "psi4/liboptions/liboptions.h"
 
 #include <algorithm>
-#include <limits>
-#include <sstream>
-#include <unordered_set>
+#include <span>
+#include <utility>
+#include <vector>
 #include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -393,6 +393,50 @@ void DirectJK::compute_JK() {
 }
 void DirectJK::postiterations() {}
 
+namespace {
+
+// Minimal integer range [first, last) used in range-for loops. This replaces
+// std::views::iota, which fails to compile under clang with libstdc++ < 13.
+// Whenever Psi4's minimum GCC version is bumped to at least 14, we should
+// revert back to using std::views::iota.
+struct integer_range {
+    std::size_t first;
+    std::size_t last;
+
+    struct iterator {
+        std::size_t value;
+        std::size_t operator*() const { return value; }
+        iterator& operator++() { ++value; return *this; }
+        bool operator==(const iterator& other) const { return value == other.value; }
+        bool operator!=(const iterator& other) const { return value != other.value; }
+    };
+
+    iterator begin() const { return {first}; }
+    iterator end() const { return {last}; }
+};
+
+// Helper method to remove the indexing madness. Produces iterable list of iterators.
+// Converts Something like [0,1,4,5] into [[0, 1), [1, 4), [4, 5)].
+auto partition(std::span<const std::size_t> atom_to_shell) {
+    std::vector<integer_range> result;
+    result.reserve(atom_to_shell.size());
+    for (std::size_t atom = 0; atom + 1 < atom_to_shell.size(); ++atom)
+        result.push_back(integer_range{atom_to_shell[atom], atom_to_shell[atom + 1]});
+    return result;
+}
+
+// Like above but enumerated. Converts Something like [0,1,4,5] into
+//   [{0, [0, 1)}, {1, [1, 4)}, {2, [4, 5)}].
+auto partition_with_idx(std::span<const std::size_t> atom_to_shell) {
+    std::vector<std::pair<std::size_t, integer_range>> result;
+    result.reserve(atom_to_shell.size());
+    for (std::size_t atom = 0; atom + 1 < atom_to_shell.size(); ++atom)
+        result.emplace_back(atom, integer_range{atom_to_shell[atom], atom_to_shell[atom + 1]});
+    return result;
+}
+
+}  // namespace
+
 void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
                         std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K) {
 
@@ -424,54 +468,95 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     int nshell = primary_->nshell();
     int nthread = df_ints_num_threads_;
 
-    // => Task Blocking <= //
+    // => Atomic Task Blocking <= //
+    // One task = all shells on one center. Shells stay in basis order (identity map).
 
-    std::vector<int> task_shells;
-    std::vector<int> task_starts;
+    // shell index that starts each center
+    std::vector<size_t> atom_to_shell;
+    // basis function index that starts each shell
+    std::vector<size_t> shell_to_basis;
 
-    // > Atomic Blocking < //
+    /*******************************************************
+     * Consider H2O with STO-3G...                         *
+     *                                                     *
+     *   3 atoms:       H  ,         O           ,   H     *
+     *   5 shells:    [ S ], [ S , S ,    P     ], [ S ]   *
+     *   7 functions: [[s]], [[s],[s],[px,py,pz]], [[s]]   *
+     *                                                     *
+     * atom_to_shell  [ 0,           1,              4, 5] *
+     * shell_to_basis [ 0,     1,  2,     3,         6, 7] *
+     *                                                     *
+     *******************************************************/
 
-    int atomic_ind = -1;
-    for (int P = 0; P < nshell; P++) {
-        if (primary_->shell(P).ncenter() > atomic_ind) {
-            task_starts.push_back(P);
-            atomic_ind++;
+    // => Helper functions that need internal variables <= //
+
+    auto nfunctions_in_shell = [this](const size_t& shell_idx) {
+        return this->primary_->shell(shell_idx).nfunction();
+    };
+
+    auto function_index_of_shell = [this](const size_t& shell_idx) {
+        return this->primary_->shell(shell_idx).function_index();
+    };
+
+    // Returns the basis function index that begins shell ``shell_idx`` where 0
+    // indicates the first basis function of the first shell of atom ``task``.
+    auto basis_index_of_shell_from_atom = [&atom_to_shell, &shell_to_basis](const size_t& shell_idx, const size_t& task) {
+        return shell_to_basis[shell_idx] - shell_to_basis[atom_to_shell[task]];
+    };
+
+    // Number of basis functions on center ``task``.
+    auto nfunctions_on_center = [&atom_to_shell, &shell_to_basis](const size_t& task) {
+        return shell_to_basis[atom_to_shell[task + 1]] - shell_to_basis[atom_to_shell[task]];
+    };
+
+    // Returns a view of shell indices for given center idx.
+    auto shells_on_center = [&atom_to_shell](size_t task) {
+        return integer_range{atom_to_shell[task], atom_to_shell[task + 1]};
+    };
+
+    // => Welcome to the jungle <= //
+
+    {
+        shell_to_basis.push_back(0);
+
+        size_t total_nfuncs = 0;
+        int atomic_ind = -1;
+        for (int P = 0; P < nshell; P++) {
+            const auto& shell = primary_->shell(P);
+
+            total_nfuncs += shell.nfunction();
+            shell_to_basis.push_back(total_nfuncs);
+
+            if (shell.ncenter() > atomic_ind) {
+                atom_to_shell.push_back(P);
+                atomic_ind++;
+            }
         }
-        task_shells.push_back(P);
-    }
-    task_starts.push_back(nshell);
-
-    // < End Atomic Blocking > //
-
-    size_t ntask = task_starts.size() - 1;
-
-    std::vector<int> task_offsets;
-    task_offsets.push_back(0);
-    for (int P2 = 0; P2 < primary_->nshell(); P2++) {
-        task_offsets.push_back(task_offsets[P2] + primary_->shell(task_shells[P2]).nfunction());
+        atom_to_shell.push_back(nshell);
     }
 
-    size_t max_task = 0L;
-    for (size_t task = 0; task < ntask; task++) {
-        size_t size = 0L;
-        for (int P2 = task_starts[task]; P2 < task_starts[task + 1]; P2++) {
-            size += primary_->shell(task_shells[P2]).nfunction();
+    // Largest number of functions for any center. Used to allocate the
+    // temporary J and K contraction buffers.
+    size_t max_nfuncs_per_center = 0;
+    for (auto centers : partition(atom_to_shell)) {
+        size_t size = 0;
+        for (size_t shell : centers) {
+            size += primary_->shell(shell).nfunction();
         }
-        max_task = (max_task >= size ? max_task : size);
+        max_nfuncs_per_center = std::max(max_nfuncs_per_center, size);
     }
 
     if (debug_) {
         outfile->Printf("  ==> DirectJK: Task Blocking <==\n\n");
-        for (size_t task = 0; task < ntask; task++) {
-            outfile->Printf("  Task: %3zu, Task Start: %4d, Task End: %4d\n", task, task_starts[task],
-                            task_starts[task + 1]);
-            for (int P2 = task_starts[task]; P2 < task_starts[task + 1]; P2++) {
-                int P = task_shells[P2];
-                int size = primary_->shell(P).nfunction();
-                int off = primary_->shell(P).function_index();
-                int off2 = task_offsets[P2];
-                outfile->Printf("    Index %4d, Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P2, P, size, off,
-                                off2);
+        for (auto [atom, shells] : partition_with_idx(atom_to_shell)) {
+            outfile->Printf("  Task: %3zu, Task Start: %4zu, Task End: %4zu\n", atom, atom_to_shell[atom],
+                            atom_to_shell[atom + 1]);
+            for (size_t shell : shells) {
+                int size = primary_->shell(shell).nfunction();
+                int off = primary_->shell(shell).function_index();
+                int off2 = shell_to_basis[shell];
+                outfile->Printf("    Index %4zu, Shell: %4zu, Size: %4d, Offset: %4d, Offset2: %4d\n", shell, shell,
+                                size, off, off2);
             }
         }
         outfile->Printf("\n");
@@ -479,27 +564,24 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
     // => Significant Task Pairs (PQ|-style <= //
 
-    std::vector<std::pair<int, int> > task_pairs;
-    for (size_t Ptask = 0; Ptask < ntask; Ptask++) {
-        for (size_t Qtask = 0; Qtask < ntask; Qtask++) {
-            if (Qtask > Ptask) continue;
-            bool found = false;
-            for (int P2 = task_starts[Ptask]; P2 < task_starts[Ptask + 1]; P2++) {
-                for (int Q2 = task_starts[Qtask]; Q2 < task_starts[Qtask + 1]; Q2++) {
-                    int P = task_shells[P2];
-                    int Q = task_shells[Q2];
-                    if (ints[0]->shell_pair_significant(P, Q)) {
-                        found = true;
-                        task_pairs.push_back(std::pair<int, int>(Ptask, Qtask));
+    std::vector<std::pair<size_t, size_t>> significant_pairs;
+    for (auto [Patom, Pshells] : partition_with_idx(atom_to_shell)) {
+        for (auto [Qatom, Qshells] : partition_with_idx(atom_to_shell)) {
+            if (Qatom > Patom) continue;
+            bool found_significant_pair = false;
+            for (size_t Ps : Pshells) {
+                for (size_t Qs : Qshells) {
+                    if (ints[0]->shell_pair_significant(Ps, Qs)) {
+                        found_significant_pair = true;
+                        significant_pairs.emplace_back(Patom, Qatom);
                         break;
                     }
                 }
-                if (found) break;
+                if (found_significant_pair) break;
             }
         }
     }
-    size_t ntask_pair = task_pairs.size();
-    size_t ntask_pair2 = ntask_pair * ntask_pair;
+    size_t n_pair = significant_pairs.size();
 
     // => Intermediate Buffers <= //
 
@@ -510,7 +592,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
             std::vector<SharedMatrix> J2;
             for (size_t ind = 0; ind < D.size(); ind++) {
                 // The factor of 2 comes from exploiting ERI permutational symmetry
-                J2.push_back(std::make_shared<Matrix>("JT", 2 * max_task, max_task));
+                J2.push_back(std::make_shared<Matrix>("JT", 2 * max_nfuncs_per_center, max_nfuncs_per_center));
             }
             JT.push_back(J2);
         }
@@ -523,7 +605,8 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
             std::vector<SharedMatrix > K2;
             for (size_t ind = 0; ind < D.size(); ind++) {
                 // The factor of 4 or 8 comes from exploiting ERI permutational symmetry
-                K2.push_back(std::make_shared<Matrix>("KT", (lr_symmetric_ ? 4 : 8) * max_task, max_task));
+                K2.push_back(std::make_shared<Matrix>("KT", (lr_symmetric_ ? 4 : 8) * max_nfuncs_per_center,
+                                                      max_nfuncs_per_center));
             }
             KT.push_back(K2);
         }
@@ -536,39 +619,25 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
 // ==> Master Task Loop <== //
 
-#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
-    for (size_t task = 0L; task < ntask_pair2; task++) {
-        size_t task1 = task / ntask_pair;
-        size_t task2 = task % ntask_pair;
-
-        int Ptask = task_pairs[task1].first;
-        int Qtask = task_pairs[task1].second;
-        int Rtask = task_pairs[task2].first;
-        int Stask = task_pairs[task2].second;
+#pragma omp parallel for num_threads(nthread) schedule(dynamic) collapse(2) reduction(+ : computed_shells)
+    for (size_t pq_pair = 0; pq_pair < n_pair; ++pq_pair) {
+    for (size_t rs_pair = 0; rs_pair < n_pair; ++rs_pair) {
+        auto [Patom, Qatom] = significant_pairs[pq_pair];
+        auto [Ratom, Satom] = significant_pairs[rs_pair];
 
         // GOTCHA! Thought this should be RStask > PQtask, but
         // H2/3-21G: Task (10|11) gives valid quartets (30|22) and (31|22)
         // This is an artifact that multiple shells on each task allow
         // for for the Ptask's index to possibly trump any RStask pair,
         // regardless of Qtask's index
-        if (Rtask > Ptask) continue;
+        if (Ratom > Patom) continue;
 
-        // printf("Task: %2d %2d %2d %2d\n", Ptask, Qtask, Rtask, Stask);
+        // printf("Task: %2zu %2zu %2zu %2zu\n", Patom, Qatom, Ratom, Satom);
 
-        int nPtask = task_starts[Ptask + 1] - task_starts[Ptask];
-        int nQtask = task_starts[Qtask + 1] - task_starts[Qtask];
-        int nRtask = task_starts[Rtask + 1] - task_starts[Rtask];
-        int nStask = task_starts[Stask + 1] - task_starts[Stask];
-
-        int P2start = task_starts[Ptask];
-        int Q2start = task_starts[Qtask];
-        int R2start = task_starts[Rtask];
-        int S2start = task_starts[Stask];
-
-        int dPsize = task_offsets[P2start + nPtask] - task_offsets[P2start];
-        int dQsize = task_offsets[Q2start + nQtask] - task_offsets[Q2start];
-        int dRsize = task_offsets[R2start + nRtask] - task_offsets[R2start];
-        int dSsize = task_offsets[S2start + nStask] - task_offsets[S2start];
+        size_t Patom_size = nfunctions_on_center(Patom);
+        size_t Qatom_size = nfunctions_on_center(Qatom);
+        size_t Ratom_size = nfunctions_on_center(Ratom);
+        size_t Satom_size = nfunctions_on_center(Satom);
 
         int thread = 0;
 #ifdef _OPENMP
@@ -578,44 +647,40 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         // => Master shell quartet loops <= //
 
         bool touched = false;
-        for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
-            for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
-                if (Q2 > P2) continue;
-                int P = task_shells[P2];
-                int Q = task_shells[Q2];
-                if (!ints[0]->shell_pair_significant(P, Q)) continue;
-                for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
-                    for (int S2 = S2start; S2 < S2start + nStask; S2++) {
-                        if (S2 > R2) continue;
-                        int R = task_shells[R2];
-                        int S = task_shells[S2];
-                        if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
-                        if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+        for (auto Ps : shells_on_center(Patom)) {
+            for (auto Qs : shells_on_center(Qatom)) {
+                if (Qs > Ps) continue;
+                if (!ints[0]->shell_pair_significant(Ps, Qs)) continue;
+                for (auto Rs : shells_on_center(Ratom)) {
+                    for (auto Ss : shells_on_center(Satom)) {
+                        if (Ss > Rs) continue;
+                        if (Rs * nshell + Ss > Ps * nshell + Qs) continue;
+                        if (!ints[0]->shell_pair_significant(Rs, Ss)) continue;
+                        if (!ints[0]->shell_significant(Ps, Qs, Rs, Ss)) continue;
 
-                        // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
+                        // printf("Quartet: %2zu %2zu %2zu %2zu\n", Ps, Qs, Rs, Ss);
                         // if (thread == 0) timer_on("JK: Ints");
-                        if (ints[thread]->compute_shell(P, Q, R, S) == 0)
+                        if (ints[thread]->compute_shell(Ps, Qs, Rs, Ss) == 0)
                             continue;  // No integrals in this shell quartet
                         computed_shells++;
                         // if (thread == 0) timer_off("JK: Ints");
 
                         const double* buffer = ints[thread]->buffer();
 
-                        int Psize = primary_->shell(P).nfunction();
-                        int Qsize = primary_->shell(Q).nfunction();
-                        int Rsize = primary_->shell(R).nfunction();
-                        int Ssize = primary_->shell(S).nfunction();
+                        size_t Psize = nfunctions_in_shell(Ps);
+                        size_t Qsize = nfunctions_in_shell(Qs);
+                        size_t Rsize = nfunctions_in_shell(Rs);
+                        size_t Ssize = nfunctions_in_shell(Ss);
 
-                        int Poff = primary_->shell(P).function_index();
-                        int Qoff = primary_->shell(Q).function_index();
-                        int Roff = primary_->shell(R).function_index();
-                        int Soff = primary_->shell(S).function_index();
+                        size_t Pao = function_index_of_shell(Ps);
+                        size_t Qao = function_index_of_shell(Qs);
+                        size_t Rao = function_index_of_shell(Rs);
+                        size_t Sao = function_index_of_shell(Ss);
 
-                        int Poff2 = task_offsets[P2] - task_offsets[P2start];
-                        int Qoff2 = task_offsets[Q2] - task_offsets[Q2start];
-                        int Roff2 = task_offsets[R2] - task_offsets[R2start];
-                        int Soff2 = task_offsets[S2] - task_offsets[S2start];
+                        size_t Plo = basis_index_of_shell_from_atom(Ps, Patom);
+                        size_t Qlo = basis_index_of_shell_from_atom(Qs, Qatom);
+                        size_t Rlo = basis_index_of_shell_from_atom(Rs, Ratom);
+                        size_t Slo = basis_index_of_shell_from_atom(Ss, Satom);
 
                         // if (thread == 0) timer_on("JK: GEMV");
                         for (size_t ind = 0; ind < D.size(); ind++) {
@@ -628,20 +693,20 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                             if (!touched) {
                                 if (build_J) {
-                                    ::memset((void*)JTp[0L * max_task], '\0', dPsize * dQsize * sizeof(double));
-                                    ::memset((void*)JTp[1L * max_task], '\0', dRsize * dSsize * sizeof(double));
+                                    ::memset((void*)JTp[0L * max_nfuncs_per_center], '\0', Patom_size * Qatom_size * sizeof(double));
+                                    ::memset((void*)JTp[1L * max_nfuncs_per_center], '\0', Ratom_size * Satom_size * sizeof(double));
                                 }
 
                                 if (build_K) {
-                                    ::memset((void*)KTp[0L * max_task], '\0', dPsize * dRsize * sizeof(double));
-                                    ::memset((void*)KTp[1L * max_task], '\0', dPsize * dSsize * sizeof(double));
-                                    ::memset((void*)KTp[2L * max_task], '\0', dQsize * dRsize * sizeof(double));
-                                    ::memset((void*)KTp[3L * max_task], '\0', dQsize * dSsize * sizeof(double));
+                                    ::memset((void*)KTp[0L * max_nfuncs_per_center], '\0', Patom_size * Ratom_size * sizeof(double));
+                                    ::memset((void*)KTp[1L * max_nfuncs_per_center], '\0', Patom_size * Satom_size * sizeof(double));
+                                    ::memset((void*)KTp[2L * max_nfuncs_per_center], '\0', Qatom_size * Ratom_size * sizeof(double));
+                                    ::memset((void*)KTp[3L * max_nfuncs_per_center], '\0', Qatom_size * Satom_size * sizeof(double));
                                     if (!lr_symmetric_) {
-                                        ::memset((void*)KTp[4L * max_task], '\0', dRsize * dPsize * sizeof(double));
-                                        ::memset((void*)KTp[5L * max_task], '\0', dSsize * dPsize * sizeof(double));
-                                        ::memset((void*)KTp[6L * max_task], '\0', dRsize * dQsize * sizeof(double));
-                                        ::memset((void*)KTp[7L * max_task], '\0', dSsize * dQsize * sizeof(double));
+                                        ::memset((void*)KTp[4L * max_nfuncs_per_center], '\0', Ratom_size * Patom_size * sizeof(double));
+                                        ::memset((void*)KTp[5L * max_nfuncs_per_center], '\0', Satom_size * Patom_size * sizeof(double));
+                                        ::memset((void*)KTp[6L * max_nfuncs_per_center], '\0', Ratom_size * Qatom_size * sizeof(double));
+                                        ::memset((void*)KTp[7L * max_nfuncs_per_center], '\0', Satom_size * Qatom_size * sizeof(double));
                                     }
                                 }
                             }
@@ -659,59 +724,59 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                             double* K8p;
 
                             if (build_J) {
-                                J1p = JTp[0L * max_task];
-                                J2p = JTp[1L * max_task];
+                                J1p = JTp[0L * max_nfuncs_per_center];
+                                J2p = JTp[1L * max_nfuncs_per_center];
                             }
 
                             if (build_K) {
-                                K1p = KTp[0L * max_task];
-                                K2p = KTp[1L * max_task];
-                                K3p = KTp[2L * max_task];
-                                K4p = KTp[3L * max_task];
+                                K1p = KTp[0L * max_nfuncs_per_center];
+                                K2p = KTp[1L * max_nfuncs_per_center];
+                                K3p = KTp[2L * max_nfuncs_per_center];
+                                K4p = KTp[3L * max_nfuncs_per_center];
                                 if (!lr_symmetric_) {
-                                    K5p = KTp[4L * max_task];
-                                    K6p = KTp[5L * max_task];
-                                    K7p = KTp[6L * max_task];
-                                    K8p = KTp[7L * max_task];
+                                    K5p = KTp[4L * max_nfuncs_per_center];
+                                    K6p = KTp[5L * max_nfuncs_per_center];
+                                    K7p = KTp[6L * max_nfuncs_per_center];
+                                    K8p = KTp[7L * max_nfuncs_per_center];
                                 }
                             }
 
                             double prefactor = 1.0;
-                            if (P == Q) prefactor *= 0.5;
-                            if (R == S) prefactor *= 0.5;
-                            if (P == R && Q == S) prefactor *= 0.5;
+                            if (Ps == Qs) prefactor *= 0.5;
+                            if (Rs == Ss) prefactor *= 0.5;
+                            if (Ps == Rs && Qs == Ss) prefactor *= 0.5;
 
-                            for (int p = 0; p < Psize; p++) {
-                                for (int q = 0; q < Qsize; q++) {
-                                    for (int r = 0; r < Rsize; r++) {
-                                        for (int s = 0; s < Ssize; s++) {
+                            for (size_t p = 0; p < Psize; p++) {
+                                for (size_t q = 0; q < Qsize; q++) {
+                                    for (size_t r = 0; r < Rsize; r++) {
+                                        for (size_t s = 0; s < Ssize; s++) {
                                             if (build_J) {
-                                                J1p[(p + Poff2) * dQsize + q + Qoff2] +=
-                                                    prefactor * (Dp[r + Roff][s + Soff] + Dp[s + Soff][r + Roff]) *
+                                                J1p[(p + Plo) * Qatom_size + q + Qlo] +=
+                                                    prefactor * (Dp[r + Rao][s + Sao] + Dp[s + Sao][r + Rao]) *
                                                     (*buffer2);
-                                                J2p[(r + Roff2) * dSsize + s + Soff2] +=
-                                                    prefactor * (Dp[p + Poff][q + Qoff] + Dp[q + Qoff][p + Poff]) *
+                                                J2p[(r + Rlo) * Satom_size + s + Slo] +=
+                                                    prefactor * (Dp[p + Pao][q + Qao] + Dp[q + Qao][p + Pao]) *
                                                     (*buffer2);
                                             }
-                                            
+
                                             if (build_K) {
-                                                K1p[(p + Poff2) * dRsize + r + Roff2] +=
-                                                    prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
-                                                K2p[(p + Poff2) * dSsize + s + Soff2] +=
-                                                    prefactor * (Dp[q + Qoff][r + Roff]) * (*buffer2);
-                                                K3p[(q + Qoff2) * dRsize + r + Roff2] +=
-                                                    prefactor * (Dp[p + Poff][s + Soff]) * (*buffer2);
-                                                K4p[(q + Qoff2) * dSsize + s + Soff2] +=
-                                                    prefactor * (Dp[p + Poff][r + Roff]) * (*buffer2);
+                                                K1p[(p + Plo) * Ratom_size + r + Rlo] +=
+                                                    prefactor * (Dp[q + Qao][s + Sao]) * (*buffer2);
+                                                K2p[(p + Plo) * Satom_size + s + Slo] +=
+                                                    prefactor * (Dp[q + Qao][r + Rao]) * (*buffer2);
+                                                K3p[(q + Qlo) * Ratom_size + r + Rlo] +=
+                                                    prefactor * (Dp[p + Pao][s + Sao]) * (*buffer2);
+                                                K4p[(q + Qlo) * Satom_size + s + Slo] +=
+                                                    prefactor * (Dp[p + Pao][r + Rao]) * (*buffer2);
                                                 if (!lr_symmetric_) {
-                                                    K5p[(r + Roff2) * dPsize + p + Poff2] +=
-                                                        prefactor * (Dp[s + Soff][q + Qoff]) * (*buffer2);
-                                                    K6p[(s + Soff2) * dPsize + p + Poff2] +=
-                                                        prefactor * (Dp[r + Roff][q + Qoff]) * (*buffer2);
-                                                    K7p[(r + Roff2) * dQsize + q + Qoff2] +=
-                                                        prefactor * (Dp[s + Soff][p + Poff]) * (*buffer2);
-                                                    K8p[(s + Soff2) * dQsize + q + Qoff2] +=
-                                                        prefactor * (Dp[r + Roff][p + Poff]) * (*buffer2);
+                                                    K5p[(r + Rlo) * Patom_size + p + Plo] +=
+                                                        prefactor * (Dp[s + Sao][q + Qao]) * (*buffer2);
+                                                    K6p[(s + Slo) * Patom_size + p + Plo] +=
+                                                        prefactor * (Dp[r + Rao][q + Qao]) * (*buffer2);
+                                                    K7p[(r + Rlo) * Qatom_size + q + Qlo] +=
+                                                        prefactor * (Dp[s + Sao][p + Pao]) * (*buffer2);
+                                                    K8p[(s + Slo) * Qatom_size + q + Qlo] +=
+                                                        prefactor * (Dp[r + Rao][p + Pao]) * (*buffer2);
                                                 }
                                             }
                                             
@@ -772,20 +837,20 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
             double* K8p;
 
             if (build_J) {
-                J1p = JTp[0L * max_task];
-                J2p = JTp[1L * max_task];
+                J1p = JTp[0L * max_nfuncs_per_center];
+                J2p = JTp[1L * max_nfuncs_per_center];
             }
 
             if (build_K) {
-                K1p = KTp[0L * max_task];
-                K2p = KTp[1L * max_task];
-                K3p = KTp[2L * max_task];
-                K4p = KTp[3L * max_task];
+                K1p = KTp[0L * max_nfuncs_per_center];
+                K2p = KTp[1L * max_nfuncs_per_center];
+                K3p = KTp[2L * max_nfuncs_per_center];
+                K4p = KTp[3L * max_nfuncs_per_center];
                 if (!lr_symmetric_) {
-                    K5p = KTp[4L * max_task];
-                    K6p = KTp[5L * max_task];
-                    K7p = KTp[6L * max_task];
-                    K8p = KTp[7L * max_task];
+                    K5p = KTp[4L * max_nfuncs_per_center];
+                    K6p = KTp[5L * max_nfuncs_per_center];
+                    K7p = KTp[6L * max_nfuncs_per_center];
+                    K8p = KTp[7L * max_nfuncs_per_center];
                 }
             }
 
@@ -793,20 +858,18 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                 // > J_PQ < //
 
-                for (int P2 = 0; P2 < nPtask; P2++) {
-                    for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                        int P = task_shells[P2start + P2];
-                        int Q = task_shells[Q2start + Q2];
-                        int Psize = primary_->shell(P).nfunction();
-                        int Qsize = primary_->shell(Q).nfunction();
-                        int Poff = primary_->shell(P).function_index();
-                        int Qoff = primary_->shell(Q).function_index();
-                        int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
-                        int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                for (auto Ps : shells_on_center(Patom)) {
+                    for (auto Qs : shells_on_center(Qatom)) {
+                        size_t Psize = nfunctions_in_shell(Ps);
+                        size_t Qsize = nfunctions_in_shell(Qs);
+                        size_t Pao = function_index_of_shell(Ps);
+                        size_t Qao = function_index_of_shell(Qs);
+                        size_t Plo = basis_index_of_shell_from_atom(Ps, Patom);
+                        size_t Qlo = basis_index_of_shell_from_atom(Qs, Qatom);
                         for (int p = 0; p < Psize; p++) {
                             for (int q = 0; q < Qsize; q++) {
 #pragma omp atomic
-                                Jp[p + Poff][q + Qoff] += J1p[(p + Poff2) * dQsize + q + Qoff2];
+                                Jp[p + Pao][q + Qao] += J1p[(p + Plo) * Qatom_size + q + Qlo];
                             }
                         }
                     }
@@ -814,20 +877,18 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                 // > J_RS < //
 
-                for (int R2 = 0; R2 < nRtask; R2++) {
-                    for (int S2 = 0; S2 < nStask; S2++) {
-                        int R = task_shells[R2start + R2];
-                        int S = task_shells[S2start + S2];
-                        int Rsize = primary_->shell(R).nfunction();
-                        int Ssize = primary_->shell(S).nfunction();
-                        int Roff = primary_->shell(R).function_index();
-                        int Soff = primary_->shell(S).function_index();
-                        int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
-                        int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                for (auto Rs : shells_on_center(Ratom)) {
+                    for (auto Ss : shells_on_center(Satom)) {
+                        size_t Rsize = nfunctions_in_shell(Rs);
+                        size_t Ssize = nfunctions_in_shell(Ss);
+                        size_t Rao = function_index_of_shell(Rs);
+                        size_t Sao = function_index_of_shell(Ss);
+                        size_t Rlo = basis_index_of_shell_from_atom(Rs, Ratom);
+                        size_t Slo = basis_index_of_shell_from_atom(Ss, Satom);
                         for (int r = 0; r < Rsize; r++) {
                             for (int s = 0; s < Ssize; s++) {
 #pragma omp atomic
-                                Jp[r + Roff][s + Soff] += J2p[(r + Roff2) * dSsize + s + Soff2];
+                                Jp[r + Rao][s + Sao] += J2p[(r + Rlo) * Satom_size + s + Slo];
                             }
                         }
                     }
@@ -838,23 +899,21 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                 // > K_PR < //
 
-                for (int P2 = 0; P2 < nPtask; P2++) {
-                    for (int R2 = 0; R2 < nRtask; R2++) {
-                        int P = task_shells[P2start + P2];
-                        int R = task_shells[R2start + R2];
-                        int Psize = primary_->shell(P).nfunction();
-                        int Rsize = primary_->shell(R).nfunction();
-                        int Poff = primary_->shell(P).function_index();
-                        int Roff = primary_->shell(R).function_index();
-                        int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
-                        int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                for (auto Ps : shells_on_center(Patom)) {
+                    for (auto Rs : shells_on_center(Ratom)) {
+                        size_t Psize = nfunctions_in_shell(Ps);
+                        size_t Rsize = nfunctions_in_shell(Rs);
+                        size_t Pao = function_index_of_shell(Ps);
+                        size_t Rao = function_index_of_shell(Rs);
+                        size_t Plo = basis_index_of_shell_from_atom(Ps, Patom);
+                        size_t Rlo = basis_index_of_shell_from_atom(Rs, Ratom);
                         for (int p = 0; p < Psize; p++) {
                             for (int r = 0; r < Rsize; r++) {
 #pragma omp atomic
-                                Kp[p + Poff][r + Roff] += K1p[(p + Poff2) * dRsize + r + Roff2];
+                                Kp[p + Pao][r + Rao] += K1p[(p + Plo) * Ratom_size + r + Rlo];
                                 if (!lr_symmetric_) {
 #pragma omp atomic
-                                    Kp[r + Roff][p + Poff] += K5p[(r + Roff2) * dPsize + p + Poff2];
+                                    Kp[r + Rao][p + Pao] += K5p[(r + Rlo) * Patom_size + p + Plo];
                                 }
                             }
                         }
@@ -863,23 +922,21 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                 // > K_PS < //
 
-                for (int P2 = 0; P2 < nPtask; P2++) {
-                    for (int S2 = 0; S2 < nStask; S2++) {
-                        int P = task_shells[P2start + P2];
-                        int S = task_shells[S2start + S2];
-                        int Psize = primary_->shell(P).nfunction();
-                        int Ssize = primary_->shell(S).nfunction();
-                        int Poff = primary_->shell(P).function_index();
-                        int Soff = primary_->shell(S).function_index();
-                        int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
-                        int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                for (auto Ps : shells_on_center(Patom)) {
+                    for (auto Ss : shells_on_center(Satom)) {
+                        size_t Psize = nfunctions_in_shell(Ps);
+                        size_t Ssize = nfunctions_in_shell(Ss);
+                        size_t Pao = function_index_of_shell(Ps);
+                        size_t Sao = function_index_of_shell(Ss);
+                        size_t Plo = basis_index_of_shell_from_atom(Ps, Patom);
+                        size_t Slo = basis_index_of_shell_from_atom(Ss, Satom);
                         for (int p = 0; p < Psize; p++) {
                             for (int s = 0; s < Ssize; s++) {
 #pragma omp atomic
-                                Kp[p + Poff][s + Soff] += K2p[(p + Poff2) * dSsize + s + Soff2];
+                                Kp[p + Pao][s + Sao] += K2p[(p + Plo) * Satom_size + s + Slo];
                                 if (!lr_symmetric_) {
 #pragma omp atomic
-                                    Kp[s + Soff][p + Poff] += K6p[(s + Soff2) * dPsize + p + Poff2];
+                                    Kp[s + Sao][p + Pao] += K6p[(s + Slo) * Patom_size + p + Plo];
                                 }
                             }
                         }
@@ -888,23 +945,21 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                 // > K_QR < //
 
-                for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                    for (int R2 = 0; R2 < nRtask; R2++) {
-                        int Q = task_shells[Q2start + Q2];
-                        int R = task_shells[R2start + R2];
-                        int Qsize = primary_->shell(Q).nfunction();
-                        int Rsize = primary_->shell(R).nfunction();
-                        int Qoff = primary_->shell(Q).function_index();
-                        int Roff = primary_->shell(R).function_index();
-                        int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
-                        int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                for (auto Qs : shells_on_center(Qatom)) {
+                    for (auto Rs : shells_on_center(Ratom)) {
+                        size_t Qsize = nfunctions_in_shell(Qs);
+                        size_t Rsize = nfunctions_in_shell(Rs);
+                        size_t Qao = function_index_of_shell(Qs);
+                        size_t Rao = function_index_of_shell(Rs);
+                        size_t Qlo = basis_index_of_shell_from_atom(Qs, Qatom);
+                        size_t Rlo = basis_index_of_shell_from_atom(Rs, Ratom);
                         for (int q = 0; q < Qsize; q++) {
                             for (int r = 0; r < Rsize; r++) {
 #pragma omp atomic
-                                Kp[q + Qoff][r + Roff] += K3p[(q + Qoff2) * dRsize + r + Roff2];
+                                Kp[q + Qao][r + Rao] += K3p[(q + Qlo) * Ratom_size + r + Rlo];
                                 if (!lr_symmetric_) {
 #pragma omp atomic
-                                    Kp[r + Roff][q + Qoff] += K7p[(r + Roff2) * dQsize + q + Qoff2];
+                                    Kp[r + Rao][q + Qao] += K7p[(r + Rlo) * Qatom_size + q + Qlo];
                                 }
                             }
                         }
@@ -913,23 +968,21 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                 // > K_QS < //
 
-                for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                    for (int S2 = 0; S2 < nStask; S2++) {
-                        int Q = task_shells[Q2start + Q2];
-                        int S = task_shells[S2start + S2];
-                        int Qsize = primary_->shell(Q).nfunction();
-                        int Ssize = primary_->shell(S).nfunction();
-                        int Qoff = primary_->shell(Q).function_index();
-                        int Soff = primary_->shell(S).function_index();
-                        int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
-                        int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                for (auto Qs : shells_on_center(Qatom)) {
+                    for (auto Ss : shells_on_center(Satom)) {
+                        size_t Qsize = nfunctions_in_shell(Qs);
+                        size_t Ssize = nfunctions_in_shell(Ss);
+                        size_t Qao = function_index_of_shell(Qs);
+                        size_t Sao = function_index_of_shell(Ss);
+                        size_t Qlo = basis_index_of_shell_from_atom(Qs, Qatom);
+                        size_t Slo = basis_index_of_shell_from_atom(Ss, Satom);
                         for (int q = 0; q < Qsize; q++) {
                             for (int s = 0; s < Ssize; s++) {
 #pragma omp atomic
-                                Kp[q + Qoff][s + Soff] += K4p[(q + Qoff2) * dSsize + s + Soff2];
+                                Kp[q + Qao][s + Sao] += K4p[(q + Qlo) * Satom_size + s + Slo];
                                 if (!lr_symmetric_) {
 #pragma omp atomic
-                                    Kp[s + Soff][q + Qoff] += K8p[(s + Soff2) * dQsize + q + Qoff2];
+                                    Kp[s + Sao][q + Qao] += K8p[(s + Slo) * Qatom_size + q + Qlo];
                                 }
                             }
                         }
@@ -940,6 +993,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         }  // End stripe out
         // if (thread == 0) timer_off("JK: Atomic");
 
+    }
     }  // End master task list
 
     for (auto& Jmat : J) {
