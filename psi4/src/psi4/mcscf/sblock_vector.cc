@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdlib>
-#include <cstdio>
 
 #include "sblock_vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"

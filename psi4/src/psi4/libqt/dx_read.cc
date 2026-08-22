@@ -33,9 +33,7 @@
  */
 
 #include <cstdlib>
-#include <cstdio>
 #include <fstream>
-#include <cmath>
 #include <string>
 #include <sstream>
 #include <vector>

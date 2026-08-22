@@ -27,7 +27,6 @@
  */
 
 #include <limits>
-#include <cmath>
 
 #include "psi4/psifiles.h"
 #include "psi4/liboptions/liboptions.h"

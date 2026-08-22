@@ -27,9 +27,6 @@
  */
 
 #include "integraltransform.h"
-#include <cmath>
-#include <cctype>
-#include <cstdio>
 #include "mospace.h"
 
 using namespace psi;

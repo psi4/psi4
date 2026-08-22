@@ -29,8 +29,6 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <cstdio>
-#include <cstdlib>
 #include <iomanip>
 #include <sstream>
 #include <cassert>

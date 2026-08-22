@@ -43,9 +43,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
 
 namespace psi {
 namespace ccenergy {

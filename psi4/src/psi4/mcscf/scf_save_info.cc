@@ -37,7 +37,6 @@
 
 #include <utility>
 #include <algorithm>
-#include <cstdio>
 #include <cmath>
 
 namespace psi {

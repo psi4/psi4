@@ -32,8 +32,6 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include <cstdlib>
-#include <cstdio>
 
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"

@@ -30,7 +30,6 @@
  *  @file ccsort.cpp
  *  @ingroup (PSIMRCC)
  */
-#include <cmath>
 
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libtrans/integraltransform.h"

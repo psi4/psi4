@@ -38,7 +38,6 @@
 #include "psi4/libdpd/dpd.h"
 
 #include <cmath>
-#include <cctype>
 #include <cstdio>
 
 using namespace psi;

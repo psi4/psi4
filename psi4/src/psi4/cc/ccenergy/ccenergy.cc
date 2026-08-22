@@ -48,10 +48,6 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
 
 // Forward declaration to call cctriples
 namespace psi {

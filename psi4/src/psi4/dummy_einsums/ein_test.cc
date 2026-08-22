@@ -26,12 +26,9 @@
  * @END LICENSE
  */
 
-#include <cmath>
-#include <cstdlib>
 
 #include <Einsums/Print.hpp>
 #include <Einsums/Runtime.hpp>
-#include <Einsums/Tensor.hpp>
 #include <Einsums/TensorAlgebra.hpp>
 
 #include "psi4/libmints/wavefunction.h"

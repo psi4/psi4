@@ -26,9 +26,6 @@
  * @END LICENSE
  */
 
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
 
 #include "psi4/libmints/corrtab.h"
 #include "psi4/libmints/molecule.h"

@@ -34,19 +34,13 @@
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/molecule.h"
 
-#include "psi4/libciomr/libciomr.h"
 
-#include <libint2/shell.h>
 
-#include <iostream>
-#include <cmath>
 #include <algorithm>
 #include <functional>
-#include <map>
 #include <vector>
 
 namespace psi {

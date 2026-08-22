@@ -27,9 +27,6 @@
  */
 
 /** Standard library includes */
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 #include <string>
 #include <vector>
 
