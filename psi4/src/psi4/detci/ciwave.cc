@@ -263,13 +263,13 @@ SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
 
     orbital_locations(orbital_name, start, end);
 
-    auto* spread = new int[nirrep_];
+    auto spread = std::vector<int>(nirrep_);
     for (int h = 0; h < nirrep_; h++) {
         spread[h] = end[h] - start[h];
     }
 
     /// Fill desired orbitals
-    auto retC = std::make_shared<Matrix>("C " + orbital_name, nirrep_, nsopi_, spread);
+    auto retC = std::make_shared<Matrix>("C " + orbital_name, nsopi_, spread);
     for (int h = 0; h < nirrep_; h++) {
         for (int i = start[h], pos = 0; i < end[h]; i++, pos++) {
             C_DCOPY(nsopi_[h], &Ca_->pointer(h)[0][i], nmopi_[h], &retC->pointer(h)[0][pos], spread[h]);
@@ -279,7 +279,6 @@ SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
     /// Cleanup
     delete[] start;
     delete[] end;
-    delete[] spread;
 
     return retC;
 }

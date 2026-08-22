@@ -331,7 +331,7 @@ void OCCWave::get_moinfo() {
         /********************************************************************************************/
         // read orbital coefficients from reference
         Ca_ = SharedMatrix(reference_wavefunction_->Ca());
-        auto Ca_ref = std::make_shared<Matrix>("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_);
+        auto Ca_ref = std::make_shared<Matrix>("Ref alpha MO coefficients", nsopi_, nmopi_);
 
         // read orbital coefficients from external files
         if (read_mo_coeff == "TRUE") {
@@ -635,8 +635,8 @@ void OCCWave::get_moinfo() {
         // read orbital coefficients from reference
         Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
-        auto Ca_ref = std::make_shared<Matrix>("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_);
-        auto Cb_ref = std::make_shared<Matrix>("Ref beta MO coefficients", nirrep_, nsopi_, nmopi_);
+        auto Ca_ref = std::make_shared<Matrix>("Ref alpha MO coefficients", nsopi_, nmopi_);
+        auto Cb_ref = std::make_shared<Matrix>("Ref beta MO coefficients", nsopi_, nmopi_);
 
         // read orbital coefficients from external files
         if (read_mo_coeff == "TRUE") {
