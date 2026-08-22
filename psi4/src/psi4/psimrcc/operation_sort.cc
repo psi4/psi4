@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <cmath>
 
 #include "psi4/libpsi4util/libpsi4util.h"
 

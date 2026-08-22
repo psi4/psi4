@@ -29,7 +29,6 @@
 #include "fcidump_helper.h"
 
 #include <cmath>
-#include <cstdio>
 #include <map>
 #include <memory>
 #include <string>

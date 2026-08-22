@@ -27,8 +27,6 @@
  */
 
 #include <cstdio>
-#include <cstdlib>
-#include <ostream>
 #include <regex>
 #include <sstream>
 #include <iterator>

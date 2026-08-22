@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <cmath>
 
 #include "psi4/psifiles.h"
 #include "psi4/libiwl/iwl.hpp"

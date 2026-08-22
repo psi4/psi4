@@ -30,7 +30,6 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
 #include "iwl.hpp"
 
 namespace psi {

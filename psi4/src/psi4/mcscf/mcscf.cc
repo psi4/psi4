@@ -36,7 +36,6 @@
  */
 
 // Standard libraries
-#include <cstdlib>
 
 // PSI C++ libraries
 #include "psi4/libpsio/psio.hpp"

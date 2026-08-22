@@ -29,7 +29,6 @@
 #include "plugin.h"
 
 #include <algorithm>
-#include <cctype>
 
 #include "psi4/libfilesystem/path.h"
 #include "psi4/liboptions/liboptions.h"

@@ -35,7 +35,6 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include <cmath>
 
 namespace psi {
 namespace libfock {
