@@ -28,6 +28,7 @@
 
 #include <string>
 
+#include "psi4/pybind11.h"
 
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/sobasis.h"
@@ -47,6 +48,7 @@
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
 
+#include "psi4/dmrg/dmrg.h"
 
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
@@ -71,6 +73,7 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+#include <pybind11/functional.h>
 
 void export_wavefunction(py::module& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);

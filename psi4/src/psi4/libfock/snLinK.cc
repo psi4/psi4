@@ -36,12 +36,15 @@
 #include "psi4/libmints/electrostatic.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/pybind11.h"
 
 #include <vector>
+
+#include <libint2.hpp>
 
 using namespace psi;
 namespace py = pybind11;
