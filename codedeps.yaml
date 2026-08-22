@@ -1595,3 +1595,20 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
+
+  - project: molsym
+    use:
+      added: "1.12"
+      required: false
+      required_note: "Allows modular symmetry package for finite difference driver."
+      buildable: false
+      buildtime: false
+      cms: true
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: molsym
+      constraint: ">=1.1.0"
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
