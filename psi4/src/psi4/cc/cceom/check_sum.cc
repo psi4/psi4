@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cmath>
 #include <cstring>
 #include "psi4/libpsio/psio.h"
 #include "Params.h"

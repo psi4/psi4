@@ -33,7 +33,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include <cmath>
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"

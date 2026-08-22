@@ -45,7 +45,6 @@
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
 
-#include <cstdio>
 #include <cstdlib>
 #include <string>
 

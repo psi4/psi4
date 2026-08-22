@@ -35,7 +35,6 @@
       int namps = number of amplitudes to be printed
 */
 #include <cstdio>
-#include <cstdlib>
 #include <cmath>
 #include <vector>
 

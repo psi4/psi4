@@ -31,7 +31,6 @@
     \brief Computes the H-bar SD block contribution of Wmnie to a Sigma vector[i].
 */
 #include <cstdio>
-#include <cmath>
 #include "Params.h"
 #include "globals.h"
 

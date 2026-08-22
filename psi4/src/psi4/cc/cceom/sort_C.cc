@@ -33,7 +33,6 @@
 /* sorts C vectors each iteration to prepare for hbar contractions */
 
 #include <cstdio>
-#include <cmath>
 #include "Params.h"
 #include "globals.h"
 
