@@ -233,11 +233,13 @@ def nbody():
     :param external_potentials: ``{2: [[-0.834, [x, y, z]], ..]}``
 
         External potentials for many-body computations activated by ``bsse_type``. Dictionary values use the usual
-        ``[[charge, [x, y, z]], ..]`` format; keys are 1-based fragment indices. Each value applies only to component
-        calculations in which that fragment has real atoms, so ghost fragments in a CP calculation do not activate
-        their potentials. For example, ``energy('hf', bsse_type='cp', external_potentials={2: potentials_b})`` applies
-        ``potentials_b`` to monomer B and all real-fragment supersystems containing B, but not to real monomer A with
-        ghost B. A list retains the conventional behavior and applies the same external potentials to every component.
+        ``[[charge, [x, y, z]], ..]`` format; keys are 1-based fragment indices. For CP, noCP, and VMFC alike, each
+        value applies only to component calculations in which that fragment has real atoms; a fragment represented
+        only by ghost atoms does not activate its potentials. For example,
+        ``energy('hf', bsse_type='cp', external_potentials={2: potentials_b})`` applies ``potentials_b`` to monomer B
+        and all real-fragment supersystems containing B, but not to real monomer A with ghost B. Potentials assigned
+        to multiple real fragments are combined. A flat list retains the conventional behavior and applies the same
+        external potentials to every component, including components where molecular fragments are ghosts.
 
     Potential QCVariables set are:
 

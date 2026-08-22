@@ -5,7 +5,6 @@ import psi4
 from psi4.driver.driver_nbody import ManyBodyComputer
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.task_planner import task_planner
-from qcmanybody.utils import delabeler
 
 from addons import uusing
 
@@ -111,6 +110,8 @@ def test_nbody_external_potentials_cp_dimer(water_cluster):
 @uusing("qcmanybody")
 def test_nbody_external_potentials_trimer_plan(water_cluster):
     """Verify planning assigns potentials only to tasks containing the target fragment."""
+    from qcmanybody.utils import delabeler
+
     trimer, _, b_external_potential = water_cluster
     plan = task_planner(
         "energy",
