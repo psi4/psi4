@@ -323,10 +323,12 @@ def test_cuest_scf(inp, request):
         'dft_nuclear_scheme': 'stratmann', # To get cuEST and Psi4 to agree exactly for DFT
         'df_basis_scf': 'def2-universal-JKFIT',
         'maxiter': 300,
+        'e_convergence': 10, 
         'd_convergence': 9,
         "puream": True,
         "reference": "rhf",
         'use_cuest': True,
+        'cuest_mixed_precision': False,
     })
 
     # Override with the test-specific options from above

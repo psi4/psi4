@@ -63,6 +63,7 @@
 #endif
 
 #ifdef USING_cuEST
+#include <array>
 #include <cuest.h>
 #include <xc.h>
 #include <cublas_v2.h>
@@ -105,6 +106,44 @@ extern bool brianBuildingNLCGrid;
 #endif
 
 namespace psi {
+
+#ifdef USING_cuEST
+namespace {
+
+struct CuestXCField {
+    const double* component_values;
+    double* accumulated_values;
+    size_t components_per_point;
+};
+
+template <size_t N>
+inline void accumulate_cuest_xc_component(size_t start_point, size_t end_point, double component_weight,
+                                          const std::array<CuestXCField, N>& fields) {
+    for (size_t point = start_point; point < end_point; ++point) {
+        bool finite = true;
+        for (const auto& field : fields) {
+            for (size_t component = 0; component < field.components_per_point; ++component) {
+                if (!std::isfinite(field.component_values[field.components_per_point * point + component])) {
+                    finite = false;
+                    break;
+                }
+            }
+            if (!finite) break;
+        }
+
+        if (finite) {
+            for (const auto& field : fields) {
+                for (size_t component = 0; component < field.components_per_point; ++component) {
+                    const size_t index = field.components_per_point * point + component;
+                    field.accumulated_values[index] += component_weight * field.component_values[index];
+                }
+            }
+        }
+    }
+}
+
+}  // namespace
+#endif
 
 VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
     : options_(options), primary_(primary), functional_(functional) {
@@ -1612,15 +1651,9 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f + start_point,
                             p_f_rho + start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(start_point, end_point, functional->alpha(),
+                                                      std::array{CuestXCField{p_f, p_full_f, 1},
+                                                                 CuestXCField{p_f_rho, p_full_f_rho, 1}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -1636,15 +1669,9 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f_rho + start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(start_point, end_point, functional->alpha(),
+                                                      std::array{CuestXCField{p_f, p_full_f, 1},
+                                                                 CuestXCField{p_f_rho, p_full_f_rho, 1}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -1709,17 +1736,10 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f_rho + start_point,
                             p_f_gamma + start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1}, CuestXCField{p_f_rho, p_full_f_rho, 1},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 1}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -1737,17 +1757,10 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f_gamma + start_point);
     
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1}, CuestXCField{p_f_rho, p_full_f_rho, 1},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 1}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -1831,19 +1844,12 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             nullptr,
                             p_f_tau + start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                                p_full_f_tau[i] += p_f_tau[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1},
+                                       CuestXCField{p_f_rho, p_full_f_rho, 1},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 1},
+                                       CuestXCField{p_f_tau, p_full_f_tau, 1}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -1865,19 +1871,12 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f_tau + start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                                p_full_f_tau[i] += p_f_tau[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1},
+                                       CuestXCField{p_f_rho, p_full_f_rho, 1},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 1},
+                                       CuestXCField{p_f_tau, p_full_f_tau, 1}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -2925,15 +2924,9 @@ SharedMatrix RV::compute_gradient() {
                             p_f + start_point,
                             p_f_rho + start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(start_point, end_point, functional->alpha(),
+                                                      std::array{CuestXCField{p_f, p_full_f, 1},
+                                                                 CuestXCField{p_f_rho, p_full_f_rho, 1}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -2949,15 +2942,9 @@ SharedMatrix RV::compute_gradient() {
                             p_f_rho + start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(start_point, end_point, functional->alpha(),
+                                                      std::array{CuestXCField{p_f, p_full_f, 1},
+                                                                 CuestXCField{p_f_rho, p_full_f_rho, 1}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -3022,17 +3009,10 @@ SharedMatrix RV::compute_gradient() {
                             p_f_rho + start_point,
                             p_f_gamma + start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1}, CuestXCField{p_f_rho, p_full_f_rho, 1},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 1}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -3050,17 +3030,10 @@ SharedMatrix RV::compute_gradient() {
                             p_f_gamma + start_point);
     
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1}, CuestXCField{p_f_rho, p_full_f_rho, 1},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 1}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -3144,19 +3117,12 @@ SharedMatrix RV::compute_gradient() {
                             nullptr,
                             p_f_tau + start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                                p_full_f_tau[i] += p_f_tau[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1},
+                                       CuestXCField{p_f_rho, p_full_f_rho, 1},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 1},
+                                       CuestXCField{p_f_tau, p_full_f_tau, 1}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -3178,19 +3144,12 @@ SharedMatrix RV::compute_gradient() {
                             p_f_tau + start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[i])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[i] += p_f_rho[i];
-                                p_full_f_gamma[i] += p_f_gamma[i];
-                                p_full_f_tau[i] += p_f_tau[i];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1},
+                                       CuestXCField{p_f_rho, p_full_f_rho, 1},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 1},
+                                       CuestXCField{p_f_tau, p_full_f_tau, 1}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -4245,17 +4204,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f + start_point,
                             p_f_rho + 2 *start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                            }
-                        }
+                        accumulate_cuest_xc_component(start_point, end_point, functional->alpha(),
+                                                      std::array{CuestXCField{p_f, p_full_f, 1},
+                                                                 CuestXCField{p_f_rho, p_full_f_rho, 2}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -4271,17 +4222,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f_rho + 2 * start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                            }
-                        }
+                        accumulate_cuest_xc_component(start_point, end_point, functional->alpha(),
+                                                      std::array{CuestXCField{p_f, p_full_f, 1},
+                                                                 CuestXCField{p_f_rho, p_full_f_rho, 2}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -4364,23 +4307,10 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f_rho + 2 *start_point,
                             p_f_gamma + 3 * start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1}, CuestXCField{p_f_rho, p_full_f_rho, 2},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 3}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -4398,23 +4328,10 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f_gamma + 3 * start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1}, CuestXCField{p_f_rho, p_full_f_rho, 2},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 3}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -4522,27 +4439,12 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             nullptr,
                             p_f_tau + 2 * start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[2 * i + 1])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                                p_full_f_tau[2 * i + 0] += p_f_tau[2 * i + 0];
-                                p_full_f_tau[2 * i + 1] += p_f_tau[2 * i + 1];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1},
+                                       CuestXCField{p_f_rho, p_full_f_rho, 2},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 3},
+                                       CuestXCField{p_f_tau, p_full_f_tau, 2}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -4567,27 +4469,12 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                             p_f_tau + 2 * start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[2 * i + 1])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                                p_full_f_tau[2 * i + 0] += p_f_tau[2 * i + 0];
-                                p_full_f_tau[2 * i + 1] += p_f_tau[2 * i + 1];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1},
+                                       CuestXCField{p_f_rho, p_full_f_rho, 2},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 3},
+                                       CuestXCField{p_f_tau, p_full_f_tau, 2}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -6182,17 +6069,9 @@ SharedMatrix UV::compute_gradient() {
                             p_f + start_point,
                             p_f_rho + 2 *start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                            }
-                        }
+                        accumulate_cuest_xc_component(start_point, end_point, functional->alpha(),
+                                                      std::array{CuestXCField{p_f, p_full_f, 1},
+                                                                 CuestXCField{p_f_rho, p_full_f_rho, 2}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -6208,17 +6087,9 @@ SharedMatrix UV::compute_gradient() {
                             p_f_rho + 2 * start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                            }
-                        }
+                        accumulate_cuest_xc_component(start_point, end_point, functional->alpha(),
+                                                      std::array{CuestXCField{p_f, p_full_f, 1},
+                                                                 CuestXCField{p_f_rho, p_full_f_rho, 2}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -6301,23 +6172,10 @@ SharedMatrix UV::compute_gradient() {
                             p_f_rho + 2 *start_point,
                             p_f_gamma + 3 * start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1}, CuestXCField{p_f_rho, p_full_f_rho, 2},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 3}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -6335,23 +6193,10 @@ SharedMatrix UV::compute_gradient() {
                             p_f_gamma + 3 * start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1}, CuestXCField{p_f_rho, p_full_f_rho, 2},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 3}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
@@ -6459,27 +6304,12 @@ SharedMatrix UV::compute_gradient() {
                             nullptr,
                             p_f_tau + 2 * start_point);
                         // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[2 * i + 1])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                                p_full_f_tau[2 * i + 0] += p_f_tau[2 * i + 0];
-                                p_full_f_tau[2 * i + 1] += p_f_tau[2 * i + 1];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1},
+                                       CuestXCField{p_f_rho, p_full_f_rho, 2},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 3},
+                                       CuestXCField{p_f_tau, p_full_f_tau, 2}});
                     }
                     // => Correlation contribution(s) <= //
                     for (const auto& functional : functional_->c_functionals()) {
@@ -6504,27 +6334,12 @@ SharedMatrix UV::compute_gradient() {
                             p_f_tau + 2 * start_point);
 
                         // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
-                        for (size_t i = start_point; i < end_point; i++) {
-                            bool nan_found = false;
-                            if (!std::isfinite(p_f[i])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_rho[2 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 1])) nan_found = true;
-                            if (!std::isfinite(p_f_gamma[3 * i + 2])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[2 * i + 0])) nan_found = true;
-                            if (!std::isfinite(p_f_tau[2 * i + 1])) nan_found = true;
-                            if (!nan_found) {
-                                p_full_f[i] += p_f[i];
-                                p_full_f_rho[2 * i + 0] += p_f_rho[2 * i + 0];
-                                p_full_f_rho[2 * i + 1] += p_f_rho[2 * i + 1];
-                                p_full_f_gamma[3 * i + 0] += p_f_gamma[3 * i + 0];
-                                p_full_f_gamma[3 * i + 1] += p_f_gamma[3 * i + 1];
-                                p_full_f_gamma[3 * i + 2] += p_f_gamma[3 * i + 2];
-                                p_full_f_tau[2 * i + 0] += p_f_tau[2 * i + 0];
-                                p_full_f_tau[2 * i + 1] += p_f_tau[2 * i + 1];
-                            }
-                        }
+                        accumulate_cuest_xc_component(
+                            start_point, end_point, functional->alpha(),
+                            std::array{CuestXCField{p_f, p_full_f, 1},
+                                       CuestXCField{p_f_rho, p_full_f_rho, 2},
+                                       CuestXCField{p_f_gamma, p_full_f_gamma, 3},
+                                       CuestXCField{p_f_tau, p_full_f_tau, 2}});
                     }
                     for (int point = start_point; point < end_point; point++) {
                         double w = p_weights[point];
