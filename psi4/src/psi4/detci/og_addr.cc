@@ -39,7 +39,6 @@
 **
 */
 
-#include <cstdio>
 #include "psi4/psi4-dec.h"
 #include "psi4/detci/structs.h"
 

@@ -30,16 +30,11 @@
     \ingroup ccresponse
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstring>
 #include <string>
-#include <cmath>
-#include <cstdlib>
 
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/psifiles.h"
 #include "psi4/physconst.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"

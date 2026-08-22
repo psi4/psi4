@@ -33,9 +33,7 @@
 #include <cstdio>
 #include <cmath>
 #include "psi4/libpsio/psio.h"
-#include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {

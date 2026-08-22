@@ -35,9 +35,7 @@
 #include "jk.h"
 #include "SplitJK.h"
 
-#include <unordered_set>
 #include <vector>
-#include <map>
 #include <algorithm>
 #ifdef _OPENMP
 #include <omp.h>

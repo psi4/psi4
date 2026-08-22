@@ -28,8 +28,6 @@
 
 #include "dct.h"
 #include "psi4/psifiles.h"
-#include <vector>
-#include <cmath>
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libtrans/integraltransform.h"

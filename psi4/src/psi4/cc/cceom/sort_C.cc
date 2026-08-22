@@ -33,15 +33,11 @@
 /* sorts C vectors each iteration to prepare for hbar contractions */
 
 #include <cstdio>
-#include <cmath>
-#include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {
 namespace cceom {
-#include "psi4/physconst.h"
 
 void sort_C(int C_index, int C_irr) {
     dpdbuf4 CMNEF, Cmnef, CMnEf, CMnfE, CMneF, C2;

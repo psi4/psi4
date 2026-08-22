@@ -30,10 +30,8 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libqt/qt.h"
 #include "dpd.h"
 
 namespace psi {

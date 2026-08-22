@@ -29,7 +29,6 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libciomr/libciomr.h"
 
 #include <libint2/engine.h>
 

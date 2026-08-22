@@ -34,31 +34,25 @@
 #include <libint2/shell.h>
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/psifiles.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #include "vector3.h"
 #include "molecule.h"
 #include "basisset.h"
-#include "dimension.h"
 #include "sobasis.h"
 #include "integral.h"
 #include "gshell.h"
-#include "factory.h"
-#include "pointgrp.h"
 #include "wavefunction.h"
 #include "coordentry.h"
 #include "psi4/libpsi4util/process.h"
 
 #include <memory>
 #include <regex>
-#include <stdexcept>
 #include <cstdio>
 #include <iomanip>
 #include <cstdlib>
 #include <cmath>
 #include <map>
-#include <list>
 
 using namespace psi;
 

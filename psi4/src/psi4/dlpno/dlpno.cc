@@ -30,7 +30,6 @@
 #include "sparse.h"
 
 #include "psi4/lib3index/3index.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
 #include "psi4/libmints/basisset.h"
@@ -42,7 +41,6 @@
 #include "psi4/libmints/orthog.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libqt/qt.h"
 

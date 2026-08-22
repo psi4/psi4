@@ -36,22 +36,13 @@
 #include "psi4/libmints/electrostatic.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/pybind11.h"
 
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <tuple>
-#include <unordered_set>
-#include <variant>
 #include <vector>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <libint2.hpp>
 

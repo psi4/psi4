@@ -57,7 +57,6 @@
 #include <cstdio>
 #include <fstream>
 #include <algorithm>
-#include <cctype>
 #include <sstream>
 #include <string>
 #include <regex>

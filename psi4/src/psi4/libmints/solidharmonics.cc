@@ -34,7 +34,6 @@
 #include <libint2/config.h>
 
 #include "matrix.h"
-#include "integral.h"
 
 using namespace psi;
 

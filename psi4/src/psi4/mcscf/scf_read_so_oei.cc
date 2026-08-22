@@ -30,18 +30,12 @@
 #define MIN(i, j) ((i > j) ? j : i)
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 
-#include <iostream>
 
-#include "psi4/psifiles.h"
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/factory.h"
 #include "psi4/libmints/mintshelper.h"
 
 extern FILE* outfile;

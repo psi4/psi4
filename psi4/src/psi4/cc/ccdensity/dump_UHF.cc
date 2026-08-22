@@ -30,15 +30,11 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #include "globals.h"
 
 namespace psi {

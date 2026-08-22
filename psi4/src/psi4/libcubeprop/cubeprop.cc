@@ -28,13 +28,11 @@
 
 #include "psi4/psi4-dec.h"
 
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
 
@@ -42,10 +40,6 @@
 #include "csg.h"
 
 #include <tuple>
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 namespace psi {
 

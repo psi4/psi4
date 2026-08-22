@@ -38,7 +38,6 @@
  *  @brief Contains all the methods to compute the energy
  */
 
-#include <cstdlib>
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmoinfo/libmoinfo.h"

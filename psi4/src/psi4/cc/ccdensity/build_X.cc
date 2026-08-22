@@ -35,7 +35,6 @@
 
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #include "globals.h"
 
 #include <cmath>

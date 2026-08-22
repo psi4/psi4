@@ -27,16 +27,12 @@
  */
 
 #include <cstdlib>
-#include <cmath>
 #include <iomanip>
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
 #include <cstring>
 #include <regex>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <climits>
 
 #include "libpsi4util.h"
 

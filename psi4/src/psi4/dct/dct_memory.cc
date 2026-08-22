@@ -31,12 +31,10 @@
 #include <vector>
 #include <cmath>
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libtrans/mospace.h"
 #include "psi4/libdpd/dpd.h"
 
 namespace psi {

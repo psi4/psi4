@@ -65,11 +65,6 @@
 
 #include "psi4/fisapt/fisapt.h"
 
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
-
-#include "psi4/libdiis/diismanager.h"
-
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
 #endif

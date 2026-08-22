@@ -43,7 +43,6 @@
 // positional cases below (first/second/second-to-last/last bucket fully
 // filtered, plus all-filtered and interleaved) pin that behavior down.
 
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -54,7 +53,6 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
 // Hosting globals (`outfile`, `restart_id`, `psi_file_prefix`, `global_dpd_`)
 // live in test/stubs.cc; the link line pulls that TU in.

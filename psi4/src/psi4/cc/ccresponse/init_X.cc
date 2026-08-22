@@ -31,10 +31,8 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstring>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsio/psio.h"
-#include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
 #include "globals.h"

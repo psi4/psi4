@@ -31,13 +31,9 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cmath>
 #include <cstring>
 #include "psi4/libpsio/psio.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {

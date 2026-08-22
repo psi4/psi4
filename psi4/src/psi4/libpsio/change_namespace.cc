@@ -34,11 +34,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/pragma.h"
-#include <memory>
-#include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/psi4-dec.h"
 namespace psi {
 
 void PSIO::change_file_namespace(size_t unit, const std::string& ns1, const std::string& ns2) {

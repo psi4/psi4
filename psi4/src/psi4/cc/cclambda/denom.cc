@@ -30,8 +30,6 @@
     \ingroup CCLAMBDA
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstring>
 #include "psi4/libdpd/dpd.h"
 #include "cclambda.h"
 #include "MOInfo.h"

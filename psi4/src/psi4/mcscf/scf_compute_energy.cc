@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <iostream>
 #include <cstdio>
 #include "scf.h"
 

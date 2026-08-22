@@ -31,14 +31,12 @@
     \brief Enter brief description of file here
 */
 #include <cstdlib>
-#include <cstdio>
 #include <cmath>
 #include <cstring>
 #include <sstream>
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libciomr/libciomr.h"
-#include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
 #include "globals.h"

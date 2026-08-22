@@ -30,18 +30,13 @@
 
 #include "dfocc.h"
 
-#include "psi4/psifiles.h"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/molecule.h"
 
-#include <fstream>
 
 namespace psi {
 namespace dfoccwave {

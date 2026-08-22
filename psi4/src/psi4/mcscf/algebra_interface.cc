@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "algebra_interface.h"
 
 namespace psi {

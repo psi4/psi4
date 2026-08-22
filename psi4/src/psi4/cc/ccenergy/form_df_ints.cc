@@ -39,7 +39,6 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libtrans/mospace.h"
 #include "psi4/lib3index/3index.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"

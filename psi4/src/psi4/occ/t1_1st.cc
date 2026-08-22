@@ -27,7 +27,6 @@
  */
 
 #include "psi4/libtrans/integraltransform.h"
-#include "defines.h"
 #include "occwave.h"
 #include "psi4/libmints/matrix.h"
 

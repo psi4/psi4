@@ -44,11 +44,9 @@
 */
 
 #include <cstdlib>
-#include <cstdio>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 
-#include <iostream>
 #include "psi4/detci/odometer.h"
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/structs.h"

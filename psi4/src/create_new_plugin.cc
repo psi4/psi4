@@ -27,14 +27,11 @@
  */
 
 #include <cstdio>
-#include <cstdlib>
-#include <ostream>
 #include <regex>
 #include <sstream>
 #include <iterator>
 #include <string>
 
-#include "psi4/psi4-dec.h"
 
 #include "psi4/libfilesystem/path.h"
 #include "psi4/libpsi4util/libpsi4util.h"

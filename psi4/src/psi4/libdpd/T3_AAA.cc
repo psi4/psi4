@@ -86,13 +86,10 @@
 ** TDC, July 2004
 */
 
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cmath>
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/psifiles.h"
 
 namespace psi {
 

@@ -41,9 +41,7 @@
 ** February 1996
 */
 
-#include <cstdio>
 #include <cmath>
-#include "psi4/detci/structs.h"
 #include "psi4/detci/ci_tol.h"
 
 namespace psi {

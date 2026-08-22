@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "defines.h"
 #include "dfocc.h"
 
 #include <cmath>

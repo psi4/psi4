@@ -28,10 +28,7 @@
 #include "psi4/libmints/electricfield.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include <stdexcept>
 #include <vector>
-#include "psi4/libciomr/libciomr.h"
 
 #include <libint2/engine.h>
 

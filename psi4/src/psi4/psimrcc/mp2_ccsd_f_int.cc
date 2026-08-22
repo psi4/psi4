@@ -26,11 +26,8 @@
  * @END LICENSE
  */
 
-#include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "mp2_ccsd.h"
-#include "matrix.h"
 #include "blas.h"
 
 namespace psi {

@@ -32,7 +32,6 @@
 #include "occwave.h"
 #include "defines.h"
 
-#include <cmath>
 
 namespace psi {
 namespace occwave {

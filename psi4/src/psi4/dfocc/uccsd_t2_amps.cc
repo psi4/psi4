@@ -27,7 +27,6 @@
  */
 
 #include "psi4/libmints/matrix.h"
-#include "psi4/libdiis/diismanager.h"
 #include "dfocc.h"
 
 namespace psi{
