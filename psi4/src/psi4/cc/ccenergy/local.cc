@@ -42,10 +42,8 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
 
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cmath>
 
 namespace psi {
 namespace ccenergy {

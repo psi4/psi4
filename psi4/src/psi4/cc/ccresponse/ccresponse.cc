@@ -34,10 +34,7 @@
 **  ccresponse: Program to compute CC linear response properties.
 */
 
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
-#include <cmath>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"

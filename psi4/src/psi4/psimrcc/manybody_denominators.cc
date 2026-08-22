@@ -32,7 +32,6 @@
  *  @brief The base class for all the many-body methods
  */
 
-#include <cmath>
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/libpsi4util.h"

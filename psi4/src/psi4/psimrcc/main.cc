@@ -41,7 +41,6 @@
 
 #include "psi4/psi4-dec.h"
 // Standard libraries
-#include <cstdlib>
 
 // PSI libraries
 #include "psi4/liboptions/liboptions.h"

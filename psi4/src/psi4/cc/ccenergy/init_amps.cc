@@ -37,8 +37,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libdpd/dpd.h"
 
-#include <cstdio>
-#include <cstdlib>
 
 namespace psi {
 namespace ccenergy {

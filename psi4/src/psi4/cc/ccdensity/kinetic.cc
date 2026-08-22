@@ -30,8 +30,6 @@
     \ingroup CCDENSITY
     \brief Computes the kinetic energy and the virial ratio for CC wave functions.
 */
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/mintshelper.h"

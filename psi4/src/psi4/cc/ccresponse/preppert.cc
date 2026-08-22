@@ -30,9 +30,6 @@
     \ingroup ccresponse
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/basisset.h"

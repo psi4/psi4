@@ -35,10 +35,7 @@
 **             two-particle densities.
 */
 
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
-#include <cmath>
 #include "ccdensity.h"
 #include "MOInfo.h"
 #include "Params.h"

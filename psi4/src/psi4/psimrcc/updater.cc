@@ -35,7 +35,6 @@
 #include <vector>
 //#include <string>
 //
-#include <cstdio>
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
 

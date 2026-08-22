@@ -34,7 +34,6 @@
 
 #include <iostream>
 #include <cstdio>
-#include <cmath>
 
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"

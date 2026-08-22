@@ -31,9 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
 
 #include "psi4/libpsi4util/process.h"
 #include "psi4/psifiles.h"

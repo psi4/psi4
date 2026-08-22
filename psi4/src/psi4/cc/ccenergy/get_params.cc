@@ -39,10 +39,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
 
-#include <cstdio>
-#include <cstdlib>
 #include <string>
-#include <cmath>
 
 namespace psi {
 namespace ccenergy {

@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdlib>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libmoinfo/libmoinfo.h"

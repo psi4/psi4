@@ -30,8 +30,6 @@
     \ingroup CCENERGY
     \brief Print and compute pair energies.
 */
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
 #include "Params.h"

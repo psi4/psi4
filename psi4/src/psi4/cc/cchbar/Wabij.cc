@@ -30,8 +30,6 @@
     \ingroup CCHBAR
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
 #include <string>
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"
