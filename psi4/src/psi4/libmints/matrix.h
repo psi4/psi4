@@ -75,23 +75,23 @@ enum diagonalize_order { evals_only_ascending = 0, ascending = 1, evals_only_des
 namespace linalg {
 /**
  * Horizontally concatenate matrices
- * @param mats std::vector of Matrix objects to concatenate
+ * @param mats `std::vector` of Matrix objects to concatenate
  */
 PSI_API
 SharedMatrix horzcat(const std::vector<SharedMatrix>& mats);
 
 /**
  * Vertically concatenate matrices
- * @param mats std::vector of Matrix objects to concatenate
+ * @param mats `std::vector` of Matrix objects to concatenate
  */
 PSI_API
 SharedMatrix vertcat(const std::vector<SharedMatrix>& mats);
 
-/** Simple doublet GEMM with on-the-fly allocation
- * \param A The first matrix
- * \param B The second matrix
- * \param transA Transpose the first matrix
- * \param transB Transpose the second matrix
+/** Simple doublet GEMM with on-the-fly allocation.
+ * @param A The first matrix
+ * @param B The second matrix
+ * @param transA Transpose the first matrix
+ * @param transB Transpose the second matrix
  */
 
 PSI_API
@@ -99,13 +99,13 @@ SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA =
 
 Matrix doublet(const Matrix& A, const Matrix& B, bool transA = false, bool transB = false);
 
-/** Simple triplet GEMM with on-the-fly allocation
- * \param A The first matrix
- * \param B The second matrix
- * \param C The third matrix
- * \param transA Transpose the first matrix
- * \param transB Transpose the second matrix
- * \param transC Transpose the third matrix
+/** Simple triplet GEMM with on-the-fly allocation.
+ * @param A The first matrix
+ * @param B The second matrix
+ * @param C The third matrix
+ * @param transA Transpose the first matrix
+ * @param transB Transpose the second matrix
+ * @param transC Transpose the third matrix
  */
 PSI_API
 SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false,
@@ -114,14 +114,14 @@ SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedM
 Matrix triplet(const Matrix&A, const Matrix& B, const Matrix& C, bool transA = false, bool transB = false, bool transC = false);
 
 namespace detail {
-/*!
- * allocate a block matrix -- analogous to libciomr's block_matrix
+/**
+ * Allocate a block matrix -- analogous to psi::block_matrix in `libciomr`.
  */
 PSI_API
 double** matrix(int nrow, int ncol);
 
-/*!
- * free a (block) matrix -- analogous to libciomr's free_block
+/**
+ * Free a (block) matrix -- analogous to psi::free_block in `libciomr`.
  */
 PSI_API
 void free(double** Block);
@@ -132,14 +132,14 @@ void free(double** Block);
  *  \class Matrix
  *  \brief Makes using matrices just a little easier.
  *
- * Using a matrix factory makes creating these a breeze.
+ * Using a MatrixFactory makes creating these a breeze.
  */
 class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
    protected:
     /// Matrix data
-    double*** matrix_;
+    double*** matrix_ = nullptr;
     /// Number of irreps
-    int nirrep_;
+    int nirrep_ = 0;
     /// Rows per irrep array. Element "h" is associated with matrix block h.
     Dimension rowspi_;
     /// Columns per irrep array. Element "h" is associated with matrix block h ^ symmetry_.
@@ -147,87 +147,157 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// Name of the matrix
     std::string name_;
     /// Symmetry of this matrix (in most cases this will be 0 [totally symmetric])
-    int symmetry_;
+    int symmetry_ = 0;
 
-    /// Allocates matrix_
+    /// Allocates #matrix_
     void alloc();
-    /// Release matrix_
+    /// Release #matrix_
     void release();
 
-    /// Copies data from the passed matrix to this matrix_
+    /// Copies data from the passed Matrix to `this`.
     void copy_from(double***);
 
     void print_mat(const double* const* const a, int m, int n, std::string out) const;
 
-    /// Numpy Shape
+    /// Used for converting to NumPy ndarray.
     std::vector<int> numpy_shape_;
 
    public:
-    /// Default constructor, zeros everything out
-    Matrix();
-    /**
-     * Constructor, zeros everything out, sets name_
-     *
-     * @param name Name of the matrix, used in saving and printing.
-     */
+    /// Default constructor, zeros everything out.
+    Matrix() = default;
+    /// Constructor with name, zeros everything out.
+    /// @param name Name of the matrix, used in saving and printing.
+    /// @param symmetry Overall symmetry of the data.
     Matrix(const std::string& name, int symmetry = 0);
-    /// copy reference constructor
+    /// Reference copy constructor.
     Matrix(const Matrix& copy);
+    /// Copy assignment operator.
     Matrix& operator=(const Matrix& copy);
-    /// Explicit shared point copy constructor
+    /// Move constructor.
+    Matrix(Matrix&& move) noexcept;
+    /// Move assignment operator.
+    Matrix& operator=(Matrix&& move) noexcept;
+    /// Explicit \c shared_ptr copy constructor.
     explicit Matrix(const SharedMatrix& copy);
-    /// copy pointer constructor
+    /// Explicit pointer copy constructor.
     explicit Matrix(const Matrix* copy);
     /**
-     * Constructor, sets up the matrix
+     * Int pointer Matrix constructor without name.
+     * @deprecated Use Dimension instead of int pointers.
      *
      * @param nirrep Number of blocks.
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
+    PSI_DEPRECATED("Matrix construction via int* is being deprecated and will be removed as soon as 1.13.")
     Matrix(int nirrep, const int* rowspi, const int* colspi, int symmetry = 0);
     /**
-     * Constructor, sets name_, and sets up the matrix
+     * Int pointer Matrix constructor with name.
+     * @deprecated Use Dimension instead of int pointers.
      *
      * @param name Name of the matrix.
      * @param nirrep Number of blocks.
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
+    PSI_DEPRECATED("Matrix construction via int* is being deprecated and will be removed as soon as 1.13.")
     Matrix(const std::string& name, int nirrep, const int* rowspi, const int* colspi, int symmetry = 0);
     /**
-     * Constructor, forms non-standard matrix.
+     * @brief Int pointer Matrix constructor of non-standard form.
+     * @deprecated Use Dimension instead of int pointers.
+     *
      * @param nirrep Number of blocks.
      * @param rows Singular value. All blocks have same number of rows.
      * @param colspi Array of length nirreps. Defines blocking scheme for columns.
      */
+    PSI_DEPRECATED("Matrix construction via int* is being deprecated and will be removed as soon as 1.13.")
     Matrix(int nirrep, int rows, const int* colspi);
 
     /**
-     * Constructor, forms non-standard matrix.
+     * Int pointer Matrix constructor of non-standard form.
+     * @deprecated Use Dimension instead of int pointers.
+     *
      * @param nirrep Number of blocks.
      * @param rowspi Array of length nirreps. Defines blocking scheme for rows.
      * @param cols Singular value. All blocks have same number of columns.
      */
+    PSI_DEPRECATED("Matrix construction via int* is being deprecated and will be removed as soon as 1.13.")
     Matrix(int nirrep, const int* rowspi, int cols);
 
     /**
-     * Constructor, sets up the matrix
-     * Convenience case for 1 irrep
+     * Matrix constructor for one irrep.
      *
      * @param rows Row dimensionality.
      * @param cols Column dimensionality.
      */
     Matrix(int rows, int cols);
     /**
-     * Constructor, sets up the matrix
-     * Convenience case for 1 irrep
+     * Matrix constructor for one irrep.
      *
      * @param name Name of the matrix.
      * @param rows Row dimensionality.
      * @param cols Column dimensionality.
      */
     Matrix(const std::string& name, int rows, int cols);
+
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param name Name of the matrix.
+     * @param rows Dimension object providing row information.
+     * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry = 0);
+
+    /**
+     * Matrix constructor using Dimension without name.
+     *
+     * @param rows Dimension object providing row information.
+     * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
+
+    /**
+     * Matrix constructor using Dimension with name.
+     *
+     * @param name Name of the matrix.
+     * @param rows Dimension object providing row information.
+     * @param cols Singular value. All blocks have same number of columns.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const std::string& name, const Dimension& rows, const int cols, int symmetry = 0);
+
+    /**
+     * Matrix constructor using Dimension without name for non-standard shape.
+     *
+     * @param rows Dimension object providing row information.
+     * @param cols Singular value. All blocks have same number of columns.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const Dimension& rows, const int cols, int symmetry = 0)
+        : Matrix("", rows, cols, symmetry) {};
+
+    /**
+     * Matrix constructor using Dimension with name for non-standard shape.
+     *
+     * @param name Name of the matrix.
+     * @param rows Singular value. All blocks have same number of rows.
+     * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const std::string& name, const int rows, const Dimension& cols, int symmetry = 0);
+
+    /**
+     * Matrix constructor using Dimension without name for non-standard shape.
+     *
+     * @param rows Singular value. All blocks have same number of rows.
+     * @param cols Dimension object providing column information.
+     * @param symmetry overall symmetry of the data.
+     */
+    Matrix(const int rows, const Dimension& cols, int symmetry = 0)
+        : Matrix("", rows, cols, symmetry) {};
 
     /**
      * Contructs a Matrix from a dpdfile2
@@ -242,25 +312,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param inBuf dpdbuf4 object to replicate (must already be initialized).
      */
     Matrix(dpdbuf4* inBuf);
-
-    /**
-     * Constructor using Dimension objects to define order and dimensionality.
-     *
-     * @param name Name of the matrix.
-     * @param rows Dimension object providing row information.
-     * @param cols Dimension object providing column information.
-     * @param symmetry overall symmetry of the data.
-     */
-    Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry = 0);
-
-    /**
-     * Constructor using Dimension objects to define order and dimensionality.
-     *
-     * @param rows Dimension object providing row information.
-     * @param cols Dimension object providing column information.
-     * @param symmetry overall symmetry of the data.
-     */
-    Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
     /// Destructor, frees memory
     virtual ~Matrix();
