@@ -30,7 +30,6 @@
     \ingroup CCHBAR
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include <string>
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"

@@ -30,7 +30,6 @@
     \ingroup CCLAMBDA
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include "cclambda.h"
 #include "Params.h"
 #include "globals.h"
