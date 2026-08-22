@@ -229,6 +229,16 @@ def nbody():
         Add atom-centered point charges for fragments whose basis sets are not included in the computation.
         Starting in v1.10, set :envvar:`QCMANYBODY_EMBEDDING_CHARGES` =1 to access this functionality.
 
+    :type external_potentials: list or dict
+    :param external_potentials: ``{2: [[-0.834, [x, y, z]], ..]}``
+
+        External potentials for many-body computations activated by ``bsse_type``. Dictionary values use the usual
+        ``[[charge, [x, y, z]], ..]`` format; keys are 1-based fragment indices. Each value applies only to component
+        calculations in which that fragment has real atoms, so ghost fragments in a CP calculation do not activate
+        their potentials. For example, ``energy('hf', bsse_type='cp', external_potentials={2: potentials_b})`` applies
+        ``potentials_b`` to monomer B and all real-fragment supersystems containing B, but not to real monomer A with
+        ghost B. A list retains the conventional behavior and applies the same external potentials to every component.
+
     Potential QCVariables set are:
 
         ptype_size = (1,)/(nat, 3)/(3 * nat, 3 * nat)
@@ -462,6 +472,24 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             **input_model.specification.keywords.model_dump(exclude_unset=True),
             input_data=input_model,  # storage, to reconstitute ManyBodyResult
         )
+
+        external_potentials = keywords["function_kwargs"].get("external_potentials")
+        if isinstance(external_potentials, dict):
+            invalid_keys = [
+                key for key in external_potentials
+                if isinstance(key, bool) or not isinstance(key, int) or not 1 <= key <= computer_model.nfragments
+            ]
+            if invalid_keys:
+                raise ValidationError(
+                    f"external_potentials keys must be 1-indexed fragment integers between 1 and "
+                    f"{computer_model.nfragments}; found {invalid_keys}."
+                )
+        elif external_potentials is not None:
+            logger.warning(
+                "A flat external_potentials list applies to every many-body component calculation. "
+                "Are you sure this is what you want? Use a 1-indexed fragment dictionary to scope potentials."
+            )
+
         nb_per_mc = computer_model.nbodies_per_mc_level
 
         # print("\n<<<  (ZZZ 1) Psi4 harness ManyBodyComputer.from_psi4_task_planner  >>>")
@@ -558,6 +586,15 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
             data = copy.deepcopy(template)
             data["molecule"] = core.Molecule.from_schema(imol.model_dump()) #nonphysical=True
+
+            external_potentials = data["keywords"]["function_kwargs"].get("external_potentials")
+            if isinstance(external_potentials, dict):
+                selected_potentials = [potential for ifr in frag for potential in external_potentials.get(ifr, [])]
+                if selected_potentials:
+                    data["keywords"]["function_kwargs"]["external_potentials"] = selected_potentials
+                else:
+                    data["keywords"]["function_kwargs"].pop("external_potentials")
+
             if self.embedding_charges:
                 charges = imol.extras.pop("embedding_charges")
                 data['keywords']['function_kwargs'].update({'external_potentials': charges})
