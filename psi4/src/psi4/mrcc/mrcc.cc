@@ -30,7 +30,6 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
-#include "psi4/pybind11.h"
 
 #include "psi4/fnocc/frozen_natural_orbitals.h"
 #include "psi4/libciomr/libciomr.h"

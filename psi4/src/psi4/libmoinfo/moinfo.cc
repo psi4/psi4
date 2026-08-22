@@ -27,7 +27,6 @@
  */
 
 // Standard Libraries
-#include <cmath>
 #include <cstdlib>
 #include <cstring>
 

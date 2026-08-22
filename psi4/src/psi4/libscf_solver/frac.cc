@@ -60,7 +60,6 @@
 #include "psi4/libqt/qt.h"
 
 #include <cstdlib>
-#include <cstdio>
 #include <cmath>
 #include <algorithm>
 #include <vector>

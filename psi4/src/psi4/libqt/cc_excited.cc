@@ -34,8 +34,6 @@
 
 #include "psi4/libpsi4util/exception.h"
 
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <string>
 

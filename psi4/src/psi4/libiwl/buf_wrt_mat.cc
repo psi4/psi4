@@ -30,7 +30,6 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
 #include <cmath>
 #include "iwl.h"
 #include "iwl.hpp"
