@@ -30,8 +30,6 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
 #include <cmath>
 #include "dpd.h"
 #include "psi4/psi4-dec.h"

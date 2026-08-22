@@ -30,10 +30,8 @@
     \ingroup CCTRIPLES
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include <cstdlib>
 #include <string>
-#include <cstring>
 
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"

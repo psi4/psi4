@@ -26,9 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"

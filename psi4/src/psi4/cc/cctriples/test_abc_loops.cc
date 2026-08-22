@@ -26,9 +26,7 @@
  * @END LICENSE
  */
 
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"

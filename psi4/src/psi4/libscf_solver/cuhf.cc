@@ -37,9 +37,6 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libpsi4util/process.h"
 
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 #include <vector>
 
 using namespace psi;

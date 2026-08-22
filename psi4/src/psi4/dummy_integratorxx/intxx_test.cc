@@ -26,10 +26,7 @@
  * @END LICENSE
  */
 
-#include <cmath>
-#include <cstdlib>
 
-#include <integratorxx/quadrature.hpp>
 
 #include "psi4/libmints/wavefunction.h"
 

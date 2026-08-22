@@ -26,9 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include "dct.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
