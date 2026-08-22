@@ -34,7 +34,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.h"
 
-#include <cmath>
 
 namespace psi {
 namespace dct {

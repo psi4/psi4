@@ -41,7 +41,6 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include <cctype>
 
 using namespace psi;
 

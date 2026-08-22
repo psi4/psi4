@@ -46,7 +46,6 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 
 namespace psi {
 namespace cctriples {

@@ -31,7 +31,6 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libqt/qt.h"
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 #include "blas.h"

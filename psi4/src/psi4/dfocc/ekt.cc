@@ -27,7 +27,6 @@
  */
 
 // Latest revision on April 38, 2013.
-#include <cstdio>
 #include <cmath>
 #include "ekt.h"
 

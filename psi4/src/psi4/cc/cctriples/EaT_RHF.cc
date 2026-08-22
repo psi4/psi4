@@ -31,7 +31,6 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <cmath>
 #ifdef _OPENMP
 #include <omp.h>
 #endif

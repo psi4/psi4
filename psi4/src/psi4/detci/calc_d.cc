@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 
-#include <cstdio>
 #include <cmath>
 #include "psi4/detci/ci_tol.h"
 #include "psi4/detci/structs.h"

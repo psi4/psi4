@@ -36,7 +36,6 @@
 **
 */
 
-#include <cstdio>
 
 namespace psi {
 namespace detci {

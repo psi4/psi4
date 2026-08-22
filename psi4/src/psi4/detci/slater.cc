@@ -31,7 +31,6 @@
     \brief Some of the Slater determinant routines
 */
 
-#include <cstdio>
 
 namespace psi {
 namespace detci {

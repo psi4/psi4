@@ -47,7 +47,6 @@
 
 */
 
-#include <cstdio>
 
 #include "psi4/detci/ciwave.h"
 

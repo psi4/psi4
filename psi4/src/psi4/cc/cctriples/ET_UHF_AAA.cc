@@ -32,7 +32,6 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <cmath>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
