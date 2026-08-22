@@ -10,7 +10,8 @@ symmetry C1
 
 set {
     reference cghf
-    scf_type pk
+    scf_type direct
+    df_scf_guess false
     e_convergence 1e-9
     basis 3-21g
     relativistic zora
