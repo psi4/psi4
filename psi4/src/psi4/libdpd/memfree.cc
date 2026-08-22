@@ -34,6 +34,5 @@
 ** Function to return number of double words available for allocation.
 */
 
-#include <cstdio>
 
 namespace psi {}
