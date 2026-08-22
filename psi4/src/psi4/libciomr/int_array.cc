@@ -36,7 +36,6 @@
 ** \ingroup CIOMR
 */
 
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>

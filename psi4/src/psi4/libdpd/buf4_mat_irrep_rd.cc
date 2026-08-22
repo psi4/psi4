@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstdlib>
 #include "dpd.h"
 #include "psi4/libpsi4util/exception.h"
 
