@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstring>
 #include <cmath>
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"

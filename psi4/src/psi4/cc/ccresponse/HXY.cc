@@ -34,7 +34,6 @@
 /*! \defgroup ccresponse ccresponse: Coupled-cluster response module */
 
 #include <cstdio>
-#include <cstring>
 #include "psi4/libdpd/dpd.h"
 
 namespace psi {

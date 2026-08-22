@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
 #include <cmath>
 #include <sstream>

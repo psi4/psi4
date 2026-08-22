@@ -38,7 +38,6 @@
   -TDC, August 2009
 */
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"

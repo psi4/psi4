@@ -33,7 +33,6 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <cmath>
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
