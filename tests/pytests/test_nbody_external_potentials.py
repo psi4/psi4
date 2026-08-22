@@ -37,45 +37,80 @@ def water_cluster():
         """
     )
     dimer = trimer.extract_subsets([1, 2])
+    # fmt: off
     b_external_potential = [
         [0.417, (np.array([-2.5628, -0.8269, -1.6696]) / psi4.constants.bohr2angstroms).tolist()],
         [-0.834, (np.array([-1.7899, -0.4027, -1.2768]) / psi4.constants.bohr2angstroms).tolist()],
         [0.417, (np.array([-1.8988, -0.4993, -0.3072]) / psi4.constants.bohr2angstroms).tolist()],
     ]
+    # fmt: on
     return trimer, dimer, b_external_potential
 
 
 @uusing("qcmanybody")
 def test_nbody_external_potentials_nocp_dimer(water_cluster):
+    """Verify fragment potentials yield the manually assembled non-CP interaction energy."""
     _, dimer, b_external_potential = water_cluster
-    psi4.set_options({"basis": "sto-3g", "scf_type": "pk", "e_convergence": 10, "d_convergence": 10})
-
-    mbe_ie = psi4.energy(
-        "hf", molecule=dimer, bsse_type="nocp", external_potentials={2: b_external_potential}
+    psi4.set_options(
+        {
+            "basis": "sto-3g",
+            "scf_type": "pk",
+            "e_convergence": 10,
+            "d_convergence": 10,
+        }
     )
 
-    monomer_a = psi4.core.Molecule.from_schema(dimer.extract_subsets(1).to_schema(dtype=2))
-    monomer_b = psi4.core.Molecule.from_schema(dimer.extract_subsets(2).to_schema(dtype=2))
+    mbe_ie = psi4.energy(
+        "hf",
+        molecule=dimer,
+        bsse_type="nocp",
+        external_potentials={2: b_external_potential},
+    )
+
+    monomer_a = psi4.core.Molecule.from_schema(
+        dimer.extract_subsets(1).to_schema(dtype=2)
+    )
+    monomer_b = psi4.core.Molecule.from_schema(
+        dimer.extract_subsets(2).to_schema(dtype=2)
+    )
     e_a = psi4.energy("hf", molecule=monomer_a)
-    e_b = psi4.energy("hf", molecule=monomer_b, external_potentials=b_external_potential)
+    e_b = psi4.energy(
+        "hf", molecule=monomer_b, external_potentials=b_external_potential
+    )
     supersystem = psi4.core.Molecule.from_schema(dimer.to_schema(dtype=2))
-    e_ab = psi4.energy("hf", molecule=supersystem, external_potentials=b_external_potential)
+    e_ab = psi4.energy(
+        "hf", molecule=supersystem, external_potentials=b_external_potential
+    )
 
     assert mbe_ie == pytest.approx(e_ab - e_a - e_b, abs=1.0e-10)
 
 
 @uusing("qcmanybody")
 def test_nbody_external_potentials_cp_dimer(water_cluster):
+    """Verify fragment potentials propagate through counterpoise-corrected calculations."""
     _, dimer, b_external_potential = water_cluster
-    psi4.set_options({"basis": "sto-3g", "scf_type": "pk", "e_convergence": 10, "d_convergence": 10})
+    psi4.set_options(
+        {
+            "basis": "sto-3g",
+            "scf_type": "pk",
+            "e_convergence": 10,
+            "d_convergence": 10,
+        }
+    )
 
-    cp_ie = psi4.energy("hf", molecule=dimer, bsse_type="cp", external_potentials={2: b_external_potential})
+    cp_ie = psi4.energy(
+        "hf",
+        molecule=dimer,
+        bsse_type="cp",
+        external_potentials={2: b_external_potential},
+    )
 
     assert cp_ie == pytest.approx(-0.005286696523, abs=1.0e-10)
 
 
 @uusing("qcmanybody")
 def test_nbody_external_potentials_trimer_plan(water_cluster):
+    """Verify planning assigns potentials only to tasks containing the target fragment."""
     trimer, _, b_external_potential = water_cluster
     plan = task_planner(
         "energy",
@@ -91,7 +126,9 @@ def test_nbody_external_potentials_trimer_plan(water_cluster):
         _, real_fragments, _ = delabeler(label)
         real_fragments = tuple(real_fragments)
         real_fragments_seen.add(real_fragments)
-        component_potentials = component.keywords["function_kwargs"].get("external_potentials")
+        component_potentials = component.keywords["function_kwargs"].get(
+            "external_potentials"
+        )
         if 2 in real_fragments:
             assert component_potentials == b_external_potential
         else:
@@ -101,5 +138,9 @@ def test_nbody_external_potentials_trimer_plan(water_cluster):
 
     with pytest.raises(ValidationError, match="1-indexed fragment integers"):
         task_planner(
-            "energy", "hf/sto-3g", trimer, bsse_type="nocp", external_potentials={0: b_external_potential}
+            "energy",
+            "hf/sto-3g",
+            trimer,
+            bsse_type="nocp",
+            external_potentials={0: b_external_potential},
         )
