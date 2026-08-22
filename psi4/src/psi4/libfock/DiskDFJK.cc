@@ -316,8 +316,8 @@ bool DiskDFJK::is_core() {
         }
     } else {
         throw PSIEXCEPTION(
-            "Invalid SCF_SUBTYPE option in DiskDFJK! Valid choices of SCF_SUBTYPE for density-fitted JK are AUTO, "
-            "INCORE, and OUT_OF_CORE.");
+            "Invalid SCF_SUBTYPE option in DiskDFJK! Valid choices of SCF_SUBTYPE for the DiskDFJK implementation of "
+            "density-fitted JK are AUTO, INCORE, and OUT_OF_CORE.");
     }
 
     return do_core;
