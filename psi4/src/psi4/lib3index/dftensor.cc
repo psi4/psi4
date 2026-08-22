@@ -34,7 +34,6 @@
 #include <sstream>
 #include <iostream>
 #include <cstdio>
-#include <cctype>
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/basisset.h"

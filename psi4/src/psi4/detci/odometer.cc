@@ -44,7 +44,6 @@
 
 #include "psi4/detci/odometer.h"
 
-#include <cstdio>
 
 namespace psi {
 namespace detci {

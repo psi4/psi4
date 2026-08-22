@@ -28,8 +28,6 @@
 
 #include "dct.h"
 
-#include <cstdio>
-#include <cstdlib>
 
 #include "psi4/libqt/qt.h"
 #include "psi4/liboptions/liboptions.h"
