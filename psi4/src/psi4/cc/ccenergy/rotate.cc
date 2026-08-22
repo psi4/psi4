@@ -45,7 +45,6 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/matrix.h"
 
-#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 

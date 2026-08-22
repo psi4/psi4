@@ -30,8 +30,6 @@
     \ingroup CCENERGY
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include "psi4/cc/ccwave.h"
 namespace psi {
