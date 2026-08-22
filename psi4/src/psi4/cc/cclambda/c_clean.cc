@@ -30,8 +30,6 @@
     \ingroup CCLAMBDA
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cmath>
 #include "MOInfo.h"
 #include "globals.h"
 

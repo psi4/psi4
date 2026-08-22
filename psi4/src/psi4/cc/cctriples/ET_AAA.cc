@@ -33,8 +33,6 @@
 
 /*! \defgroup CCTRIPLES CCTRIPLES: Evaluate triple excitations */
 
-#include <cstdio>
-#include <cmath>
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "globals.h"

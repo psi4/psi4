@@ -30,8 +30,6 @@
     \ingroup CCLAMBDA
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstring>
 #include <string>
 #include <cmath>
 #include "psi4/libqt/qt.h"

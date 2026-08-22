@@ -68,7 +68,6 @@
   -TDC, 4/09, revised 3/15
 */
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
 #include <cmath>
 #include <sstream>

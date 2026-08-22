@@ -52,7 +52,6 @@
 #include "psi4/detci/ciwave.h"
 
 #include <cstdlib>
-#include <cstdio>
 #include <cmath>
 
 namespace psi {
