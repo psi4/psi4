@@ -1,0 +1,122 @@
+#! CGHF spin_square test for O2 triplet (UHF-bootstrapped) and spin-rotated reference.
+#!
+#! CGHF's built-in CORE/SAD guesses collapse O2 to a closed-shell singlet.
+#! We bypass that by bootstrapping from converged UHF MOs, embedding them
+#! into a GHF spinor guess saved as a ComplexWavefunction checkpoint (bare
+#! wfn + set_C is enough), then reading it back via restart_file.
+
+import numpy as np
+from psi4.driver.procrouting.dft import build_superfunctional
+
+# --- O2 triplet via UHF -> CGHF bootstrap -----------------------------------
+mol = psi4.geometry("""
+0 3
+  O
+  O 1 1.1
+symmetry C1
+""")
+
+# Step 1: Converge UHF to get a spin-polarized guess
+psi4.set_options({
+    "basis": "6-31G",
+    "reference": "uhf",
+    "scf_type": "direct",
+    "orbital_optimizer_package": "internal",
+    "e_convergence": 1e-8,
+})
+_, wfn_uhf = psi4.energy("scf", molecule=mol, return_wfn=True)
+
+Ca = wfn_uhf.Ca().to_array()
+Cb = wfn_uhf.Cb().to_array()
+nso = wfn_uhf.nso()
+nalpha = wfn_uhf.nalpha()
+nbeta = wfn_uhf.nbeta()
+nocc = nalpha + nbeta
+
+# Build GHF spinor guess: alpha MOs in top block, beta MOs in bottom block
+C_guess = np.zeros((2 * nso, nocc), dtype=np.complex128)
+C_guess[:nso, :nalpha] = Ca[:, :nalpha]
+C_guess[nso:, nalpha:] = Cb[:, :nbeta]
+
+# Save as a ComplexWavefunction checkpoint (bare wfn + set_C is sufficient;
+# from_file / restart_file only needs C and nelec, both available here).
+psi4.core.clean()
+save_wfn = psi4.core.ComplexWavefunction(mol,
+    psi4.core.BasisSet.build(mol, "ORBITAL", "6-31G"))
+save_wfn.set_C(psi4.core.ComplexMatrix.from_array(C_guess, name="C"))
+checkpoint = "cghf_o2_uhf_guess"
+save_wfn.to_file(checkpoint)
+
+# Step 2: CGHF with the UHF-derived guess
+psi4.core.clean()
+psi4.set_options({
+    "basis": "6-31G",
+    "reference": "cghf",
+    "scf_type": "direct",
+    "df_scf_guess": False,
+    "e_convergence": 1e-8,
+})
+_, wfn = psi4.energy("scf", molecule=mol, return_wfn=True,
+                     restart_file=checkpoint)
+
+ss_ref, mult_ref = wfn.spin_square()
+
+compare_values(2.0, ss_ref, 1, "Spin-squared (triplet)")       #TEST
+compare_values(3.0, mult_ref, 1, "Multiplicity (triplet)")     #TEST
+
+# --- Spin-rotated reference invariance test --------------------------------
+C = wfn.C().to_array()
+C_occ = C[:, :nocc].copy()
+
+# Identify alpha vs beta columns by top/bottom norm
+alpha_norms = np.linalg.norm(C_occ[:nso, :], axis=0)
+beta_norms = np.linalg.norm(C_occ[nso:, :], axis=0)
+alpha_cols = np.where(alpha_norms > beta_norms)[0]
+beta_cols = np.where(beta_norms > alpha_norms)[0]
+
+# Givens rotation: mix one alpha and one beta column
+theta = np.pi / 4
+ia = alpha_cols[0]
+ib = beta_cols[-1]
+
+col_a = C_occ[:, ia].copy()
+col_b = C_occ[:, ib].copy()
+C_occ[:, ia] = np.cos(theta) * col_a - np.sin(theta) * col_b
+C_occ[:, ib] = np.sin(theta) * col_a + np.cos(theta) * col_b
+# D = C_occ @ C_occ^H is unchanged (unitary rotation within occ space)
+
+# Build a fresh CGHF and inject the rotated guess
+psi4.core.clean()
+psi4.set_options({
+    "basis": "6-31G",
+    "reference": "cghf",
+    "scf_type": "direct",
+    "df_scf_guess": False,
+})
+wfn2_base = psi4.core.ComplexWavefunction.build(mol, "6-31G")
+superfunc2, _ = build_superfunctional("hf", False)
+wfn2 = psi4.core.CGHF(wfn2_base, superfunc2)
+
+wfn2.form_H()
+wfn2.form_Shalf()
+wfn2.guess_C(psi4.core.ComplexMatrix.from_array(C_occ, name="rotated Cocc"))
+wfn2.guess()
+
+ss_rot, mult_rot = wfn2.spin_square()
+
+compare_values(ss_ref, ss_rot, 8, "Spin-squared rotated")        #TEST
+compare_values(mult_ref, mult_rot, 8, "Multiplicity rotated")     #TEST
+
+# Verify cross-spin blocks are non-zero in the rotated C
+C_rot = wfn2.C().to_array()
+C_rot_occ = C_rot[:, :nocc]
+
+ia_norm_a = np.linalg.norm(C_rot_occ[:nso, ia])
+ia_norm_b = np.linalg.norm(C_rot_occ[nso:, ia])
+ib_norm_a = np.linalg.norm(C_rot_occ[:nso, ib])
+ib_norm_b = np.linalg.norm(C_rot_occ[nso:, ib])
+
+compare(True, ia_norm_a > 1e-6, "Alpha-col alpha weight non-zero")   #TEST
+compare(True, ia_norm_b > 1e-6, "Alpha-col beta  weight non-zero")   #TEST
+compare(True, ib_norm_a > 1e-6, "Beta-col  alpha weight non-zero")   #TEST
+compare(True, ib_norm_b > 1e-6, "Beta-col  beta  weight non-zero")   #TEST

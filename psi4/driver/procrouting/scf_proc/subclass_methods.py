@@ -14,7 +14,11 @@ def diis_engine_helper(self):
     engines = set()
     if core.get_option('SCF', 'DIIS'):
         engines.add('diis')
-    restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
+    # CGHF/ComplexWavefunction has no same_a_b_orbs/dens (single generalized spinor set).
+    if isinstance(self, core.ComplexWavefunction):
+        restricted_open = False
+    else:
+        restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
     if not restricted_open:
         aediis = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR')
         if aediis != "NONE":
@@ -70,6 +74,33 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
     else:
         return max(gradient_a.absmax(), gradient_b.absmax())
 
+def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
+    gradient = self.form_FDSmSDF(self.F(), self.D())
+
+    if save_fock:
+        if not self.initialized_diis_manager_:
+            storage_policy = StoragePolicy.InCore if self.scf_type() == "DIRECT" else StoragePolicy.OnDisk
+            # closed_shell=False: CGHF's density is the full generalized spinor density
+            # (not RHF's alpha-only doubled convention that needs the A/EDIIS *= 2 factor).
+            self.diis_manager_ = DIIS(max_diis_vectors, "CGHF DIIS vector", RemovalPolicy.LargestError,
+                                      storage_policy, False, engines=diis_engine_helper(self))
+            self.initialized_diis_manager_ = True
+
+        entry = {"target": [self.F()]}
+        if core.get_option('SCF', 'DIIS'):
+            entry["error"] = [gradient]
+        aediis = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR')
+        if aediis != "NONE":
+            entry["densities"] = [self.D()]
+            if aediis == "EDIIS":
+                entry["energy"] = [self.compute_E()]
+        self.diis_manager_.add_entry(entry)
+
+    if self.options().get_bool("DIIS_RMS_ERROR"):
+        return gradient.rms()
+    else:
+        return gradient.absmax()
+
 def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     # Only the inact-act, inact-vir, and act-vir rotations are non-redundant
     dim_zero = core.Dimension(self.nirrep(), "Zero Dim")
@@ -113,6 +144,7 @@ def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> floa
 core.RHF.compute_orbital_gradient = _RHF_orbital_gradient
 core.UHF.compute_orbital_gradient = core.CUHF.compute_orbital_gradient = _UHF_orbital_gradient
 core.ROHF.compute_orbital_gradient = _ROHF_orbital_gradient
+core.CGHF.compute_orbital_gradient = _CGHF_orbital_gradient
 
 def _RHF_diis(self, Dnorm):
     return self.diis_manager_.extrapolate(self.Fa(), Dnorm=Dnorm)
@@ -123,9 +155,13 @@ def _UHF_diis(self, Dnorm):
 def _ROHF_diis(self, Dnorm):
     return self.diis_manager_.extrapolate(self.soFeff(), Dnorm=Dnorm)
 
+def _CGHF_diis(self, Dnorm):
+    return self.diis_manager_.extrapolate(self.F(), Dnorm=Dnorm)
+
 core.RHF.diis = _RHF_diis
 core.UHF.diis = core.CUHF.diis = _UHF_diis
 core.ROHF.diis = _ROHF_diis
+core.CGHF.diis = _CGHF_diis
 
 def _UHF_stability_analysis(self):
     # => Validate options <=

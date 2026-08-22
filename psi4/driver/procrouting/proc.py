@@ -1442,6 +1442,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         wfn = core.UHF(ref_wfn, superfunc)
     elif reference == "CUHF":
         wfn = core.CUHF(ref_wfn, superfunc)
+    elif reference == "CGHF":
+        wfn = core.CGHF(ref_wfn, superfunc)
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
@@ -1757,6 +1759,10 @@ def scf_helper(name, post_scf=True, **kwargs):
     if ref_wfn is not None:
         raise ValidationError("Cannot seed an SCF calculation with a reference wavefunction ('ref_wfn' kwarg).")
 
+    # Directly-supplied guess orbitals (NumPy array, psi4.core.Matrix/ComplexMatrix,
+    # or (Ca, Cb) tuple thereof).
+    guess_C = kwargs.pop('guess_c', None)
+
     # decide if we keep the checkpoint file
     _chkfile = kwargs.get('write_orbitals', True)
     write_checkpoint_file = False
@@ -1795,6 +1801,21 @@ def scf_helper(name, post_scf=True, **kwargs):
                        """further calculations in C1 point group.\n""")
         core.print_out("""  PE geometry must align with POTFILE keyword: """
                        """resetting coordinates with fixed origin and orientation.\n""")
+
+    if core.get_option('SCF', 'REFERENCE') == 'CGHF':
+        user_sym = scf_molecule.symmetry_from_input()
+        if user_sym and user_sym != 'c1':
+            raise ValidationError(
+                f"CGHF does not make use of molecular symmetry: "
+                f"use symmetry c1 (or remove symmetry specification), not {user_sym}.")
+
+        c1_molecule = scf_molecule.clone()
+        c1_molecule.reset_point_group('c1')
+        c1_molecule.update_geometry()
+
+        scf_molecule = c1_molecule
+        core.print_out("""  CGHF does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
 
     # SCF Banner data
     banner = kwargs.pop('banner', None)
@@ -1902,7 +1923,9 @@ def scf_helper(name, post_scf=True, **kwargs):
     # the FIRST scf call
     if cast:
         # Cast is a special case
-        base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
+        base_wfn = core.BaseWavefunction.build(
+            scf_molecule, core.get_global_option('BASIS'),
+            reference=core.get_option('SCF', 'REFERENCE'))
         core.print_out("\n         ---------------------------------------------------------\n")
         if banner:
             core.print_out("         " + banner.center(58))
@@ -1931,43 +1954,89 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out('\n')
 
     # the SECOND scf call
-    base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
+    base_wfn = core.BaseWavefunction.build(
+        scf_molecule, core.get_global_option('BASIS'),
+        reference=core.get_option('SCF', 'REFERENCE'))
     if banner:
         core.print_out("\n         ---------------------------------------------------------\n")
         core.print_out("         " + banner.center(58))
 
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
 
+    # Apply any directly-supplied guess orbitals. The C++ HF::guess()/CGHF::guess()
+    # always prefer guess_Ca_/guess_C_ over the GUESS keyword once set, so this works
+    # regardless of the GUESS option's value and takes priority over GUESS=READ below.
+    # A single array/Matrix/ComplexMatrix is occupied MOs (spin-blocked spinors for
+    # CGHF; alpha-only for a restricted real reference). A (Ca, Cb) tuple supplies
+    # independent alpha/beta occupied MOs for unrestricted/restricted-open references.
+    if guess_C is not None:
+        core.print_out("  SCF guess: user-supplied orbitals (guess_C kwarg).\n\n")
+        if isinstance(scf_wfn, core.ComplexWavefunction):
+            if not isinstance(guess_C, core.ComplexMatrix):
+                guess_C = core.ComplexMatrix.from_array(guess_C, name="C guess")
+            scf_wfn.guess_C(guess_C)
+        elif isinstance(guess_C, tuple):
+            guess_Ca, guess_Cb = guess_C
+            if not isinstance(guess_Ca, core.Matrix):
+                guess_Ca = core.Matrix.from_array(guess_Ca, name="Ca guess")
+            if not isinstance(guess_Cb, core.Matrix):
+                guess_Cb = core.Matrix.from_array(guess_Cb, name="Cb guess")
+            scf_wfn.guess_Ca(guess_Ca)
+            scf_wfn.guess_Cb(guess_Cb)
+        else:
+            if not isinstance(guess_C, core.Matrix):
+                guess_C = core.Matrix.from_array(guess_C, name="Ca guess")
+            scf_wfn.guess_Ca(guess_C)
+
     # The wfn from_file routine adds the npy suffix if needed, but we add it here so that
     # we can use os.path.isfile to query whether the file exists before attempting to read
     read_filename = scf_wfn.get_scratch_filename(180) + '.npy'
     if ((core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename)):
-        old_wfn = core.Wavefunction.from_file(read_filename)
+        if isinstance(scf_wfn, core.ComplexWavefunction):
+            old_wfn = core.ComplexWavefunction.from_file(read_filename)
 
-        Ca_occ = old_wfn.Ca_subset("SO", "OCC")
-        Cb_occ = old_wfn.Cb_subset("SO", "OCC")
+            if old_wfn.molecule().schoenflies_symbol() != scf_molecule.schoenflies_symbol():
+                raise ValidationError("Cannot compute projection of different symmetries.")
 
-        if old_wfn.molecule().schoenflies_symbol() != scf_molecule.schoenflies_symbol():
-            raise ValidationError("Cannot compute projection of different symmetries.")
+            if old_wfn.basisset().name() != scf_wfn.basisset().name():
+                raise NotImplementedError(
+                    "CGHF READ guess with basis projection is not implemented "
+                    f"(checkpoint basis '{old_wfn.basisset().name()}' vs "
+                    f"'{scf_wfn.basisset().name()}'). Same-basis READ only for now."
+                )
 
-        if old_wfn.basisset().name() == scf_wfn.basisset().name():
             core.print_out(f"  Reading orbitals from file {read_filename}, no projection.\n\n")
-            scf_wfn.guess_Ca(Ca_occ)
-            scf_wfn.guess_Cb(Cb_occ)
+            C_full = old_wfn.C().to_array()
+            nocc = old_wfn.nelec()
+            C_occ = core.ComplexMatrix.from_array(C_full[:, :nocc], name="C guess")
+            scf_wfn.guess_C(C_occ)
         else:
-            core.print_out(f"  Reading orbitals from file {read_filename}, projecting to new basis.\n\n")
-            core.print_out("  Computing basis projection from %s to %s\n\n" % (old_wfn.basisset().name(), scf_wfn.basisset().name()))
+            old_wfn = core.Wavefunction.from_file(read_filename)
 
-            pCa = scf_wfn.basis_projection(Ca_occ, old_wfn.nalphapi(), old_wfn.basisset(), scf_wfn.basisset())
-            pCb = scf_wfn.basis_projection(Cb_occ, old_wfn.nbetapi(), old_wfn.basisset(), scf_wfn.basisset())
-            scf_wfn.guess_Ca(pCa)
-            scf_wfn.guess_Cb(pCb)
+            Ca_occ = old_wfn.Ca_subset("SO", "OCC")
+            Cb_occ = old_wfn.Cb_subset("SO", "OCC")
 
-        # Strip off headers to only get R, RO, U, CU
-        old_ref = old_wfn.name().replace("KS", "").replace("HF", "")
-        new_ref = scf_wfn.name().replace("KS", "").replace("HF", "")
-        if old_ref != new_ref:
-            scf_wfn.reset_occ_ = True
+            if old_wfn.molecule().schoenflies_symbol() != scf_molecule.schoenflies_symbol():
+                raise ValidationError("Cannot compute projection of different symmetries.")
+
+            if old_wfn.basisset().name() == scf_wfn.basisset().name():
+                core.print_out(f"  Reading orbitals from file {read_filename}, no projection.\n\n")
+                scf_wfn.guess_Ca(Ca_occ)
+                scf_wfn.guess_Cb(Cb_occ)
+            else:
+                core.print_out(f"  Reading orbitals from file {read_filename}, projecting to new basis.\n\n")
+                core.print_out("  Computing basis projection from %s to %s\n\n" % (old_wfn.basisset().name(), scf_wfn.basisset().name()))
+
+                pCa = scf_wfn.basis_projection(Ca_occ, old_wfn.nalphapi(), old_wfn.basisset(), scf_wfn.basisset())
+                pCb = scf_wfn.basis_projection(Cb_occ, old_wfn.nbetapi(), old_wfn.basisset(), scf_wfn.basisset())
+                scf_wfn.guess_Ca(pCa)
+                scf_wfn.guess_Cb(pCb)
+
+            # Strip off headers to only get R, RO, U, CU
+            old_ref = old_wfn.name().replace("KS", "").replace("HF", "")
+            new_ref = scf_wfn.name().replace("KS", "").replace("HF", "")
+            if old_ref != new_ref:
+                scf_wfn.reset_occ_ = True
 
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
         core.print_out(f"\n !!!  Unable to find file {read_filename}, defaulting to SAD guess. !!!\n\n")
@@ -1987,6 +2056,11 @@ def scf_helper(name, post_scf=True, **kwargs):
 
 
     if cast:
+        if isinstance(scf_wfn, core.ComplexWavefunction):
+            raise NotImplementedError(
+                "CGHF basis cast-up / projection is not implemented. "
+                "Use the same basis for the cast-up guess or disable BASIS_GUESS."
+            )
         core.print_out("\n  Computing basis projection from %s to %s\n\n" % (ref_wfn.basisset().name(), base_wfn.basisset().name()))
         if ref_wfn.basisset().n_ecp_core() != base_wfn.basisset().n_ecp_core():
             raise ValidationError("Projecting from basis ({}) with ({}) ECP electrons to basis ({}) with ({}) ECP electrons will be a disaster. Select a compatible cast-up basis with `set guess_basis YOUR_BASIS_HERE`.".format(
@@ -2051,7 +2125,14 @@ def scf_helper(name, post_scf=True, **kwargs):
             obj.set_variable(pv, e_scf)
 
     # We always would like to print a little property information
-    if kwargs.get('scf_do_properties', True):
+    scf_do_properties = kwargs.get('scf_do_properties')
+    if (scf_do_properties is None) and isinstance(scf_wfn, core.Wavefunction):
+        scf_do_properties = True
+
+    # The default behavior for Wavefunction: True, for ComplexWavefunction: False (None).
+    if scf_do_properties:
+        if isinstance(scf_wfn, core.ComplexWavefunction):
+            raise NotImplementedError("SCF properties not available for complex wavefunctions.")
         oeprop = core.OEProp(scf_wfn)
         oeprop.set_title("SCF")
 

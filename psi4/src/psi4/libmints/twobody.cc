@@ -158,6 +158,73 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 
 }
 
+#ifdef USING_Einsums
+// Complex generalization of the real update_density method above.
+// Handles both plain (nbf, nbf) and spin-blocked (2*nbf, 2*nbf) density matrices.
+//
+// For spin-blocked (CGHF) densities, the matrix has a 2x2 block structure:
+//  [[D_aa,  D_ab],
+//   [D_ba,  D_bb]]
+// J uses only D_aa + D_bb; K uses all four blocks individually.
+// We store the max absolute value over ALL four blocks per shell pair.
+void TwoBodyAOInt::update_density_complex(const std::vector<std::shared_ptr<ComplexMatrix>>& D) {
+    if (max_dens_shell_pair_.size() == 0) {
+        max_dens_shell_pair_.resize(D.size());
+        for (int i = 0; i < D.size(); i++) {
+            max_dens_shell_pair_[i].resize(nshell_ * nshell_);
+        }
+    }
+
+    for (const auto& cm : D) {
+        const int nrow = cm->rowspi(0);
+        if (nrow != nbf_ && nrow != 2*nbf_) {
+            // Do not throw in OMP loop.
+            throw PSIEXCEPTION("update_density_complex: unexepcted density dimension " +
+                               std::to_string(nrow) + " (expected " + std::to_string(nbf_) +
+                               " or " + std::to_string(2 * nbf_) + ")");
+        }
+    }
+
+    timer_on("Update Density");
+#pragma omp parallel for
+    for (int M = 0; M < nshell_; M++) {
+        for (int N = M; N < nshell_; N++) {
+            int m_start = bs1_->shell(M).function_index();
+            int num_m = bs1_->shell(M).nfunction();
+
+            int n_start = bs1_->shell(N).function_index();
+            int num_n = bs1_->shell(N).nfunction();
+
+            for (int i = 0; i < D.size(); i++) {
+                double max_dens = 0.0;
+                int dim = D[i]->get(0).dim(0);
+
+                if (dim == nbf_) {
+                    for (int m = m_start; m < m_start + num_m; m++) {
+                        for (int n = n_start; n < n_start + num_n; n++) {
+                            max_dens = std::max(max_dens, std::abs(D[i]->get(0, m, n)));
+                        }
+                    }
+                } else /* (dim == 2*nbf_) */ {
+                    for (int m = m_start; m < m_start + num_m; m++) {
+                        for (int n = n_start; n < n_start + num_n; n++) {
+                            max_dens = std::max(max_dens, std::abs(D[i]->get(0, m, n)));               // D_aa
+                            max_dens = std::max(max_dens, std::abs(D[i]->get(0, m + nbf_, n + nbf_))); // D_bb
+                            max_dens = std::max(max_dens, std::abs(D[i]->get(0, m, n + nbf_)));        // D_ab
+                            max_dens = std::max(max_dens, std::abs(D[i]->get(0, m + nbf_, n)));        // D_ba
+                        }
+                    }
+                }
+
+                max_dens_shell_pair_[i][M * nshell_ + N] = max_dens;
+                if (M != N) max_dens_shell_pair_[i][N * nshell_ + M] = max_dens;
+            }
+
+        }
+    }
+    timer_off("Update Density");
+}
+#endif
 
 double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
     if (max_dens_shell_pair_.empty()) {
