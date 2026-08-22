@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstdlib>
 #include <string>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"

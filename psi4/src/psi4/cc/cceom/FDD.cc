@@ -34,7 +34,6 @@
 /*! \defgroup CCEOM cceom: Equation-of-Motion Coupled-Cluster */
 
 #include <cstdio>
-#include <cmath>
 #include "Params.h"
 #include "globals.h"
 

@@ -34,7 +34,6 @@
 **  X_XI_CHECK: check sum for xi
 */
 
-#include <cstdio>
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
 #include "globals.h"

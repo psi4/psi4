@@ -31,7 +31,6 @@
   \ingroup CCENERGY
   \brief Write the amplitudes from ccenergy
 */
-#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libdpd/dpd.h"

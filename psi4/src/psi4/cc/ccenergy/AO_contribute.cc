@@ -33,7 +33,6 @@
 
 /*! \defgroup CCENERGY ccenergy: Compute the Coupled-Cluster Energy */
 
-#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libiwl/iwl.h"
