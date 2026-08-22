@@ -37,7 +37,6 @@
 #include "Params.h"
 #include "globals.h"
 
-#include <cstdio>
 
 namespace psi {
 namespace ccdensity {
