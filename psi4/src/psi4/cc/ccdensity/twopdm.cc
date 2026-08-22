@@ -30,7 +30,6 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <cstdio>
 namespace psi {
 namespace ccdensity {
 
