@@ -827,6 +827,9 @@ def validate_external_potential(external_potential) -> Dict:
         Lines can be composed of ``q, [x, y, z]`` or ``q, x, y, z`` (for points) or ``q, [x, w, z] w``
         of ``q, x, y, z, w`` (for diffuse). Locations are in [a0].
         See test_extern.py for many examples.
+        Integer keys are not accepted here: they spell the 1-indexed fragment mapping that is only
+        interpreted for a many-body computation, described at
+        :ref:`External potentials in many-body computations <sec:mbeextern>`.
 
     Returns
     -------

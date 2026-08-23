@@ -55,6 +55,8 @@ The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Vali
    using internal driver code but have been offloaded to QCManyBody
    software.
 
+.. _`sec:mbeextern`:
+
 External potentials in many-body computations
 ----------------------------------------------
 

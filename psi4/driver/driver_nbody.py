@@ -337,18 +337,13 @@ def nbody():
     :type external_potentials: list or dict
     :param external_potentials: ``{2: [[-0.834, [x, y, z]], ..]}``
 
-        External potentials for many-body computations activated by ``bsse_type``. Dictionary values use the usual
-        ``[[charge, [x, y, z]], ..]`` format; keys are 1-based fragment indices. For CP, noCP, and VMFC alike, each
-        value applies only to component calculations in which that fragment has real atoms; a fragment represented
-        only by ghost atoms does not activate its potentials. For example,
-        ``energy('hf', bsse_type='cp', external_potentials={2: potentials_b})`` applies ``potentials_b`` to monomer B
-        and all real-fragment supersystems containing B, but not to real monomer A with ghost B. Potentials assigned
-        to multiple real fragments are combined. A flat list retains the conventional behavior and applies the same
-        external potentials to every component, including components where molecular fragments are ghosts. The
-        whole-molecule dictionary spellings keyed by ``points``/``diffuse``/``matrix`` or by ``A``/``B``/``C`` are
-        likewise applied to every component. When ``embedding_charges`` is also active, the embedding charges are
-        added to, not substituted for, the potentials selected for each component; for the ``A``/``B``/``C`` form
-        they join the whole-environment ``C`` partition and the ``A`` and ``B`` partitions are left untouched.
+        External potentials for many-body computations activated by ``bsse_type``. A dict with 1-based
+        fragment indices as keys and flat ``[[charge, [x, y, z]], ..]`` point-charge lists as values scopes each
+        potential to the component calculations in which that fragment has real atoms. Any other accepted
+        spelling (flat list, or a whole-molecule dict keyed by ``points``/``diffuse``/``matrix`` or by
+        ``A``/``B``/``C``) applies in full to every component. See
+        :ref:`External potentials in many-body computations <sec:mbeextern>` for the fragment-scoping rules per
+        ``bsse_type``, the accepted per-fragment forms, and the interaction with ``embedding_charges``.
 
     Potential QCVariables set are:
 
