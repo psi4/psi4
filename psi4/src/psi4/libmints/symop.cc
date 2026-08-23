@@ -56,7 +56,6 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psi4-dec.h"

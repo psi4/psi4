@@ -27,10 +27,7 @@
  */
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/molecule.h"
@@ -43,7 +40,6 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/factory.h"
-#include "psi4/libmints/vector3.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/corrtab.h"
 #include "psi4/psi4-dec.h"
@@ -54,7 +50,6 @@
 #include "psi4/libpsipcm/psipcm.h"
 #endif
 
-#include <typeinfo>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>

@@ -3,7 +3,6 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libfock/points.h"
 #include "psi4/libfock/dft_integrators.h"
-#include "psi4/libfock/sap.h"
 #include "psi4/libpsi4util/process.h"
 
 #ifdef _OPENMP

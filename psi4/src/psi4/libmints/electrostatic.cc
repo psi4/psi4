@@ -27,7 +27,6 @@
  */
 
 #include "psi4/libmints/electrostatic.h"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"

@@ -31,7 +31,6 @@
 #include "psi4/libmints/integral.h"
 
 #include <memory>
-#include <stdexcept>
 
 #include <libint2/shell.h>
 

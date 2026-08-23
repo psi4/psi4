@@ -27,7 +27,6 @@
  */
 
 #include <algorithm>
-#include <stdexcept>
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"

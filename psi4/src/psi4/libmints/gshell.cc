@@ -28,7 +28,6 @@
 
 #include <cstdlib>
 #include <cmath>
-#include "vector3.h"
 #include "integral.h"
 #include "gshell.h"
 

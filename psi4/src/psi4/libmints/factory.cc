@@ -37,7 +37,6 @@
 
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sobasis.h"
-#include "psi4/libciomr/libciomr.h"
 
 using namespace psi;
 
