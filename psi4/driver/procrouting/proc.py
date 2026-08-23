@@ -31,6 +31,7 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function. *name* can be assumed lowercase by here.
 
 """
+import numbers
 import os
 import re
 import shutil
@@ -1590,7 +1591,17 @@ def validate_external_potential(external_potential) -> Dict:
     frag_keys = set("ABC")
     mode_keys_list = ["points", "diffuse", "matrix"]
 
-    if isinstance(external_potential, dict) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
+    if isinstance(external_potential, dict) and any(
+        isinstance(k, numbers.Integral) and not isinstance(k, bool) for k in external_potential
+    ):
+        raise ValidationError(
+            "external_potential: integer keys spell a 1-indexed fragment mapping, which is only "
+            "interpreted in a many-body computation. Pass bsse_type alongside it (e.g. "
+            "energy('scf', bsse_type='nocp', external_potentials={1: [[q, [x, y, z]], ..]})) or use "
+            f"whole-molecule keys among {mode_keys_list} or A/B/C. Full input: {external_potential}"
+        )
+
+    if isinstance(external_potential, dict) and all(isinstance(k, str) for k in external_potential) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
         ep = {k.upper(): v for k, v in external_potential.items()}
     else:
         # assign "C" to mean whole molecule in the non-SAPT case

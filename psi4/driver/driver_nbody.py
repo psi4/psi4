@@ -107,6 +107,8 @@ import numbers
 import pprint
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union, Optional
 
+import numpy as np
+
 from psi4 import core
 
 from . import p4util
@@ -182,6 +184,34 @@ def _is_fragment_keyed_external_potential(external_potentials: Any) -> bool:
             return False
 
     return True
+
+
+def _validate_fragment_potential(ifr: Any, external_potential: Any) -> List:
+    """Check that one fragment's *external_potential* is the documented flat point-charge list.
+
+    Fragment scoping applies to point charges only, so the positional ``[points, diffuse, matrix]``
+    list, the ``{mode: spec}`` dict, and a bare potential matrix are rejected here rather than being
+    silently garbled by the concatenation of several fragments' potentials.
+
+    """
+    expected = (
+        f"external_potentials[{ifr}] must be a flat point-charge list in the [[charge, [x, y, z]], ..] "
+        "form; diffuse charges and potential matrices can only be given for the whole molecule"
+    )
+
+    if isinstance(external_potential, dict):
+        raise ValidationError(f"{expected}, not per fragment. Found keys {sorted(external_potential)}.")
+
+    if not isinstance(external_potential, (list, np.ndarray)):
+        raise ValidationError(f"{expected}. Found {type(external_potential).__name__}.")
+
+    if len(external_potential) == 0:
+        return []
+
+    if not p4util.validate_charge_list(external_potential):
+        raise ValidationError(f"{expected}. Found {external_potential}.")
+
+    return list(external_potential)
 
 
 def _flatten_embedding_charges(charges: List) -> List:
@@ -567,6 +597,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                     f"external_potentials keys must be 1-indexed fragment integers between 1 and "
                     f"{computer_model.nfragments}; found {invalid_keys}."
                 )
+            for ifr, potential in external_potentials.items():
+                _validate_fragment_potential(ifr, potential)
         elif external_potentials is not None:
             logger.warning(_EP_UNSCOPED_WARNING)
             core.print_out("\n  Warning: " + _EP_UNSCOPED_WARNING + "\n")
@@ -670,7 +702,12 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
             external_potentials = data["keywords"]["function_kwargs"].get("external_potentials")
             if _is_fragment_keyed_external_potential(external_potentials):
-                selected_potentials = [potential for ifr in frag for potential in external_potentials.get(ifr, [])]
+                selected_potentials = []
+                for ifr in frag:
+                    if ifr in external_potentials:
+                        selected_potentials.extend(
+                            _validate_fragment_potential(ifr, external_potentials[ifr])
+                        )
                 if selected_potentials:
                     data["keywords"]["function_kwargs"]["external_potentials"] = selected_potentials
                 else:

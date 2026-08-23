@@ -46,11 +46,13 @@ __all__ = [
     "plump_qcvar",
     "set_options",
     "set_module_options",
+    "validate_charge_list",
     "validate_external_potential",
 ]
 
 
 import math
+import numbers
 import os
 import pathlib
 import re
@@ -766,6 +768,46 @@ core.OEProp.valid_methods = [
 
 ## External Potential helpers
 
+def validate_charge_list(lqxyz, diffuse: bool=False):
+    """Flatten **lqxyz** if it is a plain list of charges, otherwise return False.
+
+    A charge line has the form ``Q x y z``, ``Q [x y z]``, ``Q x y z w``, or ``Q [x y z] w``. This is
+    the discriminator between a flat charge list and the positional ``[points, diffuse, matrix]``
+    spelling accepted by :py:func:`validate_external_potential`.
+
+    """
+    def validate_single_charge(chg):
+        try:
+            nchg = len(chg)
+        except TypeError:
+            return False
+
+        if (not diffuse) and nchg == 2:
+            return chg[0], chg[1][0], chg[1][1], chg[1][2]
+        elif diffuse and nchg == 3:
+            return chg[0], chg[1][0], chg[1][1], chg[1][2], chg[2]
+        elif (not diffuse) and nchg == 4:
+            return chg[0], chg[1], chg[2], chg[3]
+        elif diffuse and nchg == 5:
+            return chg[0], chg[1], chg[2], chg[3], chg[4]
+        else:
+            return False
+
+    flattened = [validate_single_charge(pt) for pt in lqxyz]
+
+    # reject if a charge line has wrong format or if spec is nested too deep or too shallow (can
+    #   happen due to flexible input format and backwards compatibility with points-only).
+    for itm in flattened:
+        if itm is False:
+            return False
+    try:
+        if np.array(flattened).ndim != 2:
+            return False
+    except ValueError:
+        return False
+    return flattened
+
+
 def validate_external_potential(external_potential) -> Dict:
     """Validate and normalize the format of **external_potential** in preparation for class construction.
 
@@ -805,40 +847,6 @@ def validate_external_potential(external_potential) -> Dict:
     >>> validate_external_potential({"B": {"points": np.array([0.01,2,2,2])}, "C": {"points": np.array([[0.5,0,0,1], [-0.5,0,0,-1]])}})
 
     """
-    def validate_charge_list(lqxyz, diffuse: bool=False):
-        # check charge has form Q x y z, Q [x y z], Q x y z w, or Q [x y z] w
-
-        def validate_single_charge(chg):
-            try:
-                nchg = len(chg)
-            except TypeError:
-                return False
-
-            if (not diffuse) and nchg == 2:
-                return chg[0], chg[1][0], chg[1][1], chg[1][2]
-            elif diffuse and nchg == 3:
-                return chg[0], chg[1][0], chg[1][1], chg[1][2], chg[2]
-            elif (not diffuse) and nchg == 4:
-                return chg[0], chg[1], chg[2], chg[3]
-            elif diffuse and nchg == 5:
-                return chg[0], chg[1], chg[2], chg[3], chg[4]
-            else:
-                return False
-
-        flattened = [validate_single_charge(pt) for pt in lqxyz]
-
-        # reject if a charge line has wrong format or if spec is nested too deep or too shallow (can
-        #   happen due to flexible input format and backwards compatibility with points-only).
-        for itm in flattened:
-            if itm is False:
-                return False
-        try:
-            if np.array(flattened).ndim != 2:
-                return False
-        except ValueError:
-            return False
-        return flattened
-
     def validate_potential_array(mat):
         if isinstance(mat, core.Matrix):
             npmat = mat.np
@@ -857,7 +865,17 @@ def validate_external_potential(external_potential) -> Dict:
     frag_keys = set("ABC")
     mode_keys_list = ["points", "diffuse", "matrix"]
 
-    if isinstance(external_potential, dict) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
+    if isinstance(external_potential, dict) and any(
+        isinstance(k, numbers.Integral) and not isinstance(k, bool) for k in external_potential
+    ):
+        raise ValidationError(
+            "external_potential: integer keys spell a 1-indexed fragment mapping, which is only "
+            "interpreted in a many-body computation. Pass bsse_type alongside it (e.g. "
+            "energy('scf', bsse_type='nocp', external_potentials={1: [[q, [x, y, z]], ..]})) or use "
+            f"whole-molecule keys among {mode_keys_list} or A/B/C. Full input: {external_potential}"
+        )
+
+    if isinstance(external_potential, dict) and all(isinstance(k, str) for k in external_potential) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
         ep_outer_structure = {k.upper(): v for k, v in external_potential.items()}
     else:
         # assign "C" to mean whole molecule in the non-SAPT case

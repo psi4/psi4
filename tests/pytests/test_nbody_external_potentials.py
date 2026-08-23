@@ -400,3 +400,74 @@ def test_nbody_positional_external_potentials_with_embedding_charges(
         assert psi4.driver.p4util.validate_external_potential(component_potentials)
 
     assert real_fragments_seen == {(1,), (2,), (1, 2)}
+
+
+@uusing("qcmanybody")
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param([None, [[0.3, 1.0, 1.0, 1.0, 0.5]]], id="positional-diffuse"),
+        pytest.param([None, None, np.eye(5).tolist()], id="positional-matrix"),
+        pytest.param({"points": [[0.4, [1.0, 2.0, 3.0]]]}, id="mode-dict"),
+        pytest.param({"diffuse": [[0.3, 1.0, 1.0, 1.0, 0.5]]}, id="mode-dict-diffuse"),
+        pytest.param(np.eye(5).tolist(), id="bare-matrix"),
+        pytest.param(0.4, id="scalar"),
+    ],
+)
+def test_nbody_fragment_potential_rejects_non_point_charge_values(water_cluster, value):
+    """Verify a per-fragment value that is not a flat point-charge list is refused, not garbled."""
+    _, dimer, b_external_potential = water_cluster
+
+    with pytest.raises(ValidationError, match="flat point-charge list"):
+        task_planner(
+            "energy",
+            "hf/sto-3g",
+            dimer,
+            bsse_type="nocp",
+            external_potentials={1: b_external_potential, 2: value},
+        )
+
+
+@uusing("qcmanybody")
+def test_nbody_fragment_potentials_combine_across_fragments(water_cluster):
+    """Verify point charges from several real fragments concatenate into one valid potential."""
+    from qcmanybody.utils import delabeler
+
+    trimer, _, b_external_potential = water_cluster
+    pot_1 = [[0.4, [1.0, 2.0, 3.0]]]
+    pot_2 = np.array([[0.5, 4.0, 5.0, 6.0], [-0.5, 7.0, 8.0, 9.0]])
+
+    plan = task_planner(
+        "energy",
+        "hf/sto-3g",
+        trimer,
+        bsse_type="nocp",
+        external_potentials={1: pot_1, 2: pot_2},
+    )
+
+    per_fragment = {1: 1, 2: 2, 3: 0}
+    for label, component in plan.task_list.items():
+        _, real_fragments, _ = delabeler(label)
+        expected = sum(per_fragment[ifr] for ifr in real_fragments)
+        component_potentials = component.keywords["function_kwargs"].get("external_potentials")
+        if expected == 0:
+            assert component_potentials is None
+            continue
+
+        validated = psi4.driver.p4util.validate_external_potential(component_potentials)
+        assert set(validated) == {"C"}
+        assert set(validated["C"]) == {"points"}
+        assert len(validated["C"]["points"]) == expected
+
+
+@uusing("qcmanybody")
+def test_fragment_keyed_external_potentials_require_bsse_type(water_cluster):
+    """Verify an integer-keyed mapping without bsse_type reports the missing many-body request."""
+    trimer, _, b_external_potential = water_cluster
+    psi4.set_options({"basis": "sto-3g", "scf_type": "pk"})
+
+    with pytest.raises(ValidationError, match="1-indexed fragment mapping"):
+        psi4.energy("hf", molecule=trimer, external_potentials={2: b_external_potential})
+
+    with pytest.raises(ValidationError, match="1-indexed fragment mapping"):
+        psi4.driver.p4util.validate_external_potential({2: b_external_potential})

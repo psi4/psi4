@@ -93,6 +93,16 @@ calculation. Keys must be integer fragment indices between 1 and the number of
 fragments. Potentials from multiple real fragments are combined for that
 component.
 
+Fragment scoping applies to point charges only. Each value must be the flat
+``[[charge, [x, y, z]], ...]`` list (equivalently ``[[charge, x, y, z], ...]``
+or the corresponding NumPy array); a positional ``[points, diffuse, matrix]``
+list, a ``{'points': ..., 'diffuse': ...}`` dictionary, or a potential matrix
+raises a :py:exc:`~psi4.driver.p4util.exceptions.ValidationError` rather than
+being combined with another fragment's charges. Use one of the whole-molecule
+forms below for diffuse charges and potential matrices. A fragment mapping is
+also only interpreted when ``bsse_type`` is given; supplying integer keys
+without it raises a ``ValidationError``.
+
 Passing a flat list instead of a fragment mapping retains the conventional
 single-calculation behavior: the complete list is applied to **every** generated
 component, including CP calculations where some molecular fragments are ghosts.
