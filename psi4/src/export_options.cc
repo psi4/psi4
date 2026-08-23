@@ -29,7 +29,6 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/pybind11.h"
 
-#include <string>
 
 using namespace psi;
 
