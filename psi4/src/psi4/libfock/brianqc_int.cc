@@ -38,6 +38,9 @@
 
 #include "psi4/liboptions/liboptions.h"
 
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -70,6 +73,29 @@ struct BrianGrid {
 };
 
 namespace psi {
+
+void BrianQCBase::print_header() const {
+    auto print = options_.get_int("PRINT");
+    outfile->Printf("  ===> DFT Potential <===\n\n");
+    functional_->print("outfile", print);
+
+    outfile->Printf("   => Molecular Quadrature <=\n\n");
+    outfile->Printf("    Radial Scheme          = %14s\n", RadialGridMgr::SchemeName(grid_options_.radscheme));
+    outfile->Printf("    Pruning Scheme         = %14s\n", grid_options_.prunescheme.c_str());
+    if (grid_options_.prunescheme != "NONE") {
+        outfile->Printf("    Pruning Type           = %14s\n", grid_options_.prunetype.c_str());
+    }
+    outfile->Printf("    Nuclear Scheme         = %14s\n", NuclearWeightMgr::SchemeName(grid_options_.nucscheme));
+    outfile->Printf("\n");
+    outfile->Printf("    BS radius alpha        = %14g\n", grid_options_.bs_radius_alpha);
+    outfile->Printf("    Pruning alpha          = %14g\n", grid_options_.pruning_alpha);
+    outfile->Printf("    Radial Points          = %14d\n", grid_options_.nradpts);
+    outfile->Printf("    Spherical Points       = %14d\n", grid_options_.nangpts);
+    outfile->Printf("    Weights Tolerance      = %14.2E\n", grid_options_.weights_cutoff);
+    outfile->Printf("\n");
+    Process::environment.globals["XC GRID SPHERICAL POINTS"] = grid_options_.nangpts;
+    Process::environment.globals["XC GRID RADIAL POINTS"] = grid_options_.nradpts;
+}
 
 void BrianQCBase::grid_from_options(MolecularGrid::MolecularGridOptions const &opt, bool build_dft) {
     if (!(brianEnable and brianEnableDFT)) return;
@@ -236,8 +262,8 @@ void BrianQCBase::initialize_named_grids() {
 void BrianQCBase::initialize() {
         initialize_named_grids();
 
-	const auto grid_options = std::get<0>(DFTGrid::populateOptions(options_));
-        grid_from_options(grid_options, true);
+	grid_options_ = std::get<0>(DFTGrid::populateOptions(options_));
+        grid_from_options(grid_options_, true);
 
         static const std::map<std::string, brianInt> functionalIDMap = {
             {"XC_GGA_X_AIRY", BRIAN_FUNCTIONAL_GGA_AIRY_X},
