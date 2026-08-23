@@ -35,7 +35,9 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/electrostatic.h"
 #include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/matrix_eigen.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
@@ -462,13 +464,13 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     for (int iD = 0; iD != D.size(); ++iD) {
         timer_on("snLinK: Transform D");
 
-        auto Did_eigen = D[iD]->eigen_map();    
-        auto Kid_eigen = K[iD]->eigen_map();    
+        auto Did_eigen = linalg::eigen_map(*D[iD]);
+        auto Kid_eigen = linalg::eigen_map(*K[iD]);
        
         // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
         if (do_reorder) {
             auto permutation_matrix_val = permutation_matrix_.value();
-            auto D_eigen_permute = D[iD]->eigen_map();
+            auto D_eigen_permute = linalg::eigen_map(*D[iD]);
             D_eigen_permute = permutation_matrix_val * D_eigen_permute * permutation_matrix_val.transpose();
         }
             
@@ -481,7 +483,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         } else {
             D_buffer = D[iD];
         }
-        auto D_buffer_eigen = D_buffer->eigen_map();    
+        auto D_buffer_eigen = linalg::eigen_map(*D_buffer);
         
         timer_off("snLinK: Transform D");
         
@@ -490,7 +492,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
         if (do_reorder) { 
             auto permutation_matrix_val = permutation_matrix_.value();
-            auto K_eigen_permute = K[iD]->eigen_map();
+            auto K_eigen_permute = linalg::eigen_map(*K[iD]);
             K_eigen_permute = permutation_matrix_val * K_eigen_permute * permutation_matrix_val.transpose();
         }
             
@@ -503,7 +505,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         } else {
             K_buffer = K[iD];
         }
-        auto K_buffer_eigen = K_buffer->eigen_map(); 
+        auto K_buffer_eigen = linalg::eigen_map(*K_buffer);
         
         timer_off("snLinK: Transform K");
         
@@ -536,10 +538,10 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         timer_on("snLinK: Back-transform D and K");
         if (do_reorder) {
             auto permutation_matrix_val = permutation_matrix_.value();
-            auto D_eigen_permute = D[iD]->eigen_map();
+            auto D_eigen_permute = linalg::eigen_map(*D[iD]);
             D_eigen_permute = permutation_matrix_val.transpose() * D_eigen_permute * permutation_matrix_val; 
 
-            auto K_eigen_permute = K[iD]->eigen_map();
+            auto K_eigen_permute = linalg::eigen_map(*K[iD]);
             K_eigen_permute = permutation_matrix_val.transpose() * K_eigen_permute * permutation_matrix_val; 
         }
         timer_off("snLinK: Back-transform D and K");
