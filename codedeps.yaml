@@ -98,8 +98,14 @@ data:
       aux_build_names:
         linux-64:
           - "//dpcpp_linux-64"
-        # win-64:
+        win-64:
         #   - "libgcc<14.3"
+          - libwinpthread=12.0.0.r4.gg4f2fc60ca=h57928b3_10
+          - libgcc=16.1.0=h110b43a_1
+          - libgfortran=16.1.0=h719f0c7_1
+          - libgfortran5=16.1.0=h94075d5_1
+          - libgomp=16.1.0=h8ee18e1_1
+          - libstdcxx=16.1.0=hae5796f_1
       aux_build_names_note:
         "libgcc<14.3": "Avoid 'specified procedure could not be found' DLL error."
         "clangdev=17.0.6": "For win-64, this clang (avoid omp problem with v19, v20) intel-openmp for openmp, and =*=24*mkl for libblas constraint (MKL 2024.2.2 gives wrong results, so 24*mkl requests 2024.1.0.) worked well together."
@@ -1288,7 +1294,7 @@ data:
       channel: conda-forge
       name: qcfractal
       constraint: ">=0.60,!=0.62"
-      constraint_note: "v0.60 includes new compute_tag syntax. v0.62 hangs for snowflake jobs. Not avail for Py 3.14 until v0.70 released."
+      constraint_note: "v0.60 includes new compute_tag syntax. v0.62 hangs for snowflake jobs."
       aux_run_names:
         - postgresql
       aux_run_names_note:
