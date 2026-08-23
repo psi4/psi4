@@ -51,34 +51,37 @@ struct BrianBlock {
 };
 
 class BrianQCBase : public IntegratorManager {
-    BrianQCBase(std::shared_ptr<Superfunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
-    
-   static void initialize_named_grids();
-   void grid_from_options(MolecularGrid::MolecularGridOptions const& opt, bool build_dft=true);
-   static void grid_from_prune_spec(StandardGridMgr::PruneSpec const& spec, int radscheme, std::vector<BrianBlock>& brian_blocks);
-
-   public:
-     void initialize() override;
-
    protected:
+    static void initialize_named_grids();
+    void grid_from_options(MolecularGrid::MolecularGridOptions const& opt, bool build_dft=true);
+    static void grid_from_prune_spec(StandardGridMgr::PruneSpec const& spec, int radscheme, std::vector<BrianBlock>& brian_blocks);
+
     /// SG0 and SG1... It's an array of 4 for historical reasons.
     /// Array specifies which named grid. Outer vector specifies atom.
     static inline std::array<std::vector<std::vector<BrianBlock>>, 4> brian_standard_grids;
+    std::shared_ptr<SuperFunctional> functional_;
+    // Should be set and then never changed again.
+    MolecularGrid::MolecularGridOptions grid_options_;
+
+   public:
+    BrianQCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
+    void initialize() override;
+    void print_header() const override;
 
 };
 
 class BrianRV : public BrianQCBase {
-    using BrianQCBase::BrianQCBase;
+   using BrianQCBase::BrianQCBase;
 
-    public:
-     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+   public:
+    std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
 };
 
 class BrianUV : public BrianQCBase {
-    using BrianQCBase::BrianQCBase;
+   using BrianQCBase::BrianQCBase;
 
-    public:
-     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+   public:
+    std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
 };
 }
 
