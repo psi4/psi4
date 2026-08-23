@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libpsi4util/process.h"
 
 #include "occwave.h"
 

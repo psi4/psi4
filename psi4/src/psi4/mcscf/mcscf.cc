@@ -36,8 +36,6 @@
  */
 
 // Standard libraries
-#include <iostream>
-#include <cstdlib>
 
 // PSI C++ libraries
 #include "psi4/libpsio/psio.hpp"
@@ -45,9 +43,7 @@
 // PSI libraries
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/mintshelper.h"
 
 #include "mcscf.h"

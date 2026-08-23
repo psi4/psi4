@@ -26,11 +26,9 @@
  * @END LICENSE
  */
 
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libmints/wavefunction.h"
-#include "defines.h"
 #include "arrays.h"
 #include "dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"

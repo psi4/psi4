@@ -27,7 +27,6 @@
  */
 
 #include "ccsd.h"
-#include "blas.h"
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"

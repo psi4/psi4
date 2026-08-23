@@ -34,7 +34,6 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/liboptions/liboptions.h"
 
 #include "blas.h"
 #include "ccsd.h"

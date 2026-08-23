@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdio>
 #include <cstdlib>
 
 /*!

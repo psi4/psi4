@@ -26,9 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdlib>
-#include <iostream>
-#include <cmath>
 #include <cstdio>
 
 #include "psi4/liboptions/liboptions.h"
