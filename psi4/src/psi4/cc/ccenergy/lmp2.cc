@@ -41,7 +41,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
 
-#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 

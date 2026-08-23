@@ -49,7 +49,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include "psi4/pybind11.h"
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
@@ -58,7 +57,6 @@
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ci_tol.h"
 #include "psi4/detci/civect.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/vector.h"
 
 namespace psi {

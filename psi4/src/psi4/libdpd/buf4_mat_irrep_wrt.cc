@@ -31,10 +31,7 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstdlib>
-#include "psi4/libqt/qt.h"
 #include "dpd.h"
-#include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
 namespace psi {
 

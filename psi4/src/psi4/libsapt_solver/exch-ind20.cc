@@ -30,7 +30,6 @@
 #include "sapt2.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 
 namespace psi {

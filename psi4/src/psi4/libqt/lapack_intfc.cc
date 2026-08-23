@@ -35,7 +35,6 @@
 **
 */
 
-#include <algorithm>
 
 #include "qt.h"
 #include "lapack_intfc_mangle.h"

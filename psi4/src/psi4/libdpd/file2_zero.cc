@@ -32,7 +32,6 @@
 */
 
 #include "dpd.h"
-#include "psi4/libqt/qt.h"
 
 #include <cstring>
 

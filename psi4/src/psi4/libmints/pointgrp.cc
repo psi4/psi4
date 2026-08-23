@@ -83,10 +83,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include <cstdlib>
 #include <cstring>
-#include <cctype>
-#include <cmath>
 
 namespace psi {
 namespace PointGroups {

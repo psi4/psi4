@@ -25,7 +25,6 @@
  *
  * @END LICENSE
  */
-#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -41,11 +40,9 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"

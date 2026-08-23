@@ -27,7 +27,6 @@
  */
 
 #include <iostream>
-#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include "psi4/psi4-dec.h"

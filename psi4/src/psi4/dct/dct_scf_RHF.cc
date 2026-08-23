@@ -34,12 +34,9 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/mintshelper.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 
-#include <map>
 #include <cmath>
 
 namespace psi {

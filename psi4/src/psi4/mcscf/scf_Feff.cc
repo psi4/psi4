@@ -27,7 +27,6 @@
  */
 
 #include "psi4/liboptions/liboptions.h"
-#include <cstdio>
 
 #include "scf.h"
 

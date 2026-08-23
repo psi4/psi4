@@ -29,9 +29,6 @@
 #include "integraltransform.h"
 
 #include <algorithm>
-#include <numeric>
-#include <string>
-#include <vector>
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"

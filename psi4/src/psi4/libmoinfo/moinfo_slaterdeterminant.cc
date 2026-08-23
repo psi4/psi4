@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <iostream>
 #include "moinfo.h"
 
 namespace psi {

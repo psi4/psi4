@@ -28,7 +28,6 @@
 
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libqt/qt.h"
 #include "dct.h"
 #include "psi4/psifiles.h"
 

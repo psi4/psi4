@@ -29,7 +29,6 @@
 #include "psi4/libmints/basisset.h"
 
 #include <memory>
-#include <stdexcept>
 
 #include <libint2/engine.h>
 

@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdio>
-#include <cstdlib>
 #include <stdexcept>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"

@@ -32,22 +32,18 @@
 */
 
 #include "Local.h"
-#include "Params.h"
 #include "MOInfo.h"
 #include "psi4/cc/ccwave.h"
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
 
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cmath>
 
 namespace psi {
 namespace ccenergy {

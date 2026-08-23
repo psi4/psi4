@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 
 namespace psi {

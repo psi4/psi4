@@ -26,11 +26,9 @@
  * @END LICENSE
  */
 
-#include "psi4/pragma.h"
 #include <memory>
 #include "functional.h"
 #include <xc.h>
-#include "psi4/psi4-dec.h"
 #include "LibXCfunctional.h"
 #include "psi4/libpsi4util/exception.h"
 

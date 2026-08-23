@@ -31,12 +31,9 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {

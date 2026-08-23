@@ -26,22 +26,17 @@
  * @END LICENSE
  */
 
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/eri.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/fjt.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <libint2/shell.h>
 #include <libint2/engine.h>
 
 #include <algorithm>
 #include <memory>
-#include <stdexcept>
 #include <string>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

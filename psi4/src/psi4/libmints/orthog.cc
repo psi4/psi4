@@ -29,12 +29,10 @@
 #include <cstdlib>
 #include <cfloat>
 #include <cmath>
-#include <iterator>
 #include <algorithm>
 #include <numeric>
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"

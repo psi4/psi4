@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include <algorithm>
-#include <fstream>
 #include <vector>
 
 #include "psi4/psi4-dec.h"
@@ -38,7 +36,6 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libfock/apps.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"

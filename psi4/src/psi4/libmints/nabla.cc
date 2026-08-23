@@ -31,7 +31,6 @@
 #include "psi4/libmints/molecule.h"
 
 #include <stdexcept>
-#include "psi4/libciomr/libciomr.h"
 
 #include <libint2/engine.h>
 

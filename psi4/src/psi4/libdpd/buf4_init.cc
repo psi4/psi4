@@ -30,7 +30,6 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include <cstdlib>
 #include "psi4/libciomr/libciomr.h"
 #include "dpd.h"

@@ -34,7 +34,5 @@
 ** Function to return number of double words available for allocation.
 */
 
-#include <cstdio>
-#include "dpd.h"
 
 namespace psi {}

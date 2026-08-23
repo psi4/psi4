@@ -30,7 +30,6 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
 #include <cmath>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libciomr/libciomr.h"

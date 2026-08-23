@@ -52,7 +52,6 @@
 #include <cstring>
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/libmints/vector.h"
@@ -61,8 +60,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/soscf.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dfhelper.h"

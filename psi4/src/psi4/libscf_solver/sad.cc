@@ -41,12 +41,7 @@
 #include <vector>
 #include <utility>
 
-#include "psi4/psifiles.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/psifiles.h"
 #ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
 #endif
@@ -60,7 +55,6 @@
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/lib3index/dfhelper.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 #include "hf.h"

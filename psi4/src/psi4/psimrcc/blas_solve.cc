@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdio>
 #include "psi4/libmoinfo/libmoinfo.h"
 
 #include "blas.h"

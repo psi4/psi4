@@ -35,7 +35,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 

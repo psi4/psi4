@@ -37,7 +37,6 @@
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
-#include "psi4/libciomr/libciomr.h"
 #ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
 #endif
@@ -50,18 +49,14 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "electricfield.h"
 
 #include <cstdlib>
 #include <cstdio>
-#include <cmath>
 #include <iostream>
-#include <list>
 #include <map>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <unordered_map>
 #include <utility>

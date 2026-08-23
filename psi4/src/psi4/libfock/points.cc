@@ -39,7 +39,6 @@
 #include "gau2grid/gau2grid.h"
 #include <libint2/config.h>
 
-#include <cmath>
 
 namespace psi {
 

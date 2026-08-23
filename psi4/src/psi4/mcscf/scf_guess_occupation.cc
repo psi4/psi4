@@ -26,14 +26,11 @@
  * @END LICENSE
  */
 
-#include <iostream>
 #include <vector>
-#include <string>
 #include <utility>
 #include <algorithm>
 #include <cstdio>
 
-#include "psi4/libmoinfo/libmoinfo.h"
 
 #include "scf.h"
 

@@ -30,7 +30,6 @@
     \ingroup CCTRIPLES
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include "MOInfo.h"
 #include "Params.h"
 #include "globals.h"

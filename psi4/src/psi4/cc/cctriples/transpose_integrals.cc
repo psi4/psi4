@@ -26,12 +26,7 @@
  * @END LICENSE
  */
 
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.h"
 #include "psi4/libdpd/dpd.h"
-#include "MOInfo.h"
-#include "Params.h"
-#include "globals.h"
 
 namespace psi {
 namespace cctriples {

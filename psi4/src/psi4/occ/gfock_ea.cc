@@ -31,7 +31,6 @@
 #include "psi4/libmints/matrix.h"
 #include "occwave.h"
 #include "defines.h"
-#include "dpd.h"
 
 using namespace psi;
 

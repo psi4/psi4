@@ -30,7 +30,6 @@
     \ingroup CCENERGY
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/cc/ccwave.h"

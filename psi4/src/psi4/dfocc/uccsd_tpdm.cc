@@ -27,7 +27,6 @@
  */
 
 #include "dfocc.h"
-#include "defines.h"
 
 namespace psi{
 namespace dfoccwave {

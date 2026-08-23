@@ -28,8 +28,6 @@
 
 #include "vector.h"
 
-#include <algorithm>
-#include <numeric>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
@@ -38,7 +36,6 @@
 
 #include "dimension.h"
 #include "matrix.h"
-#include "psi4/occ/arrays.h"
 
 namespace psi {
 

@@ -27,13 +27,9 @@
  */
 
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 
-#include "algebra_interface.h"
 #include "mrcc.h"
-#include "matrix.h"
-#include "blas.h"
 #include "updater.h"
 
 namespace psi {

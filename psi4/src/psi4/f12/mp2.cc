@@ -29,7 +29,6 @@
 #include "mp2.h"
 
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 #include "psi4/libmints/basisset.h"

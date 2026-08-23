@@ -33,13 +33,11 @@
 #include "matrix.h"
 #include "molecule.h"
 
-#include "psi4/psi4-dec.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libpsi4util/process.h"
 
-#include "psi4/pragma.h"
 #include <memory>
 
 namespace psi {

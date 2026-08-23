@@ -33,15 +33,10 @@
  */
 
 #include <cstdlib>
-#include <cstdio>
-#include <iostream>
 #include <fstream>
-#include <cmath>
-#include <algorithm>
 #include <string>
 #include <sstream>
 #include <vector>
-#include <utility>
 
 #include "psi4/libmints/basisset.h"
 #include "psi4/libqt/qt.h"

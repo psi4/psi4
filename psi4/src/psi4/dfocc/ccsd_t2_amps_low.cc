@@ -26,11 +26,8 @@
  * @END LICENSE
  */
 
-#include "psi4/libqt/qt.h"
-#include "defines.h"
 #include "dfocc.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libdiis/diismanager.h"
 
 namespace psi {
 namespace dfoccwave {
