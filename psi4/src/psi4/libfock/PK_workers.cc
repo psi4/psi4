@@ -30,7 +30,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/gshell.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/aiohandler.h"
 #include "psi4/libiwl/config.h"
 #include "PK_workers.h"
