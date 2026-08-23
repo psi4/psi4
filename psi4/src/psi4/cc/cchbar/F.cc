@@ -33,10 +33,8 @@
 
 /*! \defgroup CCHBAR cchbar: Compute the similarity-transformed Hamiltonian */
 
-#include <cstdio>
 #include <cstdlib>
 #include <string>
-#include <cmath>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"

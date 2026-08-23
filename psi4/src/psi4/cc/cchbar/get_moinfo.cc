@@ -30,13 +30,11 @@
     \ingroup CCHBAR
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include <cstdlib>
 #include <string>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
 #include "MOInfo.h"

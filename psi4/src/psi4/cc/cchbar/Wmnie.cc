@@ -30,10 +30,7 @@
     \ingroup CCHBAR
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cmath>
 #include "psi4/libdpd/dpd.h"
-#include "MOInfo.h"
 #include "Params.h"
 #include "globals.h"
 

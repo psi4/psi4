@@ -48,7 +48,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libqt/qt.h"
 
-#include <cstdio>
 #include <cstdlib>
 #include <string>
 
