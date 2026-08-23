@@ -128,6 +128,12 @@ jobs:
                         anaconda-client ^
                         conda-build ^
                         m2-sed ^
+                        libwinpthread=12.0.0.r4.gg4f2fc60ca=h57928b3_10 ^
+                        libgcc=16.1.0=h110b43a_1 ^
+                        libgfortran=16.1.0=h719f0c7_1 ^
+                        libgfortran5=16.1.0=h94075d5_1 ^
+                        libgomp=16.1.0=h8ee18e1_1 ^
+                        libstdcxx=16.1.0=hae5796f_1 ^
                         eigen ^
                         libboost-headers ^
                         conda-verify ^
