@@ -392,3 +392,37 @@ def test_extern_points_diffuse(ep, anskey):
 
     ene = psi4.energy("hf/6-31G*", molecule=water, external_potentials=ep)
     psi4.compare_values(ans[anskey]["energy"], ene, 6, anskey)
+
+
+def test_extern_wavefunction_uses_shared_validator(monkeypatch):
+    """Verify the wavefunction setup normalizes with :py:func:`psi4.p4util.validate_external_potential`.
+
+    A spelling taught only to the p4util validator must reach the wavefunction, so the
+    accepted-spelling grammar has a single owner rather than forked copies that can drift.
+
+    """
+    from psi4.driver import p4util
+    from psi4.driver.procrouting import proc
+
+    h2o_bohr = [-1.47172438,  0.0,         2.14046066,
+                -1.25984639,  1.44393784,  3.22442268,
+                -1.25984639, -1.44393784,  3.22442079]
+    water = psi4.core.Molecule.from_arrays(units="Bohr", geom=h2o_bohr, elem=["O", "H", "H"])
+    basis = psi4.core.BasisSet.build(water, "ORBITAL", "sto-3g", quiet=True)
+    wfn = psi4.core.Wavefunction(water, basis)
+
+    real_validator = p4util.validate_external_potential
+    sentinel = "spelling-known-only-to-p4util"
+
+    def extended_validator(external_potential):
+        if isinstance(external_potential, str) and external_potential == sentinel:
+            return real_validator(_three_near_points)
+        return real_validator(external_potential)
+
+    monkeypatch.setattr(p4util, "validate_external_potential", extended_validator)
+
+    proc._set_external_potentials_to_wavefunction(sentinel, wfn)
+
+    charges = np.array([list(chg) for chg in wfn.potential_variable("C").getCharges()])
+    assert charges.shape == np.array(_three_near_points).shape
+    assert np.allclose(charges, _three_near_points, atol=1.0e-12)

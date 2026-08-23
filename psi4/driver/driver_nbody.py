@@ -593,10 +593,17 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                 or not 1 <= key <= computer_model.nfragments
             ]
             if invalid_keys:
-                raise ValidationError(
+                message = (
                     f"external_potentials keys must be 1-indexed fragment integers between 1 and "
                     f"{computer_model.nfragments}; found {invalid_keys}."
                 )
+                if all(isinstance(key, str) for key in invalid_keys):
+                    message += (
+                        " For a whole-molecule external potential, use lowercase mode keys among "
+                        f"{sorted(_EP_MODE_KEYS)} or SAPT partition keys among "
+                        f"{sorted(_EP_SAPT_FRAGMENT_KEYS)}."
+                    )
+                raise ValidationError(message)
             for ifr, potential in external_potentials.items():
                 _validate_fragment_potential(ifr, potential)
         elif external_potentials is not None:

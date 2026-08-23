@@ -471,3 +471,30 @@ def test_fragment_keyed_external_potentials_require_bsse_type(water_cluster):
 
     with pytest.raises(ValidationError, match="1-indexed fragment mapping"):
         psi4.driver.p4util.validate_external_potential({2: b_external_potential})
+
+
+@uusing("qcmanybody")
+@pytest.mark.parametrize(
+    "key",
+    [
+        pytest.param("Points", id="miscased-mode-key"),
+        pytest.param("pointses", id="misspelled-mode-key"),
+    ],
+)
+def test_nbody_external_potentials_string_key_names_whole_molecule_keys(water_cluster, key):
+    """Verify a string key that is not a whole-molecule spelling names the accepted keys."""
+    _, dimer, _ = water_cluster
+
+    with pytest.raises(ValidationError) as exc:
+        task_planner(
+            "energy",
+            "hf/sto-3g",
+            dimer,
+            bsse_type="nocp",
+            external_potentials={key: [[0.5, [0.0, 0.0, 1.0]]]},
+        )
+
+    message = str(exc.value)
+    assert "whole-molecule external potential" in message
+    assert "'points'" in message
+    assert "'A'" in message
