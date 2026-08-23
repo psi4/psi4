@@ -28,7 +28,6 @@
 
 // Semicanonicalizing RHF Fock matrix by diagonalizing active-occupied (AOCC-AOCC) and active-virtual (AVIR-AVIR) blocks
 #include "psi4/psi4-dec.h"
-#include "defines.h"
 #include "dfocc.h"
 
 using namespace psi;
