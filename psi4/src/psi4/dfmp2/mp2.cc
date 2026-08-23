@@ -33,7 +33,6 @@
 #endif
 
 #include "psi4/psi4-dec.h"
-#include "psi4/physconst.h"
 #include "psi4/psifiles.h"
 
 #include "psi4/lib3index/3index.h"
@@ -48,7 +47,6 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"

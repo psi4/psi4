@@ -31,14 +31,9 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <algorithm>
 #include <vector>
-#include <utility>
 
-#include "psi4/psifiles.h"
-#include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/psimath.h"
 #include "psi4/libmints/petitelist.h"
@@ -48,7 +43,6 @@
 
 // MKL Header
 #ifdef USING_LAPACK_MKL
-#include <mkl.h>
 #endif
 
 // OpenMP Header

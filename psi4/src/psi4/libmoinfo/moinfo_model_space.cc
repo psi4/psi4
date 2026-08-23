@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include <iostream>
-#include <cmath>
 #include <cstdlib>
 
 #include "psi4/libpsi4util/exception.h"
