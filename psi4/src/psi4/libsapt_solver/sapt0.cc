@@ -27,7 +27,6 @@
  */
 
 #include "sapt0.h"
-#include "psi4/lib3index/3index.h"
 #include "psi4/physconst.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
