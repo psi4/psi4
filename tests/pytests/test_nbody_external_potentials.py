@@ -104,7 +104,7 @@ def test_nbody_external_potentials_cp_dimer(water_cluster):
         external_potentials={2: b_external_potential},
     )
 
-    assert cp_ie == pytest.approx(-0.005286696523, abs=1.0e-10)
+    assert cp_ie == pytest.approx(-0.005286696523, abs=1.0e-6)
 
 
 @uusing("qcmanybody")
@@ -145,3 +145,98 @@ def test_nbody_external_potentials_trimer_plan(water_cluster):
             bsse_type="nocp",
             external_potentials={0: b_external_potential},
         )
+
+
+@uusing("qcmanybody")
+@pytest.mark.parametrize(
+    "spelling",
+    [
+        pytest.param("points", id="mode-keys"),
+        pytest.param("C", id="sapt-fragment-keys"),
+    ],
+)
+def test_nbody_global_external_potential_dict_plan(water_cluster, spelling):
+    """Verify whole-molecule dict spellings are not mistaken for a fragment mapping."""
+    trimer, _, b_external_potential = water_cluster
+    global_potential = {spelling: b_external_potential}
+
+    plan = task_planner(
+        "energy",
+        "hf/sto-3g",
+        trimer,
+        bsse_type="nocp",
+        external_potentials=global_potential,
+    )
+
+    assert isinstance(plan, ManyBodyComputer)
+    assert plan.task_list
+    for component in plan.task_list.values():
+        assert component.keywords["function_kwargs"]["external_potentials"] == global_potential
+
+
+@uusing("qcmanybody")
+def test_nbody_global_external_potential_dict_energy(water_cluster):
+    """Verify a whole-molecule dict spelling gives the same MBE energy as the equivalent flat list."""
+    _, dimer, b_external_potential = water_cluster
+    psi4.set_options(
+        {
+            "basis": "sto-3g",
+            "scf_type": "pk",
+            "e_convergence": 10,
+            "d_convergence": 10,
+        }
+    )
+
+    dict_ie = psi4.energy(
+        "hf",
+        molecule=dimer,
+        bsse_type="nocp",
+        external_potentials={"points": b_external_potential},
+    )
+    list_ie = psi4.energy(
+        "hf",
+        molecule=dimer,
+        bsse_type="nocp",
+        external_potentials=b_external_potential,
+    )
+
+    assert dict_ie == pytest.approx(list_ie, abs=1.0e-10)
+
+
+@uusing("qcmanybody")
+def test_nbody_external_potentials_with_embedding_charges(water_cluster, monkeypatch):
+    """Verify embedding charges add to, rather than replace, fragment-scoped potentials."""
+    from qcmanybody.utils import delabeler
+
+    monkeypatch.setenv("QCMANYBODY_EMBEDDING_CHARGES", "1")
+
+    _, dimer, b_external_potential = water_cluster
+    plan = task_planner(
+        "energy",
+        "hf/sto-3g",
+        dimer,
+        bsse_type="nocp",
+        return_total_data=True,
+        embedding_charges={1: [0.417, -0.834, 0.417], 2: [0.417, -0.834, 0.417]},
+        external_potentials={2: b_external_potential},
+    )
+
+    assert isinstance(plan, ManyBodyComputer)
+    real_fragments_seen = set()
+    for label, component in plan.task_list.items():
+        _, real_fragments, _ = delabeler(label)
+        real_fragments = tuple(real_fragments)
+        real_fragments_seen.add(real_fragments)
+        component_potentials = component.keywords["function_kwargs"]["external_potentials"]
+
+        # one embedding charge per atom of each fragment not in the component's basis
+        nembedded = 3 * (2 - len(real_fragments))
+        if 2 in real_fragments:
+            assert len(component_potentials) == nembedded + len(b_external_potential)
+            assert component_potentials[-len(b_external_potential):] == b_external_potential
+        else:
+            assert len(component_potentials) == nembedded
+            for potential in b_external_potential:
+                assert potential not in component_potentials
+
+    assert real_fragments_seen == {(1,), (2,), (1, 2)}

@@ -98,7 +98,11 @@ single-calculation behavior: the complete list is applied to **every** generated
 component, including CP calculations where some molecular fragments are ghosts.
 Psi4 emits a warning for this form in an MBE calculation. Use it only when the
 potential represents a fixed background that should be unchanged across all
-components.
+components. The whole-molecule dictionary spellings described at
+:ref:`External potentials and QM/MM <sec:scfqmmm>` -- keys among ``points``,
+``diffuse``, and ``matrix``, or the fragment-interaction keys ``A``, ``B``, and
+``C`` -- are likewise treated as a fixed background rather than a fragment
+mapping.
 
 For the general point-charge format and further external-potential forms, see
 :ref:`External potentials and QM/MM <sec:scfqmmm>`.
