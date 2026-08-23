@@ -184,6 +184,12 @@ def _is_fragment_keyed_external_potential(external_potentials: Any) -> bool:
     return True
 
 
+def _flatten_embedding_charges(charges: List) -> List:
+    """Rewrite embedding *charges* into the flat ``[q, x, y, z]`` rows used by a normalized points channel."""
+
+    return [[chg[0], *chg[1]] if len(chg) == 2 else list(chg) for chg in charges]
+
+
 def _add_embedding_points(external_potential: Any, charges: List) -> Dict:
     """Add embedding *charges* to the point charges of a single whole-molecule external potential partition.
 
@@ -191,12 +197,16 @@ def _add_embedding_points(external_potential: Any, charges: List) -> Dict:
     the ``{mode: spec}`` form, so a partition absent from the user input becomes points-only.
 
     """
-    charges = [[chg[0], *chg[1]] if len(chg) == 2 else list(chg) for chg in charges]
     if external_potential is None:
-        return {"points": charges}
+        return {"points": _flatten_embedding_charges(charges)}
 
-    normalized = p4util.validate_external_potential({"C": external_potential})["C"]
-    normalized["points"] = charges + list(normalized.get("points", []))
+    return _add_embedding_points_to_normalized(
+        p4util.validate_external_potential({"C": external_potential})["C"], charges
+    )
+
+
+def _add_embedding_points_to_normalized(normalized: Dict, charges: List) -> Dict:
+    normalized["points"] = _flatten_embedding_charges(charges) + list(normalized.get("points", []))
     return normalized
 
 
@@ -204,7 +214,8 @@ def _combine_external_potentials(charges: List, external_potentials: Any) -> Any
     """Add embedding *charges* to any user-supplied *external_potentials* for a single component calculation.
 
     Fragment-partitioned (A/B/C) potentials keep their partitions; the whole-environment embedding charges
-    join the special ``C`` partition, so they enter the total potential exactly once.
+    join the special ``C`` partition, so they enter the total potential exactly once. The charges only ever
+    join a points channel, leaving any ``diffuse`` and ``matrix`` content of *external_potentials* intact.
 
     """
     charges = list(charges)
@@ -223,7 +234,11 @@ def _combine_external_potentials(charges: List, external_potentials: Any) -> Any
         merged[ckey] = _add_embedding_points(merged.get(ckey), charges)
         return merged
 
-    return charges + list(external_potentials)
+    normalized = p4util.validate_external_potential({"C": external_potentials})["C"]
+    if set(normalized) == {"points"} and len(normalized["points"]) == len(external_potentials):
+        return charges + list(external_potentials)
+
+    return _add_embedding_points_to_normalized(normalized, charges)
 
 
 # nbody function is here for the docstring

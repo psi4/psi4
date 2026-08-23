@@ -310,3 +310,73 @@ def test_nbody_sapt_dict_external_potentials_with_embedding_charges(
         assert psi4.driver.p4util.validate_external_potential(component_potentials)
 
     assert real_fragments_seen == {(1,), (2,), (1, 2)}
+
+
+@uusing("qcmanybody")
+@pytest.mark.parametrize(
+    "spelling",
+    [
+        pytest.param("matrix-only", id="positional-matrix-only"),
+        pytest.param("diffuse-only", id="positional-diffuse-only"),
+        pytest.param("points-diffuse", id="positional-points-diffuse"),
+        pytest.param("all-three", id="positional-points-diffuse-matrix"),
+        pytest.param("nested-points", id="positional-points-only"),
+    ],
+)
+def test_nbody_positional_external_potentials_with_embedding_charges(
+    water_cluster, monkeypatch, spelling
+):
+    """Verify positional [points, diffuse, matrix] potentials survive the embedding-charge merge."""
+    from qcmanybody.utils import delabeler
+
+    monkeypatch.setenv("QCMANYBODY_EMBEDDING_CHARGES", "1")
+
+    _, dimer, _ = water_cluster
+    points = [[0.5, 0.0, 0.0, 1.0], [-0.5, 0.0, 0.0, -1.0]]
+    diffuse = [[0.3, 1.0, 1.0, 1.0, 0.5]]
+    matrix = np.eye(5).tolist()
+
+    global_potential, expected_points, expected_modes = {
+        "matrix-only": ([None, None, matrix], [], {"points", "matrix"}),
+        "diffuse-only": ([None, diffuse], [], {"points", "diffuse"}),
+        "points-diffuse": ([points, diffuse], points, {"points", "diffuse"}),
+        "all-three": ([points, diffuse, matrix], points, {"points", "diffuse", "matrix"}),
+        "nested-points": ([points], points, {"points"}),
+    }[spelling]
+
+    plan = task_planner(
+        "energy",
+        "hf/sto-3g",
+        dimer,
+        bsse_type="nocp",
+        return_total_data=True,
+        embedding_charges={1: [0.417, -0.834, 0.417], 2: [0.417, -0.834, 0.417]},
+        external_potentials=global_potential,
+    )
+
+    assert isinstance(plan, ManyBodyComputer)
+    real_fragments_seen = set()
+    for label, component in plan.task_list.items():
+        _, real_fragments, _ = delabeler(label)
+        real_fragments_seen.add(tuple(real_fragments))
+        component_potentials = component.keywords["function_kwargs"]["external_potentials"]
+
+        # one embedding charge per atom of each fragment not in the component's basis
+        nembedded = 3 * (2 - len(real_fragments))
+        if nembedded == 0:
+            assert component_potentials == global_potential
+            continue
+
+        assert set(component_potentials) == expected_modes
+        assert len(component_potentials["points"]) == nembedded + len(expected_points)
+        assert all(len(point) == 4 for point in component_potentials["points"])
+        assert [list(point) for point in component_potentials["points"][nembedded:]] == expected_points
+        if "diffuse" in expected_modes:
+            assert [list(row) for row in component_potentials["diffuse"]] == diffuse
+        if "matrix" in expected_modes:
+            assert component_potentials["matrix"] == matrix
+
+        # the merged structure remains acceptable to the downstream consumer
+        assert psi4.driver.p4util.validate_external_potential(component_potentials)
+
+    assert real_fragments_seen == {(1,), (2,), (1, 2)}
