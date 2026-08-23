@@ -27,10 +27,7 @@
  */
 
 #include <limits>
-#include <cmath>
 
-#include "psi4/pragma.h"
-#include <memory>
 #include "psi4/psifiles.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmoinfo/libmoinfo.h"

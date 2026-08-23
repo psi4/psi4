@@ -29,13 +29,11 @@
 #include <cmath>
 #include <cstdio>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libmoinfo/libmoinfo.h"
 
 #include "algebra_interface.h"
 #include "heff.h"
 
 #include <algorithm>
-#include <functional>
 #include <utility>
 
 namespace psi {

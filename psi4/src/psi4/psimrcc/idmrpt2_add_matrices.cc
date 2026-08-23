@@ -32,7 +32,6 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include "blas.h"
 #include "idmrpt2.h"
 
 namespace psi {

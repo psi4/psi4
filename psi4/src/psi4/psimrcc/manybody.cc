@@ -31,7 +31,6 @@
  *  @ingroup (PSIMRCC)
  *  @brief The base class for all the many-body methods
  */
-#include <iostream>
 
 #include <algorithm>
 #include <cmath>
