@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
 #include <cmath>
 #include <sstream>
@@ -45,7 +44,6 @@
 
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 #include "psi4/libmints/matrix.h"
 

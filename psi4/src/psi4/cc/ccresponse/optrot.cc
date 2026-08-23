@@ -68,7 +68,6 @@
   -TDC, 4/09, revised 3/15
 */
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
 #include <cmath>
 #include <sstream>
@@ -83,7 +82,6 @@
 
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 #include "psi4/physconst.h"
 #include "psi4/libmints/matrix.h"
