@@ -2365,45 +2365,6 @@ void StandardGridMgr::Initialize_SG1() {
     }
 }
 
-class NuclearWeightMgr {
-    enum NuclearSchemes { NAIVE, BECKE, TREUTLER, STRATMANN, SBECKE };  // Must match the nuclearschemenames array!
-    static const char *nuclearschemenames[];
-
-    //// These are the member variables
-    enum NuclearSchemes scheme_;
-    std::shared_ptr<Molecule> molecule_;
-    double **inv_dist_;
-    double **amatrix_;
-    ////
-
-    inline double distToAtom(MassPoint mp, int A) const {
-        return sqrt((mp.x - molecule_->x(A)) * (mp.x - molecule_->x(A)) +
-                    (mp.y - molecule_->y(A)) * (mp.y - molecule_->y(A)) +
-                    (mp.z - molecule_->z(A)) * (mp.z - molecule_->z(A)));
-    }
-
-    static double BeckeMu(double ri, double rj, double inv_rij);
-    static double SmoothBeckeMu(double ri, double rj, double inv_rij);
-    static double BeckeStepFunction(double x);
-    static double StratmannStepFunction(double mu);
-
-    // Becke says u = (chi-1)/(chi+1), a = u/(u^2-1), then clip so that |a| <= 1/2.
-    // We can save a step and find `a' directly from chi.
-    static inline double getAfromChi(double chi) {
-        double a = (1 - chi * chi) / (4 * chi);
-        return (a < -0.5) ? -0.5 : (a > 0.5) ? 0.5 : a;
-    }
-
-   public:
-    static int WhichScheme(const char *schemename);
-    static const char *SchemeName(int which) { return nuclearschemenames[which]; }
-
-    NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme);
-    ~NuclearWeightMgr();
-    double GetStratmannCutoff(int A) const;
-    double computeNuclearWeight(MassPoint mp, int A, double stratmannCutoff) const;
-};
-
 const char *NuclearWeightMgr::nuclearschemenames[] = {"NAIVE", "BECKE", "TREUTLER", "STRATMANN",
                                                       "SBECKE"};  // Must match `enum NuclearSchemes' !
 
