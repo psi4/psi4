@@ -37,7 +37,6 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/psi4-dec.h"
 namespace psi {
 
 void PSIO::close(size_t unit, int keep) {
