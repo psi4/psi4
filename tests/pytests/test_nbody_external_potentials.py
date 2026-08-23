@@ -240,3 +240,73 @@ def test_nbody_external_potentials_with_embedding_charges(water_cluster, monkeyp
                 assert potential not in component_potentials
 
     assert real_fragments_seen == {(1,), (2,), (1, 2)}
+
+
+@uusing("qcmanybody")
+@pytest.mark.parametrize(
+    "c_partition",
+    [
+        pytest.param(None, id="absent-c"),
+        pytest.param("points-list", id="existing-c-points-list"),
+        pytest.param("mode-dict", id="existing-c-points-and-diffuse"),
+    ],
+)
+def test_nbody_sapt_dict_external_potentials_with_embedding_charges(
+    water_cluster, monkeypatch, c_partition
+):
+    """Verify embedding charges join the C partition without disturbing A, B, or C diffuse content."""
+    from qcmanybody.utils import delabeler
+
+    monkeypatch.setenv("QCMANYBODY_EMBEDDING_CHARGES", "1")
+
+    _, dimer, b_external_potential = water_cluster
+    pot_a = [[0.2, [1.0, 2.0, 3.0]]]
+    pot_b = b_external_potential
+    c_points = [[-0.3, [4.0, 5.0, 6.0]]]
+    c_diffuse = [[0.1, 7.0, 8.0, 9.0, 0.5]]
+
+    global_potential = {"A": pot_a, "B": pot_b}
+    if c_partition == "points-list":
+        global_potential["C"] = c_points
+    elif c_partition == "mode-dict":
+        global_potential["C"] = {"points": c_points, "diffuse": c_diffuse}
+
+    plan = task_planner(
+        "energy",
+        "hf/sto-3g",
+        dimer,
+        bsse_type="nocp",
+        return_total_data=True,
+        embedding_charges={1: [0.417, -0.834, 0.417], 2: [0.417, -0.834, 0.417]},
+        external_potentials=global_potential,
+    )
+
+    assert isinstance(plan, ManyBodyComputer)
+    expected_c_points = [] if c_partition is None else c_points
+    real_fragments_seen = set()
+    for label, component in plan.task_list.items():
+        _, real_fragments, _ = delabeler(label)
+        real_fragments_seen.add(tuple(real_fragments))
+        component_potentials = component.keywords["function_kwargs"]["external_potentials"]
+
+        assert component_potentials["A"] == pot_a
+        assert component_potentials["B"] == pot_b
+
+        # one embedding charge per atom of each fragment not in the component's basis
+        nembedded = 3 * (2 - len(real_fragments))
+        if nembedded == 0:
+            assert component_potentials == global_potential
+            continue
+
+        assert set(component_potentials) == {"A", "B", "C"}
+        c_spec = component_potentials["C"]
+        assert set(c_spec) == ({"points", "diffuse"} if c_partition == "mode-dict" else {"points"})
+        assert len(c_spec["points"]) == nembedded + len(expected_c_points)
+        assert all(len(point) == 4 for point in c_spec["points"])
+        if c_partition == "mode-dict":
+            assert [list(row) for row in c_spec["diffuse"]] == c_diffuse
+
+        # the merged structure remains acceptable to the downstream consumer
+        assert psi4.driver.p4util.validate_external_potential(component_potentials)
+
+    assert real_fragments_seen == {(1,), (2,), (1, 2)}

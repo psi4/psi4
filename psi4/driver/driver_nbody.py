@@ -159,9 +159,10 @@ MBETaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComp
 _EP_MODE_KEYS = {"points", "diffuse", "matrix"}
 _EP_SAPT_FRAGMENT_KEYS = {"A", "B", "C"}
 
-_EP_FLAT_WARNING = (
-    "A flat external_potentials list applies to every many-body component calculation. "
-    "Are you sure this is what you want? Use a 1-indexed fragment dictionary to scope potentials."
+_EP_UNSCOPED_WARNING = (
+    "external_potentials was not given as a 1-indexed fragment mapping, so it applies in full to every "
+    "many-body component calculation. Are you sure this is what you want? Use a 1-indexed fragment "
+    "dictionary to scope potentials to particular fragments."
 )
 
 
@@ -183,22 +184,44 @@ def _is_fragment_keyed_external_potential(external_potentials: Any) -> bool:
     return True
 
 
-def _combine_external_potentials(charges: List, external_potentials: Any) -> Any:
-    """Add embedding *charges* to any user-supplied *external_potentials* for a single component calculation."""
+def _add_embedding_points(external_potential: Any, charges: List) -> Dict:
+    """Add embedding *charges* to the point charges of a single whole-molecule external potential partition.
 
+    Any ``diffuse`` and ``matrix`` content of *external_potential* is preserved. Returns the partition in
+    the ``{mode: spec}`` form, so a partition absent from the user input becomes points-only.
+
+    """
+    charges = [[chg[0], *chg[1]] if len(chg) == 2 else list(chg) for chg in charges]
+    if external_potential is None:
+        return {"points": charges}
+
+    normalized = p4util.validate_external_potential({"C": external_potential})["C"]
+    normalized["points"] = charges + list(normalized.get("points", []))
+    return normalized
+
+
+def _combine_external_potentials(charges: List, external_potentials: Any) -> Any:
+    """Add embedding *charges* to any user-supplied *external_potentials* for a single component calculation.
+
+    Fragment-partitioned (A/B/C) potentials keep their partitions; the whole-environment embedding charges
+    join the special ``C`` partition, so they enter the total potential exactly once.
+
+    """
     charges = list(charges)
     if external_potentials is None or (isinstance(external_potentials, dict) and not external_potentials):
         return charges
 
+    if not charges:
+        return external_potentials
+
     if isinstance(external_potentials, dict):
         if set(external_potentials) <= _EP_MODE_KEYS:
-            merged = copy.deepcopy(external_potentials)
-            merged["points"] = charges + list(merged.get("points", []))
-            return merged
-        raise ValidationError(
-            "embedding_charges cannot be combined with fragment-partitioned (A/B/C) external_potentials; "
-            f"found keys {sorted(external_potentials)}."
-        )
+            return _add_embedding_points(external_potentials, charges)
+
+        merged = copy.deepcopy(external_potentials)
+        ckey = next((key for key in merged if isinstance(key, str) and key.upper() == "C"), "C")
+        merged[ckey] = _add_embedding_points(merged.get(ckey), charges)
+        return merged
 
     return charges + list(external_potentials)
 
@@ -290,7 +313,8 @@ def nbody():
         external potentials to every component, including components where molecular fragments are ghosts. The
         whole-molecule dictionary spellings keyed by ``points``/``diffuse``/``matrix`` or by ``A``/``B``/``C`` are
         likewise applied to every component. When ``embedding_charges`` is also active, the embedding charges are
-        added to, not substituted for, the potentials selected for each component.
+        added to, not substituted for, the potentials selected for each component; for the ``A``/``B``/``C`` form
+        they join the whole-environment ``C`` partition and the ``A`` and ``B`` partitions are left untouched.
 
     Potential QCVariables set are:
 
@@ -540,8 +564,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                     f"{computer_model.nfragments}; found {invalid_keys}."
                 )
         elif external_potentials is not None:
-            logger.warning(_EP_FLAT_WARNING)
-            core.print_out("\n  Warning: " + _EP_FLAT_WARNING + "\n")
+            logger.warning(_EP_UNSCOPED_WARNING)
+            core.print_out("\n  Warning: " + _EP_UNSCOPED_WARNING + "\n")
 
         nb_per_mc = computer_model.nbodies_per_mc_level
 

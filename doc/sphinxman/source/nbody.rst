@@ -96,13 +96,20 @@ component.
 Passing a flat list instead of a fragment mapping retains the conventional
 single-calculation behavior: the complete list is applied to **every** generated
 component, including CP calculations where some molecular fragments are ghosts.
-Psi4 emits a warning for this form in an MBE calculation. Use it only when the
-potential represents a fixed background that should be unchanged across all
-components. The whole-molecule dictionary spellings described at
-:ref:`External potentials and QM/MM <sec:scfqmmm>` -- keys among ``points``,
-``diffuse``, and ``matrix``, or the fragment-interaction keys ``A``, ``B``, and
-``C`` -- are likewise treated as a fixed background rather than a fragment
-mapping.
+Use it only when the potential represents a fixed background that should be
+unchanged across all components. The whole-molecule dictionary spellings
+described at :ref:`External potentials and QM/MM <sec:scfqmmm>` -- keys among
+``points``, ``diffuse``, and ``matrix``, or the fragment-interaction keys ``A``,
+``B``, and ``C`` -- are likewise treated as a fixed background rather than a
+fragment mapping. Psi4 emits a warning for any such unscoped form in an MBE
+calculation.
+
+When ``embedding_charges`` is also active, the point charges generated for the
+fragments outside a component are *added to* the potentials that component
+would otherwise receive, rather than replacing them. For the ``A``/``B``/``C``
+form the embedding charges join the whole-environment ``C`` partition, leaving
+the ``A`` and ``B`` partitions untouched, so the charges enter the total
+potential exactly once.
 
 For the general point-charge format and further external-potential forms, see
 :ref:`External potentials and QM/MM <sec:scfqmmm>`.
