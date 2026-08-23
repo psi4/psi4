@@ -30,7 +30,6 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <cmath>
@@ -42,8 +41,6 @@
 #include "psi4/libpsi4util/exception.h"
 
 #include "MOInfo.h"
-#include "Params.h"
-#include "Frozen.h"
 #include "globals.h"
 
 namespace psi {
