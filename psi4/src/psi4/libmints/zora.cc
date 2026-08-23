@@ -272,7 +272,7 @@ void ZORA::compute_TSR(SharedMatrix& T_SR) {
 
 // Compute the spin-orbit coupling Hamiltonian in the AO basis.
 void ZORA::compute_HSO(SharedMatrix& Hx, SharedMatrix& Hy, SharedMatrix& Hz) {
-    outfile->Printf("\n\n    ZORA: You called compute_HSO. Rejoice!\n");
+    timer_on("ZORA: Spin-Orbit Coupling");
     // Speed of light in atomic units squared
     const double C2 = pc_c_au * pc_c_au;
 
@@ -347,6 +347,7 @@ void ZORA::compute_HSO(SharedMatrix& Hx, SharedMatrix& Hy, SharedMatrix& Hz) {
             Hz->add(tmp_z);
         }
     }
+    timer_off("ZORA: Spin-Orbit Coupling");
 }
 
 }  // namespace psi

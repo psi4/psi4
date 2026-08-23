@@ -6,7 +6,7 @@ np.set_printoptions(suppress=True, linewidth=200, precision = 6)
 import pytest
 import psi4
 
-pytestmark = [pytest.mark.api, pytest.mark.quick]
+pytestmark = [pytest.mark.api, pytest.mark.quick, pytest.mark.zora]
 
 def test_zora_integrals():
     to_array = psi4.driver.p4util.numpy_helper._to_array

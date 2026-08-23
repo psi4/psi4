@@ -274,18 +274,21 @@ void CGHF::form_H() {
         }
         std::complex<double> i(0, 1);
 
-        for (int h = 0; h < nirrep_; h++) {
-            int nso = nsopi_[h];
-            for (int p = 0; p < nso; p++) {
-                for (int q = 0; q < nso; q++) {
-                    // Note that I multiply by i to get H_SO Hermitiain
-                    H_->get(h)(p, q)         += H_SOC[2]->get(p,q)*i; // +Hz [0,0]
-                    H_->get(h)(p+nso, q+nso) -= H_SOC[2]->get(p,q)*i; // -Hz [1,1]
-                    H_->get(h)(p, q+nso)     += H_SOC[0]->get(p,q)*i; // +Hx [0,1]
-                    H_->get(h)(p+nso, q)     += H_SOC[0]->get(p,q)*i; // +Hx [1,0]
-                    H_->get(h)(p, q+nso)     += H_SOC[1]->get(p,q);   //+iHy [0,1]
-                    H_->get(h)(p+nso, q)     -= H_SOC[1]->get(p,q);   //-iHy [1,0]
-                }
+        const auto& Hx = *H_SOC[0];
+        const auto& Hy = *H_SOC[1];
+        const auto& Hz = *H_SOC[2];
+
+        // Need SO SOC integrals and non-C1 CGHF to require loop over irreps.
+        int nso = nsopi_[0];
+        for (int p = 0; p < nso; p++) {
+            for (int q = 0; q < nso; q++) {
+                // Note that I multiply by i to get H_SO Hermitiain
+                H_->get(0)(p, q)         += Hz.get(p,q)*i; // +Hz [0,0]
+                H_->get(0)(p+nso, q+nso) -= Hz.get(p,q)*i; // -Hz [1,1]
+                H_->get(0)(p, q+nso)     += Hx.get(p,q)*i; // +Hx [0,1]
+                H_->get(0)(p+nso, q)     += Hx.get(p,q)*i; // +Hx [1,0]
+                H_->get(0)(p, q+nso)     += Hy.get(p,q);   //-iHy [0,1]
+                H_->get(0)(p+nso, q)     -= Hy.get(p,q);   //+iHy [1,0]
             }
         }
     }
