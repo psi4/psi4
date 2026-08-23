@@ -30,11 +30,9 @@
     \ingroup CCEOM
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {
