@@ -222,6 +222,7 @@ def test_nbody_external_potentials_with_embedding_charges(water_cluster, monkeyp
     )
 
     assert isinstance(plan, ManyBodyComputer)
+    flat_b = [[charge, *position] for charge, position in b_external_potential]
     real_fragments_seen = set()
     for label, component in plan.task_list.items():
         _, real_fragments, _ = delabeler(label)
@@ -229,15 +230,21 @@ def test_nbody_external_potentials_with_embedding_charges(water_cluster, monkeyp
         real_fragments_seen.add(real_fragments)
         component_potentials = component.keywords["function_kwargs"]["external_potentials"]
 
+        # whatever spelling the planner chose, check the point charges the component will actually receive
+        validated = psi4.driver.p4util.validate_external_potential(component_potentials)
+        assert set(validated) == {"C"}
+        assert set(validated["C"]) == {"points"}
+        points = [list(point) for point in validated["C"]["points"]]
+
         # one embedding charge per atom of each fragment not in the component's basis
         nembedded = 3 * (2 - len(real_fragments))
         if 2 in real_fragments:
-            assert len(component_potentials) == nembedded + len(b_external_potential)
-            assert component_potentials[-len(b_external_potential):] == b_external_potential
+            assert len(points) == nembedded + len(flat_b)
+            assert points[nembedded:] == flat_b
         else:
-            assert len(component_potentials) == nembedded
-            for potential in b_external_potential:
-                assert potential not in component_potentials
+            assert len(points) == nembedded
+            for potential in flat_b:
+                assert potential not in points
 
     assert real_fragments_seen == {(1,), (2,), (1, 2)}
 
@@ -321,6 +328,10 @@ def test_nbody_sapt_dict_external_potentials_with_embedding_charges(
         pytest.param("points-diffuse", id="positional-points-diffuse"),
         pytest.param("all-three", id="positional-points-diffuse-matrix"),
         pytest.param("nested-points", id="positional-points-only"),
+        pytest.param("nested-single-row", id="positional-single-row-points"),
+        pytest.param("nested-single-row-xyz", id="positional-single-row-points-nested-xyz"),
+        pytest.param("nested-single-row-array", id="positional-single-row-points-ndarray"),
+        pytest.param("points-trailing-none", id="positional-points-trailing-none"),
     ],
 )
 def test_nbody_positional_external_potentials_with_embedding_charges(
@@ -336,12 +347,19 @@ def test_nbody_positional_external_potentials_with_embedding_charges(
     diffuse = [[0.3, 1.0, 1.0, 1.0, 0.5]]
     matrix = np.eye(5).tolist()
 
+    single_row = [[-0.5, 1.0, 1.0, 0.0]]
+    single_row_xyz = [[-0.5, [1.0, 1.0, 0.0]]]
+
     global_potential, expected_points, expected_modes = {
         "matrix-only": ([None, None, matrix], [], {"points", "matrix"}),
         "diffuse-only": ([None, diffuse], [], {"points", "diffuse"}),
         "points-diffuse": ([points, diffuse], points, {"points", "diffuse"}),
         "all-three": ([points, diffuse, matrix], points, {"points", "diffuse", "matrix"}),
         "nested-points": ([points], points, {"points"}),
+        "nested-single-row": ([single_row], single_row, {"points"}),
+        "nested-single-row-xyz": ([single_row_xyz], single_row, {"points"}),
+        "nested-single-row-array": ([np.array(single_row)], single_row, {"points"}),
+        "points-trailing-none": ([points, None], points, {"points"}),
     }[spelling]
 
     plan = task_planner(
@@ -364,7 +382,9 @@ def test_nbody_positional_external_potentials_with_embedding_charges(
         # one embedding charge per atom of each fragment not in the component's basis
         nembedded = 3 * (2 - len(real_fragments))
         if nembedded == 0:
-            assert component_potentials == global_potential
+            assert psi4.driver.p4util.validate_external_potential(
+                component_potentials
+            ) == psi4.driver.p4util.validate_external_potential(global_potential)
             continue
 
         assert set(component_potentials) == expected_modes

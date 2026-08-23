@@ -200,12 +200,7 @@ def _add_embedding_points(external_potential: Any, charges: List) -> Dict:
     if external_potential is None:
         return {"points": _flatten_embedding_charges(charges)}
 
-    return _add_embedding_points_to_normalized(
-        p4util.validate_external_potential({"C": external_potential})["C"], charges
-    )
-
-
-def _add_embedding_points_to_normalized(normalized: Dict, charges: List) -> Dict:
+    normalized = p4util.validate_external_potential({"C": external_potential})["C"]
     normalized["points"] = _flatten_embedding_charges(charges) + list(normalized.get("points", []))
     return normalized
 
@@ -216,6 +211,7 @@ def _combine_external_potentials(charges: List, external_potentials: Any) -> Any
     Fragment-partitioned (A/B/C) potentials keep their partitions; the whole-environment embedding charges
     join the special ``C`` partition, so they enter the total potential exactly once. The charges only ever
     join a points channel, leaving any ``diffuse`` and ``matrix`` content of *external_potentials* intact.
+    Every other accepted spelling is normalized to the canonical ``{mode: spec}`` form before merging.
 
     """
     charges = list(charges)
@@ -225,20 +221,13 @@ def _combine_external_potentials(charges: List, external_potentials: Any) -> Any
     if not charges:
         return external_potentials
 
-    if isinstance(external_potentials, dict):
-        if set(external_potentials) <= _EP_MODE_KEYS:
-            return _add_embedding_points(external_potentials, charges)
-
+    if isinstance(external_potentials, dict) and not set(external_potentials) <= _EP_MODE_KEYS:
         merged = copy.deepcopy(external_potentials)
         ckey = next((key for key in merged if isinstance(key, str) and key.upper() == "C"), "C")
         merged[ckey] = _add_embedding_points(merged.get(ckey), charges)
         return merged
 
-    normalized = p4util.validate_external_potential({"C": external_potentials})["C"]
-    if set(normalized) == {"points"} and len(normalized["points"]) == len(external_potentials):
-        return charges + list(external_potentials)
-
-    return _add_embedding_points_to_normalized(normalized, charges)
+    return _add_embedding_points(external_potentials, charges)
 
 
 # nbody function is here for the docstring
