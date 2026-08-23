@@ -37,7 +37,6 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/detci/structs.h"
 
-#include <cstdio>
 #include <cstdlib>
 
 namespace psi {

@@ -30,14 +30,11 @@
     \ingroup DETCI
     \brief This file gets information about MOs and subspaces of them
 */
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libpsio/psio.h"
 #include "psi4/detci/ciwave.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/detci/structs.h"

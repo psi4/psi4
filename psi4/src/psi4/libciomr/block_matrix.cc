@@ -35,14 +35,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/psifiles.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #ifdef _POSIX_MEMLOCK
 #include <sys/mman.h>
 #endif
 
-#include "psi4/psi4-dec.h"
 
 namespace psi {
 
