@@ -30,7 +30,6 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include "dpd.h"

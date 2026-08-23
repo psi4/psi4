@@ -30,10 +30,8 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include <cstdlib>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "dpd.h"
 #include "psi4/libpsi4util/exception.h"

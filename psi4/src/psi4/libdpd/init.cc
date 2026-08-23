@@ -32,7 +32,6 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <cstdarg>
 #include <vector>
 #include "psi4/libciomr/libciomr.h"
 #include "dpd.h"

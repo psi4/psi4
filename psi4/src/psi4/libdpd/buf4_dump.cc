@@ -30,7 +30,6 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
-#include <cstdio>
 #include "psi4/libiwl/iwl.h"
 #include "dpd.h"
 

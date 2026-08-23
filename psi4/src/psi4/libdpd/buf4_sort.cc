@@ -37,8 +37,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include <cstdio>
-#include <cstdlib>
 #include <cmath>
 
 using std::string;
