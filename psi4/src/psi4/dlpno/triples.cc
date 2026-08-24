@@ -1506,11 +1506,12 @@ void DLPNOCCSD_T::print_results() {
     outfile->Printf("    *** Andy Jiang... FOR THREEEEEEEEEEE!!!\n\n");
 }
 
-DLPNOCCSDT::DLPNOCCSDT(SharedWavefunction ref_wfn, Options& options) : DLPNOCCSD_T(ref_wfn, options) {}
+DLPNOCCSDT::DLPNOCCSDT(SharedWavefunction ref_wfn, Options& options)
+    : DLPNOCCSD_T(ref_wfn, options), disk_ints_(options.get_bool("DLPNO_CCSDT_DISK_INTS")) {}
 DLPNOCCSDT::~DLPNOCCSDT() {}
 
 Tensor<double, 3> DLPNOCCSDT::matmul_3d_einsums(const Tensor<double, 3> &A, const SharedMatrix &X, int dim_old, int dim_new) {
-    /* Performs the operation A'[i,j,k] = A[I, J, K] * X[i, I] * X[j, J], X[k, K] for cube 3d tensors */
+    /* Transform all three indices of a rank-3 tensor: A'[i,j,k] = A[I,J,K] X[i,I] X[j,J] X[k,K]. */
 
     // TODO: Change this into a TensorView
     Tensor<double, 2> Xview("Xview", dim_new, dim_old);
@@ -1535,7 +1536,7 @@ Tensor<double, 3> DLPNOCCSDT::matmul_3d_einsums(const Tensor<double, 3> &A, cons
 }
 
 Tensor<double, 3> DLPNOCCSDT::matmul_3d_index(const Tensor<double, 3> &A, const SharedMatrix &X, int index) {
-    /* Performs the operation A'[i,j,k] = A[I, J, K] * X[i, I] for a given position */
+    /* Transform one selected index of a rank-3 tensor: A'[i,j,k] = A[I,j,k] X[i,I]. */
 
     // TODO: Change this into a TensorView
     int dim_new = X->rowspi(0);
@@ -2040,7 +2041,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
             prefactor = 0.5;
         }
 
-        // Read in integrals (if Disk I/O is done for integrals)
+        // Read integrals when disk-backed storage is enabled.
         if (disk_ints_) {
             q_ov_[ijk] = QIA_TNO(ijk);
             q_vv_[ijk] = QAB_TNO(ijk);
@@ -2105,7 +2106,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
         einsum(0.0, Indices{index::a, index::b, index::c}, &K_kvvv, 1.0, Indices{index::Q, index::c}, q_kv_[ijk],
                     Indices{index::Q, index::a, index::b}, q_vv_[ijk]);
 
-        // Make extended domain for TNO overlaps
+        // Form the extended domain used for TNO overlaps.
         std::vector<int> triplet_ext_domain = merge_lists(merge_lists(lmopair_to_paos_[ij], lmopair_to_paos_[jk]), lmopair_to_paos_[ik]);
 
         for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
@@ -2198,7 +2199,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
             einsum(0.0, Indices{index::a, index::d}, &R_iajb_cont_a, prefactor, Indices{index::a, index::b, index::c}, U_ijk, 
                         Indices{index::d, index::b, index::c}, g_dbkc);
 
-            // Flush buffers (unfortunately we need to copy to Psi for now, this is NOT ideal)
+            // Copy into a Psi4 Matrix for the subsequent Matrix-based basis transformation.
             ::memcpy(psi_buffer->get_pointer(), R_iajb_cont_a.data(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
 
             auto S_ijk_ij = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[ij]));
@@ -2340,7 +2341,7 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
         R_ijk->zero();
 
-        // Read in integrals (if Disk I/O is done for integrals)
+        // Read integrals when disk-backed storage is enabled.
         if (disk_ints_) {
             q_ov_[ijk] = QIA_TNO(ijk);
             q_vv_[ijk] = QAB_TNO(ijk);
@@ -2533,15 +2534,13 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             // K contribution
             Tensor<double, 3> F_ad_K_temp("F_ad_K_temp", naux_ijk, ntno_ijk, nlmo_ijk);
             einsum(0.0, Indices{index::Q, index::a, index::m}, &F_ad_K_temp, 1.0, Indices{index::Q, index::a, index::e}, q_vv_[ijk], Indices{index::m, index::e}, T_n_ijk_[ijk]);
-            Tensor<double, 3> F_ad_K_temp2("F_ad_K_temp", naux_ijk, nlmo_ijk, ntno_ijk);
+            Tensor<double, 3> F_ad_K_temp2("F_ad_K_temp2", naux_ijk, nlmo_ijk, ntno_ijk);
             permute(Indices{index::Q, index::m, index::a}, &F_ad_K_temp2, Indices{index::Q, index::a, index::m}, F_ad_K_temp);
             einsum(1.0, Indices{index::a, index::d}, &F_ad, -1.0, Indices{index::Q, index::m, index::a}, F_ad_K_temp2, Indices{index::Q, index::m, index::d}, q_ov_[ijk]);
 
             // Add the F_ld contribution to F_ad
             einsum(1.0, Indices{index::a, index::d}, &F_ad, -1.0, Indices{index::m, index::a}, T_n_ijk_[ijk], Indices{index::m, index::d}, F_ld);
         }
-
-        // ==> Stopping point 10/22 10:02 AM <== //
 
         // rho_dbci, dbcj, dbck (Lesiuk Eq. 16)
         std::vector<Tensor<double, 3>> rho_dbck_list(ijk_idx.size());
@@ -2568,19 +2567,11 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
         // Erase overlap matrices from RAM
 
-        // K_dble integrals (got excommunicated for memory gluttony)
-        /*
-        Tensor<double, 4> K_dble("K_dble", ntno_ijk, ntno_ijk, nlmo_ijk, ntno_ijk);
-        einsum(0.0, Indices{index::d, index::b, index::l, index::e}, &K_dble, 1.0, Indices{index::Q, index::d, index::b}, q_vv_t1, Indices{index::Q, index::l, index::e}, q_ov_[ijk]);
-        Tensor<double, 4> K_dble_T("K_dble_T", ntno_ijk, ntno_ijk, nlmo_ijk, ntno_ijk);
-        permute(Indices{index::e, index::b, index::l, index::d}, &K_dble_T, Indices{index::d, index::b, index::l, index::e}, K_dble);
-        Tensor<double, 4> K_dble_T2("K_dble_T2", nlmo_ijk, ntno_ijk, ntno_ijk, ntno_ijk);
-        permute(Indices{index::l, index::c, index::e, index::d}, &K_dble_T2, Indices{index::d, index::c, index::l, index::e}, K_dble);
-        */
+        // Factorize the contractions below to avoid storing four-index K_dble intermediates.
 
-        // Memory buffers (so we don't allocate memory in deep loops and give computer massive headaches)
-        Tensor<double, 3> victor_buffer_a("victor_buffer_a", ntno_ijk, ntno_ijk, ntno_ijk);
-        Tensor<double, 3> victor_buffer_b("victor_buffer_b", ntno_ijk, ntno_ijk, ntno_ijk);
+        // Reuse contraction buffers to avoid allocations inside the innermost loops.
+        Tensor<double, 3> contraction_buffer_a("contraction_buffer_a", ntno_ijk, ntno_ijk, ntno_ijk);
+        Tensor<double, 3> contraction_buffer_b("contraction_buffer_b", ntno_ijk, ntno_ijk, ntno_ijk);
 
         // K_ldme integrals
         Tensor<double, 4> K_ldme("K_ldme", nlmo_ijk, ntno_ijk, nlmo_ijk, ntno_ijk);
@@ -2590,7 +2581,7 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
         Tensor<double, 4> K_ldme_T2("K_ldme_T2", nlmo_ijk, ntno_ijk, nlmo_ijk, ntno_ijk);
         permute(Indices{index::l, index::e, index::m, index::d}, &K_ldme_T2, Indices{index::l, index::d, index::m, index::e}, K_ldme);
 
-        // Load in overlap integrals from disk
+        // Load overlap integrals from disk.
 
         for (int idx = 0; idx < ijk_idx.size(); ++idx) {
             int i = ijk_idx[idx];
@@ -2624,66 +2615,45 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             permute(Indices{index::m, index::l, index::d}, &K_limd_T, Indices{index::l, index::m, index::d}, K_limd);
             einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], 1.0, Indices{index::m, index::l, index::d}, K_limd_T, Indices{index::m, index::l, index::b, index::c}, T_lm);
 
-            // ORIGINAL
-            // (d, b, l, e) = (Q, d, b) (q_vv_t1) * (Q, l, e) (q_ov_)
-            // (d, b, c) <- (d, b, l, e) (K_dble) * (l, e, c) (U_li) // O(N^5)
-            // einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], 1.0, Indices{index::d, index::b, index::l, index::e}, K_dble, Indices{index::l, index::e, index::c}, U_li);
+            // Factorized evaluation of the direct term:
+            // (d, b, c) <- (Q, d, b) (q_vv_t1) * (Q, l, e) (q_ov) * (l, e, c) (U_li)
+            // (Q, c) (q_c_intermediate) <- (Q, l, e) (q_ov) * (l, e, c) (U_li)
+            Tensor<double, 2> q_c_intermediate("q_c_intermediate", naux_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::Q, index::c}, &q_c_intermediate, 1.0, Indices{index::Q, index::l, index::e}, q_ov_[ijk], Indices{index::l, index::e, index::c}, U_li);
+            // (d, b, c) <- (Q, d, b) (q_vv_t1) * (Q, c) (q_c_intermediate)
+            einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], 1.0, Indices{index::Q, index::d, index::b}, q_vv_t1, Indices{index::Q, index::c}, q_c_intermediate);
 
-            // NUEVA
-            // (d, b, c) <- (Q, d, b) (q_vv_t1) * (Q, l, e) (q_ov_) * (l, e, c) (U_li)
-            // (Q, c) (jaden) <- (Q, l, e) (q_ov) * (l, e, c) (U_li)
-            Tensor<double, 2> jaden("jaden", naux_ijk, ntno_ijk);
-            einsum(0.0, Indices{index::Q, index::c}, &jaden, 1.0, Indices{index::Q, index::l, index::e}, q_ov_[ijk], Indices{index::l, index::e, index::c}, U_li);
-            // (d, b, c) <- (Q, d, b) (q_vv_t1) * (Q, c) (jaden)
-            einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], 1.0, Indices{index::Q, index::d, index::b}, q_vv_t1, Indices{index::Q, index::c}, jaden);
-
-            // OLD CHUD
-            // (d, b, c) <- -1.0 (d, b, l, e) (K_dble_T) * (l, e, c) T_li
-            // einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], -1.0, Indices{index::d, index::b, index::l, index::e}, K_dble_T, Indices{index::l, index::e, index::c}, T_li);
-
-            // FUN NEW STUFF YAY!
-            // (d, b, c) <- -1.0 (Q, e, b) (q_vv_t1) * (Q, l, d) (q_ov_[ijk]) * (l, e, c) (T_li) (NEED LOOP BECAUSE INDICES R MEAN)
+            // Factorized evaluation of the exchange-like term over auxiliary-function slices:
+            // (d, b, c) <- -1.0 (Q, e, b) (q_vv_t1) * (Q, l, d) (q_ov_[ijk]) * (l, e, c) (T_li)
             for (int q_ijk = 0; q_ijk < naux_ijk; ++q_ijk) {
                 TensorView<double, 2> q_vv_t1_slice = q_vv_t1(q_ijk, All, All); // (e, b)
                 TensorView<double, 2> q_ov_slice = q_ov_[ijk](q_ijk, All, All); // (l, d)
 
-                // NOW WITHIN THIS FREAKING LOOP, (d, b, c) <- -1.0 (e, b) (q_vv_t1_slice) * (l, d) (q_ov_slice) * (l, e, c) (T_li)
-                // First step: (d, e, c) (victor_buffer_a) <- (l, d) (q_ov_slice) * (l, e, c) (T_li)
-                einsum(0.0, Indices{index::d, index::e, index::c}, &victor_buffer_a, 1.0, Indices{index::l, index::d}, q_ov_slice, Indices{index::l, index::e, index::c}, T_li);
-                // Second step: (e, d, c) (victor_buffer_b) <- (d, e, c) victor_buffer_a
-                permute(Indices{index::e, index::d, index::c}, &victor_buffer_b, Indices{index::d, index::e, index::c}, victor_buffer_a);
-                // Third step: (b, d, c) (victor_buffer_a) <- -1.0 * (e, d, c) (victor_buffer_b) * (e, b) (q_vv_t1_slice)
-                einsum(0.0, Indices{index::b, index::d, index::c}, &victor_buffer_a, -1.0, Indices{index::e, index::d, index::c}, victor_buffer_b, Indices{index::e, index::b}, q_vv_t1_slice);
-                // Final step (d, b, c) victor_buffer_b <- (b, d, c) (victor_buffer_a)
-                permute(Indices{index::d, index::b, index::c}, &victor_buffer_b, Indices{index::b, index::d, index::c}, victor_buffer_a);
+                // For fixed Q: (d, b, c) <- -1.0 (e, b) (q_vv_t1_slice) * (l, d) (q_ov_slice) * (l, e, c) (T_li)
+                // First step: (d, e, c) (contraction_buffer_a) <- (l, d) (q_ov_slice) * (l, e, c) (T_li)
+                einsum(0.0, Indices{index::d, index::e, index::c}, &contraction_buffer_a, 1.0, Indices{index::l, index::d}, q_ov_slice, Indices{index::l, index::e, index::c}, T_li);
+                // Second step: (e, d, c) (contraction_buffer_b) <- (d, e, c) contraction_buffer_a
+                permute(Indices{index::e, index::d, index::c}, &contraction_buffer_b, Indices{index::d, index::e, index::c}, contraction_buffer_a);
+                // Third step: (b, d, c) (contraction_buffer_a) <- -1.0 * (e, d, c) (contraction_buffer_b) * (e, b) (q_vv_t1_slice)
+                einsum(0.0, Indices{index::b, index::d, index::c}, &contraction_buffer_a, -1.0, Indices{index::e, index::d, index::c}, contraction_buffer_b, Indices{index::e, index::b}, q_vv_t1_slice);
+                // Final step (d, b, c) contraction_buffer_b <- (b, d, c) (contraction_buffer_a)
+                permute(Indices{index::d, index::b, index::c}, &contraction_buffer_b, Indices{index::b, index::d, index::c}, contraction_buffer_a);
 
-                rho_dbck_list[idx] += victor_buffer_b;
-
-                /* OLD STUFF (ugly)
-                Tensor<double, 3> T_li_T("T_li_T", nlmo_ijk, ntno_ijk, ntno_ijk);
-                permute(Indices{index::l, index::e, index::b}, &T_li_T, Indices{index::l, index::b, index::e}, T_li);
-                Tensor<double, 3> rho_dbck_temp("rho_dbck_temp", ntno_ijk, ntno_ijk, ntno_ijk);
-                einsum(0.0, Indices{index::d, index::c, index::b}, &rho_dbck_temp, 1.0, Indices{index::d, index::c, index::l, index::e}, K_dble_T, Indices{index::l, index::e, index::b}, T_li_T);
-                Tensor<double, 3> rho_dbck_temp2("rho_dbck_temp2", ntno_ijk, ntno_ijk, ntno_ijk);
-                permute(Indices{index::d, index::b, index::c}, &rho_dbck_temp2, Indices{index::d, index::c, index::b}, rho_dbck_temp);
-                rho_dbck_list[idx] -= rho_dbck_temp2;
-                */
+                rho_dbck_list[idx] += contraction_buffer_b;
 
                 // (d, b, c) (rho_dbck_list) <- -1.0 * (Q, e, c) (q_vv_t1) * (Q, l, d) (q_ov) * (l, b, e) (T_li)
-                // With the slices: (d, b, c) (rho_dbck_list) <- -1.0 * (e, c) (q_vv_slice) * (l, d) (q_ov_slice) * (l, b, e) (T_li)
-                // (d, b, e) (victor_buffer_a) <- (l, d) (q_ov_slice) * (l, b, e) (T_li) 
-                einsum(0.0, Indices{index::d, index::b, index::e}, &victor_buffer_a, 1.0, Indices{index::l, index::b, index::e}, T_li, Indices{index::l, index::d}, q_ov_slice);
-                // (d, b, c) (rho_dbck_list) <- -1.0 * (d, b, e) * (e, c) (q_vv_t1), don't forget the negative 1.0 or you run a lap on GT track
-                einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], -1.0, Indices{index::d, index::b, index::e}, victor_buffer_a, Indices{index::e, index::c}, q_vv_t1_slice);
+                // For fixed Q: (d, b, c) (rho_dbck_list) <- -1.0 * (e, c) (q_vv_slice) * (l, d) (q_ov_slice) * (l, b, e) (T_li)
+                // (d, b, e) (contraction_buffer_a) <- (l, d) (q_ov_slice) * (l, b, e) (T_li) 
+                einsum(0.0, Indices{index::d, index::b, index::e}, &contraction_buffer_a, 1.0, Indices{index::l, index::b, index::e}, T_li, Indices{index::l, index::d}, q_ov_slice);
+                // (d, b, c) (rho_dbck_list) <- -1.0 * (d, b, e) * (e, c) (q_vv_t1)
+                einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], -1.0, Indices{index::d, index::b, index::e}, contraction_buffer_a, Indices{index::e, index::c}, q_vv_t1_slice);
             }
 
-            // Triples terms (ca-nasty)
+            // Remaining triples contributions
             auto S_ijk_ii = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[ii]));
             S_ijk_ii = linalg::doublet(S_ijk_ii, X_pno_[ii], false, false);
             rho_dbck_list[idx] += matmul_3d_einsums(rho_dbck_cont[i], S_ijk_ii, n_pno_[ii], n_tno_[ijk]);
         } // end idx
-
-        // => Stopping point 10/22 3:45 PM <= //
 
         std::vector<std::tuple<int, int, int>> long_perms = {std::make_tuple(i, j, k), std::make_tuple(i, k, j),
                                                                 std::make_tuple(j, i, k), std::make_tuple(j, k, i),
@@ -2692,11 +2662,6 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
         std::vector<std::tuple<int, int, int>> long_perms_idx = {std::make_tuple(0, 1, 2), std::make_tuple(0, 2, 1),
                                                                     std::make_tuple(1, 0, 2), std::make_tuple(1, 2, 0),
                                                                     std::make_tuple(2, 0, 1), std::make_tuple(2, 1, 0)};
-
-        // std::vector<SharedMatrix> S_ijk_jk_list = {S_ijk_jk_[ijk], S_ijk_jk_[ijk], S_ijk_ik_[ijk], 
-        //                                             S_ijk_ik_[ijk], S_ijk_ij_[ijk], S_ijk_ij_[ijk]};
-        // std::vector<std::vector<SharedMatrix>> S_ijk_mjk_list = {S_ijk_ljk_[ijk], S_ijk_ljk_[ijk], S_ijk_ilk_[ijk], 
-        //                                                             S_ijk_ilk_[ijk], S_ijk_ijl_[ijk], S_ijk_ijl_[ijk]};
 
         // Form rho_ljck intermediate (Lesiuk Eq. 15)
         std::vector<Tensor<double, 2>> rho_ljck_list(long_perms.size());
@@ -2708,8 +2673,6 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
             rho_ljck_list[idx] = Tensor<double, 2>("rho_ljck", nlmo_ijk, ntno_ijk);
             einsum(0.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::Q, index::l}, q_io_t1_list[j_idx], Indices{index::Q, index::c}, q_iv_t1_list[k_idx]);
-
-            // => CHECKPOINT 10/25 3:40 PM <= //
 
             Tensor<double, 3> T_jm("T_jm", nlmo_ijk, ntno_ijk, ntno_ijk);
             Tensor<double, 3> T_mk("T_mk", nlmo_ijk, ntno_ijk, ntno_ijk);
@@ -2763,17 +2726,16 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             ::memcpy(T_jk.data(), T_jk_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
 
             // (l, c) [rho_ljck] <- (Q, d, c) [q_vv_t1] * (Q, l, e) [q_ov] * (e, d) [T_jk]
-            // einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::l, index::c, index::e, index::d}, K_dble_T2, Indices{index::e, index::d}, T_jk);
             for (int q_ijk = 0; q_ijk < naux_ijk; ++q_ijk) {
                 TensorView<double, 2> q_vv_t1_slice = q_vv_t1(q_ijk, All, All); // (d, c)
                 TensorView<double, 2> q_ov_slice = q_ov_[ijk](q_ijk, All, All); // (l, e)
 
                 // (l, c) [rho_ljck] <- (d, c) [q_vv_t1_slice] * (l, e) [q_ov_slice] * (e, d) [T_jk]
-                // (l, d) [elizabeth] <- (l, e) [q_ov_slice] * (e, d) [T_jk]
-                Tensor<double, 2> elizabeth("elizabeth", nlmo_ijk, ntno_ijk);
-                einsum(0.0, Indices{index::l, index::d}, &elizabeth, 1.0, Indices{index::l, index::e}, q_ov_slice, Indices{index::e, index::d}, T_jk);
-                // (l, c) <- (l, d) [elizabeth] * (d, c) [q_vv_t1_slice]
-                einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::l, index::d}, elizabeth, Indices{index::d, index::c}, q_vv_t1_slice);
+                // (l, d) [ld_intermediate] <- (l, e) [q_ov_slice] * (e, d) [T_jk]
+                Tensor<double, 2> ld_intermediate("ld_intermediate", nlmo_ijk, ntno_ijk);
+                einsum(0.0, Indices{index::l, index::d}, &ld_intermediate, 1.0, Indices{index::l, index::e}, q_ov_slice, Indices{index::e, index::d}, T_jk);
+                // (l, c) <- (l, d) [ld_intermediate] * (d, c) [q_vv_t1_slice]
+                einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::l, index::d}, ld_intermediate, Indices{index::d, index::c}, q_vv_t1_slice);
             }
 
             for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
@@ -3202,7 +3164,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
     int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, e_weak = 0.0, r_curr1 = 1.0, r_curr2 = 1.0, r_curr3 = 1.0;
     bool e_converged = false, r_converged = false;
-    const int N_MICRO_ITER = options_.get_int("DLPNO_TRIPLES_MICROITERATIONS");
+    const int n_microiterations = options_.get_int("DLPNO_TRIPLES_MICROITERATIONS");
 
     DIISManager diis = DIISManager(options_.get_int("DIIS_MAX_VECS"), "LCCSDT DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
@@ -3216,7 +3178,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
 
         std::time_t time_start = std::time(nullptr);
 
-        for (int miter = 0; miter < N_MICRO_ITER; ++miter) {
+        for (int miter = 0; miter < n_microiterations; ++miter) {
 
             // Create T_n_ij and T_n_ijk intermediates
     #pragma omp parallel for schedule(dynamic, 1)
@@ -3464,7 +3426,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
 double DLPNOCCSDT::compute_energy() {
 
     // Run DLPNO-CCSD(T) as initial step
-    double E_DLPNO_CCSD_T = DLPNOCCSD_T::compute_energy();
+    double e_dlpno_ccsd_t = DLPNOCCSD_T::compute_energy();
 
     timer_on("DLPNO-CCSDT");
 
