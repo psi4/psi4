@@ -43,19 +43,19 @@ DLPNO-CCSDT(Q): Domain-Based Local Pair Natural Orbital CCSDT(Q)
 Introduction
 ------------
 
-In our recent works [Jiang:2025:2386]_ [Jiang:2025:144102]_, we have shown that the domain-based 
-local pair natural orbital (DLPNO) approach successfully applied to gold-standard CCSD(T), 
-[Riplinger:2013:034106]_ [Riplinger:2013:134101]_ [Riplinger:2016:024109]_ 
-[Guo:2018:011101]_ [Jiang:2024:082502]_, can also be applied to higher levels of coupled-cluster theory.
+Recent work [Jiang:2025:2386]_ [Jiang:2025:144102]_ has extended the domain-based local
+pair natural orbital (DLPNO) framework to coupled-cluster methods beyond CCSD(T). The
+same locality principles previously applied to DLPNO-CCSD(T)
+[Riplinger:2013:034106]_ [Riplinger:2013:134101]_ [Riplinger:2016:024109]_
+[Guo:2018:011101]_ [Jiang:2024:082502]_ are used for the higher-order methods described here.
 
-Singles and doubles amplitudes (:math:`t_{i}^{a}` and :math:`t_{ij}^{ab}`) in the pair natural orbital (PNO) basis, 
-and triples amplitudes (:math:`t_{ijk}^{abc}`) in the triples natural orbital (TNO) basis from a preceding 
-:ref:`DLPNO-CCSD(T) <sec:dlpnocc>` computation are used as the starting guess as the solution of the
-CCSDT residual equations [Jiang:2025:2386]_. The triples amplitudes are often recomputed at a looser TNO
-tolerance than the one used for (T) |dlpno__t_cut_tno_full| (default ``1.0e-7``) for the sake of tractibility.
-This DLPNO-CCSDT method is asymptotically linear-scaling, and near-linear scaling behavior can be observed
-early for systems with significant sparsity, like water clusters. To run a DLPNO-CCSDT computation, a sample input
-file is provided:
+Singles and doubles amplitudes (:math:`t_{i}^{a}` and :math:`t_{ij}^{ab}`) in the pair natural orbital (PNO) basis,
+together with triples amplitudes (:math:`t_{ijk}^{abc}`) in the triples natural orbital (TNO) basis from a preceding
+:ref:`DLPNO-CCSD(T) <sec:dlpnocc>` computation, provide the initial guess for solving the CCSDT residual equations
+[Jiang:2025:2386]_. For tractability, the triples amplitudes are commonly recomputed with the looser TNO occupation
+cutoff |dlpno__t_cut_tno_full| (default ``1.0e-7``) than is used for the perturbative triples correction.
+DLPNO-CCSDT is asymptotically linear-scaling, and near-linear scaling behavior can emerge at relatively
+small system sizes for sparse systems such as water clusters.
 
 An example input file for a DLPNO-CCSDT computation is::
    
@@ -78,19 +78,19 @@ An example input file for a DLPNO-CCSDT computation is::
    
    energy('dlpno-ccsdt')
 
-The pair natural orbital (PNO) framework can also be applied to interacting quadruplets (``ijkl``), computed
-if the pairs ``ij``, ``jk``, ``ik``, ``il``, ``jl``, and ``kl`` are all interacting pairs. Quadruples natural
-orbitals (QNOs), are formed as the eigenvalues of the quadruples density matrix, and then truncated based on
-eigenvalues by the parameter |dlpno__t_cut_qno| (default ``3.33e-7``).
+The pair natural orbital framework can also be applied to interacting occupied-orbital quadruplets (``ijkl``).
+Quadruples natural orbitals (QNOs) are obtained by diagonalizing the averaged pair-density matrix, and QNOs are
+retained according to their occupation numbers using |dlpno__t_cut_qno| (default ``3.33e-7``).
 
 .. math::
    :label: Quadruples Density Matrix
+
    D_{ijkl} &= \frac{1}{6} [D_{ij} + D_{jk} + D_{ik} + D_{il} + D_{jl} + D_{kl}].
+
 More information on the pair density matrices can be found in the :ref:`DLPNO-MP2 <sec:dlpnomp2>` documentation.
-(Q) quadruples amplitudes [Bomble:2005:054101]_ are then solved in the QNO basis, using singles, doubles, and 
-triples amplitudes from a preceding DLPNO-CCSDT computation, in our DLPNO-CCSDT(Q) algorithm [Jiang:2025:144102]_. 
-Our algorithm brings the platinum-standard :math:`O(N^{9})` CCSDT(Q) algorithm, typically intractable for most molecules 
-more than 10 atoms, down to asymptotic linear-scaling cost.
+The (Q) quadruples amplitudes [Bomble:2005:054101]_ are evaluated in the QNO basis using singles, doubles, and
+triples amplitudes from a preceding DLPNO-CCSDT computation [Jiang:2025:144102]_. The DLPNO formulation reduces
+the asymptotic system-size scaling of the canonical :math:`\mathcal{O}(N^{9})` CCSDT(Q) correction to linear scaling.
 
 An example input file for a DLPNO-CCSDT(Q) computation is::
    
@@ -117,33 +117,29 @@ An example input file for a DLPNO-CCSDT(Q) computation is::
 Practical Advice
 ----------------
 
-* DLPNO-CCSDT/(Q) makes the impossible possible! Platinum-standard theoretical benchmarks that would
-  normally require millions or billions of years with canonical CCSDT(Q) are now possible with less
-  than a couple weeks of computation time (or a day if you have access to lots of RAM/CPUs).
+* DLPNO-CCSDT and DLPNO-CCSDT(Q) substantially extend the system sizes accessible to higher-order
+  coupled-cluster benchmarks relative to their canonical counterparts.
 
-* For most systems (other than very sparse water clusters), asymptotic linear-scaling behavior 
-  for DLPNO-CCSDT/(Q) will not be observed in the range of computations currently possible on the 
-  typical lab workstation.
+* For most systems other than highly sparse clusters, the asymptotic linear-scaling regime may not be
+  reached at system sizes practical on a typical laboratory workstation.
 
-* DLPNO-CCSDT/(Q) computations can still take a while, after all, it is designed to accurately
-  reproduce the result of one of the most expensive quantum chemistry algorithms in the world, to within
-  a relative energy error of :math:`0.1 kcal mol^{-1}`. It probably is not (yet) possible to run a protein
-  calculation with DLPNO-CCSDT/(Q).
+* These methods remain computationally demanding because they target high-accuracy approximations to
+  canonical CCSDT and CCSDT(Q). Calculations on very large systems, such as proteins, are generally not
+  practical with current computational resources.
 
-* DLPNO-CCSDT/(Q) loves RAM and disk! It consumes computer resources like a growing adolescent. The computations
-  you will be able to perform will be largely dictated by the computational resources you have access to!
-  As a rule of thumb, a typical lab workstation can handle a benzene dimer computation with a polarized double
-  zeta basis set!
+* Memory capacity and available disk space often determine the largest feasible calculation. As a rough
+  guide, a typical laboratory workstation can treat a benzene dimer with a polarized double-zeta basis,
+  although resource requirements depend strongly on geometry, thresholds, and hardware.
 
-* Always use ``VERY_TIGHT`` |dlpno__pno_convergence| for a DLPNO-CCSDT/(Q) computation, and |dlpno__t_cut_pairs|
-  is set to ``1.0e-8`` to maintain the accuracy needed for typical applications. This is done by default, and users
-  who attempt to use custom parameters for DLPNO-CCSDT/(Q) do so at their own peril!
+* The recommended settings are ``VERY_TIGHT`` |dlpno__pno_convergence| and
+  |dlpno__t_cut_pairs| = ``1.0e-8``. These values are applied automatically for the higher-order methods;
+  custom thresholds should be validated carefully for the intended application.
 
 * Users are encouraged to use DLPNO-CCSDT(Q) as part of composite or focal point schemes, with 
   the T(Q) correction being computed through the difference of the DLPNO-CCSDT(Q) energy and a
   canonical DF-CCSD(T) or rank-corrected DLPNO-CCSD(T) energy (either canonical MP2,
   tighter |dlpno__t_cut_tno| cutoff, or a CPS extrapolation). This approach has been shown to yield
-  the best error cancellation!
+  favorable error cancellation.
 
 * In DLPNO methods, it is recommended to freeze core orbitals (by setting |globals__freeze_core|
   to ``True``), since core excitations are known to be more sensitive to PNO truncations than
