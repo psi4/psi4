@@ -275,7 +275,7 @@ void IntegralTransform::initialize() {
     cacheFiles_ = init_int_array(PSIO_MAXUNIT);
     cacheList_ = init_int_matrix(numIndexArrays, numIndexArrays);
     int currentActiveDPD = psi::dpd_default;
-    dpd_init(myDPDNum_, nirreps_, memory_, 0, cacheFiles_, cacheList_, nullptr, numSpaces, spaceArray_);
+    dpd_init(myDPDNum_, nirreps_, memory_, 0, cacheFiles_, cacheList_, nullptr, spaceArray_);
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if (transformationType_ == TransformationType::SemiCanonical) {
@@ -325,8 +325,8 @@ IntegralTransform::~IntegralTransform() {
     }
 
     for(int i = 0; i < spaceArray_.size(); i++) {
-        if(spaceArray_[i] != nullptr) {
-            delete[] spaceArray_[i];
+        if(spaceArray_[i].second != nullptr) {
+            delete[] spaceArray_[i].second;
         }
     }
 }
