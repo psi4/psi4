@@ -593,8 +593,8 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
 
 class DLPNOCCSDT_Q : public DLPNOCCSDT {
    protected:
-    // Exhaustive list of all 24 permutations (I hate my life)
-    constexpr static std::array<std::tuple<int, int, int, int>, 24> quad_perms_long = {std::make_tuple(0, 1, 2, 3), std::make_tuple(0, 1, 3, 2), 
+    // All 24 permutations of four occupied-orbital positions.
+    constexpr static std::array<std::tuple<int, int, int, int>, 24> quadruple_permutations_ = {std::make_tuple(0, 1, 2, 3), std::make_tuple(0, 1, 3, 2), 
         std::make_tuple(0, 2, 1, 3), std::make_tuple(0, 2, 3, 1), std::make_tuple(0, 3, 1, 2), std::make_tuple(0, 3, 2, 1), 
         std::make_tuple(1, 0, 2, 3), std::make_tuple(1, 0, 3, 2), std::make_tuple(1, 2, 0, 3), std::make_tuple(1, 2, 3, 0), 
         std::make_tuple(1, 3, 0, 2), std::make_tuple(1, 3, 2, 0), std::make_tuple(2, 0, 1, 3), std::make_tuple(2, 0, 3, 1), 
@@ -602,7 +602,7 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
         std::make_tuple(3, 0, 1, 2), std::make_tuple(3, 0, 2, 1), std::make_tuple(3, 1, 0, 2), std::make_tuple(3, 1, 2, 0), 
         std::make_tuple(3, 2, 0, 1), std::make_tuple(3, 2, 1, 0)};
 
-    SparseMap lmoquadruplet_to_ribfs_; ///< which ribfs are on an LMO quadruplets (i, j, k)
+    SparseMap lmoquadruplet_to_ribfs_; ///< RI basis functions in each LMO quadruplet domain (i, j, k, l)
     SparseMap lmoquadruplet_to_lmos_; ///< which LMOs m form a significant pair with (i, j, k, or l)
     SparseMap lmoquadruplet_to_paos_; ///< which PAOs span the virtual space of a quadruplet of LMOs?
     std::unordered_map<int, int> i_j_k_l_to_ijkl_; ///< LMO indices (i, j, k, l) to significant LMO quadruplet index (ijkl), -1 if not found
@@ -611,7 +611,7 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     std::vector<int> sorted_quadruplets_; ///< quadruplets sorted by number of QNOs
 
     /// quadruples natural orbitals (QNOs)
-    std::vector<Tensor<double, 4>> T_iajbkcld_; ///< Quadruples amplitude for each lmo triplet
+    std::vector<Tensor<double, 4>> T_iajbkcld_; ///< Quadruples amplitudes for each LMO quadruplet
     std::vector<Tensor<double, 4>> gamma_ijkl_; ///< Gamma intermediate
     std::vector<std::array<Tensor<double, 3>, 4>> K_iabe_list_; ///< (i a_{ijkl} | b_{ijkl} e_{ijkl}) over i, j, k, l
     std::vector<std::array<Tensor<double, 2>, 16>> K_iajm_list_; ///< (i a_{ijkl} | j m_{ijkl}) over i, j, k, l
@@ -621,8 +621,8 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     std::vector<SharedVector> e_qno_; ///< QNO orbital energies
     std::vector<int> n_qno_; ///< number of qnos per quadruplet domain
     std::vector<double> e_ijkl_; ///< energy of quadruplet ijkl (used for pre-screening and convergence purposes)
-    std::vector<double> ijkl_scale_; ///< scaling factor to apply to triplet energy ijk (based on MP2 scaling)
-    std::vector<double> qno_scale_; ///< scaling factor to apply to each triplet to account for TNO truncation error
+    std::vector<double> ijkl_scale_; ///< Scaling factor applied to quadruplet energy ijkl based on MP2 scaling
+    std::vector<double> qno_scale_; ///< Scaling factor applied to each quadruplet to account for QNO truncation error
     std::vector<bool> is_strong_quadruplet_; ///< whether or not quadruplet is strong
 
     /// Write quadruples amplitudes to disk?
@@ -676,14 +676,14 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     SparseMap lmopair_to_paos_ext_;       ///< lmopair to extended PAOs
     std::vector<SharedMatrix> X_pno_ext_; ///< global PAO -> canonical PNO transforms
     std::vector<SharedVector> e_pno_ext_; ///< PNO orbital energies
-    std::vector<int> n_pno_ext_;          ///< number of pnos
+    std::vector<int> n_pno_ext_;          ///< Number of PNOs in each extended pair domain
 
     /// Encapsulates the reading in of (Q_{ijkl} | m_{ijkl} a_{ijkl})
     inline Tensor<double, 3> QIA_QNO(const int ijkl);
     /// Encapsulates the reading in of (Q_{ijkl} | a_{ijkl} b_{ijkl})
     inline Tensor<double, 3> QAB_QNO(const int ijkl);
 
-    // Write expensive integrals (Q_{ijkl} | m_{ijkl} a_{ijkl}) and (Q_{ijkl} | a_{ijkl} b_{ijkl}) to disk (true by default)!
+    // Write the largest QNO-basis integral tensors to disk (enabled by default).
     bool disk_ints_quads_;
     // How much of the original quadruples amplitude to keep
     double damping_ratio_quads_;
@@ -707,8 +707,8 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     /// Create XPNOs (Extended Pair Natural Orbitals) to help with QNO projections
     void xpno_transform(double xpno_tolerance);
 
-    /// form the projected T_{mnkl}^{abcd} amplitudes over the XPNO domain of kl
-    /// (to reduce the cost of certain delinquent terms)
+    /// Form projected T_{mnkl}^{abcd} amplitudes in the XPNO domain of kl
+    /// to reduce the cost of the computationally dominant contractions.
     void form_T_mnkl();
 
     /// compute the expensive term in L_{ijk}^{abm}
