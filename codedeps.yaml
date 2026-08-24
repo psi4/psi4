@@ -1608,7 +1608,6 @@ data:
     repository: null
     cmake:
       name: cuEST
-      constraint: "0.1"
       target: cuEST::cuEST
       components: null
     conda:
