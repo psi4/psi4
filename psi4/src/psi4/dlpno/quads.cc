@@ -1453,27 +1453,26 @@ double DLPNOCCSDT_Q::compute_energy() {
     // Clear integrals if no-post CCSDT(Q) fish fry business is involved
     if (algorithm_ == DLPNOMethod::CCSDT_Q) {
         // Clear CCSD integrals
-        K_mnij_.clear();
-        K_bar_.clear();
-        K_bar_chem_.clear();
-        L_bar_.clear();
-        J_ijab_.clear();
+        K_mibj_.clear();
+        J_ijmb_.clear();
+        L_mibj_.clear();
         L_iajb_.clear();
-        M_iajb_.clear();
-        J_ij_kj_.clear();
-        K_ij_kj_.clear();
-        K_tilde_chem_.clear();
-        K_tilde_phys_.clear();
-        L_tilde_.clear();
+        J_ikac_non_proj_.clear();
+        K_iakc_non_proj_.clear();
+        K_ivvv_.clear();
         Qma_ij_.clear();
         Qab_ij_.clear();
         i_Qk_ij_.clear();
         i_Qa_ij_.clear();
-        i_Qa_ij_.clear();
+        i_Qk_t1_.clear();
         i_Qa_t1_.clear();
         S_pno_ij_kj_.clear();
         S_pno_ij_nn_.clear();
         S_pno_ij_mn_.clear();
+        Fkc_.clear();
+        Fai_.clear();
+        Fab_.clear();
+        T_n_ij_.clear();
 
         // Clear CCSDT integrals
         q_io_.clear();
@@ -2017,10 +2016,10 @@ void DLPNOCCSDTQ::compute_integrals() {
 
         if (disk_ints_quads_) {
 #pragma omp critical
-            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_QNO, psi::Matrix::SubBlocks);
+            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_QNO, ::psi::Matrix::SubBlocks);
 
 #pragma omp critical
-            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_QNO, psi::Matrix::ThreeIndexLowerTriangle);
+            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_QNO, ::psi::Matrix::ThreeIndexLowerTriangle);
 
             q_ov_name << "(Q_ijkl | m a) " << (ijkl);
             q_vv_name << "(Q_ijkl | a b) " << (ijkl);
@@ -2042,7 +2041,7 @@ inline Tensor<double, 3> DLPNOCCSDTQ::QIA_QNO(const int ijkl) {
 
         auto q_ov = std::make_shared<Matrix>(q_ov_name.str(), naux_ijkl, nlmo_ijkl * nqno_ijkl);
 #pragma omp critical
-        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_QNO, psi::Matrix::SubBlocks);
+        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_QNO, ::psi::Matrix::SubBlocks);
 
         q_ov_ijkl_[ijkl] = Tensor<double, 3>(q_ov->name(), naux_ijkl, nlmo_ijkl, nqno_ijkl);
         ::memcpy(q_ov_ijkl_[ijkl].data(), q_ov->get_pointer(), naux_ijkl * nlmo_ijkl * nqno_ijkl * sizeof(double));
@@ -2061,7 +2060,7 @@ inline Tensor<double, 3> DLPNOCCSDTQ::QAB_QNO(const int ijkl) {
 
         auto q_vv = std::make_shared<Matrix>(q_vv_name.str(), naux_ijkl, nqno_ijkl * nqno_ijkl);
 #pragma omp critical
-        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_QNO, psi::Matrix::ThreeIndexLowerTriangle);
+        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_QNO, ::psi::Matrix::ThreeIndexLowerTriangle);
 
         q_vv_ijkl_[ijkl] = Tensor<double, 3>(q_vv->name(), naux_ijkl, nqno_ijkl, nqno_ijkl);
         ::memcpy(q_vv_ijkl_[ijkl].data(), q_vv->get_pointer(), naux_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
