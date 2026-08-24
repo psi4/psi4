@@ -121,7 +121,7 @@ inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
 
         auto q_ov = std::make_shared<Matrix>(toc_entry.str(), naux_ij, nlmo_ij * npno_ij);
 #pragma omp critical
-        q_ov->load(psio_, PSIF_DLPNO_QIA_PNO, psi::Matrix::SubBlocks);
+        q_ov->load(psio_, PSIF_DLPNO_QIA_PNO, ::psi::Matrix::SubBlocks);
 
         std::vector<SharedMatrix> Qma_pno(naux_ij);
         for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
@@ -147,7 +147,7 @@ inline std::vector<SharedMatrix> DLPNOCCSD::QAB_PNO(const int ij) {
 
         auto q_vv = std::make_shared<Matrix>(toc_entry.str(), naux_ij, npno_ij * npno_ij);
 #pragma omp critical
-        q_vv->load(psio_, PSIF_DLPNO_QAB_PNO, psi::Matrix::ThreeIndexLowerTriangle);
+        q_vv->load(psio_, PSIF_DLPNO_QAB_PNO, ::psi::Matrix::ThreeIndexLowerTriangle);
 
         std::vector<SharedMatrix> Qab_pno(naux_ij);
         for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
@@ -1688,7 +1688,7 @@ void DLPNOCCSD::compute_pno_integrals() {
                 toc_entry << "QIA (PNO) " << ij;
                 q_ov->set_name(toc_entry.str());
     #pragma omp critical
-                q_ov->save(psio_, PSIF_DLPNO_QIA_PNO, psi::Matrix::SubBlocks);
+                q_ov->save(psio_, PSIF_DLPNO_QIA_PNO, ::psi::Matrix::SubBlocks);
             }
         }
 
@@ -1705,7 +1705,7 @@ void DLPNOCCSD::compute_pno_integrals() {
                 toc_entry << "QAB (PNO) " << ij;
                 q_vv->set_name(toc_entry.str());
     #pragma omp critical
-                q_vv->save(psio_, PSIF_DLPNO_QAB_PNO, psi::Matrix::ThreeIndexLowerTriangle);
+                q_vv->save(psio_, PSIF_DLPNO_QAB_PNO, ::psi::Matrix::ThreeIndexLowerTriangle);
             }
         }
 

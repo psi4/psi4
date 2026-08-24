@@ -49,14 +49,13 @@
 #include "Einsums/Profile.hpp"
 #include "Einsums/TensorUtilities/RMSD.hpp"
 
+namespace psi {
+namespace dlpno {
 
 using namespace einsums;
 using namespace einsums::index;
 using namespace einsums::linear_algebra;
 using namespace einsums::tensor_algebra;
-
-namespace psi {
-namespace dlpno {
 
 enum class DLPNOMethod { MP2, CCSD, CCSD_T, CCSDT, CCSDT_Q, CCSDTQ };
 

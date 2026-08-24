@@ -940,16 +940,16 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
             V_iajbkc_[ijk] = V_ijk;
         } else if (save_memory && write_intermediates_) {
 #pragma omp critical
-            W_ijk->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+            W_ijk->save(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
 #pragma omp critical
-            V_ijk->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+            V_ijk->save(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
         }
 
         if (save_memory && !write_amplitudes_) {
             T_iajbkc_[ijk] = T_ijk;
         } else if (save_memory && write_amplitudes_) {
 #pragma omp critical
-            T_ijk->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+            T_ijk->save(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
         }
 
         if (thread == 0) {
@@ -1014,7 +1014,7 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
             v_name << "V " << (ijk);
             V_ijk = std::make_shared<Matrix>(v_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-            V_ijk->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+            V_ijk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
         } else {
             V_ijk = V_iajbkc_[ijk];
         }
@@ -1024,7 +1024,7 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
             t_name << "T " << (ijk);
             T_ijk = std::make_shared<Matrix>(t_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-            T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+            T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
         } else {
             T_ijk = T_iajbkc_[ijk];
         }
@@ -1219,7 +1219,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                 w_name << "W " << (ijk);
                 W_ijk = std::make_shared<Matrix>(w_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-                W_ijk->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+                W_ijk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
             } else {
                 W_ijk = W_iajbkc_[ijk];
             }
@@ -1229,7 +1229,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                 t_name << "T " << (ijk);
                 T_ijk = std::make_shared<Matrix>(t_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-                T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+                T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
             } else {
                 T_ijk = T_iajbkc_[ijk];
             }
@@ -1267,7 +1267,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                         t_name << "T " << (ijl);
                         T_ijl = std::make_shared<Matrix>(t_name.str(), n_tno_[ijl], n_tno_[ijl] * n_tno_[ijl]);
 #pragma omp critical
-                        T_ijl->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+                        T_ijl->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
                     } else {
                         T_ijl = T_iajbkc_[ijl];
                     }
@@ -1293,7 +1293,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                         t_name << "T " << (ilk);
                         T_ilk = std::make_shared<Matrix>(t_name.str(), n_tno_[ilk], n_tno_[ilk] * n_tno_[ilk]);
 #pragma omp critical
-                        T_ilk->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+                        T_ilk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
                     } else {
                         T_ilk = T_iajbkc_[ilk];
                     }
@@ -1319,7 +1319,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                         t_name << "T " << (ljk);
                         T_ljk = std::make_shared<Matrix>(t_name.str(), n_tno_[ljk], n_tno_[ljk] * n_tno_[ljk]);
 #pragma omp critical
-                        T_ljk->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+                        T_ljk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
                     } else {
                         T_ljk = T_iajbkc_[ljk];
                     }
@@ -1345,7 +1345,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
 
             if (write_amplitudes_) {
 #pragma omp critical
-                T_ijk->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+                T_ijk->save(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
             }
             
             R_iajbkc_rms[ijk] = R_ijk->rms();
@@ -1386,27 +1386,29 @@ double DLPNOCCSD_T::compute_energy() {
 
     psio_->open(PSIF_DLPNO_TRIPLES, PSIO_OPEN_NEW);
 
-    // Clear CCSD integrals
-    K_mibj_.clear();
-    J_ijmb_.clear();
-    L_mibj_.clear();
-    L_iajb_.clear();
-    J_ikac_non_proj_.clear();
-    K_iakc_non_proj_.clear();
-    K_ivvv_.clear();
-    Qma_ij_.clear();
-    Qab_ij_.clear();
-    i_Qk_ij_.clear();
-    i_Qa_ij_.clear();
-    i_Qk_t1_.clear();
-    i_Qa_t1_.clear();
-    S_pno_ij_kj_.clear();
-    S_pno_ij_nn_.clear();
-    S_pno_ij_mn_.clear();
-    Fkc_.clear();
-    Fai_.clear();
-    Fab_.clear();
-    T_n_ij_.clear();
+    // Clear CCSD integrals if CCSD(T) is last step
+    if (algorithm_ == DLPNOMethod::CCSD_T) {
+        K_mibj_.clear();
+        J_ijmb_.clear();
+        L_mibj_.clear();
+        L_iajb_.clear();
+        J_ikac_non_proj_.clear();
+        K_iakc_non_proj_.clear();
+        K_ivvv_.clear();
+        Qma_ij_.clear();
+        Qab_ij_.clear();
+        i_Qk_ij_.clear();
+        i_Qa_ij_.clear();
+        i_Qk_t1_.clear();
+        i_Qa_t1_.clear();
+        S_pno_ij_kj_.clear();
+        S_pno_ij_nn_.clear();
+        S_pno_ij_mn_.clear();
+        Fkc_.clear();
+        Fai_.clear();
+        Fab_.clear();
+        T_n_ij_.clear();
+    }
 
     print_header();
 
@@ -1866,10 +1868,10 @@ void DLPNOCCSDT::compute_integrals() {
 
         if (disk_ints_) {
 #pragma omp critical
-            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_TNO, psi::Matrix::SubBlocks);
+            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_TNO, ::psi::Matrix::SubBlocks);
 
 #pragma omp critical
-            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_TNO, psi::Matrix::ThreeIndexLowerTriangle);
+            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_TNO, ::psi::Matrix::ThreeIndexLowerTriangle);
 
             q_ov_name << "(Q_ijk | m a) " << (ijk);
             q_vv_name << "(Q_ijk | a b) " << (ijk);
@@ -1891,7 +1893,7 @@ Tensor<double, 3> DLPNOCCSDT::QIA_TNO(const int ijk) {
 
         auto q_ov = std::make_shared<Matrix>(q_ov_name.str(), naux_ijk, nlmo_ijk * ntno_ijk);
 #pragma omp critical
-        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_TNO, psi::Matrix::SubBlocks);
+        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_TNO, ::psi::Matrix::SubBlocks);
 
         q_ov_[ijk] = Tensor<double, 3>(q_ov->name(), naux_ijk, nlmo_ijk, ntno_ijk);
         ::memcpy(q_ov_[ijk].data(), q_ov->get_pointer(), naux_ijk * nlmo_ijk * ntno_ijk * sizeof(double));
@@ -1910,7 +1912,7 @@ Tensor<double, 3> DLPNOCCSDT::QAB_TNO(const int ijk) {
 
         auto q_vv = std::make_shared<Matrix>(q_vv_name.str(), naux_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_TNO, psi::Matrix::ThreeIndexLowerTriangle);
+        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_TNO, ::psi::Matrix::ThreeIndexLowerTriangle);
 
         q_vv_[ijk] = Tensor<double, 3>(q_vv_[ijk].name(), naux_ijk, ntno_ijk, ntno_ijk);
         ::memcpy(q_vv_[ijk].data(), q_vv->get_pointer(), naux_ijk * ntno_ijk * ntno_ijk * sizeof(double));
