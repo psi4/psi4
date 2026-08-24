@@ -35,9 +35,6 @@
 #include <Einsums/Config.hpp>
 #include <Einsums/Tensor.hpp>
 
-using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
-using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
-
 namespace psi {
 
 class IntegralFactory;

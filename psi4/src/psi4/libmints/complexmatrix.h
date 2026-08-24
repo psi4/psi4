@@ -222,6 +222,12 @@ class PSI_API ComplexMatrix {
     /// In-place self += alpha * other (diagonal tiles only).
     void axpy(std::complex<double> alpha, const ComplexMatrix& other);
 
+    /// In-place scale. Doesn't compile because weird GCC error?
+    // void scale(const double& alpha) {
+    //     // std::complex<double> fails because no operator- is implemented?
+    //     einsums::linear_algebra::scale(alpha, &tensor_);
+    // }
+
     /// In-place add
     void add(const ComplexMatrix& other) { tensor_ += other; }
     /// Arithmetic operator `+=`. Einsums asserts the dimensions at runtime.

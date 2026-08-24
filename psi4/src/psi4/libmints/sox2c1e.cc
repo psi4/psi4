@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#ifdef USING_Einsums
-
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
 
@@ -41,57 +39,12 @@
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/basisset.h"
 
+#include "psi4/libmints/complexmatrix.h"
+#include "psi4/libpsi4util/process.h"
+
+#include <Einsums/Tensor/TiledTensor.hpp>
 #include <Einsums/LinearAlgebra.hpp>
 #include <Einsums/TensorAlgebra.hpp>
-#include <Einsums/Runtime.hpp>
-#include <Einsums/Concepts/TensorConcepts.hpp>
-
-#include "psi4/libpsi4util/process.h"
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-namespace {
-
-/* Computes the conjugate transpose of const reference A and stores result in B */
-void conj_T(ComplexMatrix const& A, SharedComplexMatrix B) {
-    // It may seem kitsch to pass a dereferenced shared_ptr to `A`, but it's safe.
-    // `A` can neither be changed, nor become a dangling reference.
-    // TODO: permute BlockTensor directly when Einsums bug is fixed
-    for (int h = 0; h < A.num_blocks(); h++) {
-        if (A.block_dims()[h] == 0) continue;
-        einsums::tensor_algebra::permute<true>(
-            std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &B->block(h),
-            std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, A.block(h));
-    }
-}
-
-/* Convenient helper functions for gemm call of complex underlying type.
- * Templating allows for the expected
- *   gemm(ComplexMatrix const& A, ComplexMatrix const& B,
- *        SharedComplexMatrix C);
- *
- * as well as intermingling TensorView types:
- *   gemm(TensorView<ComplexMatrix> const& A, TensorView<ComplexMatrix> const& B,
- *        ComplexMatrix* C);
- *
- * and shared pointers
- *   gemm(TensorView<ComplexMatrix> const& A, TensorView<ComplexMatrix> const& B,
- *        SharedComplexMatrix C);
- */
-template <einsums::TensorConcept T1, einsums::TensorConcept T2>
-    requires einsums::SameUnderlying<einsums::RemoveViewT<T1>, T2>
-void gemm(T1 const& A, T1 const& B, T2* C) {
-    einsums::linear_algebra::gemm<false, false>(std::complex<double>(1.0), A, B, std::complex<double>(0.0), C);
-}
-
-template <einsums::TensorConcept T1, typename T2>
-    requires einsums::SameUnderlying<einsums::RemoveViewT<T1>, T2>
-void gemm(T1 const& A, T1 const& B, std::shared_ptr<T2> C) {
-    einsums::linear_algebra::gemm<false, false>(std::complex<double>(1.0), A, B, std::complex<double>(0.0), C.get());
-}
-
-}  // namespace
 
 namespace psi {
 
@@ -112,10 +65,6 @@ SOX2C1e::SOX2C1e(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_
     outfile->Printf("\n     Ref Basis: " + aoBasis_->name());
     outfile->Printf("\n     X2C Basis: " + deconBasis_->name());
     outfile->Printf("\n     The X2C Hamiltonian will be computed in the X2C Basis.\n\n");
-
-    // Turn off non-critical einsums logs to stdout
-    std::vector<std::string> ein_argv{"psi4", "--einsums:no-profiler-report", "--einsums:log-level", "3"};
-    einsums::initialize(ein_argv);
 }
 
 SOX2C1e::~SOX2C1e() {}
@@ -138,27 +87,23 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     compute_integrals(integral, soFactory);
 
     /* 2. Form 1e Dirac Hamiltonian. */
-    auto Hdirac = std::make_shared<ComplexMatrix>("Dirac Hamiltonian", nsopi4c_.blocks());
+    auto Hdirac = std::make_shared<ComplexMatrix>("Dirac Hamiltonian", nsopi4c_);
     form_dirac_hamiltonian(Hdirac);
 
     /* 3. Diagonalize 1e Dirac Hamiltonian with metric */
-    auto orth = std::make_shared<ComplexMatrix>("4c metric^(-1/2)", nsopi4c_.blocks());
-    auto orth_H = std::make_shared<ComplexMatrix>("4c metric^(-1/2).conj().T", nsopi4c_.blocks());
+    auto orth = std::make_shared<ComplexMatrix>("4c metric^(-1/2)", nsopi4c_);
     form_orth(orth);
-    conj_T(*orth, orth_H);
-
-    auto Hevec = std::make_shared<ComplexMatrix>("Dirac eigenvectors", nsopi4c_.blocks());
-    auto Heval = einsums::BlockTensor<double, 1>("Dirac eigenvalues", nsopi4c_.blocks());
-    auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi4c_.blocks());
+    auto orth_H = orth->conjT();
 
     // Orthogonalize Hdirac
-    gemm(*orth_H, *Hdirac, tmp);
-    gemm(*tmp, *orth, Hevec);
+    auto tmp = linalg::doublet(orth_H, Hdirac);
+    auto Hevec = linalg::doublet(tmp, orth);
+    einsums::BlockTensor<double, 1> Heval("Dirac Eigenvalues", nsopi4c_.blocks());
 
     for (int h = 0; h < nsopi_.n(); h++) {
         if (nsopi_[h] == 0) continue;
 
-        einsums::linear_algebra::heev<true>(&Hevec->block(h), &Heval[h]);
+        einsums::linear_algebra::heev<true>(&Hevec->get(h), &Heval[h]);
 
         if (Process::environment.options.get_int("PRINT") > 1) {
             outfile->Printf("  Eigenvalues of Dirac Hamiltonian. Irrep %d", h+1);
@@ -172,33 +117,33 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
         }
     }
     // Must do conj_T due to different conventions in BLAS & Einsums
-    conj_T(*Hevec, tmp);
-    gemm(*orth, *tmp, Hevec);  // Back-transform
+    tmp = Hevec->conjT();
+    Hevec = linalg::doublet(orth, tmp);
     tmp.reset(); // Last time using 4c matrices
 
     /* 4. Form X and Stilde */
-    auto X = std::make_shared<ComplexMatrix>("X", nsopi2c_.blocks());
+    auto X = std::make_shared<ComplexMatrix>("X", nsopi2c_);
     form_X(*Hevec, X);
 
-    auto X_H = std::make_shared<ComplexMatrix>("X.conj().T", nsopi2c_.blocks());
-    auto X_HT = std::make_shared<ComplexMatrix>("X.conj().T @ T", nsopi2c_.blocks());
-    auto TX = std::make_shared<ComplexMatrix>("T @ X", nsopi2c_.blocks());
-    auto X_HTX = std::make_shared<ComplexMatrix>("X.conj().T @ T @ X", nsopi2c_.blocks());
-    conj_T(*X, X_H);
-    gemm(*X_H, *kinetic_, X_HT);
-    conj_T(*X_HT, TX);
-    gemm(*X_HT, *X, X_HTX);
+    auto X_H = X->conjT();
+    auto X_HT = linalg::doublet(X_H, kinetic_);
+    auto TX = X_HT->conjT();
+    auto X_HTX = linalg::doublet(X_HT, X);
 
-    auto Stilde = std::make_shared<ComplexMatrix>("Stilde", nsopi2c_.blocks());
+    X_HT->set_name("X^H @ T");
+    TX->set_name("T @ X");
+    X_HTX->set_name("X^H @ T @ X");
+
+    auto Stilde = std::make_shared<ComplexMatrix>("Stilde", nsopi2c_);
     form_Stilde(*X_HTX, Stilde);
 
     /* 5. Form R */
-    auto R = std::make_shared<ComplexMatrix>("R", nsopi2c_.blocks());
+    auto R = std::make_shared<ComplexMatrix>("R", nsopi2c_);
     form_R(*Stilde, *orth, R);
 
     /* 6. Form NESC FW+ Hamiltonian (Split into V and T) */
-    auto Vx2c = ComplexMatrix("Vx2c", nsopi2c_.blocks());
-    auto Tx2c = ComplexMatrix("Tx2c", nsopi2c_.blocks());
+    auto Vx2c = ComplexMatrix("Vx2c", nsopi2c_);
+    auto Tx2c = ComplexMatrix("Tx2c", nsopi2c_);
     Tx2c = (*TX);
     Tx2c += (*X_HT);
     Tx2c -= (*X_HTX);
@@ -206,21 +151,19 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     Vx2c = (*nuclear_);
 
     // Now for 1/4c²X†WX term
-    tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_.blocks());  // Different size tmp
-    tmp->zero();
-    gemm(*X_H, *rel_pot_, tmp);
-    gemm(*tmp, *X, rel_pot_);
-    Vx2c += (*rel_pot_);
+    tmp = linalg::doublet(X_H, rel_pot_); // Different size tmp
+    rel_pot_ = linalg::doublet(tmp, X);
+    Vx2c.add(*rel_pot_);
 
     // F = R† hFW R
     // X_H is now R.conj().T
-    conj_T(*R, X_H);
+    X_H = R->conjT();
 
-    gemm(*X_H, Vx2c, tmp);
-    gemm(*tmp, *R, &Vx2c);
+    tmp = std::make_shared<ComplexMatrix>(linalg::doublet(*X_H, Vx2c));
+    Vx2c = *(linalg::doublet(tmp, R));
 
-    gemm(*X_H, Tx2c, tmp);
-    gemm(*tmp, *R, &Tx2c);
+    tmp = std::make_shared<ComplexMatrix>(linalg::doublet(*X_H, Tx2c));
+    Tx2c = *(linalg::doublet(tmp, R));
 
     /* 7. Express Tx2c + Vx2c as real matrices */
     // Decontracted basis SharedMatrices
@@ -297,18 +240,18 @@ void SOX2C1e::compute_integrals(std::shared_ptr<IntegralFactory> integral, std::
     }
 
     // Matrix to einsums conversion: block diag for most except rel_pot_.
-    overlap_ = std::make_shared<ComplexMatrix>("Overlap 2c", nsopi2c_.blocks());
-    kinetic_ = std::make_shared<ComplexMatrix>("Kinetic 2c", nsopi2c_.blocks());
-    nuclear_ = std::make_shared<ComplexMatrix>("Nuclear 2c", nsopi2c_.blocks());
-    rel_pot_ = std::make_shared<ComplexMatrix>("s.pVs.p 2c", nsopi2c_.blocks());
+    overlap_ = std::make_shared<ComplexMatrix>("Overlap 2c", nsopi2c_);
+    kinetic_ = std::make_shared<ComplexMatrix>("Kinetic 2c", nsopi2c_);
+    nuclear_ = std::make_shared<ComplexMatrix>("Nuclear 2c", nsopi2c_);
+    rel_pot_ = std::make_shared<ComplexMatrix>("s.pVs.p 2c", nsopi2c_);
 
     const std::complex<double> i{0, 1};
     for (int h = 0; h < nsopi_.n(); h++) {
         int nc = nsopi_[h];  // size of 1-component
-        auto& Sb = overlap_->block(h);
-        auto& Tb = kinetic_->block(h);
-        auto& Vb = nuclear_->block(h);
-        auto& Wb = rel_pot_->block(h);
+        auto& Sb = overlap_->get(h);
+        auto& Tb = kinetic_->get(h);
+        auto& Vb = nuclear_->get(h);
+        auto& Wb = rel_pot_->get(h);
         for (int p = 0; p < nc; p++) {
             for (int q = 0; q < nc; q++) {
                 Sb(p, q) = sMat->get(h, p, q);
@@ -337,21 +280,21 @@ void SOX2C1e::compute_integrals(std::shared_ptr<IntegralFactory> integral, std::
 void SOX2C1e::form_dirac_hamiltonian(SharedComplexMatrix Hdirac) {
     Hdirac->zero();
 
-    auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_.blocks());
+    auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_);
     // recall that rel_pot_ has already been scaled by .25 / (pc_c_au * pc_c_au)
     (*tmp) = (*rel_pot_);
     (*tmp) -= (*kinetic_);
 
     for (int h = 0; h < nsopi2c_.n(); h++) {
-        auto& Hblock = Hdirac->block(h);
+        auto& Hblock = Hdirac->get(h);
 
         einsums::Range a{0, nsopi2c_[h]};
         einsums::Range b{nsopi2c_[h], 2*nsopi2c_[h]};
 
-        Hblock(a, a) = nuclear_->block(h);
-        Hblock(a, b) = kinetic_->block(h);
-        Hblock(b, a) = kinetic_->block(h);
-        Hblock(b, b) = tmp->block(h);
+        Hblock(a, a) = nuclear_->get(h);
+        Hblock(a, b) = kinetic_->get(h);
+        Hblock(b, a) = kinetic_->get(h);
+        Hblock(b, b) = tmp->get(h);
     }
 }
 
@@ -371,7 +314,7 @@ void SOX2C1e::form_orth(SharedComplexMatrix orth) {
 
     for (int h = 0; h < nsopi_.n(); h++) {
         int dim = nsopi_[h];
-        auto& orth_block = orth->block(h);
+        auto& orth_block = orth->get(h);
         for (int p = 0; p < dim; p++) {
             for (int q = 0; q < dim; q++) {
                 orth_block(p, q) = sOrth->get(h, p, q);
@@ -396,17 +339,33 @@ void SOX2C1e::form_X(ComplexMatrix const& Hevec, SharedComplexMatrix X) {
 
         // TODO: replace this with lapack call
         einsums::linear_algebra::invert(&C_large);
-        gemm(C_small, C_large, &X->block(h));
+
+        auto& Xblock = X->get(h);
+        for (int p = 0; p < 2 * nsopi_[h]; p++) {
+            for (int q = 0; q < 2 * nsopi_[h]; q++) {
+                Xblock(p, q) = 0.0;
+                for (int k = 0; k < 2 * nsopi_[h]; k++) {
+                    Xblock(p, q) += C_small(p, k) * C_large(k, q);
+                }
+            }
+        }
     }
 }
 
 /* Stilde = S + \frac{1}{2c^2}X^\dagger T X */
 void SOX2C1e::form_Stilde(ComplexMatrix const& X_HTX, SharedComplexMatrix Stilde) {
-    const std::complex<double> C2{.5 / (pc_c_au * pc_c_au)};
+    const double C2 = .5 / (pc_c_au * pc_c_au);
 
     Stilde->zero();
     Stilde->operator+=(X_HTX);
-    einsums::linear_algebra::scale(C2, Stilde.get());
+    // Stilde->scale(C2); /* TODO: figure out why this fails */
+    for (int h = 0; h < nsopi_.n(); h++) {
+        for (int p = 0; p < nsopi2c_[h]; p++) {
+            for (int q = 0; q < nsopi2c_[h]; q++) {
+                Stilde->set(h, p, q, Stilde->get(h, p, q) * C2);
+            }
+        }
+    }
 
     Stilde->operator+=(*overlap_);
 }
@@ -417,34 +376,34 @@ void SOX2C1e::form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, Sha
     SharedMatrix _shalf = sOrth->clone();
     _shalf->general_invert(); // Shalf == S^{1/2}
 
-    auto orth2c = std::make_shared<ComplexMatrix>("orth top-left block", nsopi2c_.blocks());
-    auto Shalf = std::make_shared<ComplexMatrix>("sMat^{1/2}", nsopi2c_.blocks());
+    auto orth2c = std::make_shared<ComplexMatrix>("orth top-left block", nsopi2c_);
+    auto Shalf = std::make_shared<ComplexMatrix>("sMat^{1/2}", nsopi2c_);
     orth2c->zero();
     Shalf->zero();
     for (int h = 0; h < nsopi_.n(); h++) {
-        auto& sblock = Shalf->block(h);
+        auto& sblock = Shalf->get(h);
         for (int p = 0; p < nsopi_[h]; p++) {
             for (int q = 0; q < nsopi_[h]; q++) {
-                Shalf->block(h)(p, q) = _shalf->get(h, p, q);
-                Shalf->block(h)(p + nsopi_[h], q + nsopi_[h]) = _shalf->get(h, p, q);
+                Shalf->set(h, p, q, _shalf->get(h, p, q));
+                Shalf->set(h, p + nsopi_[h], q + nsopi_[h], _shalf->get(h, p, q));
             }
         }
 
         // Set 2c orth to top left of orth 4c
         einsums::Range a{0, nsopi2c_[h]};
-        orth2c->block(h) = orth.block(h)(a, a);
+        orth2c->get(h) = orth.get(h)(a, a);
     }
 
-    auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_.blocks());
-    auto evec = std::make_shared<ComplexMatrix>("evec", nsopi2c_.blocks());
+    auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_);
+    auto evec = std::make_shared<ComplexMatrix>("evec", nsopi2c_);
     auto eval = einsums::BlockTensor<double, 1>("eigenvalues", nsopi2c_.blocks());
 
     tmp->zero();
     evec->zero();
 
     // tmp <- [S^{-1/2} \tilde S S^{-1/2}]
-    gemm(*orth2c, Stilde, evec);
-    gemm(*evec, *orth2c, tmp);
+    evec = std::make_shared<ComplexMatrix>(linalg::doublet(*orth2c, Stilde));
+    tmp = std::make_shared<ComplexMatrix>(linalg::doublet(*evec, *orth2c));
 
     // Computing [S^{-1/2} \tilde S S^{-1/2}]^{-1/2}
 
@@ -454,25 +413,26 @@ void SOX2C1e::form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, Sha
 
     for (int h = 0; h < nsopi_.n(); h++) {
         if (nsopi_[h] == 0) continue;
-        einsums::linear_algebra::heev<true>(&tmp->block(h), &eval[h]);
+        einsums::linear_algebra::heev<true>(&tmp->get(h), &eval[h]);
     }
-    conj_T(*tmp, evec);
+    evec = tmp->conjT();
 
     // R <- Σ Λ^{-1/2} Σ^\dagger == evec @ np.diag(eval) @ tmp
     // scale each column in evec by eval: evec @ np.diag(eval)
     for (int h = 0; h < nsopi2c_.n(); h++) {
         // Einsums needs block to be non-zero dim
         if (nsopi2c_[h] == 0) continue;
-        auto& vecblock = evec->block(h);
+        auto& vecblock = evec->get(h);
         for (int i = 0; i < nsopi2c_[h]; i++) {
             einsums::linear_algebra::scale_column(i, std::pow(eval[h](i), -.5), &vecblock);
         }
     }
-    gemm(*evec, *tmp, R);
+    auto R_orth = linalg::doublet(evec, tmp);
 
     // S^{-1/2}...S^{1/2}
-    gemm(*orth2c, *R, tmp);
-    gemm(*tmp, *Shalf, R);
+    tmp = linalg::doublet(orth2c, R_orth);
+    auto R_final = linalg::doublet(tmp, Shalf);
+    *R = *R_final;
 }
 
 /* Takes Tx2c and Vx2c (two-component complex einsums BlockTensors) and converts
@@ -493,8 +453,8 @@ void SOX2C1e::form_pauli(ComplexMatrix& Tx2c, ComplexMatrix& Vx2c, SharedMatrix 
 
     for (int h = 0; h < nsopi_.n(); h++) {
         int nc = nsopi_[h];
-        auto& Tblock = Tx2c.block(h);
-        auto& Vblock = Vx2c.block(h);
+        auto& Tblock = Tx2c.get(h);
+        auto& Vblock = Vx2c.get(h);
 
         einsums::Range a{0, nsopi_[h]};
         einsums::Range b{nsopi_[h], nsopi2c_[h]};
@@ -570,20 +530,20 @@ bool SOX2C1e::test_hFW(einsums::BlockTensor<double, 1>& Heval, SharedMatrix S, S
 
     Dimension nsopi2c_contracted = nsopi_contracted_ + nsopi_contracted_;
 
-    auto hFW = std::make_shared<ComplexMatrix>("Test hFW", nsopi2c_contracted.blocks());
+    auto hFW = std::make_shared<ComplexMatrix>("Test hFW", nsopi2c_contracted);
     auto _orth = std::make_shared<Matrix>("orthogonalization", nsopi_contracted_, nsopi_contracted_);
     _orth = S->clone();
     _orth->power(-.5);
     hFW->zero();
 
-    auto orth = std::make_shared<ComplexMatrix>("orthogonalization", nsopi2c_contracted.blocks());
+    auto orth = std::make_shared<ComplexMatrix>("orthogonalization", nsopi2c_contracted);
     orth->zero();
 
     for (int h = 0; h < nsopi_contracted_.n(); h++) {
         int nc = nsopi_contracted_[h];
 
-        auto& Ob = orth->block(h);
-        auto& Hb = hFW->block(h);
+        auto& Ob = orth->get(h);
+        auto& Hb = hFW->get(h);
 
         for (int p = 0; p < nc; p++) {
             for (int q = 0; q < nc; q++) {
@@ -598,12 +558,12 @@ bool SOX2C1e::test_hFW(einsums::BlockTensor<double, 1>& Heval, SharedMatrix S, S
         }
     }
 
-    auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_contracted.blocks());
-    auto orth_H = std::make_shared<ComplexMatrix>("orth.conj().T", nsopi2c_contracted.blocks());
-    conj_T(*orth, orth_H);
+    auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_contracted);
+    auto orth_H = std::make_shared<ComplexMatrix>("orth.conj().T", nsopi2c_contracted);
+    orth_H = orth->conjT();
 
-    gemm(*orth_H, *hFW, tmp);
-    gemm(*tmp, *orth, hFW);
+    tmp = linalg::doublet(orth_H, hFW);
+    hFW = linalg::doublet(tmp, orth);
 
     auto test_eval = einsums::BlockTensor<double, 1>("hFW eigenvalues", nsopi2c_contracted.blocks());
     outfile->Printf("\n  Testing X2C Hamiltonian.\n");
@@ -614,7 +574,7 @@ bool SOX2C1e::test_hFW(einsums::BlockTensor<double, 1>& Heval, SharedMatrix S, S
         if (nsopi2c_contracted[h] > nsopi_[h])
             throw PSIEXCEPTION("SOX2C1e: RELATIVISTIC_BASIS is smaller than BASIS.");
 
-        einsums::linear_algebra::heev<false>(&hFW->block(h), &test_eval[h]);
+        einsums::linear_algebra::heev<false>(&hFW->get(h), &test_eval[h]);
 
         outfile->Printf("    Irrep %d: Comparing (%d/%d) eigenvalues of Dirac Hamiltonian.\n", h+1, nsopi2c_contracted[h], nsopi_[h]);
         if (print_eigenvalues) outfile->Printf("      (eval)   |  H dirac  |   |   H X2C   |\n");
@@ -630,5 +590,3 @@ bool SOX2C1e::test_hFW(einsums::BlockTensor<double, 1>& Heval, SharedMatrix S, S
 }
 
 }  // namespace psi
-
-#endif  // USING_Einsums

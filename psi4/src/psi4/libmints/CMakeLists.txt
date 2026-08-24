@@ -1,7 +1,6 @@
 list(APPEND sources
   local.cc
   sfx2c1e.cc
-  sox2c1e.cc
   zora.cc
   orbitalspace.cc
   maketab.cc
@@ -175,5 +174,10 @@ if(TARGET Einsums::Einsums)
         )
     endif()
   endif()
+
+  target_sources(mints
+    PRIVATE
+      sox2c1e.cc
+    )
 endif()
 
