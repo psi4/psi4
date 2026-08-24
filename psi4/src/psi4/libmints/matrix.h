@@ -28,6 +28,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <memory>
@@ -36,7 +37,6 @@
 
 #include "dimension.h"
 
-#include <eigen3/Eigen/Core>
 #ifdef USING_OpenOrbitalOptimizer
 #ifdef USING_LAPACK_MKL
 #include <mkl.h>
@@ -291,9 +291,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void copy(const Matrix* cp);
     /** @} */
 
-    /// returns an Eigen::Map object to the underlying matrix data buffer
-    Eigen::Map<Eigen::MatrixXd> eigen_map();
-    std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps();
     /// Returns an Armadillo matrix
     arma::mat to_armadillo_matrix(int h=0);
     /// Copies data from an Armadillo matrix
