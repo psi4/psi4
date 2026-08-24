@@ -171,28 +171,54 @@ OrbitalSpace orthogonalize(const std::string &id, const std::string &name, const
     SharedMatrix overlap = OrbitalSpace::overlap(bs, bs);
     Dimension SODIM = overlap->rowspi();
     auto evecs = std::make_shared<Matrix>("evecs", SODIM, SODIM);
-    auto sqrtm = std::make_shared<Matrix>("evecs", SODIM, SODIM);
     auto evals = std::make_shared<Vector>("evals", SODIM);
 
-    int nlindep = 0;
     overlap->diagonalize(evecs, evals);
+
+    Dimension nlindep(SODIM.n());
     for (int h = 0; h < SODIM.n(); h++) {
         for (int i = 0; i < SODIM[h]; i++) {
-            if (std::fabs(evals->get(h, i)) > lindep_tol) {
-                sqrtm->set(h, i, i, 1.0 / sqrt(evals->get(h, i)));
-            } else {
-                sqrtm->set(h, i, i, 0.0);
-                nlindep++;
-            }
+            if (std::fabs(evals->get(h, i)) <= lindep_tol) nlindep[h]++;
         }
     }
 
-    sqrtm->back_transform(evecs);
-
-    outfile->Printf("    %d linear dependencies will be \'removed\'.\n", nlindep);
+    outfile->Printf("    %d linear dependencies will be \'removed\'.\n", nlindep.sum());
 
     auto localfactory = std::make_shared<IntegralFactory>(bs);
-    return OrbitalSpace(id, name, sqrtm, bs, localfactory);
+
+    if (nlindep.sum() == 0) {
+        // Symmetric orthogonalization, S^{-1/2} = U s^{-1/2} U^T.
+        auto sqrtm = std::make_shared<Matrix>("S^-1/2", SODIM, SODIM);
+        for (int h = 0; h < SODIM.n(); h++) {
+            for (int i = 0; i < SODIM[h]; i++) {
+                sqrtm->set(h, i, i, 1.0 / sqrt(evals->get(h, i)));
+            }
+        }
+        sqrtm->back_transform(evecs);
+        return OrbitalSpace(id, name, sqrtm, bs, localfactory);
+    }
+
+    // Symmetric orthogonalization cannot drop the dependent directions: zeroing their
+    // contribution leaves a rank-deficient square matrix, so the space keeps claiming
+    // the full basis dimension and passes null vectors on to whatever is built from it.
+    // Fall back to canonical orthogonalization, X = U_kept s_kept^{-1/2}, which really
+    // has the reduced column dimension.
+    Dimension NDIM = SODIM - nlindep;
+    auto X = std::make_shared<Matrix>("X (canonical orthogonalization)", SODIM, NDIM);
+    for (int h = 0; h < SODIM.n(); h++) {
+        int col = 0;
+        for (int i = 0; i < SODIM[h]; i++) {
+            double eval = evals->get(h, i);
+            if (std::fabs(eval) <= lindep_tol) continue;
+            double scale = 1.0 / sqrt(eval);
+            for (int j = 0; j < SODIM[h]; j++) {
+                X->set(h, j, col, evecs->get(h, j, i) * scale);
+            }
+            col++;
+        }
+    }
+
+    return OrbitalSpace(id, name, X, bs, localfactory);
 }
 
 OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpace &space2, const std::string &id,
@@ -209,9 +235,14 @@ OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpac
     // Overlap Matrix
     SharedMatrix O12 = OrbitalSpace::overlap(space1, space2);
 
-    // Half-transform to RIBS
+    // Transform the overlap into the orbital basis of both spaces, C1^T S12 C2.
+    // The row dimension of space1 is its number of orbitals, which is smaller than its
+    // number of basis functions whenever linear dependencies were removed from it.
+    auto O12C2 = std::make_shared<Matrix>("S12 C2", O12->rowspi(), space2.C()->colspi());
+    O12C2->gemm(false, false, 1.0, O12, space2.C(), 0.0);
+
     auto C12 = std::make_shared<Matrix>("C12", space1.C()->colspi(), space2.C()->colspi());
-    C12->gemm(false, false, 1.0, O12, space2.C(), 0.0);
+    C12->gemm(true, false, 1.0, space1.C(), O12C2, 0.0);
 
     // SVD of MO overlap matrix
     auto [U, S, Vt] = C12->svd_a_temps();
