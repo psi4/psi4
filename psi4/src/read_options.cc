@@ -2675,6 +2675,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Use T0 approximation for DLPNO-CCSD(T)? (not set explicitly), 
         triggered by indicating 'dlpno-ccsd(t0)' rather than 'dlpno-ccsd(t)' !expert -*/
         options.add_bool("T0_APPROXIMATION", false);
+        /*- Use Q0 approximation for DLPNO-CCSDT(Q)? (not set explicitly), 
+        triggered by indicating 'dlpno-ccsdt(q0)' rather than 'dlpno-ccsdt(q)' !expert -*/
+        options.add_bool("Q0_APPROXIMATION", false);
         /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
         options.add_double("T_CUT_DO_IJ", 1e-5);
         /*- DOI threshold for treating PAOs (u,v) as interacting !expert -*/
@@ -2747,6 +2750,63 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Minimum number of TNOs required in each triplet !expert -*/
         options.add_int("MIN_TNOS", 9);
 
+        /*- SUBSECTION DLPNO-CCSDT Specific Options -*/
+
+        /*- Occupation number threshold for removing TNOs with full triples !expert -*/
+        options.add_double("T_CUT_TNO_FULL", 1.0e-7);
+        /*- Number of T1/T2 microiteration updates per Full T iteration 
+            (increase this value for highly multireference systems) !expert -*/
+        options.add_double("DLPNO_TRIPLES_MICROITERATIONS", 3);
+        /*- Damping factor on triples amplitude updates in CCSDT iterations !expert -*/
+        options.add_double("TRIPLES_DAMPING_RATIO", 0.0);
+
+        /*- SUBSECTION DLPNO-CCSDT(Q) Specific Options -*/
+
+        /*- Occupation number threshold for removing QNOs !expert -*/
+        options.add_double("T_CUT_QNO", 3.33e-7);
+        /*- How much to scale T_CUT_QNO by for quadruplets containing two of the same orbitals (iijk) !expert -*/
+        options.add_double("T_CUT_QNO_DIAG_SCALE", 1.0);
+        /*- Maximum number of weak pairs in (ij, jk, ik, il, jl, kl) to consider when forming quadruplet ijkl !expert -*/
+        options.add_bool("QUADS_MAX_WEAK_PAIRS", 3);
+        /*- T_CUT_QNO scaling for strong quadruplets in the iterative (Q) algorithm !expert -*/
+        options.add_double("T_CUT_QNO_STRONG_SCALE", 10.0);
+        /*- T_CUT_QNO scaling for weak quadruplets in the iterative (Q) algorithm !expert -*/
+        options.add_double("T_CUT_QNO_WEAK_SCALE", 10.0);
+        /*- Occupation number threshold used in the quadruples prescreening step !expert -*/
+        options.add_double("T_CUT_QNO_PRE", 3.33e-6);
+        /*- Local density fitting tolerance for the prescreening portion of the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_MKN_QUADS_PRE", 1.0e-1);
+        /*- LMO/PAO threshold for the prescreening portion of the (T) algorithm !expert -*/
+        options.add_double("T_CUT_DO_QUADS_PRE", 2.0e-2);
+        /*- Quadruples energy threshold for a quadruplet (ijkl) to not be further considered !expert -*/
+        options.add_double("T_CUT_QUADS_WEAK", 1.0e-8);
+        /*- Local density fitting tolerance for the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_MKN_QUADS", 1.0e-2);
+        /*- LMO/PAO threshold for the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_DO_QUADS", 1.0e-2);
+        /*- Fock matrix threshold for treating amplitudes as coupled during local (Q) iterations !expert -*/
+        options.add_double("F_CUT_Q", 1.0e-3);
+        /*- Energy difference in which to stop considering quadruples in iterative (Q) !expert -*/
+        options.add_double("T_CUT_ITER_Q", 1.0e-4);
+        /*- Minimum number of QNOs required in each quadruplet !expert -*/
+        options.add_int("MIN_QNOS", 4);
+
+        /*- SUBSECTION DLPNO-CCSDTQ Specific Options -*/
+
+        /*- Occupation number threshold for removing QNOs with full quadruples !expert -*/
+        options.add_double("T_CUT_QNO_FULL", 3.33e-6);
+        /*- Occupation number threshold for extended pair natural orbitals (XPNOs) !expert -*/
+        options.add_double("T_CUT_XPNO", 1.0e-5);
+        /*- Occupation number threshold scaling to apply to XPNOs for diagonal pairs ii !expert -*/
+        options.add_double("T_CUT_XPNO_DIAG_SCALE", 1.0);
+        /*- Occupation trace sum threshold for removing XPNOs !expert -*/
+        options.add_double("T_CUT_TRACE_XPNO", 0.0);
+        /*- Number of T1/T2 microiteration updates per Full Q iteration 
+            (increase this value for highly multireference systems) !expert -*/
+        options.add_double("DLPNO_QUADS_MICROITERATIONS", 3);
+        /*- Damping factor on quadruples amplitude update in CCSDTQ iterations !expert -*/
+        options.add_double("QUADRUPLES_DAMPING_RATIO", 0.0);
+
         /*- SUBSECTION Memory Control Options -*/
 
         /*- Use low memory PNO overlap algorithm? !expert -*/
@@ -2759,6 +2819,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("WRITE_TRIPLES_INTERMEDIATES", false);
         /*- Write triples amplitudes to disk? !expert -*/
         options.add_bool("WRITE_TRIPLES_AMPLITUDES", false);
+        /*- Write expensive DLPNO-CCSDT TNO integrals to disk? !expert -*/
+        options.add_bool("DLPNO_CCSDT_DISK_INTS", true);
+        /*- Write expensive DLPNO-CCSDTQ QNO integrals to disk? !expert -*/
+        options.add_double("DLPNO_CCSDTQ_DISK_INTS", true);
+        /*- Extrapolate T4 amplitudes for DLPNO-CCSDTQ? (Turn off for larger systems) !expert -*/
+        options.add_bool("EXTRAPOLATE_T4", true);
 
         /*- SUBSECTION DOI Grid Options -*/
 

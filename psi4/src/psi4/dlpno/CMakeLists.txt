@@ -3,6 +3,7 @@ list(APPEND sources
   mp2.cc
   ccsd.cc
   triples.cc
+  quads.cc
   wrapper.cc
   sparse.cc
   )
@@ -12,3 +13,4 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
 endif()
 
 target_link_libraries(dlpno PUBLIC diis)
+target_link_libraries(dlpno PRIVATE Einsums::Einsums)

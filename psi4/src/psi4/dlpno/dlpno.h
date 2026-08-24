@@ -43,10 +43,22 @@
 #include <string>
 #include <unordered_map>
 
+#include "Einsums/Tensor.hpp"
+#include "Einsums/TensorAlgebra.hpp"
+#include "Einsums/LinearAlgebra.hpp"
+#include "Einsums/Profile.hpp"
+#include "Einsums/TensorUtilities/RMSD.hpp"
+
+
+using namespace einsums;
+using namespace einsums::index;
+using namespace einsums::linear_algebra;
+using namespace einsums::tensor_algebra;
+
 namespace psi {
 namespace dlpno {
 
-enum class DLPNOMethod { MP2, CCSD, CCSD_T };
+enum class DLPNOMethod { MP2, CCSD, CCSD_T, CCSDT, CCSDT_Q, CCSDTQ };
 
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
@@ -497,6 +509,231 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     ~DLPNOCCSD_T() override;
 
     double compute_energy() override;
+};
+
+class DLPNOCCSDT : public DLPNOCCSD_T {
+   protected:
+    // DF integrals in the domain of triplet ijk
+    std::vector<Tensor<double, 2>> q_io_;
+    std::vector<Tensor<double, 2>> q_jo_;
+    std::vector<Tensor<double, 2>> q_ko_;
+
+    std::vector<Tensor<double, 2>> q_iv_;
+    std::vector<Tensor<double, 2>> q_jv_;
+    std::vector<Tensor<double, 2>> q_kv_;
+
+    std::vector<Tensor<double, 3>> q_ov_;
+    std::vector<Tensor<double, 3>> q_vv_;
+
+    // Write expensive integrals (q_{ijk}| m_{ijk} a_{ijk}) and (q_{ijk} | a_{ijk} b_{ijk}) to disk?
+    bool disk_ints_;
+    // Damping ratio (how much of the original triples amplitude to keep)
+    double damping_ratio_;
+
+    // Singles Amplitudes
+    std::vector<Tensor<double, 2>> T_n_ijk_;
+    // Einsums clone of Psi4 T3 amplitudes
+    std::vector<Tensor<double, 3>> T_iajbkc_clone_;
+    // Contravariant Triples Amplitudes (from Koch 2020)
+    std::vector<Tensor<double, 3>> U_iajbkc_;
+
+    // List of triples sorted by number of TNOs
+    std::vector<int> sorted_triplets_;
+    // Number of threads
+    int nthread_;
+    // Energy expression
+    double e_lccsdt_;
+    // Energy loss incurred from TNO rank reduction from (T) to T
+    double dE_T_rank_;
+    // (T0) energy using looser TNOs
+    double E_T0_loose_;
+    // (T) energy using looser TNOs
+    double E_T_loose_;
+
+    /// Encapsulates the reading in of (Q_{ijk}|m_{ijk} a_{ijk}) integrals (regardless of core or disk)
+    Tensor<double, 3> QIA_TNO(const int ijk);
+    /// Encapsulates the reading in of (Q_{ijk}|a_{ijk} b_{ijk}) integrals (regardless of core or disk)
+    Tensor<double, 3> QAB_TNO(const int ijk);
+
+    /// Helper function for transforming amplitudes from one TNO space to another
+    Tensor<double, 3> matmul_3d_einsums(const Tensor<double, 3> &A, const SharedMatrix &X, int dim_old, int dim_new);
+    /// Helper function for transforming amplitudes from one TNO space to another (one index only)
+    Tensor<double, 3> matmul_3d_index(const Tensor<double, 3> &A, const SharedMatrix &X, int index);
+    /// Helper function for managing permutational symmetry in triples amplitudes
+    Tensor<double, 3> triples_permuter_einsums(const Tensor<double, 3> &X, int i, int j, int k, bool reverse=false);
+    /// Returns a permutation index for the order of i, j, k (e.g. (i <= j <= k) = 0; (i <= k <= j) = 1, ..., (k <= j <= i) = 5)
+    int triples_permutation_idx(int i, int j, int k);
+    /// Performs spin-summation of triples amplitudes 
+    Tensor<double, 3> triples_spin_summation(const Tensor<double, 3> &X);
+    /// Performs a spin-desummation of the triples amplitude (Matthews Eq. 27)
+    /// This is done to remove linear dependencies in the triples amplitude space
+    Tensor<double, 3> triples_spin_desummation(const Tensor<double, 3> &X);
+
+    /// compute the expensive term in \rho_{ck}^{bd}
+    std::vector<Tensor<double, 3>> rho_dbck_contribution();
+    /// computes singles residuals in LCCSDT equations
+    void compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vector<std::vector<SharedMatrix>>& R_ia_buffer);
+    /// compute doubles residuals in LCCSDT equations
+    void compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb, std::vector<std::vector<SharedMatrix>>& R_iajb_buffer);
+    /// computes triples residuals in LCCSDT equations
+    void compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc);
+
+    void print_header();
+    void estimate_memory();
+    void compute_integrals();
+    void lccsdt_iterations();
+    void print_results();
+
+   public:
+    DLPNOCCSDT(SharedWavefunction ref_wfn, Options& options);
+    ~DLPNOCCSDT() override;
+
+    double compute_energy() override;
+};
+
+class DLPNOCCSDT_Q : public DLPNOCCSDT {
+   protected:
+    // Exhaustive list of all 24 permutations (I hate my life)
+    constexpr static std::array<std::tuple<int, int, int, int>, 24> quad_perms_long = {std::make_tuple(0, 1, 2, 3), std::make_tuple(0, 1, 3, 2), 
+        std::make_tuple(0, 2, 1, 3), std::make_tuple(0, 2, 3, 1), std::make_tuple(0, 3, 1, 2), std::make_tuple(0, 3, 2, 1), 
+        std::make_tuple(1, 0, 2, 3), std::make_tuple(1, 0, 3, 2), std::make_tuple(1, 2, 0, 3), std::make_tuple(1, 2, 3, 0), 
+        std::make_tuple(1, 3, 0, 2), std::make_tuple(1, 3, 2, 0), std::make_tuple(2, 0, 1, 3), std::make_tuple(2, 0, 3, 1), 
+        std::make_tuple(2, 1, 0, 3), std::make_tuple(2, 1, 3, 0), std::make_tuple(2, 3, 0, 1), std::make_tuple(2, 3, 1, 0), 
+        std::make_tuple(3, 0, 1, 2), std::make_tuple(3, 0, 2, 1), std::make_tuple(3, 1, 0, 2), std::make_tuple(3, 1, 2, 0), 
+        std::make_tuple(3, 2, 0, 1), std::make_tuple(3, 2, 1, 0)};
+
+    SparseMap lmoquadruplet_to_ribfs_; ///< which ribfs are on an LMO quadruplets (i, j, k)
+    SparseMap lmoquadruplet_to_lmos_; ///< which LMOs m form a significant pair with (i, j, k, or l)
+    SparseMap lmoquadruplet_to_paos_; ///< which PAOs span the virtual space of a quadruplet of LMOs?
+    std::unordered_map<int, int> i_j_k_l_to_ijkl_; ///< LMO indices (i, j, k, l) to significant LMO quadruplet index (ijkl), -1 if not found
+    std::vector<std::tuple<int, int, int, int>> ijkl_to_i_j_k_l_; ///< LMO quadruplet index (ijkl) to LMO index tuple (i, j, k, l)
+    std::vector<std::tuple<int, int, int, int>> ijkl_to_i_j_k_l_full_; ///< LMO quadruplet indices with no i <= j <= k <= l restriction
+    std::vector<int> sorted_quadruplets_; ///< quadruplets sorted by number of QNOs
+
+    /// quadruples natural orbitals (QNOs)
+    std::vector<Tensor<double, 4>> T_iajbkcld_; ///< Quadruples amplitude for each lmo triplet
+    std::vector<Tensor<double, 4>> gamma_ijkl_; ///< Gamma intermediate
+    std::vector<std::array<Tensor<double, 3>, 4>> K_iabe_list_; ///< (i a_{ijkl} | b_{ijkl} e_{ijkl}) over i, j, k, l
+    std::vector<std::array<Tensor<double, 2>, 16>> K_iajm_list_; ///< (i a_{ijkl} | j m_{ijkl}) over i, j, k, l
+    std::vector<std::array<Tensor<double, 2>, 16>> K_iajb_list_; ///< (i a_{ijkl} | j b_{ijkl}) over ij, ik, il, ..., kl
+    std::vector<std::array<Tensor<double, 2>, 16>> U_iajb_list_; ///< t_{ij}^{a_{ijkl} b_{ijkl}} over ij, ik, il, ..., kl
+    std::vector<SharedMatrix> X_qno_; ///< PAO -> canonical QNO transforms
+    std::vector<SharedVector> e_qno_; ///< QNO orbital energies
+    std::vector<int> n_qno_; ///< number of qnos per quadruplet domain
+    std::vector<double> e_ijkl_; ///< energy of quadruplet ijkl (used for pre-screening and convergence purposes)
+    std::vector<double> ijkl_scale_; ///< scaling factor to apply to triplet energy ijk (based on MP2 scaling)
+    std::vector<double> qno_scale_; ///< scaling factor to apply to each triplet to account for TNO truncation error
+    std::vector<bool> is_strong_quadruplet_; ///< whether or not quadruplet is strong
+
+    /// Write quadruples amplitudes to disk?
+    bool write_quad_amplitudes_ = false;
+
+    /// final energies
+    double de_lccsdt_q_screened_; ///< energy contribution from screened quadruples
+    double e_lccsdt_q_; ///< local (Q) correlation energy
+    double E_Q_; ///< raw iterative (Q) energy at weaker quadruples cutoffs
+
+    /// Create sparsity maps for quadruples
+    void quadruples_sparsity(bool prescreening);
+    /// Create QNOs (Quadruplet Natural Orbitals) for DLPNO-(Q)
+    void qno_transform(double qno_tolerance);
+    /// Sort quadruplets to split between "strong" and "weak" quadruplets (for (Q) iterations)
+    void sort_quadruplets(double e_total);
+
+    /// A helper function to transform QNO-like quantities
+    Tensor<double, 4> matmul_4d(const Tensor<double, 4>& A, const SharedMatrix &X, int dim_old, int dim_new, bool contract_first=true);
+    /// Returns a symmetrized version of that matrix (in i <= j <= k <= l ordering)
+    Tensor<double, 4> quadruples_permuter(const Tensor<double, 4>& X, int i, int j, int k, int l);
+
+    /// Compute gamma_ijkl (and return Q0 energy)
+    double compute_gamma_ijkl(bool store_amplitudes=false);
+    /// L_CCSDT(Q) energy
+    double compute_quadruplet_energy(int ijkl, const Tensor<double, 4>& T4);
+    /// A function to estimate Full-(Q) memory costs
+    void estimate_memory();
+    /// L_CCSDT(Q) iterations
+    double lccsdt_q_iterations();
+
+    void print_header();
+    void print_results();
+
+   public:
+    DLPNOCCSDT_Q(SharedWavefunction ref_wfn, Options& options);
+    ~DLPNOCCSDT_Q() override;
+
+    double compute_energy() override;
+};
+
+class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
+   protected:
+    // DF domain integrals
+    std::vector<std::array<Tensor<double, 2>, 4>> q_io_list_; ///< (Q_{ijkl} | [i, j, k, l] m_{ijkl})
+    std::vector<std::array<Tensor<double, 2>, 4>> q_iv_list_; ///< (Q_{ijkl} | [i, j, k, l] a_{ijkl})
+    std::vector<Tensor<double, 3>> q_ov_ijkl_; ///< (Q_{ijkl} | m_{ijkl} a_{ijkl})
+    std::vector<Tensor<double, 3>> q_vv_ijkl_; ///< (Q_{ijkl} | a_{ijkl} b_{ijkl})
+
+    // Extended PNO (XPNO) information
+    SparseMap lmopair_to_paos_ext_;       ///< lmopair to extended PAOs
+    std::vector<SharedMatrix> X_pno_ext_; ///< global PAO -> canonical PNO transforms
+    std::vector<SharedVector> e_pno_ext_; ///< PNO orbital energies
+    std::vector<int> n_pno_ext_;          ///< number of pnos
+
+    /// Encapsulates the reading in of (Q_{ijkl} | m_{ijkl} a_{ijkl})
+    inline Tensor<double, 3> QIA_QNO(const int ijkl);
+    /// Encapsulates the reading in of (Q_{ijkl} | a_{ijkl} b_{ijkl})
+    inline Tensor<double, 3> QAB_QNO(const int ijkl);
+
+    // Write expensive integrals (Q_{ijkl} | m_{ijkl} a_{ijkl}) and (Q_{ijkl} | a_{ijkl} b_{ijkl}) to disk (true by default)!
+    bool disk_ints_quads_;
+    // How much of the original quadruples amplitude to keep
+    double damping_ratio_quads_;
+    // Energy expression
+    double e_lccsdtq_;
+
+    // Singles Amplitudes projected onto QNO space of ijkl
+    std::vector<Tensor<double, 2>> T_n_ijkl_;
+    // Quadruples Amplitudes of ijkl projected onto XPNO space of kl
+    std::vector<std::vector<Tensor<double, 4>>> T_mnkl_list_;
+
+    // Helper functions to form quadruples intermediates
+    inline Tensor<double, 4> alpha_ijkl_helper(const Tensor<double, 4>& T_ijkl);
+    inline Tensor<double, 4> beta_ijkl_helper(const Tensor<double, 4>& alpha_ijkl);
+    /// Performs spin-summation of quadruples amplitudes 
+    Tensor<double, 4> quadruples_spin_summation(const Tensor<double, 4> &X);
+    /// Performs a spin-desummation of the quadruples amplitude (Matthews Eq. 28)
+    /// This is done to remove linear dependencies in the quadruples amplitude space
+    Tensor<double, 4> quadruples_spin_desummation(const Tensor<double, 4> &X);
+
+    /// Create XPNOs (Extended Pair Natural Orbitals) to help with QNO projections
+    void xpno_transform(double xpno_tolerance);
+
+    /// form the projected T_{mnkl}^{abcd} amplitudes over the XPNO domain of kl
+    /// (to reduce the cost of certain delinquent terms)
+    void form_T_mnkl();
+
+    /// compute the expensive term in L_{ijk}^{abm}
+    std::vector<Tensor<double, 4>> alpha_L_contribution();
+    /// compute the expensive term in M_{ejk}^{abc}
+    std::vector<Tensor<double, 4>> alpha_M_contribution();
+
+    /// computes doubles residual in LCCSDTQ equations
+    void compute_R_iajb_quads(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb, std::vector<std::vector<SharedMatrix>>& R_iajb_buffer);
+    /// computes triples residual in LCCSDTQ equations
+    void compute_R_iajbkc_quads(std::vector<SharedMatrix>& R_iajbkc);
+    /// computes quadruples residual equations in LCCSDTQ equations
+    void compute_R_iajbkcld(std::vector<Tensor<double, 4>>& R_iajbkcld);
+
+    void print_header();
+    void estimate_memory();
+    void compute_integrals();
+    void lccsdtq_iterations();
+    void print_results();
+
+    public:
+     DLPNOCCSDTQ(SharedWavefunction ref_wfn, Options& options);
+     ~DLPNOCCSDTQ() override;
+
+     double compute_energy() override;
 };
 
 }

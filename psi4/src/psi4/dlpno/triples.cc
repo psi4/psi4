@@ -1506,5 +1506,2115 @@ void DLPNOCCSD_T::print_results() {
     outfile->Printf("    *** Andy Jiang... FOR THREEEEEEEEEEE!!!\n\n");
 }
 
+DLPNOCCSDT::DLPNOCCSDT(SharedWavefunction ref_wfn, Options& options) : DLPNOCCSD_T(ref_wfn, options) {}
+DLPNOCCSDT::~DLPNOCCSDT() {}
+
+Tensor<double, 3> DLPNOCCSDT::matmul_3d_einsums(const Tensor<double, 3> &A, const SharedMatrix &X, int dim_old, int dim_new) {
+    /* Performs the operation A'[i,j,k] = A[I, J, K] * X[i, I] * X[j, J], X[k, K] for cube 3d tensors */
+
+    // TODO: Change this into a TensorView
+    Tensor<double, 2> Xview("Xview", dim_new, dim_old);
+    ::memcpy(Xview.data(), X->get_pointer(), dim_new * dim_old * sizeof(double));
+
+    Tensor<double, 3> A_new1("A_new1", dim_old, dim_old, dim_new);
+    einsum(0.0, Indices{index::I, index::J, index::k}, &A_new1, 1.0, Indices{index::I, index::J, index::K}, A, Indices{index::k, index::K}, Xview);
+
+    Tensor<double, 3> A_new2("A_new2", dim_old, dim_new, dim_old);
+    permute(Indices{index::I, index::k, index::J}, &A_new2, Indices{index::I, index::J, index::k}, A_new1);
+
+    Tensor<double, 3> A_new3("A_new3", dim_old, dim_new, dim_new);
+    einsum(0.0, Indices{index::I, index::k, index::j}, &A_new3, 1.0, Indices{index::I, index::k, index::J}, A_new2, Indices{index::j, index::J}, Xview);
+
+    Tensor<double, 3> A_new4("A_new4", dim_old, dim_new, dim_new);
+    permute(Indices{index::I, index::j, index::k}, &A_new4, Indices{index::I, index::k, index::j}, A_new3);
+
+    Tensor<double, 3> A_new("A_new", dim_new, dim_new, dim_new);
+    einsum(0.0, Indices{index::i, index::j, index::k}, &A_new, 1.0, Indices{index::i, index::I}, Xview, Indices{index::I, index::j, index::k}, A_new4);
+
+    return A_new;
+}
+
+Tensor<double, 3> DLPNOCCSDT::matmul_3d_index(const Tensor<double, 3> &A, const SharedMatrix &X, int index) {
+    /* Performs the operation A'[i,j,k] = A[I, J, K] * X[i, I] for a given position */
+
+    // TODO: Change this into a TensorView
+    int dim_new = X->rowspi(0);
+    int dim_old = X->colspi(0);
+    Tensor<double, 2> Xview("Xview", dim_new, dim_old);
+    ::memcpy(Xview.data(), X->get_pointer(), dim_new * dim_old * sizeof(double));
+
+    Tensor<double, 3> A_new;
+
+    if (index == 0) {
+        A_new = Tensor<double, 3>("A_new", dim_new, A.dim(1), A.dim(2));
+        einsum(0.0, Indices{index::i, index::J, index::K}, &A_new, 1.0, Indices{index::I, index::J, index::K}, A, Indices{index::i, index::I}, Xview);
+    } else if (index == 1) {
+        Tensor<double, 3> A_temp("A_temp", A.dim(1), A.dim(0), A.dim(2));
+        permute(Indices{index::J, index::I, index::K}, &A_temp, Indices{index::I, index::J, index::K}, A);
+
+        Tensor<double, 3> A_temp2("A_temp2", dim_new, A.dim(0), A.dim(2));
+        einsum(0.0, Indices{index::j, index::I, index::K}, &A_temp2, 1.0, Indices{index::J, index::I, index::K}, A_temp, Indices{index::j, index::J}, Xview);
+
+        A_new = Tensor<double, 3>("A_new", A.dim(0), dim_new, A.dim(2));
+        permute(Indices{index::I, index::j, index::K}, &A_new, Indices{index::j, index::I, index::K}, A_temp2);
+    } else if (index == 2) {
+        A_new = Tensor<double, 3>("A_new", A.dim(0), A.dim(1), dim_new);
+        einsum(0.0, Indices{index::I, index::J, index::k}, &A_new, 1.0, Indices{index::I, index::J, index::K}, A, Indices{index::k, index::K}, Xview);
+    } else {
+        throw PSIEXCEPTION("Index out of bounds for 3D Tensor");
+    }
+
+    return A_new;
+}
+
+Tensor<double, 3> DLPNOCCSDT::triples_permuter_einsums(const Tensor<double, 3> &X, int i, int j, int k, bool reverse) {
+    /*- Generates equivalent amplitude T_jik, T_kji, ..., etc. from T_ijk (restricted by index i <= j <= k) -*/
+    /*- Returns a permuted order based on the operations it takes to get i <= j <= k (forward or reverse) -*/
+    // Jiang 2025 Eq. 81-86, reverse Eq. 91-96
+    Tensor<double, 3> Xperm = X;
+
+    if (!reverse) {
+        if (i <= k && k <= j && i <= j) {
+            permute(Indices{index::a, index::b, index::c}, &Xperm, Indices{index::a, index::c, index::b}, X);
+        } else if (j <= i && i <= k && j <= k) {
+            permute(Indices{index::a, index::b, index::c}, &Xperm, Indices{index::b, index::a, index::c}, X);
+        } else if (j <= k && k <= i && j <= i) {
+            permute(Indices{index::a, index::b, index::c}, &Xperm, Indices{index::b, index::c, index::a}, X);
+        } else if (k <= i && i <= j && k <= j) {
+            permute(Indices{index::a, index::b, index::c}, &Xperm, Indices{index::c, index::a, index::b}, X);
+        } else if (k <= j && j <= i && k <= i) {
+            permute(Indices{index::a, index::b, index::c}, &Xperm, Indices{index::c, index::b, index::a}, X);
+        }
+    } else {
+        if (i <= k && k <= j && i <= j) {
+            permute(Indices{index::a, index::c, index::b}, &Xperm, Indices{index::a, index::b, index::c}, X);
+        } else if (j <= i && i <= k && j <= k) {
+            permute(Indices{index::b, index::a, index::c}, &Xperm, Indices{index::a, index::b, index::c}, X);
+        } else if (j <= k && k <= i && j <= i) {
+            permute(Indices{index::b, index::c, index::a}, &Xperm, Indices{index::a, index::b, index::c}, X);
+        } else if (k <= i && i <= j && k <= j) {
+            permute(Indices{index::c, index::a, index::b}, &Xperm, Indices{index::a, index::b, index::c}, X);
+        } else if (k <= j && j <= i && k <= i) {
+            permute(Indices{index::c, index::b, index::a}, &Xperm, Indices{index::a, index::b, index::c}, X);
+        }
+    }
+
+    return Xperm;
+}
+
+Tensor<double, 3> DLPNOCCSDT::triples_spin_summation(const Tensor<double, 3> &X) {
+
+    Tensor<double, 3> Xnew = X;
+    Xnew *= 4.0;
+    Tensor<double, 3> Xtemp = triples_permuter_einsums(X, 0, 2, 1);
+    Xtemp += triples_permuter_einsums(X, 2, 1, 0);
+    Xtemp += triples_permuter_einsums(X, 1, 0, 2);
+    Xtemp *= 2.0;
+    Xnew -= Xtemp;
+    Xnew += triples_permuter_einsums(X, 2, 0, 1);
+    Xnew += triples_permuter_einsums(X, 1, 2, 0);
+
+    return Xnew;
+}
+
+Tensor<double, 3> DLPNOCCSDT::triples_spin_desummation(const Tensor<double, 3> &X) {
+
+    Tensor<double, 3> Xnew = X;
+    Xnew *= 3.0;
+    Xnew -= triples_permuter_einsums(X, 2, 0, 1);
+    Xnew -= triples_permuter_einsums(X, 1, 2, 0);
+    Xnew *= 1.0 / 12.0;
+
+    return Xnew;
+}
+
+int DLPNOCCSDT::triples_permutation_idx(int i, int j, int k) {
+
+    int idx = 0;
+
+    if (i <= k && k <= j && i <= j) {
+        idx = 1;
+    } else if (j <= i && i <= k && j <= k) {
+        idx = 2;
+    } else if (j <= k && k <= i && j <= i) {
+        idx = 3;
+    } else if (k <= i && i <= j && k <= j) {
+        idx = 4;
+    } else if (k <= j && j <= i && k <= i) {
+        idx = 5;
+    }
+
+    return idx;
+}
+
+void DLPNOCCSDT::print_header() {
+    double t_cut_tno = options_.get_double("T_CUT_TNO");
+    double t_cut_tno_strong_scale = options_.get_double("T_CUT_TNO_STRONG_SCALE");
+    double t_cut_tno_weak_scale = options_.get_double("T_CUT_TNO_WEAK_SCALE");
+
+    outfile->Printf("   --------------------------------------------\n");
+    outfile->Printf("                    DLPNO-CCSDT                \n");
+    outfile->Printf("                   by Andy Jiang               \n");
+    outfile->Printf("   --------------------------------------------\n\n");
+    outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
+    outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
+    outfile->Printf("    T_CUT_TNO_STRONG           = %6.3e \n", t_cut_tno * t_cut_tno_strong_scale);
+    outfile->Printf("    T_CUT_TNO_WEAK             = %6.3e \n", t_cut_tno * t_cut_tno_weak_scale);
+    outfile->Printf("    T_CUT_DO_TRIPLES           = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES"));
+    outfile->Printf("    T_CUT_MKN_TRIPLES          = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES"));
+    outfile->Printf("    F_CUT_T                    = %6.3e \n", options_.get_double("F_CUT_T"));
+}
+
+void DLPNOCCSDT::estimate_memory() {
+
+    outfile->Printf("\n ==> DLPNO-CCSDT Memory Estimate <== \n\n");
+
+    size_t naocc = i_j_to_ij_.size();
+    size_t n_lmo_triplets = ijk_to_i_j_k_.size();
+
+    size_t K_iojv_memory = 0;
+    size_t K_ivov_memory = 0;
+    size_t K_ivvv_memory = 0;
+    size_t qij_memory = 0;
+    size_t qia_memory = 0;
+    size_t qab_memory = 0;
+
+#pragma omp parallel for reduction(+ : K_iojv_memory, K_ivov_memory, K_ivvv_memory, qij_memory, qia_memory, qab_memory)
+    for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+        int ijk = sorted_triplets_[ijk_sorted];
+        auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+        int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j], kk = i_j_to_ij_[k][k];
+        int ij = i_j_to_ij_[i][j], jk = i_j_to_ij_[j][k], ik = i_j_to_ij_[i][k];
+
+        int naux_ijk = lmotriplet_to_ribfs_[ijk].size();
+        int nlmo_ijk = lmotriplet_to_lmos_[ijk].size();
+        int npao_ijk = lmotriplet_to_paos_[ijk].size();
+        int ntno_ijk = n_tno_[ijk];
+
+        K_iojv_memory += 6 * nlmo_ijk * ntno_ijk;
+        K_ivov_memory += 3 * nlmo_ijk * ntno_ijk * ntno_ijk;
+        K_ivvv_memory += 3 * ntno_ijk * ntno_ijk * ntno_ijk;
+        qij_memory += 3 * naux_ijk * nlmo_ijk;
+
+        if (!disk_ints_) {
+            qia_memory += 3 * naux_ijk * nlmo_ijk * ntno_ijk;
+            qab_memory += naux_ijk * ntno_ijk * ntno_ijk;
+        }
+    }
+
+    size_t total_memory = K_iojv_memory + K_ivov_memory + K_ivvv_memory + qij_memory + qia_memory + qab_memory;
+
+    outfile->Printf("    (i j | l_{ijk} a_{ijk})        : %.3f [GiB]\n", K_iojv_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (i a_{ijk} | l_{ijk} b_{ijk})  : %.3f [GiB]\n", K_ivov_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (i a_{ijk} | b_{ijk} c_{ijk})  : %.3f [GiB]\n", K_ivvv_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (Q_{ijk} | l_{ijk} [i,j,k])    : %.3f [GiB]\n", qij_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (Q_{ijk} | l_{ijk} a_{ijk})    : %.3f [GiB]\n", qia_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (Q_{ijk} | a_{ijk} b_{ijk})    : %.3f [GiB]\n", qab_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    Total Memory Required          : %.3f [GiB]\n\n", total_memory * pow(2.0, -30) * sizeof(double));
+
+    if (!disk_ints_) {
+        outfile->Printf("    Keeping all LMO/TNO ERIs in core!\n\n");
+    } else {
+        outfile->Printf("    Writing expensive (Q_{ijk} | l_{ijk} a_{ijk}) and (Q_{ijk} | a_{ijk} b_{ijk}) integrals to disk!\n\n");
+    }
+}
+
+void DLPNOCCSDT::compute_integrals() {
+
+    size_t n_lmo_triplets = ijk_to_i_j_k_.size();
+
+    // Three-center quantities
+    q_io_.resize(n_lmo_triplets);
+    q_jo_.resize(n_lmo_triplets);
+    q_ko_.resize(n_lmo_triplets);
+
+    q_iv_.resize(n_lmo_triplets);
+    q_jv_.resize(n_lmo_triplets);
+    q_kv_.resize(n_lmo_triplets);
+
+    q_ov_.resize(n_lmo_triplets);
+    q_vv_.resize(n_lmo_triplets);
+
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+        int ijk = sorted_triplets_[ijk_sorted];
+        int i, j, k;
+        std::tie(i, j, k) = ijk_to_i_j_k_[ijk];
+        int ij = i_j_to_ij_[i][j], jk = i_j_to_ij_[j][k], ik = i_j_to_ij_[i][k];
+
+        int ntno_ijk = n_tno_[ijk];
+
+        if (ntno_ijk == 0) continue;
+
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        // => Compute all necessary integrals <= //
+
+        // number of auxiliary functions in the triplet domain
+        const int naux_ijk = lmotriplet_to_ribfs_[ijk].size();
+        // number of LMOs in the triplet domain
+        const int nlmo_ijk = lmotriplet_to_lmos_[ijk].size();
+        // number of PAOs in the triplet domain (before removing linear dependencies)
+        const int npao_ijk = lmotriplet_to_paos_[ijk].size();
+
+        auto q_io = std::make_shared<Matrix>("(Q_ijk | m i)", naux_ijk, nlmo_ijk);
+        auto q_jo = std::make_shared<Matrix>("(Q_ijk | m j)", naux_ijk, nlmo_ijk);
+        auto q_ko = std::make_shared<Matrix>("(Q_ijk | m k)", naux_ijk, nlmo_ijk);
+
+        auto q_iv = std::make_shared<Matrix>("(Q_ijk | i a)", naux_ijk, npao_ijk);
+        auto q_jv = std::make_shared<Matrix>("(Q_ijk | j b)", naux_ijk, npao_ijk);
+        auto q_kv = std::make_shared<Matrix>("(Q_ijk | k c)", naux_ijk, npao_ijk);
+
+        std::stringstream q_ov_name;
+        q_ov_name << "(Q_ijk | m a) " << (ijk);
+        std::stringstream q_vv_name;
+        q_vv_name << "(Q_ijk | a b) " << (ijk);
+
+        auto q_ov = std::make_shared<Matrix>(q_ov_name.str(), naux_ijk, nlmo_ijk * ntno_ijk);
+        auto q_vv = std::make_shared<Matrix>(q_vv_name.str(), naux_ijk, ntno_ijk * ntno_ijk);
+
+        for (int q_ijk = 0; q_ijk < naux_ijk; q_ijk++) {
+            const int q = lmotriplet_to_ribfs_[ijk][q_ijk];
+            const int centerq = ribasis_->function_to_center(q);
+
+            // Cheaper Integrals
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                (*q_io)(q_ijk, l_ijk) = (*qij_[q])(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_lmos_ext_dense_[centerq][l]);
+                (*q_jo)(q_ijk, l_ijk) = (*qij_[q])(riatom_to_lmos_ext_dense_[centerq][j], riatom_to_lmos_ext_dense_[centerq][l]);
+                (*q_ko)(q_ijk, l_ijk) = (*qij_[q])(riatom_to_lmos_ext_dense_[centerq][k], riatom_to_lmos_ext_dense_[centerq][l]);
+            }
+
+
+            for (int u_ijk = 0; u_ijk < npao_ijk; ++u_ijk) {
+                int u = lmotriplet_to_paos_[ijk][u_ijk];
+                (*q_iv)(q_ijk, u_ijk) = (*qia_[q])(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][u]);
+                (*q_jv)(q_ijk, u_ijk) = (*qia_[q])(riatom_to_lmos_ext_dense_[centerq][j], riatom_to_paos_ext_dense_[centerq][u]);
+                (*q_kv)(q_ijk, u_ijk) = (*qia_[q])(riatom_to_lmos_ext_dense_[centerq][k], riatom_to_paos_ext_dense_[centerq][u]);
+            }
+
+            // More expensive integrals
+            auto q_ov_tmp = std::make_shared<Matrix>(nlmo_ijk, npao_ijk);
+
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                for (int u_ijk = 0; u_ijk < npao_ijk; ++u_ijk) {
+                    int u = lmotriplet_to_paos_[ijk][u_ijk];
+                    (*q_ov_tmp)(l_ijk, u_ijk) = (*qia_[q])(riatom_to_lmos_ext_dense_[centerq][l], riatom_to_paos_ext_dense_[centerq][u]);
+                }
+            }
+            q_ov_tmp = linalg::doublet(q_ov_tmp, X_tno_[ijk], false, false);
+            ::memcpy(&(*q_ov)(q_ijk, 0), &(*q_ov_tmp)(0, 0), nlmo_ijk * ntno_ijk * sizeof(double));
+
+            auto q_vv_tmp = std::make_shared<Matrix>(npao_ijk, npao_ijk);
+
+            for (int u_ijk = 0; u_ijk < npao_ijk; ++u_ijk) {
+                int u = lmotriplet_to_paos_[ijk][u_ijk];
+                for (int v_ijk = 0; v_ijk < npao_ijk; ++v_ijk) {
+                    int v = lmotriplet_to_paos_[ijk][v_ijk];
+                    int uv_idx = riatom_to_pao_pairs_dense_[centerq][u][v];
+                    if (uv_idx == -1) continue;
+                    (*q_vv_tmp)(u_ijk, v_ijk) = (*qab_[q])(uv_idx, 0);
+                } // end v_ijk
+            } // end u_ijk
+            q_vv_tmp = linalg::triplet(X_tno_[ijk], q_vv_tmp, X_tno_[ijk], true, false, false);
+            ::memcpy(&(*q_vv)(q_ijk, 0), &(*q_vv_tmp)(0, 0), ntno_ijk * ntno_ijk * sizeof(double));
+
+        } // end q_ijk
+
+        // Contract Intermediates
+        q_iv = linalg::doublet(q_iv, X_tno_[ijk]);
+        q_jv = linalg::doublet(q_jv, X_tno_[ijk]);
+        q_kv = linalg::doublet(q_kv, X_tno_[ijk]);
+
+        // Multiply by (P|Q)^{-1/2}
+        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmotriplet_to_ribfs_[ijk], lmotriplet_to_ribfs_[ijk]);
+        A_solve->power(0.5, 1.0e-14);
+
+        C_DGESV_wrapper(A_solve->clone(), q_io);
+        C_DGESV_wrapper(A_solve->clone(), q_jo);
+        C_DGESV_wrapper(A_solve->clone(), q_ko);
+        C_DGESV_wrapper(A_solve->clone(), q_iv);
+        C_DGESV_wrapper(A_solve->clone(), q_jv);
+        C_DGESV_wrapper(A_solve->clone(), q_kv);
+        C_DGESV_wrapper(A_solve->clone(), q_ov);
+        C_DGESV_wrapper(A_solve->clone(), q_vv);
+
+        q_io_[ijk] = Tensor<double, 2>("(Q_ijk | m i)", naux_ijk, nlmo_ijk);
+        q_jo_[ijk] = Tensor<double, 2>("(Q_ijk | m j)", naux_ijk, nlmo_ijk);
+        q_ko_[ijk] = Tensor<double, 2>("(Q_ijk | m k)", naux_ijk, nlmo_ijk);
+
+        q_iv_[ijk] = Tensor<double, 2>("(Q_ijk | i a)", naux_ijk, ntno_ijk);
+        q_jv_[ijk] = Tensor<double, 2>("(Q_ijk | j b)", naux_ijk, ntno_ijk);
+        q_kv_[ijk] = Tensor<double, 2>("(Q_ijk | k c)", naux_ijk, ntno_ijk);
+
+        q_ov_[ijk] = Tensor<double, 3>(q_ov->name(), naux_ijk, nlmo_ijk, ntno_ijk);
+        q_vv_[ijk] = Tensor<double, 3>(q_vv->name(), naux_ijk, ntno_ijk, ntno_ijk);
+
+        ::memcpy(q_io_[ijk].data(), q_io->get_pointer(), naux_ijk * nlmo_ijk * sizeof(double));
+        ::memcpy(q_jo_[ijk].data(), q_jo->get_pointer(), naux_ijk * nlmo_ijk * sizeof(double));
+        ::memcpy(q_ko_[ijk].data(), q_ko->get_pointer(), naux_ijk * nlmo_ijk * sizeof(double));
+        ::memcpy(q_iv_[ijk].data(), q_iv->get_pointer(), naux_ijk * ntno_ijk * sizeof(double));
+        ::memcpy(q_jv_[ijk].data(), q_jv->get_pointer(), naux_ijk * ntno_ijk * sizeof(double));
+        ::memcpy(q_kv_[ijk].data(), q_kv->get_pointer(), naux_ijk * ntno_ijk * sizeof(double));
+        ::memcpy(q_ov_[ijk].data(), q_ov->get_pointer(), naux_ijk * nlmo_ijk * ntno_ijk * sizeof(double));
+        ::memcpy(q_vv_[ijk].data(), q_vv->get_pointer(), naux_ijk * ntno_ijk * ntno_ijk * sizeof(double));
+
+        if (disk_ints_) {
+#pragma omp critical
+            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_TNO, psi::Matrix::SubBlocks);
+
+#pragma omp critical
+            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_TNO, psi::Matrix::ThreeIndexLowerTriangle);
+
+            q_ov_name << "(Q_ijk | m a) " << (ijk);
+            q_vv_name << "(Q_ijk | a b) " << (ijk);
+
+            q_ov_[ijk] = Tensor<double, 3>(q_ov->name(), 0, 0, 0);
+            q_vv_[ijk] = Tensor<double, 3>(q_vv->name(), 0, 0, 0);
+        }
+    } // end ijk
+}
+
+Tensor<double, 3> DLPNOCCSDT::QIA_TNO(const int ijk) {
+    if (disk_ints_) {
+        int naux_ijk = lmotriplet_to_ribfs_[ijk].size();
+        int nlmo_ijk = lmotriplet_to_lmos_[ijk].size();
+        int ntno_ijk = n_tno_[ijk];
+
+        std::stringstream q_ov_name;
+        q_ov_name << "(Q_ijk | m a) " << (ijk);
+
+        auto q_ov = std::make_shared<Matrix>(q_ov_name.str(), naux_ijk, nlmo_ijk * ntno_ijk);
+#pragma omp critical
+        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_TNO, psi::Matrix::SubBlocks);
+
+        q_ov_[ijk] = Tensor<double, 3>(q_ov->name(), naux_ijk, nlmo_ijk, ntno_ijk);
+        ::memcpy(q_ov_[ijk].data(), q_ov->get_pointer(), naux_ijk * nlmo_ijk * ntno_ijk * sizeof(double));
+    }
+
+    return q_ov_[ijk];
+}
+
+Tensor<double, 3> DLPNOCCSDT::QAB_TNO(const int ijk) {
+    if (disk_ints_) {
+        int naux_ijk = lmotriplet_to_ribfs_[ijk].size();
+        int ntno_ijk = n_tno_[ijk];
+
+        std::stringstream q_vv_name;
+        q_vv_name << "(Q_ijk | a b) " << (ijk);
+
+        auto q_vv = std::make_shared<Matrix>(q_vv_name.str(), naux_ijk, ntno_ijk * ntno_ijk);
+#pragma omp critical
+        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_TNO, psi::Matrix::ThreeIndexLowerTriangle);
+
+        q_vv_[ijk] = Tensor<double, 3>(q_vv_[ijk].name(), naux_ijk, ntno_ijk, ntno_ijk);
+        ::memcpy(q_vv_[ijk].data(), q_vv->get_pointer(), naux_ijk * ntno_ijk * ntno_ijk * sizeof(double));
+    }
+
+    return q_vv_[ijk];
+}
+
+void DLPNOCCSDT::compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vector<std::vector<SharedMatrix>>& R_ia_buffer) {
+
+    size_t naocc = i_j_to_ij_.size();
+    size_t n_lmo_triplets = ijk_to_i_j_k_.size();
+
+    // Compute residual from LCCSD
+    DLPNOCCSD::compute_R_ia(R_ia, R_ia_buffer);
+
+    // Clean buffers
+#pragma omp parallel for
+    for (int thread = 0; thread < nthread_; ++thread) {
+        for (int i = 0; i < naocc; ++i) {
+            R_ia_buffer[thread][i]->zero();
+        } // end thread
+    } // end i
+
+    // Looped over unique triplets (Koch Algorithm 1)
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+        int ijk = sorted_triplets_[ijk_sorted];
+        auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+        int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j], kk = i_j_to_ij_[k][k];
+
+        int ntno_ijk = n_tno_[ijk];
+
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        double prefactor = 1.0;
+        if (i == j || j == k) {
+            prefactor = 0.5;
+        }
+
+        Tensor<double, 2> K_ivjv = Tensor<double, 2>("K_ivjv", ntno_ijk, ntno_ijk);
+        Tensor<double, 2> K_jvkv = Tensor<double, 2>("K_jvkv", ntno_ijk, ntno_ijk);
+        Tensor<double, 2> K_ivkv = Tensor<double, 2>("K_ivkv", ntno_ijk, ntno_ijk);
+
+        einsum(0.0, Indices{index::a, index::b}, &K_ivjv, 1.0, Indices{index::Q, index::a}, q_iv_[ijk], Indices{index::Q, index::b}, q_jv_[ijk]);
+        einsum(0.0, Indices{index::a, index::b}, &K_jvkv, 1.0, Indices{index::Q, index::a}, q_jv_[ijk], Indices{index::Q, index::b}, q_kv_[ijk]);
+        einsum(0.0, Indices{index::a, index::b}, &K_ivkv, 1.0, Indices{index::Q, index::a}, q_iv_[ijk], Indices{index::Q, index::b}, q_kv_[ijk]);
+
+        std::vector<std::tuple<int, int, int>> P_S = {std::make_tuple(i, j, k), std::make_tuple(j, i, k), std::make_tuple(k, i, j)};
+        std::vector<Tensor<double, 2>> K_ovov_list = {K_jvkv, K_ivkv, K_ivjv};
+
+        for (int perm_idx = 0; perm_idx < P_S.size(); ++perm_idx) {
+            auto &[i, j, k] = P_S[perm_idx];
+            int ii = i_j_to_ij_[i][i];
+
+            auto S_ijk_ii = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmopair_to_paos_[ii]);
+            S_ijk_ii = linalg::triplet(X_tno_[ijk], S_ijk_ii, X_pno_[ii], true, false, false);
+
+            Tensor<double, 3> U_ijk = U_iajbkc_[ijk];
+            if (perm_idx == 1) {
+                permute(Indices{index::b, index::a, index::c}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            } else if (perm_idx == 2) {
+                permute(Indices{index::c, index::a, index::b}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            }
+
+            Tensor<double, 1> R_ia_cont("R_ia_cont", n_tno_[ijk]);
+            einsum(0.0, Indices{index::a}, &R_ia_cont, prefactor, Indices{index::a, index::b, index::c}, U_ijk, Indices{index::b, index::c}, K_ovov_list[perm_idx]);
+
+            auto R_ia_psi = std::make_shared<Matrix>(n_tno_[ijk], 1);
+            ::memcpy(R_ia_psi->get_pointer(), &(R_ia_cont)(0), n_tno_[ijk] * sizeof(double));
+
+            R_ia_buffer[thread][i]->add(linalg::doublet(S_ijk_ii, R_ia_psi, true, false));
+        }
+
+    } // end ijk
+
+    // Flush buffers
+#pragma omp parallel for
+    for (int i = 0; i < naocc; ++i) {
+        for (int thread = 0; thread < nthread_; ++thread) {
+            R_ia[i]->add(R_ia_buffer[thread][i]);
+        } // end thread
+    } // end i
+}
+
+void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb,
+                                        std::vector<std::vector<SharedMatrix>>& R_iajb_buffer) {
+
+    size_t n_lmo_pairs = ij_to_i_j_.size();
+    size_t n_lmo_triplets = ijk_to_i_j_k_.size();
+
+    // Compute residual from LCCSD
+    DLPNOCCSD::compute_R_iajb(R_iajb, Rn_iajb);
+
+    // Clean buffers
+#pragma omp parallel for
+    for (int thread = 0; thread < nthread_; ++thread) {
+        for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+            R_iajb_buffer[thread][ij]->zero();
+        } // end thread
+    } // end i
+
+// Looped over unique triplets (Koch Algorithm 1)
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+        int ijk = sorted_triplets_[ijk_sorted];
+        auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+        int ij = i_j_to_ij_[i][j], jk = i_j_to_ij_[j][k], ik = i_j_to_ij_[i][k];
+
+        int nlmo_ijk = lmotriplet_to_lmos_[ijk].size();
+        int ntno_ijk = n_tno_[ijk];
+
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        // Buffers
+        Tensor<double, 2> R_iajb_cont_a("R_iajb_cont_a", n_tno_[ijk], n_tno_[ijk]);
+        Tensor<double, 3> R_iajb_cont_b("R_iajb_cont_b", nlmo_ijk, n_tno_[ijk], n_tno_[ijk]);
+        SharedMatrix psi_buffer = std::make_shared<Matrix>(n_tno_[ijk], n_tno_[ijk]);
+
+        double prefactor = 1.0;
+        if (i == j || j == k) {
+            prefactor = 0.5;
+        }
+
+        // Read in integrals (if Disk I/O is done for integrals)
+        if (disk_ints_) {
+            q_ov_[ijk] = QIA_TNO(ijk);
+            q_vv_[ijk] = QAB_TNO(ijk);
+        }
+
+        // => (i l_{ijk} | j b_{ijk}) integrals <= //
+
+        Tensor<double, 2> K_iojv = Tensor<double, 2>("K_iojv", nlmo_ijk, ntno_ijk);
+        Tensor<double, 2> K_joiv = Tensor<double, 2>("K_joiv", nlmo_ijk, ntno_ijk);
+        Tensor<double, 2> K_jokv = Tensor<double, 2>("K_jokv", nlmo_ijk, ntno_ijk);
+        Tensor<double, 2> K_kojv = Tensor<double, 2>("K_kojv", nlmo_ijk, ntno_ijk);
+        Tensor<double, 2> K_iokv = Tensor<double, 2>("K_iokv", nlmo_ijk, ntno_ijk);
+        Tensor<double, 2> K_koiv = Tensor<double, 2>("K_koiv", nlmo_ijk, ntno_ijk);
+
+        einsum(0.0, Indices{index::l, index::a}, &K_iojv, 1.0, Indices{index::Q, index::l}, q_io_[ijk], Indices{index::Q, index::a}, q_jv_[ijk]);
+        einsum(0.0, Indices{index::l, index::a}, &K_joiv, 1.0, Indices{index::Q, index::l}, q_jo_[ijk], Indices{index::Q, index::a}, q_iv_[ijk]);
+        einsum(0.0, Indices{index::l, index::a}, &K_jokv, 1.0, Indices{index::Q, index::l}, q_jo_[ijk], Indices{index::Q, index::a}, q_kv_[ijk]);
+        einsum(0.0, Indices{index::l, index::a}, &K_kojv, 1.0, Indices{index::Q, index::l}, q_ko_[ijk], Indices{index::Q, index::a}, q_jv_[ijk]);
+        einsum(0.0, Indices{index::l, index::a}, &K_iokv, 1.0, Indices{index::Q, index::l}, q_io_[ijk], Indices{index::Q, index::a}, q_kv_[ijk]);
+        einsum(0.0, Indices{index::l, index::a}, &K_koiv, 1.0, Indices{index::Q, index::l}, q_ko_[ijk], Indices{index::Q, index::a}, q_iv_[ijk]);
+
+        // => (i a_{ijk} | j b_{ijk}) integrals <= //
+
+        Tensor<double, 2> K_ivjv = Tensor<double, 2>("K_ivjv", ntno_ijk, ntno_ijk);
+        Tensor<double, 2> K_jvkv = Tensor<double, 2>("K_jvkv", ntno_ijk, ntno_ijk);
+        Tensor<double, 2> K_ivkv = Tensor<double, 2>("K_ivkv", ntno_ijk, ntno_ijk);
+
+        einsum(0.0, Indices{index::a, index::b}, &K_ivjv, 1.0, Indices{index::Q, index::a}, q_iv_[ijk], Indices{index::Q, index::b}, q_jv_[ijk]);
+        einsum(0.0, Indices{index::a, index::b}, &K_jvkv, 1.0, Indices{index::Q, index::a}, q_jv_[ijk], Indices{index::Q, index::b}, q_kv_[ijk]);
+        einsum(0.0, Indices{index::a, index::b}, &K_ivkv, 1.0, Indices{index::Q, index::a}, q_iv_[ijk], Indices{index::Q, index::b}, q_kv_[ijk]);
+
+        Tensor<double, 2> K_kvjv = K_jvkv;
+        permute(Indices{index::b, index::a}, &K_kvjv, Indices{index::a, index::b}, K_jvkv);
+        Tensor<double, 2> K_kviv = K_ivkv;
+        permute(Indices{index::b, index::a}, &K_kviv, Indices{index::a, index::b}, K_ivkv);
+        Tensor<double, 2> K_jviv = K_ivjv;
+        permute(Indices{index::b, index::a}, &K_jviv, Indices{index::a, index::b}, K_ivjv);
+
+        // => (i a_{ijk} | l_{ijk} d_{ijk}) integrals <= //
+
+        Tensor<double, 3> K_ivov = Tensor<double, 3>("K_ivov", nlmo_ijk, ntno_ijk, ntno_ijk);
+        Tensor<double, 3> K_jvov = Tensor<double, 3>("K_jvov", nlmo_ijk, ntno_ijk, ntno_ijk);
+        Tensor<double, 3> K_kvov = Tensor<double, 3>("K_kvov", nlmo_ijk, ntno_ijk, ntno_ijk);
+
+        einsum(0.0, Indices{index::m, index::a, index::b}, &K_ivov, 1.0, Indices{index::Q, index::m, index::a}, q_ov_[ijk], 
+                    Indices{index::Q, index::b}, q_iv_[ijk]);
+        einsum(0.0, Indices{index::m, index::a, index::b}, &K_jvov, 1.0, Indices{index::Q, index::m, index::a}, q_ov_[ijk],
+                    Indices{index::Q, index::b}, q_jv_[ijk]);
+        einsum(0.0, Indices{index::m, index::a, index::b}, &K_kvov, 1.0, Indices{index::Q, index::m, index::a}, q_ov_[ijk],
+                    Indices{index::Q, index::b}, q_kv_[ijk]);
+
+        // => (i a_{ijk} | b_{ijk} c_{ijk}) integrals <= //
+
+        Tensor<double, 3> K_ivvv = Tensor<double, 3>("K_ivvv", ntno_ijk, ntno_ijk, ntno_ijk);
+        Tensor<double, 3> K_jvvv = Tensor<double, 3>("K_jvvv", ntno_ijk, ntno_ijk, ntno_ijk);
+        Tensor<double, 3> K_kvvv = Tensor<double, 3>("K_kvvv", ntno_ijk, ntno_ijk, ntno_ijk);
+
+        einsum(0.0, Indices{index::a, index::b, index::c}, &K_ivvv, 1.0, Indices{index::Q, index::c}, q_iv_[ijk], 
+                    Indices{index::Q, index::a, index::b}, q_vv_[ijk]);
+        einsum(0.0, Indices{index::a, index::b, index::c}, &K_jvvv, 1.0, Indices{index::Q, index::c}, q_jv_[ijk],
+                    Indices{index::Q, index::a, index::b}, q_vv_[ijk]);
+        einsum(0.0, Indices{index::a, index::b, index::c}, &K_kvvv, 1.0, Indices{index::Q, index::c}, q_kv_[ijk],
+                    Indices{index::Q, index::a, index::b}, q_vv_[ijk]);
+
+        // Make extended domain for TNO overlaps
+        std::vector<int> triplet_ext_domain = merge_lists(merge_lists(lmopair_to_paos_[ij], lmopair_to_paos_[jk]), lmopair_to_paos_[ik]);
+
+        for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+            int l = lmotriplet_to_lmos_[ijk][l_ijk];
+            int il = i_j_to_ij_[i][l], jl = i_j_to_ij_[j][l], kl = i_j_to_ij_[k][l];
+            triplet_ext_domain = merge_lists(triplet_ext_domain, merge_lists(merge_lists(lmopair_to_paos_[il], 
+                                    lmopair_to_paos_[jl]), lmopair_to_paos_[kl]));
+
+        } // end l
+
+        // Semi-direct TNO overlap algorithm
+        auto S_ijk = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], triplet_ext_domain);
+        S_ijk = linalg::doublet(X_tno_[ijk], S_ijk, true, false);
+
+        // => Fkc contribution <= //
+
+        std::vector<std::tuple<int, int, int>> P_S = {std::make_tuple(i, j, k), std::make_tuple(i, k, j), std::make_tuple(j, k, i)};
+        std::vector<Tensor<double, 3>> K_kvov_list = {K_kvov, K_jvov, K_ivov};
+
+        for (int idx = 0; idx < P_S.size(); ++idx) {
+            auto &[i, j, k] = P_S[idx];
+            int ij = i_j_to_ij_[i][j];
+
+            // (T1-dressed Fock Matrix) F_kc = [2.0 * (kc|ld) - (kd|lc)] t_{ld}
+            Tensor<double, 1> Fkc("Fkc", ntno_ijk);
+            Tensor<double, 3> K_lckd = K_kvov_list[idx];
+            permute(Indices{index::l, index::c, index::d}, &K_lckd, Indices{index::l, index::d, index::c}, K_kvov_list[idx]);
+
+            einsum(0.0, Indices{index::c}, &Fkc, 2.0, Indices{index::l, index::d, index::c}, K_kvov_list[idx], Indices{index::l, index::d}, T_n_ijk_[ijk]);
+            einsum(1.0, Indices{index::c}, &Fkc, -1.0, Indices{index::l, index::d, index::c}, K_lckd, Indices{index::l, index::d}, T_n_ijk_[ijk]);
+
+            auto U_ijk = U_iajbkc_[ijk];
+            if (idx == 1) {
+                permute(Indices{index::a, index::c, index::b}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            } else if (idx == 2) {
+                permute(Indices{index::b, index::c, index::a}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            }
+
+            einsum(0.0, Indices{index::a, index::b}, &R_iajb_cont_a, prefactor, Indices{index::a, index::b, index::c}, U_ijk, Indices{index::c}, Fkc);
+            ::memcpy(psi_buffer->get_pointer(), R_iajb_cont_a.data(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+
+            auto S_ijk_ij = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[ij]));
+            S_ijk_ij = linalg::doublet(S_ijk_ij, X_pno_[ij], false, false);
+            R_iajb_buffer[thread][ij]->add(linalg::triplet(S_ijk_ij, psi_buffer, S_ijk_ij, true, false, false));
+        }
+
+        // => (db|kc) and (jl|kc) contribution <= //
+        std::vector<std::tuple<int, int, int>> perms = {std::make_tuple(i, j, k), std::make_tuple(i, k, j),
+                                                        std::make_tuple(j, i, k), std::make_tuple(j, k, i),
+                                                        std::make_tuple(k, i, j), std::make_tuple(k, j, i)};
+
+        std::vector<Tensor<double, 2>> K_jokv_list = {K_jokv, K_kojv, K_iokv, K_koiv, K_iojv, K_joiv};
+        std::vector<Tensor<double, 2>> K_ovov_list = {K_jvkv, K_kvjv, K_ivkv, K_kviv, K_ivjv, K_jviv};
+        std::vector<Tensor<double, 3>> K_kvvv_list = {K_kvvv, K_jvvv, K_kvvv, K_ivvv, K_jvvv, K_ivvv};
+        K_kvov_list = {K_kvov, K_jvov, K_kvov, K_ivov, K_jvov, K_ivov};
+
+        for (int idx = 0; idx < perms.size(); ++idx) {
+            auto &[i, j, k] = perms[idx];
+            int ij = i_j_to_ij_[i][j];
+
+            auto U_ijk = U_iajbkc_[ijk];
+            if (idx == 1) {
+                permute(Indices{index::a, index::c, index::b}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            } else if (idx == 2) {
+                permute(Indices{index::b, index::a, index::c}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            } else if (idx == 3) {
+                permute(Indices{index::b, index::c, index::a}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            } else if (idx == 4) {
+                permute(Indices{index::c, index::a, index::b}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            } else if (idx == 5) {
+                permute(Indices{index::c, index::b, index::a}, &U_ijk, Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+            }
+
+            // (T1-dressed integral g_jlkc)
+            // (jl|kc)_t1 = (jl|kc) + (jd|kc)t_{l}^{d}
+            Tensor<double, 2> g_jlkc = K_jokv_list[idx];
+            einsum(1.0, Indices{index::l, index::c}, &g_jlkc, 1.0, Indices{index::d, index::c}, K_ovov_list[idx], Indices{index::l, index::d}, T_n_ijk_[ijk]);
+
+            // (T1-dressed integral g_dbkc)
+            // (db|kc)_t1 = (db|kc) - (lb|kc)t_{l}^{d}
+            Tensor<double, 3> g_dbkc = K_kvvv_list[idx]; // dbkc
+            einsum(1.0, Indices{index::d, index::b, index::c}, &g_dbkc, -1.0, Indices{index::l, index::d}, T_n_ijk_[ijk],
+                        Indices{index::l, index::b, index::c}, K_kvov_list[idx]);
+
+            // g_jlkc contribution
+            einsum(0.0, Indices{index::l, index::a, index::b}, &R_iajb_cont_b, prefactor, Indices{index::a, index::b, index::c}, U_ijk, 
+                    Indices{index::l, index::c}, g_jlkc);
+
+            // g_dbkc contribution
+            einsum(0.0, Indices{index::a, index::d}, &R_iajb_cont_a, prefactor, Indices{index::a, index::b, index::c}, U_ijk, 
+                        Indices{index::d, index::b, index::c}, g_dbkc);
+
+            // Flush buffers (unfortunately we need to copy to Psi for now, this is NOT ideal)
+            ::memcpy(psi_buffer->get_pointer(), R_iajb_cont_a.data(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+
+            auto S_ijk_ij = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[ij]));
+            S_ijk_ij = linalg::doublet(S_ijk_ij, X_pno_[ij], false, false);
+            R_iajb_buffer[thread][ij]->add(linalg::triplet(S_ijk_ij, psi_buffer, S_ijk_ij, true, false, false));
+
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                int il = i_j_to_ij_[i][l];
+                // Flush il buffer
+                ::memcpy(psi_buffer->get_pointer(), &(R_iajb_cont_b)(l_ijk, 0, 0), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+
+                auto S_ijk_il = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[il]));
+                S_ijk_il = linalg::doublet(S_ijk_il, X_pno_[il], false, false);
+                R_iajb_buffer[thread][il]->subtract(linalg::triplet(S_ijk_il, psi_buffer, S_ijk_il, true, false, false));
+            } // end l_ijk
+        } // end perms
+
+        if (disk_ints_) {
+            q_ov_[ijk] = Tensor<double, 3>(q_ov_[ijk].name(), 0, 0, 0);
+            q_vv_[ijk] = Tensor<double, 3>(q_vv_[ijk].name(), 0, 0, 0);
+        }
+
+    } // end ijk
+
+    // Flush buffers
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        int ji = ij_to_ji_[ij];
+        for (int thread = 0; thread < nthread_; ++thread) {
+            auto cont_a = R_iajb_buffer[thread][ij]->clone();
+            cont_a->scale(2.0 / 3.0);
+            auto cont_b = R_iajb_buffer[thread][ji]->transpose();
+            cont_b->scale(2.0 / 3.0);
+            auto cont_c = R_iajb_buffer[thread][ij]->transpose();
+            cont_c->scale(1.0 / 3.0);
+            auto cont_d = R_iajb_buffer[thread][ji]->clone();
+            cont_d->scale(1.0 / 3.0);
+
+            // Add all contributions
+            R_iajb[ij]->add(cont_a);
+            R_iajb[ij]->add(cont_b);
+            R_iajb[ij]->add(cont_c);
+            R_iajb[ij]->add(cont_d);
+            // R_iajb[ij]->print_out();
+            // exit(0);
+        } // end thread
+    } // end ij
+}
+
+std::vector<Tensor<double, 3>> DLPNOCCSDT::rho_dbck_contribution() {
+
+    int naocc = i_j_to_ij_.size();
+    size_t n_lmo_pairs = ij_to_i_j_.size();
+    size_t n_lmo_triplets = ijk_to_i_j_k_.size();
+
+    std::vector<Tensor<double, 3>> rho_dbck_cont(naocc);
+
+#pragma omp parallel for
+    for (int k = 0; k < naocc; ++k) {
+        int kk = i_j_to_ij_[k][k];
+        int nlmo_k = lmopair_to_lmos_[kk].size();
+        int naux_k = lmopair_to_ribfs_[kk].size();
+        int npno_k = n_pno_[kk];
+
+        rho_dbck_cont[k] = Tensor<double, 3>("rho_dbck_cont", npno_k, npno_k, npno_k);
+        rho_dbck_cont[k].zero();
+
+        std::vector<SharedMatrix> q_ov_k = QIA_PNO(kk);
+
+        Tensor<double, 4> g_menf_t("g_menf_t", nlmo_k, nlmo_k, npno_k, npno_k);
+        g_menf_t.zero();
+
+        for (int n_k = 0; n_k < nlmo_k; ++n_k) {
+            int n = lmopair_to_lmos_[kk][n_k];
+            for (int m_k = 0; m_k < nlmo_k; ++m_k) {
+                int m = lmopair_to_lmos_[kk][m_k];
+                for (int e_k = 0; e_k < n_pno_[kk]; ++e_k) {
+                    for (int f_k = 0; f_k < n_pno_[kk]; ++f_k) {
+                        for (int q_k = 0; q_k < naux_k; ++q_k) {
+                            g_menf_t(n_k, m_k, f_k, e_k) += (*q_ov_k[q_k])(n_k, f_k) * (*q_ov_k[q_k])(m_k, e_k);
+                        } // end q_k
+                    } // end f_k
+                } // end e_k
+            } // end m_k
+        } // end n_k
+
+        for (int m_k = 0; m_k < nlmo_k; ++m_k) {
+            int m = lmopair_to_lmos_[kk][m_k];
+            for (int l_k = 0; l_k < nlmo_k; ++l_k) {
+                int l = lmopair_to_lmos_[kk][l_k];
+
+                int mlk_dense = m * naocc * naocc + l * naocc + k;
+                if (!i_j_k_to_ijk_.count(mlk_dense)) continue;
+                int mlk = i_j_k_to_ijk_[mlk_dense];
+
+                // (2 t_{mlk}^{ebc} - t_{mlk}^{cbe} - t_{mlk}^{bec})
+                auto S_mlk_k = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[mlk], lmopair_to_paos_[kk]);
+                S_mlk_k = linalg::triplet(X_tno_[mlk], S_mlk_k, X_pno_[kk], true, false, false);
+
+                Tensor<double, 3> T_mlk = matmul_3d_einsums(triples_permuter_einsums(
+                                            T_iajbkc_clone_[mlk], m, l, k), S_mlk_k->transpose(), n_tno_[mlk], n_pno_[kk]);
+                Tensor<double, 3> Z_mlk = T_mlk;
+                Z_mlk *= 2.0;
+                Z_mlk -= triples_permuter_einsums(T_mlk, 1, 0, 2);
+                Z_mlk -= triples_permuter_einsums(T_mlk, 2, 1, 0);
+
+                Tensor<double, 2> g_menf_t_slice = g_menf_t(m_k, l_k, All, All);
+                einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_cont[k], -1.0, Indices{index::e, index::d}, g_menf_t_slice,
+                        Indices{index::e, index::b, index::c}, Z_mlk);
+            } // end m_ijk
+        } // end l_ijk
+    } // end k
+
+    return rho_dbck_cont;
+}
+
+void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
+
+    size_t naocc = i_j_to_ij_.size();
+    size_t n_lmo_pairs = ij_to_i_j_.size();
+    size_t n_lmo_triplets = ijk_to_i_j_k_.size();
+
+    // Compute expensive rho_dbck contribution
+    std::vector<Tensor<double, 3>> rho_dbck_cont = rho_dbck_contribution();
+
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+        int ijk = sorted_triplets_[ijk_sorted];
+        auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+        int ij = i_j_to_ij_[i][j], jk = i_j_to_ij_[j][k], ik = i_j_to_ij_[i][k];
+
+        int ntno_ijk = n_tno_[ijk];
+        int naux_ijk = lmotriplet_to_ribfs_[ijk].size();
+        int nlmo_ijk = lmotriplet_to_lmos_[ijk].size();
+
+        auto R_ijk = R_iajbkc[ijk];
+        auto T_ijk = T_iajbkc_[ijk];
+
+        R_ijk->zero();
+
+        // Read in integrals (if Disk I/O is done for integrals)
+        if (disk_ints_) {
+            q_ov_[ijk] = QIA_TNO(ijk);
+            q_vv_[ijk] = QAB_TNO(ijk);
+        }
+
+        // Form extended domain for overlap integrals
+        std::vector<int> triplet_ext_domain = merge_lists(merge_lists(lmopair_to_paos_[ij], lmopair_to_paos_[jk]), lmopair_to_paos_[ik]);
+
+        for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+            int m = lmotriplet_to_lmos_[ijk][m_ijk];
+            int mi = i_j_to_ij_[m][i], mj = i_j_to_ij_[m][j], mk = i_j_to_ij_[m][k];
+
+            triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[mi]);
+            triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[mj]);
+            triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[mk]);
+
+            int mjk_dense = m * naocc * naocc + j * naocc + k;
+            if (i_j_k_to_ijk_.count(mjk_dense)) {
+                int mjk = i_j_k_to_ijk_[mjk_dense];
+                triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[mjk]);
+            } // end if
+
+            int imk_dense = i * naocc * naocc + m * naocc + k;
+            if (i_j_k_to_ijk_.count(imk_dense)) {
+                int imk = i_j_k_to_ijk_[imk_dense];
+                triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[imk]);
+            } // end if
+
+            int ijm_dense = i * naocc * naocc + j * naocc + m;
+            if (i_j_k_to_ijk_.count(ijm_dense)) {
+                int ijm = i_j_k_to_ijk_[ijm_dense];
+                triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[ijm]);
+            } // end if
+
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                int li = i_j_to_ij_[l][i], lj = i_j_to_ij_[l][j], lk = i_j_to_ij_[l][k], ml = i_j_to_ij_[m][l];
+                if (ml == -1) continue;
+
+                triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[li]);
+                triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[lj]);
+                triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[lk]);
+                triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[ml]);
+
+                int mli_dense = m * naocc * naocc + l * naocc + i;
+                if (i_j_k_to_ijk_.count(mli_dense)) {
+                    int mli = i_j_k_to_ijk_[mli_dense];
+                    triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[mli]);
+                } // end if
+
+                int mlj_dense = m * naocc * naocc + l * naocc + j;
+                if (i_j_k_to_ijk_.count(mlj_dense)) {
+                    int mlj = i_j_k_to_ijk_[mlj_dense];
+                    triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[mlj]);
+                } // end if
+
+                int mlk_dense = m * naocc * naocc + l * naocc + k;
+                if (i_j_k_to_ijk_.count(mlk_dense)) {
+                    int mlk = i_j_k_to_ijk_[mlk_dense];
+                    triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[mlk]);
+                }
+            } // end l_ijk
+        } // end m_ijk
+
+        // Semi-direct computation of TNOs
+        auto S_ijk = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], triplet_ext_domain);
+        S_ijk = linalg::doublet(X_tno_[ijk], S_ijk, true, false);
+
+        std::vector<int> ijk_idx = {i, j, k};
+
+        std::vector<Tensor<double, 2>> q_io_list = {q_io_[ijk], q_jo_[ijk], q_ko_[ijk]};
+        std::vector<Tensor<double, 2>> q_iv_list = {q_iv_[ijk], q_jv_[ijk], q_kv_[ijk]};
+
+        std::vector<Tensor<double, 1>> T_i_list(ijk_idx.size());
+        std::vector<Tensor<double, 2>> q_io_t1_list(ijk_idx.size());
+        std::vector<Tensor<double, 2>> q_iv_t1_list(ijk_idx.size());
+
+        // => STEP 0: T1-dress DF integrals <= //
+
+        for (int i_idx = 0; i_idx < ijk_idx.size(); ++i_idx) {
+            int i = ijk_idx[i_idx];
+            auto i_ijk = std::find(lmotriplet_to_lmos_[ijk].begin(), lmotriplet_to_lmos_[ijk].end(), i) - lmotriplet_to_lmos_[ijk].begin();
+
+            // T_{i}^{a_{ijk}}
+            Tensor<double, 1> T_i("T_i", ntno_ijk);
+            ::memcpy(T_i.data(), &(T_n_ijk_[ijk])(i_ijk, 0), ntno_ijk * sizeof(double));
+            T_i_list[i_idx] = T_i;
+
+            // T1-dressing of q_iv
+            q_iv_t1_list[i_idx] = q_iv_list[i_idx];
+            einsum(1.0, Indices{index::Q, index::a}, &q_iv_t1_list[i_idx], -1.0, Indices{index::Q, index::l}, q_io_list[i_idx], Indices{index::l, index::a}, T_n_ijk_[ijk]);
+            einsum(1.0, Indices{index::Q, index::a}, &q_iv_t1_list[i_idx], 1.0, Indices{index::Q, index::a, index::b}, q_vv_[ijk], Indices{index::b}, T_i);
+
+            Tensor<double, 2> q_iv_t1_temp("q_iv_t1_temp", naux_ijk, nlmo_ijk);
+            einsum(0.0, Indices{index::Q, index::l}, &q_iv_t1_temp, 1.0, Indices{index::Q, index::l, index::b}, q_ov_[ijk], Indices{index::b}, T_i);
+            einsum(1.0, Indices{index::Q, index::a}, &q_iv_t1_list[i_idx], -1.0, Indices{index::Q, index::l}, q_iv_t1_temp, Indices{index::l, index::a}, T_n_ijk_[ijk]);
+
+            // T1-dressing of q_io
+            q_io_t1_list[i_idx] = q_io_list[i_idx];
+            einsum(1.0, Indices{index::Q, index::l}, &q_io_t1_list[i_idx], 1.0, Indices{index::Q, index::l, index::a}, q_ov_[ijk], Indices{index::a}, T_i);
+        } // end i_idx
+
+        /*
+        auto j_ijk = std::find(lmotriplet_to_lmos_[ijk].begin(), lmotriplet_to_lmos_[ijk].end(), j) - lmotriplet_to_lmos_[ijk].begin();
+        auto k_ijk = std::find(lmotriplet_to_lmos_[ijk].begin(), lmotriplet_to_lmos_[ijk].end(), k) - lmotriplet_to_lmos_[ijk].begin();
+        
+        Tensor<double, 1> T_j("T_j", ntno_ijk);
+        ::memcpy(T_j.data(), &(T_n_ijk_[ijk])(j_ijk, 0), ntno_ijk * sizeof(double));
+        Tensor<double, 1> T_k("T_k", ntno_ijk);
+        ::memcpy(T_k.data(), &(T_n_ijk_[ijk])(k_ijk, 0), ntno_ijk * sizeof(double));
+        
+        Tensor<double, 2> q_jv_t1 = q_jv_[ijk];
+        einsum(1.0, Indices{index::Q, index::a}, &q_jv_t1, -1.0, Indices{index::Q, index::l}, q_jo_[ijk], Indices{index::l, index::a}, T_n_ijk_[ijk]);
+        einsum(1.0, Indices{index::Q, index::a}, &q_jv_t1, 1.0, Indices{index::Q, index::a, index::b}, q_vv_[ijk], Indices{index::b}, T_j);
+        Tensor<double, 2> q_jv_t1_temp("q_jv_t1_temp", naux_ijk, nlmo_ijk);
+        einsum(0.0, Indices{index::Q, index::l}, &q_jv_t1_temp, 1.0, Indices{index::Q, index::l, index::b}, q_ov_[ijk], Indices{index::b}, T_j);
+        einsum(1.0, Indices{index::Q, index::a}, &q_jv_t1, -1.0, Indices{index::Q, index::l}, q_jv_t1_temp, Indices{index::l, index::a}, T_n_ijk_[ijk]);
+        Tensor<double, 2> q_kv_t1 = q_kv_[ijk];
+        einsum(1.0, Indices{index::Q, index::a}, &q_kv_t1, -1.0, Indices{index::Q, index::l}, q_ko_[ijk], Indices{index::l, index::a}, T_n_ijk_[ijk]);
+        einsum(1.0, Indices{index::Q, index::a}, &q_kv_t1, 1.0, Indices{index::Q, index::a, index::b}, q_vv_[ijk], Indices{index::b}, T_k);
+        Tensor<double, 2> q_kv_t1_temp("q_kv_t1_temp", naux_ijk, nlmo_ijk);
+        einsum(0.0, Indices{index::Q, index::l}, &q_kv_t1_temp, 1.0, Indices{index::Q, index::l, index::b}, q_ov_[ijk], Indices{index::b}, T_k);
+        einsum(1.0, Indices{index::Q, index::a}, &q_kv_t1, -1.0, Indices{index::Q, index::l}, q_kv_t1_temp, Indices{index::l, index::a}, T_n_ijk_[ijk]);
+        Tensor<double, 2> q_jo_t1 = q_jo_[ijk];
+        einsum(1.0, Indices{index::Q, index::l}, &q_jo_t1, 1.0, Indices{index::Q, index::l, index::a}, q_ov_[ijk], Indices{index::a}, T_j);
+        Tensor<double, 2> q_ko_t1 = q_ko_[ijk];
+        einsum(1.0, Indices{index::Q, index::l}, &q_ko_t1, 1.0, Indices{index::Q, index::l, index::a}, q_ov_[ijk], Indices{index::a}, T_k);
+        */
+
+        // This one is special... the second index is dressed instead of the first (per convention), to increase computational efficiency
+        Tensor<double, 3> q_vv_t1 = q_vv_[ijk];
+        Tensor<double, 3> q_vo("q_vo", naux_ijk, ntno_ijk, nlmo_ijk);
+        permute(Indices{index::Q, index::a, index::l}, &q_vo, Indices{index::Q, index::l, index::a}, q_ov_[ijk]);
+        einsum(1.0, Indices{index::Q, index::a, index::b}, &q_vv_t1, -1.0, Indices{index::Q, index::a, index::l}, q_vo, Indices{index::l, index::b}, T_n_ijk_[ijk]);
+
+        // => Form Fock Matrix Intermediates <= //
+
+        // Gamma_Q is used universally for J-like contractions
+        Tensor<double, 1> gamma_Q("gamma_Q", naux_ijk);
+        einsum(0.0, Indices{index::Q}, &gamma_Q, 1.0, Indices{index::Q, index::m, index::e}, q_ov_[ijk], Indices{index::m, index::e}, T_n_ijk_[ijk]);
+
+        // => F_ld (this is scoped to ensure that the intermediate tensors are not persistent in memory <= //
+        Tensor<double, 2> F_ld("F_ld", nlmo_ijk, ntno_ijk); {
+            // J contractions
+            einsum(0.0, Indices{index::l, index::d}, &F_ld, 2.0, Indices{index::Q, index::l, index::d}, q_ov_[ijk], Indices{index::Q}, gamma_Q);
+
+            // K contractions
+            Tensor<double, 3> F_ld_K_temp("F_ld_K_temp", naux_ijk, nlmo_ijk, nlmo_ijk);
+            einsum(0.0, Indices{index::Q, index::l, index::m}, &F_ld_K_temp, 1.0, Indices{index::Q, index::l, index::e}, q_ov_[ijk], Indices{index::m, index::e}, T_n_ijk_[ijk]);
+            Tensor<double, 3> F_ld_K_temp2("F_ld_K_temp2", naux_ijk, nlmo_ijk, nlmo_ijk);
+            permute(Indices{index::Q, index::m, index::l}, &F_ld_K_temp2, Indices{index::Q, index::l, index::m}, F_ld_K_temp);
+            einsum(1.0, Indices{index::l, index::d}, &F_ld, -1.0, Indices{index::Q, index::m, index::l}, F_ld_K_temp2, Indices{index::Q, index::m, index::d}, q_ov_[ijk]);
+        }
+
+        // => F_li <= //
+        std::vector<Tensor<double, 1>> F_li_list(ijk_idx.size()); // F_li, F_lj, F_lk
+
+        for (int idx = 0; idx < ijk_idx.size(); ++idx) {
+            int i = ijk_idx[idx];
+
+            // F_lmo (non-T1 contribution)
+            F_li_list[idx] = Tensor<double, 1>("F_li", nlmo_ijk);
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                F_li_list[idx](l_ijk) = (*F_lmo_)(l, i);
+            }
+
+            // J Contractions
+            einsum(1.0, Indices{index::l}, &F_li_list[idx], 2.0, Indices{index::Q, index::l}, q_io_list[idx], Indices{index::Q}, gamma_Q);
+
+            // K contractions
+            Tensor<double, 2> F_li_K_temp("F_li_K_temp", naux_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::Q, index::a}, &F_li_K_temp, 1.0, Indices{index::Q, index::m}, q_io_list[idx], Indices{index::m, index::a}, T_n_ijk_[ijk]);
+            einsum(1.0, Indices{index::l}, &F_li_list[idx], -1.0, Indices{index::Q, index::a, index::l}, q_vo, Indices{index::Q, index::a}, F_li_K_temp);
+
+            // Add F_ld contribution
+            einsum(1.0, Indices{index::l}, &F_li_list[idx], 1.0, Indices{index::l, index::d}, F_ld, Indices{index::d}, T_i_list[idx]);
+        }
+
+        // => F_ad <= //
+        Tensor<double, 2> F_ad("F_ad", ntno_ijk, ntno_ijk); {
+            F_ad.zero();
+            // e_tno (non-t1 contribution)
+            for (int a_ijk = 0; a_ijk < ntno_ijk; ++a_ijk) {
+                F_ad(a_ijk, a_ijk) = (*e_tno_[ijk])(a_ijk);
+            }
+
+            // J contribution
+            einsum(1.0, Indices{index::a, index::d}, &F_ad, 2.0, Indices{index::Q, index::a, index::d}, q_vv_[ijk], Indices{index::Q}, gamma_Q);
+            // K contribution
+            Tensor<double, 3> F_ad_K_temp("F_ad_K_temp", naux_ijk, ntno_ijk, nlmo_ijk);
+            einsum(0.0, Indices{index::Q, index::a, index::m}, &F_ad_K_temp, 1.0, Indices{index::Q, index::a, index::e}, q_vv_[ijk], Indices{index::m, index::e}, T_n_ijk_[ijk]);
+            Tensor<double, 3> F_ad_K_temp2("F_ad_K_temp", naux_ijk, nlmo_ijk, ntno_ijk);
+            permute(Indices{index::Q, index::m, index::a}, &F_ad_K_temp2, Indices{index::Q, index::a, index::m}, F_ad_K_temp);
+            einsum(1.0, Indices{index::a, index::d}, &F_ad, -1.0, Indices{index::Q, index::m, index::a}, F_ad_K_temp2, Indices{index::Q, index::m, index::d}, q_ov_[ijk]);
+
+            // Add the F_ld contribution to F_ad
+            einsum(1.0, Indices{index::a, index::d}, &F_ad, -1.0, Indices{index::m, index::a}, T_n_ijk_[ijk], Indices{index::m, index::d}, F_ld);
+        }
+
+        // ==> Stopping point 10/22 10:02 AM <== //
+
+        // rho_dbci, dbcj, dbck (Lesiuk Eq. 16)
+        std::vector<Tensor<double, 3>> rho_dbck_list(ijk_idx.size());
+
+        // T_lm amplitudes
+        Tensor<double, 4> T_lm("T_lm", nlmo_ijk, nlmo_ijk, ntno_ijk, ntno_ijk);
+        T_lm.zero();
+        for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+            int l = lmotriplet_to_lmos_[ijk][l_ijk];
+
+            for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+                int m = lmotriplet_to_lmos_[ijk][m_ijk];
+                int lm = i_j_to_ij_[l][m];
+                if (lm == -1) continue;
+                int lm_idx = (l_ijk > m_ijk) ? m_ijk * nlmo_ijk + l_ijk : l_ijk * nlmo_ijk + m_ijk;
+
+                auto S_ijk_lm = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[lm]));
+                S_ijk_lm = linalg::doublet(S_ijk_lm, X_pno_[lm], false, false);
+
+                auto T_lm_ijk = linalg::triplet(S_ijk_lm, T_iajb_[lm], S_ijk_lm, false, false, true);
+                ::memcpy(&T_lm(l_ijk, m_ijk, 0, 0), T_lm_ijk->get_pointer(), ntno_ijk * ntno_ijk * sizeof(double));
+            }
+        }
+
+        // Erase overlap matrices from RAM
+
+        // K_dble integrals (got excommunicated for memory gluttony)
+        /*
+        Tensor<double, 4> K_dble("K_dble", ntno_ijk, ntno_ijk, nlmo_ijk, ntno_ijk);
+        einsum(0.0, Indices{index::d, index::b, index::l, index::e}, &K_dble, 1.0, Indices{index::Q, index::d, index::b}, q_vv_t1, Indices{index::Q, index::l, index::e}, q_ov_[ijk]);
+        Tensor<double, 4> K_dble_T("K_dble_T", ntno_ijk, ntno_ijk, nlmo_ijk, ntno_ijk);
+        permute(Indices{index::e, index::b, index::l, index::d}, &K_dble_T, Indices{index::d, index::b, index::l, index::e}, K_dble);
+        Tensor<double, 4> K_dble_T2("K_dble_T2", nlmo_ijk, ntno_ijk, ntno_ijk, ntno_ijk);
+        permute(Indices{index::l, index::c, index::e, index::d}, &K_dble_T2, Indices{index::d, index::c, index::l, index::e}, K_dble);
+        */
+
+        // Memory buffers (so we don't allocate memory in deep loops and give computer massive headaches)
+        Tensor<double, 3> victor_buffer_a("victor_buffer_a", ntno_ijk, ntno_ijk, ntno_ijk);
+        Tensor<double, 3> victor_buffer_b("victor_buffer_b", ntno_ijk, ntno_ijk, ntno_ijk);
+
+        // K_ldme integrals
+        Tensor<double, 4> K_ldme("K_ldme", nlmo_ijk, ntno_ijk, nlmo_ijk, ntno_ijk);
+        einsum(0.0, Indices{index::l, index::d, index::m, index::e}, &K_ldme, 1.0, Indices{index::Q, index::l, index::d}, q_ov_[ijk], Indices{index::Q, index::m, index::e}, q_ov_[ijk]);
+        Tensor<double, 4> K_ldme_T("K_ldme_T", nlmo_ijk, nlmo_ijk, ntno_ijk, ntno_ijk);
+        permute(Indices{index::l, index::m, index::d, index::e}, &K_ldme_T, Indices{index::l, index::d, index::m, index::e}, K_ldme);
+        Tensor<double, 4> K_ldme_T2("K_ldme_T2", nlmo_ijk, ntno_ijk, nlmo_ijk, ntno_ijk);
+        permute(Indices{index::l, index::e, index::m, index::d}, &K_ldme_T2, Indices{index::l, index::d, index::m, index::e}, K_ldme);
+
+        // Load in overlap integrals from disk
+
+        for (int idx = 0; idx < ijk_idx.size(); ++idx) {
+            int i = ijk_idx[idx];
+            int ii = i_j_to_ij_[i][i];
+
+            rho_dbck_list[idx] = Tensor<double, 3>("rho_dbck_list", ntno_ijk, ntno_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], 1.0, Indices{index::Q, index::d, index::b}, q_vv_t1, Indices{index::Q, index::c}, q_iv_t1_list[idx]);
+
+            Tensor<double, 3> T_li("T_li", nlmo_ijk, ntno_ijk, ntno_ijk);
+            Tensor<double, 3> U_li("U_li", nlmo_ijk, ntno_ijk, ntno_ijk);
+
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                int li = i_j_to_ij_[l][i];
+
+                auto S_ijk_li = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[li]));
+                S_ijk_li = linalg::doublet(S_ijk_li, X_pno_[li], false, false);
+
+                auto T_li_ijk = linalg::triplet(S_ijk_li, T_iajb_[li], S_ijk_li, false, false, true);
+                auto U_li_ijk = linalg::triplet(S_ijk_li, Tt_iajb_[li], S_ijk_li, false, false, true);
+
+                ::memcpy(&T_li(l_ijk, 0, 0), T_li_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+                ::memcpy(&U_li(l_ijk, 0, 0), U_li_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+            } // end l_ijk
+
+            einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], -1.0, Indices{index::l, index::d}, F_ld, Indices{index::l, index::b, index::c}, T_li);
+
+            Tensor<double, 3> K_limd("K_limd", nlmo_ijk, nlmo_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::l, index::m, index::d}, &K_limd, 1.0, Indices{index::Q, index::l}, q_io_t1_list[idx], Indices{index::Q, index::m, index::d}, q_ov_[ijk]);
+            Tensor<double, 3> K_limd_T("K_limd_T", nlmo_ijk, nlmo_ijk, ntno_ijk);
+            permute(Indices{index::m, index::l, index::d}, &K_limd_T, Indices{index::l, index::m, index::d}, K_limd);
+            einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], 1.0, Indices{index::m, index::l, index::d}, K_limd_T, Indices{index::m, index::l, index::b, index::c}, T_lm);
+
+            // ORIGINAL
+            // (d, b, l, e) = (Q, d, b) (q_vv_t1) * (Q, l, e) (q_ov_)
+            // (d, b, c) <- (d, b, l, e) (K_dble) * (l, e, c) (U_li) // O(N^5)
+            // einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], 1.0, Indices{index::d, index::b, index::l, index::e}, K_dble, Indices{index::l, index::e, index::c}, U_li);
+
+            // NUEVA
+            // (d, b, c) <- (Q, d, b) (q_vv_t1) * (Q, l, e) (q_ov_) * (l, e, c) (U_li)
+            // (Q, c) (jaden) <- (Q, l, e) (q_ov) * (l, e, c) (U_li)
+            Tensor<double, 2> jaden("jaden", naux_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::Q, index::c}, &jaden, 1.0, Indices{index::Q, index::l, index::e}, q_ov_[ijk], Indices{index::l, index::e, index::c}, U_li);
+            // (d, b, c) <- (Q, d, b) (q_vv_t1) * (Q, c) (jaden)
+            einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], 1.0, Indices{index::Q, index::d, index::b}, q_vv_t1, Indices{index::Q, index::c}, jaden);
+
+            // OLD CHUD
+            // (d, b, c) <- -1.0 (d, b, l, e) (K_dble_T) * (l, e, c) T_li
+            // einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], -1.0, Indices{index::d, index::b, index::l, index::e}, K_dble_T, Indices{index::l, index::e, index::c}, T_li);
+
+            // FUN NEW STUFF YAY!
+            // (d, b, c) <- -1.0 (Q, e, b) (q_vv_t1) * (Q, l, d) (q_ov_[ijk]) * (l, e, c) (T_li) (NEED LOOP BECAUSE INDICES R MEAN)
+            for (int q_ijk = 0; q_ijk < naux_ijk; ++q_ijk) {
+                TensorView<double, 2> q_vv_t1_slice = q_vv_t1(q_ijk, All, All); // (e, b)
+                TensorView<double, 2> q_ov_slice = q_ov_[ijk](q_ijk, All, All); // (l, d)
+
+                // NOW WITHIN THIS FREAKING LOOP, (d, b, c) <- -1.0 (e, b) (q_vv_t1_slice) * (l, d) (q_ov_slice) * (l, e, c) (T_li)
+                // First step: (d, e, c) (victor_buffer_a) <- (l, d) (q_ov_slice) * (l, e, c) (T_li)
+                einsum(0.0, Indices{index::d, index::e, index::c}, &victor_buffer_a, 1.0, Indices{index::l, index::d}, q_ov_slice, Indices{index::l, index::e, index::c}, T_li);
+                // Second step: (e, d, c) (victor_buffer_b) <- (d, e, c) victor_buffer_a
+                permute(Indices{index::e, index::d, index::c}, &victor_buffer_b, Indices{index::d, index::e, index::c}, victor_buffer_a);
+                // Third step: (b, d, c) (victor_buffer_a) <- -1.0 * (e, d, c) (victor_buffer_b) * (e, b) (q_vv_t1_slice)
+                einsum(0.0, Indices{index::b, index::d, index::c}, &victor_buffer_a, -1.0, Indices{index::e, index::d, index::c}, victor_buffer_b, Indices{index::e, index::b}, q_vv_t1_slice);
+                // Final step (d, b, c) victor_buffer_b <- (b, d, c) (victor_buffer_a)
+                permute(Indices{index::d, index::b, index::c}, &victor_buffer_b, Indices{index::b, index::d, index::c}, victor_buffer_a);
+
+                rho_dbck_list[idx] += victor_buffer_b;
+
+                /* OLD STUFF (ugly)
+                Tensor<double, 3> T_li_T("T_li_T", nlmo_ijk, ntno_ijk, ntno_ijk);
+                permute(Indices{index::l, index::e, index::b}, &T_li_T, Indices{index::l, index::b, index::e}, T_li);
+                Tensor<double, 3> rho_dbck_temp("rho_dbck_temp", ntno_ijk, ntno_ijk, ntno_ijk);
+                einsum(0.0, Indices{index::d, index::c, index::b}, &rho_dbck_temp, 1.0, Indices{index::d, index::c, index::l, index::e}, K_dble_T, Indices{index::l, index::e, index::b}, T_li_T);
+                Tensor<double, 3> rho_dbck_temp2("rho_dbck_temp2", ntno_ijk, ntno_ijk, ntno_ijk);
+                permute(Indices{index::d, index::b, index::c}, &rho_dbck_temp2, Indices{index::d, index::c, index::b}, rho_dbck_temp);
+                rho_dbck_list[idx] -= rho_dbck_temp2;
+                */
+
+                // (d, b, c) (rho_dbck_list) <- -1.0 * (Q, e, c) (q_vv_t1) * (Q, l, d) (q_ov) * (l, b, e) (T_li)
+                // With the slices: (d, b, c) (rho_dbck_list) <- -1.0 * (e, c) (q_vv_slice) * (l, d) (q_ov_slice) * (l, b, e) (T_li)
+                // (d, b, e) (victor_buffer_a) <- (l, d) (q_ov_slice) * (l, b, e) (T_li) 
+                einsum(0.0, Indices{index::d, index::b, index::e}, &victor_buffer_a, 1.0, Indices{index::l, index::b, index::e}, T_li, Indices{index::l, index::d}, q_ov_slice);
+                // (d, b, c) (rho_dbck_list) <- -1.0 * (d, b, e) * (e, c) (q_vv_t1), don't forget the negative 1.0 or you run a lap on GT track
+                einsum(1.0, Indices{index::d, index::b, index::c}, &rho_dbck_list[idx], -1.0, Indices{index::d, index::b, index::e}, victor_buffer_a, Indices{index::e, index::c}, q_vv_t1_slice);
+            }
+
+            // Triples terms (ca-nasty)
+            auto S_ijk_ii = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[ii]));
+            S_ijk_ii = linalg::doublet(S_ijk_ii, X_pno_[ii], false, false);
+            rho_dbck_list[idx] += matmul_3d_einsums(rho_dbck_cont[i], S_ijk_ii, n_pno_[ii], n_tno_[ijk]);
+        } // end idx
+
+        // => Stopping point 10/22 3:45 PM <= //
+
+        std::vector<std::tuple<int, int, int>> long_perms = {std::make_tuple(i, j, k), std::make_tuple(i, k, j),
+                                                                std::make_tuple(j, i, k), std::make_tuple(j, k, i),
+                                                                std::make_tuple(k, i, j), std::make_tuple(k, j, i)};
+
+        std::vector<std::tuple<int, int, int>> long_perms_idx = {std::make_tuple(0, 1, 2), std::make_tuple(0, 2, 1),
+                                                                    std::make_tuple(1, 0, 2), std::make_tuple(1, 2, 0),
+                                                                    std::make_tuple(2, 0, 1), std::make_tuple(2, 1, 0)};
+
+        // std::vector<SharedMatrix> S_ijk_jk_list = {S_ijk_jk_[ijk], S_ijk_jk_[ijk], S_ijk_ik_[ijk], 
+        //                                             S_ijk_ik_[ijk], S_ijk_ij_[ijk], S_ijk_ij_[ijk]};
+        // std::vector<std::vector<SharedMatrix>> S_ijk_mjk_list = {S_ijk_ljk_[ijk], S_ijk_ljk_[ijk], S_ijk_ilk_[ijk], 
+        //                                                             S_ijk_ilk_[ijk], S_ijk_ijl_[ijk], S_ijk_ijl_[ijk]};
+
+        // Form rho_ljck intermediate (Lesiuk Eq. 15)
+        std::vector<Tensor<double, 2>> rho_ljck_list(long_perms.size());
+
+        for (int idx = 0; idx < long_perms.size(); ++idx) {
+            auto &[i, j, k] = long_perms[idx];
+            auto &[i_idx, j_idx, k_idx] = long_perms_idx[idx];
+            int jk = i_j_to_ij_[j][k];
+
+            rho_ljck_list[idx] = Tensor<double, 2>("rho_ljck", nlmo_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::Q, index::l}, q_io_t1_list[j_idx], Indices{index::Q, index::c}, q_iv_t1_list[k_idx]);
+
+            // => CHECKPOINT 10/25 3:40 PM <= //
+
+            Tensor<double, 3> T_jm("T_jm", nlmo_ijk, ntno_ijk, ntno_ijk);
+            Tensor<double, 3> T_mk("T_mk", nlmo_ijk, ntno_ijk, ntno_ijk);
+            Tensor<double, 3> U_mk("U_mk", nlmo_ijk, ntno_ijk, ntno_ijk);
+
+            for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+                int m = lmotriplet_to_lmos_[ijk][m_ijk];
+                int mk = i_j_to_ij_[m][k], jm = i_j_to_ij_[j][m];
+
+                // jm
+                auto S_ijk_jm = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[jm]));
+                S_ijk_jm = linalg::doublet(S_ijk_jm, X_pno_[jm], false, false);
+
+                auto T_jm_ijk = linalg::triplet(S_ijk_jm, T_iajb_[jm], S_ijk_jm, false, false, true);
+                ::memcpy(&T_jm(m_ijk, 0, 0), T_jm_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+
+                // mk
+                auto S_ijk_mk = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[mk]));
+                S_ijk_mk = linalg::doublet(S_ijk_mk, X_pno_[mk], false, false);
+
+                auto T_mk_ijk = linalg::triplet(S_ijk_mk, T_iajb_[mk], S_ijk_mk, false, false, true);
+                auto U_mk_ijk = linalg::triplet(S_ijk_mk, Tt_iajb_[mk], S_ijk_mk, false, false, true);
+
+                ::memcpy(&T_mk(m_ijk, 0, 0), T_mk_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+                ::memcpy(&U_mk(m_ijk, 0, 0), U_mk_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+            }
+
+            Tensor<double, 3> K_mdlj("K_mdlj", nlmo_ijk, ntno_ijk, nlmo_ijk);
+            einsum(0.0, Indices{index::m, index::d, index::l}, &K_mdlj, 1.0, Indices{index::Q, index::m, index::d}, q_ov_[ijk], Indices{index::Q, index::l}, q_io_t1_list[j_idx]);
+
+            einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::m, index::d, index::l}, K_mdlj, Indices{index::m, index::d, index::c}, U_mk);
+
+            Tensor<double, 3> K_mdlj_T("K_mdlj_T", nlmo_ijk, nlmo_ijk, ntno_ijk);
+            permute(Indices{index::l, index::m, index::d}, &K_mdlj_T, Indices{index::l, index::d, index::m}, K_mdlj);
+            einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], -1.0, Indices{index::l, index::m, index::d}, K_mdlj_T, Indices{index::m, index::d, index::c}, T_mk);
+
+            Tensor<double, 3> K_ldmk("K_ldmk", nlmo_ijk, ntno_ijk, nlmo_ijk);
+            einsum(0.0, Indices{index::l, index::d, index::m}, &K_ldmk, 1.0, Indices{index::Q, index::l, index::d}, q_ov_[ijk], Indices{index::Q, index::m}, q_io_t1_list[k_idx]);
+
+            Tensor<double, 3> K_ldmk_T("K_ldmk_T", nlmo_ijk, nlmo_ijk, ntno_ijk);
+            permute(Indices{index::l, index::m, index::d}, &K_ldmk_T, Indices{index::l, index::d, index::m}, K_ldmk);
+
+            einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], -1.0, Indices{index::l, index::m, index::d}, K_ldmk_T, Indices{index::m, index::d, index::c}, T_jm);
+
+            Tensor<double, 2> T_jk("T_jk", ntno_ijk, ntno_ijk);
+
+            auto S_ijk_jk = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[jk]));
+            S_ijk_jk = linalg::doublet(S_ijk_jk, X_pno_[jk], false, false);
+
+            auto T_jk_ijk = linalg::triplet(S_ijk_jk, T_iajb_[jk], S_ijk_jk, false, false, true);
+            ::memcpy(T_jk.data(), T_jk_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+
+            // (l, c) [rho_ljck] <- (Q, d, c) [q_vv_t1] * (Q, l, e) [q_ov] * (e, d) [T_jk]
+            // einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::l, index::c, index::e, index::d}, K_dble_T2, Indices{index::e, index::d}, T_jk);
+            for (int q_ijk = 0; q_ijk < naux_ijk; ++q_ijk) {
+                TensorView<double, 2> q_vv_t1_slice = q_vv_t1(q_ijk, All, All); // (d, c)
+                TensorView<double, 2> q_ov_slice = q_ov_[ijk](q_ijk, All, All); // (l, e)
+
+                // (l, c) [rho_ljck] <- (d, c) [q_vv_t1_slice] * (l, e) [q_ov_slice] * (e, d) [T_jk]
+                // (l, d) [elizabeth] <- (l, e) [q_ov_slice] * (e, d) [T_jk]
+                Tensor<double, 2> elizabeth("elizabeth", nlmo_ijk, ntno_ijk);
+                einsum(0.0, Indices{index::l, index::d}, &elizabeth, 1.0, Indices{index::l, index::e}, q_ov_slice, Indices{index::e, index::d}, T_jk);
+                // (l, c) <- (l, d) [elizabeth] * (d, c) [q_vv_t1_slice]
+                einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::l, index::d}, elizabeth, Indices{index::d, index::c}, q_vv_t1_slice);
+            }
+
+            for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+                int m = lmotriplet_to_lmos_[ijk][m_ijk];
+                int mjk_dense = m * naocc * naocc + j * naocc + k;
+                if (!i_j_k_to_ijk_.count(mjk_dense)) continue;
+
+                int mjk = i_j_k_to_ijk_[mjk_dense];
+                auto S_ijk_mjk = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmotriplet_to_paos_[mjk]));
+                S_ijk_mjk = linalg::doublet(S_ijk_mjk, X_tno_[mjk], false, false);
+
+                // (2 t_{mjk}^{edc} - t_{mjk}^{cde} - t_{mjk}^{dec})
+                Tensor<double, 3> T_mjk = matmul_3d_einsums(
+                    triples_permuter_einsums(T_iajbkc_clone_[mjk], m, j, k), S_ijk_mjk, n_tno_[mjk], n_tno_[ijk]);
+
+                Tensor<double, 3> T_kjm("T_kjm", ntno_ijk, ntno_ijk, ntno_ijk);
+                permute(Indices{index::c, index::b, index::a}, &T_kjm, Indices{index::a, index::b, index::c}, T_mjk);
+
+                Tensor<double, 3> T_jmk("T_jmk", ntno_ijk, ntno_ijk, ntno_ijk);
+                permute(Indices{index::b, index::a, index::c}, &T_jmk, Indices{index::a, index::b, index::c}, T_mjk);
+
+                T_mjk *= 2.0;
+                T_mjk -= T_kjm;
+                T_mjk -= T_jmk;
+
+                // (l, c) [rho_ljck_list] <- (Q, l, d) [q_ov] * (Q, m, e) [q_ov] * (e, d, c) [T_mjk]
+                Tensor<double, 3> K_mled_slice = K_ldme_T(m_ijk, All, All, All);
+                einsum(1.0, Indices{index::l, index::c}, &rho_ljck_list[idx], 1.0, Indices{index::l, index::e, index::d}, K_mled_slice, Indices{index::e, index::d, index::c}, T_mjk);
+            }
+        }
+
+        // Lesiuk Eq. 11a (flip sign)
+        std::vector<Tensor<double, 3>> Wperms(long_perms.size());
+
+        // std::vector<SharedMatrix> S_ijk_ij_list = {S_ijk_ij_[ijk], S_ijk_ik_[ijk], S_ijk_ij_[ijk],
+        //                                             S_ijk_jk_[ijk], S_ijk_ik_[ijk], S_ijk_jk_[ijk]};
+        // std::vector<std::vector<SharedMatrix>> S_ijk_il_list = {S_ijk_il_[ijk], S_ijk_il_[ijk], S_ijk_jl_[ijk],
+        //                                                             S_ijk_jl_[ijk], S_ijk_kl_[ijk], S_ijk_kl_[ijk]};
+
+        for (int idx = 0; idx < long_perms.size(); ++idx) {
+            auto &[i, j, k] = long_perms[idx];
+            auto &[i_idx, j_idx, k_idx] = long_perms_idx[idx];
+            int ij = i_j_to_ij_[i][j];
+
+            Wperms[idx] = Tensor("Wperm", n_tno_[ijk], n_tno_[ijk], n_tno_[ijk]);
+
+            /// => rho_dbck contribution <= ///
+
+            // Compute overlap between TNOs of triplet ijk and PNOs of pair ij
+            auto S_ijk_ij = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[ij]));
+            S_ijk_ij = linalg::doublet(S_ijk_ij, X_pno_[ij], false, false);
+
+            auto T_ij = linalg::triplet(S_ijk_ij, T_iajb_[ij], S_ijk_ij, false, false, true);
+            Tensor<double, 2> T_ij_einsums("T_ij", n_tno_[ijk], n_tno_[ijk]);
+            ::memcpy(T_ij_einsums.data(), T_ij->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+
+            einsum(0.0, Indices{index::a, index::b, index::c}, &Wperms[idx], 1.0, Indices{index::a, index::d}, T_ij_einsums, 
+                    Indices{index::d, index::b, index::c}, rho_dbck_list[k_idx]);
+
+            /// => rho_ljck contribution <= //
+            Tensor<double, 3> T_il_einsums("T_il", nlmo_ijk, n_tno_[ijk], n_tno_[ijk]);
+
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                int il = i_j_to_ij_[i][l];
+
+                auto S_ijk_il = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[il]));
+                S_ijk_il = linalg::doublet(S_ijk_il, X_pno_[il], false, false);
+
+                auto T_il = linalg::triplet(S_ijk_il, T_iajb_[il], S_ijk_il, false, false, true);
+                ::memcpy(&T_il_einsums(l_ijk, 0, 0), T_il->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+            } // end l_ijk
+
+            einsum(1.0, Indices{index::a, index::b, index::c}, &Wperms[idx], -1.0, Indices{index::l, index::a, index::b}, T_il_einsums, 
+                    Indices{index::l, index::c}, rho_ljck_list[idx]);
+        }
+
+        for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
+            for (int b_ijk = 0; b_ijk < ntno_ijk; b_ijk++) {
+                for (int c_ijk = 0; c_ijk < ntno_ijk; c_ijk++) {
+                    (*R_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) +=
+                        (Wperms[0])(a_ijk, b_ijk, c_ijk) + (Wperms[1])(a_ijk, c_ijk, b_ijk) + (Wperms[2])(b_ijk, a_ijk, c_ijk) + 
+                        (Wperms[3])(b_ijk, c_ijk, a_ijk) + (Wperms[4])(c_ijk, a_ijk, b_ijk) + (Wperms[5])(c_ijk, b_ijk, a_ijk);
+                }
+            }
+        }
+
+        // => STEP 2: SHORT PERMUTATION TERMS <= //
+        std::vector<std::tuple<int, int, int>> short_perms = {std::make_tuple(i, j, k), std::make_tuple(j, i, k), std::make_tuple(k, j, i)};
+        std::vector<std::tuple<int, int, int>> short_perms_idx = {std::make_tuple(0, 1, 2), std::make_tuple(1, 0, 2), std::make_tuple(2, 1, 0)};
+
+        // chi_li, chi_lj, chi_lk (Lesiuk Eq. 12a)
+        std::vector<Tensor<double, 1>> chi_li_list(ijk_idx.size());
+
+        for (int idx = 0; idx < ijk_idx.size(); ++idx) {
+            int i = ijk_idx[idx];
+
+            chi_li_list[idx] = F_li_list[idx];
+
+            Tensor<double, 3> U_mi("U_mi", nlmo_ijk, ntno_ijk, ntno_ijk);
+            for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+                int m = lmotriplet_to_lmos_[ijk][m_ijk];
+                int mi = i_j_to_ij_[m][i];
+
+                auto S_ijk_mi = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[mi]));
+                S_ijk_mi = linalg::doublet(S_ijk_mi, X_pno_[mi], false, false);
+
+                auto U_mi_ijk = linalg::triplet(S_ijk_mi, Tt_iajb_[mi], S_ijk_mi, false, false, true);
+                ::memcpy(&U_mi(m_ijk, 0, 0), U_mi_ijk->get_pointer(), ntno_ijk * ntno_ijk * sizeof(double));
+            }
+
+            Tensor<double, 2> chi_li_temp("chi_li_temp", naux_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::Q, index::d}, &chi_li_temp, 1.0, Indices{index::Q, index::m, index::e}, q_ov_[ijk], Indices{index::m, index::e, index::d}, U_mi);
+            einsum(1.0, Indices{index::l}, &chi_li_list[idx], 1.0, Indices{index::Q, index::d, index::l}, q_vo, Indices{index::Q, index::d}, chi_li_temp);
+        }
+
+        // Lesiuk Eq. 12b
+        Tensor<double, 2> chi_ad("chi_ad", ntno_ijk, ntno_ijk); {
+            chi_ad = F_ad;
+
+            Tensor<double, 4> U_lm = T_lm;
+            Tensor<double, 4> T_lm_T("T_lm_T", nlmo_ijk, nlmo_ijk, ntno_ijk, ntno_ijk);
+            permute(Indices{index::l, index::m, index::e, index::d}, &T_lm_T, Indices{index::l, index::m, index::d, index::e}, T_lm);
+            U_lm *= 2.0;
+            U_lm -= T_lm_T;
+            einsum(1.0, Indices{index::a, index::d}, &chi_ad, -1.0, Indices{index::m, index::l, index::e, index::a}, U_lm, Indices{index::m, index::l, index::e, index::d}, K_ldme_T);
+            /*
+            for (int q_ijk = 0; q_ijk < naux_ijk; ++q_ijk) {
+                TensorView<double, 2> B_Q_me_slice = q_ov_[ijk](q_ijk, All, All); // B^{Q_{ijk}}_{m_{ijk} e_{ijk}}
+                Tensor<double, 2> X_bar("X_bar", nlmo_ijk, ntno_ijk);
+                // X_bar(l, a) = \sum_{m, e} B_Q_me_slice(m, e) * U_lm(l, m, a, e)
+                einsum(0.0, Indices{index::l, index::a}, &X_bar, 1.0, Indices{index::m, index::e}, B_Q_me_slice, Indices{index::l, index::m, index::a, index::e}, U_lm);
+                // chi_ad(a, d) -= \sum_{l} X_bar(l, a) * B_Q_me_slice(l, d)
+                einsum(1.0, Indices{index::a, index::d}, &chi_ad, -1.0, Indices{index::l, index::a}, X_bar, Indices{index::l, index::d}, B_Q_me_slice);
+            }
+            */
+        }
+
+        // chi_jklm, chi_iklm, chi_jilm (Lesiuk Eq. 13a)
+        std::vector<Tensor<double, 2>> chi_jk_list(short_perms.size());
+
+        // std::vector<SharedMatrix> S_ijk_jk_list_short = {S_ijk_jk_[ijk], S_ijk_ik_[ijk], S_ijk_ij_[ijk]};
+
+        for (int idx = 0; idx < short_perms.size(); ++idx) {
+            auto &[i, j, k] = short_perms[idx];
+            auto &[i_idx, j_idx, k_idx] = short_perms_idx[idx];
+            int jk = i_j_to_ij_[j][k];
+
+            chi_jk_list[idx] = Tensor<double, 2>("chi_jk", nlmo_ijk, nlmo_ijk);
+            einsum(0.0, Indices{index::l, index::m}, &chi_jk_list[idx], 1.0, Indices{index::Q, index::l}, q_io_t1_list[j_idx], Indices{index::Q, index::m}, q_io_t1_list[k_idx]);
+
+            auto S_ijk_jk = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[jk]));
+            S_ijk_jk = linalg::doublet(S_ijk_jk, X_pno_[jk], false, false);
+
+            auto T_jk_psi = linalg::triplet(S_ijk_jk, T_iajb_[jk], S_ijk_jk, false, false, true);
+
+            Tensor<double, 2> T_jk("T_jk", ntno_ijk, ntno_ijk);
+            ::memcpy(T_jk.data(), T_jk_psi->get_pointer(), ntno_ijk * ntno_ijk * sizeof(double));
+
+            Tensor<double, 3> chi_jk_temp("chi_jk_temp", naux_ijk, nlmo_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::Q, index::l, index::e}, &chi_jk_temp, 1.0, Indices{index::Q, index::l, index::d}, q_ov_[ijk], Indices{index::d, index::e}, T_jk);
+
+            Tensor<double, 3> chi_jk_temp_T("chi_jk_temp_T", naux_ijk, ntno_ijk, nlmo_ijk);
+            permute(Indices{index::Q, index::e, index::l}, &chi_jk_temp_T, Indices{index::Q, index::l, index::e}, chi_jk_temp);
+
+            einsum(1.0, Indices{index::l, index::m}, &chi_jk_list[idx], 1.0, Indices{index::Q, index::e, index::l}, chi_jk_temp_T, Indices{index::Q, index::e, index::m}, q_vo);
+        }
+
+        // chi_bdce (Lesiuk Eq. 13b, different order b/c different T1 convention)
+        // Praise... to the Lord... only 20 lines
+        Tensor<double, 4> chi_dbec("chi_dbec", ntno_ijk, ntno_ijk, ntno_ijk, ntno_ijk); {
+            einsum(0.0, Indices{index::d, index::b, index::e, index::c}, &chi_dbec, 1.0, Indices{index::Q, index::d, index::b}, q_vv_t1, Indices{index::Q, index::e, index::c}, q_vv_t1);
+
+            Tensor<double, 4> chi_dbec_temp("chi_dbec_temp", ntno_ijk, ntno_ijk, ntno_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::d, index::e, index::b, index::c}, &chi_dbec_temp, 1.0, Indices{index::l, index::m, index::d, index::e}, K_ldme_T, Indices{index::l, index::m, index::b, index::c}, T_lm);
+
+            Tensor<double, 4> chi_dbec_temp_T("chi_dbec_temp_T", ntno_ijk, ntno_ijk, ntno_ijk, ntno_ijk);
+            permute(Indices{index::d, index::b, index::e, index::c}, &chi_dbec_temp_T, Indices{index::d, index::e, index::b, index::c}, chi_dbec_temp);
+            chi_dbec += chi_dbec_temp_T;
+
+            // Rearrange chi_dbec
+            permute(Indices{index::d, index::e, index::b, index::c}, &chi_dbec_temp, Indices{index::d, index::b, index::e, index::c}, chi_dbec);
+            chi_dbec = chi_dbec_temp;
+        }
+
+        // Lesiuk Eq. 14a (chi_lida, chi_ljda, chi_lkda)
+        std::vector<Tensor<double, 3>> chi_lida_list(short_perms.size());
+
+        for (int idx = 0; idx < ijk_idx.size(); ++idx) {
+            int i = ijk_idx[idx];
+
+            chi_lida_list[idx] = Tensor<double, 3>("chi_lida", nlmo_ijk, ntno_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::l, index::d, index::a}, &chi_lida_list[idx], 1.0, Indices{index::Q, index::l}, q_io_t1_list[idx], Indices{index::Q, index::d, index::a}, q_vv_t1);
+
+            Tensor<double, 3> T_im("T_im", nlmo_ijk, ntno_ijk, ntno_ijk);
+            for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+                int m = lmotriplet_to_lmos_[ijk][m_ijk];
+                int im = i_j_to_ij_[i][m];
+
+                auto S_ijk_im = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[im]));
+                S_ijk_im = linalg::doublet(S_ijk_im, X_pno_[im], false, false);
+
+                auto T_im_ijk = linalg::triplet(S_ijk_im, T_iajb_[im], S_ijk_im, false, false, true);
+                ::memcpy(&T_im(m_ijk, 0, 0), T_im_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+            }
+
+            einsum(1.0, Indices{index::l, index::d, index::a}, &chi_lida_list[idx], -1.0, Indices{index::m, index::e, index::l, index::d}, K_ldme_T2, Indices{index::m, index::e, index::a}, T_im);
+        }
+
+        // Lesiuk Eq. 14b (chi_ldai, chi_ldaj, chi_ldak)
+        std::vector<Tensor<double, 3>> chi_ldai_list(short_perms.size());
+        for (int idx = 0; idx < ijk_idx.size(); ++idx) {
+            int i = ijk_idx[idx];
+
+            chi_ldai_list[idx] = Tensor<double, 3>("chi_ldai", nlmo_ijk, ntno_ijk, ntno_ijk);
+            einsum(0.0, Indices{index::l, index::d, index::a}, &chi_ldai_list[idx], 1.0, Indices{index::Q, index::l, index::d}, q_ov_[ijk], Indices{index::Q, index::a}, q_iv_t1_list[idx]);
+
+            Tensor<double, 3> T_mi("T_mi", nlmo_ijk, ntno_ijk, ntno_ijk);
+            Tensor<double, 3> U_mi("U_mi", nlmo_ijk, ntno_ijk, ntno_ijk);
+            for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+                int m = lmotriplet_to_lmos_[ijk][m_ijk];
+                int mi = i_j_to_ij_[m][i];
+
+                auto S_ijk_mi = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmopair_to_paos_[mi]));
+                S_ijk_mi = linalg::doublet(S_ijk_mi, X_pno_[mi], false, false);
+
+                auto T_mi_ijk = linalg::triplet(S_ijk_mi, T_iajb_[mi], S_ijk_mi, false, false, true);
+                auto U_mi_ijk = linalg::triplet(S_ijk_mi, Tt_iajb_[mi], S_ijk_mi, false, false, true);
+                ::memcpy(&T_mi(m_ijk, 0, 0), T_mi_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+                ::memcpy(&U_mi(m_ijk, 0, 0), U_mi_ijk->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+            }
+
+            // (l, e, m, d) (m, a, e) => (a, d, l)
+            einsum(1.0, Indices{index::l, index::d, index::a}, &chi_ldai_list[idx], -1.0, Indices{index::l, index::d, index::m, index::e}, K_ldme_T2, Indices{index::m, index::e, index::a}, T_mi);
+            // (l, d, m, e) (m, a, e) => (a, d, l)
+            einsum(1.0, Indices{index::l, index::d, index::a}, &chi_ldai_list[idx], 1.0, Indices{index::l, index::d, index::m, index::e}, K_ldme, Indices{index::m, index::e, index::a}, U_mi);
+        }
+
+        std::vector<Tensor<double, 3>> Vperms(short_perms.size());
+
+        // std::vector<std::vector<SharedMatrix>> S_ijk_ljk_list = {S_ijk_ljk_[ijk], S_ijk_ilk_[ijk], S_ijk_ijl_[ijk]};
+        // std::vector<std::vector<SharedMatrix>> S_ijk_ilm_list = {S_ijk_mli_[ijk], S_ijk_mlj_[ijk], S_ijk_mlk_[ijk]};
+
+        for (int idx = 0; idx < short_perms.size(); ++idx) {
+            auto &[i, j, k] = short_perms[idx];
+            auto &[i_idx, j_idx, k_idx] = short_perms_idx[idx];
+            int ii = i_j_to_ij_[i][i];
+
+            Vperms[idx] = Tensor<double, 3>("V_iajbkc", ntno_ijk, ntno_ijk, ntno_ijk);
+
+            // T_ijk contributions
+            Tensor<double, 3> T_ijk = triples_permuter_einsums(T_iajbkc_clone_[ijk], i, j, k);
+            einsum(0.0, Indices{index::a, index::b, index::c}, &Vperms[idx], 1.0, Indices{index::a, index::d}, chi_ad, Indices{index::d, index::b, index::c}, T_ijk);
+
+            einsum(1.0, Indices{index::a, index::b, index::c}, &Vperms[idx], 1.0, Indices{index::a, index::d, index::e}, T_ijk, Indices{index::d, index::e, index::b, index::c}, chi_dbec);
+
+            // T_ljk contributions
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                int ljk_dense = l * naocc * naocc + j * naocc + k;
+                if (!i_j_k_to_ijk_.count(ljk_dense)) continue;
+                int ljk = i_j_k_to_ijk_[ljk_dense];
+
+                auto S_ijk_ljk = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmotriplet_to_paos_[ljk]));
+                S_ijk_ljk = linalg::doublet(S_ijk_ljk, X_tno_[ljk], false, false);
+
+                Tensor<double, 3> T_ljk = matmul_3d_einsums(
+                    triples_permuter_einsums(T_iajbkc_clone_[ljk], l, j, k), S_ijk_ljk, n_tno_[ljk], n_tno_[ijk]);
+
+                Tensor<double, 3> T_ljk_clone = T_ljk;
+                T_ljk_clone *= -(chi_li_list[i_idx])(l_ijk);
+                Vperms[idx] += T_ljk_clone;
+
+                // chi_lida contributions
+                Tensor<double, 2> chi_lida_temp = chi_lida_list[i_idx](l_ijk, All, All);
+                einsum(1.0, Indices{index::a, index::b, index::c}, &Vperms[idx], -1.0, Indices{index::d, index::a}, chi_lida_temp, Indices{index::d, index::b, index::c}, T_ljk);
+                Tensor<double, 3> Vperm_temp("Vperm_temp", ntno_ijk, ntno_ijk, ntno_ijk);
+                permute(Indices{index::b, index::a, index::c}, &Vperm_temp, Indices{index::a, index::b, index::c}, T_ljk);
+                Tensor<double, 3> Vperm_temp2("Vperm_temp2", ntno_ijk, ntno_ijk, ntno_ijk);
+                einsum(0.0, Indices{index::b, index::a, index::c}, &Vperm_temp2, 1.0, Indices{index::d, index::b}, chi_lida_temp, Indices{index::d, index::a, index::c}, Vperm_temp);
+                permute(Indices{index::a, index::b, index::c}, &Vperm_temp, Indices{index::b, index::a, index::c}, Vperm_temp2);
+                Vperms[idx] -= Vperm_temp;
+                einsum(1.0, Indices{index::a, index::b, index::c}, &Vperms[idx], -1.0, Indices{index::d, index::c}, chi_lida_temp, Indices{index::a, index::b, index::d}, T_ljk);
+
+                // chi_ldai contributions
+                Tensor<double, 3> T_jlk("T_jlk", ntno_ijk, ntno_ijk, ntno_ijk);
+                permute(Indices{index::b, index::a, index::c}, &T_jlk, Indices{index::a, index::b, index::c}, T_ljk);
+
+                Tensor<double, 3> T_kjl("T_kjl", ntno_ijk, ntno_ijk, ntno_ijk);
+                permute(Indices{index::c, index::b, index::a}, &T_kjl, Indices{index::a, index::b, index::c}, T_ljk);
+
+                T_ljk *= 2.0;
+                T_ljk -= T_jlk;
+                T_ljk -= T_kjl;
+
+                Tensor<double, 2> chi_ldai_temp = chi_ldai_list[i_idx](l_ijk, All, All);
+                einsum(1.0, Indices{index::a, index::b, index::c}, &Vperms[idx], 1.0, Indices{index::d, index::a}, chi_ldai_temp, Indices{index::d, index::b, index::c}, T_ljk);
+
+                /*
+                for (int a_ijk = 0; a_ijk < ntno_ijk; ++a_ijk) {
+                    for (int b_ijk = 0; b_ijk < ntno_ijk; ++b_ijk) {
+                        for (int c_ijk = 0; c_ijk < ntno_ijk; ++c_ijk) {
+                            for (int d_ijk = 0; d_ijk < ntno_ijk; ++d_ijk) {
+                                // chi_lida contributions
+                                Vperms[idx](a_ijk, b_ijk, c_ijk) -= chi_lida_list[i_idx](l_ijk, d_ijk, a_ijk) * (T_ljk)(d_ijk, b_ijk, c_ijk)
+                                    + chi_lida_list[i_idx](l_ijk, d_ijk, b_ijk) * (T_ljk)(a_ijk, d_ijk, c_ijk) + chi_lida_list[i_idx](l_ijk, d_ijk, c_ijk) * (T_ljk)(a_ijk, b_ijk, d_ijk);
+                                // chi_ldai contributions
+                                Vperms[idx](a_ijk, b_ijk, c_ijk) += chi_ldai_list[i_idx](l_ijk, d_ijk, a_ijk) * (2 * T_ljk(d_ijk, b_ijk, c_ijk) 
+                                                                    - T_ljk(c_ijk, b_ijk, d_ijk) - T_ljk(b_ijk, d_ijk, c_ijk));
+                            } // end d_ijk
+                        } // end c_ijk
+                    } // end b_ijk
+                } // end a_ijk
+                */
+            }
+
+            // T_ilm contributions
+            for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                int l = lmotriplet_to_lmos_[ijk][l_ijk];
+
+                for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+                    int m = lmotriplet_to_lmos_[ijk][m_ijk];
+                    int ilm_dense = i * naocc * naocc + l * naocc + m;
+                    if (!i_j_k_to_ijk_.count(ilm_dense)) continue;
+                    int ilm = i_j_k_to_ijk_[ilm_dense];
+                    int lm_idx = (l_ijk > m_ijk) ? m_ijk * nlmo_ijk + l_ijk : l_ijk * nlmo_ijk + m_ijk;
+
+                    auto S_ijk_ilm = submatrix_cols(*S_ijk, index_list(triplet_ext_domain, lmotriplet_to_paos_[ilm]));
+                    S_ijk_ilm = linalg::doublet(S_ijk_ilm, X_tno_[ilm], false, false);
+
+                    Tensor<double, 3> T_ilm = matmul_3d_einsums(
+                        triples_permuter_einsums(T_iajbkc_clone_[ilm], i, l, m), S_ijk_ilm, n_tno_[ilm], n_tno_[ijk]);
+
+                    T_ilm *= (chi_jk_list[idx])(l_ijk, m_ijk);
+                    Vperms[idx] += T_ilm;
+                } // end m_ijk
+            } // end l_ijk
+        } // end idx
+
+        if (disk_ints_) {
+            q_ov_[ijk] = Tensor<double, 3>(q_ov_[ijk].name(), 0, 0, 0);
+            q_vv_[ijk] = Tensor<double, 3>(q_vv_[ijk].name(), 0, 0, 0);
+        }
+
+        // Flush Vperms
+        for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
+            for (int b_ijk = 0; b_ijk < ntno_ijk; b_ijk++) {
+                for (int c_ijk = 0; c_ijk < ntno_ijk; c_ijk++) {
+                    (*R_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) +=
+                        (Vperms[0])(a_ijk, b_ijk, c_ijk) + (Vperms[1])(b_ijk, a_ijk, c_ijk) + (Vperms[2])(c_ijk, b_ijk, a_ijk);
+                } // end c_ijk
+            } // end b_ijk
+        } // end a_ijk
+
+    } // end ijk
+}
+
+void DLPNOCCSDT::lccsdt_iterations() {
+
+    int naocc = i_j_to_ij_.size();
+    int n_lmo_pairs = ij_to_i_j_.size();
+    int n_lmo_triplets = ijk_to_i_j_k_.size();
+
+    // Thread and OMP Parallel Info
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    // => Initialize Residuals and Amplitude <= //
+
+    std::vector<SharedMatrix> R_ia(naocc);
+    std::vector<SharedMatrix> Rn_iajb(n_lmo_pairs);
+    std::vector<SharedMatrix> R_iajb(n_lmo_pairs);
+    std::vector<SharedMatrix> R_iajbkc(n_lmo_triplets);
+
+#pragma omp parallel for
+    for (int i = 0; i < naocc; ++i) {
+        int ii = i_j_to_ij_[i][i];
+        R_ia[i] = std::make_shared<Matrix>(n_pno_[ii], 1);
+    }
+
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        R_iajb[ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
+        Rn_iajb[ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
+    }
+
+#pragma omp parallel for
+    for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+        int ijk = sorted_triplets_[ijk_sorted];
+        R_iajbkc[ijk] = std::make_shared<Matrix>(n_tno_[ijk], n_tno_[ijk] * n_tno_[ijk]);
+    }
+
+    std::vector<std::vector<SharedMatrix>> R_ia_buffer(nthreads);
+    std::vector<std::vector<SharedMatrix>> R_iajb_buffer(nthreads);
+
+#pragma omp parallel for
+    for (int thread = 0; thread < nthreads; ++thread) {
+        R_ia_buffer[thread].resize(naocc);
+        R_iajb_buffer[thread].resize(n_lmo_pairs);
+
+        for (int i = 0; i < naocc; ++i) {
+            int ii = i_j_to_ij_[i][i];
+            R_ia_buffer[thread][i] = std::make_shared<Matrix>(n_pno_[ii], 1);
+        }
+
+        for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+            R_iajb_buffer[thread][ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
+        }
+    }
+
+    // Amplitude intermediates
+    T_n_ijk_.resize(n_lmo_triplets);
+    T_iajbkc_clone_.resize(n_lmo_triplets);
+    U_iajbkc_.resize(n_lmo_triplets);
+
+    // LCCSDT iterations
+
+    outfile->Printf("\n  ==> Local CCSDT <==\n\n");
+
+    outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
+    outfile->Printf("    R_CONVERGENCE = %.2e\n\n", options_.get_double("R_CONVERGENCE"));
+    outfile->Printf("                       Corr. Energy    Delta E     RMS R1     RMS R2     RMS R3     Time (s)\n");
+
+    int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
+    double e_curr = 0.0, e_prev = 0.0, e_weak = 0.0, r_curr1 = 1.0, r_curr2 = 1.0, r_curr3 = 1.0;
+    bool e_converged = false, r_converged = false;
+    const int N_MICRO_ITER = options_.get_int("DLPNO_TRIPLES_MICROITERATIONS");
+
+    DIISManager diis = DIISManager(options_.get_int("DIIS_MAX_VECS"), "LCCSDT DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+
+    while (!(e_converged && r_converged)) {
+        // RMS of residual per LMO orbital, for assessing convergence
+        std::vector<double> R_ia_rms(naocc, 0.0);
+        // RMS of residual per LMO pair, for assessing convergence
+        std::vector<double> R_iajb_rms(n_lmo_pairs, 0.0);
+        // RMS of residual per LMO triplet, for assessing convergence
+        std::vector<double> R_iajbkc_rms(n_lmo_triplets, 0.0);
+
+        std::time_t time_start = std::time(nullptr);
+
+        for (int miter = 0; miter < N_MICRO_ITER; ++miter) {
+
+            // Create T_n_ij and T_n_ijk intermediates
+    #pragma omp parallel for schedule(dynamic, 1)
+            for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+                auto &[i, j] = ij_to_i_j_[ij];
+
+                int nlmo_ij = lmopair_to_lmos_[ij].size();
+                int npno_ij = n_pno_[ij];
+                int ij_idx = (i <= j) ? ij : ij_to_ji_[ij];
+
+                T_n_ij_[ij] = std::make_shared<Matrix>(nlmo_ij, npno_ij);
+
+                for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
+                    int n = lmopair_to_lmos_[ij][n_ij];
+                    int nn = i_j_to_ij_[n][n];
+                    auto T_n_temp = linalg::doublet(S_pno_ij_nn_[ij_idx][n], T_ia_[n], false, false);
+
+                    for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
+                        (*T_n_ij_[ij])(n_ij, a_ij) = (*T_n_temp)(a_ij, 0);
+                    } // end a_ij
+                } // end n_ij
+            }
+
+    #pragma omp parallel for schedule(dynamic, 1)
+            for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+                int ijk = sorted_triplets_[ijk_sorted];
+                auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+                int nlmo_ijk = lmotriplet_to_lmos_[ijk].size();
+
+                T_n_ijk_[ijk] = Tensor<double, 2>("T_n_ijk", nlmo_ijk, n_tno_[ijk]);
+
+                for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
+                    int l = lmotriplet_to_lmos_[ijk][l_ijk];
+                    int ll = i_j_to_ij_[l][l];
+
+                    auto S_ijk_ll = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmopair_to_paos_[ll]);
+                    S_ijk_ll = linalg::triplet(X_tno_[ijk], S_ijk_ll, X_pno_[ll], true, false, false);
+
+                    auto T_l_temp = linalg::doublet(S_ijk_ll, T_ia_[l]);
+
+                    for (int a_ijk = 0; a_ijk < n_tno_[ijk]; ++a_ijk) {
+                        (T_n_ijk_[ijk])(l_ijk, a_ijk) = (*T_l_temp)(a_ijk, 0);
+                    }
+                } // end l_ijk
+            } // end ijk
+
+            // Create T_iajbkc_clone intermediate
+    #pragma omp parallel for schedule(dynamic, 1)
+            for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+                int ijk = sorted_triplets_[ijk_sorted];
+                auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+
+                T_iajbkc_clone_[ijk] = Tensor<double, 3>("T_ijk", n_tno_[ijk], n_tno_[ijk], n_tno_[ijk]);
+                ::memcpy(T_iajbkc_clone_[ijk].data(), T_iajbkc_[ijk]->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+
+                U_iajbkc_[ijk] = triples_spin_summation(T_iajbkc_clone_[ijk]);
+            } // end ijk
+
+            // T1-dress integrals and Fock matrices
+            t1_ints();
+            t1_fock();
+
+            // spin adapt and then de-adapt triples amplitudes
+        #pragma omp parallel for schedule(dynamic, 1)
+            for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+                int ijk = sorted_triplets_[ijk_sorted];
+                auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+
+                T_iajbkc_clone_[ijk] = triples_spin_desummation(triples_spin_summation(T_iajbkc_clone_[ijk]));
+                U_iajbkc_[ijk] = triples_spin_summation(T_iajbkc_clone_[ijk]);
+                ::memcpy(T_iajbkc_[ijk]->get_pointer(), T_iajbkc_clone_[ijk].data(), n_tno_[ijk] * n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+            }
+
+            // compute triples residual
+            timer_on("DLPNO-CCSDT : R_iajbkc");
+            if (miter == 0) {
+                compute_R_iajbkc(R_iajbkc);
+
+                // spin adapt and then de-adapt triples residual
+        #pragma omp parallel for schedule(dynamic, 1)
+                for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+                    int ijk = sorted_triplets_[ijk_sorted];
+                    auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+
+                    Tensor<double, 3> R3_spinad("R3_spinad", n_tno_[ijk], n_tno_[ijk], n_tno_[ijk]);
+                    ::memcpy(R3_spinad.data(), R_iajbkc[ijk]->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+                    R3_spinad = triples_spin_desummation(triples_spin_summation(R3_spinad));
+                    ::memcpy(R_iajbkc[ijk]->get_pointer(), R3_spinad.data(), n_tno_[ijk] * n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+                }
+
+                // Update triples amplitude
+                r_curr3 = 0.0;
+        #pragma omp parallel for schedule(dynamic, 1) reduction(+ : r_curr3)
+                for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
+                    int ijk = sorted_triplets_[ijk_sorted];
+                    auto &[i, j, k] = ijk_to_i_j_k_[ijk];
+                    double alpha = (fabs(R_iajbkc[ijk]->rms()) > fabs(R_iajbkc_rms[ijk])) ? damping_ratio_ : 0.0;
+
+                    for (int a_ijk = 0; a_ijk < n_tno_[ijk]; ++a_ijk) {
+                        for (int b_ijk = 0; b_ijk < n_tno_[ijk]; ++b_ijk) {
+                            for (int c_ijk = 0; c_ijk < n_tno_[ijk]; ++c_ijk) {
+                                (*T_iajbkc_[ijk])(a_ijk, b_ijk * n_tno_[ijk] + c_ijk) -= (1.0 - alpha) * (*R_iajbkc[ijk])(a_ijk, b_ijk * n_tno_[ijk] + c_ijk) /
+                                                    (e_tno_[ijk]->get(a_ijk) + e_tno_[ijk]->get(b_ijk) + e_tno_[ijk]->get(c_ijk) - F_lmo_->get(i,i) - F_lmo_->get(j,j) - F_lmo_->get(k,k));
+                            }
+                        }
+                    }
+                    // Copy information
+                    ::memcpy(T_iajbkc_clone_[ijk].data(), T_iajbkc_[ijk]->get_pointer(), n_tno_[ijk] * n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
+                    U_iajbkc_[ijk] = triples_spin_summation(T_iajbkc_clone_[ijk]);
+
+                    R_iajbkc_rms[ijk] = R_iajbkc[ijk]->rms();
+                    r_curr3 += R_iajbkc_rms[ijk] * R_iajbkc_rms[ijk];
+                }
+                r_curr3 = std::sqrt(r_curr3 / n_lmo_triplets);
+            } // end if
+            timer_off("DLPNO-CCSDT : R_iajbkc");
+
+            // compute doubles residual
+            timer_on("DLPNO-CCSDT : R_iajb");
+            compute_R_iajb_triples(R_iajb, Rn_iajb, R_iajb_buffer);
+
+            // Update doubles amplitude
+            r_curr2 = 0.0;
+    #pragma omp parallel for schedule(dynamic, 1) reduction(+ : r_curr2)
+            for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+                auto &[i, j] = ij_to_i_j_[ij];
+                double alpha = (fabs(R_iajb[ij]->rms()) > fabs(R_iajb_rms[ij])) ? damping_ratio_ : 0.0;
+
+                for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
+                    for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
+                        (*T_iajb_[ij])(a_ij, b_ij) -= (1.0 - alpha) * (*R_iajb[ij])(a_ij, b_ij) / 
+                                        (e_pno_[ij]->get(a_ij) + e_pno_[ij]->get(b_ij) - F_lmo_->get(i,i) - F_lmo_->get(j,j));
+                    }
+                }
+                Tt_iajb_[ij] = T_iajb_[ij]->clone();
+                Tt_iajb_[ij]->scale(2.0);
+                Tt_iajb_[ij]->subtract(T_iajb_[ij]->transpose());
+
+                R_iajb_rms[ij] = R_iajb[ij]->rms();
+                r_curr2 += R_iajb_rms[ij] * R_iajb_rms[ij];
+            }
+            r_curr2 = std::sqrt(r_curr2 / n_lmo_pairs);
+            timer_off("DLPNO-CCSDT : R_iajb");
+
+            // compute singles residual
+            timer_on("DLPNO-CCSDT : R_ia");
+            compute_R_ia_triples(R_ia, R_ia_buffer);
+
+            // Update singles amplitude
+            r_curr1 = 0.0;
+    #pragma omp parallel for reduction(+ : r_curr1)
+            for (int i = 0; i < naocc; ++i) {
+                int ii = i_j_to_ij_[i][i];
+                double alpha = (fabs(R_ia[i]->rms()) > fabs(R_ia_rms[i])) ? damping_ratio_ : 0.0;
+
+                for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+                    (*T_ia_[i])(a_ii, 0) -= (1.0 - alpha) * (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+                }
+                R_ia_rms[i] = R_ia[i]->rms();
+                r_curr1 += R_ia_rms[i] * R_ia_rms[i];
+            }
+            r_curr1 = std::sqrt(r_curr1 / naocc); 
+            timer_off("DLPNO-CCSDT : R_ia");
+        } // end miter
+
+        // DIIS Extrapolation
+        std::vector<SharedMatrix> T_vecs;
+        T_vecs.reserve(T_ia_.size() + T_iajb_.size() + T_iajbkc_.size());
+        T_vecs.insert(T_vecs.end(), T_ia_.begin(), T_ia_.end());
+        T_vecs.insert(T_vecs.end(), T_iajb_.begin(), T_iajb_.end());
+        T_vecs.insert(T_vecs.end(), T_iajbkc_.begin(), T_iajbkc_.end());
+
+        std::vector<SharedMatrix> R_vecs;
+        R_vecs.reserve(R_ia.size() + R_iajb.size() + R_iajbkc.size());
+        R_vecs.insert(R_vecs.end(), R_ia.begin(), R_ia.end());
+        R_vecs.insert(R_vecs.end(), R_iajb.begin(), R_iajb.end());
+        R_vecs.insert(R_vecs.end(), R_iajbkc.begin(), R_iajbkc.end());
+
+        auto T_vecs_flat = flatten_mats(T_vecs);
+        auto R_vecs_flat = flatten_mats(R_vecs);
+
+        if (iteration == 1) {
+            diis.set_error_vector_size(R_vecs_flat);
+            diis.set_vector_size(T_vecs_flat);
+        }
+
+        diis.add_entry(R_vecs_flat.get(), T_vecs_flat.get());
+        diis.extrapolate(T_vecs_flat.get());
+
+        copy_flat_mats(T_vecs_flat, T_vecs);
+
+        // evaluate energy and convergence
+        e_prev = e_curr;
+        e_curr = 0.0;
+        e_weak = 0.0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_curr, e_weak)
+        for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+            auto &[i, j] = ij_to_i_j_[ij];
+            int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j];
+            int ij_idx = (i < j) ? ij : ij_to_ji_[ij];
+
+            // Update anti-symmetrized amplitudes
+            Tt_iajb_[ij] = T_iajb_[ij]->clone();
+            Tt_iajb_[ij]->scale(2.0);
+            Tt_iajb_[ij]->subtract(T_iajb_[ij]->transpose());
+
+            auto tau = T_iajb_[ij]->clone();
+            auto S_ij_ii = S_pno_ij_nn_[ij_idx][i];
+            auto S_ij_jj = S_pno_ij_nn_[ij_idx][j];
+            auto tia_temp = linalg::doublet(S_ij_ii, T_ia_[i]);
+            auto tjb_temp = linalg::doublet(S_ij_jj, T_ia_[j]);
+
+            for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
+                for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
+                    (*tau)(a_ij, b_ij) += (*tia_temp)(a_ij, 0) * (*tjb_temp)(b_ij, 0);
+                } // end b_ij
+            } // end a_ij
+
+            double e_ij = tau->vector_dot(L_iajb_[ij]);
+
+            e_curr += e_ij;
+            if (i_j_to_ij_strong_[i][j] == -1) e_weak += e_ij;
+        }
+
+        r_converged = fabs(r_curr1) < options_.get_double("R_CONVERGENCE");
+        r_converged &= fabs(r_curr2) < options_.get_double("R_CONVERGENCE");
+        r_converged &= fabs(r_curr3) < options_.get_double("R_CONVERGENCE");
+        e_converged = fabs(e_curr - e_prev) < options_.get_double("E_CONVERGENCE");
+
+        e_lccsdt_ = e_curr - e_weak;
+        de_weak_ = e_weak;
+
+        std::time_t time_stop = std::time(nullptr);
+
+        outfile->Printf("  @LCCSDT iter %3d: %16.12f %10.3e %10.3e %10.3e %10.3e %8d\n", iteration, e_curr, e_curr - e_prev, r_curr1, r_curr2, r_curr3, (int)time_stop - (int)time_start);
+
+        ++iteration;
+
+        if (iteration > max_iteration) {
+            throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
+        }
+    }
+}
+
+double DLPNOCCSDT::compute_energy() {
+
+    // Run DLPNO-CCSD(T) as initial step
+    double E_DLPNO_CCSD_T = DLPNOCCSD_T::compute_energy();
+
+    timer_on("DLPNO-CCSDT");
+
+    einsums::profile::initialize();
+
+    print_header();
+
+    if (write_qia_pno_) {
+        psio_->open(PSIF_DLPNO_QIA_PNO, PSIO_OPEN_OLD);
+    }
+
+    if (write_qab_pno_) {
+        psio_->open(PSIF_DLPNO_QAB_PNO, PSIO_OPEN_OLD);
+    }
+
+    damping_ratio_ = options_.get_double("TRIPLES_DAMPING_RATIO");
+
+    if (disk_ints_) {
+        psio_->open(PSIF_DLPNO_QIA_TNO, PSIO_OPEN_NEW);
+        psio_->open(PSIF_DLPNO_QAB_TNO, PSIO_OPEN_NEW);
+    }
+
+    // Compute TNOs (they can be looser than for CCSD(T))
+    // timer_on("DLPNO-CCSDT : Recomputing TNOs");
+
+    int n_lmo_triplets = ijk_to_i_j_k_.size();
+    /*
+    tno_scale_.clear();
+    tno_scale_.resize(n_lmo_triplets, 1.0);
+    double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
+    tno_transform(t_cut_tno_full);
+    double E_T0_new = compute_lccsd_t0(true);
+    double E_T_new = lccsd_t_iterations();
+    */
+
+    // Sort list of triplets based on number of TNOs (for parallel efficiency)
+    std::vector<std::pair<int, int>> ijk_tnos(n_lmo_triplets);
+
+#pragma omp parallel for
+    for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
+        ijk_tnos[ijk] = std::make_pair(ijk, n_tno_[ijk]);
+    }
+
+    std::sort(ijk_tnos.begin(), ijk_tnos.end(), [&](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+        return (a.second > b.second);
+    });
+
+    sorted_triplets_.resize(n_lmo_triplets);
+#pragma omp parallel for
+    for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
+        sorted_triplets_[ijk] = ijk_tnos[ijk].first;
+    }
+
+    // timer_off("DLPNO-CCSDT : Recomputing TNOs");
+
+    nthread_ = 1;
+#ifdef _OPENMP
+    nthread_ = Process::environment.get_n_threads();
+#endif
+
+    timer_on("DLPNO-CCSDT : Estimate Memory");
+    estimate_memory();
+    timer_off("DLPNO-CCSDT : Estimate Memory");
+
+    timer_on("DLPNO-CCSDT : Compute Integrals");
+    compute_integrals();
+    timer_off("DLPNO-CCSDT : Compute Integrals");
+
+    // Compute DLPNO-CCSDT energy
+    timer_on("DLPNO-CCSDT : LCCSDT iterations");
+    lccsdt_iterations();
+    timer_off("DLPNO-CCSDT : LCCSDT iterations");
+
+    if (write_qia_pno_) {
+        // Integrals deleted if CCSDT is the last iterative CC method used in sequence
+        if (algorithm_ != DLPNOMethod::CCSDTQ) {
+            psio_->close(PSIF_DLPNO_QIA_PNO, 0);
+        } else {
+            psio_->close(PSIF_DLPNO_QIA_PNO, 1);
+        }
+    }
+
+    if (write_qab_pno_) {
+        // Integrals deleted if CCSDT is the last iterative CC method used in sequence
+        if (algorithm_ != DLPNOMethod::CCSDTQ) {
+            psio_->close(PSIF_DLPNO_QAB_PNO, 0);
+        } else {
+            psio_->close(PSIF_DLPNO_QAB_PNO, 1);
+        }
+    }
+
+    if (disk_ints_) {
+        // Integrals deleted if CCSDT is the last iterative CC method used in sequence
+        if (algorithm_ != DLPNOMethod::CCSDTQ) {
+            psio_->close(PSIF_DLPNO_QIA_TNO, 0);
+            psio_->close(PSIF_DLPNO_QAB_TNO, 0);
+        } else {
+            psio_->close(PSIF_DLPNO_QIA_TNO, 1);
+            psio_->close(PSIF_DLPNO_QAB_TNO, 1);
+        }
+    }
+
+    einsums::profile::finalize();
+
+    timer_off("DLPNO-CCSDT");
+
+    dE_T_rank_ = de_lccsd_t_screened_;
+    outfile->Printf("\n  * (T) TNO rank correction: %16.12f\n\n", dE_T_rank_);
+
+    double e_scf = variables_["SCF TOTAL ENERGY"];
+    double e_ccsdt_corr = e_lccsdt_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+    double e_ccsdt_total = e_scf + e_ccsdt_corr;
+
+    set_scalar_variable("CCSDT CORRELATION ENERGY", e_ccsdt_corr);
+    set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsdt_corr);
+    set_scalar_variable("CCSDT TOTAL ENERGY", e_ccsdt_total);
+    set_scalar_variable("CURRENT ENERGY", e_ccsdt_total);
+
+    print_results();
+
+    return e_ccsdt_total;
+}
+
+void DLPNOCCSDT::print_results() {
+
+    int naocc = i_j_to_ij_.size();
+    double t1diag = 0.0;
+#pragma omp parallel for reduction(+ : t1diag)
+    for (int i = 0; i < naocc; ++i) {
+        t1diag += T_ia_[i]->vector_dot(T_ia_[i]);
+    }
+    t1diag = std::sqrt(t1diag / (2.0 * naocc));
+    outfile->Printf("\n  T1 Diagnostic: %8.8f \n", t1diag);
+    if (t1diag > 0.02) {
+        outfile->Printf("    WARNING: T1 Diagnostic is greater than 0.02, CCSD results may be unreliable!\n");
+    }
+    set_scalar_variable("CC T1 DIAGNOSTIC", t1diag);
+
+    double e_total = e_lccsdt_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+
+    outfile->Printf("  \n");
+    outfile->Printf("  Total DLPNO-CCSDT Correlation Energy: %16.12f \n", e_total);
+    outfile->Printf("    LCCSDT Correlation Energy:          %16.12f \n", e_lccsdt_);
+    outfile->Printf("    Weak Pair Contribution:             %16.12f \n", de_weak_);
+    outfile->Printf("    Eliminated Pair MP2 Correction:     %16.12f \n", de_lmp2_eliminated_);
+    outfile->Printf("    Dipole Pair Correction:             %16.12f \n", de_dipole_);
+    outfile->Printf("    PNO Truncation Correction:          %16.12f \n", de_pno_total_);
+    outfile->Printf("    Triples Rank Correction:            %16.12f \n", dE_T_rank_);
+    outfile->Printf("\n\n  @Total DLPNO-CCSDT Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_total);
+}
+
 }  // namespace dlpno
 }  // namespace psi
