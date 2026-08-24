@@ -64,16 +64,6 @@ namespace psi {
 // doi:10.1016/0009-2614(94)01128-1, and White et al., Chem. Phys. Lett. 253,
 // 268 (1996), doi:10.1016/0009-2614(96)00175-3.
 
-static double axis_sign(double coordinate) {
-    if (std::abs(coordinate) < 1.0e-8) {
-        return 0.0;
-    } else if (coordinate < 0) {
-        return -1.0;
-    } else {
-        return 1.0;
-    }
-}
-
 ShellPair::ShellPair(std::shared_ptr<BasisSet>& bs1, std::shared_ptr<BasisSet>& bs2, std::pair<int, int> pair_index,
                      std::shared_ptr<HarmonicCoefficients>& mpole_coefs, double cfmm_extent_tol) {
     bs1_ = bs1;
@@ -280,6 +270,10 @@ void CFMMBox::set_regions() {
 
     // Parent is not a nullpointer
     if (parent) {
+        constexpr auto axis_sign = [](double coordinate) constexpr noexcept {
+            return static_cast<double>((coordinate >= 1.0e-8) - (coordinate <= -1.0e-8));
+        };
+
         // Near field or local far fields are from children of parents
         // and children of parent's near field
         for (std::shared_ptr<CFMMBox> parent_nf : parent->near_field_) {
