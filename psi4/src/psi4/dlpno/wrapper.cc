@@ -44,12 +44,19 @@ SharedWavefunction dlpno(SharedWavefunction ref_wfn, Options& options) {
             dlpno = std::make_shared<DLPNOCCSD>(ref_wfn, options);
         } else if (options.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
             dlpno = std::make_shared<DLPNOCCSD_T>(ref_wfn, options);
+#ifdef USING_Einsums
         } else if (options.get_str("DLPNO_ALGORITHM") == "CCSDT") {
             dlpno = std::make_shared<DLPNOCCSDT>(ref_wfn, options);
         } else if (options.get_str("DLPNO_ALGORITHM") == "CCSDT(Q)") {
             dlpno = std::make_shared<DLPNOCCSDT_Q>(ref_wfn, options);
         } else if (options.get_str("DLPNO_ALGORITHM") == "CCSDTQ") {
             dlpno = std::make_shared<DLPNOCCSDTQ>(ref_wfn, options);
+#else
+        } else if (options.get_str("DLPNO_ALGORITHM") == "CCSDT" ||
+                   options.get_str("DLPNO_ALGORITHM") == "CCSDT(Q)" ||
+                   options.get_str("DLPNO_ALGORITHM") == "CCSDTQ") {
+            throw PSIEXCEPTION("DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ require Psi4 built with Einsums support (ENABLE_Einsums=ON).");
+#endif
         } else {
             throw PSIEXCEPTION("Requested DLPNO method is not yet available!");
         }
