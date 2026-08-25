@@ -28,29 +28,22 @@ def _status_icon(counts):
     return "⚪"
 
 
-def _cell_text(counts, *, diagonal=False):
-    total = sum(counts.values())
-    if not total:
-        return "**〔—〕**" if diagonal else ""
-    # A pass proves the addon is present and operational even if other tests in
-    # the cell skip because a second addon is absent. Failures remain highest
-    # priority; yellow is reserved for cells where every test skipped.
-    icon = _status_icon(counts)
-    details = " ".join(
+def _summary_status_icon(counts):
+    """Status for the summary table, including complete pass coverage."""
+    if counts["failed"]:
+        return "🔴"
+    if counts["registered"] and counts["passed"] == counts["registered"]:
+        return "🔵"
+    return _status_icon(counts)
+
+
+def _count_text(counts):
+    details = "+".join(
         f"{counts[status]}{status[0].upper()}"
         for status in ("passed", "failed", "skipped")
         if counts[status]
     )
-    text = f"{icon} {details}"
-    return f"**〔{text}〕**" if diagonal else text
-
-
-def _column_codes(addons):
-    """Return stable one-character labels for a compact matrix."""
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    if len(addons) > len(alphabet):
-        raise ValueError(f"Addon matrix supports at most {len(alphabet)} addons")
-    return dict(zip(addons, alphabet))
+    return f"{_summary_status_icon(counts)} {details or '0'}"
 
 
 def summarize(tests, known_addons=()):
@@ -80,30 +73,18 @@ def render_markdown(tests, known_addons=()):
     lines = [
         "# Psi4 addon test report",
         "",
-        "🟢 at least one passed · 🟡 all skipped · 🔴 at least one failed · ⚪ no executed tests · **〔bold brackets〕** diagonal",
+        "🔵 all registered passed · 🟢 at least one passed · 🟡 all skipped · 🔴 at least one failed · ⚪ no executed tests",
         "",
-        "| Addon | Status | Registered | Passed | Failed | Skipped |",
-        "|---|:---:|---:|---:|---:|---:|",
+        "| Addon | Count | Also tested with |",
+        "|---|:---|---|",
     ]
     for addon in ["core", *addons]:
         row = totals[addon]
-        lines.append(
-            f"| {addon} | {_status_icon(row)} | {row['registered']} | {row['passed']} | {row['failed']} | {row['skipped']} |"
-        )
+        partners = ""
+        if addon != "core":
+            partners = ", ".join(other for other in addons if other != addon and matrix[addon][other]["registered"])
+        lines.append(f"| {addon} | {_count_text(row)} | {partners} |")
 
-    lines.extend(["", "## Addon overlap matrix", ""])
-    if addons:
-        codes = _column_codes(addons)
-        lines.append("| | " + " | ".join(codes[addon] for addon in addons) + " |")
-        lines.append("|---|" + "---:|" * len(addons))
-        for row_index, a in enumerate(addons):
-            cells = [
-                _cell_text(matrix[a][b], diagonal=col_index == row_index) if col_index <= row_index else ""
-                for col_index, b in enumerate(addons)
-            ]
-            lines.append(f"| **{codes[a]} · {a}** | " + " | ".join(cells) + " |")
-    else:
-        lines.append("No addon tests were selected.")
     lines.append("")
     return "\n".join(lines)
 
@@ -149,8 +130,8 @@ class AddonReporter:
             pass
         previous.update(self.tests)
         known_addons = sorted(known_addons)
-        addons, totals, matrix = summarize(previous, known_addons)
-        payload = {"known_addons": known_addons, "addons": totals, "matrix": matrix, "tests": previous}
+        _, totals, _ = summarize(previous, known_addons)
+        payload = {"known_addons": known_addons, "addons": totals, "tests": previous}
         self.output.parent.mkdir(parents=True, exist_ok=True)
         temporary = self.output.with_suffix(self.output.suffix + ".tmp")
         temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
