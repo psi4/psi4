@@ -125,8 +125,11 @@ class PSI_API OrbitalSpace {
     /** Given a combined basis set, it constructs an orthogonalized
      * space with the same span. Linearly dependent orbitals are thrown out.
      * \param lindep_tol The tolerance for linear dependencies
+     * \param cholesky_tol The tolerance for the partial Cholesky decomposition used when
+     *        the overlap is too ill conditioned for canonical orthogonalization
      */
-    static OrbitalSpace build_ri_space(const std::shared_ptr<BasisSet>& combined, double lindep_tol = 1.e-6);
+    static OrbitalSpace build_ri_space(const std::shared_ptr<BasisSet>& combined, double lindep_tol = 1.e-6,
+                                       double cholesky_tol = 1.e-8);
 
     /** Given a basis set, it orthogonalizes the orbitals and returns a space with the same
      * span but orthogonal orbitals. Also, linear dependent orbitals are projected out.

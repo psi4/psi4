@@ -165,60 +165,25 @@ void OrbitalSpace::print() const {
 
 namespace {  // anonymous
 OrbitalSpace orthogonalize(const std::string &id, const std::string &name, const std::shared_ptr<BasisSet> &bs,
-                           double lindep_tol) {
+                           double lindep_tol, double cholesky_tol) {
     outfile->Printf("    Orthogonalizing basis for space %s.\n", name.c_str());
 
     SharedMatrix overlap = OrbitalSpace::overlap(bs, bs);
-    Dimension SODIM = overlap->rowspi();
-    auto evecs = std::make_shared<Matrix>("evecs", SODIM, SODIM);
-    auto evals = std::make_shared<Vector>("evals", SODIM);
 
-    overlap->diagonalize(evecs, evals);
+    // Symmetric orthogonalization while the basis is well conditioned, canonical once
+    // vectors have to be dropped, partial Cholesky when the overlap is too ill conditioned
+    // for that. The dependent directions are really removed from X rather than zeroed, so
+    // the space that comes back has the reduced dimension instead of trailing null vectors.
+    BasisSetOrthogonalization orthog(BasisSetOrthogonalization::Automatic, overlap, lindep_tol, cholesky_tol, 1);
+    auto X = orthog.basis_to_orthog_basis();
 
-    Dimension nlindep(SODIM.n());
-    for (int h = 0; h < SODIM.n(); h++) {
-        for (int i = 0; i < SODIM[h]; i++) {
-            if (std::fabs(evals->get(h, i)) <= lindep_tol) nlindep[h]++;
-        }
-    }
+    // Counted from X itself: nlindep() reports the number of functions kept rather than the
+    // number removed, and dim()/orthog_dim() return an int through Dimension(size_t), which
+    // silently yields a Dimension of that many zeros.
+    outfile->Printf("    %d linear dependencies will be \'removed\'.\n",
+                    overlap->rowspi().sum() - X->colspi().sum());
 
-    outfile->Printf("    %d linear dependencies will be \'removed\'.\n", nlindep.sum());
-
-    auto localfactory = std::make_shared<IntegralFactory>(bs);
-
-    if (nlindep.sum() == 0) {
-        // Symmetric orthogonalization, S^{-1/2} = U s^{-1/2} U^T.
-        auto sqrtm = std::make_shared<Matrix>("S^-1/2", SODIM, SODIM);
-        for (int h = 0; h < SODIM.n(); h++) {
-            for (int i = 0; i < SODIM[h]; i++) {
-                sqrtm->set(h, i, i, 1.0 / sqrt(evals->get(h, i)));
-            }
-        }
-        sqrtm->back_transform(evecs);
-        return OrbitalSpace(id, name, sqrtm, bs, localfactory);
-    }
-
-    // Symmetric orthogonalization cannot drop the dependent directions: zeroing their
-    // contribution leaves a rank-deficient square matrix, so the space keeps claiming
-    // the full basis dimension and passes null vectors on to whatever is built from it.
-    // Fall back to canonical orthogonalization, X = U_kept s_kept^{-1/2}, which really
-    // has the reduced column dimension.
-    Dimension NDIM = SODIM - nlindep;
-    auto X = std::make_shared<Matrix>("X (canonical orthogonalization)", SODIM, NDIM);
-    for (int h = 0; h < SODIM.n(); h++) {
-        int col = 0;
-        for (int i = 0; i < SODIM[h]; i++) {
-            double eval = evals->get(h, i);
-            if (std::fabs(eval) <= lindep_tol) continue;
-            double scale = 1.0 / sqrt(eval);
-            for (int j = 0; j < SODIM[h]; j++) {
-                X->set(h, j, col, evecs->get(h, j, i) * scale);
-            }
-            col++;
-        }
-    }
-
-    return OrbitalSpace(id, name, X, bs, localfactory);
+    return OrbitalSpace(id, name, X, bs, std::make_shared<IntegralFactory>(bs));
 }
 
 OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpace &space2, const std::string &id,
@@ -281,9 +246,10 @@ OrbitalSpace OrbitalSpace::build_cabs_space(const OrbitalSpace &orb_space, const
     return orthogonal_complement(orb_space, ri_space, "p''", "CABS", lindep_tol);
 }
 
-OrbitalSpace OrbitalSpace::build_ri_space(const std::shared_ptr<BasisSet> &combined, double lindep_tol) {
+OrbitalSpace OrbitalSpace::build_ri_space(const std::shared_ptr<BasisSet> &combined, double lindep_tol,
+                                          double cholesky_tol) {
     // orthogonalize the basis set projecting out linear dependencies.
-    return orthogonalize("p'", "RIBS", combined, lindep_tol);
+    return orthogonalize("p'", "RIBS", combined, lindep_tol, cholesky_tol);
 }
 
 }  // namespace psi

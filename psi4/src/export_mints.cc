@@ -1642,8 +1642,10 @@ void export_mints(py::module& m) {
                     "Given combined basis sets, it constructs an orthogonalized \
                     space with the same span. Linearly dependent orbitals are thrown out. \
                     The first argument, combined, is the two basis sets together but unorthogonalized \
-                    The second argument, lindep_tol, is the tolerance for linear dependencies",
-                    "combined"_a, "lindep_tol"_a = 1.e-6);
+                    The second argument, lindep_tol, is the tolerance for linear dependencies \
+                    The third argument, cholesky_tol, is the tolerance for the partial Cholesky decomposition \
+                    used when the overlap is too ill conditioned for canonical orthogonalization",
+                    "combined"_a, "lindep_tol"_a = 1.e-6, "cholesky_tol"_a = 1.e-8);
 
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")
