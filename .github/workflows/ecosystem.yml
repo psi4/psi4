@@ -436,11 +436,11 @@ jobs:
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest --addon-report=addon-report.json --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --addon-report=addon-report.json --addon-report-label="${{ runner.os }} / ${{ matrix.cfg.label }} / Python ${{ matrix.cfg.python-version }}" --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest --addon-report=addon-report.json --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" -k "${{ matrix.cfg.pytest-name-expr }}" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --addon-report=addon-report.json --addon-report-label="${{ runner.os }} / ${{ matrix.cfg.label }} / Python ${{ matrix.cfg.python-version }}" --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" -k "${{ matrix.cfg.pytest-name-expr }}" stage/lib/psi4/tests/
 
     - name: Publish addon test report
       if: always()
@@ -457,11 +457,11 @@ jobs:
           echo "::warning::addon-report.md was not produced"
           echo "## Psi4 addon test report" >> "$GITHUB_STEP_SUMMARY"
           echo "The addon report was not produced; pytest may have exited before session cleanup." >> "$GITHUB_STEP_SUMMARY"
+          ADDON_REPORT_LABEL="${{ runner.os }} / ${{ matrix.cfg.label }} / Python ${{ matrix.cfg.python-version }}" python -c 'import json, os; json.dump({"label": os.environ["ADDON_REPORT_LABEL"], "error": "report unavailable"}, open("addon-report.json", "w", encoding="utf-8"))'
         fi
 
     - name: Upload addon test report
-      # if: always()
-      if: false
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: addon-report-${{ runner.os }}-py${{ matrix.cfg.python-version }}-${{ strategy.job-index }}
@@ -502,6 +502,33 @@ jobs:
         export PYTHONPATH=stage/lib
         pytest --cache-clear -v -rws --color yes -n auto -m qcmanybody stage/lib/psi4/tests/
         pytest --cache-clear -v -rws --color yes -n auto -k missing stage/lib/psi4/tests/
+
+  addon-summary:
+    name: "Eco • Combined addon report"
+    if: always()
+    needs: ecosystem
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Psi4
+      uses: actions/checkout@v6
+
+    - name: Download addon reports
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        pattern: addon-report-*
+        path: addon-reports
+
+    - name: Combine addon reports
+      run: python tests/pytests/addon_report.py --combine addon-reports --output addon-report-combined.md
+
+    - name: Publish combined addon report
+      run: |
+        echo "::group::Combined addon test report (Markdown source)"
+        cat addon-report-combined.md
+        echo "::endgroup::"
+        cat addon-report-combined.md >> "$GITHUB_STEP_SUMMARY"
 
 # Notes
 # -----
