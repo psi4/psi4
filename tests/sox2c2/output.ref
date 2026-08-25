@@ -1,0 +1,472 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.12a1.dev110 
+
+                         Git: Rev {sox2c1e} dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 25 August 2026 03:36PM
+
+    Process ID: 356676
+    Host:       dn5.dngroup.chem
+    PSIDATADIR: psi4/objdir_psidev/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, bse, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, d̶f̶t̶d̶3̶,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, e̶c̶p̶i̶n̶t̶, einsums, f̶o̶r̶t̶e̶, gauxc, g̶c̶p̶, g̶d̶m̶a̶,
+                g̶e̶o̶m̶e̶t̶r̶i̶c̶, g̶p̶u̶_̶d̶f̶c̶c̶, integratorxx, i̶p̶i̶, l̶i̶b̶e̶f̶p̶,
+                m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, ooo, o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶,
+                p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶, p̶s̶i̶x̶a̶s̶, pyeinsums, qcmanybody,
+                r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶, v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test of SOX2C-1e with Hydrogen Iodide. Reference is from ReSpect (hf-1eX2C + ucc-pvdz).
+#! Uses non-axial symmetry so that Hx, Hy, and Hz components are all non-zero.
+
+ref_e = -7114.458905465102
+
+molecule hydrogen_iodide {
+0 1
+    I 0 0 0
+    H 0.26726 0.53452 0.80178
+symmetry C1
+}
+
+basis HI_custom_basis {
+[dyall-2z]
+spherical
+****
+I     0
+S    1   1.00
+      4.76716569D+07         1.0
+S    1   1.00
+      8.85780213D+06         1.0
+S    1   1.00
+      2.13271716D+06         1.0
+S    1   1.00
+      5.91444786D+05         1.0
+S    1   1.00
+      1.83355348D+05         1.0
+S    1   1.00
+      6.21146979D+04         1.0
+S    1   1.00
+      2.26645336D+04         1.0
+S    1   1.00
+      8.80519941D+03         1.0
+S    1   1.00
+      3.60858100D+03         1.0
+S    1   1.00
+      1.54755208D+03         1.0
+S    1   1.00
+      6.89378471D+02         1.0
+S    1   1.00
+      3.15140312D+02         1.0
+S    1   1.00
+      1.38182652D+02         1.0
+S    1   1.00
+      6.81673701D+01         1.0
+S    1   1.00
+      3.35643795D+01         1.0
+S    1   1.00
+      1.43531864D+01         1.0
+S    1   1.00
+      7.23366317D+00         1.0
+S    1   1.00
+      2.78850745D+00         1.0
+S    1   1.00
+      1.31752658D+00         1.0
+S    1   1.00
+      3.24888716D-01         1.0
+S    1   1.00
+      1.26580436D-01         1.0
+P    1   1.00
+      2.53817535D+05         1.0
+P    1   1.00
+      3.74699676D+04         1.0
+P    1   1.00
+      8.54270467D+03         1.0
+P    1   1.00
+      2.54055332D+03         1.0
+P    1   1.00
+      9.00086660D+02         1.0
+P    1   1.00
+      3.58408502D+02         1.0
+P    1   1.00
+      1.54196337D+02         1.0
+P    1   1.00
+      6.98648702D+01         1.0
+P    1   1.00
+      3.22303175D+01         1.0
+P    1   1.00
+      1.50109163D+01         1.0
+P    1   1.00
+      7.18477925D+00         1.0
+P    1   1.00
+      3.01682750D+00         1.0
+P    1   1.00
+      1.29734703D+00         1.0
+P    1   1.00
+      3.51707219D-01         1.0
+P    1   1.00
+      1.13965453D-01         1.0
+D    1   1.00
+      1.80142819D+03         1.0
+D    1   1.00
+      5.10725112D+02         1.0
+D    1   1.00
+      1.91813939D+02         1.0
+D    1   1.00
+      8.20523022D+01         1.0
+D    1   1.00
+      3.78288870D+01         1.0
+D    1   1.00
+      1.80291432D+01         1.0
+D    1   1.00
+      8.77223438D+00         1.0
+D    1   1.00
+      4.14272362D+00         1.0
+D    1   1.00
+      1.89787537D+00         1.0
+D    1   1.00
+      8.25505789D-01         1.0
+D    1   1.00
+      2.98523850D-01         1.0
+****
+assign I dyall-2z
+assign H cc-pvdz-decon
+}
+
+set {
+  reference cghf
+  scf_type direct
+  df_scf_guess false
+  basis HI_custom_basis
+  basis_relativistic HI_custom_basis
+  relativistic x2c
+  spin_orbit_coupling true
+  e_convergence 8
+}
+
+try:
+    computed_e = energy('scf')
+    converged = True
+except SCFConvergenceError:
+    converged = False
+
+compare(True, converged, "SCF should converge without")          #TEST
+compare_values(ref_e, computed_e, 5e-7, "SOX2C-1e total energy") #TEST
+
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+
+Relativistic analytic gradients are not implemented yet, re-routing to finite differences.
+  CGHF does not make use of molecular symmetry: further calculations in C1 point group.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on dn5.dngroup.chem
+*** at Tue Aug 25 15:36:34 2026
+
+   => Loading Basis Set <=
+
+    Name: HI_CUSTOM_BASIS
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry I          line     5 inputblock dyall-2z 
+    atoms 2 entry H          line    22 file psi4/objdir_psidev/stage/share/psi4/basis/cc-pvdz.gbs func decontract
+
+
+         ---------------------------------------------------------
+                                COMPLEX SCF
+                            by Nathan Gillispie
+                              CGHF Reference
+                              500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         I            0.000000000000     0.000000000000    -0.007878995009   126.904471900000
+         H           -0.000000000000    -0.000000000000     0.992116358181     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =     16.85974  C =     16.85974 [cm^-1]
+  Rotational constants: A = ************  B = 505442.16162  C = 505442.16162 [MHz]
+  Nuclear repulsion =   28.046522492393525
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 54
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM not available for Complex SCF.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: HI_CUSTOM_BASIS
+    Blend: CC-PVDZ-DECON + DYALL-2Z
+    Number of shells: 52
+    Number of basis functions: 128
+    Number of Cartesian functions: 139
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: HI_CUSTOM_BASIS
+    Role: DECON
+    Keyword: BASIS_RELATIVISTIC
+    atoms 1 entry I          line     5 inputblock dyall-2z 
+    atoms 2 entry H          line    22 file psi4/objdir_psidev/stage/share/psi4/basis/cc-pvdz.gbs func decontract
+
+  ==> Integral Setup <==
+
+  ==> ComplexDirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    Memory [MiB]:              375
+    Screening Type:           CSAM
+    Screening Cutoff:        1E-12
+
+ OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.
+
+     _____ ____ _  _____   ______    ___
+    / ___// __ \ |/ /__ \ / ____/   <  /__
+    \__ \/ / / /   /__/ // /  ______/ / _ \
+   ___/ / /_/ /   |/ __// /__/_____/ /  __/
+  /____/\____/_/|_/____/\____/    /_/\___/
+           by Nathan Gillispie
+
+   ==> SOX2C-1e Options <==
+     Ref Basis: HI_CUSTOM_BASIS
+     X2C Basis: HI_CUSTOM_BASIS
+     The X2C Hamiltonian will be computed in the X2C Basis.
+
+  Frobenius norms of form_pauli
+    T : 0.0000000008902
+    V : 0.0000000002544
+    Hx: 0.0000000012979
+    Hy: 0.0000000018094
+    Hz: 0.0000000078638
+
+  NOTE: Not projecting RELATIVISTIC_BASIS X2C integrals to BASIS. Basis sets appear to be the same.
+
+  Testing X2C Hamiltonian.
+    Irrep 1: Comparing (256/128) eigenvalues of Dirac Hamiltonian.
+
+  The 1-norm of |H_X2C - H_Dirac| is 0.000000049312.
+  ==> SOX2C-1e Integrals computed successfully! <==
+
+
+  CGHF: Spin-orbit coupling selected.
+  Minimum eigenvalue in the overlap matrix is 4.7880180546E-04.
+  Reciprocal condition number of the overlap matrix is 8.7337457809E-05.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A        128     256 
+   -------------------------
+    Total     128     256
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @CGHF iter SAD: -7051.91210421680080   -7.05191e+03   0.00000e+00 
+   @CGHF iter   1: -7114.13734602570003   -6.22252e+01   1.65318e-02 DIIS/ADIIS
+   @CGHF iter   2: -7114.35603162574989   -2.18686e-01   7.44854e-03 DIIS/ADIIS
+   @CGHF iter   3: -7114.45642178907474   -1.00390e-01   1.05096e-03 DIIS/ADIIS
+   @CGHF iter   4: -7114.45884711079270   -2.42532e-03   4.06031e-05 DIIS
+   @CGHF iter   5: -7114.45890067999972   -5.35692e-05   1.15862e-05 DIIS
+   @CGHF iter   6: -7114.45890508539833   -4.40540e-06   2.23940e-06 DIIS
+   @CGHF iter   7: -7114.45890525795494   -1.72557e-07   4.59104e-07 DIIS
+   @CGHF iter   8: -7114.45890526588028   -7.92534e-09   1.01934e-07 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @S^2:                    0.033346650
+   @2S+1:                   1.064606312
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Occupied:
+
+       1A   -1224.958059     2A   -1224.958059     3A   -192.892703  
+       4A   -192.892703     5A   -180.857409     6A   -180.857409  
+       7A   -169.312821     8A   -169.312821     9A   -169.312683  
+      10A   -169.312683    11A    -40.492760    12A    -40.492760  
+      13A    -35.394984    14A    -35.394984    15A    -33.158874  
+      16A    -33.158874    17A    -33.156235    18A    -33.156235  
+      19A    -24.244429    20A    -24.244429    21A    -24.242873  
+      22A    -24.242873    23A    -23.694395    24A    -23.694395  
+      25A    -23.693733    26A    -23.693733    27A    -23.692348  
+      28A    -23.692348    29A     -7.758764    30A     -7.758764  
+      31A     -5.887507    32A     -5.887507    33A     -5.457739  
+      34A     -5.457739    35A     -5.436004    36A     -5.436004  
+      37A     -2.384927    38A     -2.384927    39A     -2.346606  
+      40A     -2.346606    41A     -2.298731    42A     -2.298731  
+      43A     -2.272166    44A     -2.272166    45A     -2.256614  
+      46A     -2.256614    47A     -1.033122    48A     -1.033122  
+      49A     -0.571249    50A     -0.571249    51A     -0.405730  
+      52A     -0.405730    53A     -0.378142    54A     -0.378142  
+
+    Virtual:
+
+      55A      0.212678    56A      0.212678    57A      0.316572  
+      58A      0.316572    59A      0.528216    60A      0.528216  
+      61A      0.543941    62A      0.543941    63A      0.547567  
+      64A      0.547567    65A      0.565033    66A      0.565033  
+      67A      0.573041    68A      0.573041    69A      0.580527  
+      70A      0.580527    71A      0.583910    72A      0.583910  
+      73A      0.804932    74A      0.804932    75A      0.977477  
+      76A      0.977477    77A      1.581185    78A      1.581185  
+      79A      1.581703    80A      1.581703    81A      2.111179  
+      82A      2.111179    83A      2.859273    84A      2.859273  
+      85A      2.867878    86A      2.867878    87A      2.899972  
+      88A      2.899972    89A      2.908610    90A      2.908610  
+      91A      2.973596    92A      2.973596    93A      3.523929  
+      94A      3.523929    95A      4.525423    96A      4.525423  
+      97A      4.782748    98A      4.782748    99A      5.037023  
+     100A      5.037023   101A      5.293895   102A      5.293895  
+     103A     10.056421   104A     10.056421   105A     10.084244  
+     106A     10.084244   107A     10.181796   108A     10.181796  
+     109A     10.191242   110A     10.191242   111A     10.366660  
+     112A     10.366660   113A     21.841769   114A     21.841769  
+     115A     22.745745   116A     22.745745   117A     23.935174  
+     118A     23.935174   119A     24.139118   120A     24.139118  
+     121A     28.902734   122A     28.902734   123A     30.153995  
+     124A     30.153995   125A     30.209153   126A     30.209153  
+     127A     30.497483   128A     30.497483   129A     30.500349  
+     130A     30.500349   131A     30.645149   132A     30.645149  
+     133A     82.890622   134A     82.890622   135A     82.947737  
+     136A     82.947737   137A     83.782218   138A     83.782218  
+     139A     83.783225   140A     83.783225   141A     83.882009  
+     142A     83.882009   143A     84.625932   144A     84.625932  
+     145A     88.653069   146A     88.653069   147A     88.787147  
+     148A     88.787147   149A    117.701464   150A    117.701464  
+     151A    217.527076   152A    217.527076   153A    217.577769  
+     154A    217.577769   155A    219.964309   156A    219.964309  
+     157A    219.966509   158A    219.966509   159A    220.043478  
+     160A    220.043478   161A    268.174161   162A    268.174161  
+     163A    279.887327   164A    279.887327   165A    279.992768  
+     166A    279.992768   167A    386.007030   168A    386.007030  
+     169A    569.682543   170A    569.682543   171A    569.722097  
+     172A    569.722097   173A    577.252000   174A    577.252000  
+     175A    577.254044   176A    577.254044   177A    577.311431  
+     178A    577.311431   179A    771.779267   180A    771.779267  
+     181A    805.150173   182A    805.150173   183A    805.232859  
+     184A    805.232859   185A   1112.470684   186A   1112.470684  
+     187A   1563.713860   188A   1563.713860   189A   1563.741207  
+     190A   1563.741207   191A   1591.767061   192A   1591.767061  
+     193A   1591.768506   194A   1591.768506   195A   1591.807720  
+     196A   1591.807720   197A   2102.573493   198A   2102.573493  
+     199A   2203.119337   200A   2203.119337   201A   2203.181555  
+     202A   2203.181555   203A   2888.897245   204A   2888.897245  
+     205A   4874.961786   206A   4874.961786   207A   4874.976126  
+     208A   4874.976126   209A   5028.247917   210A   5028.247917  
+     211A   5028.248712   212A   5028.248712   213A   5028.269079  
+     214A   5028.269079   215A   5561.511564   216A   5561.511564  
+     217A   5882.557259   218A   5882.557259   219A   5882.599129  
+     220A   5882.599129   221A   6760.774685   222A   6760.774685  
+     223A   14434.370157   224A   14434.370157   225A   14436.457867  
+     226A   14436.457867   227A   15482.365261   228A   15482.365261  
+     229A   15482.387921   230A   15482.387921   231A   28645.681648  
+     232A   28645.681648   233A   37676.175895   234A   37676.175895  
+     235A   41129.447812   236A   41129.447812   237A   41129.456558  
+     238A   41129.456558   239A   54136.633516   240A   54136.633516  
+     241A   99968.859076   242A   99968.859076   243A   107538.239938  
+     244A   107538.239938   245A   120613.329325   246A   120613.329325  
+     247A   120613.331293   248A   120613.331293   249A   184811.114507  
+     250A   184811.114507   251A   349727.033442   252A   349727.033442  
+     253A   695628.130304   254A   695628.130304   255A   1506351.928770  
+     256A   1506351.928770  
+
+    Final Occupation by Irrep:
+              A 
+
+  @CGHF Final Energy: -7114.45890526588028
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             28.0465224923935246
+    One-Electron Energy =               -9809.8278052383011527
+    Two-Electron Energy =                2667.3223774800271713
+    Total Energy =                      -7114.4589052658802757
+
+Computation Completed
+
+*** tstop() called on dn5.dngroup.chem at Tue Aug 25 15:37:13 2026
+Module time:
+	user time   =      39.32 seconds =       0.66 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =         39 seconds =       0.65 minutes
+Total time:
+	user time   =      39.32 seconds =       0.66 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =         39 seconds =       0.65 minutes
+    SCF should converge without...........................................................PASSED
+    SOX2C-1e total energy.................................................................PASSED
+
+    Psi4 stopped on: Tuesday, 25 August 2026 03:37PM
+    Psi4 wall time for execution: 0:00:39.55
+
+*** Psi4 exiting successfully. Buy a developer a beer!
