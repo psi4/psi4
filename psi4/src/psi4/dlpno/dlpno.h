@@ -558,6 +558,9 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     /// Persistent in-core state at the end of the CCSDT stage, in doubles.
     /// The CCSDT(Q) estimator uses this when CCSDTQ must retain all lower-rank data.
     size_t ccsdt_resident_memory_doubles_ = 0;
+    /// Largest temporary lower-rank residual workspace required by a CCSDT iteration, in doubles.
+    /// The CCSDTQ estimator combines this with its T4-dependent residual workspaces.
+    size_t ccsdt_iteration_workspace_doubles_ = 0;
 
     /// Encapsulates the reading in of (Q_{ijk}|m_{ijk} a_{ijk}) integrals (regardless of core or disk)
     Tensor<double, 3> QIA_TNO(const int ijk);
@@ -690,6 +693,8 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     double compute_energy() override;
 };
 
+// Equations for DLPNOCCSDTQ refer to Jiang et al. (JCTC 22, 2825--2845, 2026;
+// DOI: 10.1021/acs.jctc.5c01910) and its Supporting Information unless noted otherwise.
 class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
    protected:
     // DF domain integrals
@@ -699,67 +704,85 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     std::vector<Tensor<double, 3>> q_vv_ijkl_; ///< (Q_{ijkl} | a_{ijkl} b_{ijkl})
 
     // Extended PNO (XPNO) information
-    SparseMap lmopair_to_paos_ext_;       ///< lmopair to extended PAOs
-    std::vector<SharedMatrix> X_pno_ext_; ///< global PAO -> canonical PNO transforms
-    std::vector<SharedVector> e_pno_ext_; ///< PNO orbital energies
-    std::vector<int> n_pno_ext_;          ///< Number of PNOs in each extended pair domain
+    SparseMap lmopair_to_paos_ext_;           ///< LMO pair to extended PAO domain
+    std::vector<SharedMatrix> X_xpno_;         ///< Extended-PAO-to-canonical-XPNO transforms
+    std::vector<SharedVector> e_xpno_;         ///< Canonical XPNO orbital energies
+    std::vector<int> n_xpno_;                  ///< Number of XPNOs in each extended pair domain
 
     /// Encapsulates the reading in of (Q_{ijkl} | m_{ijkl} a_{ijkl})
     inline Tensor<double, 3> QIA_QNO(const int ijkl);
     /// Encapsulates the reading in of (Q_{ijkl} | a_{ijkl} b_{ijkl})
     inline Tensor<double, 3> QAB_QNO(const int ijkl);
 
-    // Write the largest QNO-basis integral tensors to disk (enabled by default).
-    bool disk_ints_quads_;
-    // How much of the original quadruples amplitude to keep
-    double damping_ratio_quads_;
-    // Energy expression
-    double e_lccsdtq_;
+    /// Write the largest QNO-basis integral tensors to disk (enabled by default).
+    bool disk_qno_integrals_ = true;
+    /// Include T4 amplitudes and residuals in the on-disk DIIS vectors.
+    bool extrapolate_t4_ = true;
+    /// Fraction of the preceding T4 amplitude retained when damping is activated.
+    double quadruples_damping_ratio_ = 0.0;
+    /// Local CCSDTQ correlation energy.
+    double e_lccsdtq_ = 0.0;
 
-    // Singles Amplitudes projected onto QNO space of ijkl
-    std::vector<Tensor<double, 2>> T_n_ijkl_;
-    // Quadruples Amplitudes of ijkl projected onto XPNO space of kl
-    std::vector<std::vector<Tensor<double, 4>>> T_mnkl_list_;
+    /// Singles amplitudes t_m^a projected into the QNO space of ijkl.
+    std::vector<Tensor<double, 2>> T_m_ijkl_;
+    /// T_mnkl projected into the XPNO space of kl (main-text Eq. (83)).
+    std::vector<std::vector<Tensor<double, 4>>> T_mnkl_xpno_;
 
-    // Helper functions to form quadruples intermediates
-    inline Tensor<double, 4> alpha_ijkl_helper(const Tensor<double, 4>& T_ijkl);
-    inline Tensor<double, 4> beta_ijkl_helper(const Tensor<double, 4>& alpha_ijkl);
-    /// Performs spin-summation of quadruples amplitudes 
+    /// Form alpha_ijkl from T_ijkl (main-text Eq. (30)).
+    inline Tensor<double, 4> form_alpha_ijkl(const Tensor<double, 4>& T_ijkl);
+    /// Form beta_ijkl from alpha_ijkl (main-text Eq. (31)).
+    inline Tensor<double, 4> form_beta_ijkl(const Tensor<double, 4>& alpha_ijkl);
+    /// Form the spin-summed quadruples tensor used by the closed-shell equations.
     Tensor<double, 4> quadruples_spin_summation(const Tensor<double, 4> &X);
-    /// Performs a spin-desummation of the quadruples amplitude (Matthews Eq. 28)
-    /// This is done to remove linear dependencies in the quadruples amplitude space
+    /// Apply the minimum-norm spin pseudoinverse of Matthews and Stanton, Eq. (28)
+    /// (JCP 142, 064108, 2015; DOI: 10.1063/1.4907278), removing the redundant
+    /// components of the nonorthogonal spin-adapted quadruples representation.
     Tensor<double, 4> quadruples_spin_desummation(const Tensor<double, 4> &X);
 
-    /// Create XPNOs (Extended Pair Natural Orbitals) to help with QNO projections
+    /// Flatten Psi4 matrices and, optionally, native Einsums T4/R4 tensors into one DIIS vector.
+    SharedVector flatten_ccsdtq_diis(const std::vector<SharedMatrix>& matrices,
+                                     const std::vector<Tensor<double, 4>>& rank4_tensors,
+                                     bool include_t4) const;
+    /// Scatter an extrapolated DIIS vector back into the Psi4 matrices and native T4/R4 tensors.
+    void copy_ccsdtq_diis(const SharedVector& flat, std::vector<SharedMatrix>& matrices,
+                          std::vector<Tensor<double, 4>>& rank4_tensors, bool include_t4) const;
+
+    /// Create extended pair natural orbitals (XPNOs) for the T_mnkl contractions.
     void xpno_transform(double xpno_tolerance);
 
     /// Form projected T_{mnkl}^{abcd} amplitudes in the XPNO domain of kl
     /// to reduce the cost of the computationally dominant contractions.
-    void form_T_mnkl();
+    void form_T_mnkl_xpno();
 
-    /// compute the expensive term in L_{ijk}^{abm}
-    std::vector<Tensor<double, 4>> alpha_L_contribution();
-    /// compute the expensive term in M_{ejk}^{abc}
-    std::vector<Tensor<double, 4>> alpha_M_contribution();
+    /// Form delta L_ijk^{abm}[ij] in a pair domain (main-text Eqs. (98)--(99); SI Eq. (S13)).
+    std::vector<Tensor<double, 4>> compute_delta_L_ijk_abm();
+    /// Form delta M_ejk^{abc}[jk] in a pair domain (main-text Eqs. (101)--(102); SI Eq. (S15)).
+    std::vector<Tensor<double, 4>> compute_delta_M_ejk_abc();
 
-    /// computes doubles residual in LCCSDTQ equations
-    void compute_R_iajb_quads(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb, std::vector<std::vector<SharedMatrix>>& R_iajb_buffer);
-    /// computes triples residual in LCCSDTQ equations
-    void compute_R_iajbkc_quads(std::vector<SharedMatrix>& R_iajbkc);
-    /// computes quadruples residual equations in LCCSDTQ equations
-    void compute_R_iajbkcld(std::vector<Tensor<double, 4>>& R_iajbkcld);
+    /// Add the T4-dependent doubles residual (main-text Eq. (93); SI Eq. (S16)).
+    void add_t4_to_doubles_residual(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb,
+                                    std::vector<std::vector<SharedMatrix>>& R_iajb_buffer);
+    /// Add the T4-dependent triples residual (main-text Eqs. (94)--(96); SI Eqs. (S17)--(S19)).
+    void add_t4_to_triples_residual(std::vector<SharedMatrix>& R_iajbkc);
+    /// Form the local quadruples residual (main-text Eq. (50); SI Eqs. (S20)--(S34)).
+    void compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_iajbkcld);
 
+    /// Print full-quadruples thresholds, iteration controls, and requested storage policy.
     void print_header();
+    /// Estimate resident and per-thread peaks and select safe automatic storage fallbacks.
     void estimate_memory();
+    /// Build the QNO-basis density-fitted integrals required by the CCSDTQ iteration.
     void compute_integrals();
+    /// Iterate the coupled local T1/T2/T3/T4 amplitude equations.
     void lccsdtq_iterations();
+    /// Print the final energy decomposition and post-CCSDT increments.
     void print_results();
 
-    public:
-     DLPNOCCSDTQ(SharedWavefunction ref_wfn, Options& options);
-     ~DLPNOCCSDTQ() override;
+   public:
+    DLPNOCCSDTQ(SharedWavefunction ref_wfn, Options& options);
+    ~DLPNOCCSDTQ() override;
 
-     double compute_energy() override;
+    double compute_energy() override;
 };
 
 #endif  // USING_Einsums
