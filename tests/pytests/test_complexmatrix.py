@@ -14,15 +14,67 @@ def test_complexmatrix_constructor_zeroed():
     mat = psi4.core.ComplexMatrix("zeros", [2, 3, 1])
     assert mat.nirrep() == 3
 
-    views = mat.array_interface()
+    views = mat.array_interface_readonly()
     assert len(views) == 3
     assert [v.shape for v in views] == [(2, 2), (3, 3), (1, 1)]
     assert all(v.dtype == np.complex128 for v in views)
+    assert all(not v.flags.writeable for v in views)
 
     blocks = mat.to_array()
     assert isinstance(blocks, list)
     for blk in blocks:
         np.testing.assert_allclose(blk, np.zeros_like(blk))
+
+    # Neither construction nor copy/read access materializes backend tiles.
+    clone = mat.clone()
+    clone_views = clone.array_interface_readonly()
+    assert all(view.base is not clone for view in clone_views)
+
+
+def test_complexmatrix_complex128_layout_and_strides():
+    """ComplexMatrix views expose NumPy complex128 with C-order byte strides."""
+    mat = psi4.core.ComplexMatrix("strides", [2, 3], [4, 5])
+    expected_dtype = np.dtype(np.complex128)
+
+    for view in mat.array_interface():
+        assert view.dtype == expected_dtype
+        assert view.itemsize == 2 * np.dtype(np.float64).itemsize
+        assert view.strides == (view.shape[1] * view.itemsize, view.itemsize)
+
+        values = np.arange(view.size, dtype=np.complex128).reshape(view.shape) + 1j
+        view[:] = values
+        np.testing.assert_array_equal(view.view(np.float64), values.view(np.float64))
+
+
+def test_complexmatrix_readonly_array_interface_sparse_tiles():
+    """Read-only views of missing tiles are zero arrays without backend allocation."""
+    mat = psi4.core.ComplexMatrix("sparse", [4, 0, 3])
+
+    views = mat.array_interface_readonly()
+    assert [view.shape for view in views] == [(4, 4), (0, 0), (3, 3)]
+    assert all(not view.flags.writeable for view in views)
+    assert all(view.base is not mat for view in views)
+    for view in views:
+        np.testing.assert_allclose(view, np.zeros_like(view))
+
+    with pytest.raises(ValueError):
+        views[0][0, 0] = 1 + 1j
+
+
+def test_complexmatrix_readonly_array_interface_existing_tile():
+    """Read-only views alias allocated tiles but reject writes."""
+    mat = psi4.core.ComplexMatrix("readonly", [2])
+    writable = mat.array_interface()[0]
+    writable[:] = [[1 + 2j, 3], [4, 5 - 1j]]
+
+    readonly = mat.array_interface_readonly()[0]
+    assert readonly.base is mat
+    assert not readonly.flags.writeable
+    assert np.shares_memory(readonly, writable)
+    np.testing.assert_allclose(readonly, writable)
+
+    with pytest.raises(ValueError):
+        readonly[0, 0] = 9
 
 
 def test_complexmatrix_constructor_rectangular():
@@ -47,6 +99,23 @@ def test_complexmatrix_array_interface_write_through():
 
     mat.to_array(copy=False)[0, 1] = 9 + 9j
     assert view[0, 1] == pytest.approx(9 + 9j)
+
+
+def test_complexmatrix_array_view_keeps_parent_alive():
+    """A zero-copy NumPy view retains its ComplexMatrix owner."""
+    import gc
+    import weakref
+
+    mat = psi4.core.ComplexMatrix.from_array(np.eye(2, dtype=np.complex128))
+    view = mat.to_array(copy=False)
+    parent = weakref.ref(mat)
+
+    assert view.base is mat
+    del mat
+    gc.collect()
+
+    assert parent() is view.base
+    np.testing.assert_allclose(view, np.eye(2, dtype=np.complex128))
 
 
 def test_complexmatrix_to_from_array_c1():
@@ -86,6 +155,7 @@ def test_complexmatrix_to_array_copy_flag():
     assert mat.to_array()[0, 0] == pytest.approx(0)
 
     aliased = mat.to_array(copy=False)
+    assert np.shares_memory(aliased, mat.array_interface()[0])
     aliased[0, 0] = 42
     assert mat.to_array()[0, 0] == pytest.approx(42)
 
@@ -151,6 +221,24 @@ def test_doublet_atypical_shapes():
     assert result[0].shape == (4, 3)
     assert result[1].shape == (0, 0)
     assert result[2].shape == (2, 5)
+
+
+def test_triplet_shared_result():
+    """triplet computes A^H @ B @ C^H through the shared-pointer binding."""
+    rng = np.random.default_rng(31)
+    n = 3
+    A_np = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    B_np = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    C_np = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+
+    A = psi4.core.ComplexMatrix.from_array(A_np, name="A")
+    B = psi4.core.ComplexMatrix.from_array(B_np, name="B")
+    C = psi4.core.ComplexMatrix.from_array(C_np, name="C")
+
+    result = psi4.core.ComplexMatrix.triplet(A, B, C, True, False, True).to_array()
+    expected = A_np.conj().T @ B_np @ C_np.conj().T
+
+    np.testing.assert_allclose(result, expected, atol=1e-14)
 
 
 # ---------------------------------------------------------------------------
@@ -233,6 +321,20 @@ def test_complexmatrix_diagonalize_multi_block():
         Forth_blk = X_blk @ F_blk @ X_blk
         residual = evecs_blk.conj().T @ Forth_blk @ evecs_blk - np.diag(evals_np_blk)
         np.testing.assert_allclose(residual, 0.0, atol=1e-10)
+
+
+def test_complexmatrix_diagonalize_preserves_input():
+    """The one-argument diagonalize overload does not modify its input."""
+    rng = np.random.default_rng(123)
+    n = 4
+    A_np = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    F_np = A_np + A_np.conj().T
+    F = psi4.core.ComplexMatrix.from_array(F_np, name="F")
+
+    evals_vec, _ = psi4.core.ComplexMatrix.diagonalize(F)
+
+    np.testing.assert_allclose(F.to_array(), F_np, atol=0.0)
+    np.testing.assert_allclose(evals_vec.array_interface()[0], np.linalg.eigvalsh(F_np), atol=1e-12)
 
 
 # ---------------------------------------------------------------------------

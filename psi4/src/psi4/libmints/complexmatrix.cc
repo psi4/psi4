@@ -307,8 +307,9 @@ SharedComplexMatrix ComplexMatrix::conjT() const {
 
 namespace linalg {
 
-std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(const ComplexMatrix& F_) {
-    ComplexMatrix Forth = F_; // copy as to not destroy original F_
+namespace {
+
+std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize_in_place(ComplexMatrix& Forth) {
     Dimension nmopi_ = Forth.colspi();
     auto epsilon_ = std::make_shared<Vector>("Orbital energies", nmopi_);
 
@@ -338,13 +339,20 @@ std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(const Compl
     return std::make_tuple(epsilon_, temp);
 }
 
+}  // namespace
+
+std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(const ComplexMatrix& F_) {
+    ComplexMatrix Forth = F_; // copy as to not destroy original F_
+    return diagonalize_in_place(Forth);
+}
+
 std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(
     const ComplexMatrix& F_, const ComplexMatrix& X_) {
     // Form F' = X'FX for canonical orthogonalization
     auto Forth = triplet(X_, F_, X_, true, false, false);
     Forth.set_name("Orthogonalized Fock");
 
-    return diagonalize(Forth);
+    return diagonalize_in_place(Forth);
 }
 
 /**
@@ -355,11 +363,13 @@ std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(
  *  NOTE: when you move back to Einsums gemm, don't forget to explicitly specialize
  *  all the templates!
  */
-ComplexMatrix doublet(const ComplexMatrix& A, const ComplexMatrix& B, bool AdjoinA, bool AdjoinB) {
-    const Dimension C_rowspi = (AdjoinA) ? A.colspi() : A.rowspi();
-    const Dimension C_colspi = (AdjoinB) ? B.rowspi() : B.colspi();
+namespace {
 
-    ComplexMatrix C{"T", C_rowspi, C_colspi};
+void doublet_into(const ComplexMatrix& A, const ComplexMatrix& B, bool AdjoinA, bool AdjoinB,
+                  ComplexMatrix& C) {
+    const auto& Atensor = static_cast<const ComplexMatrix::TiledT&>(A);
+    const auto& Btensor = static_cast<const ComplexMatrix::TiledT&>(B);
+    auto& Ctensor = static_cast<ComplexMatrix::TiledT&>(C);
 
     const int nirrep = A.nirrep();
 
@@ -369,12 +379,12 @@ ComplexMatrix doublet(const ComplexMatrix& A, const ComplexMatrix& B, bool Adjoi
     // Use einsums::blas::gemm directly so we can pass 'c' (conjugate-transpose)
     // instead of 't' (plain transpose) for the adjoint operations.
     for (int h = 0; h < nirrep; h++) {
-        if (A.tensor_.has_zero_size(h, h) || B.tensor_.has_zero_size(h, h)) continue;
-        if (!A.tensor_.has_tile(h, h) || !B.tensor_.has_tile(h, h)) continue;
+        if (Atensor.has_zero_size(h, h) || Btensor.has_zero_size(h, h)) continue;
+        if (!Atensor.has_tile(h, h) || !Btensor.has_tile(h, h)) continue;
 
-        auto const &Atile = A.tensor_.tile(h, h);
-        auto const &Btile = B.tensor_.tile(h, h);
-        auto &Ctile = C.tensor_.tile(h, h);
+        auto const &Atile = Atensor.tile(h, h);
+        auto const &Btile = Btensor.tile(h, h);
+        auto &Ctile = Ctensor.tile(h, h);
 
         using int_t = einsums::blas::int_t;
 
@@ -387,13 +397,26 @@ ComplexMatrix doublet(const ComplexMatrix& A, const ComplexMatrix& B, bool Adjoi
                             Btile.data(), static_cast<int_t>(Btile.stride(0)),
                             std::complex<double>{0.0}, Ctile.data(), static_cast<int_t>(Ctile.stride(0)));
     }
+}
 
+}  // namespace
+
+ComplexMatrix doublet(const ComplexMatrix& A, const ComplexMatrix& B, bool AdjoinA, bool AdjoinB) {
+    const Dimension C_rowspi = (AdjoinA) ? A.colspi() : A.rowspi();
+    const Dimension C_colspi = (AdjoinB) ? B.rowspi() : B.colspi();
+
+    ComplexMatrix C{"T", C_rowspi, C_colspi};
+    doublet_into(A, B, AdjoinA, AdjoinB, C);
     return C;
 }
 
 SharedComplexMatrix doublet(const SharedComplexMatrix& A, const SharedComplexMatrix& B,
                             bool AdjoinA, bool AdjoinB) {
-    return std::make_shared<ComplexMatrix>(std::move(doublet(*A, *B, AdjoinA, AdjoinB)));
+    const Dimension C_rowspi = (AdjoinA) ? A->colspi() : A->rowspi();
+    const Dimension C_colspi = (AdjoinB) ? B->rowspi() : B->colspi();
+    auto C = std::make_shared<ComplexMatrix>("T", C_rowspi, C_colspi);
+    doublet_into(*A, *B, AdjoinA, AdjoinB, *C);
+    return C;
 }
 
 ComplexMatrix triplet(const ComplexMatrix& A, const ComplexMatrix& B, const ComplexMatrix& C,
@@ -405,7 +428,8 @@ ComplexMatrix triplet(const ComplexMatrix& A, const ComplexMatrix& B, const Comp
 
 SharedComplexMatrix triplet(const SharedComplexMatrix& A, const SharedComplexMatrix& B, const SharedComplexMatrix& C,
                             bool AdjoinA, bool AdjoinB, bool AdjoinC) {
-    return std::make_shared<ComplexMatrix>(std::move(triplet(*A, *B, *C, AdjoinA, AdjoinB, AdjoinC)));
+    auto BC = doublet(B, C, AdjoinB, AdjoinC);
+    return doublet(A, BC, AdjoinA, AdjoinB);
 }
 
 SharedComplexMatrix expm(const ComplexMatrix& A, std::complex<double> c) {

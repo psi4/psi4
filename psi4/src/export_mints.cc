@@ -75,6 +75,7 @@
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/thc_eri.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include <algorithm>
 #include <string>
 
 using namespace psi;
@@ -333,18 +334,39 @@ namespace {
 #ifdef USING_Einsums
 
 /// NumPy views for a ComplexMatrix (einsums TiledTensor).
-py::list tiled_tensor_array_interface(psi::ComplexMatrix& tt) {
+py::list tiled_tensor_array_interface(psi::ComplexMatrix& tt, bool allocate_tiles, bool writable) {
     using ValueT = std::complex<double>;
     py::list ret;
-    for (int h = 0; h < tt.nirrep(); ++h) {
-        auto& tile = tt.get(h); // allocates tiles if missing
+    py::object owner = py::cast(&tt);
+    const auto& tensor = static_cast<const psi::ComplexMatrix::TiledT&>(tt);
+
+    auto append_view = [&](const auto& tile) {
         const auto r = static_cast<py::ssize_t>(tile.dim(0));
         const auto c = static_cast<py::ssize_t>(tile.dim(1));
-        ValueT* ptr = (r != 0 && c != 0) ? tile.data() : nullptr;
+        ValueT* ptr = (r != 0 && c != 0) ? const_cast<ValueT*>(tile.data()) : nullptr;
         std::vector<py::ssize_t> shape{r, c};
         std::vector<py::ssize_t> strides{static_cast<py::ssize_t>(tile.stride(0) * sizeof(ValueT)),
                                          static_cast<py::ssize_t>(tile.stride(1) * sizeof(ValueT))};
-        ret.append(py::array(py::dtype::of<ValueT>(), shape, strides, ptr, py::cast(&tt)));
+        py::array arr(py::dtype::of<ValueT>(), shape, strides, ptr, owner);
+        if (!writable) arr.attr("setflags")(false);
+        ret.append(arr);
+    };
+
+    for (int h = 0; h < tt.nirrep(); ++h) {
+        if (!allocate_tiles && !tensor.has_tile(h, h)) {
+            const auto r = static_cast<py::ssize_t>(tt.rowdim(h));
+            const auto c = static_cast<py::ssize_t>(tt.coldim(h));
+            std::vector<py::ssize_t> shape{r, c};
+            py::array_t<ValueT> zero(shape);
+            const auto size = static_cast<std::size_t>(r) * static_cast<std::size_t>(c);
+            if (size != 0) std::fill_n(zero.mutable_data(), size, ValueT{});
+            zero.attr("setflags")(false);
+            ret.append(zero);
+        } else if (allocate_tiles) {
+            append_view(tt.get(h));  // allocates missing tiles for writable callers
+        } else {
+            append_view(tensor.tile(h, h));
+        }
     }
     return ret;
 }
@@ -744,14 +766,10 @@ void export_mints(py::module& m) {
         .def(py::init([](const std::string& name, const std::vector<size_t>& block_sizes) {
                  // One size list --> same tiling on both axes (square diagonal tiles).
                  Dimension dim({block_sizes.begin(), block_sizes.end()});
-                 auto mat = std::make_shared<ComplexMatrix>(name, dim);
-                 for (int h = 0; h < static_cast<int>(block_sizes.size()); ++h) {
-                     (void)mat->get(h);  // allocate + zero diagonal tiles
-                 }
-                 return mat;
+                 return std::make_shared<ComplexMatrix>(name, dim);
              }),
              "name"_a, "block_sizes"_a,
-             "Construct a ComplexMatrix with one square diagonal tile per entry in block_sizes.")
+             "Construct a ComplexMatrix with one lazy, zero-valued square diagonal tile per entry in block_sizes.")
         .def(py::init([](const std::string& name, const std::vector<size_t>& row_sizes,
                          const std::vector<size_t>& col_sizes) {
                  if (row_sizes.size() != col_sizes.size()) {
@@ -760,23 +778,26 @@ void export_mints(py::module& m) {
                  }
                  Dimension row_dim({row_sizes.begin(), row_sizes.end()});
                  Dimension col_dim({col_sizes.begin(), col_sizes.end()});
-                 auto mat = std::make_shared<ComplexMatrix>(name, row_dim, col_dim);
-                 for (int h = 0; h < static_cast<int>(row_sizes.size()); ++h) {
-                     (void)mat->get(h);
-                 }
-                 return mat;
+                 return std::make_shared<ComplexMatrix>(name, row_dim, col_dim);
              }),
              "name"_a, "row_sizes"_a, "col_sizes"_a,
-             "Construct a ComplexMatrix with diagonal tiles of shape (row_sizes[h], col_sizes[h]).")
+             "Construct a ComplexMatrix with lazy diagonal tiles of shape (row_sizes[h], col_sizes[h]).")
         .def("nirrep", [](const ComplexMatrix& m) { return m.nirrep(); }, "Returns number of tiles")
         .def("rowdim", static_cast<Dimension (ComplexMatrix::*)() const>(&ComplexMatrix::rowspi),
-             py::return_value_policy::copy,
-             "Per-irrep row tile sizes as a Dimension (C1 returns size-1 Dimension).")
+             py::return_value_policy::move, "Per-irrep row tile sizes as a Dimension (C1 returns size-1 Dimension).")
         .def("coldim", static_cast<Dimension (ComplexMatrix::*)() const>(&ComplexMatrix::colspi),
-             py::return_value_policy::copy,
-             "Per-irrep column tile sizes as a Dimension.")
-        .def("array_interface", &tiled_tensor_array_interface, py::return_value_policy::reference_internal,
-             "List of per-irrep diagonal-tile NumPy views sharing the tensor's memory.")
+             py::return_value_policy::move, "Per-irrep column tile sizes as a Dimension.")
+        .def("array_interface",
+             [](ComplexMatrix& matrix) { return tiled_tensor_array_interface(matrix, true, true); },
+             py::return_value_policy::reference_internal,
+             "List of writable per-irrep NumPy views sharing the tensor's memory. "
+             "Missing tiles are allocated. Views retain the parent ComplexMatrix, but are invalid after "
+             "zero() or any operation that destroys or replaces tile storage.")
+        .def("array_interface_readonly",
+             [](ComplexMatrix& matrix) { return tiled_tensor_array_interface(matrix, false, false); },
+             py::return_value_policy::reference_internal,
+             "List of read-only per-irrep NumPy views. Existing tiles share the tensor's memory; "
+             "missing tiles are returned as zero arrays without allocating tensor storage.")
         .def_property("name", [](const ComplexMatrix& m) { return m.name(); },
                       [](ComplexMatrix& m, const std::string& name) { m.set_name(name); },
                       "The name of this ComplexMatrix.")
