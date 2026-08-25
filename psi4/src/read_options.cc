@@ -261,7 +261,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("ZORA_NR_DEBUG", false);
 
     /*- Add the spin-orbit coupling Hamiltonian on top of the scalar-relativistic Hamiltonian.
-    Only available with |globals__reference| set to ``CGHF``. At this time, only
+    Only available with |scf__reference| set to ``CGHF``. At this time, only
     |globals__relativistic| set to ``X2C`` is supported. -*/
     options.add_bool("SPIN_ORBIT_COUPLING", false);
 
