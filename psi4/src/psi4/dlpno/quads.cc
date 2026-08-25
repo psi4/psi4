@@ -1526,7 +1526,8 @@ double DLPNOCCSDT_Q::compute_energy() {
     outfile->Printf("    * Screened Quadruplets Contribution:        %16.12f\n", de_lccsdt_q_screened_);
 
     double e_scf = variables_["SCF TOTAL ENERGY"];
-    double e_ccsdt_q_corr = E_Q0 + de_lccsdt_q_screened_ + e_lccsdt_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+    double e_ccsdt_q_corr = E_Q0 + de_lccsdt_q_screened_ + e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ +
+                            de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_ccsdt_q_total = e_scf + e_ccsdt_q_corr;
 
     outfile->Printf("\n\n  @Total DLPNO-CCSDT(Q0) Energy: %16.12f\n", e_ccsdt_q_total);
@@ -1561,7 +1562,8 @@ double DLPNOCCSDT_Q::compute_energy() {
         outfile->Printf("    * DLPNO-(Q) Contribution:                   %16.12f\n", dE_Q);
         outfile->Printf("    * Screened Quadruplets Contribution:        %16.12f\n", de_lccsdt_q_screened_);
 
-        e_ccsdt_q_corr = E_Q0 + dE_Q + de_lccsdt_q_screened_ + e_lccsdt_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+        e_ccsdt_q_corr = E_Q0 + dE_Q + de_lccsdt_q_screened_ + e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ +
+                         de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
         e_ccsdt_q_total = e_scf + e_ccsdt_q_corr;
         e_total = e_ccsdt_q_total;
 
@@ -4264,7 +4266,8 @@ double DLPNOCCSDTQ::compute_energy() {
     timer_off("DLPNO-CCSDTQ");
 
     double e_scf = variables_["SCF TOTAL ENERGY"];
-    double e_ccsdtq_corr = e_lccsdtq_ + de_lccsdt_q_screened_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+    double e_ccsdtq_corr = e_lccsdtq_ + de_lccsdt_q_screened_ + de_lccsd_t_screened_ + de_weak_ +
+                           de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_ccsdtq_total = e_scf + e_ccsdtq_corr;
 
     set_scalar_variable("CCSDTQ CORRELATION ENERGY", e_ccsdtq_corr);
@@ -4289,7 +4292,8 @@ void DLPNOCCSDTQ::print_results() {
     outfile->Printf("\n  T1 Diagnostic: %8.8f \n", t1diag);
     set_scalar_variable("CC T1 DIAGNOSTIC", t1diag);
 
-    double e_total = e_lccsdtq_ + de_lccsdt_q_screened_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+    double e_total = e_lccsdtq_ + de_lccsdt_q_screened_ + de_lccsd_t_screened_ + de_weak_ +
+                     de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
 
     outfile->Printf("  \n");
     outfile->Printf("  Total DLPNO-CCSDTQ Correlation Energy: %16.12f \n", e_total);
@@ -4298,7 +4302,7 @@ void DLPNOCCSDTQ::print_results() {
     outfile->Printf("    Eliminated Pair MP2 Correction:      %16.12f \n", de_lmp2_eliminated_);
     outfile->Printf("    Dipole Pair Correction:              %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:           %16.12f \n", de_pno_total_);
-    outfile->Printf("    Triples Rank Correction:             %16.12f \n", dE_T_rank_);
+    outfile->Printf("    Screened Triplets Contribution:      %16.12f \n", de_lccsd_t_screened_);
     outfile->Printf("    Screened Quadruples Correction:      %16.12f \n", de_lccsdt_q_screened_);
     outfile->Printf("\n\n  @Total DLPNO-CCSDTQ Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_total);
 }
