@@ -2749,7 +2749,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Minimum number of TNOs required in each triplet !expert -*/
         options.add_int("MIN_TNOS", 9);
 
-        /*- SUBSECTION DLPNO-CCSDT Specific Options -*/
+        /*- SUBSECTION DLPNO Full-Triples (CCSDT) Options -*/
 
         /*- Occupation number threshold for removing TNOs with full triples !expert -*/
         options.add_double("T_CUT_TNO_FULL", 1.0e-7);
@@ -2790,7 +2790,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Minimum number of QNOs required in each quadruplet !expert -*/
         options.add_int("MIN_QNOS", 4);
 
-        /*- SUBSECTION DLPNO-CCSDTQ Specific Options -*/
+        /*- SUBSECTION DLPNO Full-Quadruples (CCSDTQ) Options -*/
 
         /*- Occupation number threshold for removing QNOs with full quadruples !expert -*/
         options.add_double("T_CUT_QNO_FULL", 3.33e-6);
