@@ -30,16 +30,19 @@
 
 .. index::
    single: DLPNO-CC
-   
+   single: DLPNO-CCSDT
+   single: DLPNO-CCSDT(Q)
+   single: DLPNO-CCSDTQ
+
 .. _`sec:dlpnocc`:
 
-DLPNO-CCSD(T): Domain-Based Local Pair Natural Orbital CCSD(T)
-==============================================================
+DLPNO Coupled-Cluster Methods Through CCSDTQ
+============================================
 
 .. codeauthor:: Andy Jiang 
 .. sectionauthor:: Andy Jiang
 
-*Module:* :ref:`Keywords <apdx:dlpno>`, :ref:`PSI Variables <apdx:dlpno_psivar>`, :source:`DLPNOCCSD(T) <psi4/src/psi4/dlpno>`
+*Module:* :ref:`Keywords <apdx:dlpno>`, :ref:`PSI Variables <apdx:dlpno_psivar>`, :source:`DLPNO coupled-cluster methods <psi4/src/psi4/dlpno>`
 
 Introduction
 ------------
@@ -53,10 +56,11 @@ limits its applicability for larger molecules.
 The domain-based local pair natural orbital (DLPNO)-CCSD(T) approach of Neese and coworkers 
 [Riplinger:2013:034106]_ [Riplinger:2013:134101]_ [Riplinger:2016:024109]_ 
 [Guo:2018:011101]_ uses localized orbitals to exploit molecular sparsity for a linear-scaling approximation 
-to canonical CCSD(T). These errors are controllable through user set parameters. Computations on large molecules, 
+to canonical CCSD(T). These errors are controllable through user-set parameters. Computations on large molecules, 
 such as crambin (636 atoms) [Riplinger:2013:134101]_ and insulin [Jiang:2024:082502]_ have been performed
 with this algorithm. This algorithm was originally implemented in the ORCA software package, but it
-is now available in |PSIfour|!
+is now available in |PSIfour|. Psi4's in-tree implementation provides DLPNO-CCSD, DLPNO-CCSD(T0),
+DLPNO-CCSD(T), DLPNO-CCSDT, DLPNO-CCSDT(Q0), DLPNO-CCSDT(Q), and DLPNO-CCSDTQ energies.
 
 For a more comprehensive overview on local correlation and the DLPNO-CCSD(T) algorithm, the reader is referred
 to the :ref:`DLPNO-MP2 <sec:dlpnomp2>` documentation, and the published work of Jiang et al. describing the
@@ -100,10 +104,129 @@ An example input file for a DLPNO-CCSD(T) computation is::
    
    energy('dlpno-ccsd(t)') # dlpno-ccsd(t0) for the semicanonical (T0) computation
 
+Higher-Order DLPNO Methods
+--------------------------
+
+Recent work [Jiang:2025:2386]_ [Jiang:2025:144102]_ [Jiang:2026:2825]_ has extended the
+DLPNO framework to coupled-cluster methods beyond CCSD(T). The same locality principles
+used for DLPNO-CCSD(T) are applied to full triples, perturbative quadruples, and full
+quadruples, with local natural-orbital spaces constructed for each significant occupied
+orbital tuple.
+
+DLPNO-CCSDT
+~~~~~~~~~~~
+
+Singles and doubles amplitudes (:math:`t_i^a` and :math:`t_{ij}^{ab}`) in pair natural
+orbital (PNO) spaces, together with triples amplitudes (:math:`t_{ijk}^{abc}`) in triples
+natural orbital (TNO) spaces from a preceding DLPNO-CCSD(T) computation, provide the
+initial guess for solving the CCSDT residual equations [Jiang:2025:2386]_. For tractability,
+the triples amplitudes are commonly recomputed with the looser TNO occupation cutoff
+|dlpno__t_cut_tno_full| (default ``1.0e-7``) than is used for the perturbative triples
+correction. DLPNO-CCSDT is asymptotically linear-scaling, and near-linear behavior can
+emerge at relatively small system sizes for sparse systems such as water clusters.
+
+An example input file for a DLPNO-CCSDT computation is::
+
+   memory 2 GB
+
+   molecule h2o {
+   0 1
+   O
+   H 1 0.96
+   H 1 0.96 2 104.5
+   symmetry c1
+   }
+
+   set basis cc-pvdz
+   set scf_type df
+   set freeze_core true
+   set pno_convergence very_tight
+   set t_cut_pairs 1.0e-8
+   set t_cut_tno_full 1.0e-7
+
+   energy('dlpno-ccsdt')
+
+DLPNO-CCSDT(Q)
+~~~~~~~~~~~~~~
+
+The pair-natural-orbital framework can also be applied to interacting occupied-orbital
+quadruplets (:math:`ijkl`). Quadruples natural orbitals (QNOs) are obtained by
+diagonalizing an averaged pair-density matrix and are retained according to their
+occupation numbers using |dlpno__t_cut_qno| (default ``3.33e-7``).
+
+.. math::
+   :label: Quadruples Density Matrix
+
+   D_{ijkl} &= \frac{1}{6} [D_{ij} + D_{jk} + D_{ik} + D_{il} + D_{jl} + D_{kl}].
+
+More information on the pair-density matrices can be found in the
+:ref:`DLPNO-MP2 <sec:dlpnomp2>` documentation. The perturbative quadruples amplitudes
+[Bomble:2005:054101]_ are evaluated in QNO spaces using singles, doubles, and triples
+amplitudes from a preceding DLPNO-CCSDT computation [Jiang:2025:144102]_. The DLPNO
+formulation reduces the asymptotic system-size scaling of the canonical
+:math:`\mathcal{O}(N^9)` CCSDT(Q) correction to linear scaling.
+
+An example input file for an iterative DLPNO-CCSDT(Q) computation is::
+
+   memory 2 GB
+
+   molecule h2o {
+   0 1
+   O
+   H 1 0.96
+   H 1 0.96 2 104.5
+   symmetry c1
+   }
+
+   set basis cc-pvdz
+   set scf_type df
+   set freeze_core true
+   set pno_convergence very_tight
+   set t_cut_pairs 1.0e-8
+   set t_cut_tno_full 1.0e-7
+   set t_cut_qno 3.33e-7
+
+   energy('dlpno-ccsdt(q)')  # Use dlpno-ccsdt(q0) for the semicanonical (Q0) correction
+
+DLPNO-CCSDTQ
+~~~~~~~~~~~~
+
+DLPNO-CCSDTQ iteratively solves the full quadruples-amplitude equations in local QNO
+spaces [Jiang:2026:2825]_. The full-quadruples QNO space is controlled by
+|dlpno__t_cut_qno_full| (default ``3.33e-6``). Extended pair natural orbitals (XPNOs)
+are additionally constructed to project selected quadruples amplitudes into extended
+pair domains for the computationally dominant contractions. Their occupation cutoff is
+controlled by |dlpno__t_cut_xpno|, which defaults to three times
+|dlpno__t_cut_qno_full| (approximately ``1.0e-5``).
+
+An example input file for a DLPNO-CCSDTQ computation is::
+
+   memory 2 GB
+
+   molecule h2o {
+   0 1
+   O
+   H 1 0.96
+   H 1 0.96 2 104.5
+   symmetry c1
+   }
+
+   set basis cc-pvdz
+   set scf_type df
+   set freeze_core true
+   set pno_convergence very_tight
+   set t_cut_pairs 1.0e-8
+   set t_cut_tno_full 1.0e-7
+   set t_cut_qno 3.33e-7
+   set t_cut_qno_full 3.33e-6
+   set t_cut_xpno 1.0e-5
+
+   energy('dlpno-ccsdtq')
+
 PNO Convergence Settings
 ------------------------
 
-Here we present a table of the PNO convergence settings, paramaters, and recommended use cases. Most of these parameters and
+Here we present a table of the PNO convergence settings, parameters, and recommended use cases. Most of these parameters and
 settings are similar to what is found in ORCA, with two added parameters (|dlpno__t_cut_trace| and |dlpno__t_cut_energy|) to
 increase the robustness of the PNO space. These added parameters truncate by percent recovery of the total occupation number,
 as well as the percentage energy recovery of the PNOs compared to the non-truncated basis.
@@ -140,6 +263,25 @@ Practical Advice
   for DLPNO-CCSD/(T) are automatically determined. There is no need to toggle with the disk/core
   options for the average user.
 
+* DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ substantially extend the molecular sizes
+  accessible to post-CCSD(T) benchmarks relative to their canonical counterparts. They remain
+  considerably more demanding than DLPNO-CCSD(T), and the linear-scaling regime may not be reached
+  at system sizes practical on a typical laboratory workstation.
+
+* Memory capacity and available disk space often determine the largest feasible higher-order
+  calculation. Resource requirements depend strongly on molecular sparsity, basis set, natural-orbital
+  thresholds, and whether expensive intermediates are retained in memory or written to disk.
+
+* For higher-order calculations, the recommended starting settings are
+  |dlpno__pno_convergence| ``VERY_TIGHT`` and |dlpno__t_cut_pairs| = ``1.0e-8``.
+  These values are applied automatically by the higher-order drivers. Custom thresholds should be
+  validated carefully for the intended application.
+
+* DLPNO-CCSDT(Q) is particularly useful in composite or focal-point schemes, where the
+  higher-order correction is formed as the difference between DLPNO-CCSDT(Q) and a canonical
+  DF-CCSD(T) or rank-corrected DLPNO-CCSD(T) energy. Such combinations can provide favorable
+  cancellation of local-correlation truncation errors [Jiang:2025:144102]_.
+
 * In DLPNO methods, it is recommended to freeze core orbitals (by setting |globals__freeze_core|
   to ``True``), since core excitations are known to be more sensitive to PNO truncations than
   valence truncations. If a non-frozen core computation is requested, all PNOs corresponding to core-core
@@ -147,7 +289,7 @@ Practical Advice
 
 * Note that DLPNO does not yet have molecular point group symmetry implemented and will run in C1 symmetry.
 
-* At this time, DLPNO-CCSD/(T) is only available for closed-shell RHF computations.
+* At this time, all DLPNO coupled-cluster methods are available only for closed-shell RHF energy computations.
 
 Computation Size Limits
 -----------------------
