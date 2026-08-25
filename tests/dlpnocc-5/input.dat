@@ -9,6 +9,7 @@ ref_dlpnoccsdt_q_tot      =    -76.241768557100              #TEST
 ref_dlpnoccsdtq_tot       =    -76.241742918936              #TEST
 ref_dlpnoccsdtq_corl      =     -0.214955643341              #TEST
 
+memory 2 GB
 
 molecule h2o {
 0 1
