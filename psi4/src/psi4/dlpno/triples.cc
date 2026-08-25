@@ -1573,9 +1573,9 @@ Tensor<double, 3> DLPNOCCSDT::matmul_3d_index(const Tensor<double, 3> &A, const 
 }
 
 Tensor<double, 3> DLPNOCCSDT::triples_permuter_einsums(const Tensor<double, 3> &X, int i, int j, int k, bool reverse) {
-    /*- Generates equivalent amplitude T_jik, T_kji, ..., etc. from T_ijk (restricted by index i <= j <= k) -*/
-    /*- Returns a permuted order based on the operations it takes to get i <= j <= k (forward or reverse) -*/
-    // Jiang 2025 Eq. 81-86, reverse Eq. 91-96
+    // Generate an occupied/virtual-column permutation from the stored i <= j <= k tensor.
+    // The direct permutation operator is defined by manuscript Eqs. (81)-(86); reverse=true
+    // applies the conjugate operator of Eqs. (91)-(96).
     Tensor<double, 3> Xperm = X;
 
     if (!reverse) {
@@ -1609,6 +1609,10 @@ Tensor<double, 3> DLPNOCCSDT::triples_permuter_einsums(const Tensor<double, 3> &
 
 Tensor<double, 3> DLPNOCCSDT::triples_spin_summation(const Tensor<double, 3> &X) {
 
+    // Successive spin summation of an orbital triples tensor. This is the six-permutation
+    // specialization of the procedure described by Matthews and Stanton immediately before
+    // their Eqs. (23)-(25), J. Chem. Phys. 142, 064108 (2015), DOI: 10.1063/1.4907278.
+
     Tensor<double, 3> Xnew = X;
     Xnew *= 4.0;
     Tensor<double, 3> Xtemp = triples_permuter_einsums(X, 0, 2, 1);
@@ -1624,6 +1628,11 @@ Tensor<double, 3> DLPNOCCSDT::triples_spin_summation(const Tensor<double, 3> &X)
 
 Tensor<double, 3> DLPNOCCSDT::triples_spin_desummation(const Tensor<double, 3> &X) {
 
+    // Matthews and Stanton Eq. (27), using their fully spin-summed three-body form:
+    // t = (1/4) X - (1/12) P_(jki) X - (1/12) P_(kij) X. The inverse is not unique
+    // because the spin-summation transformation is singular; this sparse pseudoinverse
+    // recovers an equivalent orbital tensor without retaining a second amplitude copy.
+
     Tensor<double, 3> Xnew = X;
     Xnew *= 3.0;
     Xnew -= triples_permuter_einsums(X, 2, 0, 1);
@@ -1631,25 +1640,6 @@ Tensor<double, 3> DLPNOCCSDT::triples_spin_desummation(const Tensor<double, 3> &
     Xnew *= 1.0 / 12.0;
 
     return Xnew;
-}
-
-int DLPNOCCSDT::triples_permutation_idx(int i, int j, int k) {
-
-    int idx = 0;
-
-    if (i <= k && k <= j && i <= j) {
-        idx = 1;
-    } else if (j <= i && i <= k && j <= k) {
-        idx = 2;
-    } else if (j <= k && k <= i && j <= i) {
-        idx = 3;
-    } else if (k <= i && i <= j && k <= j) {
-        idx = 4;
-    } else if (k <= j && j <= i && k <= i) {
-        idx = 5;
-    }
-
-    return idx;
 }
 
 void DLPNOCCSDT::print_header() {
@@ -1660,67 +1650,216 @@ void DLPNOCCSDT::print_header() {
     outfile->Printf("   --------------------------------------------\n");
     outfile->Printf("                    DLPNO-CCSDT                \n");
     outfile->Printf("                   by Andy Jiang               \n");
+    outfile->Printf("              DOI: 10.1021/acs.jctc.4c01716   \n");
     outfile->Printf("   --------------------------------------------\n\n");
     outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
-    outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
+    outfile->Printf("  Inherited CCSD parameters are reported in the preceding DLPNO-CCSD header.\n");
+    outfile->Printf("  Full-triples and inherited triples parameters:\n");
+    outfile->Printf("    T_CUT_TNO                  = %6.3e \n", t_cut_tno);
+    outfile->Printf("    T_CUT_TNO_FULL             = %6.3e \n", options_.get_double("T_CUT_TNO_FULL"));
     outfile->Printf("    T_CUT_TNO_STRONG           = %6.3e \n", t_cut_tno * t_cut_tno_strong_scale);
     outfile->Printf("    T_CUT_TNO_WEAK             = %6.3e \n", t_cut_tno * t_cut_tno_weak_scale);
+    outfile->Printf("    T_CUT_TNO_PRE              = %6.3e \n", options_.get_double("T_CUT_TNO_PRE"));
+    outfile->Printf("    T_CUT_TRIPLES_WEAK         = %6.3e \n", options_.get_double("T_CUT_TRIPLES_WEAK"));
     outfile->Printf("    T_CUT_DO_TRIPLES           = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES"));
+    outfile->Printf("    T_CUT_DO_TRIPLES_PRE       = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES_PRE"));
     outfile->Printf("    T_CUT_MKN_TRIPLES          = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES"));
+    outfile->Printf("    T_CUT_MKN_TRIPLES_PRE      = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES_PRE"));
     outfile->Printf("    F_CUT_T                    = %6.3e \n", options_.get_double("F_CUT_T"));
+    outfile->Printf("    T_CUT_ITER                 = %6.3e \n", options_.get_double("T_CUT_ITER"));
+    outfile->Printf("    MIN_TNOS                   = %6d   \n", options_.get_int("MIN_TNOS"));
+    outfile->Printf("    TRIPLES_MAX_WEAK_PAIRS     = %6d   \n", options_.get_int("TRIPLES_MAX_WEAK_PAIRS"));
+    outfile->Printf("    TRIPLES_MICROITERATIONS    = %6d   \n", options_.get_int("DLPNO_TRIPLES_MICROITERATIONS"));
+    outfile->Printf("    TRIPLES_DAMPING_RATIO      = %6.3e \n", options_.get_double("TRIPLES_DAMPING_RATIO"));
+    outfile->Printf("    E_CONVERGENCE              = %6.3e \n", options_.get_double("E_CONVERGENCE"));
+    outfile->Printf("    R_CONVERGENCE              = %6.3e \n", options_.get_double("R_CONVERGENCE"));
+    outfile->Printf("    DLPNO_MAXITER              = %6d   \n", options_.get_int("DLPNO_MAXITER"));
+    outfile->Printf("    DIIS_MAX_VECS              = %6d   \n", options_.get_int("DIIS_MAX_VECS"));
+    outfile->Printf("    DLPNO_TOGGLE_MEMORY        = %6s   \n",
+                    options_.get_bool("DLPNO_TOGGLE_MEMORY") ? "TRUE" : "FALSE");
+    outfile->Printf("    DLPNO_CCSDT_DISK_INTS      = %6s   \n", disk_ints_ ? "TRUE" : "FALSE");
+    outfile->Printf("    WRITE_TRIPLES_INTERMEDIATES= %6s   \n", write_intermediates_ ? "TRUE" : "FALSE");
+    outfile->Printf("    WRITE_TRIPLES_AMPLITUDES   = %6s   \n\n", write_amplitudes_ ? "TRUE" : "FALSE");
 }
 
 void DLPNOCCSDT::estimate_memory() {
+    const size_t n_lmo_triplets = ijk_to_i_j_k_.size();
+    const size_t n_lmo_pairs = ij_to_i_j_.size();
+    const size_t nthreads = static_cast<size_t>(nthread_);
 
-    outfile->Printf("\n ==> DLPNO-CCSDT Memory Estimate <== \n\n");
+    size_t tno_basis_memory = 0;
+    size_t triples_amplitude_memory = 0;
+    size_t perturbative_triples_memory = 0;
+    size_t inexpensive_df_memory = 0;
+    size_t disk_eligible_df_memory = 0;
+    size_t triples_iteration_memory = 0;
+    size_t integral_workspace_per_thread = 0;
+    size_t contraction_workspace_per_thread = 0;
 
-    size_t naocc = i_j_to_ij_.size();
-    size_t n_lmo_triplets = ijk_to_i_j_k_.size();
+    // The per-thread expressions below are conservative upper bounds built from the tensors
+    // simultaneously scoped in compute_integrals() and the R1/R2/R3 residual builders. They
+    // intentionally favor a safe estimate over relying only on the leading asymptotic term.
+    for (size_t ijk = 0; ijk < n_lmo_triplets; ++ijk) {
+        const size_t naux = lmotriplet_to_ribfs_[ijk].size();
+        const size_t nlmo = lmotriplet_to_lmos_[ijk].size();
+        const size_t npao = lmotriplet_to_paos_[ijk].size();
+        const size_t ntno = n_tno_[ijk];
+        const size_t ntno2 = ntno * ntno;
+        const size_t ntno3 = ntno2 * ntno;
+        const size_t ntno4 = ntno3 * ntno;
+        const size_t nlmo2 = nlmo * nlmo;
 
-    size_t K_iojv_memory = 0;
-    size_t K_ivov_memory = 0;
-    size_t K_ivvv_memory = 0;
-    size_t qij_memory = 0;
-    size_t qia_memory = 0;
-    size_t qab_memory = 0;
+        // X_tno, e_tno, and the triples amplitude produced by the preceding (T) calculation.
+        tno_basis_memory += npao * ntno + ntno;
+        triples_amplitude_memory += ntno3;
 
-#pragma omp parallel for reduction(+ : K_iojv_memory, K_ivov_memory, K_ivvv_memory, qij_memory, qia_memory, qab_memory)
-    for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
-        int ijk = sorted_triplets_[ijk_sorted];
-        auto &[i, j, k] = ijk_to_i_j_k_[ijk];
-        int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j], kk = i_j_to_ij_[k][k];
-        int ij = i_j_to_ij_[i][j], jk = i_j_to_ij_[j][k], ik = i_j_to_ij_[i][k];
+        // W and V remain resident after the initial (T) calculation unless disk-backed.
+        if (!write_intermediates_) perturbative_triples_memory += 2 * ntno3;
 
-        int naux_ijk = lmotriplet_to_ribfs_[ijk].size();
-        int nlmo_ijk = lmotriplet_to_lmos_[ijk].size();
-        int npao_ijk = lmotriplet_to_paos_[ijk].size();
-        int ntno_ijk = n_tno_[ijk];
+        // q_io/q_jo/q_ko and q_iv/q_jv/q_kv are always retained in core. q_ov and q_vv
+        // are the two tensors controlled by DLPNO_CCSDT_DISK_INTS.
+        inexpensive_df_memory += 3 * naux * (nlmo + ntno);
+        disk_eligible_df_memory += naux * nlmo * ntno + naux * ntno2;
 
-        K_iojv_memory += 6 * nlmo_ijk * ntno_ijk;
-        K_ivov_memory += 3 * nlmo_ijk * ntno_ijk * ntno_ijk;
-        K_ivvv_memory += 3 * ntno_ijk * ntno_ijk * ntno_ijk;
-        qij_memory += 3 * naux_ijk * nlmo_ijk;
+        // T_n_ijk, the Einsums T3 clone, contravariant T3, and the R3 matrix.
+        triples_iteration_memory += nlmo * ntno + 3 * ntno3;
 
-        if (!disk_ints_) {
-            qia_memory += 3 * naux_ijk * nlmo_ijk * ntno_ijk;
-            qab_memory += naux_ijk * ntno_ijk * ntno_ijk;
-        }
+        const size_t integral_workspace =
+            3 * naux * nlmo + 3 * naux * npao + naux * nlmo * ntno + naux * ntno2 +
+            2 * naux * naux + nlmo * ntno + npao * npao;
+        integral_workspace_per_thread = std::max(integral_workspace_per_thread, integral_workspace);
+
+        const size_t r1_workspace = 3 * ntno2 + 3 * ntno3 + 2 * ntno;
+        const size_t r2_workspace =
+            12 * nlmo * ntno + 12 * ntno2 + 9 * nlmo * ntno2 + 10 * ntno3;
+
+        // R3 includes the long-permutation W tensors, short-permutation V tensors,
+        // rho/chi intermediates, T_lm/K_ldme blocks, and T1-dressed DF work arrays.
+        const size_t r3_workspace =
+            3 * ntno4 + 6 * nlmo2 * ntno2 + 24 * ntno3 + 14 * nlmo * ntno2 +
+            6 * nlmo2 * ntno + 3 * nlmo2 + 3 * naux * ntno2 +
+            4 * naux * nlmo * ntno + 2 * naux * nlmo2 + 6 * naux * (nlmo + ntno) +
+            static_cast<size_t>(basisset_->nbf()) * ntno;
+        contraction_workspace_per_thread =
+            std::max(contraction_workspace_per_thread, std::max(r1_workspace, std::max(r2_workspace, r3_workspace)));
     }
 
-    size_t total_memory = K_iojv_memory + K_ivov_memory + K_ivvv_memory + qij_memory + qia_memory + qab_memory;
+    size_t singles_words = 0;
+    size_t doubles_words = 0;
+    size_t projected_pair_singles_memory = 0;
+    for (size_t i = 0; i < i_j_to_ij_.size(); ++i) {
+        const int ii = i_j_to_ij_[i][i];
+        singles_words += n_pno_[ii];
+    }
+    for (size_t ij = 0; ij < n_lmo_pairs; ++ij) {
+        const size_t npno = n_pno_[ij];
+        doubles_words += npno * npno;
+        projected_pair_singles_memory += lmopair_to_lmos_[ij].size() * npno;
+    }
 
-    outfile->Printf("    (i j | l_{ijk} a_{ijk})        : %.3f [GiB]\n", K_iojv_memory * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (i a_{ijk} | l_{ijk} b_{ijk})  : %.3f [GiB]\n", K_ivov_memory * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (i a_{ijk} | b_{ijk} c_{ijk})  : %.3f [GiB]\n", K_ivvv_memory * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (Q_{ijk} | l_{ijk} [i,j,k])    : %.3f [GiB]\n", qij_memory * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (Q_{ijk} | l_{ijk} a_{ijk})    : %.3f [GiB]\n", qia_memory * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (Q_{ijk} | a_{ijk} b_{ijk})    : %.3f [GiB]\n", qab_memory * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    Total Memory Required          : %.3f [GiB]\n\n", total_memory * pow(2.0, -30) * sizeof(double));
+    // T1, R1, R2, Rn2, T_n_ij, and the thread-private R1/R2 accumulation buffers.
+    const size_t lower_rank_iteration_memory =
+        2 * singles_words + 2 * doubles_words + projected_pair_singles_memory +
+        nthreads * (singles_words + doubles_words);
 
-    if (!disk_ints_) {
-        outfile->Printf("    Keeping all LMO/TNO ERIs in core!\n\n");
+    // The in-core DIIS manager retains a solution and error vector for every slot. Include
+    // one additional solution/error pair for the flattened vectors used during extrapolation.
+    const size_t iteration_vector_words = singles_words + doubles_words + triples_amplitude_memory;
+    const size_t diis_memory =
+        2 * (static_cast<size_t>(options_.get_int("DIIS_MAX_VECS")) + 1) * iteration_vector_words;
+
+    // rho_dbck_contribution() returns one diagonal-PNO cube per occupied orbital. Its
+    // g_menf_t and transformed-T3 work tensors are thread-private while that helper runs.
+    size_t rho_intermediate_memory = 0;
+    size_t rho_workspace_per_thread = 0;
+    for (size_t i = 0; i < i_j_to_ij_.size(); ++i) {
+        const int ii = i_j_to_ij_[i][i];
+        const size_t npno = n_pno_[ii];
+        const size_t nlmo = lmopair_to_lmos_[ii].size();
+        const size_t npno2 = npno * npno;
+        const size_t npno3 = npno2 * npno;
+        rho_intermediate_memory += npno3;
+        rho_workspace_per_thread =
+            std::max(rho_workspace_per_thread, nlmo * nlmo * npno2 + 3 * npno3 + npno2);
+    }
+    contraction_workspace_per_thread = std::max(contraction_workspace_per_thread, rho_workspace_per_thread);
+
+    size_t in_core_disk_eligible_df_memory = disk_ints_ ? 0 : disk_eligible_df_memory;
+
+    auto memory_peaks = [&]() {
+        const size_t common_memory = ccsd_baseline_memory_doubles_ + tno_basis_memory +
+                                     triples_amplitude_memory + perturbative_triples_memory +
+                                     inexpensive_df_memory + in_core_disk_eligible_df_memory;
+        const size_t integral_peak = common_memory + nthreads * integral_workspace_per_thread;
+        const size_t iteration_resident = common_memory + triples_iteration_memory +
+                                          lower_rank_iteration_memory + diis_memory;
+        const size_t ccsd_residual_peak = iteration_resident + ccsd_iteration_workspace_doubles_;
+        const size_t triples_residual_peak = iteration_resident + rho_intermediate_memory +
+                                             nthreads * contraction_workspace_per_thread;
+        const size_t iteration_peak = std::max(ccsd_residual_peak, triples_residual_peak);
+        return std::make_pair(integral_peak, iteration_peak);
+    };
+
+    const double DOUBLES_TO_GB = 1.0e-9 * sizeof(double);
+    const double BYTES_TO_GB = 1.0e-9;
+
+    auto print_estimate = [&](const char* title) {
+        const auto [integral_peak, iteration_peak] = memory_peaks();
+        outfile->Printf("\n  ==> %s <==\n\n", title);
+        outfile->Printf("    Inherited DLPNO-CCSD baseline estimate: %8.3f [GB]\n",
+                        ccsd_baseline_memory_doubles_ * DOUBLES_TO_GB);
+        outfile->Printf("    Inherited CCSD iteration workspace    : %8.3f [GB]\n",
+                        ccsd_iteration_workspace_doubles_ * DOUBLES_TO_GB);
+        outfile->Printf("    Inherited DLPNO-CCSD peak estimate    : %8.3f [GB]\n",
+                        ccsd_peak_memory_doubles_ * DOUBLES_TO_GB);
+        outfile->Printf("    TNO transforms and orbital energies   : %8.3f [GB]\n", tno_basis_memory * DOUBLES_TO_GB);
+        outfile->Printf("    (T) triples amplitudes                 : %8.3f [GB]\n",
+                        triples_amplitude_memory * DOUBLES_TO_GB);
+        outfile->Printf("    Retained (T) W/V intermediates        : %8.3f [GB]\n",
+                        perturbative_triples_memory * DOUBLES_TO_GB);
+        outfile->Printf("    Always-in-core CCSDT DF integrals      : %8.3f [GB]\n",
+                        inexpensive_df_memory * DOUBLES_TO_GB);
+        outfile->Printf("    In-core disk-eligible CCSDT integrals  : %8.3f [GB]\n",
+                        in_core_disk_eligible_df_memory * DOUBLES_TO_GB);
+        outfile->Printf("    CCSDT amplitudes/intermediates         : %8.3f [GB]\n",
+                        triples_iteration_memory * DOUBLES_TO_GB);
+        outfile->Printf("    Lower-rank amplitudes/residual buffers : %8.3f [GB]\n",
+                        lower_rank_iteration_memory * DOUBLES_TO_GB);
+        outfile->Printf("    In-core DIIS upper bound               : %8.3f [GB]\n", diis_memory * DOUBLES_TO_GB);
+        outfile->Printf("    rho_dbck cross-domain intermediates    : %8.3f [GB]\n",
+                        rho_intermediate_memory * DOUBLES_TO_GB);
+        outfile->Printf("    Integral workspace per thread (%3zu)   : %8.3f [GB]\n", nthreads,
+                        integral_workspace_per_thread * DOUBLES_TO_GB);
+        outfile->Printf("    Contraction workspace per thread (%3zu): %8.3f [GB]\n", nthreads,
+                        contraction_workspace_per_thread * DOUBLES_TO_GB);
+        outfile->Printf("    Estimated integral-build peak          : %8.3f [GB]\n", integral_peak * DOUBLES_TO_GB);
+        outfile->Printf("    Estimated CCSDT-iteration peak         : %8.3f [GB]\n", iteration_peak * DOUBLES_TO_GB);
+        outfile->Printf("    Total memory given                     : %8.3f [GB]\n\n", memory_ * BYTES_TO_GB);
+    };
+
+    print_estimate("DLPNO-CCSDT Memory Requirements");
+
+    auto [integral_peak, iteration_peak] = memory_peaks();
+    size_t required_memory = std::max(integral_peak, iteration_peak);
+    if (toggle_memory_ && !disk_ints_ && required_memory * sizeof(double) > 0.9 * memory_) {
+        outfile->Printf("  Total required memory is more than 90%% of available memory.\n");
+        outfile->Printf("    Switching (Q_{ijk}|m_{ijk} a_{ijk}) and (Q_{ijk}|a_{ijk} b_{ijk}) to disk...\n");
+        disk_ints_ = true;
+        in_core_disk_eligible_df_memory = 0;
+        std::tie(integral_peak, iteration_peak) = memory_peaks();
+        required_memory = std::max(integral_peak, iteration_peak);
+        print_estimate("Updated DLPNO-CCSDT Memory Requirements");
+    }
+
+    if (toggle_memory_ && required_memory * sizeof(double) > 0.9 * memory_) {
+        outfile->Printf("  Total required memory remains more than 90%% of available memory after all safe toggles.\n");
+        throw PSIEXCEPTION("Too little memory given for the DLPNO-CCSDT algorithm.");
+    }
+
+    if (disk_ints_) {
+        outfile->Printf("    Writing the largest TNO-basis DF integrals to disk.\n\n");
     } else {
-        outfile->Printf("    Writing expensive (Q_{ijk} | l_{ijk} a_{ijk}) and (Q_{ijk} | a_{ijk} b_{ijk}) integrals to disk!\n\n");
+        outfile->Printf("    Keeping all TNO-basis DF integrals in core.\n\n");
     }
 }
 
@@ -1928,7 +2067,8 @@ void DLPNOCCSDT::compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vect
     size_t naocc = i_j_to_ij_.size();
     size_t n_lmo_triplets = ijk_to_i_j_k_.size();
 
-    // Compute residual from LCCSD
+    // Start from the CCSD part, then add the canonical T3 term of manuscript Eq. (32)
+    // in its domain-projected form, Eq. (80) and Algorithm 1.
     DLPNOCCSD::compute_R_ia(R_ia, R_ia_buffer);
 
     // Clean buffers
@@ -1939,12 +2079,11 @@ void DLPNOCCSDT::compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vect
         } // end thread
     } // end i
 
-    // Looped over unique triplets (Koch Algorithm 1)
+    // Loop over unique triplets as prescribed by DLPNO-CCSDT Algorithm 1.
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
         int ijk = sorted_triplets_[ijk_sorted];
         auto &[i, j, k] = ijk_to_i_j_k_[ijk];
-        int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j], kk = i_j_to_ij_[k][k];
 
         int ntno_ijk = n_tno_[ijk];
 
@@ -2009,7 +2148,8 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
     size_t n_lmo_pairs = ij_to_i_j_.size();
     size_t n_lmo_triplets = ijk_to_i_j_k_.size();
 
-    // Compute residual from LCCSD
+    // Start from the CCSD part, then add the canonical T3 terms of manuscript Eq. (33)
+    // and apply Eq. (34) through the local contractions in Eqs. (87)-(90), Algorithm 2.
     DLPNOCCSD::compute_R_iajb(R_iajb, Rn_iajb);
 
     // Clean buffers
@@ -2020,7 +2160,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
         } // end thread
     } // end i
 
-// Looped over unique triplets (Koch Algorithm 1)
+    // Loop over unique triplets as prescribed by DLPNO-CCSDT Algorithm 2.
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
         int ijk = sorted_triplets_[ijk_sorted];
@@ -2125,7 +2265,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
         auto S_ijk = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], triplet_ext_domain);
         S_ijk = linalg::doublet(X_tno_[ijk], S_ijk, true, false);
 
-        // => Fkc contribution <= //
+        // => F_kc contribution: DLPNO Eq. (87), from canonical Eq. (33) <= //
 
         std::vector<std::tuple<int, int, int>> P_S = {std::make_tuple(i, j, k), std::make_tuple(i, k, j), std::make_tuple(j, k, i)};
         std::vector<Tensor<double, 3>> K_kvov_list = {K_kvov, K_jvov, K_ivov};
@@ -2157,7 +2297,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
             R_iajb_buffer[thread][ij]->add(linalg::triplet(S_ijk_ij, psi_buffer, S_ijk_ij, true, false, false));
         }
 
-        // => (db|kc) and (jl|kc) contribution <= //
+        // => (db|kc) and (jl|kc) contributions: DLPNO Eqs. (88)-(89), canonical Eq. (33) <= //
         std::vector<std::tuple<int, int, int>> perms = {std::make_tuple(i, j, k), std::make_tuple(i, k, j),
                                                         std::make_tuple(j, i, k), std::make_tuple(j, k, i),
                                                         std::make_tuple(k, i, j), std::make_tuple(k, j, i)};
@@ -2229,7 +2369,8 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
 
     } // end ijk
 
-    // Flush buffers
+    // Apply the spin-adapted pair permutation of DLPNO Eq. (90), corresponding to
+    // the canonical permutation operator in Eq. (34), while flushing the buffers.
 #pragma omp parallel for
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int ji = ij_to_ji_[ij];
@@ -2248,17 +2389,20 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
             R_iajb[ij]->add(cont_b);
             R_iajb[ij]->add(cont_c);
             R_iajb[ij]->add(cont_d);
-            // R_iajb[ij]->print_out();
-            // exit(0);
         } // end thread
     } // end ij
 }
 
 std::vector<Tensor<double, 3>> DLPNOCCSDT::rho_dbck_contribution() {
 
+    // This helper extracts the most expensive cross-domain term implied by rho_k(d,b,c),
+    // manuscript Eq. (101) (canonical counterpart: Eqs. (41)-(42)). In SI Algorithm S3,
+    // it is the triples-amplitude contraction in the final update of rho_k. Forming that
+    // contribution once in the diagonal PNO domain of k and projecting it into each TNO
+    // domain avoids repeating the same contraction for every target triplet. This is an
+    // algebraic factorization of the published term, not a separate approximation.
+
     int naocc = i_j_to_ij_.size();
-    size_t n_lmo_pairs = ij_to_i_j_.size();
-    size_t n_lmo_triplets = ijk_to_i_j_k_.size();
 
     std::vector<Tensor<double, 3>> rho_dbck_cont(naocc);
 
@@ -2324,10 +2468,9 @@ std::vector<Tensor<double, 3>> DLPNOCCSDT::rho_dbck_contribution() {
 void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
     size_t naocc = i_j_to_ij_.size();
-    size_t n_lmo_pairs = ij_to_i_j_.size();
     size_t n_lmo_triplets = ijk_to_i_j_k_.size();
 
-    // Compute expensive rho_dbck contribution
+    // Compute the reusable part of rho_k(d,b,c), manuscript Eq. (101) / SI Algorithm S3.
     std::vector<Tensor<double, 3>> rho_dbck_cont = rho_dbck_contribution();
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -2423,7 +2566,8 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
         std::vector<Tensor<double, 2>> q_io_t1_list(ijk_idx.size());
         std::vector<Tensor<double, 2>> q_iv_t1_list(ijk_idx.size());
 
-        // => STEP 0: T1-dress DF integrals <= //
+        // => DF factorization and T1-dressed three-index integrals: manuscript Eqs. (20)-(26),
+        //    SI Eq. (S1) and Algorithm S1 <= //
 
         for (int i_idx = 0; i_idx < ijk_idx.size(); ++i_idx) {
             int i = ijk_idx[i_idx];
@@ -2448,40 +2592,14 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             einsum(1.0, Indices{index::Q, index::l}, &q_io_t1_list[i_idx], 1.0, Indices{index::Q, index::l, index::a}, q_ov_[ijk], Indices{index::a}, T_i);
         } // end i_idx
 
-        /*
-        auto j_ijk = std::find(lmotriplet_to_lmos_[ijk].begin(), lmotriplet_to_lmos_[ijk].end(), j) - lmotriplet_to_lmos_[ijk].begin();
-        auto k_ijk = std::find(lmotriplet_to_lmos_[ijk].begin(), lmotriplet_to_lmos_[ijk].end(), k) - lmotriplet_to_lmos_[ijk].begin();
-        
-        Tensor<double, 1> T_j("T_j", ntno_ijk);
-        ::memcpy(T_j.data(), &(T_n_ijk_[ijk])(j_ijk, 0), ntno_ijk * sizeof(double));
-        Tensor<double, 1> T_k("T_k", ntno_ijk);
-        ::memcpy(T_k.data(), &(T_n_ijk_[ijk])(k_ijk, 0), ntno_ijk * sizeof(double));
-        
-        Tensor<double, 2> q_jv_t1 = q_jv_[ijk];
-        einsum(1.0, Indices{index::Q, index::a}, &q_jv_t1, -1.0, Indices{index::Q, index::l}, q_jo_[ijk], Indices{index::l, index::a}, T_n_ijk_[ijk]);
-        einsum(1.0, Indices{index::Q, index::a}, &q_jv_t1, 1.0, Indices{index::Q, index::a, index::b}, q_vv_[ijk], Indices{index::b}, T_j);
-        Tensor<double, 2> q_jv_t1_temp("q_jv_t1_temp", naux_ijk, nlmo_ijk);
-        einsum(0.0, Indices{index::Q, index::l}, &q_jv_t1_temp, 1.0, Indices{index::Q, index::l, index::b}, q_ov_[ijk], Indices{index::b}, T_j);
-        einsum(1.0, Indices{index::Q, index::a}, &q_jv_t1, -1.0, Indices{index::Q, index::l}, q_jv_t1_temp, Indices{index::l, index::a}, T_n_ijk_[ijk]);
-        Tensor<double, 2> q_kv_t1 = q_kv_[ijk];
-        einsum(1.0, Indices{index::Q, index::a}, &q_kv_t1, -1.0, Indices{index::Q, index::l}, q_ko_[ijk], Indices{index::l, index::a}, T_n_ijk_[ijk]);
-        einsum(1.0, Indices{index::Q, index::a}, &q_kv_t1, 1.0, Indices{index::Q, index::a, index::b}, q_vv_[ijk], Indices{index::b}, T_k);
-        Tensor<double, 2> q_kv_t1_temp("q_kv_t1_temp", naux_ijk, nlmo_ijk);
-        einsum(0.0, Indices{index::Q, index::l}, &q_kv_t1_temp, 1.0, Indices{index::Q, index::l, index::b}, q_ov_[ijk], Indices{index::b}, T_k);
-        einsum(1.0, Indices{index::Q, index::a}, &q_kv_t1, -1.0, Indices{index::Q, index::l}, q_kv_t1_temp, Indices{index::l, index::a}, T_n_ijk_[ijk]);
-        Tensor<double, 2> q_jo_t1 = q_jo_[ijk];
-        einsum(1.0, Indices{index::Q, index::l}, &q_jo_t1, 1.0, Indices{index::Q, index::l, index::a}, q_ov_[ijk], Indices{index::a}, T_j);
-        Tensor<double, 2> q_ko_t1 = q_ko_[ijk];
-        einsum(1.0, Indices{index::Q, index::l}, &q_ko_t1, 1.0, Indices{index::Q, index::l, index::a}, q_ov_[ijk], Indices{index::a}, T_k);
-        */
-
         // This one is special... the second index is dressed instead of the first (per convention), to increase computational efficiency
         Tensor<double, 3> q_vv_t1 = q_vv_[ijk];
         Tensor<double, 3> q_vo("q_vo", naux_ijk, ntno_ijk, nlmo_ijk);
         permute(Indices{index::Q, index::a, index::l}, &q_vo, Indices{index::Q, index::l, index::a}, q_ov_[ijk]);
         einsum(1.0, Indices{index::Q, index::a, index::b}, &q_vv_t1, -1.0, Indices{index::Q, index::a, index::l}, q_vo, Indices{index::l, index::b}, T_n_ijk_[ijk]);
 
-        // => Form Fock Matrix Intermediates <= //
+        // => Form dressed Fock intermediates: manuscript Eqs. (27)-(31), SI Eqs. (S2)-(S4)
+        //    and Algorithm S2 <= //
 
         // Gamma_Q is used universally for J-like contractions
         Tensor<double, 1> gamma_Q("gamma_Q", naux_ijk);
@@ -2546,7 +2664,8 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             einsum(1.0, Indices{index::a, index::d}, &F_ad, -1.0, Indices{index::m, index::a}, T_n_ijk_[ijk], Indices{index::m, index::d}, F_ld);
         }
 
-        // rho_dbci, dbcj, dbck (Lesiuk Eq. 16)
+        // rho_i/rho_j/rho_k(d,b,c): manuscript Eq. (101), canonical Eqs. (41)-(42),
+        // SI Eq. (S5) and Algorithm S3.
         std::vector<Tensor<double, 3>> rho_dbck_list(ijk_idx.size());
 
         // T_lm amplitudes
@@ -2667,7 +2786,8 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
                                                                     std::make_tuple(1, 0, 2), std::make_tuple(1, 2, 0),
                                                                     std::make_tuple(2, 0, 1), std::make_tuple(2, 1, 0)};
 
-        // Form rho_ljck intermediate (Lesiuk Eq. 15)
+        // rho_jk(l,c): manuscript Eq. (102), canonical Eqs. (39)-(40),
+        // SI Eq. (S6) and Algorithm S4.
         std::vector<Tensor<double, 2>> rho_ljck_list(long_perms.size());
 
         for (int idx = 0; idx < long_perms.size(); ++idx) {
@@ -2771,13 +2891,9 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             }
         }
 
-        // Lesiuk Eq. 11a (flip sign)
+        // Long-permutation W contribution: manuscript Eq. (100), canonical Eqs. (38)-(42),
+        // and Algorithm 3. The sign is absorbed into the local rho contraction below.
         std::vector<Tensor<double, 3>> Wperms(long_perms.size());
-
-        // std::vector<SharedMatrix> S_ijk_ij_list = {S_ijk_ij_[ijk], S_ijk_ik_[ijk], S_ijk_ij_[ijk],
-        //                                             S_ijk_jk_[ijk], S_ijk_ik_[ijk], S_ijk_jk_[ijk]};
-        // std::vector<std::vector<SharedMatrix>> S_ijk_il_list = {S_ijk_il_[ijk], S_ijk_il_[ijk], S_ijk_jl_[ijk],
-        //                                                             S_ijk_jl_[ijk], S_ijk_kl_[ijk], S_ijk_kl_[ijk]};
 
         for (int idx = 0; idx < long_perms.size(); ++idx) {
             auto &[i, j, k] = long_perms[idx];
@@ -2827,11 +2943,13 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             }
         }
 
-        // => STEP 2: SHORT PERMUTATION TERMS <= //
+        // => Short-permutation V contribution: manuscript Eq. (103), canonical Eqs. (43)-(50),
+        //    and Algorithm 4 <= //
         std::vector<std::tuple<int, int, int>> short_perms = {std::make_tuple(i, j, k), std::make_tuple(j, i, k), std::make_tuple(k, j, i)};
         std::vector<std::tuple<int, int, int>> short_perms_idx = {std::make_tuple(0, 1, 2), std::make_tuple(1, 0, 2), std::make_tuple(2, 1, 0)};
 
-        // chi_li, chi_lj, chi_lk (Lesiuk Eq. 12a)
+        // chi_i(l), chi_j(l), chi_k(l): manuscript Eq. (106), canonical Eq. (45),
+        // SI Eq. (S12) and Algorithm S7.
         std::vector<Tensor<double, 1>> chi_li_list(ijk_idx.size());
 
         for (int idx = 0; idx < ijk_idx.size(); ++idx) {
@@ -2856,7 +2974,7 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             einsum(1.0, Indices{index::l}, &chi_li_list[idx], 1.0, Indices{index::Q, index::d, index::l}, q_vo, Indices{index::Q, index::d}, chi_li_temp);
         }
 
-        // Lesiuk Eq. 12b
+        // chi(a,d): manuscript Eq. (104), canonical Eq. (46), SI Eq. (S10) and Algorithm S5.
         Tensor<double, 2> chi_ad("chi_ad", ntno_ijk, ntno_ijk); {
             chi_ad = F_ad;
 
@@ -2866,22 +2984,11 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             U_lm *= 2.0;
             U_lm -= T_lm_T;
             einsum(1.0, Indices{index::a, index::d}, &chi_ad, -1.0, Indices{index::m, index::l, index::e, index::a}, U_lm, Indices{index::m, index::l, index::e, index::d}, K_ldme_T);
-            /*
-            for (int q_ijk = 0; q_ijk < naux_ijk; ++q_ijk) {
-                TensorView<double, 2> B_Q_me_slice = q_ov_[ijk](q_ijk, All, All); // B^{Q_{ijk}}_{m_{ijk} e_{ijk}}
-                Tensor<double, 2> X_bar("X_bar", nlmo_ijk, ntno_ijk);
-                // X_bar(l, a) = \sum_{m, e} B_Q_me_slice(m, e) * U_lm(l, m, a, e)
-                einsum(0.0, Indices{index::l, index::a}, &X_bar, 1.0, Indices{index::m, index::e}, B_Q_me_slice, Indices{index::l, index::m, index::a, index::e}, U_lm);
-                // chi_ad(a, d) -= \sum_{l} X_bar(l, a) * B_Q_me_slice(l, d)
-                einsum(1.0, Indices{index::a, index::d}, &chi_ad, -1.0, Indices{index::l, index::a}, X_bar, Indices{index::l, index::d}, B_Q_me_slice);
-            }
-            */
         }
 
-        // chi_jklm, chi_iklm, chi_jilm (Lesiuk Eq. 13a)
+        // chi_jk(l,m), chi_ik(l,m), chi_ji(l,m): manuscript Eq. (109), canonical Eq. (47),
+        // SI Eq. (S15) and Algorithm S10.
         std::vector<Tensor<double, 2>> chi_jk_list(short_perms.size());
-
-        // std::vector<SharedMatrix> S_ijk_jk_list_short = {S_ijk_jk_[ijk], S_ijk_ik_[ijk], S_ijk_ij_[ijk]};
 
         for (int idx = 0; idx < short_perms.size(); ++idx) {
             auto &[i, j, k] = short_perms[idx];
@@ -2908,8 +3015,8 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             einsum(1.0, Indices{index::l, index::m}, &chi_jk_list[idx], 1.0, Indices{index::Q, index::e, index::l}, chi_jk_temp_T, Indices{index::Q, index::e, index::m}, q_vo);
         }
 
-        // chi_bdce (Lesiuk Eq. 13b, different order b/c different T1 convention)
-        // Praise... to the Lord... only 20 lines
+        // chi(d,e,b,c): manuscript Eq. (105), canonical Eq. (48), SI Eq. (S11) and Algorithm S6.
+        // The in-memory index order follows the T1-dressing convention used above.
         Tensor<double, 4> chi_dbec("chi_dbec", ntno_ijk, ntno_ijk, ntno_ijk, ntno_ijk); {
             einsum(0.0, Indices{index::d, index::b, index::e, index::c}, &chi_dbec, 1.0, Indices{index::Q, index::d, index::b}, q_vv_t1, Indices{index::Q, index::e, index::c}, q_vv_t1);
 
@@ -2925,7 +3032,8 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             chi_dbec = chi_dbec_temp;
         }
 
-        // Lesiuk Eq. 14a (chi_lida, chi_ljda, chi_lkda)
+        // chi_i(l,d,a), chi_j(l,d,a), chi_k(l,d,a): manuscript Eq. (107), canonical Eq. (49),
+        // SI Eq. (S13) and Algorithm S8.
         std::vector<Tensor<double, 3>> chi_lida_list(short_perms.size());
 
         for (int idx = 0; idx < ijk_idx.size(); ++idx) {
@@ -2949,7 +3057,8 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             einsum(1.0, Indices{index::l, index::d, index::a}, &chi_lida_list[idx], -1.0, Indices{index::m, index::e, index::l, index::d}, K_ldme_T2, Indices{index::m, index::e, index::a}, T_im);
         }
 
-        // Lesiuk Eq. 14b (chi_ldai, chi_ldaj, chi_ldak)
+        // tilde-chi_i(l,d,a), tilde-chi_j(l,d,a), tilde-chi_k(l,d,a): manuscript Eq. (108),
+        // canonical Eq. (50), SI Eq. (S14) and Algorithm S9.
         std::vector<Tensor<double, 3>> chi_ldai_list(short_perms.size());
         for (int idx = 0; idx < ijk_idx.size(); ++idx) {
             int i = ijk_idx[idx];
@@ -2979,9 +3088,6 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
         }
 
         std::vector<Tensor<double, 3>> Vperms(short_perms.size());
-
-        // std::vector<std::vector<SharedMatrix>> S_ijk_ljk_list = {S_ijk_ljk_[ijk], S_ijk_ilk_[ijk], S_ijk_ijl_[ijk]};
-        // std::vector<std::vector<SharedMatrix>> S_ijk_ilm_list = {S_ijk_mli_[ijk], S_ijk_mlj_[ijk], S_ijk_mlk_[ijk]};
 
         for (int idx = 0; idx < short_perms.size(); ++idx) {
             auto &[i, j, k] = short_perms[idx];
@@ -3037,23 +3143,6 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
                 Tensor<double, 2> chi_ldai_temp = chi_ldai_list[i_idx](l_ijk, All, All);
                 einsum(1.0, Indices{index::a, index::b, index::c}, &Vperms[idx], 1.0, Indices{index::d, index::a}, chi_ldai_temp, Indices{index::d, index::b, index::c}, T_ljk);
-
-                /*
-                for (int a_ijk = 0; a_ijk < ntno_ijk; ++a_ijk) {
-                    for (int b_ijk = 0; b_ijk < ntno_ijk; ++b_ijk) {
-                        for (int c_ijk = 0; c_ijk < ntno_ijk; ++c_ijk) {
-                            for (int d_ijk = 0; d_ijk < ntno_ijk; ++d_ijk) {
-                                // chi_lida contributions
-                                Vperms[idx](a_ijk, b_ijk, c_ijk) -= chi_lida_list[i_idx](l_ijk, d_ijk, a_ijk) * (T_ljk)(d_ijk, b_ijk, c_ijk)
-                                    + chi_lida_list[i_idx](l_ijk, d_ijk, b_ijk) * (T_ljk)(a_ijk, d_ijk, c_ijk) + chi_lida_list[i_idx](l_ijk, d_ijk, c_ijk) * (T_ljk)(a_ijk, b_ijk, d_ijk);
-                                // chi_ldai contributions
-                                Vperms[idx](a_ijk, b_ijk, c_ijk) += chi_ldai_list[i_idx](l_ijk, d_ijk, a_ijk) * (2 * T_ljk(d_ijk, b_ijk, c_ijk) 
-                                                                    - T_ljk(c_ijk, b_ijk, d_ijk) - T_ljk(b_ijk, d_ijk, c_ijk));
-                            } // end d_ijk
-                        } // end c_ijk
-                    } // end b_ijk
-                } // end a_ijk
-                */
             }
 
             // T_ilm contributions
@@ -3241,11 +3330,13 @@ void DLPNOCCSDT::lccsdt_iterations() {
                 U_iajbkc_[ijk] = triples_spin_summation(T_iajbkc_clone_[ijk]);
             } // end ijk
 
-            // T1-dress integrals and Fock matrices
+            // Canonical t1 dressing and its DF factorization, manuscript Eqs. (20)-(31); the local forms are
+            // detailed in SI Algorithms S1-S2.
             t1_ints();
             t1_fock();
 
-            // spin adapt and then de-adapt triples amplitudes
+            // Project the orbital triples tensor through the spin-summed representation
+            // using Matthews and Stanton's spin-summation procedure and Eq. (27).
         #pragma omp parallel for schedule(dynamic, 1)
             for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
                 int ijk = sorted_triplets_[ijk_sorted];
@@ -3256,7 +3347,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
                 ::memcpy(T_iajbkc_[ijk]->get_pointer(), T_iajbkc_clone_[ijk].data(), n_tno_[ijk] * n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
             }
 
-            // compute triples residual
+            // Triples residual: canonical Eqs. (37)-(50), DLPNO Eqs. (99)-(110).
             timer_on("DLPNO-CCSDT : R_iajbkc");
             if (miter == 0) {
                 compute_R_iajbkc(R_iajbkc);
@@ -3300,7 +3391,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
             } // end if
             timer_off("DLPNO-CCSDT : R_iajbkc");
 
-            // compute doubles residual
+            // Doubles residual: canonical Eqs. (33)-(34), DLPNO Eqs. (87)-(90).
             timer_on("DLPNO-CCSDT : R_iajb");
             compute_R_iajb_triples(R_iajb, Rn_iajb, R_iajb_buffer);
 
@@ -3327,7 +3418,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
             r_curr2 = std::sqrt(r_curr2 / n_lmo_pairs);
             timer_off("DLPNO-CCSDT : R_iajb");
 
-            // compute singles residual
+            // Singles residual: canonical Eq. (32), DLPNO Eq. (80).
             timer_on("DLPNO-CCSDT : R_ia");
             compute_R_ia_triples(R_ia, R_ia_buffer);
 
@@ -3374,7 +3465,8 @@ void DLPNOCCSDT::lccsdt_iterations() {
 
         copy_flat_mats(T_vecs_flat, T_vecs);
 
-        // evaluate energy and convergence
+        // Evaluate the canonical CCSDT energy of Eq. (51) in the local representation;
+        // the final DLPNO energy assembly is given by manuscript Eqs. (111)-(113).
         e_prev = e_curr;
         e_curr = 0.0;
         e_weak = 0.0;
@@ -3430,7 +3522,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
 double DLPNOCCSDT::compute_energy() {
 
     // Run DLPNO-CCSD(T) as initial step
-    double e_dlpno_ccsd_t = DLPNOCCSD_T::compute_energy();
+    DLPNOCCSD_T::compute_energy();
 
     timer_on("DLPNO-CCSDT");
 
@@ -3448,23 +3540,7 @@ double DLPNOCCSDT::compute_energy() {
 
     damping_ratio_ = options_.get_double("TRIPLES_DAMPING_RATIO");
 
-    if (disk_ints_) {
-        psio_->open(PSIF_DLPNO_QIA_TNO, PSIO_OPEN_NEW);
-        psio_->open(PSIF_DLPNO_QAB_TNO, PSIO_OPEN_NEW);
-    }
-
-    // Compute TNOs (they can be looser than for CCSD(T))
-    // timer_on("DLPNO-CCSDT : Recomputing TNOs");
-
     int n_lmo_triplets = ijk_to_i_j_k_.size();
-    /*
-    tno_scale_.clear();
-    tno_scale_.resize(n_lmo_triplets, 1.0);
-    double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
-    tno_transform(t_cut_tno_full);
-    double E_T0_new = compute_lccsd_t0(true);
-    double E_T_new = lccsd_t_iterations();
-    */
 
     // Sort list of triplets based on number of TNOs (for parallel efficiency)
     std::vector<std::pair<int, int>> ijk_tnos(n_lmo_triplets);
@@ -3484,8 +3560,6 @@ double DLPNOCCSDT::compute_energy() {
         sorted_triplets_[ijk] = ijk_tnos[ijk].first;
     }
 
-    // timer_off("DLPNO-CCSDT : Recomputing TNOs");
-
     nthread_ = 1;
 #ifdef _OPENMP
     nthread_ = Process::environment.get_n_threads();
@@ -3494,6 +3568,13 @@ double DLPNOCCSDT::compute_energy() {
     timer_on("DLPNO-CCSDT : Estimate Memory");
     estimate_memory();
     timer_off("DLPNO-CCSDT : Estimate Memory");
+
+    // estimate_memory() may activate disk-backed storage, so open these files only
+    // after the automatic memory decision has been made.
+    if (disk_ints_) {
+        psio_->open(PSIF_DLPNO_QIA_TNO, PSIO_OPEN_NEW);
+        psio_->open(PSIF_DLPNO_QAB_TNO, PSIO_OPEN_NEW);
+    }
 
     timer_on("DLPNO-CCSDT : Compute Integrals");
     compute_integrals();
@@ -3537,11 +3618,11 @@ double DLPNOCCSDT::compute_energy() {
 
     timer_off("DLPNO-CCSDT");
 
-    dE_T_rank_ = de_lccsd_t_screened_;
-    outfile->Printf("\n  * (T) TNO rank correction: %16.12f\n\n", dE_T_rank_);
-
+    // de_lccsd_t_screened_ is the screened-triplet component carried forward from the
+    // preceding DLPNO-(T) calculation. It is not a separate TNO-rank correction here.
     double e_scf = variables_["SCF TOTAL ENERGY"];
-    double e_ccsdt_corr = e_lccsdt_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+    double e_ccsdt_corr = e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ +
+                          de_pno_total_;
     double e_ccsdt_total = e_scf + e_ccsdt_corr;
 
     set_scalar_variable("CCSDT CORRELATION ENERGY", e_ccsdt_corr);
@@ -3564,22 +3645,30 @@ void DLPNOCCSDT::print_results() {
     }
     t1diag = std::sqrt(t1diag / (2.0 * naocc));
     outfile->Printf("\n  T1 Diagnostic: %8.8f \n", t1diag);
-    if (t1diag > 0.02) {
-        outfile->Printf("    WARNING: T1 Diagnostic is greater than 0.02, CCSD results may be unreliable!\n");
+    // Lee and Taylor's conventional 0.02 closed-shell threshold was defined from CCSD
+    // singles amplitudes (Int. J. Quantum Chem. 36, 199, 1989; DOI: 10.1002/qua.560360824).
+    // No distinct, generally accepted CCSDT-specific cutoff is available, so retain 0.02
+    // as a conservative warning about the single-reference description.
+    constexpr double closed_shell_t1_warning = 0.02;
+    if (t1diag > closed_shell_t1_warning) {
+        outfile->Printf("    WARNING: T1 Diagnostic is greater than 0.02; single-reference coupled-cluster "
+                        "results may be unreliable.\n");
     }
     set_scalar_variable("CC T1 DIAGNOSTIC", t1diag);
 
-    double e_total = e_lccsdt_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+    double e_total = e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ +
+                     de_pno_total_;
+    const double e_ccsdt_total = variables_["SCF TOTAL ENERGY"] + e_total;
+    const double ccsdt_minus_ccsd = e_ccsdt_total - variables_["CCSD TOTAL ENERGY"];
+    const double ccsdt_minus_ccsd_t = e_ccsdt_total - variables_["CCSD(T) TOTAL ENERGY"];
 
     outfile->Printf("  \n");
     outfile->Printf("  Total DLPNO-CCSDT Correlation Energy: %16.12f \n", e_total);
     outfile->Printf("    LCCSDT Correlation Energy:          %16.12f \n", e_lccsdt_);
-    outfile->Printf("    Weak Pair Contribution:             %16.12f \n", de_weak_);
-    outfile->Printf("    Eliminated Pair MP2 Correction:     %16.12f \n", de_lmp2_eliminated_);
-    outfile->Printf("    Dipole Pair Correction:             %16.12f \n", de_dipole_);
-    outfile->Printf("    PNO Truncation Correction:          %16.12f \n", de_pno_total_);
-    outfile->Printf("    Triples Rank Correction:            %16.12f \n", dE_T_rank_);
-    outfile->Printf("\n\n  @Total DLPNO-CCSDT Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_total);
+    outfile->Printf("    Screened Triplets Contribution:     %16.12f \n", de_lccsd_t_screened_);
+    outfile->Printf("    CCSDT - CCSD Energy:                %16.12f \n", ccsdt_minus_ccsd);
+    outfile->Printf("    CCSDT - CCSD(T) Energy:             %16.12f \n", ccsdt_minus_ccsd_t);
+    outfile->Printf("\n\n  @Total DLPNO-CCSDT Energy: %16.12f \n", e_ccsdt_total);
 }
 
 #endif  // USING_Einsums

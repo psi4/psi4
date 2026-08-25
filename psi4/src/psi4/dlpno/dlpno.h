@@ -385,6 +385,10 @@ class PSI_API DLPNOCCSD : public DLPNO {
 
     double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
+    /// Baseline and temporary-memory estimates retained from DLPNOCCSD::estimate_memory(), in doubles
+    size_t ccsd_baseline_memory_doubles_ = 0;
+    size_t ccsd_iteration_workspace_doubles_ = 0;
+    size_t ccsd_peak_memory_doubles_ = 0;
 
     /// Returns the appropriate overlap matrix given two LMO pairs
     inline SharedMatrix S_PNO(const int ij, const int mn);
@@ -516,6 +520,8 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
 
 #ifdef USING_Einsums
 
+// Equations for DLPNOCCSDT refer to Jiang et al. (JCTC 21, 2386, 2025;
+// DOI: 10.1021/acs.jctc.4c01716) and its Supporting Information unless noted otherwise.
 class DLPNOCCSDT : public DLPNOCCSD_T {
    protected:
     // DF integrals in the domain of triplet ijk
@@ -539,7 +545,7 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     std::vector<Tensor<double, 2>> T_n_ijk_;
     // Einsums clone of Psi4 T3 amplitudes
     std::vector<Tensor<double, 3>> T_iajbkc_clone_;
-    // Contravariant Triples Amplitudes (from Koch 2020)
+    // Contravariant (spin-summed) triples amplitudes; manuscript Eq. (79)
     std::vector<Tensor<double, 3>> U_iajbkc_;
 
     // List of triples sorted by number of TNOs
@@ -548,12 +554,6 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     int nthread_;
     // Energy expression
     double e_lccsdt_;
-    // Energy loss incurred from TNO rank reduction from (T) to T
-    double dE_T_rank_;
-    // (T0) energy using looser TNOs
-    double E_T0_loose_;
-    // (T) energy using looser TNOs
-    double E_T_loose_;
 
     /// Encapsulates the reading in of (Q_{ijk}|m_{ijk} a_{ijk}) integrals (regardless of core or disk)
     Tensor<double, 3> QIA_TNO(const int ijk);
@@ -564,23 +564,20 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     Tensor<double, 3> matmul_3d_einsums(const Tensor<double, 3> &A, const SharedMatrix &X, int dim_old, int dim_new);
     /// Helper function for transforming amplitudes from one TNO space to another (one index only)
     Tensor<double, 3> matmul_3d_index(const Tensor<double, 3> &A, const SharedMatrix &X, int index);
-    /// Helper function for managing permutational symmetry in triples amplitudes
+    /// Apply the direct or conjugate triples permutation operators, manuscript Eqs. (81)-(86) or (91)-(96)
     Tensor<double, 3> triples_permuter_einsums(const Tensor<double, 3> &X, int i, int j, int k, bool reverse=false);
-    /// Returns a permutation index for the order of i, j, k (e.g. (i <= j <= k) = 0; (i <= k <= j) = 1, ..., (k <= j <= i) = 5)
-    int triples_permutation_idx(int i, int j, int k);
-    /// Performs spin-summation of triples amplitudes 
+    /// Spin-sum a triples orbital tensor following Matthews and Stanton, JCP 142, 064108 (2015)
     Tensor<double, 3> triples_spin_summation(const Tensor<double, 3> &X);
-    /// Performs a spin-desummation of the triples amplitude (Matthews Eq. 27)
-    /// This is done to remove linear dependencies in the triples amplitude space
+    /// Recover an equivalent orbital triples tensor using Matthews and Stanton Eq. (27)
     Tensor<double, 3> triples_spin_desummation(const Tensor<double, 3> &X);
 
-    /// compute the expensive term in \rho_{ck}^{bd}
+    /// Factorized cross-domain contribution implied by rho_k(d,b,c), manuscript Eq. (101) and SI Algorithm S3
     std::vector<Tensor<double, 3>> rho_dbck_contribution();
-    /// computes singles residuals in LCCSDT equations
+    /// Add triples to the singles residual: canonical Eq. (32), DLPNO Eq. (80), Algorithm 1
     void compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vector<std::vector<SharedMatrix>>& R_ia_buffer);
-    /// compute doubles residuals in LCCSDT equations
+    /// Add triples to the doubles residual: canonical Eqs. (33)-(34), DLPNO Eqs. (87)-(90), Algorithm 2
     void compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb, std::vector<std::vector<SharedMatrix>>& R_iajb_buffer);
-    /// computes triples residuals in LCCSDT equations
+    /// Form the triples residual: canonical Eqs. (37)-(50), DLPNO Eqs. (99)-(110), Algorithms 3-4
     void compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc);
 
     void print_header();

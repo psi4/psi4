@@ -190,8 +190,11 @@ void DLPNO::common_init() {
         if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
     }
 
-    // Tighter cutoffs for post-CCSD(T) methods, essentially very tight with T_CUT_PAIRS 1.0e-8
-    if (algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q || algorithm_ == DLPNOMethod::CCSDTQ) {
+    // Post-CCSD(T) methods do not use a separate weak-pair treatment. Collapsing the
+    // strong/weak and weak/semicanonical boundaries to the same value removes that category.
+    const bool post_ccsd_t =
+        algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q || algorithm_ == DLPNOMethod::CCSDTQ;
+    if (post_ccsd_t) {
         if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
         if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
         if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
@@ -199,13 +202,16 @@ void DLPNO::common_init() {
         if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
         if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
         if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
-        if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-8;
         if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+
+        // These are method invariants rather than convergence-set defaults.
+        T_CUT_PAIRS_ = 1.0e-8;
+        T_CUT_PAIRS_MP2_ = 1.0e-8;
     }
 
-    // TODO: Is this reasonable?
-    // Answer: Yes, this is what they do in ORCA
-    if (!options_["T_CUT_PAIRS_MP2"].has_changed()) T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
+    if (!post_ccsd_t && !options_["T_CUT_PAIRS_MP2"].has_changed()) {
+        T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
+    }
 
     name_ = "DLPNO";
     module_ = "dlpno";

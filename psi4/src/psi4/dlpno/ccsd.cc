@@ -499,6 +499,12 @@ void DLPNOCCSD::estimate_memory() {
     } else {
         outfile->Printf("    Storing (Q_{ij}|a_{ij} b_{ij}) integrals in RAM... \n\n");
     }
+
+    // Retain the final, post-toggle CCSD estimates so higher-order methods can distinguish
+    // the baseline in the CCSD estimator from its thread workspace.
+    ccsd_baseline_memory_doubles_ = memory_ccsd - thread_buffer_b * nthreads;
+    ccsd_iteration_workspace_doubles_ = thread_buffer_b * nthreads;
+    ccsd_peak_memory_doubles_ = std::max(memory_ccsd, memory_integrals);
 }
 
 template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
