@@ -2823,9 +2823,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("WRITE_QUADRUPLES_INTERMEDIATES", false);
         /*- Write expensive DLPNO-CCSDT TNO integrals to disk? !expert -*/
         options.add_bool("DLPNO_CCSDT_DISK_INTS", true);
-        /*- Write expensive DLPNO-CCSDTQ QNO integrals to disk? !expert -*/
+        /*- Write expensive DLPNO-CCSDTQ QNO integrals to disk? May be enabled automatically
+            by ``DLPNO_TOGGLE_MEMORY`` when the estimated peak is too large. !expert -*/
         options.add_bool("DLPNO_CCSDTQ_DISK_INTS", true);
-        /*- Include T4 amplitudes in DIIS extrapolation for DLPNO-CCSDTQ? !expert -*/
+        /*- Include T4 amplitudes in DIIS extrapolation for DLPNO-CCSDTQ? May be disabled
+            automatically by ``DLPNO_TOGGLE_MEMORY`` after disk-backed integrals are selected. !expert -*/
         options.add_bool("EXTRAPOLATE_T4", true);
 
         /*- SUBSECTION DOI Grid Options -*/

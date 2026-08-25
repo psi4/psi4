@@ -1857,6 +1857,9 @@ void DLPNOCCSDT::estimate_memory() {
         ccsd_baseline_memory_doubles_ + tno_basis_memory + triples_amplitude_memory +
         perturbative_triples_memory + inexpensive_df_memory + in_core_disk_eligible_df_memory +
         triples_iteration_resident_memory;
+    ccsdt_iteration_workspace_doubles_ =
+        std::max(ccsd_iteration_workspace_doubles_,
+                 rho_intermediate_memory + nthreads * contraction_workspace_per_thread);
 
     if (disk_ints_) {
         outfile->Printf("    Writing the largest TNO-basis DF integrals to disk.\n\n");

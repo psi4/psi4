@@ -42,5 +42,9 @@ compare_values(ref_dlpnoccsdtq_corl, variable('CURRENT CORRELATION ENERGY'), 6, 
 compare_values(ref_dlpnoccsdtq_tot, variable('CURRENT ENERGY'), 6, 'ccsdtq tot')                 #TEST
 compare_values(ref_dlpnoccsdtq_corl, variable('CCSDTQ CORRELATION ENERGY'), 6, 'ccsdtq corl')   #TEST
 compare_values(ref_dlpnoccsdtq_tot, variable('CCSDTQ TOTAL ENERGY'), 6, 'ccsdtq tot')                 #TEST
+compare_values(ref_dlpnoccsdtq_tot - ref_dlpnoccsdt_tot,
+               variable('CCSDTQ - CCSDT ENERGY'), 6, 'ccsdtq - ccsdt')                    #TEST
+compare_values(ref_dlpnoccsdtq_tot - ref_dlpnoccsdt_q_tot,
+               variable('CCSDTQ - CCSDT(Q) ENERGY'), 6, 'ccsdtq - ccsdt(q)')             #TEST
 compare_values(ref_dlpnoccsdtq_tot, val, 6, 'ccsdtq return')                                     #TEST
 clean()
