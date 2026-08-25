@@ -27,6 +27,7 @@ set nat_orbs False
 set e_convergence 1.0e-8
 set r_convergence 1.0e-8
 set pno_convergence very_tight
+set write_quadruples_intermediates true
 
 print('   Testing DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ ...')
 val = energy('dlpno-ccsdtq')

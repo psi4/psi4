@@ -4515,383 +4515,185 @@ def run_dfep2(name, **kwargs):
     return dfep2_wfn
 
 
-def run_dlpnomp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a DLPNO-MP2 calculation.
+def run_dlpno(name, **kwargs):
+    """Run any density-fitted local-PNO method from DLPNO-MP2 through DLPNO-CCSDTQ."""
 
-    """
+    method_name = name.lower()
+    methods = {
+        "dlpno-mp2": {
+            "algorithm": "MP2",
+            "banner": "DLPNO-MP2",
+            "aux_basis": "DF_BASIS_MP2",
+            "energy_label": "MP2",
+        },
+        "scs-dlpno-mp2": {
+            "algorithm": "MP2",
+            "banner": "DLPNO-MP2",
+            "aux_basis": "DF_BASIS_MP2",
+            "energy_label": "SCS-MP2",
+        },
+        "dlpno-ccsd": {
+            "algorithm": "CCSD",
+            "banner": "DLPNO-CCSD",
+            "aux_basis": "DF_BASIS_CC",
+            "energy_label": "CCSD",
+        },
+        "dlpno-ccsd(t0)": {
+            "algorithm": "CCSD(T)",
+            "banner": "DLPNO-CCSD(T0)",
+            "aux_basis": "DF_BASIS_CC",
+            "energy_label": "CCSD(T)",
+            "t0": True,
+        },
+        "dlpno-ccsd(t)": {
+            "algorithm": "CCSD(T)",
+            "banner": "DLPNO-CCSD(T)",
+            "aux_basis": "DF_BASIS_CC",
+            "energy_label": "CCSD(T)",
+            "t0": False,
+        },
+        "dlpno-ccsdt": {
+            "algorithm": "CCSDT",
+            "banner": "DLPNO-CCSDT",
+            "aux_basis": "DF_BASIS_CC",
+            "energy_label": "CCSDT",
+        },
+        "dlpno-ccsdt(q0)": {
+            "algorithm": "CCSDT(Q)",
+            "banner": "DLPNO-CCSDT(Q0)",
+            "aux_basis": "DF_BASIS_CC",
+            "energy_label": "CCSDT(Q)",
+            "q0": True,
+        },
+        "dlpno-ccsdt(q)": {
+            "algorithm": "CCSDT(Q)",
+            "banner": "DLPNO-CCSDT(Q)",
+            "aux_basis": "DF_BASIS_CC",
+            "energy_label": "CCSDT(Q)",
+            "q0": False,
+        },
+        "dlpno-ccsdtq": {
+            "algorithm": "CCSDTQ",
+            "banner": "DLPNO-CCSDTQ",
+            "aux_basis": "DF_BASIS_CC",
+            "energy_label": "CCSDTQ",
+            "q0": False,
+        },
+    }
+
+    if method_name not in methods:
+        raise ValidationError(f"Unrecognized DLPNO method '{name}'.")
+
+    method = methods[method_name]
     optstash = p4util.OptionsState(
-        ['DF_BASIS_MP2'],
-        ['SCF_TYPE'],
-        ["DLPNO", "DLPNO_ALGORITHM"])
-
-    # Alter default algorithm (if not set by user)
-    if not core.has_global_option_changed('SCF_TYPE'):
-        core.set_global_option('SCF_TYPE', 'DF')
-        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
-
-    # DLPNO-MP2 is only DF
-    if core.get_global_option('MP2_TYPE') != "DF":
-        raise ValidationError("""  DLPNO-MP2 is only implemented with density fitting.\n"""
-                              """  'mp2_type' must be set to 'DF'.\n""")
-
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        molecule = kwargs.get('molecule', core.get_active_molecule())
-        # We need to force SCF to run in c1 for DLPNO methods
-        # TODO: Investigate why local DF domains are not properly assigned
-        # when the preceding SCF is NOT run in c1
-        if molecule.schoenflies_symbol() != 'c1':
-            core.print_out("""\n  A requested method does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n\n""")
-            molecule.reset_point_group("c1")
-            molecule.update_geometry()
-
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
-    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
-        raise ValidationError("""  DLPNO-MP2 does not make use of molecular symmetry: """
-                              """reference wavefunction must be C1.\n""")
-
-    if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-MP2 is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
-
-    core.tstart()
-    core.print_out('\n')
-    p4util.banner('DLPNO-MP2')
-    core.print_out('\n')
-
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
-                                    core.get_option("DLPNO", "DF_BASIS_MP2"),
-                                    "RIFIT", core.get_global_option('BASIS'))
-    ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
-
-    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "MP2")
-
-    dlpnomp2_wfn = core.dlpno(ref_wfn)
-    dlpnomp2_wfn.compute_energy()
-
-    if name == 'scs-dlpno-mp2':
-        dlpnomp2_wfn.set_variable('CURRENT ENERGY', dlpnomp2_wfn.variable('SCS-MP2 TOTAL ENERGY'))
-        dlpnomp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnomp2_wfn.variable('SCS-MP2 CORRELATION ENERGY'))
-
-    elif name == 'dlpno-mp2':
-        dlpnomp2_wfn.set_variable('CURRENT ENERGY', dlpnomp2_wfn.variable('MP2 TOTAL ENERGY'))
-        dlpnomp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnomp2_wfn.variable('MP2 CORRELATION ENERGY'))
-
-    # Shove variables into global space
-    for k, v in dlpnomp2_wfn.variables().items():
-        core.set_variable(k, v)
-
-    optstash.restore()
-    core.tstop()
-    return dlpnomp2_wfn
-
-def run_dlpnoccsd(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a DLPNO-CCSD calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ["DLPNO", 'DF_BASIS_CC'],
-        ['SCF_TYPE'],
-        ["DLPNO", "DLPNO_ALGORITHM"])
-
-    # Alter default algorithm (if not set by user)
-    if not core.has_global_option_changed('SCF_TYPE'):
-        core.set_global_option('SCF_TYPE', 'DF')
-        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
-
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        molecule = kwargs.get('molecule', core.get_active_molecule())
-        # We need to force SCF to run in c1 for DLPNO methods
-        # TODO: Investigate why local DF domains are not properly assigned
-        # when the preceding SCF is NOT run in c1
-        if molecule.schoenflies_symbol() != 'c1':
-            core.print_out("""\n  A requested method does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n\n""")
-            molecule.reset_point_group("c1")
-            molecule.update_geometry()
-
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
-    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
-        raise ValidationError("""  DLPNO-CCSD does not make use of molecular symmetry: """
-                              """reference wavefunction must be C1.\n""")
-    
-    if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSD is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
-    
-    core.tstart()
-    core.print_out('\n')
-    p4util.banner('DLPNO-CCSD')
-    core.print_out('\n')
-
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                    core.get_option("DLPNO", "DF_BASIS_CC"),
-                                    "RIFIT", core.get_global_option('BASIS'))
-    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
-
-    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD")
-
-    dlpnoccsd_wfn = core.dlpno(ref_wfn)
-    dlpnoccsd_wfn.compute_energy()
-
-    dlpnoccsd_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_wfn.variable('CCSD TOTAL ENERGY'))
-    dlpnoccsd_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsd_wfn.variable('CCSD CORRELATION ENERGY'))
-
-    # Shove variables into global space
-    for k, v in dlpnoccsd_wfn.variables().items():
-        core.set_variable(k, v)
-
-    optstash.restore()
-    core.tstop()
-    return dlpnoccsd_wfn
-
-def run_dlpnoccsd_t(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a DLPNO-CCSD(T0)/(T) calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ["DLPNO", 'DF_BASIS_CC'],
-        ['SCF_TYPE'],
+        ["DLPNO", "DF_BASIS_MP2"],
+        ["DLPNO", "DF_BASIS_CC"],
+        ["SCF_TYPE"],
         ["DLPNO", "DLPNO_ALGORITHM"],
-        ["DLPNO", "T0_APPROXIMATION"])
-
-    # Alter default algorithm (if not set by user)
-    if not core.has_global_option_changed('SCF_TYPE'):
-        core.set_global_option('SCF_TYPE', 'DF')
-        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
-
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        molecule = kwargs.get('molecule', core.get_active_molecule())
-        # We need to force SCF to run in c1 for DLPNO methods
-        # TODO: Investigate why local DF domains are not properly assigned
-        # when the preceding SCF is NOT run in c1
-        if molecule.schoenflies_symbol() != 'c1':
-            core.print_out("""\n  A requested method does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n\n""")
-            molecule.reset_point_group("c1")
-            molecule.update_geometry()
-            
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
-    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
-        raise ValidationError("""  DLPNO-CCSD(T) does not make use of molecular symmetry: """
-                              """reference wavefunction must be C1.\n""")
-    
-    if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSD(T) is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
-    
-    core.tstart()
-    core.print_out('\n')
-    p4util.banner('DLPNO-CCSD(T)')
-    core.print_out('\n')
-
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                    core.get_option("DLPNO", "DF_BASIS_CC"),
-                                    "RIFIT", core.get_global_option('BASIS'))
-    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
-
-    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD(T)")
-    if name == "dlpno-ccsd(t0)":
-        core.set_local_option("DLPNO", "T0_APPROXIMATION", True)
-    else:
-        core.set_local_option("DLPNO", "T0_APPROXIMATION", False)
-
-    dlpnoccsd_t_wfn = core.dlpno(ref_wfn)
-    dlpnoccsd_t_wfn.compute_energy()
-
-    dlpnoccsd_t_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_t_wfn.variable('CCSD(T) TOTAL ENERGY'))
-    dlpnoccsd_t_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsd_t_wfn.variable('CCSD(T) CORRELATION ENERGY'))
-
-    # Shove variables into global space
-    for k, v in dlpnoccsd_t_wfn.variables().items():
-        core.set_variable(k, v)
-
-    optstash.restore()
-    core.tstop()
-    return dlpnoccsd_t_wfn
-
-def run_dlpnoccsdt(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a DLPNO-CCSDT calculation.
-    """
-    optstash = p4util.OptionsState(
-        ['DF_BASIS_CC'],
-        ['SCF_TYPE'],
-        ["DLPNO", "DLPNO_ALGORITHM"]
+        ["DLPNO", "T0_APPROXIMATION"],
+        ["DLPNO", "Q0_APPROXIMATION"],
+        ["DLPNO", "T_CUT_TNO_STRONG_SCALE"],
+        ["DLPNO", "T_CUT_TNO_WEAK_SCALE"],
+        ["DLPNO", "T_CUT_QNO_STRONG_SCALE"],
+        ["DLPNO", "T_CUT_QNO_WEAK_SCALE"],
+        ["DLPNO", "T_CUT_XPNO"],
     )
 
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
-    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
-        raise ValidationError("""  DLPNO-CCSDT does not make use of molecular symmetry: """
-                              """reference wavefunction must be C1.\n""")
+    timer_started = False
+    try:
+        if not core.has_global_option_changed("SCF_TYPE"):
+            core.set_global_option("SCF_TYPE", "DF")
+            core.print_out("    SCF Algorithm Type (re)set to DF.\n")
 
-    if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSDT is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        if method["algorithm"] == "MP2" and core.get_global_option("MP2_TYPE") != "DF":
+            raise ValidationError(
+                "DLPNO-MP2 is only implemented with density fitting. "
+                "'mp2_type' must be set to 'DF'."
+            )
 
-    core.tstart()
-    core.print_out('\n')
-    p4util.banner('DLPNO-CCSDT')
-    core.print_out('\n')
+        # Every DLPNO implementation currently expects a C1 reference because its sparse
+        # orbital, pair, triplet, and quadruplet domains do not carry irrep block structure.
+        ref_wfn = kwargs.get("ref_wfn")
+        if ref_wfn is None:
+            molecule = kwargs.get("molecule", core.get_active_molecule())
+            if molecule.schoenflies_symbol() != "c1":
+                core.print_out(
+                    "\n  A requested method does not make use of molecular symmetry: "
+                    "further calculations in C1 point group.\n\n"
+                )
+                molecule.reset_point_group("c1")
+                molecule.update_geometry()
+            ref_wfn = scf_helper(method_name, use_c1=True, **kwargs)
+        elif ref_wfn.molecule().schoenflies_symbol() != "c1":
+            raise ValidationError(
+                f"{method['banner']} does not make use of molecular symmetry: "
+                "reference wavefunction must be C1."
+            )
 
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                    core.get_option("DLPNO", "DF_BASIS_CC"),
-                                    "RIFIT", core.get_global_option('BASIS'))
-    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+        reference = core.get_global_option("REFERENCE")
+        if reference != "RHF":
+            raise ValidationError(f"{method['banner']} is not available for {reference} references.")
 
-    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSDT")
+        core.tstart()
+        timer_started = True
+        core.print_out("\n")
+        p4util.banner(method["banner"])
+        core.print_out("\n")
 
-    # Reset T_CUT_TNO_STRONG_SCALE and T_CUT_TNO_WEAK_SCALE to T_CUT_TNO_FULL / T_CUT_TNO
-    t_cut_tno = core.get_option("DLPNO", "T_CUT_TNO")
-    t_cut_tno_full = core.get_option("DLPNO", "T_CUT_TNO_FULL")
-    core.set_local_option("DLPNO", "T_CUT_TNO_STRONG_SCALE", t_cut_tno_full / t_cut_tno)
-    core.set_local_option("DLPNO", "T_CUT_TNO_WEAK_SCALE", t_cut_tno_full / t_cut_tno)
+        aux_basis_name = method["aux_basis"]
+        aux_basis = core.BasisSet.build(
+            ref_wfn.molecule(),
+            aux_basis_name,
+            core.get_option("DLPNO", aux_basis_name),
+            "RIFIT",
+            core.get_global_option("BASIS"),
+        )
+        ref_wfn.set_basisset(aux_basis_name, aux_basis)
 
-    dlpnoccsdt_wfn = core.dlpno(ref_wfn)
-    dlpnoccsdt_wfn.compute_energy()
+        algorithm = method["algorithm"]
+        core.set_local_option("DLPNO", "DLPNO_ALGORITHM", algorithm)
 
-    dlpnoccsdt_wfn.set_variable('CURRENT ENERGY', dlpnoccsdt_wfn.variable('CCSDT TOTAL ENERGY'))
-    dlpnoccsdt_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsdt_wfn.variable('CCSDT CORRELATION ENERGY'))
+        if "t0" in method:
+            core.set_local_option("DLPNO", "T0_APPROXIMATION", method["t0"])
+        if "q0" in method:
+            core.set_local_option("DLPNO", "Q0_APPROXIMATION", method["q0"])
 
-    # Shove variables into global space
-    for k, v in dlpnoccsdt_wfn.variables().items():
-        core.set_variable(k, v)
+        if algorithm in {"CCSDT", "CCSDT(Q)", "CCSDTQ"}:
+            t_cut_tno = core.get_option("DLPNO", "T_CUT_TNO")
+            t_cut_tno_full = core.get_option("DLPNO", "T_CUT_TNO_FULL")
+            tno_scale = t_cut_tno_full / t_cut_tno
+            core.set_local_option("DLPNO", "T_CUT_TNO_STRONG_SCALE", tno_scale)
+            core.set_local_option("DLPNO", "T_CUT_TNO_WEAK_SCALE", tno_scale)
 
-    optstash.restore()
-    core.tstop()
-    return dlpnoccsdt_wfn
+        if algorithm == "CCSDTQ":
+            t_cut_qno = core.get_option("DLPNO", "T_CUT_QNO")
+            t_cut_qno_full = core.get_option("DLPNO", "T_CUT_QNO_FULL")
+            qno_scale = t_cut_qno_full / t_cut_qno
+            core.set_local_option("DLPNO", "T_CUT_QNO_STRONG_SCALE", qno_scale)
+            core.set_local_option("DLPNO", "T_CUT_QNO_WEAK_SCALE", qno_scale)
 
-def run_dlpnoccsdt_q(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a DLPNO-CCSDT(Q) calculation.
-    """
-    optstash = p4util.OptionsState(
-        ['DF_BASIS_CC'],
-        ['SCF_TYPE'],
-        ["DLPNO", "DLPNO_ALGORITHM"],
-        ["DLPNO", "Q0_APPROXIMATION"]
-    )
+            if not core.has_option_changed("DLPNO", "T_CUT_XPNO"):
+                core.set_local_option("DLPNO", "T_CUT_XPNO", 3.0 * t_cut_qno_full)
 
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
-    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
-        raise ValidationError("""  DLPNO-CCSDT(Q) does not make use of molecular symmetry: """
-                              """reference wavefunction must be C1.\n""")
+        dlpno_wfn = core.dlpno(ref_wfn)
+        dlpno_wfn.compute_energy()
 
-    if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSDT(Q) is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        energy_label = method["energy_label"]
+        dlpno_wfn.set_variable("CURRENT ENERGY", dlpno_wfn.variable(f"{energy_label} TOTAL ENERGY"))
+        dlpno_wfn.set_variable(
+            "CURRENT CORRELATION ENERGY",
+            dlpno_wfn.variable(f"{energy_label} CORRELATION ENERGY"),
+        )
 
-    core.tstart()
-    core.print_out('\n')
-    p4util.banner('DLPNO-CCSDT(Q)')
-    core.print_out('\n')
+        for variable, value in dlpno_wfn.variables().items():
+            core.set_variable(variable, value)
 
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                    core.get_option("DLPNO", "DF_BASIS_CC"),
-                                    "RIFIT", core.get_global_option('BASIS'))
-    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+        return dlpno_wfn
+    finally:
+        if timer_started:
+            core.tstop()
+        optstash.restore()
 
-    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSDT(Q)")
-    core.set_local_option("DLPNO", "Q0_APPROXIMATION", True) if name == "dlpno-ccsdt(q0)" else core.set_local_option("DLPNO", "Q0_APPROXIMATION", False)
-
-    # Reset T_CUT_TNO_STRONG_SCALE and T_CUT_TNO_WEAK_SCALE to T_CUT_TNO_FULL / T_CUT_TNO
-    t_cut_tno = core.get_option("DLPNO", "T_CUT_TNO")
-    t_cut_tno_full = core.get_option("DLPNO", "T_CUT_TNO_FULL")
-    core.set_local_option("DLPNO", "T_CUT_TNO_STRONG_SCALE", t_cut_tno_full / t_cut_tno)
-    core.set_local_option("DLPNO", "T_CUT_TNO_WEAK_SCALE", t_cut_tno_full / t_cut_tno)
-
-    dlpnoccsdt_q_wfn = core.dlpno(ref_wfn)
-    dlpnoccsdt_q_wfn.compute_energy()
-
-    dlpnoccsdt_q_wfn.set_variable('CURRENT ENERGY', dlpnoccsdt_q_wfn.variable('CCSDT(Q) TOTAL ENERGY'))
-    dlpnoccsdt_q_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsdt_q_wfn.variable('CCSDT(Q) CORRELATION ENERGY'))
-
-    # Shove variables into global space
-    for k, v in dlpnoccsdt_q_wfn.variables().items():
-        core.set_variable(k, v)
-
-    optstash.restore()
-    core.tstop()
-    return dlpnoccsdt_q_wfn
-
-def run_dlpnoccsdtq(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a DLPNO-CCSDTQ calculation.
-    """
-    optstash = p4util.OptionsState(
-        ['DF_BASIS_CC'],
-        ['SCF_TYPE'],
-        ["DLPNO", "DLPNO_ALGORITHM"]
-    )
-
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
-    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
-        raise ValidationError("""  DLPNO-CCSDTQ does not make use of molecular symmetry: """
-                              """reference wavefunction must be C1.\n""")
-
-    if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSDTQ is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
-
-    core.tstart()
-    core.print_out('\n')
-    p4util.banner('DLPNO-CCSDTQ')
-    core.print_out('\n')
-
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                    core.get_option("DLPNO", "DF_BASIS_CC"),
-                                    "RIFIT", core.get_global_option('BASIS'))
-    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
-
-    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSDTQ")
-
-    # Reset T_CUT_TNO_STRONG_SCALE and T_CUT_TNO_WEAK_SCALE to T_CUT_TNO_FULL / T_CUT_TNO
-    t_cut_tno = core.get_option("DLPNO", "T_CUT_TNO")
-    t_cut_tno_full = core.get_option("DLPNO", "T_CUT_TNO_FULL")
-    core.set_local_option("DLPNO", "T_CUT_TNO_STRONG_SCALE", t_cut_tno_full / t_cut_tno)
-    core.set_local_option("DLPNO", "T_CUT_TNO_WEAK_SCALE", t_cut_tno_full / t_cut_tno)
-
-    # Reset T_CUT_QNO_STRONG_SCALE and T_CUT_QNO_WEAK_SCALE to T_CUT_QNO_FULL / T_CUT_QNO
-    t_cut_qno = core.get_option("DLPNO", "T_CUT_QNO")
-    t_cut_qno_full = core.get_option("DLPNO", "T_CUT_QNO_FULL")
-    core.set_local_option("DLPNO", "T_CUT_QNO_STRONG_SCALE", t_cut_qno_full / t_cut_qno)
-    core.set_local_option("DLPNO", "T_CUT_QNO_WEAK_SCALE", t_cut_qno_full / t_cut_qno)
-
-    # T_CUT_XPNO is set to T_CUT_QNO_FULL * 3 by default (if not set by user)
-    if not core.has_option_changed("DLPNO", "T_CUT_XPNO"):
-        core.set_local_option("DLPNO", "T_CUT_XPNO", t_cut_qno_full * 3.0)
-
-    dlpnoccsdtq_wfn = core.dlpno(ref_wfn)
-    dlpnoccsdtq_wfn.compute_energy()
-
-    dlpnoccsdtq_wfn.set_variable('CURRENT ENERGY', dlpnoccsdtq_wfn.variable('CCSDTQ TOTAL ENERGY'))
-    dlpnoccsdtq_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsdtq_wfn.variable('CCSDTQ CORRELATION ENERGY'))
-
-    # Shove variables into global space
-    for k, v in dlpnoccsdtq_wfn.variables().items():
-        core.set_variable(k, v)
-
-    optstash.restore()
-    core.tstop()
-    return dlpnoccsdtq_wfn
 
 def run_mp2f12(name, **kwargs):
     r"""Function encoding sequence of PSI module calls

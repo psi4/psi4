@@ -555,6 +555,10 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     // Energy expression
     double e_lccsdt_;
 
+    /// Persistent in-core state at the end of the CCSDT stage, in doubles.
+    /// The CCSDT(Q) estimator uses this when CCSDTQ must retain all lower-rank data.
+    size_t ccsdt_resident_memory_doubles_ = 0;
+
     /// Encapsulates the reading in of (Q_{ijk}|m_{ijk} a_{ijk}) integrals (regardless of core or disk)
     Tensor<double, 3> QIA_TNO(const int ijk);
     /// Encapsulates the reading in of (Q_{ijk}|a_{ijk} b_{ijk}) integrals (regardless of core or disk)
@@ -593,8 +597,21 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     double compute_energy() override;
 };
 
+// Equations and algorithms for DLPNOCCSDT_Q refer to Jiang, Schaefer, and Turney,
+// J. Chem. Phys. 162, 144102 (2025), DOI: 10.1063/5.0257672.
 class DLPNOCCSDT_Q : public DLPNOCCSDT {
    protected:
+    struct QuadrupletEnergyIntermediates {
+        /// g_i'(a,b,e) = (i'a|be), Algorithm 1; used by Eq. (19), term 1, and Algorithm 4.
+        std::array<Tensor<double, 3>, 4> K_iabe;
+        /// g_i'j'(a,m) = (i'a|j'm), Algorithm 1; used by Eq. (19), term 2, and Algorithm 4.
+        std::array<Tensor<double, 2>, 16> K_iajm;
+        /// g_i'j'(a,b) = (i'a|j'b), Algorithm 1; used by canonical Eqs. (25)-(26).
+        std::array<Tensor<double, 2>, 16> K_iajb;
+        /// Projected contravariant doubles U_i'j'(a,b), Algorithm 1 and canonical Eq. (25).
+        std::array<Tensor<double, 2>, 16> U_iajb;
+    };
+
     // All 24 permutations of four occupied-orbital positions.
     constexpr static std::array<std::tuple<int, int, int, int>, 24> quadruple_permutations_ = {std::make_tuple(0, 1, 2, 3), std::make_tuple(0, 1, 3, 2), 
         std::make_tuple(0, 2, 1, 3), std::make_tuple(0, 2, 3, 1), std::make_tuple(0, 3, 1, 2), std::make_tuple(0, 3, 2, 1), 
@@ -612,13 +629,12 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     std::vector<std::tuple<int, int, int, int>> ijkl_to_i_j_k_l_full_; ///< LMO quadruplet indices with no i <= j <= k <= l restriction
     std::vector<int> sorted_quadruplets_; ///< quadruplets sorted by number of QNOs
 
-    /// quadruples natural orbitals (QNOs)
-    std::vector<Tensor<double, 4>> T_iajbkcld_; ///< Quadruples amplitudes for each LMO quadruplet
-    std::vector<Tensor<double, 4>> gamma_ijkl_; ///< Gamma intermediate
-    std::vector<std::array<Tensor<double, 3>, 4>> K_iabe_list_; ///< (i a_{ijkl} | b_{ijkl} e_{ijkl}) over i, j, k, l
-    std::vector<std::array<Tensor<double, 2>, 16>> K_iajm_list_; ///< (i a_{ijkl} | j m_{ijkl}) over i, j, k, l
-    std::vector<std::array<Tensor<double, 2>, 16>> K_iajb_list_; ///< (i a_{ijkl} | j b_{ijkl}) over ij, ik, il, ..., kl
-    std::vector<std::array<Tensor<double, 2>, 16>> U_iajb_list_; ///< t_{ij}^{a_{ijkl} b_{ijkl}} over ij, ik, il, ..., kl
+    /// Quadruples natural orbitals (QNOs), formed from the six-pair density of Eq. (41).
+    std::vector<Tensor<double, 4>> T_iajbkcld_; ///< T4 amplitudes, canonical Eqs. (20), (23)-(24)
+    std::vector<Tensor<double, 4>> gamma_ijkl_; ///< T4 source term, canonical Eq. (19), DLPNO Algorithm 2
+    /// Reusable inputs to the [Q] and (Q) energy contractions, grouped by quadruplet
+    /// so their lifetime and optional disk backing can be managed as one unit.
+    std::vector<QuadrupletEnergyIntermediates> quadruplet_energy_intermediates_;
     std::vector<SharedMatrix> X_qno_; ///< PAO -> canonical QNO transforms
     std::vector<SharedVector> e_qno_; ///< QNO orbital energies
     std::vector<int> n_qno_; ///< number of qnos per quadruplet domain
@@ -627,8 +643,8 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     std::vector<double> qno_scale_; ///< Scaling factor applied to each quadruplet to account for QNO truncation error
     std::vector<bool> is_strong_quadruplet_; ///< whether or not quadruplet is strong
 
-    /// Write quadruples amplitudes to disk?
-    bool write_quad_amplitudes_ = false;
+    /// Store iterative-(Q) source, amplitudes, and reusable energy intermediates on disk.
+    bool write_quadruples_intermediates_ = false;
 
     /// final energies
     double de_lccsdt_q_screened_; ///< energy contribution from screened quadruples
@@ -642,18 +658,26 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     /// Sort quadruplets to split between "strong" and "weak" quadruplets (for (Q) iterations)
     void sort_quadruplets(double e_total);
 
-    /// A helper function to transform QNO-like quantities
+    /// Transform all four virtual indices between QNO spaces (semidirect overlaps, Eqs. (58)-(61)).
     Tensor<double, 4> matmul_4d(const Tensor<double, 4>& A, const SharedMatrix &X, int dim_old, int dim_new, bool contract_first=true);
-    /// Returns a symmetrized version of that matrix (in i <= j <= k <= l ordering)
+    /// Apply the occupied/QNO permutation maps of Eqs. (51)-(55).
     Tensor<double, 4> quadruples_permuter(const Tensor<double, 4>& X, int i, int j, int k, int l);
 
-    /// Compute gamma_ijkl (and return Q0 energy)
+    /// Save/load rank-four tensors and the reusable Algorithm 1 energy bundle through PSIO.
+    void save_quadruples_tensor(const Tensor<double, 4>& tensor, const std::string& label, int ijkl);
+    Tensor<double, 4> load_quadruples_tensor(const std::string& label, int ijkl);
+    void save_quadruplet_energy_intermediates(const QuadrupletEnergyIntermediates& intermediates, int ijkl);
+    QuadrupletEnergyIntermediates load_quadruplet_energy_intermediates(int ijkl);
+
+    /// Form Gamma and semicanonical T4 (canonical Eqs. (19)-(20), DLPNO Algorithms 1-2)
+    /// and return the semicanonical (Q0) energy of Eqs. (25)-(26).
     double compute_gamma_ijkl(bool store_amplitudes=false);
-    /// L_CCSDT(Q) energy
-    double compute_quadruplet_energy(int ijkl, const Tensor<double, 4>& T4);
-    /// A function to estimate Full-(Q) memory costs
+    /// Evaluate the [Q] and (Q) energy contractions (canonical Eqs. (25)-(26), Algorithms 3-4).
+    double compute_quadruplet_energy(int ijkl, const Tensor<double, 4>& T4,
+                                     const QuadrupletEnergyIntermediates& intermediates);
+    /// Estimate iterative-(Q) resident and thread-workspace peaks and select disk backing.
     void estimate_memory();
-    /// L_CCSDT(Q) iterations
+    /// Iterate the non-semicanonical T4 equations (canonical Eqs. (23)-(24), DLPNO Algorithm 5).
     double lccsdt_q_iterations();
 
     void print_header();

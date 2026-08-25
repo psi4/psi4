@@ -1693,6 +1693,7 @@ void DLPNOCCSDT::estimate_memory() {
     size_t inexpensive_df_memory = 0;
     size_t disk_eligible_df_memory = 0;
     size_t triples_iteration_memory = 0;
+    size_t triples_iteration_resident_memory = 0;
     size_t integral_workspace_per_thread = 0;
     size_t contraction_workspace_per_thread = 0;
 
@@ -1723,6 +1724,9 @@ void DLPNOCCSDT::estimate_memory() {
 
         // T_n_ijk, the Einsums T3 clone, contravariant T3, and the R3 matrix.
         triples_iteration_memory += nlmo * ntno + 3 * ntno3;
+        // R3 is iteration-local; the other three quantities persist into a following
+        // CCSDT(Q)/CCSDTQ stage and therefore belong in the inherited resident estimate.
+        triples_iteration_resident_memory += nlmo * ntno + 2 * ntno3;
 
         const size_t integral_workspace =
             3 * naux * nlmo + 3 * naux * npao + naux * nlmo * ntno + naux * ntno2 +
@@ -1805,36 +1809,29 @@ void DLPNOCCSDT::estimate_memory() {
 
     auto print_estimate = [&](const char* title) {
         const auto [integral_peak, iteration_peak] = memory_peaks();
+        auto print_memory_line = [&](const std::string& label, size_t words) {
+            outfile->Printf("    %-46s : %8.3f [GB]\n", label.c_str(), words * DOUBLES_TO_GB);
+        };
         outfile->Printf("\n  ==> %s <==\n\n", title);
-        outfile->Printf("    Inherited DLPNO-CCSD baseline estimate: %8.3f [GB]\n",
-                        ccsd_baseline_memory_doubles_ * DOUBLES_TO_GB);
-        outfile->Printf("    Inherited CCSD iteration workspace    : %8.3f [GB]\n",
-                        ccsd_iteration_workspace_doubles_ * DOUBLES_TO_GB);
-        outfile->Printf("    Inherited DLPNO-CCSD peak estimate    : %8.3f [GB]\n",
-                        ccsd_peak_memory_doubles_ * DOUBLES_TO_GB);
-        outfile->Printf("    TNO transforms and orbital energies   : %8.3f [GB]\n", tno_basis_memory * DOUBLES_TO_GB);
-        outfile->Printf("    (T) triples amplitudes                 : %8.3f [GB]\n",
-                        triples_amplitude_memory * DOUBLES_TO_GB);
-        outfile->Printf("    Retained (T) W/V intermediates        : %8.3f [GB]\n",
-                        perturbative_triples_memory * DOUBLES_TO_GB);
-        outfile->Printf("    Always-in-core CCSDT DF integrals      : %8.3f [GB]\n",
-                        inexpensive_df_memory * DOUBLES_TO_GB);
-        outfile->Printf("    In-core disk-eligible CCSDT integrals  : %8.3f [GB]\n",
-                        in_core_disk_eligible_df_memory * DOUBLES_TO_GB);
-        outfile->Printf("    CCSDT amplitudes/intermediates         : %8.3f [GB]\n",
-                        triples_iteration_memory * DOUBLES_TO_GB);
-        outfile->Printf("    Lower-rank amplitudes/residual buffers : %8.3f [GB]\n",
-                        lower_rank_iteration_memory * DOUBLES_TO_GB);
-        outfile->Printf("    In-core DIIS upper bound               : %8.3f [GB]\n", diis_memory * DOUBLES_TO_GB);
-        outfile->Printf("    rho_dbck cross-domain intermediates    : %8.3f [GB]\n",
-                        rho_intermediate_memory * DOUBLES_TO_GB);
-        outfile->Printf("    Integral workspace per thread (%3zu)   : %8.3f [GB]\n", nthreads,
-                        integral_workspace_per_thread * DOUBLES_TO_GB);
-        outfile->Printf("    Contraction workspace per thread (%3zu): %8.3f [GB]\n", nthreads,
-                        contraction_workspace_per_thread * DOUBLES_TO_GB);
-        outfile->Printf("    Estimated integral-build peak          : %8.3f [GB]\n", integral_peak * DOUBLES_TO_GB);
-        outfile->Printf("    Estimated CCSDT-iteration peak         : %8.3f [GB]\n", iteration_peak * DOUBLES_TO_GB);
-        outfile->Printf("    Total memory given                     : %8.3f [GB]\n\n", memory_ * BYTES_TO_GB);
+        print_memory_line("Inherited DLPNO-CCSD baseline estimate", ccsd_baseline_memory_doubles_);
+        print_memory_line("Inherited CCSD iteration workspace", ccsd_iteration_workspace_doubles_);
+        print_memory_line("Inherited DLPNO-CCSD peak estimate", ccsd_peak_memory_doubles_);
+        print_memory_line("TNO transforms and orbital energies", tno_basis_memory);
+        print_memory_line("(T) triples amplitudes", triples_amplitude_memory);
+        print_memory_line("Retained (T) W/V intermediates", perturbative_triples_memory);
+        print_memory_line("Always-in-core CCSDT DF integrals", inexpensive_df_memory);
+        print_memory_line("In-core disk-eligible CCSDT integrals", in_core_disk_eligible_df_memory);
+        print_memory_line("CCSDT amplitudes/intermediates", triples_iteration_memory);
+        print_memory_line("Lower-rank amplitudes/residual buffers", lower_rank_iteration_memory);
+        print_memory_line("In-core DIIS upper bound", diis_memory);
+        print_memory_line("rho_dbck cross-domain intermediates", rho_intermediate_memory);
+        print_memory_line("Integral workspace per thread (" + std::to_string(nthreads) + ")",
+                          integral_workspace_per_thread);
+        print_memory_line("Contraction workspace per thread (" + std::to_string(nthreads) + ")",
+                          contraction_workspace_per_thread);
+        print_memory_line("Estimated integral-build peak", integral_peak);
+        print_memory_line("Estimated CCSDT-iteration peak", iteration_peak);
+        outfile->Printf("    %-46s : %8.3f [GB]\n\n", "Total memory given", memory_ * BYTES_TO_GB);
     };
 
     print_estimate("DLPNO-CCSDT Memory Requirements");
@@ -1855,6 +1852,11 @@ void DLPNOCCSDT::estimate_memory() {
         outfile->Printf("  Total required memory remains more than 90%% of available memory after all safe toggles.\n");
         throw PSIEXCEPTION("Too little memory given for the DLPNO-CCSDT algorithm.");
     }
+
+    ccsdt_resident_memory_doubles_ =
+        ccsd_baseline_memory_doubles_ + tno_basis_memory + triples_amplitude_memory +
+        perturbative_triples_memory + inexpensive_df_memory + in_core_disk_eligible_df_memory +
+        triples_iteration_resident_memory;
 
     if (disk_ints_) {
         outfile->Printf("    Writing the largest TNO-basis DF integrals to disk.\n\n");

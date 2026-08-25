@@ -2818,6 +2818,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("WRITE_TRIPLES_INTERMEDIATES", false);
         /*- Write triples amplitudes to disk? !expert -*/
         options.add_bool("WRITE_TRIPLES_AMPLITUDES", false);
+        /*- Write iterative DLPNO-(Q) amplitudes, source terms, and reusable energy
+            intermediates to disk? !expert -*/
+        options.add_bool("WRITE_QUADRUPLES_INTERMEDIATES", false);
         /*- Write expensive DLPNO-CCSDT TNO integrals to disk? !expert -*/
         options.add_bool("DLPNO_CCSDT_DISK_INTS", true);
         /*- Write expensive DLPNO-CCSDTQ QNO integrals to disk? !expert -*/
