@@ -272,6 +272,10 @@ Practical Advice
   calculation. Resource requirements depend strongly on molecular sparsity, basis set, natural-orbital
   thresholds, and whether expensive intermediates are retained in memory or written to disk.
 
+* DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ require a |PSIfour| build with the optional
+  Einsums tensor library enabled (``ENABLE_Einsums=ON``). DLPNO-MP2, DLPNO-CCSD,
+  and DLPNO-CCSD(T) remain available when Einsums support is disabled.
+
 * For higher-order calculations, the recommended starting settings are
   |dlpno__pno_convergence| ``VERY_TIGHT`` and |dlpno__t_cut_pairs| = ``1.0e-8``.
   These values are applied automatically by the higher-order drivers. Custom thresholds should be

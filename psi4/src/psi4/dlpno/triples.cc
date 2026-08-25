@@ -1508,6 +1508,8 @@ void DLPNOCCSD_T::print_results() {
     outfile->Printf("    *** Andy Jiang... FOR THREEEEEEEEEEE!!!\n\n");
 }
 
+#ifdef USING_Einsums
+
 DLPNOCCSDT::DLPNOCCSDT(SharedWavefunction ref_wfn, Options& options)
     : DLPNOCCSD_T(ref_wfn, options), disk_ints_(options.get_bool("DLPNO_CCSDT_DISK_INTS")) {}
 DLPNOCCSDT::~DLPNOCCSDT() {}
@@ -3579,6 +3581,8 @@ void DLPNOCCSDT::print_results() {
     outfile->Printf("    Triples Rank Correction:            %16.12f \n", dE_T_rank_);
     outfile->Printf("\n\n  @Total DLPNO-CCSDT Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_total);
 }
+
+#endif  // USING_Einsums
 
 }  // namespace dlpno
 }  // namespace psi

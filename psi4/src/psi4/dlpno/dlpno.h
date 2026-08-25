@@ -43,19 +43,23 @@
 #include <string>
 #include <unordered_map>
 
+#ifdef USING_Einsums
 #include "Einsums/Tensor.hpp"
 #include "Einsums/TensorAlgebra.hpp"
 #include "Einsums/LinearAlgebra.hpp"
 #include "Einsums/Profile.hpp"
 #include "Einsums/TensorUtilities/RMSD.hpp"
+#endif
 
 namespace psi {
 namespace dlpno {
 
+#ifdef USING_Einsums
 using namespace einsums;
 using namespace einsums::index;
 using namespace einsums::linear_algebra;
 using namespace einsums::tensor_algebra;
+#endif
 
 enum class DLPNOMethod { MP2, CCSD, CCSD_T, CCSDT, CCSDT_Q, CCSDTQ };
 
@@ -510,6 +514,8 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     double compute_energy() override;
 };
 
+#ifdef USING_Einsums
+
 class DLPNOCCSDT : public DLPNOCCSD_T {
    protected:
     // DF integrals in the domain of triplet ijk
@@ -734,6 +740,8 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
 
      double compute_energy() override;
 };
+
+#endif  // USING_Einsums
 
 }
 }
