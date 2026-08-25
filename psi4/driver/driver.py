@@ -266,11 +266,11 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | dlpno-ccsd(t)           | local CCSD(T) with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                                 |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
-    | dlpno-ccsdt             | local CCSDT (full triples) with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                               |
+    | dlpno-ccsdt             | local CCSDT (full triples) with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                    |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
-    | dlpno-ccsdt(q)          | local CCSDT(Q) with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                           |
+    | dlpno-ccsdt(q)          | local CCSDT(Q) with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                                |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
-    | dlpno-ccsdtq            | local CCSDTQ (full quadruples) with pair natural orbital domains :ref:`[manual] <sec:dlpnocc>`                                   |
+    | dlpno-ccsdtq            | local CCSDTQ (full quadruples) with pair natural orbital domains :ref:`[manual] <sec:dlpnocc>`                                        |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | cc3                     | approximate CC singles, doubles, and triples (CC3) :ref:`[manual] <sec:cc>` :ref:`[details] <dd_cc3>`                                 |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
