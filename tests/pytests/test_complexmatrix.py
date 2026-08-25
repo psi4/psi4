@@ -119,8 +119,8 @@ def test_complexmatrix_to_array_multiblock():
 # ---------------------------------------------------------------------------
 
 
-def test_doublet_aH_b_conjugation():
-    """Verify that doublet<true, false>(A, I) computes conjugate-transpose A."""
+def test_doublet_conjugation():
+    """Verify that doublet(A, Id, True, False) computes A.conjT()."""
     rng = np.random.default_rng(19)
     n = 4
 
@@ -130,7 +130,7 @@ def test_doublet_aH_b_conjugation():
     A_cm = psi4.core.ComplexMatrix.from_array(A_np, name="A")
     I_cm = psi4.core.ComplexMatrix.from_array(I_np, name="I")
 
-    result = psi4.core._doublet_aH_b(A_cm, I_cm).to_array()
+    result = psi4.core.doublet(A_cm, I_cm, True, False).to_array()
 
     A_H = A_np.conj().T
 
@@ -138,11 +138,11 @@ def test_doublet_aH_b_conjugation():
 
 
 def test_doublet_atypical_shapes():
-    """Test linalg::doublet<true, false> edge cases where a tile is zero or not allocated."""
+    """Test linalg::doublet edge cases where a tile is zero or not allocated."""
     A_cm = psi4.core.ComplexMatrix("A", [1, 4, 3], [4, 0, 2])
     B_cm = psi4.core.ComplexMatrix("B", [1, 4, 3], [3, 0, 5])
 
-    result = psi4.core._doublet_aH_b(A_cm, B_cm).to_array()
+    result = psi4.core.doublet(A_cm, B_cm, True, False).to_array()
 
     assert result[0].shape == (4, 3)
     assert result[1].shape == (0, 0)

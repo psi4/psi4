@@ -30,12 +30,10 @@
 #define psi4_libscf_solver_cghf_h
 
 #include "psi4/libmints/complexwavefunction.h"
-#include "psi4/libmints/typedefs.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libscf_solver/basehf.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include <memory>
 #include <tuple>
 #include <vector>
 

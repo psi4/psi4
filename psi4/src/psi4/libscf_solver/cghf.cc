@@ -36,6 +36,7 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/complexmatrix.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libfock/ComplexJK.h"
@@ -464,7 +465,7 @@ void CGHF::form_C(double shift) {
     epsilon_ = evals;
 
     // Form C_ := X_ @ C' (evecs)
-    C_ = linalg::doublet<false, false>(X_, evecs);
+    C_ = linalg::doublet(X_, evecs);
     C_->set_name("MO coefficients");
 
     find_occupation();
@@ -510,8 +511,8 @@ void CGHF::form_D() {
         C_occ->get(h) = C_->get(h)(einsums::All, einsums::Range{0, nocc});
     }
 
-    // D = C_occ * C_occ^H   (conjugate-transpose via doublet<false, true>)
-    D_ = linalg::doublet<false, true>(C_occ, C_occ);
+    // D = C_occ * C_occ^H   (conjugate-transpose via doublet(..., false, true))
+    D_ = linalg::doublet(C_occ, C_occ, false, true);
     D_->set_name("Density");
 
     if (debug_ > 0) {
@@ -792,10 +793,10 @@ std::tuple<double, double> CGHF::spin_square() const {
     }
 
     // Sσστ = Cσ^H S Cτ
-    auto Saa = linalg::triplet<true, false, false>(Ca, S, Ca);
-    auto Sbb = linalg::triplet<true, false, false>(Cb, S, Cb);
-    auto Sab = linalg::triplet<true, false, false>(Ca, S, Cb);
-    auto Sba = linalg::triplet<true, false, false>(Cb, S, Ca);
+    auto Saa = linalg::triplet(Ca, S, Ca, true, false, false);
+    auto Sbb = linalg::triplet(Cb, S, Cb, true, false, false);
+    auto Sab = linalg::triplet(Ca, S, Cb, true, false, false);
+    auto Sba = linalg::triplet(Cb, S, Ca, true, false, false);
 
     const auto nocc_a = Saa.trace();
     const auto nocc_b = Sbb.trace();
@@ -851,12 +852,12 @@ void CGHF::check_phases() {
 SharedComplexMatrix CGHF::form_FDSmSDF(SharedComplexMatrix Fso, SharedComplexMatrix Dso) {
     // FDS - SDF in the (spin-blocked) SO basis, then project with X like HF::form_FDSmSDF /
     // the OOO DIIS error (X^H e X). For Hermitian F, D, S this matches (FDS) - (FDS)^H.
-    auto FDSmSDF = linalg::triplet<false, false, false>(Fso, Dso, S_);
-    auto SDF = linalg::triplet<false, false, false>(S_, Dso, Fso);
+    auto FDSmSDF = linalg::triplet(Fso, Dso, S_);
+    auto SDF = linalg::triplet(S_, Dso, Fso);
     FDSmSDF->subtract(*SDF);
     FDSmSDF->set_name("FDS-SDF");
 
-    auto orthog = linalg::triplet<true, false, false>(X_, FDSmSDF, X_);
+    auto orthog = linalg::triplet(X_, FDSmSDF, X_, true, false, false);
     orthog->set_name("Orthogonal FDS-SDF");
     return orthog;
 }

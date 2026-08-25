@@ -807,12 +807,19 @@ void export_mints(py::module& m) {
           "eigenvectors as columns.  The caller typically computes MO coefficients\n"
           "as C = X @ U^H.  X should be real (e.g. S^{-1/2} of the overlap matrix).");
 
-    m.def("_doublet_aH_b",
-          static_cast<ComplexMatrix (*)(const ComplexMatrix&, const ComplexMatrix&)>(
-              &linalg::doublet<true, false>),
-          "A"_a, "B"_a,
-          "Compute A^H @ B (intended: conjugate-transpose of A times B).\n"
-          "Exposed for testing the Einsums gemm conjugation convention.");
+    m.def("doublet",
+          static_cast<SharedComplexMatrix (*)(const SharedComplexMatrix&, const SharedComplexMatrix&,
+              bool, bool)>(&linalg::doublet),
+          "A"_a, "B"_a, "AdjoinA"_a = false, "AdjoinB"_a = false,
+          "Compute A times B with optional boolean arguments to adjoin (A.conjT()) "
+          "respective matrices.");
+
+    m.def("triplet",
+          static_cast<SharedComplexMatrix (*)(const SharedComplexMatrix&, const SharedComplexMatrix&,
+              const SharedComplexMatrix&, bool, bool, bool)>(&linalg::triplet),
+          "A"_a, "B"_a, "C"_a, "AdjoinA"_a = false, "AdjoinB"_a = false, "AdjoinC"_a = false,
+          "Compute A @ B @ C with optional boolean arguments to conjugate transpose "
+          "respective matrices.");
 
 #else
     // Type-only stubs so Python monkey-patches and isinstance checks still resolve.
