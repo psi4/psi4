@@ -204,9 +204,11 @@ void DLPNO::common_init() {
         if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
         if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
 
-        // These are method invariants rather than convergence-set defaults.
-        T_CUT_PAIRS_ = 1.0e-8;
-        T_CUT_PAIRS_MP2_ = 1.0e-8;
+        // Post-CCSD(T) methods do not retain a separate weak-pair category. Honor an
+        // explicitly requested pair cutoff, but otherwise use the method default and
+        // collapse the MP2 screening boundary onto the same value.
+        if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1.0e-8;
+        T_CUT_PAIRS_MP2_ = T_CUT_PAIRS_;
     }
 
     if (!post_ccsd_t && !options_["T_CUT_PAIRS_MP2"].has_changed()) {

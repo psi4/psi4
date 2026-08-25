@@ -270,7 +270,11 @@ Practical Advice
 
 * Memory capacity and available disk space often determine the largest feasible higher-order
   calculation. Resource requirements depend strongly on molecular sparsity, basis set, natural-orbital
-  thresholds, and whether expensive intermediates are retained in memory or written to disk.
+  thresholds, and whether expensive intermediates are retained in memory or written to disk. For an
+  iterative DLPNO-CCSDT(Q) calculation, |PSIfour| automatically moves the :math:`\Gamma_{ijkl}` source,
+  :math:`T_{ijkl}` amplitudes, and reusable energy intermediates to disk when its memory estimate exceeds
+  the available allocation. Expert users can force this behavior with
+  |dlpno__write_quadruples_intermediates|.
 
 * DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ require a |PSIfour| build with the optional
   Einsums tensor library enabled (``ENABLE_Einsums=ON``). DLPNO-MP2, DLPNO-CCSD,
