@@ -185,6 +185,7 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
         Hy_x2c->transform(D);
         Hz_x2c->transform(D);
     } else {
+        nsopi_contracted_ = nsopi_;
         outfile->Printf("\n  NOTE: Not projecting RELATIVISTIC_BASIS X2C integrals"
                         " to BASIS. Basis sets appear to be the same.\n");
     }
@@ -474,8 +475,8 @@ void SOX2C1e::form_pauli(ComplexMatrix& Tx2c, ComplexMatrix& Vx2c, SharedMatrix 
                 Zerr += tz.imag() * tz.imag() + vz.imag() * vz.imag();
                 Hz->set(h, p, q, tz.real() + vz.real());
 
-                std::complex<double>&& ty = .5 * (Tblock(a, b)(p, q) - Tblock(a, b)(p, q));
-                std::complex<double>&& vy = .5 * (Vblock(a, b)(p, q) - Vblock(a, b)(p, q));
+                std::complex<double>&& ty = .5 * (Tblock(a, b)(p, q) - Tblock(b, a)(p, q));
+                std::complex<double>&& vy = .5 * (Vblock(a, b)(p, q) - Vblock(b, a)(p, q));
                 Yerr += ty.imag() * ty.imag() + vy.imag() * vy.imag();
                 Hy->set(h, p, q, ty.real() + vy.real());
 
@@ -548,8 +549,8 @@ bool SOX2C1e::test_hFW(einsums::BlockTensor<double, 1>& Heval, SharedMatrix S, S
         for (int p = 0; p < nc; p++) {
             for (int q = 0; q < nc; q++) {
                 Hb(p, q)           += T->get(h, p, q) + V->get(h, p, q) + 1i * Hz->get(h, p, q);
-                Hb(p, q + nc)      += Hx->get(h, p, q) + 1i * Hy->get(h, p, q);
-                Hb(p + nc, q)      += Hx->get(h, p, q) - 1i * Hy->get(h, p, q);
+                Hb(p, q + nc)      += Hy->get(h, p, q) + 1i * Hx->get(h, p, q);
+                Hb(p + nc, q)      += -Hy->get(h, p, q) + 1i * Hx->get(h, p, q);
                 Hb(p + nc, q + nc) += T->get(h, p, q) + V->get(h, p, q) - 1i * Hz->get(h, p, q);
 
                 Ob(p, q) += _orth->get(h, p, q);
@@ -571,7 +572,7 @@ bool SOX2C1e::test_hFW(einsums::BlockTensor<double, 1>& Heval, SharedMatrix S, S
     bool print_eigenvalues = Process::environment.options.get_int("PRINT") > 1;
     for (int h = 0; h < nsopi_contracted_.n(); h++) {
         if (nsopi2c_contracted[h] == 0) continue;
-        if (nsopi2c_contracted[h] > nsopi_[h])
+        if (nsopi_contracted_[h] > nsopi_[h])
             throw PSIEXCEPTION("SOX2C1e: RELATIVISTIC_BASIS is smaller than BASIS.");
 
         einsums::linear_algebra::heev<false>(&hFW->get(h), &test_eval[h]);

@@ -56,17 +56,18 @@ def test_sox2c1e_integrals():
     wfn.set_basisset('BASIS_RELATIVISTIC', b2)
     mints = psi4.core.MintsHelper(wfn)
 
-    Hx, Hy, Hz = [1j*block_diag(*m.to_array()) for m in mints.so_x2c_spin_orbit()]
+    Hx, Hy, Hz = [block_diag(*m.to_array()) for m in mints.so_x2c_spin_orbit()]
     S = block_diag(*mints.so_overlap().to_array())
     T = block_diag(*mints.so_kinetic().to_array())
     V = block_diag(*mints.so_potential().to_array())
 
     nbf = b1.nbf()
     H = numpy.zeros((2*nbf, 2*nbf), dtype=complex)
-    H[:nbf, :nbf] = T + V + Hz
-    H[nbf:, nbf:] = T + V - Hz
-    H[:nbf, nbf:] = Hx + 1j*Hy
-    H[nbf:, :nbf] = Hx - 1j*Hy
+    # T + V + i σ·H, matching SOX2C1e::form_pauli and CGHF::form_H
+    H[:nbf, :nbf] = T + V + 1j * Hz
+    H[nbf:, nbf:] = T + V - 1j * Hz
+    H[:nbf, nbf:] = Hy + 1j * Hx
+    H[nbf:, :nbf] = -Hy + 1j * Hx
 
     assert numpy.allclose(H, H.conj().T)
 
