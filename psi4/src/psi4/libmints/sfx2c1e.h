@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_x2cint_h_
-#define _psi_src_lib_libmints_x2cint_h_
+#ifndef _psi_src_lib_libmints_sfx2c1e_h_
+#define _psi_src_lib_libmints_sfx2c1e_h_
 
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
@@ -149,4 +149,4 @@ class PSI_API SFX2C1e {
 
 }  // namespace psi
 
-#endif  // _psi_src_lib_libmints_x2cint_h_
+#endif  // _psi_src_lib_libmints_sfx2c1e_h_
