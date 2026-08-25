@@ -798,28 +798,34 @@ void export_mints(py::module& m) {
              "Replicates einsum('ij,ji->', self, other)")
         .def("conjT", &ComplexMatrix::conjT, "Returns the conjugate transpose of this ComplexMatrix.")
         .def("rms", &ComplexMatrix::rms, "Returns sqrt(mean(|z|^2)) over the declared tile grid.")
-        .def("absmax", &ComplexMatrix::absmax, "Returns the maximum |z| over allocated diagonal tiles.");
-
-    m.def("diagonalize", &linalg::diagonalize, "F"_a, "X"_a,
-          "Diagonalize a Hermitian ComplexMatrix F with metric X.\n\n"
-          "Forms Forth = X^H @ F @ X, diagonalizes it with a Hermitian eigensolver,\n"
-          "and returns (eigenvalues: Vector, U^H: ComplexMatrix) where U^H has\n"
-          "eigenvectors as columns.  The caller typically computes MO coefficients\n"
-          "as C = X @ U^H.  X should be real (e.g. S^{-1/2} of the overlap matrix).");
-
-    m.def("doublet",
-          static_cast<SharedComplexMatrix (*)(const SharedComplexMatrix&, const SharedComplexMatrix&,
-              bool, bool)>(&linalg::doublet),
-          "A"_a, "B"_a, "AdjoinA"_a = false, "AdjoinB"_a = false,
-          "Compute A times B with optional boolean arguments to adjoin (A.conjT()) "
-          "respective matrices.");
-
-    m.def("triplet",
-          static_cast<SharedComplexMatrix (*)(const SharedComplexMatrix&, const SharedComplexMatrix&,
-              const SharedComplexMatrix&, bool, bool, bool)>(&linalg::triplet),
-          "A"_a, "B"_a, "C"_a, "AdjoinA"_a = false, "AdjoinB"_a = false, "AdjoinC"_a = false,
-          "Compute A @ B @ C with optional boolean arguments to conjugate transpose "
-          "respective matrices.");
+        .def("absmax", &ComplexMatrix::absmax, "Returns the maximum |z| over allocated diagonal tiles.")
+        .def_static("diagonalize", static_cast<std::tuple<SharedVector, SharedComplexMatrix>
+            (*)(const ComplexMatrix&)>(&linalg::diagonalize), "Forth"_a,
+            "Diagonalize a Hermitian ComplexMatrix Forth.\n\n"
+            "Uses a Hermitian eigensolver, and returns (eigenvalues: Vector, U^H: ComplexMatrix) "
+            "where U^H has eigenvectors as columns.")
+        .def_static("diagonalize", static_cast<std::tuple<SharedVector, SharedComplexMatrix>
+            (*)(const ComplexMatrix&, const ComplexMatrix&)>(&linalg::diagonalize), "F"_a, "X"_a,
+            "Diagonalize a Hermitian ComplexMatrix F with metric X.\n\n"
+            "Forms Forth = X^H @ F @ X, diagonalizes it with a Hermitian eigensolver,\n"
+            "and returns (eigenvalues: Vector, U^H: ComplexMatrix) where U^H has\n"
+            "eigenvectors as columns.  The caller typically computes MO coefficients\n"
+            "as C = X @ U^H.  X should be real (e.g. S^{-1/2} of the overlap matrix).")
+        .def_static("doublet",
+            static_cast<SharedComplexMatrix (*)(const SharedComplexMatrix&, const SharedComplexMatrix&,
+                bool, bool)>(&linalg::doublet),
+            "A"_a, "B"_a, "AdjoinA"_a = false, "AdjoinB"_a = false,
+            "Compute A times B with optional boolean arguments to adjoin (A.conjT()) "
+            "respective matrices.")
+        .def_static("triplet",
+            static_cast<SharedComplexMatrix (*)(const SharedComplexMatrix&, const SharedComplexMatrix&,
+                const SharedComplexMatrix&, bool, bool, bool)>(&linalg::triplet),
+            "A"_a, "B"_a, "C"_a, "AdjoinA"_a = false, "AdjoinB"_a = false, "AdjoinC"_a = false,
+            "Compute A @ B @ C with optional boolean arguments to conjugate transpose "
+            "respective matrices.")
+        .def_static("expm", &linalg::expm, "A"_a, "c"_a = std::complex<double>{1},
+            "Matrix exponential for a Hermitian ``A`` and optional prefactor ``c``.\n\n"
+            "Computes :math:`e^{cA}` using diagonalization. Does **not** check for Hermiticity.");
 
 #else
     // Type-only stubs so Python monkey-patches and isinstance checks still resolve.

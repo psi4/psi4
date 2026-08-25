@@ -307,14 +307,9 @@ SharedComplexMatrix ComplexMatrix::conjT() const {
 
 namespace linalg {
 
-std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(
-        const ComplexMatrix& F_, const ComplexMatrix& X_) {
-
-    // Form F' = X'FX for canonical orthogonalization
-    auto Forth = triplet(X_, F_, X_, true, false, false);
-    Forth.set_name("Orthogonalized Fock");
-
-    Dimension nmopi_ = X_.colspi();
+std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(const ComplexMatrix& F_) {
+    ComplexMatrix Forth = F_; // copy as to not destroy original F_
+    Dimension nmopi_ = Forth.colspi();
     auto epsilon_ = std::make_shared<Vector>("Orbital energies", nmopi_);
 
     for (int h = 0; h < Forth.nirrep(); h++) {
@@ -341,6 +336,15 @@ std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(
     // heev retuns the wrong side, so we need to take the conjugate transpose for the proper eigenvectors
     SharedComplexMatrix temp = Forth.conjT();
     return std::make_tuple(epsilon_, temp);
+}
+
+std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(
+    const ComplexMatrix& F_, const ComplexMatrix& X_) {
+    // Form F' = X'FX for canonical orthogonalization
+    auto Forth = triplet(X_, F_, X_, true, false, false);
+    Forth.set_name("Orthogonalized Fock");
+
+    return diagonalize(Forth);
 }
 
 /**
@@ -402,6 +406,24 @@ ComplexMatrix triplet(const ComplexMatrix& A, const ComplexMatrix& B, const Comp
 SharedComplexMatrix triplet(const SharedComplexMatrix& A, const SharedComplexMatrix& B, const SharedComplexMatrix& C,
                             bool AdjoinA, bool AdjoinB, bool AdjoinC) {
     return std::make_shared<ComplexMatrix>(std::move(triplet(*A, *B, *C, AdjoinA, AdjoinB, AdjoinC)));
+}
+
+SharedComplexMatrix expm(const ComplexMatrix& A, std::complex<double> c) {
+    // A == U.H @ np.diag(evals) @ U
+    auto [evals, Uh] = diagonalize(A);
+    const auto nirrep = A.nirrep();
+
+    auto U = Uh->conjT();
+
+    for (auto h = 0; h < nirrep; h++) {
+        const auto dim = evals->dim(h);
+        for (auto i = 0; i < dim; i++) {
+            auto f = std::exp(c * evals->get(h, i));
+            einsums::linear_algebra::scale_row(i, f, &U->get(h));
+        }
+    }
+
+    return doublet(Uh, U);
 }
 
 }  // namespace linalg

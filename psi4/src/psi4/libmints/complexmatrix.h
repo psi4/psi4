@@ -86,7 +86,19 @@ ComplexMatrix triplet(const ComplexMatrix&, const ComplexMatrix&, const ComplexM
 SharedComplexMatrix triplet(const SharedComplexMatrix&, const SharedComplexMatrix&, const SharedComplexMatrix&,
                             bool = false, bool = false, bool = false);
 
+std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(const ComplexMatrix& F_);
+
 std::tuple<std::shared_ptr<Vector>, SharedComplexMatrix> diagonalize(const ComplexMatrix& F_, const ComplexMatrix& X_);
+
+/**
+ * @brief Matrix exponential for a Hermitian ``A`` and optional prefactor ``c``.
+ *
+ * Computes :math:`e^{cA}` using diagonalization. Does **not** check for Hermiticity.
+ *
+ * @param A The ComplexMatrix to exponentiate.
+ * @param c The optional prefactor.
+ */
+SharedComplexMatrix expm(const ComplexMatrix& A, std::complex<double> c = {1});
 
 }  // namespace linalg
 

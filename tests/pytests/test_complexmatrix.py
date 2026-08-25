@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import scipy
 
 import psi4
 from addons import using
@@ -123,6 +124,7 @@ def test_doublet_conjugation():
     """Verify that doublet(A, Id, True, False) computes A.conjT()."""
     rng = np.random.default_rng(19)
     n = 4
+    doublet = psi4.core.ComplexMatrix.doublet
 
     A_np = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
     I_np = np.eye(n, dtype=np.complex128)
@@ -130,7 +132,7 @@ def test_doublet_conjugation():
     A_cm = psi4.core.ComplexMatrix.from_array(A_np, name="A")
     I_cm = psi4.core.ComplexMatrix.from_array(I_np, name="I")
 
-    result = psi4.core.doublet(A_cm, I_cm, True, False).to_array()
+    result = doublet(A_cm, I_cm, True, False).to_array()
 
     A_H = A_np.conj().T
 
@@ -139,10 +141,12 @@ def test_doublet_conjugation():
 
 def test_doublet_atypical_shapes():
     """Test linalg::doublet edge cases where a tile is zero or not allocated."""
+    doublet = psi4.core.ComplexMatrix.doublet
+
     A_cm = psi4.core.ComplexMatrix("A", [1, 4, 3], [4, 0, 2])
     B_cm = psi4.core.ComplexMatrix("B", [1, 4, 3], [3, 0, 5])
 
-    result = psi4.core.doublet(A_cm, B_cm, True, False).to_array()
+    result = doublet(A_cm, B_cm, True, False).to_array()
 
     assert result[0].shape == (4, 3)
     assert result[1].shape == (0, 0)
@@ -186,7 +190,7 @@ def test_complexmatrix_diagonalize_hermitian():
     F_cm = psi4.core.ComplexMatrix.from_array(F_np, name="F")
     X_cm = psi4.core.ComplexMatrix.from_array(X_np, name="X")
 
-    evals_vec, evecs_cm = psi4.core.diagonalize(F_cm, X_cm)
+    evals_vec, evecs_cm = psi4.core.ComplexMatrix.diagonalize(F_cm, X_cm)
 
     evals_np = np.asarray(evals_vec.array_interface()[0])
     evecs_np = evecs_cm.to_array()  # U^H (eigenvectors as columns)
@@ -216,7 +220,7 @@ def test_complexmatrix_diagonalize_multi_block():
         S_blk = B @ B.T
         X_cm.array_interface()[h][:] = _inv_sqrt_hermitian(S_blk)
 
-    evals_vec, evecs_cm = psi4.core.diagonalize(F_cm, X_cm)
+    evals_vec, evecs_cm = psi4.core.ComplexMatrix.diagonalize(F_cm, X_cm)
 
     evals_arrs = evals_vec.array_interface()
     evecs_blocks = evecs_cm.to_array()  # list of U_h^H per block
@@ -437,7 +441,7 @@ def test_complexmatrix_conjT_multi_block():
 
 def test_complexmatrix_conjT_roundtrip():
     """(A^H)^H == A."""
-    rng = np.random.default_rng(31)
+    rng = np.random.default_rng(1684630636)
     n = 3
     ref = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
 
@@ -446,3 +450,54 @@ def test_complexmatrix_conjT_roundtrip():
 
     np.testing.assert_allclose(roundtrip.to_array(), ref, atol=1e-14)
     assert roundtrip.name == "A^H^H"
+
+# ---------------------------------------------------------------------------
+#  Expm
+# ---------------------------------------------------------------------------
+
+@pytest.mark.smoke
+def test_complexmatrix_expm_smoke():
+    """Test that expm(0) == Id."""
+    rng = np.random.default_rng(405597024094)
+    n = 6
+    ref = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    ref += ref.conj().T # Make Hermitian
+
+    mat = psi4.core.ComplexMatrix.from_array(ref, name="A")
+    result = psi4.core.ComplexMatrix.expm(mat, 0).to_array()
+    id = np.eye(n).astype(complex)
+
+    np.testing.assert_allclose(result, id, atol=1e-14)
+
+
+def test_complexmatrix_expm():
+    """Test expm against scipy implementation."""
+    rng = np.random.default_rng(1819241594)
+    n = 6
+    Anp = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    Anp += Anp.conj().T # Make Hermitian
+
+    A = psi4.core.ComplexMatrix.from_array(Anp, name="A")
+    result = psi4.core.ComplexMatrix.expm(A).to_array()
+    ref = scipy.linalg.expm(Anp)
+
+    np.testing.assert_allclose(result, ref, atol=1e-14)
+
+
+# @pytest.mark.long
+def test_complexmatrix_expm_unitary():
+    """Assert that exp(i*A) is unitary."""
+    rng = np.random.default_rng(1819241594)
+    n = 6
+    Anp = rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))
+    Anp += Anp.conj().T # Make Hermitian
+
+    A = psi4.core.ComplexMatrix.from_array(Anp, name="A")
+    result = psi4.core.ComplexMatrix.expm(A, 1j).to_array()
+
+    test = result @ result.conj().T
+    id = np.eye(n).astype(complex)
+
+    np.testing.assert_allclose(test, id, atol=1e-14)
+
+
