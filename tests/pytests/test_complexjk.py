@@ -304,22 +304,13 @@ def _run_complex_jk(basis, C_arr, screening="NONE", ints_tol=1.0e-12, bench=Fals
 
 def _max_eri_am():
     """Highest angular momentum with 4-center ERI support in this libint2 build."""
-    amchar = "SPDFGHIKLM"
-    max_am = 0
-    for am, ch in enumerate(amchar):
-        # libint2 uses lowercase shell labels in support keys, e.g. eri_kkkk_d0
-        key = f"eri_{ch.lower() * 4}_d0"
-        if psi4.core.libint2_supports(key):
-            max_am = am
-        else:
-            break
-    return max_am
+    return psi4.libint2_configuration()["eri"][0]
 
 
-def _uncontracted_am_basis_string(max_am):
+def _uncontracted_am_basis_string(max_am, atom_str="H"):
     """Spherical custom basis: one primitive per AM from S through max_am."""
     amchar = "SPDFGHIKLM"
-    lines = ["spherical", "****", "H 0"]
+    lines = ["spherical", "****", f"{atom_str} 0"]
     for am in range(max_am + 1):
         lines.append(f"{amchar[am]} 1 1.0")
         lines.append("  1.0 1.0")
@@ -332,7 +323,7 @@ def test_complexdirectjk_high_am_single_atom():
     """Single atom with one primitive per shell up through max supported ERI AM."""
     max_am = _max_eri_am()
     assert max_am >= 4  # at least G in a normal Psi4 build
-    basis_string = _uncontracted_am_basis_string(max_am)
+    basis_string = _uncontracted_am_basis_string(max_am, atom_str="He")
 
     mol = psi4.geometry(
         """
@@ -344,8 +335,7 @@ def test_complexdirectjk_high_am_single_atom():
 
     def basisspec_psi4_yo__anonymous_higham(mol, role):
         mol.set_basis_all_atoms("higham", role=role)
-        # One-primitive-per-AM string is written for H; reuse label for He.
-        return {"higham": basis_string.replace("H 0", "He 0")}
+        return {"higham": basis_string}
 
     psi4.driver.qcdb.libmintsbasisset.basishorde["HIGHAM"] = basisspec_psi4_yo__anonymous_higham
     psi4.set_options({"SCF_TYPE": "DIRECT", "SCREENING": "NONE", "DF_SCF_GUESS": False})
