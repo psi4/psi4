@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.12a1.dev28 
+                               Psi4 1.12a1.dev51 
 
-                         Git: Rev {mgga-vx} cfc864d dirty
+                         Git: Rev {prodhess} 8d67f24 
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -32,45 +32,58 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 06 August 2026 08:57AM
+    Psi4 started on: Tuesday, 25 August 2026 07:31PM
 
-    Process ID: 2251312
+    Process ID: 230082
     Host:       lenovo
-    PSIDATADIR: /home/work/psi4/objdir/stage/share/psi4
+    PSIDATADIR: /home/work/psi4/install/share/psi4
     Memory:     500.0 MiB
     Threads:    6
     Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, bse, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, d̶f̶t̶d̶3̶,
                 dftd4, d̶k̶h̶, e̶c̶p̶i̶n̶t̶, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
-                g̶d̶m̶a̶, g̶e̶o̶m̶e̶t̶r̶i̶c̶, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶,
-                i̶p̶i̶, l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
-                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
-                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
-                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, mrcc, ooo, o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶,
+                p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶, p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶,
+                qcmanybody, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶, v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
 
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! TDA excitation energies of triplet methylene with LDA, GGA, and meta-GGA
-#! functionals (UKS). The meta-GGA cases exercise the spin-resolved tau
-#! second-derivative kernel; the LDA (SVWN = LDA_X + LDA_C_VWN_RPA) and GGA
-#! (PBE) cases are rung controls that must reproduce PySCF at those rungs too.
+#! TDA and RPA excitation energies of triplet methylene with LDA, GGA, and
+#! meta-GGA functionals (UKS). The meta-GGA cases exercise the spin-resolved
+#! tau second-derivative kernel; the LDA (SVWN = LDA_X + LDA_C_VWN_RPA) and
+#! GGA (PBE) cases are rung controls that must reproduce PySCF at those rungs
+#! too. RPA is covered as well as TDA because the two contract the generated
+#! kernel differently: TDA needs only A, whereas RPA also needs B.
+#! The geometry is the experimental triplet structure (H-C-H 134 deg). A
+#! near-linear methylene is NOT usable here: as the molecule straightens the
+#! two pi orbitals become degenerate, the RPA eigenproblem is ill-conditioned,
+#! and the solver fails to converge -- TDA, which drops B and stays Hermitian,
+#! does not notice.
 #! Reference values from PySCF 2.13.0 (same Libxc): 6-31G, identical geometry,
-#! grids.atom_grid = (99, 590), SCF conv_tol 1e-12, TD conv_tol 1e-9.
+#! grids.atom_grid = (99, 590) with pruning DISABLED on both sides -- Psi4
+#! prunes by default, and an unpruned PySCF reference then integrates on a
+#! different grid, which a grid-sensitive meta-GGA notices even though LDA
+#! and GGA do not. SCF conv_tol 1e-12, TD conv_tol 1e-9.
 
-svwn_scf = -38.8646630650                                     #TEST
-svwn_tda = [0.28652490, 0.28850940, 0.32842472]              #TEST
-pbe_scf = -39.0588357256                                      #TEST
-pbe_tda = [0.28736627, 0.28932949, 0.34620232]               #TEST
-tpss_scf = -39.1356185476                                     #TEST
-tpss_tda = [0.29577897, 0.29776197, 0.36820804]               #TEST
-r2scan_scf = -39.1002541060                                   #TEST
-r2scan_tda = [0.32571972, 0.32771938, 0.38072251]             #TEST
+svwn_scf = -38.8851687131                                    #TEST
+svwn_tda = [0.26503498, 0.27619818, 0.28644599]              #TEST
+svwn_rpa = [0.26427501, 0.27493212, 0.28624123]              #TEST
+pbe_scf = -39.0795825574                                     #TEST
+pbe_tda = [0.27804505, 0.27972238, 0.30226090]               #TEST
+pbe_rpa = [0.27655331, 0.27850063, 0.30168899]               #TEST
+tpss_scf = -39.1554584424                                    #TEST
+tpss_tda = [0.28807213, 0.29502681, 0.31972868]              #TEST
+tpss_rpa = [0.28652592, 0.29306435, 0.31814954]              #TEST
+r2scan_scf = -39.1204362722                                  #TEST
+r2scan_tda = [0.30934376, 0.31476051, 0.33315259]            #TEST
+r2scan_rpa = [0.30669578, 0.31235956, 0.33155863]            #TEST
 
 molecule ch2 {
 0 3
 C  0.000  0.000  0.000
-H  0.000  0.980  0.100
-H  0.000 -0.980  0.100
+H  0.000  0.9914 -0.4208
+H  0.000 -0.9914 -0.4208
 symmetry c1
 noreorient
 }
@@ -82,22 +95,27 @@ set {
     save_jk true
     dft_spherical_points 590
     dft_radial_points 99
+    dft_pruning_scheme flat
     e_convergence 10
     d_convergence 9
 }
 
 from psi4.driver.procrouting.response.scf_response import tdscf_excitations
 
-for func, ref_scf, ref_tda in (("SVWN", svwn_scf, svwn_tda),
-                               ("PBE", pbe_scf, pbe_tda),
-                               ("TPSS", tpss_scf, tpss_tda),
-                               ("R2SCAN", r2scan_scf, r2scan_tda)):
+for func, ref_scf, ref_tda, ref_rpa in (
+        ("SVWN", svwn_scf, svwn_tda, svwn_rpa),
+        ("PBE", pbe_scf, pbe_tda, pbe_rpa),
+        ("TPSS", tpss_scf, tpss_tda, tpss_rpa),
+        ("R2SCAN", r2scan_scf, r2scan_tda, r2scan_rpa)):
     e, wfn = energy(func, return_wfn=True)
     compare_values(ref_scf, e, 5, f"{func} SCF energy vs PySCF")              #TEST
-    res = tdscf_excitations(wfn, states=3, tda=True, r_convergence=1e-7)
-    for i, ref in enumerate(sorted(ref_tda)):                                 #TEST
-        compare_values(ref, sorted(r["EXCITATION ENERGY"] for r in res)[i], 4, #TEST
-                       f"{func} TDA root {i+1} vs PySCF")                     #TEST
+    for tda, ref_exc in ((True, ref_tda), (False, ref_rpa)):
+        kind = "TDA" if tda else "RPA"
+        res = tdscf_excitations(wfn, states=5, tda=tda, r_convergence=1e-7)
+        for i, ref in enumerate(sorted(ref_exc)):                              #TEST                              #TEST
+            compare_values(ref,                                                #TEST
+                           sorted(r["EXCITATION ENERGY"] for r in res)[i], 4,  #TEST
+                           f"{func} {kind} root {i+1} vs PySCF")               #TEST
     clean()
 --------------------------------------------------------------------------
 
@@ -110,15 +128,15 @@ Scratch directory: /home/work/scratch/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on lenovo
-*** at Thu Aug  6 08:57:53 2026
+*** at Tue Aug 25 19:31:31 2026
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry C          line    87 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
-    atoms 2-3 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 1   entry C          line    87 file /home/work/psi4/install/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /home/work/psi4/install/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -138,15 +156,15 @@ Scratch directory: /home/work/scratch/
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         C            0.000000000000     0.000000000000    -0.014381424017    12.000000000000
-         H            0.000000000000     0.980000000000     0.085618575983     1.007825032230
-         H            0.000000000000    -0.980000000000     0.085618575983     1.007825032230
+         C            0.000000000000    -0.000000000000     0.060517032262    12.000000000000
+         H            0.000000000000     0.991400000000    -0.360282967738     1.007825032230
+         H            0.000000000000    -0.991400000000    -0.360282967738     1.007825032230
 
   Running in c1 symmetry.
 
-  Rotational constants: A =    976.81734  B =      8.70822  C =      8.63127 [cm^-1]
-  Rotational constants: A = 29284247.06425  B = 261065.75722  C = 258758.95039 [MHz]
-  Nuclear repulsion =    6.716236004921142
+  Rotational constants: A =     55.16478  B =      8.50910  C =      7.37198 [cm^-1]
+  Rotational constants: A = 1653798.52383  B = 255096.34342  C = 221006.38617 [MHz]
+  Nuclear repulsion =    6.162963984587006
 
   Charge       = 0
   Multiplicity = 3
@@ -213,7 +231,8 @@ Scratch directory: /home/work/scratch/
    => Molecular Quadrature <=
 
     Radial Scheme          =       TREUTLER
-    Pruning Scheme         =           NONE
+    Pruning Scheme         =           FLAT
+    Pruning Type           =       FUNCTION
     Nuclear Scheme         =       TREUTLER
 
     Blocking Scheme        =         OCTREE
@@ -221,8 +240,8 @@ Scratch directory: /home/work/scratch/
     Pruning alpha          =              1
     Radial Points          =             99
     Spherical Points       =            590
-    Total Points           =         167886
-    Total Blocks           =           1297
+    Total Points           =         168321
+    Total Blocks           =           1309
     Max Points             =            256
     Max Functions          =             13
     Weights Tolerance      =       1.00E-15
@@ -258,8 +277,8 @@ Scratch directory: /home/work/scratch/
 
   Cached 100.0% of DFT collocation blocks in 0.016 [GiB].
 
-  Minimum eigenvalue in the overlap matrix is 2.0394896392E-02.
-  Reciprocal condition number of the overlap matrix is 5.9702984690E-03.
+  Minimum eigenvalue in the overlap matrix is 4.2220013631E-02.
+  Reciprocal condition number of the overlap matrix is 1.2605153268E-02.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -278,29 +297,29 @@ Scratch directory: /home/work/scratch/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter SAD:   -38.55453246498484   -3.85545e+01   0.00000e+00 
-   @UKS iter   1:   -38.78002951869306   -2.25497e-01   2.83210e-02 DIIS/ADIIS
-   @UKS iter   2:   -38.78440684376692   -4.37733e-03   2.79738e-02 DIIS/ADIIS
-   @UKS iter   3:   -38.86461152886692   -8.02047e-02   6.32627e-04 DIIS/ADIIS
-   @UKS iter   4:   -38.86466197907782   -5.04502e-05   8.36365e-05 DIIS
-   @UKS iter   5:   -38.86466304814666   -1.06907e-06   1.02542e-05 DIIS
-   @UKS iter   6:   -38.86466306483601   -1.66893e-08   1.36180e-06 DIIS
-   @UKS iter   7:   -38.86466306511494   -2.78931e-10   2.82198e-07 DIIS
-   @UKS iter   8:   -38.86466306512724   -1.22995e-11   4.97378e-09 DIIS
-   @UKS iter   9:   -38.86466306512722    2.13163e-14   3.37154e-10 DIIS
+   @UKS iter SAD:   -38.53673346228360   -3.85367e+01   0.00000e+00 
+   @UKS iter   1:   -38.81173536858732   -2.75002e-01   2.61715e-02 DIIS/ADIIS
+   @UKS iter   2:   -38.80160599028886    1.01294e-02   2.79445e-02 DIIS/ADIIS
+   @UKS iter   3:   -38.88513166249266   -8.35257e-02   4.25136e-04 DIIS/ADIIS
+   @UKS iter   4:   -38.88516733686787   -3.56744e-05   8.59294e-05 DIIS
+   @UKS iter   5:   -38.88516869563011   -1.35876e-06   1.03039e-05 DIIS
+   @UKS iter   6:   -38.88516871297206   -1.73420e-08   1.67087e-06 DIIS
+   @UKS iter   7:   -38.88516871327291   -3.00851e-10   1.20753e-07 DIIS
+   @UKS iter   8:   -38.88516871327522   -2.30926e-12   1.22440e-08 DIIS
+   @UKS iter   9:   -38.88516871327523   -7.10543e-15   4.46777e-10 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
    Electrons on quadrature grid:
-      Nalpha   =    4.9999999996 ; deviation = -4.261e-10
-      Nbeta    =    2.9999999996 ; deviation = -4.145e-10
-      Ntotal   =    7.9999999992 ; deviation = -8.406e-10 
+      Nalpha   =    5.0000000036 ; deviation = 3.558e-09
+      Nbeta    =    3.0000000040 ; deviation = 4.000e-09
+      Ntotal   =    8.0000000076 ; deviation = 7.558e-09 
 
-   @Spin Contamination Metric:   5.001442328E-03
+   @Spin Contamination Metric:   4.337581720E-03
    @S^2 Expected:                2.000000000E+00
-   @S^2 Observed:                2.005001442E+00
+   @S^2 Observed:                2.004337582E+00
    @S   Expected:                1.000000000E+00
    @S   Observed:                1.000000000E+00
 
@@ -309,25 +328,25 @@ Scratch directory: /home/work/scratch/
 
     Alpha Occupied:                                                       
 
-       1A     -9.816269     2A     -0.633047     3A     -0.470303  
-       4A     -0.211260     5A     -0.208943  
+       1A     -9.837658     2A     -0.620306     3A     -0.426537  
+       4A     -0.241940     5A     -0.209262  
 
     Alpha Virtual:                                                        
 
-       6A      0.074136     7A      0.169082     8A      0.459879  
-       9A      0.464846    10A      0.487681    11A      0.711974  
-      12A      0.924004    13A      1.095842  
+       6A      0.064161     7A      0.136356     8A      0.457848  
+       9A      0.461272    10A      0.538137    11A      0.573833  
+      12A      0.868983    13A      0.898563  
 
     Beta Occupied:                                                        
 
-       1A     -9.787543     2A     -0.568012     3A     -0.440444  
+       1A     -9.808160     2A     -0.559720     3A     -0.395619  
 
     Beta Virtual:                                                         
 
-       4A     -0.109802     5A     -0.108665     6A      0.100743  
-       7A      0.182165     8A      0.514031     9A      0.546015  
-      10A      0.553922    11A      0.748322    12A      0.967465  
-      13A      1.117129  
+       4A     -0.128391     5A     -0.105995     6A      0.086191  
+       7A      0.160987     8A      0.529789     9A      0.543983  
+      10A      0.575188    11A      0.624736    12A      0.906781  
+      13A      0.921227  
 
     Final Occupation by Irrep:
               A 
@@ -336,25 +355,25 @@ Scratch directory: /home/work/scratch/
     NA   [     5 ]
     NB   [     3 ]
 
-  @UKS Final Energy:   -38.86466306512722
+  @UKS Final Energy:   -38.88516871327523
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              6.7162360049211420
-    One-Electron Energy =                 -64.9548028036403338
-    Two-Electron Energy =                  25.2660549618438566
-    DFT Exchange-Correlation Energy =      -5.8921512282518842
+    Nuclear Repulsion Energy =              6.1629639845870061
+    One-Electron Energy =                 -63.9690018678621755
+    Two-Electron Energy =                  24.7503909631291457
+    DFT Exchange-Correlation Energy =      -5.8295217931292109
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -38.8646630651272176
+    Total Energy =                        -38.8851687132752275
 
   UHF NO Occupations:
-  HONO-2 :    3  A 1.9980877
+  HONO-2 :    3  A 1.9988644
   HONO-1 :    4  A 1.0000000
   HONO-0 :    5  A 1.0000000
-  LUNO+0 :    6  A 0.0019123
-  LUNO+1 :    7  A 0.0005899
-  LUNO+2 :    8  A 0.0000005
+  LUNO+0 :    6  A 0.0011356
+  LUNO+1 :    7  A 0.0010338
+  LUNO+2 :    8  A 0.0000006
   LUNO+3 :    9  A 0.0000000
 
 
@@ -373,22 +392,22 @@ Properties computed using the SCF density matrix
  ------------------------------------------------------------------------------------
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
- Dipole X            :         -0.0000000            0.0000000           -0.0000000
- Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.0681741            0.1605296            0.0923555
- Magnitude           :                                                    0.0923555
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :          0.3873895           -0.6755086           -0.2881191
+ Magnitude           :                                                    0.2881191
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on lenovo at Thu Aug  6 08:57:57 2026
+*** tstop() called on lenovo at Tue Aug 25 19:31:32 2026
 Module time:
-	user time   =       5.87 seconds =       0.10 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       3.01 seconds =       0.05 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       5.87 seconds =       0.10 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       3.01 seconds =       0.05 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
     SVWN SCF energy vs PySCF..............................................................PASSED
 
 ******************************************************************************************
@@ -416,10 +435,10 @@ Total time:
 
   ==> Requested Excitations <==
 
-      3 singlet states with A symmetry
+      5 singlet states with A symmetry
 
 
-  ==> Seeking the lowest 3 singlet states with A symmetry
+  ==> Seeking the lowest 5 singlet states with A symmetry
 
                          Generalized Davidson Solver                         
                                By Ruhee Dcunha                               
@@ -428,16 +447,16 @@ Total time:
 
     Max number of iterations        = 60   
     Eigenvector tolerance           = 1.0000e-07
-    Max number of expansion vectors = 1050 
+    Max number of expansion vectors = 1750 
 
   => Iterations <=
                            Max[D[value]]     Max[|R|]   # vectors
-  DavidsonSolver iter   1:   3.28667e-01  2.50918e-02     12      
-  DavidsonSolver iter   2:   5.11331e-04  4.49594e-03     15      
-  DavidsonSolver iter   3:   2.05282e-05  3.50713e-04     18      
-  DavidsonSolver iter   4:   1.22004e-07  2.46707e-05     21      
-  DavidsonSolver iter   5:   6.78558e-10  2.38006e-06     23      
-  DavidsonSolver iter   6:   5.51564e-12  4.28528e-08     25      Converged
+  DavidsonSolver iter   1:   3.45577e-01  3.12333e-02     20      
+  DavidsonSolver iter   2:   1.04223e-03  2.31159e-03     25      
+  DavidsonSolver iter   3:   5.60153e-06  1.65547e-04     29      
+  DavidsonSolver iter   4:   2.83144e-08  8.05441e-06     32      
+  DavidsonSolver iter   5:   4.73839e-11  2.79129e-07     34      
+  DavidsonSolver iter   6:   7.34413e-14  1.94307e-08     36      Converged
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -447,38 +466,54 @@ Total time:
                                     Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
      #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
     ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
-     1        A->A (1 A)       0.28652         7.79674        -38.57814        0.0001          0.0075          0.0000         -0.0000        
-     2        A->A (1 A)       0.28851         7.85074        -38.57615        0.0000          0.0086          0.0000         -0.0000        
-     3        A->A (1 A)       0.32842         8.93689        -38.53624        0.0001          0.0004         -0.0000         -0.0000        
+     1        A->A (1 A)       0.26503         7.21197        -38.62013        0.0014          0.0036         -0.0000          0.0000        
+     2        A->A (1 A)       0.27620         7.51574        -38.60897        0.0001          0.0068         -0.0000         -0.0000        
+     3        A->A (1 A)       0.28645         7.79459        -38.59872        0.0000          0.0000          0.0000         -0.0000        
+     4        A->A (1 A)       0.30702         8.35456        -38.57814        0.0098          0.0249          0.0000          0.0000        
+     5        A->A (1 A)       0.34554         9.40249        -38.53963        0.0000          0.0000          0.0000          0.0000        
 
 
 
 Contributing excitations
 Only contributions with abs(coeff) > 1.00e-01 will be printed:
 
-Excited State    1 (1 A):   0.28652 au   159.02 nm f = 0.0001
+Excited State    1 (1 A):   0.26503 au   171.91 nm f = 0.0014
 Alpha orbitals:
-  Sums of squares: Xssq =  9.688713e-01
-      5a (a) ->   6a (a)    0.984253 (96.875%)
+  Sums of squares: Xssq =  6.602269e-03
 Beta orbitals:
-  Sums of squares: Xssq =  3.112872e-02
-      2a (b) ->   5a (b)   -0.175411 ( 3.077%)
+  Sums of squares: Xssq =  9.933977e-01
+      3a (b) ->   4a (b)   -0.996535 (99.308%)
 
-Excited State    2 (1 A):   0.28851 au   157.93 nm f = 0.0000
+Excited State    2 (1 A):   0.27620 au   164.97 nm f = 0.0001
 Alpha orbitals:
-  Sums of squares: Xssq =  9.704628e-01
-      4a (a) ->   6a (a)   -0.985045 (97.031%)
+  Sums of squares: Xssq =  9.742831e-01
+      5a (a) ->   6a (a)   -0.987013 (97.419%)
 Beta orbitals:
-  Sums of squares: Xssq =  2.953715e-02
-      2a (b) ->   4a (b)    0.170155 ( 2.895%)
+  Sums of squares: Xssq =  2.571688e-02
+      2a (b) ->   5a (b)    0.159308 ( 2.538%)
 
-Excited State    3 (1 A):   0.32842 au   138.73 nm f = 0.0001
+Excited State    3 (1 A):   0.28645 au   159.06 nm f = 0.0000
 Alpha orbitals:
-  Sums of squares: Xssq =  1.999527e-02
-      4a (a) ->   7a (a)   -0.140239 ( 1.967%)
+  Sums of squares: Xssq =  2.074298e-02
+      5a (a) ->   7a (a)   -0.143518 ( 2.060%)
 Beta orbitals:
-  Sums of squares: Xssq =  9.800047e-01
-      3a (b) ->   4a (b)    0.989934 (97.997%)
+  Sums of squares: Xssq =  9.792570e-01
+      3a (b) ->   5a (b)    0.989562 (97.923%)
+
+Excited State    4 (1 A):   0.30702 au   148.40 nm f = 0.0098
+Alpha orbitals:
+  Sums of squares: Xssq =  9.885251e-01
+      4a (a) ->   6a (a)   -0.993899 (98.783%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.147486e-02
+
+Excited State    5 (1 A):   0.34554 au   131.86 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.793353e-01
+      5a (a) ->   7a (a)    0.989600 (97.931%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.066471e-02
+      3a (b) ->   5a (b)    0.143548 ( 2.061%)
 
 
 ******************************************************************************************
@@ -493,6 +528,126 @@ Beta orbitals:
     SVWN TDA root 2 vs PySCF..............................................................PASSED
     SVWN TDA root 3 vs PySCF..............................................................PASSED
 
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+
+
+         ---------------------------------------------------------
+                         TDSCF excitation energies                
+                 by Andrew M. James and Daniel G. A. Smith        
+         ---------------------------------------------------------
+
+  ==> Options <==
+
+     Residual threshold  : 1.0000e-07
+     Initial guess       : denominators
+     Reference           : UHF
+     Solver type         : RPA (Hamiltonian)
+
+
+  ==> Requested Excitations <==
+
+      5 singlet states with A symmetry
+
+
+  ==> Seeking the lowest 5 singlet states with A symmetry
+
+                        Generalized Hamiltonian Solver                       
+                              By Andrew M. James                             
+
+  ==> Options <==
+
+    Max number of iterations        = 60   
+    Eigenvector tolerance           = 1.0000e-07
+    Max number of expansion vectors = 1750 
+
+  => Iterations <=
+                              Max[D[value]]     Max[|R|]   # vectors
+  HamiltonianSolver iter   1:   3.45473e-01  6.18326e-02     20      
+  HamiltonianSolver iter   2:   1.58432e-03  1.20089e-02     25      
+  HamiltonianSolver iter   3:   2.98266e-05  2.45098e-03     32      
+  HamiltonianSolver iter   4:   3.64442e-07  3.69656e-04     38      
+  HamiltonianSolver iter   5:   9.39421e-09  7.76314e-05     44      
+  HamiltonianSolver iter   6:   2.39202e-10  9.12609e-06     48      
+  HamiltonianSolver iter   7:   2.38415e-12  3.86309e-07     52      
+  HamiltonianSolver iter   8:   4.48530e-14  7.93054e-08     55      Converged
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********  Length-gauge rotatory strengths are **NOT** gauge-origin invariant  **********
+******************************************************************************************
+
+                                    Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
+     #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
+    ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
+     1        A->A (1 A)       0.26428         7.19129        -38.62089        0.0013          0.0067         -0.0000         -0.0000        
+     2        A->A (1 A)       0.27493         7.48128        -38.61024        0.0003          0.0037         -0.0000         -0.0000        
+     3        A->A (1 A)       0.28624         7.78902        -38.59893        0.0000          0.0000         -0.0000         -0.0000        
+     4        A->A (1 A)       0.30615         8.33083        -38.57902        0.0103          0.0252          0.0000          0.0000        
+     5        A->A (1 A)       0.34541         9.39911        -38.53976        0.0000          0.0000         -0.0000         -0.0000        
+
+
+
+Contributing excitations and de-excitations
+Only contributions with abs(coeff) > 1.00e-01 will be printed:
+
+Excited State    1 (1 A):   0.26428 au   172.41 nm f = 0.0013
+Alpha orbitals:
+  Sums of squares: Xssq =  6.633118e-03; Yssq =  6.180715e-04; Xssq - Yssq =  6.015046e-03
+Beta orbitals:
+  Sums of squares: Xssq =  9.940514e-01; Yssq =  6.647047e-05; Xssq - Yssq =  9.939850e-01
+      3a (b) ->   4a (b)   -0.996922 (99.385%)
+
+Excited State    2 (1 A):   0.27493 au   165.73 nm f = 0.0003
+Alpha orbitals:
+  Sums of squares: Xssq =  9.779740e-01; Yssq =  2.012992e-05; Xssq - Yssq =  9.779538e-01
+      5a (a) ->   6a (a)    0.988897 (97.792%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.356652e-02; Yssq =  1.520368e-03; Xssq - Yssq =  2.204616e-02
+      2a (b) ->   5a (b)   -0.152422 ( 2.323%)
+
+Excited State    3 (1 A):   0.28624 au   159.18 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  2.100822e-02; Yssq =  2.316168e-04; Xssq - Yssq =  2.077660e-02
+      5a (a) ->   7a (a)   -0.144428 ( 2.086%)
+Beta orbitals:
+  Sums of squares: Xssq =  9.792646e-01; Yssq =  4.116884e-05; Xssq - Yssq =  9.792234e-01
+      3a (b) ->   5a (b)    0.989565 (97.924%)
+
+Excited State    4 (1 A):   0.30615 au   148.83 nm f = 0.0103
+Alpha orbitals:
+  Sums of squares: Xssq =  9.901113e-01; Yssq =  6.260466e-05; Xssq - Yssq =  9.900487e-01
+      4a (a) ->   6a (a)    0.994863 (98.975%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.067676e-02; Yssq =  7.254528e-04; Xssq - Yssq =  9.951308e-03
+
+Excited State    5 (1 A):   0.34541 au   131.91 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.792742e-01; Yssq =  4.914261e-06; Xssq - Yssq =  9.792693e-01
+      5a (a) ->   7a (a)   -0.989569 (97.925%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.090450e-02; Yssq =  1.738235e-04; Xssq - Yssq =  2.073068e-02
+      3a (b) ->   5a (b)   -0.144374 ( 2.084%)
+
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+    SVWN RPA root 1 vs PySCF..............................................................PASSED
+    SVWN RPA root 2 vs PySCF..............................................................PASSED
+    SVWN RPA root 3 vs PySCF..............................................................PASSED
+
 Scratch directory: /home/work/scratch/
    => Libint2 <=
 
@@ -502,15 +657,15 @@ Scratch directory: /home/work/scratch/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on lenovo
-*** at Thu Aug  6 08:58:03 2026
+*** at Tue Aug 25 19:31:36 2026
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry C          line    87 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
-    atoms 2-3 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 1   entry C          line    87 file /home/work/psi4/install/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /home/work/psi4/install/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -530,15 +685,15 @@ Scratch directory: /home/work/scratch/
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         C            0.000000000000    -0.000000000000    -0.014381424017    12.000000000000
-         H            0.000000000000     0.980000000000     0.085618575983     1.007825032230
-         H            0.000000000000    -0.980000000000     0.085618575983     1.007825032230
+         C            0.000000000000    -0.000000000000     0.060517032262    12.000000000000
+         H            0.000000000000     0.991400000000    -0.360282967738     1.007825032230
+         H            0.000000000000    -0.991400000000    -0.360282967738     1.007825032230
 
   Running in c1 symmetry.
 
-  Rotational constants: A =    976.81734  B =      8.70822  C =      8.63127 [cm^-1]
-  Rotational constants: A = 29284247.06425  B = 261065.75722  C = 258758.95039 [MHz]
-  Nuclear repulsion =    6.716236004921143
+  Rotational constants: A =     55.16478  B =      8.50910  C =      7.37198 [cm^-1]
+  Rotational constants: A = 1653798.52383  B = 255096.34342  C = 221006.38617 [MHz]
+  Nuclear repulsion =    6.162963984587006
 
   Charge       = 0
   Multiplicity = 3
@@ -604,7 +759,8 @@ Scratch directory: /home/work/scratch/
    => Molecular Quadrature <=
 
     Radial Scheme          =       TREUTLER
-    Pruning Scheme         =           NONE
+    Pruning Scheme         =           FLAT
+    Pruning Type           =       FUNCTION
     Nuclear Scheme         =       TREUTLER
 
     Blocking Scheme        =         OCTREE
@@ -612,8 +768,8 @@ Scratch directory: /home/work/scratch/
     Pruning alpha          =              1
     Radial Points          =             99
     Spherical Points       =            590
-    Total Points           =         167886
-    Total Blocks           =           1297
+    Total Points           =         168321
+    Total Blocks           =           1309
     Max Points             =            256
     Max Functions          =             13
     Weights Tolerance      =       1.00E-15
@@ -649,8 +805,8 @@ Scratch directory: /home/work/scratch/
 
   Cached 100.0% of DFT collocation blocks in 0.063 [GiB].
 
-  Minimum eigenvalue in the overlap matrix is 2.0394896392E-02.
-  Reciprocal condition number of the overlap matrix is 5.9702984690E-03.
+  Minimum eigenvalue in the overlap matrix is 4.2220013631E-02.
+  Reciprocal condition number of the overlap matrix is 1.2605153268E-02.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -669,30 +825,30 @@ Scratch directory: /home/work/scratch/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter SAD:   -38.72658732635335   -3.87266e+01   0.00000e+00 
-   @UKS iter   1:   -38.98332465787095   -2.56737e-01   2.65754e-02 DIIS/ADIIS
-   @UKS iter   2:   -38.99169669517431   -8.37204e-03   2.54260e-02 DIIS/ADIIS
-   @UKS iter   3:   -39.05876006198939   -6.70634e-02   7.44242e-04 DIIS/ADIIS
-   @UKS iter   4:   -39.05883319219526   -7.31302e-05   1.21686e-04 DIIS/ADIIS
-   @UKS iter   5:   -39.05883570008148   -2.50789e-06   1.22887e-05 DIIS
-   @UKS iter   6:   -39.05883572536213   -2.52806e-08   1.43780e-06 DIIS
-   @UKS iter   7:   -39.05883572571109   -3.48962e-10   2.81872e-07 DIIS
-   @UKS iter   8:   -39.05883572572625   -1.51630e-11   1.78397e-08 DIIS
-   @UKS iter   9:   -39.05883572572630   -4.26326e-14   1.19385e-09 DIIS
-   @UKS iter  10:   -39.05883572572633   -2.84217e-14   5.54068e-11 DIIS
+   @UKS iter SAD:   -38.70958973209026   -3.87096e+01   0.00000e+00 
+   @UKS iter   1:   -39.01542947205174   -3.05840e-01   2.42776e-02 DIIS/ADIIS
+   @UKS iter   2:   -39.01047825032056    4.95122e-03   2.52750e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.07952685148940   -6.90486e-02   5.25872e-04 DIIS/ADIIS
+   @UKS iter   4:   -39.07957951927682   -5.26678e-05   1.16300e-04 DIIS/ADIIS
+   @UKS iter   5:   -39.07958251043684   -2.99116e-06   1.48455e-05 DIIS
+   @UKS iter   6:   -39.07958255704317   -4.66063e-08   1.92834e-06 DIIS
+   @UKS iter   7:   -39.07958255754116   -4.97991e-10   1.62472e-07 DIIS
+   @UKS iter   8:   -39.07958255754530   -4.14246e-12   2.29339e-08 DIIS
+   @UKS iter   9:   -39.07958255754541   -1.06581e-13   1.37766e-09 DIIS
+   @UKS iter  10:   -39.07958255754541   -7.10543e-15   4.92672e-11 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
    Electrons on quadrature grid:
-      Nalpha   =    4.9999999996 ; deviation = -4.256e-10
-      Nbeta    =    2.9999999996 ; deviation = -4.078e-10
-      Ntotal   =    7.9999999992 ; deviation = -8.335e-10 
+      Nalpha   =    5.0000000038 ; deviation = 3.808e-09
+      Nbeta    =    3.0000000044 ; deviation = 4.432e-09
+      Ntotal   =    8.0000000082 ; deviation = 8.240e-09 
 
-   @Spin Contamination Metric:   7.661190824E-03
+   @Spin Contamination Metric:   5.079716150E-03
    @S^2 Expected:                2.000000000E+00
-   @S^2 Observed:                2.007661191E+00
+   @S^2 Observed:                2.005079716E+00
    @S   Expected:                1.000000000E+00
    @S   Observed:                1.000000000E+00
 
@@ -701,25 +857,25 @@ Scratch directory: /home/work/scratch/
 
     Alpha Occupied:                                                       
 
-       1A     -9.906637     2A     -0.621644     3A     -0.448128  
-       4A     -0.195339     5A     -0.192975  
+       1A     -9.928754     2A     -0.607836     3A     -0.405016  
+       4A     -0.226989     5A     -0.193578  
 
     Alpha Virtual:                                                        
 
-       6A      0.092411     7A      0.191466     8A      0.485403  
-       9A      0.492186    10A      0.507720    11A      0.741886  
-      12A      0.934764    13A      1.110015  
+       6A      0.083731     7A      0.159437     8A      0.485591  
+       9A      0.488460    10A      0.568231    11A      0.591818  
+      12A      0.881142    13A      0.911431  
 
     Beta Occupied:                                                        
 
-       1A     -9.879264     2A     -0.549356     3A     -0.428371  
+       1A     -9.900963     2A     -0.541400     3A     -0.382469  
 
     Beta Virtual:                                                         
 
-       4A     -0.070863     5A     -0.069661     6A      0.121739  
-       7A      0.198622     8A      0.536460     9A      0.584944  
-      10A      0.590439    11A      0.774752    12A      0.984120  
-      13A      1.122919  
+       4A     -0.092433     5A     -0.068047     6A      0.107487  
+       7A      0.180830     8A      0.562856     9A      0.582225  
+      10A      0.602003    11A      0.649088    12A      0.923527  
+      13A      0.927309  
 
     Final Occupation by Irrep:
               A 
@@ -728,24 +884,24 @@ Scratch directory: /home/work/scratch/
     NA   [     5 ]
     NB   [     3 ]
 
-  @UKS Final Energy:   -39.05883572572633
+  @UKS Final Energy:   -39.07958255754541
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              6.7162360049211429
-    One-Electron Energy =                 -64.9637464029835030
-    Two-Electron Energy =                  25.2847448004296638
-    DFT Exchange-Correlation Energy =      -6.0960701280936282
+    Nuclear Repulsion Energy =              6.1629639845870061
+    One-Electron Energy =                 -63.9766950409777522
+    Two-Electron Energy =                  24.7678554422193713
+    DFT Exchange-Correlation Energy =      -6.0337069433740416
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -39.0588357257263254
+    Total Energy =                        -39.0795825575454145
 
   UHF NO Occupations:
-  HONO-2 :    3  A 1.9967070
+  HONO-2 :    3  A 1.9983011
   HONO-1 :    4  A 1.0000000
   HONO-0 :    5  A 1.0000000
-  LUNO+0 :    6  A 0.0032930
-  LUNO+1 :    7  A 0.0005427
+  LUNO+0 :    6  A 0.0016989
+  LUNO+1 :    7  A 0.0008423
   LUNO+2 :    8  A 0.0000004
   LUNO+3 :    9  A 0.0000000
 
@@ -765,22 +921,22 @@ Properties computed using the SCF density matrix
  ------------------------------------------------------------------------------------
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
- Dipole X            :         -0.0000000            0.0000000           -0.0000000
- Dipole Y            :          0.0000000           -0.0000000            0.0000000
- Dipole Z            :         -0.0726304            0.1605296            0.0878992
- Magnitude           :                                                    0.0878992
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :          0.4095646           -0.6755086           -0.2659440
+ Magnitude           :                                                    0.2659440
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on lenovo at Thu Aug  6 08:58:09 2026
+*** tstop() called on lenovo at Tue Aug 25 19:31:37 2026
 Module time:
-	user time   =      11.94 seconds =       0.20 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       6.41 seconds =       0.11 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      29.03 seconds =       0.48 minutes
-	system time =       0.72 seconds =       0.01 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      28.30 seconds =       0.47 minutes
+	system time =       0.28 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
     PBE SCF energy vs PySCF...............................................................PASSED
 
 ******************************************************************************************
@@ -808,10 +964,10 @@ Total time:
 
   ==> Requested Excitations <==
 
-      3 singlet states with A symmetry
+      5 singlet states with A symmetry
 
 
-  ==> Seeking the lowest 3 singlet states with A symmetry
+  ==> Seeking the lowest 5 singlet states with A symmetry
 
                          Generalized Davidson Solver                         
                                By Ruhee Dcunha                               
@@ -820,16 +976,16 @@ Total time:
 
     Max number of iterations        = 60   
     Eigenvector tolerance           = 1.0000e-07
-    Max number of expansion vectors = 1050 
+    Max number of expansion vectors = 1750 
 
   => Iterations <=
                            Max[D[value]]     Max[|R|]   # vectors
-  DavidsonSolver iter   1:   3.46639e-01  2.65279e-02     12      
-  DavidsonSolver iter   2:   6.05453e-04  4.94278e-03     15      
-  DavidsonSolver iter   3:   2.61882e-05  5.21737e-04     18      
-  DavidsonSolver iter   4:   2.52023e-07  3.65178e-05     21      
-  DavidsonSolver iter   5:   1.46579e-09  3.66755e-06     23      
-  DavidsonSolver iter   6:   1.25916e-11  7.75096e-08     25      Converged
+  DavidsonSolver iter   1:   3.51653e-01  3.44691e-02     20      
+  DavidsonSolver iter   2:   1.35048e-03  3.13097e-03     25      
+  DavidsonSolver iter   3:   1.02445e-05  2.35234e-04     29      
+  DavidsonSolver iter   4:   6.18825e-08  1.38544e-05     32      
+  DavidsonSolver iter   5:   1.48305e-10  4.66819e-07     34      
+  DavidsonSolver iter   6:   1.87517e-13  1.30403e-08     36      Converged
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -839,38 +995,54 @@ Total time:
                                     Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
      #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
     ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
-     1        A->A (1 A)       0.28737         7.81963        -38.77147        0.0002          0.0063          0.0000          0.0000        
-     2        A->A (1 A)       0.28933         7.87306        -38.76951        0.0000          0.0073          0.0000         -0.0000        
-     3        A->A (1 A)       0.34620         9.42065        -38.71263        0.0003          0.0008          0.0000          0.0000        
+     1        A->A (1 A)       0.27805         7.56599        -38.80154        0.0001          0.0062          0.0000          0.0000        
+     2        A->A (1 A)       0.27972         7.61163        -38.79986        0.0019          0.0047          0.0000          0.0000        
+     3        A->A (1 A)       0.30226         8.22494        -38.77732        0.0000          0.0000          0.0000          0.0000        
+     4        A->A (1 A)       0.30927         8.41577        -38.77031        0.0100          0.0234         -0.0000         -0.0000        
+     5        A->A (1 A)       0.35160         9.56749        -38.72798        0.0000          0.0000          0.0000          0.0000        
 
 
 
 Contributing excitations
 Only contributions with abs(coeff) > 1.00e-01 will be printed:
 
-Excited State    1 (1 A):   0.28737 au   158.55 nm f = 0.0002
+Excited State    1 (1 A):   0.27805 au   163.87 nm f = 0.0001
 Alpha orbitals:
-  Sums of squares: Xssq =  9.705333e-01
-      5a (a) ->   6a (a)    0.985107 (97.044%)
+  Sums of squares: Xssq =  9.745631e-01
+      5a (a) ->   6a (a)    0.987153 (97.447%)
 Beta orbitals:
-  Sums of squares: Xssq =  2.946675e-02
-      2a (b) ->   5a (b)   -0.170387 ( 2.903%)
+  Sums of squares: Xssq =  2.543689e-02
+      2a (b) ->   5a (b)   -0.158217 ( 2.503%)
 
-Excited State    2 (1 A):   0.28933 au   157.48 nm f = 0.0000
+Excited State    2 (1 A):   0.27972 au   162.89 nm f = 0.0019
 Alpha orbitals:
-  Sums of squares: Xssq =  9.721527e-01
-      4a (a) ->   6a (a)    0.985912 (97.202%)
+  Sums of squares: Xssq =  9.337287e-03
 Beta orbitals:
-  Sums of squares: Xssq =  2.784725e-02
-      2a (b) ->   4a (b)   -0.164495 ( 2.706%)
+  Sums of squares: Xssq =  9.906627e-01
+      3a (b) ->   4a (b)   -0.995067 (99.016%)
 
-Excited State    3 (1 A):   0.34620 au   131.61 nm f = 0.0003
+Excited State    3 (1 A):   0.30226 au   150.74 nm f = 0.0000
 Alpha orbitals:
-  Sums of squares: Xssq =  4.722848e-02
-      4a (a) ->   7a (a)    0.216132 ( 4.671%)
+  Sums of squares: Xssq =  4.188132e-02
+      5a (a) ->   7a (a)   -0.204001 ( 4.162%)
 Beta orbitals:
-  Sums of squares: Xssq =  9.527715e-01
-      3a (b) ->   4a (b)   -0.975999 (95.257%)
+  Sums of squares: Xssq =  9.581187e-01
+      3a (b) ->   5a (b)    0.978762 (95.797%)
+
+Excited State    4 (1 A):   0.30927 au   147.32 nm f = 0.0100
+Alpha orbitals:
+  Sums of squares: Xssq =  9.878843e-01
+      4a (a) ->   6a (a)    0.993617 (98.727%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.211573e-02
+
+Excited State    5 (1 A):   0.35160 au   129.59 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.582466e-01
+      5a (a) ->   7a (a)   -0.978868 (95.818%)
+Beta orbitals:
+  Sums of squares: Xssq =  4.175338e-02
+      3a (b) ->   5a (b)   -0.204180 ( 4.169%)
 
 
 ******************************************************************************************
@@ -885,6 +1057,126 @@ Beta orbitals:
     PBE TDA root 2 vs PySCF...............................................................PASSED
     PBE TDA root 3 vs PySCF...............................................................PASSED
 
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+
+
+         ---------------------------------------------------------
+                         TDSCF excitation energies                
+                 by Andrew M. James and Daniel G. A. Smith        
+         ---------------------------------------------------------
+
+  ==> Options <==
+
+     Residual threshold  : 1.0000e-07
+     Initial guess       : denominators
+     Reference           : UHF
+     Solver type         : RPA (Hamiltonian)
+
+
+  ==> Requested Excitations <==
+
+      5 singlet states with A symmetry
+
+
+  ==> Seeking the lowest 5 singlet states with A symmetry
+
+                        Generalized Hamiltonian Solver                       
+                              By Andrew M. James                             
+
+  ==> Options <==
+
+    Max number of iterations        = 60   
+    Eigenvector tolerance           = 1.0000e-07
+    Max number of expansion vectors = 1750 
+
+  => Iterations <=
+                              Max[D[value]]     Max[|R|]   # vectors
+  HamiltonianSolver iter   1:   3.51559e-01  6.95409e-02     20      
+  HamiltonianSolver iter   2:   2.13200e-03  1.57635e-02     25      
+  HamiltonianSolver iter   3:   5.42490e-05  2.46422e-03     32      
+  HamiltonianSolver iter   4:   9.01584e-07  4.72052e-04     38      
+  HamiltonianSolver iter   5:   1.32419e-08  9.86949e-05     44      
+  HamiltonianSolver iter   6:   3.81470e-10  7.71592e-06     48      
+  HamiltonianSolver iter   7:   2.64733e-12  9.97410e-07     52      
+  HamiltonianSolver iter   8:   6.92779e-14  7.41039e-08     55      Converged
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********  Length-gauge rotatory strengths are **NOT** gauge-origin invariant  **********
+******************************************************************************************
+
+                                    Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
+     #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
+    ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
+     1        A->A (1 A)       0.27655         7.52540        -38.80303        0.0004          0.0031         -0.0000         -0.0000        
+     2        A->A (1 A)       0.27850         7.57839        -38.80108        0.0018          0.0079          0.0000          0.0000        
+     3        A->A (1 A)       0.30169         8.20938        -38.77789        0.0000          0.0000          0.0000          0.0000        
+     4        A->A (1 A)       0.30809         8.38363        -38.77149        0.0107          0.0235         -0.0000         -0.0000        
+     5        A->A (1 A)       0.35148         9.56415        -38.72811        0.0000          0.0000          0.0000         -0.0000        
+
+
+
+Contributing excitations and de-excitations
+Only contributions with abs(coeff) > 1.00e-01 will be printed:
+
+Excited State    1 (1 A):   0.27655 au   164.75 nm f = 0.0004
+Alpha orbitals:
+  Sums of squares: Xssq =  9.775781e-01; Yssq =  1.613105e-05; Xssq - Yssq =  9.775619e-01
+      5a (a) ->   6a (a)    0.988690 (97.751%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.423237e-02; Yssq =  1.794300e-03; Xssq - Yssq =  2.243807e-02
+      2a (b) ->   5a (b)   -0.154315 ( 2.381%)
+
+Excited State    2 (1 A):   0.27850 au   163.60 nm f = 0.0018
+Alpha orbitals:
+  Sums of squares: Xssq =  9.846952e-03; Yssq =  8.262164e-04; Xssq - Yssq =  9.020736e-03
+Beta orbitals:
+  Sums of squares: Xssq =  9.914739e-01; Yssq =  4.946754e-04; Xssq - Yssq =  9.909793e-01
+      3a (b) ->   4a (b)    0.995524 (99.107%)
+
+Excited State    3 (1 A):   0.30169 au   151.03 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  4.374644e-02; Yssq =  3.519669e-04; Xssq - Yssq =  4.339447e-02
+      5a (a) ->   7a (a)   -0.208467 ( 4.346%)
+Beta orbitals:
+  Sums of squares: Xssq =  9.570586e-01; Yssq =  4.530341e-04; Xssq - Yssq =  9.566055e-01
+      3a (b) ->   5a (b)    0.978211 (95.690%)
+
+Excited State    4 (1 A):   0.30809 au   147.89 nm f = 0.0107
+Alpha orbitals:
+  Sums of squares: Xssq =  9.893570e-01; Yssq =  8.142106e-05; Xssq - Yssq =  9.892755e-01
+      4a (a) ->   6a (a)    0.994472 (98.897%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.175029e-02; Yssq =  1.025818e-03; Xssq - Yssq =  1.072447e-02
+
+Excited State    5 (1 A):   0.35148 au   129.63 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.567082e-01; Yssq =  1.579898e-05; Xssq - Yssq =  9.566924e-01
+      5a (a) ->   7a (a)   -0.978079 (95.664%)
+Beta orbitals:
+  Sums of squares: Xssq =  4.345676e-02; Yssq =  1.491116e-04; Xssq - Yssq =  4.330764e-02
+      3a (b) ->   5a (b)   -0.208300 ( 4.339%)
+
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+    PBE RPA root 1 vs PySCF...............................................................PASSED
+    PBE RPA root 2 vs PySCF...............................................................PASSED
+    PBE RPA root 3 vs PySCF...............................................................PASSED
+
 Scratch directory: /home/work/scratch/
    => Libint2 <=
 
@@ -894,15 +1186,15 @@ Scratch directory: /home/work/scratch/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on lenovo
-*** at Thu Aug  6 08:58:17 2026
+*** at Tue Aug 25 19:31:43 2026
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry C          line    87 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
-    atoms 2-3 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 1   entry C          line    87 file /home/work/psi4/install/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /home/work/psi4/install/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -922,15 +1214,15 @@ Scratch directory: /home/work/scratch/
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         C            0.000000000000     0.000000000000    -0.014381424017    12.000000000000
-         H            0.000000000000     0.980000000000     0.085618575983     1.007825032230
-         H            0.000000000000    -0.980000000000     0.085618575983     1.007825032230
+         C            0.000000000000    -0.000000000000     0.060517032262    12.000000000000
+         H            0.000000000000     0.991400000000    -0.360282967738     1.007825032230
+         H            0.000000000000    -0.991400000000    -0.360282967738     1.007825032230
 
   Running in c1 symmetry.
 
-  Rotational constants: A =    976.81734  B =      8.70822  C =      8.63127 [cm^-1]
-  Rotational constants: A = 29284247.06425  B = 261065.75722  C = 258758.95039 [MHz]
-  Nuclear repulsion =    6.716236004921143
+  Rotational constants: A =     55.16478  B =      8.50910  C =      7.37198 [cm^-1]
+  Rotational constants: A = 1653798.52383  B = 255096.34342  C = 221006.38617 [MHz]
+  Nuclear repulsion =    6.162963984587006
 
   Charge       = 0
   Multiplicity = 3
@@ -996,7 +1288,8 @@ Scratch directory: /home/work/scratch/
    => Molecular Quadrature <=
 
     Radial Scheme          =       TREUTLER
-    Pruning Scheme         =           NONE
+    Pruning Scheme         =           FLAT
+    Pruning Type           =       FUNCTION
     Nuclear Scheme         =       TREUTLER
 
     Blocking Scheme        =         OCTREE
@@ -1004,8 +1297,8 @@ Scratch directory: /home/work/scratch/
     Pruning alpha          =              1
     Radial Points          =             99
     Spherical Points       =            590
-    Total Points           =         167886
-    Total Blocks           =           1297
+    Total Points           =         168321
+    Total Blocks           =           1309
     Max Points             =            256
     Max Functions          =             13
     Weights Tolerance      =       1.00E-15
@@ -1041,8 +1334,8 @@ Scratch directory: /home/work/scratch/
 
   Cached 100.0% of DFT collocation blocks in 0.158 [GiB].
 
-  Minimum eigenvalue in the overlap matrix is 2.0394896392E-02.
-  Reciprocal condition number of the overlap matrix is 5.9702984690E-03.
+  Minimum eigenvalue in the overlap matrix is 4.2220013631E-02.
+  Reciprocal condition number of the overlap matrix is 1.2605153268E-02.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -1061,30 +1354,30 @@ Scratch directory: /home/work/scratch/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter SAD:   -38.77960830810175   -3.87796e+01   0.00000e+00 
-   @UKS iter   1:   -39.07323758072609   -2.93629e-01   2.42846e-02 DIIS/ADIIS
-   @UKS iter   2:   -39.09303456344641   -1.97970e-02   1.99671e-02 DIIS/ADIIS
-   @UKS iter   3:   -39.13540142919628   -4.23669e-02   1.28555e-03 DIIS/ADIIS
-   @UKS iter   4:   -39.13561309615320   -2.11667e-04   1.75486e-04 DIIS/ADIIS
-   @UKS iter   5:   -39.13561852895806   -5.43280e-06   1.57151e-05 DIIS
-   @UKS iter   6:   -39.13561857279085   -4.38328e-08   1.48706e-06 DIIS
-   @UKS iter   7:   -39.13561857327187   -4.81023e-10   3.10207e-07 DIIS
-   @UKS iter   8:   -39.13561857329105   -1.91775e-11   1.85364e-08 DIIS
-   @UKS iter   9:   -39.13561857329115   -9.94760e-14   1.29228e-09 DIIS
-   @UKS iter  10:   -39.13561857329111    3.55271e-14   1.21654e-10 DIIS
+   @UKS iter SAD:   -38.76085009208576   -3.87609e+01   0.00000e+00 
+   @UKS iter   1:   -39.10264786640279   -3.41798e-01   2.21014e-02 DIIS/ADIIS
+   @UKS iter   2:   -39.11108134757684   -8.43348e-03   2.00829e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.15532907636851   -4.42477e-02   8.51977e-04 DIIS/ADIIS
+   @UKS iter   4:   -39.15545099197328   -1.21916e-04   1.75898e-04 DIIS/ADIIS
+   @UKS iter   5:   -39.15545837414907   -7.38218e-06   1.85234e-05 DIIS
+   @UKS iter   6:   -39.15545844149202   -6.73430e-08   1.31296e-06 DIIS
+   @UKS iter   7:   -39.15545844179999   -3.07963e-10   1.30525e-07 DIIS
+   @UKS iter   8:   -39.15545844180365   -3.66640e-12   2.26814e-08 DIIS
+   @UKS iter   9:   -39.15545844180369   -3.55271e-14   1.74931e-09 DIIS
+   @UKS iter  10:   -39.15545844180376   -7.10543e-14   4.37385e-11 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
    Electrons on quadrature grid:
-      Nalpha   =    4.9999999996 ; deviation = -4.256e-10
-      Nbeta    =    2.9999999996 ; deviation = -4.064e-10
-      Ntotal   =    7.9999999992 ; deviation = -8.320e-10 
+      Nalpha   =    5.0000000040 ; deviation = 3.969e-09
+      Nbeta    =    3.0000000046 ; deviation = 4.587e-09
+      Ntotal   =    8.0000000086 ; deviation = 8.556e-09 
 
-   @Spin Contamination Metric:   9.216475999E-03
+   @Spin Contamination Metric:   5.821808282E-03
    @S^2 Expected:                2.000000000E+00
-   @S^2 Observed:                2.009216476E+00
+   @S^2 Observed:                2.005821808E+00
    @S   Expected:                1.000000000E+00
    @S   Observed:                1.000000000E+00
 
@@ -1093,25 +1386,25 @@ Scratch directory: /home/work/scratch/
 
     Alpha Occupied:                                                       
 
-       1A    -10.006644     2A     -0.639134     3A     -0.454260  
-       4A     -0.199957     5A     -0.197547  
+       1A    -10.030818     2A     -0.625763     3A     -0.411816  
+       4A     -0.233639     5A     -0.199851  
 
     Alpha Virtual:                                                        
 
-       6A      0.099016     7A      0.203020     8A      0.503015  
-       9A      0.509608    10A      0.526353    11A      0.762307  
-      12A      0.958255    13A      1.149323  
+       6A      0.090837     7A      0.169946     8A      0.503486  
+       9A      0.505320    10A      0.588830    11A      0.613888  
+      12A      0.904918    13A      0.944146  
 
     Beta Occupied:                                                        
 
-       1A     -9.975462     2A     -0.563913     3A     -0.443337  
+       1A     -9.999938     2A     -0.555336     3A     -0.395545  
 
     Beta Virtual:                                                         
 
-       4A     -0.052422     5A     -0.050613     6A      0.143181  
-       7A      0.215366     8A      0.564399     9A      0.618722  
-      10A      0.623552    11A      0.810980    12A      1.102114  
-      13A      1.349364  
+       4A     -0.082253     5A     -0.051731     6A      0.129785  
+       7A      0.200906     8A      0.590862     9A      0.613022  
+      10A      0.629920    11A      0.682666    12A      1.024594  
+      13A      1.081877  
 
     Final Occupation by Irrep:
               A 
@@ -1120,25 +1413,25 @@ Scratch directory: /home/work/scratch/
     NA   [     5 ]
     NB   [     3 ]
 
-  @UKS Final Energy:   -39.13561857329111
+  @UKS Final Energy:   -39.15545844180376
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              6.7162360049211429
-    One-Electron Energy =                 -64.9798289903864514
-    Two-Electron Energy =                  25.3089197582480629
-    DFT Exchange-Correlation Energy =      -6.1809453460738704
+    Nuclear Repulsion Energy =              6.1629639845870061
+    One-Electron Energy =                 -63.9834592956740735
+    Two-Electron Energy =                  24.7814188602366912
+    DFT Exchange-Correlation Energy =      -6.1163819909533848
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -39.1356185732911115
+    Total Energy =                        -39.1554584418037592
 
   UHF NO Occupations:
-  HONO-2 :    3  A 1.9958849
+  HONO-2 :    3  A 1.9977206
   HONO-1 :    4  A 1.0000000
   HONO-0 :    5  A 1.0000000
-  LUNO+0 :    6  A 0.0041151
-  LUNO+1 :    7  A 0.0005005
-  LUNO+2 :    8  A 0.0000013
+  LUNO+0 :    6  A 0.0022794
+  LUNO+1 :    7  A 0.0006334
+  LUNO+2 :    8  A 0.0000009
   LUNO+3 :    9  A 0.0000000
 
 
@@ -1157,22 +1450,22 @@ Properties computed using the SCF density matrix
  ------------------------------------------------------------------------------------
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
- Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.0674529            0.1605296            0.0930767
- Magnitude           :                                                    0.0930767
+ Dipole Z            :          0.4068528           -0.6755086           -0.2686558
+ Magnitude           :                                                    0.2686558
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on lenovo at Thu Aug  6 08:58:29 2026
+*** tstop() called on lenovo at Tue Aug 25 19:31:47 2026
 Module time:
-	user time   =      37.90 seconds =       0.63 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      20.52 seconds =       0.34 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =      89.76 seconds =       1.50 minutes
-	system time =       1.17 seconds =       0.02 minutes
-	total time  =         36 seconds =       0.60 minutes
+	user time   =      83.31 seconds =       1.39 minutes
+	system time =       0.44 seconds =       0.01 minutes
+	total time  =         16 seconds =       0.27 minutes
     TPSS SCF energy vs PySCF..............................................................PASSED
 
 ******************************************************************************************
@@ -1200,10 +1493,10 @@ Total time:
 
   ==> Requested Excitations <==
 
-      3 singlet states with A symmetry
+      5 singlet states with A symmetry
 
 
-  ==> Seeking the lowest 3 singlet states with A symmetry
+  ==> Seeking the lowest 5 singlet states with A symmetry
 
                          Generalized Davidson Solver                         
                                By Ruhee Dcunha                               
@@ -1212,17 +1505,16 @@ Total time:
 
     Max number of iterations        = 60   
     Eigenvector tolerance           = 1.0000e-07
-    Max number of expansion vectors = 1050 
+    Max number of expansion vectors = 1750 
 
   => Iterations <=
                            Max[D[value]]     Max[|R|]   # vectors
-  DavidsonSolver iter   1:   3.68984e-01  2.86569e-02     12      
-  DavidsonSolver iter   2:   7.78577e-04  4.89149e-03     15      
-  DavidsonSolver iter   3:   2.75547e-05  7.63894e-04     18      
-  DavidsonSolver iter   4:   4.99587e-07  6.70321e-05     21      
-  DavidsonSolver iter   5:   3.82081e-09  2.63058e-06     24      
-  DavidsonSolver iter   6:   7.70234e-12  1.31109e-07     26      
-  DavidsonSolver iter   7:   1.29341e-14  1.17497e-08     27      Converged
+  DavidsonSolver iter   1:   3.65012e-01  3.74856e-02     20      
+  DavidsonSolver iter   2:   1.65203e-03  3.73055e-03     25      
+  DavidsonSolver iter   3:   1.35983e-05  3.32052e-04     29      
+  DavidsonSolver iter   4:   1.36910e-07  2.05342e-05     32      
+  DavidsonSolver iter   5:   3.49418e-10  6.94337e-07     34      
+  DavidsonSolver iter   6:   3.38840e-13  6.66344e-08     36      Converged
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -1232,38 +1524,54 @@ Total time:
                                     Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
      #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
     ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
-     1        A->A (1 A)       0.29578         8.04855        -38.83984        0.0005          0.0043         -0.0000         -0.0000        
-     2        A->A (1 A)       0.29776         8.10251        -38.83786        0.0002          0.0053          0.0000         -0.0000        
-     3        A->A (1 A)       0.36820         10.01934       -38.76741        0.0006          0.0011         -0.0000         -0.0000        
+     1        A->A (1 A)       0.28807         7.83884        -38.86739        0.0000          0.0051         -0.0000          0.0000        
+     2        A->A (1 A)       0.29503         8.02809        -38.86043        0.0019          0.0038          0.0000         -0.0000        
+     3        A->A (1 A)       0.31973         8.70026        -38.83573        0.0109          0.0233         -0.0000         -0.0000        
+     4        A->A (1 A)       0.32121         8.74057        -38.83425        0.0000          0.0000          0.0000          0.0000        
+     5        A->A (1 A)       0.36492         9.92996        -38.79054        0.0000          0.0000          0.0000          0.0000        
 
 
 
 Contributing excitations
 Only contributions with abs(coeff) > 1.00e-01 will be printed:
 
-Excited State    1 (1 A):   0.29578 au   154.05 nm f = 0.0005
+Excited State    1 (1 A):   0.28807 au   158.17 nm f = 0.0000
 Alpha orbitals:
-  Sums of squares: Xssq =  9.769621e-01
-      5a (a) ->   6a (a)    0.988376 (97.689%)
+  Sums of squares: Xssq =  9.789354e-01
+      5a (a) ->   6a (a)    0.989332 (97.878%)
 Beta orbitals:
-  Sums of squares: Xssq =  2.303794e-02
-      2a (b) ->   5a (b)   -0.150032 ( 2.251%)
+  Sums of squares: Xssq =  2.106464e-02
+      2a (b) ->   5a (b)   -0.143504 ( 2.059%)
 
-Excited State    2 (1 A):   0.29776 au   153.02 nm f = 0.0002
+Excited State    2 (1 A):   0.29503 au   154.44 nm f = 0.0019
 Alpha orbitals:
-  Sums of squares: Xssq =  9.782779e-01
-      4a (a) ->   6a (a)   -0.989009 (97.814%)
+  Sums of squares: Xssq =  9.324302e-03
 Beta orbitals:
-  Sums of squares: Xssq =  2.172214e-02
-      2a (b) ->   4a (b)    0.144359 ( 2.084%)
+  Sums of squares: Xssq =  9.906757e-01
+      3a (b) ->   4a (b)   -0.994805 (98.964%)
 
-Excited State    3 (1 A):   0.36820 au   123.74 nm f = 0.0006
+Excited State    3 (1 A):   0.31973 au   142.51 nm f = 0.0109
 Alpha orbitals:
-  Sums of squares: Xssq =  7.612880e-02
-      4a (a) ->   7a (a)   -0.274749 ( 7.549%)
+  Sums of squares: Xssq =  9.897963e-01
+      4a (a) ->   6a (a)    0.994432 (98.889%)
 Beta orbitals:
-  Sums of squares: Xssq =  9.238712e-01
-      3a (b) ->   4a (b)    0.960811 (92.316%)
+  Sums of squares: Xssq =  1.020365e-02
+
+Excited State    4 (1 A):   0.32121 au   141.85 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  5.364135e-02
+      5a (a) ->   7a (a)    0.230901 ( 5.332%)
+Beta orbitals:
+  Sums of squares: Xssq =  9.463587e-01
+      3a (b) ->   5a (b)   -0.972535 (94.582%)
+
+Excited State    5 (1 A):   0.36492 au   124.86 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.464787e-01
+      5a (a) ->   7a (a)   -0.972769 (94.628%)
+Beta orbitals:
+  Sums of squares: Xssq =  5.352135e-02
+      3a (b) ->   5a (b)   -0.231295 ( 5.350%)
 
 
 ******************************************************************************************
@@ -1278,6 +1586,127 @@ Beta orbitals:
     TPSS TDA root 2 vs PySCF..............................................................PASSED
     TPSS TDA root 3 vs PySCF..............................................................PASSED
 
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+
+
+         ---------------------------------------------------------
+                         TDSCF excitation energies                
+                 by Andrew M. James and Daniel G. A. Smith        
+         ---------------------------------------------------------
+
+  ==> Options <==
+
+     Residual threshold  : 1.0000e-07
+     Initial guess       : denominators
+     Reference           : UHF
+     Solver type         : RPA (Hamiltonian)
+
+
+  ==> Requested Excitations <==
+
+      5 singlet states with A symmetry
+
+
+  ==> Seeking the lowest 5 singlet states with A symmetry
+
+                        Generalized Hamiltonian Solver                       
+                              By Andrew M. James                             
+
+  ==> Options <==
+
+    Max number of iterations        = 60   
+    Eigenvector tolerance           = 1.0000e-07
+    Max number of expansion vectors = 1750 
+
+  => Iterations <=
+                              Max[D[value]]     Max[|R|]   # vectors
+  HamiltonianSolver iter   1:   3.64940e-01  7.70446e-02     20      
+  HamiltonianSolver iter   2:   2.78382e-03  2.03909e-02     25      
+  HamiltonianSolver iter   3:   9.35741e-05  3.74497e-03     32      
+  HamiltonianSolver iter   4:   3.15869e-06  6.93443e-04     38      
+  HamiltonianSolver iter   5:   1.93540e-08  1.16487e-04     44      
+  HamiltonianSolver iter   6:   6.16038e-10  8.76691e-06     48      
+  HamiltonianSolver iter   7:   7.70856e-12  1.31608e-06     52      
+  HamiltonianSolver iter   8:   3.89688e-14  1.28385e-07     56      
+  HamiltonianSolver iter   9:   3.68594e-14  7.37000e-08     57      Converged
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********  Length-gauge rotatory strengths are **NOT** gauge-origin invariant  **********
+******************************************************************************************
+
+                                    Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
+     #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
+    ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
+     1        A->A (1 A)       0.28653         7.79677        -38.86893        0.0003          0.0024         -0.0000         -0.0000        
+     2        A->A (1 A)       0.29306         7.97469        -38.86239        0.0017          0.0065         -0.0000         -0.0000        
+     3        A->A (1 A)       0.31815         8.65729        -38.83731        0.0117          0.0224          0.0000          0.0000        
+     4        A->A (1 A)       0.31991         8.70528        -38.83555        0.0000          0.0000         -0.0000         -0.0000        
+     5        A->A (1 A)       0.36480         9.92668        -38.79066        0.0000          0.0000          0.0000          0.0000        
+
+
+
+Contributing excitations and de-excitations
+Only contributions with abs(coeff) > 1.00e-01 will be printed:
+
+Excited State    1 (1 A):   0.28653 au   159.02 nm f = 0.0003
+Alpha orbitals:
+  Sums of squares: Xssq =  9.810769e-01; Yssq =  8.997684e-05; Xssq - Yssq =  9.809869e-01
+      5a (a) ->   6a (a)    0.990411 (98.091%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.072896e-02; Yssq =  1.715836e-03; Xssq - Yssq =  1.901312e-02
+      2a (b) ->   5a (b)   -0.142175 ( 2.021%)
+
+Excited State    2 (1 A):   0.29306 au   155.47 nm f = 0.0017
+Alpha orbitals:
+  Sums of squares: Xssq =  1.057302e-02; Yssq =  9.478944e-04; Xssq - Yssq =  9.625122e-03
+Beta orbitals:
+  Sums of squares: Xssq =  9.917302e-01; Yssq =  1.355332e-03; Xssq - Yssq =  9.903749e-01
+      3a (b) ->   4a (b)    0.995351 (99.072%)
+
+Excited State    3 (1 A):   0.31815 au   143.21 nm f = 0.0117
+Alpha orbitals:
+  Sums of squares: Xssq =  9.908209e-01; Yssq =  2.378005e-04; Xssq - Yssq =  9.905831e-01
+      4a (a) ->   6a (a)    0.994949 (98.992%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.062812e-02; Yssq =  1.211230e-03; Xssq - Yssq =  9.416886e-03
+
+Excited State    4 (1 A):   0.31991 au   142.42 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  5.745675e-02; Yssq =  4.025498e-04; Xssq - Yssq =  5.705420e-02
+      5a (a) ->   7a (a)    0.238906 ( 5.708%)
+Beta orbitals:
+  Sums of squares: Xssq =  9.443331e-01; Yssq =  1.387326e-03; Xssq - Yssq =  9.429458e-01
+      3a (b) ->   5a (b)   -0.971455 (94.372%)
+
+Excited State    5 (1 A):   0.36480 au   124.90 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.431213e-01; Yssq =  8.146673e-05; Xssq - Yssq =  9.430398e-01
+      5a (a) ->   7a (a)   -0.971034 (94.291%)
+Beta orbitals:
+  Sums of squares: Xssq =  5.701605e-02; Yssq =  5.582955e-05; Xssq - Yssq =  5.696022e-02
+      3a (b) ->   5a (b)   -0.238725 ( 5.699%)
+
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+    TPSS RPA root 1 vs PySCF..............................................................PASSED
+    TPSS RPA root 2 vs PySCF..............................................................PASSED
+    TPSS RPA root 3 vs PySCF..............................................................PASSED
+
 Scratch directory: /home/work/scratch/
    => Libint2 <=
 
@@ -1287,15 +1716,15 @@ Scratch directory: /home/work/scratch/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on lenovo
-*** at Thu Aug  6 08:58:50 2026
+*** at Tue Aug 25 19:32:04 2026
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry C          line    87 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
-    atoms 2-3 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 1   entry C          line    87 file /home/work/psi4/install/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /home/work/psi4/install/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -1315,15 +1744,15 @@ Scratch directory: /home/work/scratch/
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         C            0.000000000000    -0.000000000000    -0.014381424017    12.000000000000
-         H            0.000000000000     0.980000000000     0.085618575983     1.007825032230
-         H            0.000000000000    -0.980000000000     0.085618575983     1.007825032230
+         C            0.000000000000    -0.000000000000     0.060517032262    12.000000000000
+         H            0.000000000000     0.991400000000    -0.360282967738     1.007825032230
+         H            0.000000000000    -0.991400000000    -0.360282967738     1.007825032230
 
   Running in c1 symmetry.
 
-  Rotational constants: A =    976.81734  B =      8.70822  C =      8.63127 [cm^-1]
-  Rotational constants: A = 29284247.06425  B = 261065.75722  C = 258758.95039 [MHz]
-  Nuclear repulsion =    6.716236004921143
+  Rotational constants: A =     55.16478  B =      8.50910  C =      7.37198 [cm^-1]
+  Rotational constants: A = 1653798.52383  B = 255096.34342  C = 221006.38617 [MHz]
+  Nuclear repulsion =    6.162963984587006
 
   Charge       = 0
   Multiplicity = 3
@@ -1388,7 +1817,8 @@ Scratch directory: /home/work/scratch/
    => Molecular Quadrature <=
 
     Radial Scheme          =       TREUTLER
-    Pruning Scheme         =           NONE
+    Pruning Scheme         =           FLAT
+    Pruning Type           =       FUNCTION
     Nuclear Scheme         =       TREUTLER
 
     Blocking Scheme        =         OCTREE
@@ -1396,8 +1826,8 @@ Scratch directory: /home/work/scratch/
     Pruning alpha          =              1
     Radial Points          =             99
     Spherical Points       =            590
-    Total Points           =         167886
-    Total Blocks           =           1297
+    Total Points           =         168321
+    Total Blocks           =           1309
     Max Points             =            256
     Max Functions          =             13
     Weights Tolerance      =       1.00E-15
@@ -1433,8 +1863,8 @@ Scratch directory: /home/work/scratch/
 
   Cached 100.0% of DFT collocation blocks in 0.158 [GiB].
 
-  Minimum eigenvalue in the overlap matrix is 2.0394896392E-02.
-  Reciprocal condition number of the overlap matrix is 5.9702984690E-03.
+  Minimum eigenvalue in the overlap matrix is 4.2220013631E-02.
+  Reciprocal condition number of the overlap matrix is 1.2605153268E-02.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -1453,30 +1883,30 @@ Scratch directory: /home/work/scratch/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter SAD:   -38.73408203570759   -3.87341e+01   0.00000e+00 
-   @UKS iter   1:   -39.04457376364864   -3.10492e-01   2.27916e-02 DIIS/ADIIS
-   @UKS iter   2:   -39.06813018531174   -2.35564e-02   1.78943e-02 DIIS/ADIIS
-   @UKS iter   3:   -39.10006599505854   -3.19358e-02   1.10885e-03 DIIS/ADIIS
-   @UKS iter   4:   -39.10024954439902   -1.83549e-04   1.39892e-04 DIIS/ADIIS
-   @UKS iter   5:   -39.10025354570002   -4.00130e-06   1.57281e-05 DIIS
-   @UKS iter   6:   -39.10025358473683   -3.90368e-08   2.90779e-06 DIIS
-   @UKS iter   7:   -39.10025358601124   -1.27441e-09   2.53279e-07 DIIS
-   @UKS iter   8:   -39.10025358602640   -1.51559e-11   4.57092e-08 DIIS
-   @UKS iter   9:   -39.10025358602689   -4.90274e-13   4.88210e-09 DIIS
-   @UKS iter  10:   -39.10025358602687    1.42109e-14   4.37455e-10 DIIS
+   @UKS iter SAD:   -38.71207927582275   -3.87121e+01   0.00000e+00 
+   @UKS iter   1:   -39.07296357696280   -3.60884e-01   2.05756e-02 DIIS/ADIIS
+   @UKS iter   2:   -39.08588481739262   -1.29212e-02   1.80986e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.12027869385458   -3.43939e-02   8.72910e-04 DIIS/ADIIS
+   @UKS iter   4:   -39.12043071421932   -1.52020e-04   1.56649e-04 DIIS/ADIIS
+   @UKS iter   5:   -39.12043718467682   -6.47046e-06   2.69180e-05 DIIS
+   @UKS iter   6:   -39.12043733752574   -1.52849e-07   3.83117e-06 DIIS
+   @UKS iter   7:   -39.12043734003722   -2.51148e-09   3.74657e-07 DIIS
+   @UKS iter   8:   -39.12043734006927   -3.20526e-11   4.79132e-08 DIIS
+   @UKS iter   9:   -39.12043734006971   -4.33431e-13   3.29706e-09 DIIS
+   @UKS iter  10:   -39.12043734006969    2.13163e-14   1.28845e-10 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
    Electrons on quadrature grid:
-      Nalpha   =    4.9999999996 ; deviation = -4.295e-10
-      Nbeta    =    2.9999999996 ; deviation = -4.047e-10
-      Ntotal   =    7.9999999992 ; deviation = -8.342e-10 
+      Nalpha   =    5.0000000036 ; deviation = 3.648e-09
+      Nbeta    =    3.0000000046 ; deviation = 4.629e-09
+      Ntotal   =    8.0000000083 ; deviation = 8.278e-09 
 
-   @Spin Contamination Metric:   1.439388366E-02
+   @Spin Contamination Metric:   9.022239560E-03
    @S^2 Expected:                2.000000000E+00
-   @S^2 Observed:                2.014393884E+00
+   @S^2 Observed:                2.009022240E+00
    @S   Expected:                1.000000000E+00
    @S   Observed:                1.000000000E+00
 
@@ -1485,25 +1915,25 @@ Scratch directory: /home/work/scratch/
 
     Alpha Occupied:                                                       
 
-       1A    -10.057163     2A     -0.665624     3A     -0.466327  
-       4A     -0.216492     5A     -0.214029  
+       1A    -10.079980     2A     -0.650021     3A     -0.422057  
+       4A     -0.249657     5A     -0.215374  
 
     Alpha Virtual:                                                        
 
-       6A      0.120146     7A      0.241302     8A      0.520274  
-       9A      0.527244    10A      0.537742    11A      0.803067  
-      12A      1.002217    13A      1.189927  
+       6A      0.109425     7A      0.193941     8A      0.521348  
+       9A      0.522048    10A      0.617868    11A      0.624562  
+      12A      0.950944    13A      0.990966  
 
     Beta Occupied:                                                        
 
-       1A    -10.023797     2A     -0.562574     3A     -0.446311  
+       1A    -10.046719     2A     -0.556215     3A     -0.396734  
 
     Beta Virtual:                                                         
 
-       4A     -0.037821     5A     -0.036725     6A      0.155328  
-       7A      0.245205     8A      0.586180     9A      0.665129  
-      10A      0.668206    11A      0.857681    12A      1.061187  
-      13A      1.169350  
+       4A     -0.060123     5A     -0.035657     6A      0.133679  
+       7A      0.213955     8A      0.629494     9A      0.651955  
+      10A      0.661242    11A      0.707873    12A      0.985408  
+      13A      0.995844  
 
     Final Occupation by Irrep:
               A 
@@ -1512,25 +1942,25 @@ Scratch directory: /home/work/scratch/
     NA   [     5 ]
     NB   [     3 ]
 
-  @UKS Final Energy:   -39.10025358602687
+  @UKS Final Energy:   -39.12043734006969
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              6.7162360049211429
-    One-Electron Energy =                 -64.9573371571760561
-    Two-Electron Energy =                  25.2828968037988275
-    DFT Exchange-Correlation Energy =      -6.1420492375707880
+    Nuclear Repulsion Energy =              6.1629639845870061
+    One-Electron Energy =                 -63.9667091707892297
+    Two-Electron Energy =                  24.7610810937603105
+    DFT Exchange-Correlation Energy =      -6.0777732476277748
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -39.1002535860268736
+    Total Energy =                        -39.1204373400696852
 
   UHF NO Occupations:
-  HONO-2 :    3  A 1.9936015
+  HONO-2 :    3  A 1.9967975
   HONO-1 :    4  A 1.0000000
   HONO-0 :    5  A 1.0000000
-  LUNO+0 :    6  A 0.0063985
-  LUNO+1 :    7  A 0.0008176
-  LUNO+2 :    8  A 0.0000016
+  LUNO+0 :    6  A 0.0032025
+  LUNO+1 :    7  A 0.0013132
+  LUNO+2 :    8  A 0.0000015
   LUNO+3 :    9  A 0.0000000
 
 
@@ -1549,22 +1979,22 @@ Properties computed using the SCF density matrix
  ------------------------------------------------------------------------------------
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
- Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :         -0.0000000            0.0000000           -0.0000000
- Dipole Z            :         -0.0777511            0.1605296            0.0827785
- Magnitude           :                                                    0.0827785
+ Dipole Z            :          0.4275815           -0.6755086           -0.2479271
+ Magnitude           :                                                    0.2479271
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on lenovo at Thu Aug  6 08:58:58 2026
+*** tstop() called on lenovo at Tue Aug 25 19:32:07 2026
 Module time:
-	user time   =      27.28 seconds =       0.45 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =      14.28 seconds =       0.24 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =     194.50 seconds =       3.24 minutes
-	system time =       1.55 seconds =       0.03 minutes
-	total time  =         65 seconds =       1.08 minutes
+	user time   =     199.31 seconds =       3.32 minutes
+	system time =       0.53 seconds =       0.01 minutes
+	total time  =         36 seconds =       0.60 minutes
     R2SCAN SCF energy vs PySCF............................................................PASSED
 
 ******************************************************************************************
@@ -1592,10 +2022,10 @@ Total time:
 
   ==> Requested Excitations <==
 
-      3 singlet states with A symmetry
+      5 singlet states with A symmetry
 
 
-  ==> Seeking the lowest 3 singlet states with A symmetry
+  ==> Seeking the lowest 5 singlet states with A symmetry
 
                          Generalized Davidson Solver                         
                                By Ruhee Dcunha                               
@@ -1604,17 +2034,16 @@ Total time:
 
     Max number of iterations        = 60   
     Eigenvector tolerance           = 1.0000e-07
-    Max number of expansion vectors = 1050 
+    Max number of expansion vectors = 1750 
 
   => Iterations <=
                            Max[D[value]]     Max[|R|]   # vectors
-  DavidsonSolver iter   1:   3.81324e-01  3.11729e-02     12      
-  DavidsonSolver iter   2:   1.01669e-03  5.90266e-03     15      
-  DavidsonSolver iter   3:   4.16113e-05  7.40618e-04     18      
-  DavidsonSolver iter   4:   4.42091e-07  7.05073e-05     21      
-  DavidsonSolver iter   5:   4.29917e-09  3.40104e-06     24      
-  DavidsonSolver iter   6:   1.21373e-11  2.00807e-07     26      
-  DavidsonSolver iter   7:   2.52576e-14  4.41591e-08     27      Converged
+  DavidsonSolver iter   1:   3.97484e-01  3.63483e-02     20      
+  DavidsonSolver iter   2:   1.51740e-03  3.20603e-03     25      
+  DavidsonSolver iter   3:   1.08326e-05  2.79986e-04     29      
+  DavidsonSolver iter   4:   9.57450e-08  1.76302e-05     32      
+  DavidsonSolver iter   5:   1.91232e-10  1.10529e-06     35      
+  DavidsonSolver iter   6:   6.93112e-13  2.76985e-08     37      Converged
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -1624,38 +2053,54 @@ Total time:
                                     Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
      #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
     ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
-     1        A->A (1 A)       0.32570         8.86274        -38.77455        0.0000          0.0077          0.0000          0.0000        
-     2        A->A (1 A)       0.32771         8.91744        -38.77254        0.0000          0.0088         -0.0000         -0.0000        
-     3        A->A (1 A)       0.38075         10.36068       -38.71951        0.0001          0.0006          0.0000          0.0000        
+     1        A->A (1 A)       0.30928         8.41602        -38.81115        0.0016          0.0065          0.0000         -0.0000        
+     2        A->A (1 A)       0.31478         8.56546        -38.80566        0.0004          0.0082          0.0000         -0.0000        
+     3        A->A (1 A)       0.33312         9.06473        -38.78731        0.0000          0.0000         -0.0000          0.0000        
+     4        A->A (1 A)       0.34599         9.41489        -38.77445        0.0132          0.0251         -0.0000         -0.0000        
+     5        A->A (1 A)       0.39709         10.80538       -38.72335        0.0000          0.0000         -0.0000         -0.0000        
 
 
 
 Contributing excitations
 Only contributions with abs(coeff) > 1.00e-01 will be printed:
 
-Excited State    1 (1 A):   0.32570 au   139.89 nm f = 0.0000
+Excited State    1 (1 A):   0.30928 au   147.32 nm f = 0.0016
 Alpha orbitals:
-  Sums of squares: Xssq =  9.610978e-01
-      5a (a) ->   6a (a)    0.980143 (96.068%)
+  Sums of squares: Xssq =  8.941519e-03
 Beta orbitals:
-  Sums of squares: Xssq =  3.890222e-02
-      2a (b) ->   5a (b)   -0.195628 ( 3.827%)
+  Sums of squares: Xssq =  9.910585e-01
+      3a (b) ->   4a (b)   -0.995050 (99.013%)
 
-Excited State    2 (1 A):   0.32771 au   139.04 nm f = 0.0000
+Excited State    2 (1 A):   0.31478 au   144.75 nm f = 0.0004
 Alpha orbitals:
-  Sums of squares: Xssq =  9.632381e-01
-      4a (a) ->   6a (a)   -0.981156 (96.267%)
+  Sums of squares: Xssq =  9.675523e-01
+      5a (a) ->   6a (a)    0.983396 (96.707%)
 Beta orbitals:
-  Sums of squares: Xssq =  3.676188e-02
-      2a (b) ->   4a (b)    0.188458 ( 3.552%)
+  Sums of squares: Xssq =  3.244766e-02
+      2a (b) ->   5a (b)   -0.178379 ( 3.182%)
 
-Excited State    3 (1 A):   0.38075 au   119.67 nm f = 0.0001
+Excited State    3 (1 A):   0.33312 au   136.78 nm f = 0.0000
 Alpha orbitals:
-  Sums of squares: Xssq =  2.068381e-02
-      4a (a) ->   7a (a)    0.141858 ( 2.012%)
+  Sums of squares: Xssq =  2.820197e-02
+      5a (a) ->   7a (a)    0.167007 ( 2.789%)
 Beta orbitals:
-  Sums of squares: Xssq =  9.793162e-01
-      3a (b) ->   4a (b)   -0.989456 (97.902%)
+  Sums of squares: Xssq =  9.717980e-01
+      3a (b) ->   5a (b)   -0.985720 (97.164%)
+
+Excited State    4 (1 A):   0.34599 au   131.69 nm f = 0.0132
+Alpha orbitals:
+  Sums of squares: Xssq =  9.830159e-01
+      4a (a) ->   6a (a)    0.990297 (98.069%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.698415e-02
+
+Excited State    5 (1 A):   0.39709 au   114.74 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.718306e-01
+      5a (a) ->   7a (a)    0.985350 (97.092%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.816939e-02
+      3a (b) ->   5a (b)    0.167419 ( 2.803%)
 
 
 ******************************************************************************************
@@ -1670,7 +2115,127 @@ Beta orbitals:
     R2SCAN TDA root 2 vs PySCF............................................................PASSED
     R2SCAN TDA root 3 vs PySCF............................................................PASSED
 
-    Psi4 stopped on: Thursday, 06 August 2026 08:59AM
-    Psi4 wall time for execution: 0:01:20.92
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+
+
+         ---------------------------------------------------------
+                         TDSCF excitation energies                
+                 by Andrew M. James and Daniel G. A. Smith        
+         ---------------------------------------------------------
+
+  ==> Options <==
+
+     Residual threshold  : 1.0000e-07
+     Initial guess       : denominators
+     Reference           : UHF
+     Solver type         : RPA (Hamiltonian)
+
+
+  ==> Requested Excitations <==
+
+      5 singlet states with A symmetry
+
+
+  ==> Seeking the lowest 5 singlet states with A symmetry
+
+                        Generalized Hamiltonian Solver                       
+                              By Andrew M. James                             
+
+  ==> Options <==
+
+    Max number of iterations        = 60   
+    Eigenvector tolerance           = 1.0000e-07
+    Max number of expansion vectors = 1750 
+
+  => Iterations <=
+                              Max[D[value]]     Max[|R|]   # vectors
+  HamiltonianSolver iter   1:   3.97220e-01  7.62763e-02     20      
+  HamiltonianSolver iter   2:   2.64280e-03  1.93012e-02     25      
+  HamiltonianSolver iter   3:   8.06982e-05  3.59570e-03     32      
+  HamiltonianSolver iter   4:   1.72266e-06  7.70138e-04     38      
+  HamiltonianSolver iter   5:   3.32800e-08  1.06708e-04     44      
+  HamiltonianSolver iter   6:   6.62483e-10  1.08187e-05     48      
+  HamiltonianSolver iter   7:   5.49516e-12  1.79915e-06     52      
+  HamiltonianSolver iter   8:   1.59150e-13  9.98999e-08     56      Converged
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********  Length-gauge rotatory strengths are **NOT** gauge-origin invariant  **********
+******************************************************************************************
+
+                                    Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
+     #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
+    ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
+     1        A->A (1 A)       0.30663         8.34380        -38.81381        0.0017          0.0086         -0.0000         -0.0000        
+     2        A->A (1 A)       0.31237         8.50004        -38.80807        0.0016          0.0046          0.0000          0.0000        
+     3        A->A (1 A)       0.33153         9.02126        -38.78891        0.0000          0.0000          0.0000          0.0000        
+     4        A->A (1 A)       0.34357         9.34895        -38.77687        0.0150          0.0231         -0.0000         -0.0000        
+     5        A->A (1 A)       0.39661         10.79243       -38.72382        0.0000          0.0000          0.0000          0.0000        
+
+
+
+Contributing excitations and de-excitations
+Only contributions with abs(coeff) > 1.00e-01 will be printed:
+
+Excited State    1 (1 A):   0.30663 au   148.59 nm f = 0.0017
+Alpha orbitals:
+  Sums of squares: Xssq =  1.041239e-02; Yssq =  1.011991e-03; Xssq - Yssq =  9.400397e-03
+Beta orbitals:
+  Sums of squares: Xssq =  9.930086e-01; Yssq =  2.408947e-03; Xssq - Yssq =  9.905996e-01
+      3a (b) ->   4a (b)    0.995902 (99.182%)
+
+Excited State    2 (1 A):   0.31237 au   145.86 nm f = 0.0016
+Alpha orbitals:
+  Sums of squares: Xssq =  9.681893e-01; Yssq =  4.929295e-04; Xssq - Yssq =  9.676964e-01
+      5a (a) ->   6a (a)    0.983697 (96.766%)
+Beta orbitals:
+  Sums of squares: Xssq =  3.468818e-02; Yssq =  2.384543e-03; Xssq - Yssq =  3.230363e-02
+      2a (b) ->   5a (b)   -0.184215 ( 3.394%)
+
+Excited State    3 (1 A):   0.33153 au   137.44 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  3.159526e-02; Yssq =  4.497408e-04; Xssq - Yssq =  3.114552e-02
+      5a (a) ->   7a (a)   -0.176696 ( 3.122%)
+Beta orbitals:
+  Sums of squares: Xssq =  9.706736e-01; Yssq =  1.819165e-03; Xssq - Yssq =  9.688545e-01
+      3a (b) ->   5a (b)    0.985130 (97.048%)
+
+Excited State    4 (1 A):   0.34357 au   132.62 nm f = 0.0150
+Alpha orbitals:
+  Sums of squares: Xssq =  9.838969e-01; Yssq =  8.545042e-04; Xssq - Yssq =  9.830424e-01
+      4a (a) ->   6a (a)   -0.990337 (98.077%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.861123e-02; Yssq =  1.653596e-03; Xssq - Yssq =  1.695764e-02
+
+Excited State    5 (1 A):   0.39661 au   114.88 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.692536e-01; Yssq =  3.974716e-04; Xssq - Yssq =  9.688562e-01
+      5a (a) ->   7a (a)   -0.983984 (96.822%)
+Beta orbitals:
+  Sums of squares: Xssq =  3.124578e-02; Yssq =  1.019473e-04; Xssq - Yssq =  3.114383e-02
+      3a (b) ->   5a (b)   -0.176305 ( 3.108%)
+
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+    R2SCAN RPA root 1 vs PySCF............................................................PASSED
+    R2SCAN RPA root 2 vs PySCF............................................................PASSED
+    R2SCAN RPA root 3 vs PySCF............................................................PASSED
+
+    Psi4 stopped on: Tuesday, 25 August 2026 07:32PM
+    Psi4 wall time for execution: 0:00:50.46
 
 *** Psi4 exiting successfully. Buy a developer a beer!
