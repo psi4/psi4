@@ -262,14 +262,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
-    /**
-     * Constructor for a 1D matrix from Eigen.
-     *
-     * @param eigen_mat The Eigen matrix whose contents and dimensions will be copied.
-     * @param name An optional name for the Matrix.
-     */
-    Matrix(const Eigen::MatrixXd& eigen_mat, const std::string& name = "");
-
     /// Destructor, frees memory
     virtual ~Matrix();
 
@@ -298,6 +290,9 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
     /** @} */
+
+    /// Copies data from the passed matrix to this matrix_
+    void copy_from(const double* const, int h=0);
 
     /// Returns an Armadillo matrix
     arma::mat to_armadillo_matrix(int h=0);
@@ -791,6 +786,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      *  \param a Matrix to transform
      *  \param transformer The matrix returned by PetiteList::aotoso() that acts as the transformer
      */
+    void apply_symmetry(const Matrix& a, const Matrix& transformer);
     void apply_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
 
     /** Special function to remove symmetry from a matrix.
