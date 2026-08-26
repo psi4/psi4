@@ -28,7 +28,7 @@ set nat_orbs False
 set e_convergence 1.0e-8
 set r_convergence 1.0e-8
 set pno_convergence very_tight
-set write_quadruples_intermediates true
+set write_quadruples_intermediates false
 
 # These perturbative-only cutoffs are intentionally loose. A CCSDTQ call must
 # override them with T_CUT_TNO_FULL and T_CUT_QNO_FULL, respectively.
@@ -37,7 +37,23 @@ set t_cut_tno_weak 1.0e-3
 set t_cut_qno_strong 1.0e-3
 set t_cut_qno_weak 1.0e-3
 
+# Algorithm 5 is a Jacobi iteration.  Exercise the immutable old/new T4
+# generations in both storage modes and with different OpenMP schedules before
+# the full CCSDTQ regression.  The two answers must be storage- and
+# thread-count independent.
+print('   Testing in-core/disk DLPNO-CCSDT(Q) Jacobi equivalence ...')
+set_num_threads(1)
+val_q_incore = energy('dlpno-ccsdt(q)')
+clean()
+
+set_options({'WRITE_QUADRUPLES_INTERMEDIATES': True})
+set_num_threads(2)
+val_q_disk = energy('dlpno-ccsdt(q)')
+compare_values(val_q_incore, val_q_disk, 8, 'ccsdt(q) Jacobi storage/thread equivalence')  #TEST
+clean()
+
 print('   Testing DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ ...')
+set_num_threads(4)
 val = energy('dlpno-ccsdtq')
 
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                 #TEST
