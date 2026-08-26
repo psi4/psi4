@@ -33,5 +33,6 @@
 - Test running is well covered by CI. For running locally, see [All or relevant fraction of full tests run](http://psicode.org/psi4manual/master/build_planning.html#how-to-run-a-subset-of-tests)
 
 ## Status
-- [ ] Ready for review
+- Ready for review -- use `/review-ready` in a PR comment to add a "review-requested" label. Expect reviewers to rm this label and add "awaiting-author-contribution". Re-add label for another cycle.
+- Priority review -- use `/review-next` in a PR comment to add a "review-this-pr-of-mine-next" label to signal priority for attention. Adding will rm it from your other PRs.
 - Ready for merge -- use Draft/Open GitHub status to signal your view on merge readiness
