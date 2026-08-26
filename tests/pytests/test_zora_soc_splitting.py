@@ -37,9 +37,7 @@ def mo_energies():
     def get_2p3d_energies(wfn):
         """Returns 2p and 3d energies of single atom."""
         # GHF energies are split into alpha/beta due to factory limitations.
-        mo_energy_a = wfn.epsilon_a().to_array()
-        mo_energy_b = wfn.epsilon_b().to_array()
-        mo_energies = np.sort(np.append(mo_energy_a, mo_energy_b))
+        mo_energies = wfn.epsilon().to_array()
 
         mo_e_2p = mo_energies[4:10]
         mo_e_3d = mo_energies[18:28]
