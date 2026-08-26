@@ -12,17 +12,17 @@ jobs:
       (contains(github.event.comment.body, '/review-ready') || contains(github.event.comment.body, '/review-next'))
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      pull-requests: read
       issues: write
 
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       - name: Install PyGithub
-        run: pip install PyGithub
+        run: python -m pip install PyGithub==2.9.1
 
       - name: Process Label Commands
         env:
@@ -42,6 +42,7 @@ jobs:
           commenter = os.environ['COMMENTER']
           current_pr_num = int(os.environ['CURRENT_PR'])
           comment_body = os.environ['COMMENT_BODY']
+          command = comment_body.strip()
 
           # Define our labels
           READY_LABEL = "review-requested"
@@ -53,10 +54,18 @@ jobs:
 
           current_pr = repo.get_pull(current_pr_num)
 
+          # Commands may only be issued by the PR author.
+          if command in {"/review-ready", "/review-next"} and current_pr.user.login != commenter:
+              print(f"Error: {commenter} is not the author of PR #{current_pr_num}. Aborting.")
+              current_pr.create_issue_comment(
+                  f"⚠️ @{commenter} you can only use review commands on your own PRs."
+              )
+              exit(0)
+
           # ==========================================
           # COMMAND 1: /review-ready (Unlimited use cases)
           # ==========================================
-          if "/review-ready" in comment_body:
+          if command == "/review-ready":
               print(f"Processing /review-ready command from {commenter} on PR #{current_pr_num}")
               current_pr.add_to_labels(READY_LABEL)
               print(f"Successfully added standard '{READY_LABEL}' label.")
@@ -64,38 +73,38 @@ jobs:
           # ==========================================
           # COMMAND 2: /review-next (Strict limit queue)
           # ==========================================
-          if "/review-next" in comment_body:
-              # Security Check: Ensure commenter is the PR author
-              if current_pr.user.login != commenter:
-                  print(f"Error: {commenter} is not the author of PR #{current_pr_num}. Aborting.")
-                  current_pr.create_issue_comment(f"⚠️ @{commenter} you can only use this command on your own PRs.")
-                  exit(0)
-
+          if command == "/review-next":
               max_allowed = 2 if commenter in EXTRA_PR_USERS else 1
               print(f"Processing queue command from user: {commenter} (Max allowed: {max_allowed})")
 
-              # Check if current PR already has the label to avoid double-counting
-              current_has_label = QUEUE_LABEL in [l.name for l in current_pr.get_labels()]
+              current_has_label = QUEUE_LABEL in [l.name for l in current_pr.labels]
 
-              # Gather all OTHER open PRs authored by this user that have the queue label
-              user_labeled_prs = []
-              open_prs = repo.get_pulls(state='open', sort='created', direction='asc') # Oldest first
-              
-              for pr in open_prs:
-                  if pr.user.login == commenter and pr.number != current_pr_num:
-                      if QUEUE_LABEL in [l.name for l in pr.get_labels()]:
-                          user_labeled_prs.append(pr)
+              # Fetch only this author's open items carrying the queue label,
+              # oldest update first. The Issues API includes pull requests.
+              labeled_items = repo.get_issues(
+                  state="open",
+                  labels=[QUEUE_LABEL],
+                  creator=commenter,
+                  sort="updated",
+                  direction="asc",
+              )
 
-              # Total count if we add the label to the current PR
-              current_total = len(user_labeled_prs) + (1 if not current_has_label else 0)
+              user_labeled_prs = [
+                  item for item in labeled_items
+                  if item.number != current_pr_num and item.pull_request is not None
+              ]
 
-              # Bump the oldest PR(s) if user exceeds their limit
+              # user_labeled_prs excludes the current PR, which is part of
+              # the desired final state whether or not it is already labeled.
+              current_total = len(user_labeled_prs) + 1
+
+              # Bump the least recently updated PR(s) if over the limit.
               while current_total > max_allowed and user_labeled_prs:
-                  bumped_pr = user_labeled_prs.pop(0) # Pops oldest PR
+                  bumped_pr = user_labeled_prs.pop(0)
                   print(f"Bumping queue label from PR #{bumped_pr.number}")
                   
                   bumped_pr.remove_from_labels(QUEUE_LABEL)
-                  bumped_pr.create_issue_comment(
+                  bumped_pr.create_comment(
                       f"🔄 @{commenter} added a new review priority. This PR has been bumped off the priority list to stay within your limit of {max_allowed}."
                   )
                   
