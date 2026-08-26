@@ -161,7 +161,7 @@ inline void validate_cuest_xc_components(const std::shared_ptr<SuperFunctional>&
     validate(functional->c_functionals());
 }
 
-// The cuEST ansatz is the highest rung in the superfunctional, but each LibXC component uses its own API.
+// Ensures that cuEST uses the appropriate LibXC component for mixed rung (GGA+metaGGA) functionals
 inline void evaluate_cuest_xc_component(
     const std::shared_ptr<Functional>& component, size_t start_point, size_t end_point, size_t rho_components,
     size_t gamma_components, size_t tau_components, const double* rho, const double* gamma, const double* tau,
