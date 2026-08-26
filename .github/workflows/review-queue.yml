@@ -9,7 +9,7 @@ jobs:
     # Trigger if comment is on a PR and contains either of our slash commands
     if: |
       github.event.issue.pull_request && 
-      (contains(github.event.comment.body, '/ready') || contains(github.event.comment.body, '/review-next'))
+      (contains(github.event.comment.body, '/review-ready') || contains(github.event.comment.body, '/review-next'))
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -48,30 +48,30 @@ jobs:
           QUEUE_LABEL = "review-this-pr-of-mine-next"
 
           # --- CONFIGURATION ---
-          # Add usernames here who are allowed to have up to 3 queue labels
-          VIP_USERS = ["loriab", "susilehtola", " JonathonMisiewicz"] 
+          # Add usernames here who are allowed to have up to 2 queue labels
+          EXTRA_PR_USERS = ["loriab", "susilehtola", "JonathonMisiewicz"] 
 
           current_pr = repo.get_pull(current_pr_num)
 
           # ==========================================
-          # COMMAND 1: /please-review (Unlimited use cases)
+          # COMMAND 1: /review-ready (Unlimited use cases)
           # ==========================================
-          if "/please-review" in comment_body:
-              print(f"Processing /please-review command from {commenter} on PR #{current_pr_num}")
+          if "/review-ready" in comment_body:
+              print(f"Processing /review-ready command from {commenter} on PR #{current_pr_num}")
               current_pr.add_to_labels(READY_LABEL)
               print(f"Successfully added standard '{READY_LABEL}' label.")
 
           # ==========================================
-          # COMMAND 2: /please-review-next (Strict limit queue)
+          # COMMAND 2: /review-next (Strict limit queue)
           # ==========================================
-          if "/please-review-next" in comment_body:
+          if "/review-next" in comment_body:
               # Security Check: Ensure commenter is the PR author
               if current_pr.user.login != commenter:
                   print(f"Error: {commenter} is not the author of PR #{current_pr_num}. Aborting.")
                   current_pr.create_issue_comment(f"⚠️ @{commenter} you can only use this command on your own PRs.")
                   exit(0)
 
-              max_allowed = 2 if commenter in VIP_USERS else 1
+              max_allowed = 2 if commenter in EXTRA_PR_USERS else 1
               print(f"Processing queue command from user: {commenter} (Max allowed: {max_allowed})")
 
               # Check if current PR already has the label to avoid double-counting
