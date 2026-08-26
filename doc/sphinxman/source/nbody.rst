@@ -91,9 +91,12 @@ fragments and no others. This rule is the same for ``bsse_type='nocp'``,
 
 Thus the fragment mapping follows the physical subsystem in each term of the
 many-body expansion, rather than applying every potential to every generated
-calculation. Keys must be integer fragment indices between 1 and the number of
-fragments. Potentials from multiple real fragments are combined for that
-component.
+calculation. Because those component Hamiltonians do not share one fixed
+external potential, the report displays their interaction-energy columns as
+``N/A``, as it does for embedding charges; total energies and n-body
+contributions remain available. Keys must be integer fragment indices between
+1 and the number of fragments. Potentials from multiple real fragments are
+combined for that component.
 
 Fragment scoping applies to point charges only. Each value must be the flat
 ``[[charge, [x, y, z]], ...]`` list (equivalently ``[[charge, x, y, z], ...]``

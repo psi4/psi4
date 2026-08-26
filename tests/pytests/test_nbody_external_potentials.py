@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pytest
 
@@ -82,6 +84,40 @@ def test_nbody_external_potentials_nocp_dimer(water_cluster):
     )
 
     assert mbe_ie == pytest.approx(e_ab - e_a - e_b, abs=1.0e-10)
+
+
+@uusing("qcmanybody")
+def test_nbody_external_potentials_report_as_embedded(water_cluster):
+    """Report fragment-scoped potentials without a misleading interaction energy."""
+    _, dimer, b_external_potential = water_cluster
+    psi4.set_options(
+        {
+            "basis": "sto-3g",
+            "scf_type": "pk",
+            "e_convergence": 10,
+            "d_convergence": 10,
+        }
+    )
+
+    plan = psi4.energy(
+        "hf",
+        molecule=dimer,
+        bsse_type="nocp",
+        external_potentials={2: b_external_potential},
+        return_plan=True,
+        return_total_data=True,
+    )
+    plan.compute()
+    result = plan.get_results()
+
+    table_rows = [line for line in result.stdout.splitlines() if re.search(r"§A\s+[12]\s", line)]
+    assert len(table_rows) == 2
+    assert all(row.count("N/A") == 2 for row in table_rows)
+
+    assert result.properties.nocp_corrected_total_energy is not None
+    assert result.properties.nocp_corrected_2_body_contribution_to_energy is not None
+    assert result.properties.nocp_corrected_interaction_energy is None
+    assert result.properties.nocp_corrected_interaction_energy_through_2_body is None
 
 
 @uusing("qcmanybody")
@@ -278,11 +314,11 @@ def test_nbody_sapt_dict_external_potentials_with_embedding_charges(
     elif c_partition == "mode-dict":
         global_potential["C"] = {"points": c_points, "diffuse": c_diffuse}
 
-    plan = task_planner(
-        "energy",
+    plan = psi4.energy(
         "hf/sto-3g",
-        dimer,
+        molecule=dimer,
         bsse_type="nocp",
+        return_plan=True,
         return_total_data=True,
         embedding_charges={1: [0.417, -0.834, 0.417], 2: [0.417, -0.834, 0.417]},
         external_potentials=global_potential,
