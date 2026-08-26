@@ -34,6 +34,7 @@
 #include "psi4/libfunctional/superfunctional.h"
 
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/eigen_interface.h"
 #include "psi4/libmints/molecule.h"
 
 #include "psi4/liboptions/liboptions.h"
@@ -144,7 +145,7 @@ void GauXCBase::print_header() const {
 }
 
 std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
-    Eigen::MatrixXd eigen_d = D_AO_[0]->eigen_map();
+    Eigen::MatrixXd eigen_d = psi::linalg::eigen_map(*D_AO_[0]);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
         auto permuter = primary_->generate_permutation_to_cca();
@@ -160,11 +161,11 @@ std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
 #endif
 
     // Set the result
-    auto ao_result = std::make_shared<Matrix>(v_xc);
+    auto ao_result = psi::linalg::matrix_from_eigen(v_xc);
     if (AO2USO_) {
-        ret[0]->apply_symmetry(ao_result, AO2USO_);
+        (*ret[0]).apply_symmetry(ao_result, *AO2USO_);
     } else {
-        ret[0]->copy(ao_result);
+        (*ret[0]).copy(ao_result);
     }
 
     std::map<std::string, double> quad_values;
@@ -186,8 +187,8 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
     Ds->add(D_AO_[1]);
     auto Dz = D_AO_[0]->clone();
     Dz->subtract(D_AO_[1]);
-    Eigen::MatrixXd eigen_ds = Ds->eigen_map();
-    Eigen::MatrixXd eigen_dz = Dz->eigen_map();
+    Eigen::MatrixXd eigen_ds = psi::linalg::eigen_map(*Ds);
+    Eigen::MatrixXd eigen_dz = psi::linalg::eigen_map(*Dz);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
         auto permuter = primary_->generate_permutation_to_cca();
@@ -207,11 +208,11 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
 #endif
 
     // Set the result
-    auto ao_a = std::make_shared<Matrix>(v_a);
-    auto ao_b = std::make_shared<Matrix>(v_b);
+    auto ao_a = psi::linalg::matrix_from_eigen(v_a);
+    auto ao_b = psi::linalg::matrix_from_eigen(v_b);
     if (AO2USO_) {
-        ret[0]->apply_symmetry(ao_a, AO2USO_);
-        ret[1]->apply_symmetry(ao_b, AO2USO_);
+        ret[0]->apply_symmetry(ao_a, *AO2USO_);
+        ret[1]->apply_symmetry(ao_b, *AO2USO_);
     } else {
         ret[0]->copy(ao_a);
         ret[1]->copy(ao_b);
@@ -231,7 +232,7 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
 }
 
 SharedMatrix GauRV::compute_gradient() {
-    Eigen::MatrixXd eigen_d = D_AO_[0]->eigen_map();
+    Eigen::MatrixXd eigen_d = psi::linalg::eigen_map(*D_AO_[0]);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
         auto permuter = primary_->generate_permutation_to_cca();
@@ -263,8 +264,8 @@ SharedMatrix GauUV::compute_gradient() {
     Ds->add(D_AO_[1]);
     auto Dz = D_AO_[0]->clone();
     Dz->subtract(D_AO_[1]);
-    Eigen::MatrixXd eigen_ds = Ds->eigen_map();
-    Eigen::MatrixXd eigen_dz = Dz->eigen_map();
+    Eigen::MatrixXd eigen_ds = psi::linalg::eigen_map(*Ds);
+    Eigen::MatrixXd eigen_dz = psi::linalg::eigen_map(*Dz);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
         auto permuter = primary_->generate_permutation_to_cca();
