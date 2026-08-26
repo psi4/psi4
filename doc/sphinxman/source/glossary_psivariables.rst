@@ -48,6 +48,10 @@ PSI Variables by Alpha
 
    The coupled-cluster bracket perturbative triples correction [E_h].
 
+.. psivar:: (Q) CORRECTION ENERGY
+
+   The coupled-cluster perturbative quadruples correction [E_h].
+
 .. psivar:: (T) CORRECTION ENERGY
 
    The coupled-cluster perturbative triples correction [E_h].
@@ -547,6 +551,12 @@ PSI Variables by Alpha
    The total electronic energy [E_h] and correlation energy component [E_h]
    for the requested full coupled-cluster (CCSD, CCSDT, up to CC\ *n*)
    level of theory.
+
+.. psivar:: CCSDTQ - CCSDT ENERGY
+   CCSDTQ - CCSDT(Q) ENERGY
+
+   The difference between the CCSDTQ total energy and the CCSDT or CCSDT(Q)
+   total energy, respectively [E_h].
 
 .. psivar:: CCSD(T) TOTAL ENERGY
    CCSD(T) CORRELATION ENERGY
@@ -2094,4 +2104,3 @@ PSI Variables by Alpha
 
    The interatomic contributions to the dispersion correction [E_h].
    Sums to the dispersion energy.
-
