@@ -458,8 +458,11 @@ void Matrix::release() {
 }
 
 void Matrix::copy_from(double ***c) {
+    // n.b. This cannot be refactored to use the inner copy-from.
+    // We'd need to pass c[h][0][0], which is not valid for an empty irrep.
     for (int h = 0; h < nirrep_; ++h) {
-        copy_from(&(c[h][0][0]), h);
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
+        if (size) memcpy(&(matrix_[h][0][0]), &(c[h][0][0]), size);
     }
 }
 
