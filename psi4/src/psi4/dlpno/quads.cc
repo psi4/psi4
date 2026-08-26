@@ -1366,6 +1366,7 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                                                nqno_ijkl, nqno_ijkl);
             gamma_ijkl_perm.zero();
 
+            // Canonical Eq. (19), term 1; DLPNO Algorithm 2:
             // (i'a|be) t_{j'k'l'}^{ecd}.
             const size_t jkl_dense = triplet_key(j, k, l, naocc);
             if (i_j_k_to_ijk_.count(jkl_dense)) {
@@ -1383,6 +1384,7 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                        Indices{index::e, index::c, index::d}, T_jkl);
             }
 
+            // Canonical Eq. (19), term 2; DLPNO Algorithm 2:
             // -(i'a|j'm) t_{mk'l'}^{bcd}.
             const int ij_idx = i_idx * n_occupied_positions + j_idx;
             const int kl_position = pair_position(k_idx, l_idx);
@@ -1415,6 +1417,8 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                                                   nqno_ijkl, nqno_ijkl, nqno_ijkl);
             Tensor<double, 4> gamma_ijkl_buffer_b("gamma_ijkl_buffer_b", nqno_ijkl,
                                                   nqno_ijkl, nqno_ijkl, nqno_ijkl);
+            // Canonical Eq. (19), term 3; DLPNO Algorithm 2:
+            // +(mi'|nj') t_{mk'}^{ac} t_{nl'}^{bd}.
             Tensor<double, 3> gamma_term3("gamma_term3", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
             const int ij_position = pair_position(i_idx, j_idx);
             einsum(0.0, Indices{index::n, index::a, index::c}, &gamma_term3, 1.0,
@@ -1450,6 +1454,8 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                                                   nqno_ijkl, nqno_ijkl, nqno_ijkl);
             const int kj_position = pair_position(k_idx, j_idx);
 
+            // Canonical Eq. (19), term 4; DLPNO Algorithm 2:
+            // -2(i'a|me) t_{k'j'}^{eb} t_{ml'}^{cd}.
             Tensor<double, 3> gamma_term4("gamma_term4", nqno_ijkl, nlmo_ijkl, nqno_ijkl);
             if (k_idx <= j_idx) {
                 einsum(0.0, Indices{index::a, index::m, index::b}, &gamma_term4, 1.0,
@@ -1469,6 +1475,8 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                    gamma_term4_transposed, Indices{index::m, index::c, index::d},
                    T_mkac_list[l_idx]);
 
+            // Canonical Eq. (19), term 5; DLPNO Algorithm 2:
+            // -2(be|mi') t_{k'j'}^{ce} t_{ml'}^{ad}.
             Tensor<double, 3> gamma_term5("gamma_term5", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
             if (k_idx <= j_idx) {
                 einsum(0.0, Indices{index::m, index::b, index::c}, &gamma_term5, 1.0,
@@ -1507,6 +1515,8 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                                                nqno_ijkl, nqno_ijkl);
             const int ij_idx = i_idx * n_occupied_positions + j_idx;
             const int kl_idx = k_idx * n_occupied_positions + l_idx;
+            // Canonical Eq. (19), term 6; DLPNO Algorithm 2:
+            // +(cf|ae) t_{i'j'}^{eb} t_{k'l'}^{fd}.
             einsum(0.0, Indices{index::a, index::b, index::c, index::d},
                    &gamma_ijkl_perm, 1.0, Indices{index::Q, index::a, index::b},
                    theta_Qab[ij_idx], Indices{index::Q, index::c, index::d},
