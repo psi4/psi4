@@ -18,7 +18,8 @@ def mo_energies():
 
     psi4.set_options({
         'reference': 'cghf',
-        'scf_type': 'pk',
+        'scf_type': 'direct',
+        'df_scf_guess': False,
         'basis': '3-21g',
         'e_convergence': 1e-9,
         'relativistic': 'zora',
