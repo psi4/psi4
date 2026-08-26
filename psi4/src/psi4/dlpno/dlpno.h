@@ -610,9 +610,9 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
         /// g_i'j'(a,m) = (i'a|j'm), Algorithm 1; used by Eq. (19), term 2, and Algorithm 4.
         std::array<einsums::Tensor<double, 2>, 16> K_iajm;
         /// g_i'j'(a,b) = (i'a|j'b), Algorithm 1; used by canonical Eqs. (25)-(26).
-        std::array<einsums::Tensor<double, 2>, 16> K_iajb;
+        std::array<einsums::Tensor<double, 2>, 10> K_iajb;
         /// Projected contravariant doubles U_i'j'(a,b), Algorithm 1 and canonical Eq. (25).
-        std::array<einsums::Tensor<double, 2>, 16> U_iajb;
+        std::array<einsums::Tensor<double, 2>, 10> U_iajb;
     };
 
     // All 24 permutations of four occupied-orbital positions.
@@ -623,6 +623,13 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
         std::make_tuple(2, 1, 0, 3), std::make_tuple(2, 1, 3, 0), std::make_tuple(2, 3, 0, 1), std::make_tuple(2, 3, 1, 0), 
         std::make_tuple(3, 0, 1, 2), std::make_tuple(3, 0, 2, 1), std::make_tuple(3, 1, 0, 2), std::make_tuple(3, 1, 2, 0), 
         std::make_tuple(3, 2, 0, 1), std::make_tuple(3, 2, 1, 0)};
+
+    // Packed upper triangle of the four occupied positions. Pair tensors use
+    // X_ij(a,b) = X_ji(b,a), so ten components replace the former 4 x 4 arrays.
+    constexpr static std::array<std::array<int, 4>, 4> pair_positions_ = {
+        std::array<int, 4>{0, 1, 2, 3}, std::array<int, 4>{1, 4, 5, 6},
+        std::array<int, 4>{2, 5, 7, 8}, std::array<int, 4>{3, 6, 8, 9}};
+    constexpr static int pair_position(int i, int j) { return pair_positions_[i][j]; }
 
     SparseMap lmoquadruplet_to_ribfs_; ///< RI basis functions in each LMO quadruplet domain (i, j, k, l)
     SparseMap lmoquadruplet_to_lmos_; ///< which LMOs m form a significant pair with (i, j, k, or l)
