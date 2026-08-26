@@ -44,6 +44,12 @@ set t_cut_qno_weak 1.0e-3
 print('   Testing in-core/disk DLPNO-CCSDT(Q) Jacobi equivalence ...')
 set_num_threads(1)
 val_q_incore = energy('dlpno-ccsdt(q)')
+compare_values(ref_dlpnoccsdt_corl, variable('CCSDT CORRELATION ENERGY'), 6,
+               'standalone ccsdt corl before (q)')  #TEST
+compare_values(ref_dlpnoccsdt_tot, variable('CCSDT TOTAL ENERGY'), 6,
+               'standalone ccsdt total before (q)')  #TEST
+compare_values(ref_dlpnoccsdt_q_tot, val_q_incore, 6,
+               'in-core standalone ccsdt(q) total')  #TEST
 clean()
 
 set_options({'WRITE_QUADRUPLES_INTERMEDIATES': True})
