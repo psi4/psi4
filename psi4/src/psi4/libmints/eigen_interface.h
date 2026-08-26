@@ -41,5 +41,7 @@ PSI_API Eigen::Map<Eigen::MatrixXd> eigen_map(Matrix& matrix);
 /// Map each irrep block of a Psi4 Matrix onto its underlying data.
 PSI_API std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps(Matrix& matrix);
 
+Matrix matrix_from_eigen(const Eigen::MatrixXd& eigen_mat, const std::string& name = "");
+
 }  // namespace linalg
 }  // namespace psi

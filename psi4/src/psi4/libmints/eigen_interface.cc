@@ -26,7 +26,7 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/matrix_eigen.h"
+#include "psi4/libmints/eigen_interface.h"
 
 namespace psi {
 namespace linalg {
@@ -50,6 +50,12 @@ std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps(Matrix& matrix) {
     }
 
     return maps;
+}
+
+Matrix matrix_from_eigen(const Eigen::MatrixXd& eigen_mat, const std::string& name) {
+    Matrix new_matrix(name, static_cast<int>(eigen_mat.rows()), static_cast<int>(eigen_mat.cols()) );
+    new_matrix.copy_from(eigen_mat.data());
+    return new_matrix;
 }
 
 }  // namespace linalg
