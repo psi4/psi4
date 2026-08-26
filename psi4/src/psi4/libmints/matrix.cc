@@ -278,20 +278,6 @@ Matrix::Matrix(dpdbuf4 *inBuf)
     }
 }
 
-Matrix::Matrix(const Eigen::MatrixXd& eigen_mat, const std::string& name) {
-    name_ = name;
-    const std::vector<int> rowspi = {static_cast<int>(eigen_mat.rows())};
-    const std::vector<int> colspi = {static_cast<int>(eigen_mat.cols())};
-    rowspi_ = Dimension(rowspi);
-    colspi_ = Dimension(colspi);
-    nirrep_ = 1;
-    symmetry_ = 0;
-    matrix_ = nullptr;
-    alloc();
-    auto size = eigen_mat.size();
-    if (size) memcpy(&(matrix_[0][0][0]), eigen_mat.data(), size * sizeof(double));
-}
-
 Matrix::~Matrix() { release(); }
 
 void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const std::string &name, int symmetry) {
@@ -473,9 +459,13 @@ void Matrix::release() {
 
 void Matrix::copy_from(double ***c) {
     for (int h = 0; h < nirrep_; ++h) {
-        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
-        if (size) memcpy(&(matrix_[h][0][0]), &(c[h][0][0]), size);
+        copy_from(&(c[h][0][0]), h);
     }
+}
+
+void Matrix::copy_from(const double *const data, int h) {
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
+        if (size) memcpy(&(matrix_[h][0][0]), data, size * sizeof(double));
 }
 
 // Sets all elements of matrix to val
@@ -2682,19 +2672,20 @@ void Matrix::transform(const Matrix &a, const Matrix &transformer) {
     transform(transformer, a, transformer);
 }
 
-void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transformer) {
+void Matrix::apply_symmetry(const Matrix &a, const Matrix &transformer) {
+
     // Check dimensions of the two matrices and symmetry
-    if (a->nirrep() > 1) {
+    if (a.nirrep() > 1) {
         throw PSIEXCEPTION("Matrix::apply_symmetry: first matrix must have no symmetry.\n");
     }
-    if (a->nrow() != transformer->rowdim(0) || a->ncol() != transformer->ncol()) {
-        a->print();
-        transformer->print();
+    if (a.nrow() != transformer.rowdim(0) || a.ncol() != transformer.ncol()) {
+        a.print();
+        transformer.print();
         throw PSIEXCEPTION("Matrix::apply_symmetry: simple to regular. Sizes are not compatible.\n");
     }
 
     // Create temporary matrix of proper size.
-    Matrix temp(nirrep(), a->nrow(), transformer->colspi());
+    Matrix temp(nirrep(), a.nrow(), transformer.colspi());
 
     char ta = 'n';
     char tb = 'n';
@@ -2706,13 +2697,13 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     for (int h = 0; h < nirrep_; ++h) {
         m = temp.rowdim(h);
         n = temp.coldim(h ^ symmetry());
-        k = a->ncol();
+        k = a.ncol();
         nca = k;
         ncb = n;
         ncc = n;
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[0][0][0]), nca, &(transformer->matrix_[h ^ symmetry()][0][0]),
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(a.matrix_[0][0][0]), nca, &(transformer.matrix_[h ^ symmetry()][0][0]),
                     ncb, 0.0, &(temp.matrix_[h ^ symmetry()][0][0]), ncc);
         }
     }
@@ -2722,16 +2713,19 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     for (int h = 0; h < nirrep_; ++h) {
         m = rowdim(h);
         n = coldim(h ^ symmetry());
-        k = transformer->rowdim(h);
+        k = transformer.rowdim(h);
         nca = m;
         ncb = n;
         ncc = n;
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer->matrix_[h][0][0]), nca, &(temp.matrix_[h ^ symmetry()][0][0]),
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer.matrix_[h][0][0]), nca, &(temp.matrix_[h ^ symmetry()][0][0]),
                     ncb, 0.0, &(matrix_[h][0][0]), ncc);
         }
     }
+}
+void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transformer) {
+    apply_symmetry(*a, *transformer);
 }
 
 void Matrix::remove_symmetry(const SharedMatrix &a, const SharedMatrix &SO2AO) {

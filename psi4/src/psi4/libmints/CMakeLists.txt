@@ -38,7 +38,7 @@ list(APPEND sources
   numinthelper.cc
   coordentry.cc
   matrix.cc
-  matrix_eigen.cc
+  eigen_interface.cc
   gshell.cc
   integraliter.cc
   pointgrp.cc
