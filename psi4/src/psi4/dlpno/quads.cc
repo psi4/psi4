@@ -47,8 +47,10 @@
 #include "psi4/libqt/qt.h"
 
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <ctime>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
@@ -230,37 +232,99 @@ DLPNOCCSDT_Q::QuadrupletEnergyIntermediates DLPNOCCSDT_Q::load_quadruplet_energy
     return intermediates;
 }
 
-Tensor<double, 4> DLPNOCCSDT_Q::matmul_4d(const Tensor<double, 4> &A, const SharedMatrix &X, 
-                    int dim_old, int dim_new, bool contract_first) {
-    /* Transform all four indices of a rank-4 tensor: A'[i,j,k,l] = A[I,J,K,L] X[i,I] X[j,J] X[k,K] X[l,L]. */
+size_t DLPNOCCSDT_Q::quadruples_permutation_index(int i, int j, int k, int l) const {
+    const std::array<int, 4> occupied = {i, j, k, l};
+    std::array<int, 4> sorted_positions = {0, 1, 2, 3};
+    std::stable_sort(sorted_positions.begin(), sorted_positions.end(),
+                     [&](int lhs, int rhs) { return occupied[lhs] < occupied[rhs]; });
 
-    // TODO: Change this into a TensorView
+    for (size_t permutation = 0; permutation < quadruple_permutations_.size(); ++permutation) {
+        const auto& candidate = quadruple_permutations_[permutation];
+        if (std::get<0>(candidate) == sorted_positions[0] &&
+            std::get<1>(candidate) == sorted_positions[1] &&
+            std::get<2>(candidate) == sorted_positions[2] &&
+            std::get<3>(candidate) == sorted_positions[3]) {
+            return permutation;
+        }
+    }
+    throw PSIEXCEPTION("Unable to determine a DLPNO quadruples column permutation.");
+}
+
+Tensor<double, 4> DLPNOCCSDT_Q::matmul_4d(const Tensor<double, 4>& A,
+                                           const SharedMatrix& X, int dim_old,
+                                           int dim_new) {
+    return matmul_4d_permuted(A, X, dim_old, dim_new, 0, 1, 2, 3);
+}
+
+Tensor<double, 4> DLPNOCCSDT_Q::matmul_4d_permuted(
+    const Tensor<double, 4>& A, const SharedMatrix& X, int dim_old, int dim_new,
+    int i, int j, int k, int l) {
+    // Transform A'[i,j,k,l] = A[I,J,K,L] X[i,I] X[j,J] X[k,K] X[l,L].
+    // Before every contraction, the old index is explicitly moved to the
+    // contiguous final axis. Consequently each einsum is a matrix multiply.
+    // Only the current and next rank-four buffers coexist.
     Tensor<double, 2> Xview("Xview", dim_new, dim_old);
-    ::memcpy(Xview.data(), X->get_pointer(), dim_new * dim_old * sizeof(double));
+    ::memcpy(Xview.data(), X->get_pointer(),
+             static_cast<size_t>(dim_new) * dim_old * sizeof(double));
 
-    Tensor<double, 4> A_new2("A_new2", dim_new, dim_old, dim_old, dim_new);
+    Tensor<double, 4> work("rank4_transform_1", dim_old, dim_old, dim_old, dim_new);
+    einsum(0.0, Indices{index::I, index::J, index::K, index::l}, &work,
+           1.0, Indices{index::I, index::J, index::K, index::L}, A,
+           Indices{index::l, index::L}, Xview);
 
-    if (contract_first) {
-        Tensor<double, 4> A_new1("A_new1", dim_old, dim_old, dim_old, dim_new);
-        einsum(0.0, Indices{index::I, index::J, index::K, index::l}, &A_new1, 1.0, Indices{index::I, index::J, index::K, index::L}, A, Indices{index::l, index::L}, Xview);
-        einsum(0.0, Indices{index::i, index::J, index::K, index::l}, &A_new2, 1.0, Indices{index::I, index::J, index::K, index::l}, A_new1, Indices{index::i, index::I}, Xview);
-    } else {
-        einsum(0.0, Indices{index::i, index::J, index::K, index::l}, &A_new2, 1.0, Indices{index::i, index::J, index::K, index::L}, A, Indices{index::l, index::L}, Xview);
+    {
+        Tensor<double, 4> contiguous("rank4_transform_perm_2", dim_old, dim_old,
+                                      dim_new, dim_old);
+        permute(Indices{index::I, index::J, index::l, index::K}, &contiguous,
+                Indices{index::I, index::J, index::K, index::l}, work);
+        work = Tensor<double, 4>("released", 0, 0, 0, 0);
+        Tensor<double, 4> next("rank4_transform_2", dim_old, dim_old, dim_new,
+                                dim_new);
+        einsum(0.0, Indices{index::I, index::J, index::l, index::k}, &next,
+               1.0, Indices{index::I, index::J, index::l, index::K}, contiguous,
+               Indices{index::k, index::K}, Xview);
+        work = std::move(next);
     }
 
-    Tensor<double, 4> A_new3("A_new3", dim_old, dim_new, dim_new, dim_old);
-    permute(Indices{index::J, index::i, index::l, index::K}, &A_new3, Indices{index::i, index::J, index::K, index::l}, A_new2);
+    {
+        Tensor<double, 4> contiguous("rank4_transform_perm_3", dim_old, dim_new,
+                                      dim_new, dim_old);
+        permute(Indices{index::I, index::l, index::k, index::J}, &contiguous,
+                Indices{index::I, index::J, index::l, index::k}, work);
+        work = Tensor<double, 4>("released", 0, 0, 0, 0);
+        Tensor<double, 4> next("rank4_transform_3", dim_old, dim_new, dim_new,
+                                dim_new);
+        einsum(0.0, Indices{index::I, index::l, index::k, index::j}, &next,
+               1.0, Indices{index::I, index::l, index::k, index::J}, contiguous,
+               Indices{index::j, index::J}, Xview);
+        work = std::move(next);
+    }
 
-    Tensor<double, 4> A_new4("A_new4", dim_old, dim_new, dim_new, dim_new);
-    einsum(0.0, Indices{index::J, index::i, index::l, index::k}, &A_new4, 1.0, Indices{index::J, index::i, index::l, index::K}, A_new3, Indices{index::k, index::K}, Xview);
+    {
+        Tensor<double, 4> contiguous("rank4_transform_perm_4", dim_new, dim_new,
+                                      dim_new, dim_old);
+        permute(Indices{index::l, index::k, index::j, index::I}, &contiguous,
+                Indices{index::I, index::l, index::k, index::j}, work);
+        work = Tensor<double, 4>("released", 0, 0, 0, 0);
+        Tensor<double, 4> next("rank4_transform_4", dim_new, dim_new, dim_new,
+                                dim_new);
+        einsum(0.0, Indices{index::l, index::k, index::j, index::i}, &next,
+               1.0, Indices{index::l, index::k, index::j, index::I}, contiguous,
+               Indices{index::i, index::I}, Xview);
+        work = std::move(next);
+    }
 
-    Tensor<double, 4> A_new5("A_new5", dim_new, dim_new, dim_new, dim_new);
-    einsum(0.0, Indices{index::j, index::i, index::l, index::k}, &A_new5, 1.0, Indices{index::J, index::i, index::l, index::k}, A_new4, Indices{index::j, index::J}, Xview);
+    Tensor<double, 4> result("rank4_transform_result", dim_new, dim_new, dim_new,
+                              dim_new);
+    permute(Indices{index::i, index::j, index::k, index::l}, &result,
+            Indices{index::l, index::k, index::j, index::i}, work);
+    work = Tensor<double, 4>("released", 0, 0, 0, 0);
 
-    Tensor<double, 4> A_new("A_new", dim_new, dim_new, dim_new, dim_new);
-    permute(Indices{index::i, index::j, index::k, index::l}, &A_new, Indices{index::j, index::i, index::l, index::k}, A_new5);
-
-    return A_new;
+    // Transforming before the occupied-column permutation makes every
+    // contraction a GEMM regardless of the requested order.  Only the smaller
+    // dim_new^4 result is permuted; the old-space amplitude is never copied.
+    if (quadruples_permutation_index(i, j, k, l) == 0) return result;
+    return quadruples_permuter(result, i, j, k, l);
 }
 
 Tensor<double, 4> DLPNOCCSDT_Q::quadruples_permuter(const Tensor<double, 4>& X, int i, int j, int k, int l) {
@@ -802,6 +866,7 @@ void DLPNOCCSDT_Q::estimate_memory() {
     size_t qno_basis_memory = 0;
     size_t energy_intermediate_memory = 0;
     size_t quadruples_tensor_memory = 0;
+    size_t jacobi_next_bank_memory = 0;
     size_t gamma_workspace_per_thread = 0;
     size_t iteration_workspace_per_thread = 0;
 
@@ -830,28 +895,60 @@ void DLPNOCCSDT_Q::estimate_memory() {
             4 * nqno3 + 16 * nqno * nlmo + 20 * nqno2;
         energy_intermediate_memory += energy_intermediates;
         quadruples_tensor_memory += 2 * nqno4;  // Gamma and T4
+        jacobi_next_bank_memory += nqno4;
 
-        // Conservative peak for one Algorithm 2 task. The estimate includes the sliced
-        // DF tensors of Eqs. (47)-(50), all six canonical-Eq. (19) contraction families,
-        // and the Algorithm 3/4 energy workspace that is live before the task returns.
+        // Conservative peak for one Algorithm 2 task.  The four Gamma families
+        // are now constructed and released sequentially, so use their maximum
+        // lexical lifetime rather than their sum.
         const size_t df_workspace =
             8 * naux * nlmo + 4 * naux * (npao + nqno) +
             2 * naux * nlmo * nqno + 2 * naux * nqno2 + 2 * naux * naux +
             npao * npao;
+        const size_t gamma_terms_12_workspace =
+            10 * nlmo * nqno3 + 2 * nqno4;
+        const size_t gamma_term_3_workspace =
+            10 * nlmo2 + 5 * nlmo * nqno2 + 3 * nqno4;
+        const size_t gamma_terms_45_workspace =
+            15 * nlmo * nqno2 + 10 * nqno2 + 3 * nqno4;
+        const size_t gamma_term_6_workspace =
+            12 * naux * nqno2 + 10 * nqno2 + 2 * nqno4;
         const size_t gamma_contraction_workspace =
-            10 * nlmo * nqno3 + 10 * nlmo2 + 12 * nlmo * nqno2 +
-            26 * nqno2 + 16 * naux * nqno2 + 4 * nqno4;
+            std::max({gamma_terms_12_workspace, gamma_term_3_workspace,
+                      gamma_terms_45_workspace, gamma_term_6_workspace});
         const size_t energy_contraction_workspace =
-            10 * nlmo * nqno3 + 7 * nqno4 + 8 * nlmo * nqno + 8 * nqno3;
+            2 * nlmo * nqno3 + 5 * nqno4 + 8 * nlmo * nqno + 8 * nqno3 +
+            4 * nqno2;
         gamma_workspace_per_thread =
             std::max(gamma_workspace_per_thread,
-                     df_workspace + energy_intermediates + gamma_contraction_workspace +
-                         energy_contraction_workspace);
+                     df_workspace + energy_intermediates +
+                         std::max(gamma_contraction_workspace,
+                                  energy_contraction_workspace));
 
-        // Algorithm 5 holds the current residual, one or more transformed neighboring T4
-        // tensors, and (during the energy pass) the Algorithm 3/4 work arrays. If the
-        // persistent bundle is disk-backed, one quadruplet's bundle is loaded per thread.
-        const size_t residual_workspace = 8 * std::max(nqno4, max_nqno4);
+        // Algorithm 5 holds a mutable T4 copy and a residual in the target QNO
+        // space.  A coupled amplitude in the largest source QNO space remains
+        // live while matmul_4d_permuted() ping-pongs two mixed-dimension rank-4
+        // buffers.  This is the actual lexical lifetime of the refactored four
+        // GEMMs, rather than a fixed multiple of max(nqno^4).
+        const size_t old_dim = max_nqno;
+        const size_t new_dim = nqno;
+        const size_t old2 = old_dim * old_dim;
+        const size_t old3 = old2 * old_dim;
+        const size_t old4 = old2 * old2;
+        const size_t new2 = new_dim * new_dim;
+        const size_t new3 = new2 * new_dim;
+        const size_t new4 = new2 * new2;
+        const size_t transform_buffers = std::max(
+            {2 * old3 * new_dim,
+             old3 * new_dim + old2 * new2,
+             2 * old2 * new2,
+             old2 * new2 + old_dim * new3,
+             2 * old_dim * new3,
+             old_dim * new3 + new4,
+             2 * new4});
+        const size_t transformed_neighbor_workspace =
+            old4 + old_dim * new_dim + transform_buffers;
+        const size_t residual_workspace =
+            2 * nqno4 + transformed_neighbor_workspace;
         const size_t disk_load_workspace =
             write_quadruples_intermediates_ ? energy_intermediates + 2 * nqno4 : 0;
         iteration_workspace_per_thread =
@@ -870,6 +967,12 @@ void DLPNOCCSDT_Q::estimate_memory() {
     } else {
         retained_lower_rank_memory = qij_memory_ + qia_memory_ + qab_memory_;
 
+        // T1 is retained through print_results() for the diagnostic. K_iajb_,
+        // by contrast, is released before this estimate and is not counted.
+        for (size_t i = 0; i < i_j_to_ij_.size(); ++i) {
+            const int ii = i_j_to_ij_[i][i];
+            retained_lower_rank_memory += n_pno_[ii];
+        }
         for (size_t ij = 0; ij < n_lmo_pairs; ++ij) {
             const size_t npao = lmopair_to_paos_[ij].size();
             const size_t npno = n_pno_[ij];
@@ -888,7 +991,10 @@ void DLPNOCCSDT_Q::estimate_memory() {
         const size_t resident_memory =
             retained_lower_rank_memory + qno_basis_memory + disk_eligible_resident;
         const size_t build_peak = resident_memory + nthreads * gamma_workspace_per_thread;
-        const size_t iteration_peak = resident_memory + nthreads * iteration_workspace_per_thread;
+        const size_t in_core_next_generation =
+            write_quadruples_intermediates_ ? 0 : jacobi_next_bank_memory;
+        const size_t iteration_peak = resident_memory + in_core_next_generation +
+                                      nthreads * iteration_workspace_per_thread;
         return std::make_tuple(resident_memory, build_peak, iteration_peak);
     };
 
@@ -912,6 +1018,8 @@ void DLPNOCCSDT_Q::estimate_memory() {
                           write_quadruples_intermediates_ ? 0 : energy_intermediate_memory);
         print_memory_line("In-core Gamma and T4 tensors",
                           write_quadruples_intermediates_ ? 0 : quadruples_tensor_memory);
+        print_memory_line("In-core Jacobi next-T4 generation",
+                          write_quadruples_intermediates_ ? 0 : jacobi_next_bank_memory);
         print_memory_line("Algorithm 2 workspace per thread (" + std::to_string(nthreads) + ")",
                           gamma_workspace_per_thread);
         print_memory_line("Algorithm 5 workspace per thread (" + std::to_string(nthreads) + ")",
@@ -944,11 +1052,29 @@ void DLPNOCCSDT_Q::estimate_memory() {
             const size_t energy_intermediates =
                 4 * nqno3 + 16 * nqno * nlmo + 20 * nqno2;
             const size_t energy_contraction_workspace =
-                10 * nlmo * nqno3 + 7 * nqno4 + 8 * nlmo * nqno + 8 * nqno3;
-            const size_t residual_workspace = 8 * std::max(nqno4, max_nqno4);
+                2 * nlmo * nqno3 + 5 * nqno4 + 8 * nlmo * nqno + 8 * nqno3 +
+                4 * nqno2;
+            const size_t old_dim = max_nqno;
+            const size_t new_dim = nqno;
+            const size_t old2 = old_dim * old_dim;
+            const size_t old3 = old2 * old_dim;
+            const size_t old4 = old2 * old2;
+            const size_t new2 = new_dim * new_dim;
+            const size_t new3 = new2 * new_dim;
+            const size_t new4 = new2 * new2;
+            const size_t transform_buffers = std::max(
+                {2 * old3 * new_dim,
+                 old3 * new_dim + old2 * new2,
+                 2 * old2 * new2,
+                 old2 * new2 + old_dim * new3,
+                 2 * old_dim * new3,
+                 old_dim * new3 + new4,
+                 2 * new4});
+            const size_t residual_workspace =
+                2 * nqno4 + old4 + old_dim * new_dim + transform_buffers;
             iteration_workspace_per_thread =
                 std::max(iteration_workspace_per_thread,
-                         std::max(residual_workspace + 2 * nqno4,
+                         std::max(residual_workspace,
                                   energy_contraction_workspace + energy_intermediates + nqno4));
         }
 
@@ -1097,23 +1223,13 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
         auto A_solve = submatrix_rows_and_cols(*full_metric_, lmoquadruplet_to_ribfs_[ijkl], lmoquadruplet_to_ribfs_[ijkl]);
         A_solve->power(0.5, 1.0e-14);
 
-        C_DGESV_wrapper(A_solve->clone(), q_io);
-        C_DGESV_wrapper(A_solve->clone(), q_jo);
-        C_DGESV_wrapper(A_solve->clone(), q_ko);
-        C_DGESV_wrapper(A_solve->clone(), q_lo);
-        
         q_iv = linalg::doublet(q_iv, X_qno_[ijkl]);
         q_jv = linalg::doublet(q_jv, X_qno_[ijkl]);
         q_kv = linalg::doublet(q_kv, X_qno_[ijkl]);
         q_lv = linalg::doublet(q_lv, X_qno_[ijkl]);
 
-        C_DGESV_wrapper(A_solve->clone(), q_iv);
-        C_DGESV_wrapper(A_solve->clone(), q_jv);
-        C_DGESV_wrapper(A_solve->clone(), q_kv);
-        C_DGESV_wrapper(A_solve->clone(), q_lv);
-
-        C_DGESV_wrapper(A_solve->clone(), q_ov);
-        C_DGESV_wrapper(A_solve->clone(), q_vv);
+        C_DGESV_shared_factorization(
+            A_solve->clone(), {q_io, q_jo, q_ko, q_lo, q_iv, q_jv, q_kv, q_lv, q_ov, q_vv});
 
         Tensor<double, 2> q_io_ein("(Q_ijkl | m i)", naux_ijkl, nlmo_ijkl);
         Tensor<double, 2> q_jo_ein("(Q_ijkl | m j)", naux_ijkl, nlmo_ijkl);
@@ -1158,10 +1274,11 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
 
         // Algorithm 1 intermediates for canonical Eq. (19), term 2
         std::array<Tensor<double, 4>, 10> T_mkl_list;
-        for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
-            const int k = ijkl_list[i_idx];
-            for (int j_idx = 0; j_idx < n_occupied_positions; ++j_idx) {
-                const int l = ijkl_list[j_idx];
+        auto build_gamma_terms_12 = [&]() {
+            for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
+                const int k = ijkl_list[i_idx];
+                for (int j_idx = 0; j_idx < n_occupied_positions; ++j_idx) {
+                    const int l = ijkl_list[j_idx];
                 
                 // Form K_iajm intermediate
                 const int ij_position = i_idx * n_occupied_positions + j_idx;
@@ -1194,26 +1311,29 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                         ::memcpy(&T_mkl_list[kl_position](m_ijkl, 0, 0, 0), T_mkl.data(),
                                  nqno_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
                     } // end if
-                } // end m_ijkl
-            } // end j_idx
-        } // end i_idx
+                    } // end m_ijkl
+                } // end j_idx
+            } // end i_idx
+        };
 
         // Algorithm 1 intermediates for canonical Eq. (19), term 3
         std::array<Tensor<double, 2>, 10> K_minj_list;
-        for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
-            for (int j_idx = i_idx; j_idx < n_occupied_positions; ++j_idx) {
-                const int ij_position = pair_position(i_idx, j_idx);
-                K_minj_list[ij_position] =
-                    Tensor<double, 2>("(mi|nj)", nlmo_ijkl, nlmo_ijkl);
-                einsum(0.0, Indices{index::m, index::n}, &K_minj_list[ij_position], 1.0,
-                       Indices{index::Q, index::m}, q_io_list[i_idx],
-                       Indices{index::Q, index::n}, q_io_list[j_idx]);
-            }
-        }
-
         std::array<Tensor<double, 3>, 4> T_mkac_list;
-        for (int idx = 0; idx < n_occupied_positions; ++idx) {
-            int i = ijkl_list[idx];
+        auto build_gamma_term_3 = [&]() {
+            for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
+                for (int j_idx = i_idx; j_idx < n_occupied_positions; ++j_idx) {
+                    const int ij_position = pair_position(i_idx, j_idx);
+                    K_minj_list[ij_position] =
+                        Tensor<double, 2>("(mi|nj)", nlmo_ijkl, nlmo_ijkl);
+                    einsum(0.0, Indices{index::m, index::n},
+                           &K_minj_list[ij_position], 1.0,
+                           Indices{index::Q, index::m}, q_io_list[i_idx],
+                           Indices{index::Q, index::n}, q_io_list[j_idx]);
+                }
+            }
+
+            for (int idx = 0; idx < n_occupied_positions; ++idx) {
+                int i = ijkl_list[idx];
 
             T_mkac_list[idx] = Tensor<double, 3>("T_mkac", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
             T_mkac_list[idx].zero();
@@ -1227,60 +1347,84 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
 
                 auto T_mi = linalg::triplet(S_ijkl_mi, T_iajb_[mi], S_ijkl_mi, false, false, true);
                 ::memcpy(&T_mkac_list[idx](m_ijkl, 0, 0), T_mi->get_pointer(), nqno_ijkl * nqno_ijkl * sizeof(double));
-            } // end m_ijkl
-        } // end idx
+                } // end m_ijkl
+            } // end idx
+        };
 
         // Algorithm 1 intermediates for canonical Eq. (19), term 4
         std::array<Tensor<double, 3>, 4> K_iame_list;
-        for (int idx = 0; idx < n_occupied_positions; ++idx) {
-            K_iame_list[idx] = Tensor<double, 3>("(ia|me)", nqno_ijkl, nlmo_ijkl, nqno_ijkl);
-            einsum(0.0, Indices{index::a, index::m, index::e}, &K_iame_list[idx], 1.0, Indices{index::Q, index::a}, q_iv_list[idx], Indices{index::Q, index::m, index::e}, q_ov_ein);
-        }
-
         std::array<Tensor<double, 2>, 10> T_ijab_list;
-        for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
-            int i = ijkl_list[i_idx];
-            for (int j_idx = i_idx; j_idx < n_occupied_positions; ++j_idx) {
-                int j = ijkl_list[j_idx];
-                int ij = i_j_to_ij_[i][j];
-                const int ij_position = pair_position(i_idx, j_idx);
-
-                T_ijab_list[ij_position] = Tensor<double, 2>("T_ijab", nqno_ijkl, nqno_ijkl);
-
-                auto S_ijkl_ij = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmopair_to_paos_[ij]);
-                S_ijkl_ij = linalg::triplet(X_qno_[ijkl], S_ijkl_ij, X_pno_[ij], true, false, false);
-                auto T_ij = linalg::triplet(S_ijkl_ij, T_iajb_[ij], S_ijkl_ij, false, false, true);
-                ::memcpy(T_ijab_list[ij_position].data(),
-                         T_ij->get_pointer(), nqno_ijkl * nqno_ijkl * sizeof(double));
-            } // end j_idx
-        } // end i_idx
-
         // Algorithm 1 intermediates for canonical Eq. (19), term 5
         std::array<Tensor<double, 3>, 4> K_mibe_list;
-        for (int idx = 0; idx < n_occupied_positions; ++idx) {
-            K_mibe_list[idx] = Tensor<double, 3>("(mi|be)", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
-            einsum(0.0, Indices{index::m, index::b, index::e}, &K_mibe_list[idx], 1.0, Indices{index::Q, index::m}, q_io_list[idx], Indices{index::Q, index::b, index::e}, q_vv_ein);
-        }
+        auto build_gamma_terms_45 = [&]() {
+            for (int idx = 0; idx < n_occupied_positions; ++idx) {
+                K_iame_list[idx] = Tensor<double, 3>(
+                    "(ia|me)", nqno_ijkl, nlmo_ijkl, nqno_ijkl);
+                einsum(0.0, Indices{index::a, index::m, index::e},
+                       &K_iame_list[idx], 1.0,
+                       Indices{index::Q, index::a}, q_iv_list[idx],
+                       Indices{index::Q, index::m, index::e}, q_ov_ein);
+            }
 
-        // Algorithm 1 theta intermediate for canonical Eq. (19), term 6
-        std::array<Tensor<double, 3>, 16> theta_Qab;
-        for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
-            for (int j_idx = 0; j_idx < n_occupied_positions; ++j_idx) {
-                const int ij_idx = i_idx * n_occupied_positions + j_idx;
-                const int ij_position = pair_position(i_idx, j_idx);
+            for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
+                int i = ijkl_list[i_idx];
+                for (int j_idx = i_idx; j_idx < n_occupied_positions; ++j_idx) {
+                    int j = ijkl_list[j_idx];
+                    int ij = i_j_to_ij_[i][j];
+                    const int ij_position = pair_position(i_idx, j_idx);
 
-                theta_Qab[ij_idx] = Tensor<double, 3>("theta_Qab", naux_ijkl, nqno_ijkl, nqno_ijkl);
-                if (i_idx <= j_idx) {
-                    einsum(0.0, Indices{index::Q, index::a, index::b}, &theta_Qab[ij_idx], 1.0,
-                           Indices{index::Q, index::a, index::e}, q_vv_ein,
-                           Indices{index::e, index::b}, T_ijab_list[ij_position]);
-                } else {
-                    einsum(0.0, Indices{index::Q, index::a, index::b}, &theta_Qab[ij_idx], 1.0,
-                           Indices{index::Q, index::a, index::e}, q_vv_ein,
-                           Indices{index::b, index::e}, T_ijab_list[ij_position]);
+                    T_ijab_list[ij_position] = Tensor<double, 2>(
+                        "T_ijab", nqno_ijkl, nqno_ijkl);
+
+                    auto S_ijkl_ij = submatrix_rows_and_cols(
+                        *S_pao_, lmoquadruplet_to_paos_[ijkl], lmopair_to_paos_[ij]);
+                    S_ijkl_ij = linalg::triplet(X_qno_[ijkl], S_ijkl_ij,
+                                                X_pno_[ij], true, false, false);
+                    auto T_ij = linalg::triplet(S_ijkl_ij, T_iajb_[ij],
+                                                S_ijkl_ij, false, false, true);
+                    ::memcpy(T_ijab_list[ij_position].data(), T_ij->get_pointer(),
+                             static_cast<size_t>(nqno_ijkl) * nqno_ijkl *
+                                 sizeof(double));
                 }
             }
-        }
+
+            for (int idx = 0; idx < n_occupied_positions; ++idx) {
+                K_mibe_list[idx] = Tensor<double, 3>(
+                    "(mi|be)", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
+                einsum(0.0, Indices{index::m, index::b, index::e},
+                       &K_mibe_list[idx], 1.0,
+                       Indices{index::Q, index::m}, q_io_list[idx],
+                       Indices{index::Q, index::b, index::e}, q_vv_ein);
+            }
+        };
+
+        // Algorithm 1 theta intermediate for canonical Eq. (19), term 6.
+        // Build oriented pairs lazily and release each after its final use.  A
+        // quadruplet permutation never requests a diagonal positional pair, so
+        // this also avoids the four unused theta blocks in the former 16-bank.
+        std::array<Tensor<double, 3>, 16> theta_Qab;
+        std::array<bool, 16> theta_built{};
+        auto build_theta_Qab = [&](int i_idx, int j_idx) -> Tensor<double, 3>& {
+            const int ij_idx = i_idx * n_occupied_positions + j_idx;
+            if (theta_built[ij_idx]) return theta_Qab[ij_idx];
+
+            const int ij_position = pair_position(i_idx, j_idx);
+            theta_Qab[ij_idx] = Tensor<double, 3>(
+                "theta_Qab", naux_ijkl, nqno_ijkl, nqno_ijkl);
+            theta_built[ij_idx] = true;
+            if (i_idx <= j_idx) {
+                einsum(0.0, Indices{index::Q, index::a, index::b},
+                       &theta_Qab[ij_idx], 1.0,
+                       Indices{index::Q, index::a, index::e}, q_vv_ein,
+                       Indices{index::e, index::b}, T_ijab_list[ij_position]);
+            } else {
+                einsum(0.0, Indices{index::Q, index::a, index::b},
+                       &theta_Qab[ij_idx], 1.0,
+                       Indices{index::Q, index::a, index::e}, q_vv_ein,
+                       Indices{index::b, index::e}, T_ijab_list[ij_position]);
+            }
+            return theta_Qab[ij_idx];
+        };
 
         // Algorithm 1 intermediates reused by the [Q] and (Q) energies, Eqs. (25)-(26)
         for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
@@ -1353,6 +1497,7 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
 
         // Terms 1 and 2: swapping the last two T3 columns leaves each canonicalized
         // contraction invariant, reducing both families from 24 to 12 evaluations.
+        build_gamma_terms_12();
         std::unordered_set<size_t> computed_terms_12;
         einsums::for_sequence<24UL>([&](auto perm_idx) {
             auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
@@ -1368,26 +1513,36 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
 
             // Canonical Eq. (19), term 1; DLPNO Algorithm 2:
             // (i'a|be) t_{j'k'l'}^{ecd}.
-            const size_t jkl_dense = triplet_key(j, k, l, naocc);
-            if (i_j_k_to_ijk_.count(jkl_dense)) {
-                const int jkl = i_j_k_to_ijk_[jkl_dense];
-                auto S_ijkl_jkl = submatrix_rows_and_cols(
-                    *S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[jkl]);
-                S_ijkl_jkl =
-                    linalg::triplet(X_qno_[ijkl], S_ijkl_jkl, X_tno_[jkl], true, false, false);
-                auto T_jkl =
-                    matmul_3d_einsums(triples_permuter_einsums(T_iajbkc_clone_[jkl], j, k, l),
-                                      S_ijkl_jkl, n_tno_[jkl], n_qno_[ijkl]);
+            // The m=j slice of the term-2 T_mkl block is exactly the required
+            // T_jkl amplitude.  Column symmetry supplies the reversed (l,k)
+            // orientation through labels, eliminating a second T3 projection.
+            const int j_ijkl =
+                std::find(lmoquadruplet_to_lmos_[ijkl].begin(),
+                          lmoquadruplet_to_lmos_[ijkl].end(), j) -
+                lmoquadruplet_to_lmos_[ijkl].begin();
+            const int kl_position = pair_position(k_idx, l_idx);
+            Tensor<double, 3> T_jkl("T_jkl contiguous", nqno_ijkl,
+                                     nqno_ijkl, nqno_ijkl);
+            auto T_jkl_view =
+                T_mkl_list[kl_position](j_ijkl, All, All, All);
+            permute(Indices{index::e, index::c, index::d}, &T_jkl,
+                    Indices{index::e, index::c, index::d}, T_jkl_view);
+            if (k_idx <= l_idx) {
                 einsum(0.0, Indices{index::a, index::b, index::c, index::d},
                        &gamma_ijkl_perm, 1.0, Indices{index::a, index::b, index::e},
                        energy_intermediates.K_iabe[i_idx],
                        Indices{index::e, index::c, index::d}, T_jkl);
+            } else {
+                einsum(0.0, Indices{index::a, index::b, index::c, index::d},
+                       &gamma_ijkl_perm, 1.0,
+                       Indices{index::a, index::b, index::e},
+                       energy_intermediates.K_iabe[i_idx],
+                       Indices{index::e, index::d, index::c}, T_jkl);
             }
 
             // Canonical Eq. (19), term 2; DLPNO Algorithm 2:
             // -(i'a|j'm) t_{mk'l'}^{bcd}.
             const int ij_idx = i_idx * n_occupied_positions + j_idx;
-            const int kl_position = pair_position(k_idx, l_idx);
             einsum(1.0, Indices{index::a, index::b, index::c, index::d},
                    &gamma_ijkl_perm, -1.0, Indices{index::a, index::m},
                    energy_intermediates.K_iajm[ij_idx],
@@ -1399,9 +1554,13 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             accumulate_gamma_orbit(gamma_ijkl_perm, permutation_buffer, occupied_permutation,
                                    gamma_terms_12, 2.0);
         });
+        for (auto& tensor : T_mkl_list) {
+            tensor = Tensor<double, 4>("released", 0, 0, 0, 0);
+        }
 
         // Term 3: simultaneous exchange of the two integral/T2 branches accounts
         // for the partner generated by (i j)(k l).
+        build_gamma_term_3();
         std::unordered_set<size_t> computed_term_3;
         einsums::for_sequence<24UL>([&](auto perm_idx) {
             auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
@@ -1433,10 +1592,14 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             accumulate_gamma_orbit(gamma_ijkl_perm, gamma_ijkl_buffer_b, occupied_permutation,
                                    gamma_term_3, 2.0);
         });
+        for (auto& tensor : K_minj_list) {
+            tensor = Tensor<double, 2>("released", 0, 0);
+        }
 
         // Terms 4 and 5 have no nontrivial column stabilizer. The packed T2 list
         // still removes six duplicate pair transformations without materializing
         // a transposed amplitude.
+        build_gamma_terms_45();
         std::unordered_set<size_t> computed_terms_45;
         einsums::for_sequence<24UL>([&](auto perm_idx) {
             auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
@@ -1456,7 +1619,10 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
 
             // Canonical Eq. (19), term 4; DLPNO Algorithm 2:
             // -2(i'a|me) t_{k'j'}^{eb} t_{ml'}^{cd}.
-            Tensor<double, 3> gamma_term4("gamma_term4", nqno_ijkl, nlmo_ijkl, nqno_ijkl);
+            // Form the natural GEMM output (a,m,b), then transpose once so the
+            // following contraction sees contiguous (a,b) and m dimensions.
+            Tensor<double, 3> gamma_term4("gamma_term4", nqno_ijkl, nlmo_ijkl,
+                                           nqno_ijkl);
             if (k_idx <= j_idx) {
                 einsum(0.0, Indices{index::a, index::m, index::b}, &gamma_term4, 1.0,
                        Indices{index::a, index::m, index::e}, K_iame_list[i_idx],
@@ -1466,13 +1632,15 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                        Indices{index::a, index::m, index::e}, K_iame_list[i_idx],
                        Indices{index::b, index::e}, T_ijab_list[kj_position]);
             }
-            Tensor<double, 3> gamma_term4_transposed("gamma_term4_transposed", nqno_ijkl,
-                                                     nqno_ijkl, nlmo_ijkl);
-            permute(Indices{index::a, index::b, index::m}, &gamma_term4_transposed,
+            Tensor<double, 3> gamma_term4_transposed(
+                "gamma_term4_transposed", nqno_ijkl, nqno_ijkl, nlmo_ijkl);
+            permute(Indices{index::a, index::b, index::m},
+                    &gamma_term4_transposed,
                     Indices{index::a, index::m, index::b}, gamma_term4);
             einsum(1.0, Indices{index::a, index::b, index::c, index::d},
                    &gamma_ijkl_perm, -2.0, Indices{index::a, index::b, index::m},
-                   gamma_term4_transposed, Indices{index::m, index::c, index::d},
+                   gamma_term4_transposed,
+                   Indices{index::m, index::c, index::d},
                    T_mkac_list[l_idx]);
 
             // Canonical Eq. (19), term 5; DLPNO Algorithm 2:
@@ -1499,9 +1667,30 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             accumulate_gamma_orbit(gamma_ijkl_perm, gamma_ijkl_buffer_a, occupied_permutation,
                                    gamma_terms_45, 1.0);
         });
+        for (auto& tensor : K_iame_list) {
+            tensor = Tensor<double, 3>("released", 0, 0, 0);
+        }
+        for (auto& tensor : K_mibe_list) {
+            tensor = Tensor<double, 3>("released", 0, 0, 0);
+        }
+        for (auto& tensor : T_mkac_list) {
+            tensor = Tensor<double, 3>("released", 0, 0, 0);
+        }
 
         // Term 6: exchanging the two T2/DF branches, (i j) <-> (k l), leaves
         // the canonicalized contraction invariant.
+        std::array<int, 16> theta_use_count{};
+        std::unordered_set<size_t> counted_term_6;
+        einsums::for_sequence<24UL>([&](auto perm_idx) {
+            auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
+            if (!is_gamma_representative(i_idx, j_idx, k_idx, l_idx, gamma_term_6)) return;
+            const size_t occupied_permutation =
+                quadruplet_key(ijkl_list[i_idx], ijkl_list[j_idx], ijkl_list[k_idx],
+                                ijkl_list[l_idx], naocc);
+            if (!counted_term_6.insert(occupied_permutation).second) return;
+            ++theta_use_count[i_idx * n_occupied_positions + j_idx];
+            ++theta_use_count[k_idx * n_occupied_positions + l_idx];
+        });
         std::unordered_set<size_t> computed_term_6;
         einsums::for_sequence<24UL>([&](auto perm_idx) {
             auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
@@ -1517,15 +1706,31 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             const int kl_idx = k_idx * n_occupied_positions + l_idx;
             // Canonical Eq. (19), term 6; DLPNO Algorithm 2:
             // +(cf|ae) t_{i'j'}^{eb} t_{k'l'}^{fd}.
+            auto& theta_ij = build_theta_Qab(i_idx, j_idx);
+            auto& theta_kl = build_theta_Qab(k_idx, l_idx);
             einsum(0.0, Indices{index::a, index::b, index::c, index::d},
                    &gamma_ijkl_perm, 1.0, Indices{index::Q, index::a, index::b},
-                   theta_Qab[ij_idx], Indices{index::Q, index::c, index::d},
-                   theta_Qab[kl_idx]);
+                   theta_ij, Indices{index::Q, index::c, index::d}, theta_kl);
             Tensor<double, 4> permutation_buffer("gamma_permutation_buffer", nqno_ijkl,
                                                   nqno_ijkl, nqno_ijkl, nqno_ijkl);
             accumulate_gamma_orbit(gamma_ijkl_perm, permutation_buffer, occupied_permutation,
                                    gamma_term_6, 2.0);
+
+            if (--theta_use_count[ij_idx] == 0) {
+                theta_Qab[ij_idx] = Tensor<double, 3>("released", 0, 0, 0);
+                theta_built[ij_idx] = false;
+            }
+            if (--theta_use_count[kl_idx] == 0) {
+                theta_Qab[kl_idx] = Tensor<double, 3>("released", 0, 0, 0);
+                theta_built[kl_idx] = false;
+            }
         });
+        for (auto& tensor : T_ijab_list) {
+            tensor = Tensor<double, 2>("released", 0, 0);
+        }
+        for (auto& tensor : theta_Qab) {
+            tensor = Tensor<double, 3>("released", 0, 0, 0);
+        }
 
         gamma_ijkl *= 0.5;
 
@@ -1600,46 +1805,78 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
     double quadruplet_energy = 0.0;
     std::unordered_map<size_t, double> e_perm_energy;
 
-    std::array<Tensor<double, 4>, 10> T_ijm_list;
-    for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
-        int i = ijkl_list[i_idx];
-        for (int j_idx = i_idx; j_idx < n_occupied_positions; ++j_idx) {
-            int j = ijkl_list[j_idx];
-
-            const int ij_position = pair_position(i_idx, j_idx);
-            T_ijm_list[ij_position] =
-                Tensor<double, 4>("T_ijm", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-            T_ijm_list[ij_position].zero();
-
-            for (int m_ijkl = 0; m_ijkl < nlmo_ijkl; ++m_ijkl) {
-                int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
-                const size_t ijm_dense = triplet_key(i, j, m, naocc);
-                if (i_j_k_to_ijk_.count(ijm_dense)) {
-                    int ijm = i_j_k_to_ijk_[ijm_dense];
-                    auto S_ijkl_ijm = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[ijm]);
-                    S_ijkl_ijm = linalg::triplet(X_qno_[ijkl], S_ijkl_ijm, X_tno_[ijm], true, false, false);
-                    auto T_ijm = matmul_3d_einsums(triples_permuter_einsums(T_iajbkc_clone_[ijm], i, j, m), 
-                                                    S_ijkl_ijm, n_tno_[ijm], n_qno_[ijkl]);
-
-                    ::memcpy(&T_ijm_list[ij_position](m_ijkl, 0, 0, 0), T_ijm.data(),
-                             nqno_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
-                } // end if
-            } // end m_ijkl
-        } // end j_idx
-    } // end i_idx
-
     // Materialize an oriented view of a packed pair tensor only when the requested
     // occupied order is reversed. Column symmetry supplies X_ji(a,b) = X_ij(b,a).
     auto oriented_pair_tensor = [&](const auto& packed, int first_idx, int second_idx,
-                                    const std::string& name) {
+                                    const std::string& name,
+                                    Tensor<double, 2>& transpose_workspace)
+        -> const Tensor<double, 2>& {
         const Tensor<double, 2>& stored = packed[pair_position(first_idx, second_idx)];
-        if (first_idx <= second_idx) return Tensor<double, 2>(stored);
-        Tensor<double, 2> oriented(name, nqno_ijkl, nqno_ijkl);
-        permute(Indices{index::a, index::b}, &oriented, Indices{index::b, index::a}, stored);
-        return oriented;
+        if (first_idx <= second_idx) return stored;
+        transpose_workspace = Tensor<double, 2>(name, nqno_ijkl, nqno_ijkl);
+        permute(Indices{index::a, index::b}, &transpose_workspace,
+                Indices{index::b, index::a}, stored);
+        return transpose_workspace;
     };
 
-    einsums::for_sequence<24UL>([&](auto perm_idx) {
+    // Assign each distinct occupied permutation to the first positional-pair
+    // representative encountered in the historical 24-permutation order.
+    // Processing that schedule by pair lets one T_ijm block serve all of its
+    // permutations and then be released; repeated occupied indices retain the
+    // exact same representative as before.
+    std::array<std::vector<size_t>, 10> pair_permutation_schedule;
+    std::unordered_set<size_t> scheduled_permutations;
+    for (size_t perm_idx = 0; perm_idx < quadruple_permutations_.size(); ++perm_idx) {
+        const auto& [i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
+        const size_t occupied_permutation =
+            quadruplet_key(ijkl_list[i_idx], ijkl_list[j_idx], ijkl_list[k_idx],
+                            ijkl_list[l_idx], naocc);
+        if (!scheduled_permutations.insert(occupied_permutation).second) continue;
+        pair_permutation_schedule[pair_position(i_idx, j_idx)].push_back(perm_idx);
+    }
+
+    for (int scheduled_pair = 0; scheduled_pair < 10; ++scheduled_pair) {
+        if (pair_permutation_schedule[scheduled_pair].empty()) continue;
+
+        const auto& first_permutation =
+            quadruple_permutations_[pair_permutation_schedule[scheduled_pair].front()];
+        const int pair_i_idx = std::min(std::get<0>(first_permutation),
+                                        std::get<1>(first_permutation));
+        const int pair_j_idx = std::max(std::get<0>(first_permutation),
+                                        std::get<1>(first_permutation));
+        const int pair_i = ijkl_list[pair_i_idx];
+        const int pair_j = ijkl_list[pair_j_idx];
+
+        Tensor<double, 4> T_ijm_pair("T_ijm", nlmo_ijkl, nqno_ijkl,
+                                      nqno_ijkl, nqno_ijkl);
+        T_ijm_pair.zero();
+        for (int m_ijkl = 0; m_ijkl < nlmo_ijkl; ++m_ijkl) {
+            const int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
+            const size_t ijm_dense = triplet_key(pair_i, pair_j, m, naocc);
+            if (!i_j_k_to_ijk_.count(ijm_dense)) continue;
+            const int ijm = i_j_k_to_ijk_[ijm_dense];
+            auto S_ijkl_ijm = submatrix_rows_and_cols(
+                *S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[ijm]);
+            S_ijkl_ijm = linalg::triplet(X_qno_[ijkl], S_ijkl_ijm,
+                                          X_tno_[ijm], true, false, false);
+            auto T_ijm = matmul_3d_einsums(
+                triples_permuter_einsums(T_iajbkc_clone_[ijm], pair_i, pair_j, m),
+                S_ijkl_ijm, n_tno_[ijm], nqno_ijkl);
+            ::memcpy(&T_ijm_pair(m_ijkl, 0, 0, 0), T_ijm.data(),
+                     static_cast<size_t>(nqno_ijkl) * nqno_ijkl * nqno_ijkl *
+                         sizeof(double));
+        }
+
+        // The schedule contains both orientations of this unordered occupied
+        // pair. Pack the reversed column order once; using a contiguous tensor
+        // here lets every sixth-order contraction below be a GEMM rather than
+        // repeatedly operating on a logically transposed rank-four view.
+        Tensor<double, 4> T_jim_pair("T_jim", nlmo_ijkl, nqno_ijkl,
+                                      nqno_ijkl, nqno_ijkl);
+        permute(Indices{index::m, index::a, index::b, index::c}, &T_jim_pair,
+                Indices{index::m, index::b, index::a, index::c}, T_ijm_pair);
+
+        for (size_t perm_idx : pair_permutation_schedule[scheduled_pair]) {
         auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
         int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
         const size_t ijkl_idx = quadruplet_key(i, j, k, l, naocc);
@@ -1650,18 +1887,24 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
 
             // Get quadruples amplitude
             Tensor<double, 4> T_ijkl = quadruples_permuter(T4, i, j, k, l);
+            const Tensor<double, 4>& T_ijm_oriented =
+                (i_idx <= j_idx) ? T_ijm_pair : T_jim_pair;
 
             // Fifth-order [Q] contribution: canonical Eq. (25), DLPNO Algorithm 3.
             // Column symmetry gives stabilizers of order 2, 1, and 4 for the
             // three displayed contractions, respectively. For a distinct-index
             // quadruplet this reduces 72 primitive evaluations to 12 + 24 + 6 = 42.
-            Tensor<double, 2> U_kl =
-                oriented_pair_tensor(intermediates.U_iajb, k_idx, l_idx, "U_kl");
-            Tensor<double, 2> K_ij =
-                oriented_pair_tensor(intermediates.K_iajb, i_idx, j_idx, "K_ij");
+            Tensor<double, 2> U_kl_workspace;
+            const Tensor<double, 2>& U_kl = oriented_pair_tensor(
+                intermediates.U_iajb, k_idx, l_idx, "U_kl", U_kl_workspace);
+            Tensor<double, 2> K_ij_workspace;
+            const Tensor<double, 2>& K_ij = oriented_pair_tensor(
+                intermediates.K_iajb, i_idx, j_idx, "K_ij", K_ij_workspace);
             Tensor<double, 2> L_ij = K_ij;
             L_ij *= 2.0;
-            L_ij -= oriented_pair_tensor(intermediates.K_iajb, j_idx, i_idx, "K_ji");
+            Tensor<double, 2> K_ji_workspace;
+            L_ij -= oriented_pair_tensor(intermediates.K_iajb, j_idx, i_idx,
+                                          "K_ji", K_ji_workspace);
 
             const size_t q5_cross_partner = quadruplet_key(j, i, l, k, naocc);
             const bool evaluate_q5_cross = ijkl_idx <= q5_cross_partner;
@@ -1687,29 +1930,42 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
             }
             const bool evaluate_q5_pair = ijkl_idx == q5_pair_representative;
 
-            for (int a_ijkl = 0; a_ijkl < nqno_ijkl; ++a_ijkl) {
-                for (int b_ijkl = 0; b_ijkl < nqno_ijkl; ++b_ijkl) {
-                    for (int c_ijkl = 0; c_ijkl < nqno_ijkl; ++c_ijkl) {
-                        for (int d_ijkl = 0; d_ijkl < nqno_ijkl; ++d_ijkl) {
-                            double q5_kernel =
-                                -2.0 * U_kl(b_ijkl, d_ijkl) * L_ij(a_ijkl, c_ijkl);
-                            if (evaluate_q5_cross) {
-                                q5_kernel += q5_cross_multiplicity * U_kl(a_ijkl, b_ijkl) *
-                                             K_ij(c_ijkl, d_ijkl);
-                            }
-                            if (evaluate_q5_pair) {
-                                q5_kernel += q5_pair_multiplicity * U_kl(c_ijkl, d_ijkl) *
-                                             L_ij(a_ijkl, b_ijkl);
-                            }
-                            e_perm_energy[ijkl_idx] +=
-                                T_ijkl(a_ijkl, b_ijkl, c_ijkl, d_ijkl) * q5_kernel;
-                        } // end d_ijkl
-                    } // end c_ijkl
-                } // end b_ijkl
-            } // end a_ijkl
+            // Evaluate every fifth-order product as GEMV + dot.  Explicitly
+            // permute T4 so the two contracted virtual indices form one
+            // contiguous matrix dimension; this replaces the scalar v^4 loop
+            // without changing the symmetry representatives or multiplicities.
+            Tensor<double, 4> T_buffer("T_buffer", nqno_ijkl, nqno_ijkl,
+                                        nqno_ijkl, nqno_ijkl);
+            Tensor<double, 2> q5_reduced("q5_reduced", nqno_ijkl, nqno_ijkl);
 
-            // Reusable rank-four permutation workspace for Eqs. (27)-(28).
-            Tensor<double, 4> T_buffer("T_buffer", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
+            permute(Indices{index::a, index::c, index::b, index::d}, &T_buffer,
+                    Indices{index::a, index::b, index::c, index::d}, T_ijkl);
+            einsum(0.0, Indices{index::a, index::c}, &q5_reduced, 1.0,
+                   Indices{index::a, index::c, index::b, index::d}, T_buffer,
+                   Indices{index::b, index::d}, U_kl);
+            e_perm_energy[ijkl_idx] -=
+                2.0 * linear_algebra::dot(q5_reduced, L_ij);
+
+            if (evaluate_q5_cross) {
+                permute(Indices{index::c, index::d, index::a, index::b},
+                        &T_buffer,
+                        Indices{index::a, index::b, index::c, index::d}, T_ijkl);
+                einsum(0.0, Indices{index::c, index::d}, &q5_reduced, 1.0,
+                       Indices{index::c, index::d, index::a, index::b}, T_buffer,
+                       Indices{index::a, index::b}, U_kl);
+                e_perm_energy[ijkl_idx] +=
+                    q5_cross_multiplicity *
+                    linear_algebra::dot(q5_reduced, K_ij);
+            }
+
+            if (evaluate_q5_pair) {
+                einsum(0.0, Indices{index::a, index::b}, &q5_reduced, 1.0,
+                       Indices{index::a, index::b, index::c, index::d}, T_ijkl,
+                       Indices{index::c, index::d}, U_kl);
+                e_perm_energy[ijkl_idx] +=
+                    q5_pair_multiplicity *
+                    linear_algebra::dot(q5_reduced, L_ij);
+            }
 
             // Canonical Eq. (27), used by the sixth-order (Q) energy in Eq. (26)
             // and DLPNO Algorithm 4.
@@ -1739,50 +1995,33 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
             // in the factorized local form of DLPNO Algorithm 4.
 
             // => 2 - P_{cd} contributions
-
-            Tensor<double, 4> T_bar_dc("T_bar_dc", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-            permute(Indices{index::a, index::b, index::d, index::c}, &T_bar_dc, Indices{index::a, index::b, index::c, index::d}, T_bar);
-            Tensor<double, 4> T_tilde_dc("T_tilde_dc", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-            permute(Indices{index::a, index::b, index::d, index::c}, &T_tilde_dc, Indices{index::a, index::b, index::c, index::d}, T_tilde);
-
+            // Precombine the operator once, then evaluate one GEMM for alpha
+            // and one for beta.  The former factorization performed two large
+            // contractions for each result and retained both dc permutations.
+            Tensor<double, 4> T_2minus("(2-P_cd)T", nqno_ijkl, nqno_ijkl,
+                                        nqno_ijkl, nqno_ijkl);
             Tensor<double, 2> alpha_ijm_buffer("alpha_ijm_buffer", nlmo_ijkl, nqno_ijkl);
             Tensor<double, 2> beta_ijm_buffer("beta_ijm_buffer", nlmo_ijkl, nqno_ijkl);
-            const int ij_position = pair_position(i_idx, j_idx);
-            if (i_idx <= j_idx) {
-                einsum(0.0, Indices{index::m, index::d}, &alpha_ijm_buffer, 2.0,
-                       Indices{index::m, index::a, index::b, index::c},
-                       T_ijm_list[ij_position],
-                       Indices{index::a, index::b, index::c, index::d}, T_bar);
-                einsum(1.0, Indices{index::m, index::d}, &alpha_ijm_buffer, -1.0,
-                       Indices{index::m, index::a, index::b, index::c},
-                       T_ijm_list[ij_position],
-                       Indices{index::a, index::b, index::c, index::d}, T_bar_dc);
-                einsum(0.0, Indices{index::m, index::d}, &beta_ijm_buffer, 2.0,
-                       Indices{index::m, index::a, index::b, index::c},
-                       T_ijm_list[ij_position],
-                       Indices{index::a, index::b, index::c, index::d}, T_tilde);
-                einsum(1.0, Indices{index::m, index::d}, &beta_ijm_buffer, -1.0,
-                       Indices{index::m, index::a, index::b, index::c},
-                       T_ijm_list[ij_position],
-                       Indices{index::a, index::b, index::c, index::d}, T_tilde_dc);
-            } else {
-                einsum(0.0, Indices{index::m, index::d}, &alpha_ijm_buffer, 2.0,
-                       Indices{index::m, index::b, index::a, index::c},
-                       T_ijm_list[ij_position],
-                       Indices{index::a, index::b, index::c, index::d}, T_bar);
-                einsum(1.0, Indices{index::m, index::d}, &alpha_ijm_buffer, -1.0,
-                       Indices{index::m, index::b, index::a, index::c},
-                       T_ijm_list[ij_position],
-                       Indices{index::a, index::b, index::c, index::d}, T_bar_dc);
-                einsum(0.0, Indices{index::m, index::d}, &beta_ijm_buffer, 2.0,
-                       Indices{index::m, index::b, index::a, index::c},
-                       T_ijm_list[ij_position],
-                       Indices{index::a, index::b, index::c, index::d}, T_tilde);
-                einsum(1.0, Indices{index::m, index::d}, &beta_ijm_buffer, -1.0,
-                       Indices{index::m, index::b, index::a, index::c},
-                       T_ijm_list[ij_position],
-                       Indices{index::a, index::b, index::c, index::d}, T_tilde_dc);
-            }
+
+            T_2minus = T_bar;
+            T_2minus *= 2.0;
+            permute(Indices{index::a, index::b, index::d, index::c}, &T_buffer,
+                    Indices{index::a, index::b, index::c, index::d}, T_bar);
+            T_2minus -= T_buffer;
+            einsum(0.0, Indices{index::m, index::d}, &alpha_ijm_buffer, 1.0,
+                   Indices{index::m, index::a, index::b, index::c},
+                   T_ijm_oriented,
+                   Indices{index::a, index::b, index::c, index::d}, T_2minus);
+
+            T_2minus = T_tilde;
+            T_2minus *= 2.0;
+            permute(Indices{index::a, index::b, index::d, index::c}, &T_buffer,
+                    Indices{index::a, index::b, index::c, index::d}, T_tilde);
+            T_2minus -= T_buffer;
+            einsum(0.0, Indices{index::m, index::d}, &beta_ijm_buffer, 1.0,
+                   Indices{index::m, index::a, index::b, index::c},
+                   T_ijm_oriented,
+                   Indices{index::a, index::b, index::c, index::d}, T_2minus);
 
             Tensor<double, 2> K_lk_T("K_lk_T", nlmo_ijkl, nqno_ijkl);
             permute(Indices{index::m, index::d}, &K_lk_T, Indices{index::d, index::m},
@@ -1795,41 +2034,36 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
 
             // 2 - P_{kl} contributions
             int k_ijkl = std::find(lmoquadruplet_to_lmos_[ijkl].begin(), lmoquadruplet_to_lmos_[ijkl].end(), k) - lmoquadruplet_to_lmos_[ijkl].begin();
-            Tensor<double, 3> T_ijk = T_ijm_list[ij_position](k_ijkl, All, All, All);
+            Tensor<double, 3> T_ijk("T_ijk contiguous", nqno_ijkl,
+                                     nqno_ijkl, nqno_ijkl);
+            auto T_ijk_view =
+                T_ijm_oriented(k_ijkl, All, All, All);
+            permute(Indices{index::a, index::b, index::e}, &T_ijk,
+                    Indices{index::a, index::b, index::e}, T_ijk_view);
             int l_ijkl = std::find(lmoquadruplet_to_lmos_[ijkl].begin(), lmoquadruplet_to_lmos_[ijkl].end(), l) - lmoquadruplet_to_lmos_[ijkl].begin();
-            Tensor<double, 3> T_ijl = T_ijm_list[ij_position](l_ijkl, All, All, All);
+            Tensor<double, 3> T_ijl("T_ijl contiguous", nqno_ijkl,
+                                     nqno_ijkl, nqno_ijkl);
+            auto T_ijl_view =
+                T_ijm_oriented(l_ijkl, All, All, All);
+            permute(Indices{index::a, index::b, index::e}, &T_ijl,
+                    Indices{index::a, index::b, index::e}, T_ijl_view);
 
             Tensor<double, 3> T_ijk_bar("T_ijk_bar", nqno_ijkl, nqno_ijkl, nqno_ijkl);
             Tensor<double, 3> T_ijl_bar("T_ijl_bar", nqno_ijkl, nqno_ijkl, nqno_ijkl);
             Tensor<double, 3> T_ijk_tilde("T_ijk_tilde", nqno_ijkl, nqno_ijkl, nqno_ijkl);
             Tensor<double, 3> T_ijl_tilde("T_ijl_tilde", nqno_ijkl, nqno_ijkl, nqno_ijkl);
-            if (i_idx <= j_idx) {
-                einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijk_bar, 1.0,
-                       Indices{index::a, index::b, index::c, index::d}, T_bar,
-                       Indices{index::a, index::b, index::e}, T_ijk);
-                einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijl_bar, 1.0,
-                       Indices{index::a, index::b, index::c, index::d}, T_bar,
-                       Indices{index::a, index::b, index::e}, T_ijl);
-                einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijk_tilde, 1.0,
-                       Indices{index::a, index::b, index::c, index::d}, T_tilde,
-                       Indices{index::a, index::b, index::e}, T_ijk);
-                einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijl_tilde, 1.0,
-                       Indices{index::a, index::b, index::c, index::d}, T_tilde,
-                       Indices{index::a, index::b, index::e}, T_ijl);
-            } else {
-                einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijk_bar, 1.0,
-                       Indices{index::a, index::b, index::c, index::d}, T_bar,
-                       Indices{index::b, index::a, index::e}, T_ijk);
-                einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijl_bar, 1.0,
-                       Indices{index::a, index::b, index::c, index::d}, T_bar,
-                       Indices{index::b, index::a, index::e}, T_ijl);
-                einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijk_tilde, 1.0,
-                       Indices{index::a, index::b, index::c, index::d}, T_tilde,
-                       Indices{index::b, index::a, index::e}, T_ijk);
-                einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijl_tilde, 1.0,
-                       Indices{index::a, index::b, index::c, index::d}, T_tilde,
-                       Indices{index::b, index::a, index::e}, T_ijl);
-            }
+            einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijk_bar, 1.0,
+                   Indices{index::a, index::b, index::c, index::d}, T_bar,
+                   Indices{index::a, index::b, index::e}, T_ijk);
+            einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijl_bar, 1.0,
+                   Indices{index::a, index::b, index::c, index::d}, T_bar,
+                   Indices{index::a, index::b, index::e}, T_ijl);
+            einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijk_tilde, 1.0,
+                   Indices{index::a, index::b, index::c, index::d}, T_tilde,
+                   Indices{index::a, index::b, index::e}, T_ijk);
+            einsum(0.0, Indices{index::e, index::c, index::d}, &T_ijl_tilde, 1.0,
+                   Indices{index::a, index::b, index::c, index::d}, T_tilde,
+                   Indices{index::a, index::b, index::e}, T_ijl);
 
             Tensor<double, 3> g_kdce_T("g_kdce_T", nqno_ijkl, nqno_ijkl, nqno_ijkl);
             permute(Indices{index::e, index::c, index::d}, &g_kdce_T,
@@ -1843,7 +2077,8 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
 
             quadruplet_energy += e_perm_energy[ijkl_idx];
         }
-    });
+        }
+    }
         
     return quadruplet_energy;
 }
@@ -1868,11 +2103,22 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
 
     std::vector<double> e_ijkl_old(n_lmo_quadruplets, 0.0);
 
+    // Algorithm 5 is a Jacobi iteration: every off-diagonal Fock coupling in
+    // iteration n must read the same immutable T4 generation.  Keep distinct
+    // record labels for the disk-backed path and a second tensor bank for the
+    // in-core path.  The generations are swapped only after the OpenMP update
+    // loop has completed.
+    std::string current_t4_label = "T4";
+    std::string next_t4_label = "T4 Jacobi Next";
+
     while (!(e_converged && r_converged)) {
         // RMS residual for each LMO quadruplet, used to assess convergence.
         std::vector<double> R_iajbkcld_rms(n_lmo_quadruplets, 0.0);
 
         std::time_t time_start = std::time(nullptr);
+
+        std::vector<Tensor<double, 4>> next_t4_bank;
+        if (!write_quadruples_intermediates_) next_t4_bank.resize(n_lmo_quadruplets);
 
 #pragma omp parallel for schedule(dynamic, 1)
         for (int ijkl_sorted = 0; ijkl_sorted < n_lmo_quadruplets; ++ijkl_sorted) {
@@ -1880,7 +2126,18 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
             auto &[i, j, k, l] = ijkl_to_i_j_k_l_[ijkl];
 
             int nqno_ijkl = n_qno_[ijkl];
-            if (std::fabs(e_ijkl_[ijkl] - e_ijkl_old[ijkl]) < std::fabs(e_ijkl_old[ijkl] * t_cut_iter)) continue;
+            if (std::fabs(e_ijkl_[ijkl] - e_ijkl_old[ijkl]) <
+                std::fabs(e_ijkl_old[ijkl] * t_cut_iter)) {
+                // A skipped quadruplet is unchanged, but it must still be
+                // present in the complete next Jacobi generation.
+                if (write_quadruples_intermediates_) {
+                    auto T_ijkl = load_quadruples_tensor(current_t4_label, ijkl);
+                    save_quadruples_tensor(T_ijkl, next_t4_label, ijkl);
+                } else {
+                    next_t4_bank[ijkl] = T_iajbkcld_[ijkl];
+                }
+                continue;
+            }
 
             // S integrals
             std::vector<int> quadruplet_ext_domain;
@@ -1919,16 +2176,29 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
                                                    ? load_quadruples_tensor("Gamma", ijkl)
                                                    : gamma_ijkl_[ijkl];
             Tensor<double, 4> T_ijkl = write_quadruples_intermediates_
-                                               ? load_quadruples_tensor("T4", ijkl)
+                                               ? load_quadruples_tensor(current_t4_label, ijkl)
                                                : T_iajbkcld_[ijkl];
-            auto get_t4 = [&](int coupled_ijkl) {
-                return write_quadruples_intermediates_
-                           ? load_quadruples_tensor("T4", coupled_ijkl)
-                           : T_iajbkcld_[coupled_ijkl];
+            auto transform_coupled_t4 = [&](int coupled_ijkl,
+                                             const SharedMatrix& overlap,
+                                             int p, int q, int r, int s) {
+                if (write_quadruples_intermediates_) {
+                    auto source =
+                        load_quadruples_tensor(current_t4_label, coupled_ijkl);
+                    return matmul_4d_permuted(
+                        source, overlap, n_qno_[coupled_ijkl], n_qno_[ijkl],
+                        p, q, r, s);
+                }
+                // The current Jacobi generation is immutable during this
+                // parallel loop, so the in-core source can be passed by
+                // reference without a full rank-four copy.
+                return matmul_4d_permuted(
+                    T_iajbkcld_[coupled_ijkl], overlap,
+                    n_qno_[coupled_ijkl], n_qno_[ijkl], p, q, r, s);
             };
 
-            Tensor<double, 4> R_ijkl("R_ijkl", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-            R_ijkl = gamma_ijkl;
+            // Gamma is consumed exactly once in this task.  Move its storage
+            // into the residual instead of retaining a second nqno^4 copy.
+            Tensor<double, 4> R_ijkl = std::move(gamma_ijkl);
 
             for (int a_ijkl = 0; a_ijkl < nqno_ijkl; ++a_ijkl) {
                 for (int b_ijkl = 0; b_ijkl < nqno_ijkl; ++b_ijkl) {
@@ -1952,8 +2222,8 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
                     int ijkm = i_j_k_l_to_ijkl_[ijkm_dense];
                     std::vector<int> ijkm_idx_list = index_list(quadruplet_ext_domain, lmoquadruplet_to_paos_[ijkm]);
                     auto S_ijkl_ijkm = linalg::doublet(submatrix_rows(*S_ijkl, ijkm_idx_list), X_qno_[ijkm], true, false);
-                    auto T_temp = matmul_4d(quadruples_permuter(get_t4(ijkm), i, j, k, m),
-                                            S_ijkl_ijkm, n_qno_[ijkm], n_qno_[ijkl]);
+                    auto T_temp = transform_coupled_t4(
+                        ijkm, S_ijkl_ijkm, i, j, k, m);
                     T_temp *= (*F_lmo_)(l, m);
                     R_ijkl -= T_temp;
                 }
@@ -1962,8 +2232,8 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
                     int ijml = i_j_k_l_to_ijkl_[ijml_dense];
                     std::vector<int> ijml_idx_list = index_list(quadruplet_ext_domain, lmoquadruplet_to_paos_[ijml]);
                     auto S_ijkl_ijml = linalg::doublet(submatrix_rows(*S_ijkl, ijml_idx_list), X_qno_[ijml], true, false);
-                    auto T_temp = matmul_4d(quadruples_permuter(get_t4(ijml), i, j, m, l),
-                                            S_ijkl_ijml, n_qno_[ijml], n_qno_[ijkl]);
+                    auto T_temp = transform_coupled_t4(
+                        ijml, S_ijkl_ijml, i, j, m, l);
                     T_temp *= (*F_lmo_)(k, m);
                     R_ijkl -= T_temp;
                 }
@@ -1972,8 +2242,8 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
                     int imkl = i_j_k_l_to_ijkl_[imkl_dense];
                     std::vector<int> imkl_idx_list = index_list(quadruplet_ext_domain, lmoquadruplet_to_paos_[imkl]);
                     auto S_ijkl_imkl = linalg::doublet(submatrix_rows(*S_ijkl, imkl_idx_list), X_qno_[imkl], true, false);
-                    auto T_temp = matmul_4d(quadruples_permuter(get_t4(imkl), i, m, k, l),
-                                            S_ijkl_imkl, n_qno_[imkl], n_qno_[ijkl]);
+                    auto T_temp = transform_coupled_t4(
+                        imkl, S_ijkl_imkl, i, m, k, l);
                     T_temp *= (*F_lmo_)(j, m);
                     R_ijkl -= T_temp;
                 }
@@ -1982,8 +2252,8 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
                     int mjkl = i_j_k_l_to_ijkl_[mjkl_dense];
                     std::vector<int> mjkl_idx_list = index_list(quadruplet_ext_domain, lmoquadruplet_to_paos_[mjkl]);
                     auto S_ijkl_mjkl = linalg::doublet(submatrix_rows(*S_ijkl, mjkl_idx_list), X_qno_[mjkl], true, false);
-                    auto T_temp = matmul_4d(quadruples_permuter(get_t4(mjkl), m, j, k, l),
-                                            S_ijkl_mjkl, n_qno_[mjkl], n_qno_[ijkl]);
+                    auto T_temp = transform_coupled_t4(
+                        mjkl, S_ijkl_mjkl, m, j, k, l);
                     T_temp *= (*F_lmo_)(i, m);
                     R_ijkl -= T_temp;
                 }
@@ -2003,12 +2273,22 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
             } // end a_ijkl
 
             if (write_quadruples_intermediates_) {
-                save_quadruples_tensor(T_ijkl, "T4", ijkl);
+                save_quadruples_tensor(T_ijkl, next_t4_label, ijkl);
             } else {
-                T_iajbkcld_[ijkl] = std::move(T_ijkl);
+                next_t4_bank[ijkl] = std::move(T_ijkl);
             }
             
             R_iajbkcld_rms[ijkl] = std::sqrt(linear_algebra::dot(R_ijkl, R_ijkl)) / (nqno_ijkl * nqno_ijkl);
+        }
+
+        if (write_quadruples_intermediates_) {
+            std::swap(current_t4_label, next_t4_label);
+        } else {
+            T_iajbkcld_.swap(next_t4_bank);
+            // Destroy the old generation before the energy pass so the second
+            // persistent bank contributes only to the Jacobi-update peak.
+            next_t4_bank.clear();
+            next_t4_bank.shrink_to_fit();
         }
 
         // evaluate convergence
@@ -2023,7 +2303,7 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
             int ijkl = sorted_quadruplets_[ijkl_sorted];
             double e_ijkl = 0.0;
             if (write_quadruples_intermediates_) {
-                auto T_ijkl = load_quadruples_tensor("T4", ijkl);
+                auto T_ijkl = load_quadruples_tensor(current_t4_label, ijkl);
                 auto energy_intermediates = load_quadruplet_energy_intermediates(ijkl);
                 e_ijkl = compute_quadruplet_energy(ijkl, T_ijkl, energy_intermediates);
             } else {
@@ -2051,6 +2331,17 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
         }
     }
 
+    // The rest of the implementation uses the canonical "T4" record name.
+    // If the converged disk generation occupies the alternate label, publish
+    // it back under that stable name before returning.
+    if (write_quadruples_intermediates_ && current_t4_label != "T4") {
+#pragma omp parallel for schedule(dynamic, 1)
+        for (int ijkl = 0; ijkl < n_lmo_quadruplets; ++ijkl) {
+            auto T_ijkl = load_quadruples_tensor(current_t4_label, ijkl);
+            save_quadruples_tensor(T_ijkl, "T4", ijkl);
+        }
+    }
+
     timer_off("LCCSDT(Q) Iterations");
 
     return e_curr;
@@ -2070,6 +2361,7 @@ double DLPNOCCSDT_Q::compute_energy() {
     if (algorithm_ == DLPNOMethod::CCSDT_Q) {
         // Clear CCSD integrals
         K_mibj_.clear();
+        K_iajb_.clear();
         J_ijmb_.clear();
         L_mibj_.clear();
         L_iajb_.clear();
@@ -2099,6 +2391,7 @@ double DLPNOCCSDT_Q::compute_energy() {
         q_kv_.clear();
         q_ov_.clear();
         q_vv_.clear();
+        K_ovov_tno_cache_.clear();
     }
 
     // Re-create T_iajbkc_clone intermediate
@@ -2350,9 +2643,6 @@ void DLPNOCCSDTQ::estimate_memory() {
     for (const int nqno : n_qno_) max_nqno = std::max(max_nqno, static_cast<size_t>(nqno));
     for (const int npno : n_pno_) max_npno = std::max(max_npno, static_cast<size_t>(npno));
     for (const int nxpno : n_xpno_) max_xpno = std::max(max_xpno, static_cast<size_t>(nxpno));
-    const size_t max_nqno2 = max_nqno * max_nqno;
-    const size_t max_nqno3 = max_nqno2 * max_nqno;
-    const size_t max_nqno4 = max_nqno2 * max_nqno2;
     const size_t max_npno2 = max_npno * max_npno;
     const size_t max_xpno2 = max_xpno * max_xpno;
     const size_t max_xpno4 = max_xpno2 * max_xpno2;
@@ -2398,6 +2688,7 @@ void DLPNOCCSDTQ::estimate_memory() {
     size_t quadruples_workspace_per_thread = 0;
     size_t spin_workspace_per_thread = 0;
     size_t xpno_transform_workspace_per_thread = 0;
+    size_t xpno_stream_workspace_per_thread = 0;
     size_t disk_integral_workspace_per_thread = 0;
 
     // XPNO transforms are shared by the two orientations of each pair. The
@@ -2407,21 +2698,34 @@ void DLPNOCCSDTQ::estimate_memory() {
         const size_t npno = n_pno_[kl];
         const size_t nlmo = lmopair_to_lmos_[kl].size();
         const size_t naux = lmopair_to_ribfs_[kl].size();
-        const size_t npao = lmopair_to_paos_[kl].size();
         const size_t npno2 = npno * npno;
         const size_t npno4 = npno2 * npno2;
 
         delta_l_memory += nlmo * nlmo * npno2;
         delta_m_memory += npno4;
         const size_t pair_df_words = naux * nlmo * npno;
-        const size_t delta_l_workspace =
-            pair_df_words + nlmo * nlmo * npno2 + nlmo * npno2 + 2 * npno4 +
-            npao * npno + max_nqno * npno;
-        const size_t delta_m_workspace =
-            pair_df_words + nlmo * nlmo * npno2 + 2 * npno4 + npao * npno +
-            max_nqno * npno;
+        const size_t old_dim = max_nqno;
+        const size_t new_dim = npno;
+        const size_t old2 = old_dim * old_dim;
+        const size_t old3 = old2 * old_dim;
+        const size_t new2 = new_dim * new_dim;
+        const size_t new3 = new2 * new_dim;
+        const size_t new4 = new2 * new2;
+        const size_t transform_buffers = std::max(
+            {2 * old3 * new_dim,
+             old3 * new_dim + old2 * new2,
+             2 * old2 * new2,
+             old2 * new2 + old_dim * new3,
+             2 * old_dim * new3,
+             old_dim * new3 + new4,
+             2 * new4});
+        // The fused routine retains one packed DF tensor and one streamed
+        // g_m^{ef} slice. Delta-L and delta-M share both before advancing n.
+        const size_t delta_lm_workspace =
+            pair_df_words + naux * npno + nlmo * npno2 +
+            max_nqno * npno + transform_buffers + 5 * npno4;
         delta_lm_workspace_per_thread =
-            std::max(delta_lm_workspace_per_thread, std::max(delta_l_workspace, delta_m_workspace));
+            std::max(delta_lm_workspace_per_thread, delta_lm_workspace);
 
         if (k > l) continue;
         const size_t npao_ext = lmopair_to_paos_ext_[kl].size();
@@ -2439,6 +2743,26 @@ void DLPNOCCSDTQ::estimate_memory() {
 
         const size_t nxpno2 = nxpno * nxpno;
         const size_t nxpno4 = nxpno2 * nxpno2;
+        {
+            const size_t old_dim = max_nqno;
+            const size_t new_dim = nxpno;
+            const size_t old2 = old_dim * old_dim;
+            const size_t old3 = old2 * old_dim;
+            const size_t new2 = new_dim * new_dim;
+            const size_t new3 = new2 * new_dim;
+            const size_t new4 = new2 * new2;
+            const size_t transform_buffers = std::max(
+                {2 * old3 * new_dim,
+                 old3 * new_dim + old2 * new2,
+                 2 * old2 * new2,
+                 old2 * new2 + old_dim * new3,
+                 2 * old_dim * new3,
+                 old_dim * new3 + new4,
+                 2 * new4});
+            xpno_stream_workspace_per_thread = std::max(
+                xpno_stream_workspace_per_thread,
+                old_dim * new_dim + transform_buffers);
+        }
         for (const int m : lmopair_to_lmos_[kl]) {
             for (const int n : lmopair_to_lmos_[kl]) {
                 if (m > n) continue;
@@ -2462,9 +2786,23 @@ void DLPNOCCSDTQ::estimate_memory() {
             3 * ntno + 6 * naux * (nlmo + ntno) + 2 * naux * nlmo * ntno +
             naux * ntno2 + naux + 2 * naux * nlmo * nlmo;
         const size_t local_integrals = 3 * ntno * nlmo * nlmo + nlmo * ntno3;
+        const size_t old_dim = max_nqno;
+        const size_t new_dim = ntno;
+        const size_t old2 = old_dim * old_dim;
+        const size_t old3 = old2 * old_dim;
+        const size_t new2 = new_dim * new_dim;
+        const size_t new3 = new2 * new_dim;
+        const size_t new4 = new2 * new2;
+        const size_t transform_buffers = std::max(
+            {2 * old3 * new_dim,
+             old3 * new_dim + old2 * new2,
+             2 * old2 * new2,
+             old2 * new2 + old_dim * new3,
+             2 * old_dim * new3,
+             old_dim * new3 + new4,
+             2 * new4});
         const size_t cross_domain_t4 =
-            2 * max_nqno4 + 6 * max_nqno3 + 4 * ntno * max_nqno2 +
-            4 * ntno2 * max_nqno + 4 * ntno3;
+            old_dim * new_dim + transform_buffers + 3 * new4 + 5 * ntno3;
         triples_t4_workspace_per_thread =
             std::max(triples_t4_workspace_per_thread, t1_dressed_df + local_integrals + cross_domain_t4);
     }
@@ -2518,15 +2856,15 @@ void DLPNOCCSDTQ::estimate_memory() {
             2 * naux * nqno2 + naux + 4 * naux * nlmo2;
         const size_t projected_amplitude_workspace =
             16 * nqno2 + 8 * nlmo * nqno2 + nlmo2 * nqno2 +
-            4 * nlmo2 * nqno3 + 32 * nlmo * nqno3 + 12 * nlmo * nqno4;
+            4 * nlmo2 * nqno3 + 4 * nlmo * nqno4;
         const size_t four_index_integral_workspace =
             16 * nqno * nlmo2 + 4 * nlmo2 * nqno2 + 8 * nlmo * nqno2 +
             5 * nlmo * nqno3;
         const size_t a_through_m_workspace =
-            4 * nqno3 + 16 * nlmo * nqno + 2 * nqno2 + 8 * nlmo * nqno2 +
-            16 * nlmo2 + 49 * nlmo * nqno3 + 48 * nqno * nlmo2 +
-            48 * nlmo * nqno2 + 34 * nqno4;
-        const size_t residual_permutation_workspace = 30 * nqno4 + max_xpno4;
+            4 * nqno3 + 16 * nlmo * nqno + 2 * nqno2 +
+            34 * nlmo * nqno2 + 16 * nlmo2 + 9 * nlmo * nqno3 +
+            26 * nqno * nlmo2 + 10 * nqno4;
+        const size_t residual_permutation_workspace = 8 * nqno4 + max_xpno4;
         quadruples_workspace_per_thread =
             std::max(quadruples_workspace_per_thread,
                      dressed_df_workspace + projected_amplitude_workspace +
@@ -2580,9 +2918,16 @@ void DLPNOCCSDTQ::estimate_memory() {
         const size_t integral_peak =
             common_resident + nthreads * effective_integral_workspace;
         const size_t spin_peak = iteration_resident + nthreads * spin_workspace_per_thread;
+        const size_t xpno_t4_resident =
+            stream_xpno_t4_ ? 0 : xpno_projected_t4_memory;
+        const size_t effective_quadruples_workspace =
+            quadruples_workspace_per_thread +
+            (stream_xpno_t4_ ? xpno_stream_workspace_per_thread : 0);
         const size_t r4_peak =
-            iteration_resident + xpno_projected_t4_memory + delta_l_memory + delta_m_memory +
-            nthreads * std::max(delta_lm_workspace_per_thread, quadruples_workspace_per_thread);
+            iteration_resident + xpno_t4_resident + delta_l_memory +
+            delta_m_memory +
+            nthreads * std::max(delta_lm_workspace_per_thread,
+                                effective_quadruples_workspace);
         const size_t r3_peak =
             iteration_resident +
             std::max(ccsdt_iteration_workspace_doubles_, nthreads * triples_t4_workspace_per_thread);
@@ -2621,15 +2966,23 @@ void DLPNOCCSDTQ::estimate_memory() {
                               quadruples_residual_memory);
         print_memory_line("Thread-private R1/R2 accumulation buffers", thread_accumulation_buffers);
         print_memory_line("XPNO-projected T_mnkl blocks (Eqs. (83)--(85))",
-                          xpno_projected_t4_memory);
+                          stream_xpno_t4_ ? 0 : xpno_projected_t4_memory);
         print_memory_line("Pair-domain delta-L/delta-M intermediates", delta_l_memory + delta_m_memory);
         print_memory_line("XPNO-build workspace per thread (" + std::to_string(nthreads) + ")",
                           xpno_transform_workspace_per_thread);
+        print_memory_line("Streamed XPNO-T4 workspace per thread (" +
+                              std::to_string(nthreads) + ")",
+                          stream_xpno_t4_ ? xpno_stream_workspace_per_thread : 0);
         print_memory_line("Integral workspace per thread (" + std::to_string(nthreads) + ")",
                           disk_qno_integrals_ ? disk_integral_workspace_per_thread
                                               : integral_workspace_per_thread);
         print_memory_line("A--M/R4 workspace per thread (" + std::to_string(nthreads) + ")",
-                          std::max(delta_lm_workspace_per_thread, quadruples_workspace_per_thread));
+                          std::max(
+                              delta_lm_workspace_per_thread,
+                              quadruples_workspace_per_thread +
+                                  (stream_xpno_t4_
+                                       ? xpno_stream_workspace_per_thread
+                                       : 0)));
         print_memory_line("T4-to-R3 workspace per thread (" + std::to_string(nthreads) + ")",
                           triples_t4_workspace_per_thread);
         print_memory_line("T4-to-R2 workspace per thread (" + std::to_string(nthreads) + ")",
@@ -2668,6 +3021,18 @@ void DLPNOCCSDTQ::estimate_memory() {
         print_estimate("Updated DLPNO-CCSDTQ Memory Requirements");
     }
 
+    if (toggle_memory_ && !stream_xpno_t4_ &&
+        required_memory * sizeof(double) > 0.9 * memory_) {
+        outfile->Printf(
+            "  Total required memory remains more than 90%% of available memory.\n");
+        outfile->Printf(
+            "    Switching the XPNO T_mnkl bank to block-streamed projection...\n");
+        stream_xpno_t4_ = true;
+        peaks = memory_peaks();
+        required_memory = std::max({peaks.xpno, peaks.integral, peaks.iteration});
+        print_estimate("Updated DLPNO-CCSDTQ Memory Requirements");
+    }
+
     if (toggle_memory_ && extrapolate_t4_ &&
         required_memory * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total required memory remains more than 90%% of available memory.\n");
@@ -2689,6 +3054,8 @@ void DLPNOCCSDTQ::estimate_memory() {
     } else {
         outfile->Printf("    Keeping all QNO-basis DF integrals in core.\n");
     }
+    outfile->Printf("    XPNO-projected T4 blocks are %s.\n",
+                    stream_xpno_t4_ ? "streamed on demand" : "retained through R4 construction");
     outfile->Printf("    T4 amplitudes are %sincluded in DIIS extrapolation.\n\n",
                     extrapolate_t4_ ? "" : "not ");
 }
@@ -3019,16 +3386,8 @@ void DLPNOCCSDTQ::compute_integrals() {
         auto A_solve = submatrix_rows_and_cols(*full_metric_, lmoquadruplet_to_ribfs_[ijkl], lmoquadruplet_to_ribfs_[ijkl]);
         A_solve->power(0.5, 1.0e-14);
 
-        C_DGESV_wrapper(A_solve->clone(), q_io);
-        C_DGESV_wrapper(A_solve->clone(), q_jo);
-        C_DGESV_wrapper(A_solve->clone(), q_ko);
-        C_DGESV_wrapper(A_solve->clone(), q_lo);
-        C_DGESV_wrapper(A_solve->clone(), q_iv);
-        C_DGESV_wrapper(A_solve->clone(), q_jv);
-        C_DGESV_wrapper(A_solve->clone(), q_kv);
-        C_DGESV_wrapper(A_solve->clone(), q_lv);
-        C_DGESV_wrapper(A_solve->clone(), q_ov);
-        C_DGESV_wrapper(A_solve->clone(), q_vv);
+        C_DGESV_shared_factorization(
+            A_solve->clone(), {q_io, q_jo, q_ko, q_lo, q_iv, q_jv, q_kv, q_lv, q_ov, q_vv});
 
         q_io_list_[ijkl][0] = Tensor<double, 2>("(Q_ijkl | m i)", naux_ijkl, nlmo_ijkl);
         q_io_list_[ijkl][1] = Tensor<double, 2>("(Q_ijkl | m j)", naux_ijkl, nlmo_ijkl);
@@ -3295,14 +3654,32 @@ void DLPNOCCSDTQ::add_t4_to_doubles_residual(std::vector<SharedMatrix>& R_iajb, 
             int kl = i_j_to_ij_[k][l];
 
             if (!computed_perms.count(ijkl_idx)) {
+                // T4, alpha/beta, and K obey simultaneous occupied/virtual
+                // column symmetry.  Swapping (i,j) leaves the output block
+                // unchanged; swapping (k,l) produces the transpose that the
+                // final pair-buffer flush would add back to the same canonical
+                // block.  Evaluate one representative of this Klein-four orbit
+                // and retain the exact number of distinct occupied keys as its
+                // multiplicity (important for repeated-index quadruplets).
+                std::unordered_set<size_t> orbit_keys = {
+                    quadruplet_key(i, j, k, l, naocc),
+                    quadruplet_key(j, i, k, l, naocc),
+                    quadruplet_key(i, j, l, k, naocc),
+                    quadruplet_key(j, i, l, k, naocc)};
+                for (const size_t orbit_key : orbit_keys) {
+                    computed_perms.emplace(orbit_key);
+                }
+
                 // Get quadruples amplitude
                 Tensor<double, 4> T_ijkl = quadruples_permuter(T_iajbkcld_[ijkl], i, j, k, l);
 
                 // Form alpha_ijkl (main-text Eq. (30)).
                 Tensor<double, 4> alpha = form_alpha_ijkl(T_ijkl);
+                T_ijkl = Tensor<double, 4>("released", 0, 0, 0, 0);
 
                 // Form beta_ijkl from alpha_ijkl (main-text Eq. (31)).
                 Tensor<double, 4> beta = form_beta_ijkl(alpha);
+                alpha = Tensor<double, 4>("released", 0, 0, 0, 0);
 
                 // T4 contribution to R_kl^{cd}: canonical Eq. (33), local
                 // main-text Eq. (93), and the contraction-ready SI Eq. (S16).
@@ -3313,6 +3690,7 @@ void DLPNOCCSDTQ::add_t4_to_doubles_residual(std::vector<SharedMatrix>& R_iajb, 
                 Tensor<double, 2> R_iajb_cont("R_iajb_cont", nqno_ijkl, nqno_ijkl);
                 einsum(0.0, Indices{index::c, index::d}, &R_iajb_cont, 0.25, Indices{index::a, index::b, index::c, index::d}, beta,
                         Indices{index::a, index::b}, K_iajb);
+                R_iajb_cont *= static_cast<double>(orbit_keys.size());
 
                 // Form QNO overlap integral (S_ijkl_kl)
                 auto S_ijkl_kl = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmopair_to_paos_[kl]);
@@ -3323,8 +3701,6 @@ void DLPNOCCSDTQ::add_t4_to_doubles_residual(std::vector<SharedMatrix>& R_iajb, 
                 ::memcpy(R_iajb_psi->get_pointer(), R_iajb_cont.data(), nqno_ijkl * nqno_ijkl * sizeof(double));
                 R_iajb_buffer[thread][kl]->add(linalg::triplet(S_ijkl_kl, R_iajb_psi, S_ijkl_kl, true, false, false));
 
-                // Add ijkl_idx to computed perms
-                computed_perms.emplace(ijkl_idx);
             }
         });
     }
@@ -3449,85 +3825,120 @@ void DLPNOCCSDTQ::add_t4_to_triples_residual(std::vector<SharedMatrix>& R_iajbkc
         // Permutations
         std::vector<std::tuple<int, int, int>> short_perms_idx = {std::make_tuple(0, 1, 2), std::make_tuple(1, 0, 2), std::make_tuple(2, 1, 0)};
 
-        // Total residual contribution
-        Tensor<double, 3> R_ijk_cont("R_ijk_cont", ntno_ijk, ntno_ijk, ntno_ijk);
-        
-        for (int perm_idx = 0; perm_idx < short_perms_idx.size(); ++perm_idx) {
-            auto &[i_idx, j_idx, k_idx] = short_perms_idx[perm_idx];
-            int i = ijk_idx[i_idx], j = ijk_idx[j_idx], k = ijk_idx[k_idx];
+        // Accumulate the three short permutations separately.  Transform each
+        // complementary T4 block into the target TNO basis first; spin
+        // adaptation and column permutation commute with this common four-axis
+        // transform.  All following contractions are therefore direct GEMVs or
+        // GEMMs in the final basis, and the (m,i,j,k) projection is shared by
+        // all three short permutations.
+        std::array<Tensor<double, 3>, 3> R_short_permutation;
+        for (auto& residual : R_short_permutation) {
+            residual = Tensor<double, 3>("R_ijk short permutation", ntno_ijk,
+                                          ntno_ijk, ntno_ijk);
+            residual.zero();
+        }
 
-            Tensor<double, 3> R_ijk_buffer("R_ijk_buffer", ntno_ijk, ntno_ijk, ntno_ijk);
-            R_ijk_buffer.zero();
+        for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
+            const int m = lmotriplet_to_lmos_[ijk][m_ijk];
+            const size_t mijk_idx = quadruplet_key(m, i, j, k, naocc);
+            const int mijk = i_j_k_l_to_ijkl_.count(mijk_idx)
+                                  ? i_j_k_l_to_ijkl_[mijk_idx]
+                                  : -1;
 
-            for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
-                int m = lmotriplet_to_lmos_[ijk][m_ijk];
-                const size_t mijk_idx = quadruplet_key(m, i, j, k, naocc);
-                int mijk = i_j_k_l_to_ijkl_.count(mijk_idx) ? (i_j_k_l_to_ijkl_[mijk_idx]) : -1;
+            if (mijk != -1) {
+                auto S_ijk_mijk = submatrix_rows_and_cols(
+                    *S_pao_, lmotriplet_to_paos_[ijk],
+                    lmoquadruplet_to_paos_[mijk]);
+                S_ijk_mijk = linalg::triplet(X_tno_[ijk], S_ijk_mijk,
+                                             X_qno_[mijk], true, false, false);
+                Tensor<double, 4> T_mijk_tno = matmul_4d(
+                    T_iajbkcld_[mijk], S_ijk_mijk, n_qno_[mijk], ntno_ijk);
 
-                if (mijk != -1) {
-                    auto S_ijk_mijk = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmoquadruplet_to_paos_[mijk]);
-                    S_ijk_mijk = linalg::triplet(X_tno_[ijk], S_ijk_mijk, X_qno_[mijk], true, false, false);
-                    Tensor<double, 2> S_ijk_mijk_ein("S_ijk_mijk_ein", n_tno_[ijk], n_qno_[mijk]);
-                    ::memcpy(S_ijk_mijk_ein.data(), S_ijk_mijk->get_pointer(), n_tno_[ijk] * n_qno_[mijk] * sizeof(double));
+                Tensor<double, 1> F_me("F_me", ntno_ijk);
+                F_me = F_ld(m_ijk, All);
+                auto K_edb = K_ledb(m_ijk, All, All, All);
+                Tensor<double, 3> K_aef("K_aef", ntno_ijk, ntno_ijk,
+                                         ntno_ijk);
+                permute(Indices{index::a, index::f, index::e}, &K_aef,
+                        Indices{index::f, index::e, index::a}, K_edb);
 
-                    Tensor<double, 4> T_mijk = quadruples_permuter(T_iajbkcld_[mijk], m, i, j, k);
+                for (int perm_idx = 0;
+                     perm_idx < static_cast<int>(short_perms_idx.size());
+                     ++perm_idx) {
+                    auto &[i_idx, j_idx, k_idx] = short_perms_idx[perm_idx];
+                    const int p_i = ijk_idx[i_idx];
+                    const int p_j = ijk_idx[j_idx];
+                    const int p_k = ijk_idx[k_idx];
+                    Tensor<double, 4> T_mijk = quadruples_permuter(
+                        T_mijk_tno, m, p_i, p_j, p_k);
                     Tensor<double, 4> alpha_mijk = form_alpha_ijkl(T_mijk);
+                    T_mijk = Tensor<double, 4>("released", 0, 0, 0, 0);
 
-                    // F_me contribution: canonical Eq. (35), local main-text Eq. (94),
-                    // and contraction-ready SI Eq. (S17).
-                    Tensor<double, 1> F_me_slice = F_ld(m_ijk, All);
-                    Tensor<double, 1> F_me_qno("F_me_qno", n_qno_[mijk]);
-                    einsum(0.0, Indices{index::E}, &F_me_qno, 1.0, Indices{index::e, index::E}, S_ijk_mijk_ein, Indices{index::e}, F_me_slice);
+                    // F_me contribution: canonical Eq. (35), local main-text
+                    // Eq. (94), and contraction-ready SI Eq. (S17).
+                    einsum(1.0, Indices{index::a, index::b, index::c},
+                           &R_short_permutation[perm_idx], 1.0 / 3.0,
+                           Indices{index::e, index::a, index::b, index::c},
+                           alpha_mijk, Indices{index::e}, F_me);
 
-                    Tensor<double, 3> R_ijk_buffer_b("R_ijk_buffer_b", n_qno_[mijk], n_qno_[mijk], n_qno_[mijk]);
-                    einsum(0.0, Indices{index::a, index::b, index::c}, &R_ijk_buffer_b, 1.0 / 3, Indices{index::e, index::a, index::b, index::c}, 
-                            alpha_mijk, Indices{index::e}, F_me_qno);
-                    
-                    R_ijk_buffer += matmul_3d_einsums(R_ijk_buffer_b, S_ijk_mijk, n_qno_[mijk], n_tno_[ijk]);
-
-                    // (ae|mf) contribution: canonical Eq. (35), local main-text
-                    // Eq. (95), and contraction-ready SI Eq. (S18).
-                    Tensor<double, 3> K_ledb_slice = K_ledb(m_ijk, All, All, All);
-                    Tensor<double, 3> K_ledb_temp_a = matmul_3d_index(K_ledb_slice, S_ijk_mijk->transpose(), 0);
-                    Tensor<double, 3> K_ledb_temp_b = matmul_3d_index(K_ledb_temp_a, S_ijk_mijk->transpose(), 1);
-
-                    Tensor<double, 3> R_ijk_buffer_c("R_ijk_buffer_c", n_tno_[ijk], n_qno_[mijk], n_qno_[mijk]);
-                    einsum(0.0, Indices{index::a, index::b, index::c}, &R_ijk_buffer_c, 1.0, Indices{index::f, index::e, index::a}, K_ledb_temp_b,
-                            Indices{index::f, index::e, index::b, index::c}, alpha_mijk);
-                    
-                    Tensor<double, 3> R_ijk_buffer_d = matmul_3d_index(R_ijk_buffer_c, S_ijk_mijk, 1);
-                    R_ijk_buffer += matmul_3d_index(R_ijk_buffer_d, S_ijk_mijk, 2);
+                    // (ae|mf) contribution: canonical Eq. (35), local
+                    // main-text Eq. (95), and SI Eq. (S18). K_aef and alpha
+                    // expose contiguous (fe) matrix dimensions.
+                    einsum(1.0, Indices{index::a, index::b, index::c},
+                           &R_short_permutation[perm_idx], 1.0,
+                           Indices{index::a, index::f, index::e}, K_aef,
+                           Indices{index::f, index::e, index::b, index::c},
+                           alpha_mijk);
                 }
+            }
 
+            for (int perm_idx = 0;
+                 perm_idx < static_cast<int>(short_perms_idx.size());
+                 ++perm_idx) {
+                auto &[i_idx, j_idx, k_idx] = short_perms_idx[perm_idx];
+                const int p_j = ijk_idx[j_idx];
+                const int p_k = ijk_idx[k_idx];
                 for (int n_ijk = 0; n_ijk < nlmo_ijk; ++n_ijk) {
-                    int n = lmotriplet_to_lmos_[ijk][n_ijk];
-                    const size_t mnjk_idx = quadruplet_key(m, n, j, k, naocc);
-                    int mnjk = i_j_k_l_to_ijkl_.count(mnjk_idx) ? (i_j_k_l_to_ijkl_[mnjk_idx]) : -1;
-                    if (mnjk == -1) continue;
+                    const int n = lmotriplet_to_lmos_[ijk][n_ijk];
+                    const size_t mnjk_idx =
+                        quadruplet_key(m, n, p_j, p_k, naocc);
+                    if (!i_j_k_l_to_ijkl_.count(mnjk_idx)) continue;
+                    const int mnjk = i_j_k_l_to_ijkl_[mnjk_idx];
 
-                    // (me|ni) contribution: canonical Eq. (35), local main-text
-                    // Eq. (96), and contraction-ready SI Eq. (S19); O(N^10) worst case.
-                    auto S_ijk_mnjk = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmoquadruplet_to_paos_[mnjk]);
-                    S_ijk_mnjk = linalg::triplet(X_tno_[ijk], S_ijk_mnjk, X_qno_[mnjk], true, false, false);
-                    Tensor<double, 2> S_ijk_mnjk_ein("S_ijk_mnjk_ein", n_tno_[ijk], n_qno_[mnjk]);
-                    ::memcpy(S_ijk_mnjk_ein.data(), S_ijk_mnjk->get_pointer(), n_tno_[ijk] * n_qno_[mnjk] * sizeof(double));
-
-                    Tensor<double, 4> T_mnjk = quadruples_permuter(T_iajbkcld_[mnjk], m, n, j, k);
+                    auto S_ijk_mnjk = submatrix_rows_and_cols(
+                        *S_pao_, lmotriplet_to_paos_[ijk],
+                        lmoquadruplet_to_paos_[mnjk]);
+                    S_ijk_mnjk = linalg::triplet(
+                        X_tno_[ijk], S_ijk_mnjk, X_qno_[mnjk], true, false,
+                        false);
+                    Tensor<double, 4> T_mnjk = matmul_4d_permuted(
+                        T_iajbkcld_[mnjk], S_ijk_mnjk, n_qno_[mnjk],
+                        ntno_ijk, m, n, p_j, p_k);
                     Tensor<double, 4> alpha_mnjk = form_alpha_ijkl(T_mnjk);
+                    T_mnjk = Tensor<double, 4>("released", 0, 0, 0, 0);
 
-                    Tensor<double, 1> K_meni_slice = K_menj_list[i_idx](All, m_ijk, n_ijk);
-                    Tensor<double, 1> K_meni_qno("K_meni_qno", n_qno_[mnjk]);
-                    einsum(0.0, Indices{index::E}, &K_meni_qno, 1.0, Indices{index::e, index::E}, S_ijk_mnjk_ein, Indices{index::e}, K_meni_slice);
+                    // (me|ni) contribution: canonical Eq. (35), local
+                    // main-text Eq. (96), and SI Eq. (S19).  Copy the strided
+                    // tensor view into a contiguous vector for one GEMV.
+                    Tensor<double, 1> K_meni("K_meni", ntno_ijk);
+                    K_meni = K_menj_list[i_idx](All, m_ijk, n_ijk);
+                    einsum(1.0, Indices{index::a, index::b, index::c},
+                           &R_short_permutation[perm_idx], -1.0,
+                           Indices{index::e, index::a, index::b, index::c},
+                           alpha_mnjk, Indices{index::e}, K_meni);
+                }
+            }
+        }
 
-                    Tensor<double, 3> R_ijk_buffer_e("R_ijk_buffer_e", n_qno_[mnjk], n_qno_[mnjk], n_qno_[mnjk]);
-                    einsum(0.0, Indices{index::a, index::b, index::c}, &R_ijk_buffer_e, -1.0, Indices{index::e, index::a, index::b, index::c}, 
-                            alpha_mnjk, Indices{index::e}, K_meni_qno);
-
-                    R_ijk_buffer += matmul_3d_einsums(R_ijk_buffer_e, S_ijk_mnjk, n_qno_[mnjk], n_tno_[ijk]);
-                } // end n_ijk
-            } // end m_ijk
-            R_ijk_cont += triples_permuter_einsums(R_ijk_buffer, i_idx, j_idx, k_idx); // Lie algebra rules for short perms allow for this
-        } // end perm_idx
+        Tensor<double, 3> R_ijk_cont("R_ijk_cont", ntno_ijk, ntno_ijk,
+                                      ntno_ijk);
+        R_ijk_cont.zero();
+        for (int perm_idx = 0;
+             perm_idx < static_cast<int>(short_perms_idx.size()); ++perm_idx) {
+            auto &[i_idx, j_idx, k_idx] = short_perms_idx[perm_idx];
+            R_ijk_cont += triples_permuter_einsums(
+                R_short_permutation[perm_idx], i_idx, j_idx, k_idx);
+        }
 
         C_DAXPY(ntno_ijk * ntno_ijk * ntno_ijk, 1.0, R_ijk_cont.data(), 1, R_iajbkc[ijk]->get_pointer(), 1);
 
@@ -3538,145 +3949,109 @@ void DLPNOCCSDTQ::add_t4_to_triples_residual(std::vector<SharedMatrix>& R_iajbkc
     }
 }
 
-// Pair-domain delta L of main-text Eqs. (98)--(99) and SI Eq. (S13).
-std::vector<Tensor<double, 4>> DLPNOCCSDTQ::compute_delta_L_ijk_abm() {
+// Pair-domain delta L/M of main-text Eqs. (98)--(102) and SI Eqs. (S13),(S15).
+std::pair<std::vector<Tensor<double, 4>>, std::vector<Tensor<double, 4>>>
+DLPNOCCSDTQ::compute_delta_L_M() {
+    const int naocc = i_j_to_ij_.size();
+    const size_t n_lmo_pairs = ij_to_i_j_.size();
 
-    int naocc = i_j_to_ij_.size();
-    size_t n_lmo_pairs = ij_to_i_j_.size();
-
-    // 0.5 (me|nf) alpha_{nijk}^{fabe}
     std::vector<Tensor<double, 4>> delta_L_ijk_abm_list(n_lmo_pairs);
-
-#pragma omp parallel for
-    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-        auto &[i, j] = ij_to_i_j_[ij];
-        
-        int nlmo_ij = lmopair_to_lmos_[ij].size();
-        int naux_ij = lmopair_to_ribfs_[ij].size();
-        int npno_ij = n_pno_[ij];
-
-        delta_L_ijk_abm_list[ij] =
-            Tensor<double, 4>("delta_L_ijk_abm", nlmo_ij, nlmo_ij, npno_ij, npno_ij);  // (k, m, a, b)
-        delta_L_ijk_abm_list[ij].zero();
-
-        std::vector<SharedMatrix> q_ov_ij = QIA_PNO(ij);
-
-        Tensor<double, 4> g_menf_t("g_menf_t", nlmo_ij, nlmo_ij, npno_ij, npno_ij);
-        g_menf_t.zero();
-
-        for (int m_ij = 0; m_ij < nlmo_ij; ++m_ij) {
-            int m = lmopair_to_lmos_[ij][m_ij];
-            for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
-                int n = lmopair_to_lmos_[ij][n_ij];
-                for (int e_ij = 0; e_ij < npno_ij; ++e_ij) {
-                    for (int f_ij = 0; f_ij < npno_ij; ++f_ij) {
-                        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                            g_menf_t(m_ij, n_ij, e_ij, f_ij) += (*q_ov_ij[q_ij])(m_ij, e_ij) * (*q_ov_ij[q_ij])(n_ij, f_ij);
-                        } // end q_ij
-                    } // end f_ij
-                } // end e_ij
-            } // end n_ij
-        } // end m_ij
-        
-        for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-            int k = lmopair_to_lmos_[ij][k_ij];
-
-            Tensor<double, 3> delta_L_ijk_abm_buffer("delta_L_ijk_abm_buffer", nlmo_ij, npno_ij, npno_ij);
-            delta_L_ijk_abm_buffer.zero();
-
-            for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
-                int n = lmopair_to_lmos_[ij][n_ij];
-
-                const size_t nijk_idx = quadruplet_key(n, i, j, k, naocc);
-                int nijk = i_j_k_l_to_ijkl_.count(nijk_idx) ? i_j_k_l_to_ijkl_[nijk_idx] : -1;
-
-                if (nijk == -1) continue;
-
-                auto S_nijk_ij = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[nijk], lmopair_to_paos_[ij]);
-                S_nijk_ij = linalg::triplet(X_qno_[nijk], S_nijk_ij, X_pno_[ij], true, false, false);
-
-                Tensor<double, 4> T_nijk = matmul_4d(quadruples_permuter(T_iajbkcld_[nijk], n, i, j, k), S_nijk_ij->transpose(), n_qno_[nijk], n_pno_[ij]);
-                Tensor<double, 4> alpha_nijk = form_alpha_ijkl(T_nijk);
-                Tensor<double, 3> g_menf_t_slice = g_menf_t(n_ij, All, All, All); // (m, f, e)
-
-                permute(Indices{index::f, index::e, index::a, index::b}, &T_nijk, Indices{index::f, index::a, index::b, index::e}, alpha_nijk);
-                
-                einsum(1.0, Indices{index::m, index::a, index::b}, &delta_L_ijk_abm_buffer, 0.5, Indices{index::m, index::f, index::e}, g_menf_t_slice,
-                        Indices{index::f, index::e, index::a, index::b}, T_nijk);
-
-            } // end n_ij
-
-            delta_L_ijk_abm_list[ij](k_ij, All, All, All) = delta_L_ijk_abm_buffer;
-
-        } // end k_ij
-    }
-
-    return delta_L_ijk_abm_list;
-
-}
-
-// Pair-domain delta M of main-text Eqs. (101)--(102) and SI Eq. (S15).
-std::vector<Tensor<double, 4>> DLPNOCCSDTQ::compute_delta_M_ejk_abc() {
-
-    int naocc = i_j_to_ij_.size();
-    size_t n_lmo_pairs = ij_to_i_j_.size();
-
-    // -0.5 (me|nf) alpha_{nmjk}^{fabc}
     std::vector<Tensor<double, 4>> delta_M_ejk_abc_list(n_lmo_pairs);
 
-#pragma omp parallel for
-    for (int jk = 0; jk < n_lmo_pairs; ++jk) {
-        auto &[j, k] = ij_to_i_j_[jk];
-        int nlmo_jk = lmopair_to_lmos_[jk].size();
-        int naux_jk = lmopair_to_ribfs_[jk].size();
-        int npno_jk = n_pno_[jk];
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+        const int nlmo_ij = lmopair_to_lmos_[ij].size();
+        const int naux_ij = lmopair_to_ribfs_[ij].size();
+        const int npno_ij = n_pno_[ij];
 
-        delta_M_ejk_abc_list[jk] =
-            Tensor<double, 4>("delta_M_ejk_abc", npno_jk, npno_jk, npno_jk, npno_jk);
-        delta_M_ejk_abc_list[jk].zero();
+        delta_L_ijk_abm_list[ij] = Tensor<double, 4>(
+            "delta_L_ijk_abm", nlmo_ij, nlmo_ij, npno_ij, npno_ij);
+        delta_L_ijk_abm_list[ij].zero();
+        delta_M_ejk_abc_list[ij] = Tensor<double, 4>(
+            "delta_M_ejk_abc", npno_ij, npno_ij, npno_ij, npno_ij);
+        delta_M_ejk_abc_list[ij].zero();
 
-        std::vector<SharedMatrix> q_ov_jk = QIA_PNO(jk);
+        // Pack B_Q^{me} as Q x (m,e), the right operand of every streamed
+        // integral GEMM.  For fixed n, B_all^T B_n produces all
+        // g_m^{ef}=(me|nf) slices in nlmo*npno^2 storage; both delta L and
+        // delta M consume that slice before the next n is built.
+        std::vector<SharedMatrix> q_ov_ij = QIA_PNO(ij);
+        Tensor<double, 3> q_qme("B_Qme", naux_ij, nlmo_ij, npno_ij);
+        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+            ::memcpy(&q_qme(q_ij, 0, 0), q_ov_ij[q_ij]->pointer()[0],
+                     static_cast<size_t>(nlmo_ij) * npno_ij * sizeof(double));
+        }
+        q_ov_ij.clear();
 
-        Tensor<double, 4> g_menf_t("g_menf_t", nlmo_jk, nlmo_jk, npno_jk, npno_jk);
-        g_menf_t.zero();
+        for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
+            const int n = lmopair_to_lmos_[ij][n_ij];
 
-        for (int n_jk = 0; n_jk < nlmo_jk; ++n_jk) {
-            int n = lmopair_to_lmos_[jk][n_jk];
-            for (int m_jk = 0; m_jk < nlmo_jk; ++m_jk) {
-                int m = lmopair_to_lmos_[jk][m_jk];
-                for (int e_jk = 0; e_jk < n_pno_[jk]; ++e_jk) {
-                    for (int f_jk = 0; f_jk < n_pno_[jk]; ++f_jk) {
-                        for (int q_jk = 0; q_jk < naux_jk; ++q_jk) {
-                            g_menf_t(n_jk, m_jk, f_jk, e_jk) += (*q_ov_jk[q_jk])(n_jk, f_jk) * (*q_ov_jk[q_jk])(m_jk, e_jk);
-                        } // end q_jk
-                    } // end f_jk
-                } // end e_jk
-            } // end m_jk
-        } // end n_jk
+            Tensor<double, 2> q_n("B_Qnf", naux_ij, npno_ij);
+            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+                ::memcpy(&q_n(q_ij, 0), &q_qme(q_ij, n_ij, 0),
+                         static_cast<size_t>(npno_ij) * sizeof(double));
+            }
 
-        for (int n_jk = 0; n_jk < nlmo_jk; ++n_jk) {
-            int n = lmopair_to_lmos_[jk][n_jk];
-            for (int m_jk = 0; m_jk < nlmo_jk; ++m_jk) {
-                int m = lmopair_to_lmos_[jk][m_jk];
-                const size_t nmjk_idx = quadruplet_key(n, m, j, k, naocc);
-                int nmjk = i_j_k_l_to_ijkl_.count(nmjk_idx) ? i_j_k_l_to_ijkl_[nmjk_idx] : -1;
+            Tensor<double, 3> g_mef("(me|nf)", nlmo_ij, npno_ij, npno_ij);
+            einsum(0.0, Indices{index::m, index::e, index::f}, &g_mef, 1.0,
+                   Indices{index::Q, index::m, index::e}, q_qme,
+                   Indices{index::Q, index::f}, q_n);
 
-                if (nmjk == -1) continue;
+            // delta L_ijk^{abm} += 0.5 (me|nf) alpha_nijk^{fabe}.
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                const int k = lmopair_to_lmos_[ij][k_ij];
+                const size_t nijk_idx = quadruplet_key(n, i, j, k, naocc);
+                if (!i_j_k_l_to_ijkl_.count(nijk_idx)) continue;
+                const int nijk = i_j_k_l_to_ijkl_[nijk_idx];
 
-                auto S_nmjk_jk = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[nmjk], lmopair_to_paos_[jk]);
-                S_nmjk_jk = linalg::triplet(X_qno_[nmjk], S_nmjk_jk, X_pno_[jk], true, false, false);
+                auto S_nijk_ij = submatrix_rows_and_cols(
+                    *S_pao_, lmoquadruplet_to_paos_[nijk], lmopair_to_paos_[ij]);
+                S_nijk_ij = linalg::triplet(X_qno_[nijk], S_nijk_ij,
+                                             X_pno_[ij], true, false, false);
+                Tensor<double, 4> T_nijk = matmul_4d_permuted(
+                    T_iajbkcld_[nijk], S_nijk_ij->transpose(), n_qno_[nijk],
+                    npno_ij, n, i, j, k);
+                Tensor<double, 4> alpha_nijk = form_alpha_ijkl(T_nijk);
 
-                Tensor<double, 4> T_nmjk = matmul_4d(quadruples_permuter(T_iajbkcld_[nmjk], n, m, j, k), S_nmjk_jk->transpose(), n_qno_[nmjk], n_pno_[jk]);
-                Tensor<double, 4> alpha_nmjk = form_alpha_ijkl(T_nmjk);
-                Tensor<double, 2> g_menf_t_slice = g_menf_t(n_jk, m_jk, All, All);
+                // T_efab makes (e,f) and (a,b) contiguous matrix dimensions.
+                permute(Indices{index::e, index::f, index::a, index::b}, &T_nijk,
+                        Indices{index::f, index::a, index::b, index::e},
+                        alpha_nijk);
+                auto delta_L_k =
+                    delta_L_ijk_abm_list[ij](k_ij, All, All, All);
+                einsum(1.0, Indices{index::m, index::a, index::b}, &delta_L_k,
+                       0.5, Indices{index::m, index::e, index::f}, g_mef,
+                       Indices{index::e, index::f, index::a, index::b}, T_nijk);
+            }
 
-                einsum(1.0, Indices{index::e, index::a, index::b, index::c}, &delta_M_ejk_abc_list[jk], -0.5, Indices{index::f, index::e}, g_menf_t_slice,
-                        Indices{index::f, index::a, index::b, index::c}, alpha_nmjk);
-            } // end n_jk
-        } // end m_jk
-    } // end jk
+            // delta M_eij^{abc} += -0.5 (me|nf) alpha_nmij^{fabc}.
+            for (int m_ij = 0; m_ij < nlmo_ij; ++m_ij) {
+                const int m = lmopair_to_lmos_[ij][m_ij];
+                const size_t nmij_idx = quadruplet_key(n, m, i, j, naocc);
+                if (!i_j_k_l_to_ijkl_.count(nmij_idx)) continue;
+                const int nmij = i_j_k_l_to_ijkl_[nmij_idx];
 
-    return delta_M_ejk_abc_list;
+                auto S_nmij_ij = submatrix_rows_and_cols(
+                    *S_pao_, lmoquadruplet_to_paos_[nmij], lmopair_to_paos_[ij]);
+                S_nmij_ij = linalg::triplet(X_qno_[nmij], S_nmij_ij,
+                                             X_pno_[ij], true, false, false);
+                Tensor<double, 4> T_nmij = matmul_4d_permuted(
+                    T_iajbkcld_[nmij], S_nmij_ij->transpose(), n_qno_[nmij],
+                    npno_ij, n, m, i, j);
+                Tensor<double, 4> alpha_nmij = form_alpha_ijkl(T_nmij);
+                auto g_ef = g_mef(m_ij, All, All);
+                einsum(1.0, Indices{index::e, index::a, index::b, index::c},
+                       &delta_M_ejk_abc_list[ij], -0.5,
+                       Indices{index::e, index::f}, g_ef,
+                       Indices{index::f, index::a, index::b, index::c},
+                       alpha_nmij);
+            }
+        }
+    }
+
+    return {std::move(delta_L_ijk_abm_list),
+            std::move(delta_M_ejk_abc_list)};
 }
 
 void DLPNOCCSDTQ::form_T_mnkl_xpno() {
@@ -3714,8 +4089,9 @@ void DLPNOCCSDTQ::form_T_mnkl_xpno() {
                 auto S_mnkl_kl = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[mnkl], lmopair_to_paos_ext_[kl]);
                 S_mnkl_kl = linalg::triplet(X_qno_[mnkl], S_mnkl_kl, X_xpno_[kl], true, false, false);
 
-                T_mnkl_xpno_[kl][mn] = matmul_4d(quadruples_permuter(T_iajbkcld_[mnkl], m, n, k, l),
-                        S_mnkl_kl->transpose(), n_qno_[mnkl], n_xpno_[kl]);
+                T_mnkl_xpno_[kl][mn] = matmul_4d_permuted(
+                    T_iajbkcld_[mnkl], S_mnkl_kl->transpose(), n_qno_[mnkl],
+                    n_xpno_[kl], m, n, k, l);
             } // end n_kl
         } // end m_kl
     } // end kl
@@ -3733,10 +4109,12 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
         Indices{c, d, a, b}, Indices{c, d, b, a}, Indices{d, a, b, c}, Indices{d, a, c, b}, Indices{d, b, a, c}, Indices{d, b, c, a}, 
         Indices{d, c, a, b}, Indices{d, c, b, a});
 
-    // Form the pair-domain correction to L_ijk^{abm}, SI Eq. (S13).
-    std::vector<Tensor<double, 4>> delta_L_ijk_abm_list = compute_delta_L_ijk_abm();
-    // Form the pair-domain correction to M_ejk^{abc}, SI Eq. (S15).
-    std::vector<Tensor<double, 4>> delta_M_ejk_abc_list = compute_delta_M_ejk_abc();
+    // Form the pair-domain L/M corrections together so both consume the same
+    // streamed (me|nf) slices, SI Eqs. (S13) and (S15).
+    std::vector<Tensor<double, 4>> delta_L_ijk_abm_list;
+    std::vector<Tensor<double, 4>> delta_M_ejk_abc_list;
+    std::tie(delta_L_ijk_abm_list, delta_M_ejk_abc_list) =
+        compute_delta_L_M();
 
 // Loop over unique quadruplets
 #pragma omp parallel for schedule(dynamic, 1)
@@ -3878,7 +4256,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
         std::array<Tensor<double, 2>, 16> T_ij_list; // (Project T_ij amplitudes from PNO space of ij to QNO space of ijkl)
         for (int i_idx = 0; i_idx < FOUR; ++i_idx) {
             int i = ijkl_list[i_idx];
-            for (int j_idx = 0; j_idx < FOUR; ++j_idx) {
+            for (int j_idx = i_idx; j_idx < FOUR; ++j_idx) {
                 int j = ijkl_list[j_idx];
                 int ij = i_j_to_ij_[i][j];
 
@@ -3888,6 +4266,15 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
 
                 auto T_ij = linalg::triplet(S_ijkl_ij, T_iajb_[ij], S_ijkl_ij, false, false, true);
                 ::memcpy(T_ij_list[i_idx * FOUR + j_idx].data(), T_ij->get_pointer(), nqno_ijkl * nqno_ijkl * sizeof(double));
+
+                if (i_idx != j_idx) {
+                    T_ij_list[j_idx * FOUR + i_idx] = Tensor<double, 2>(
+                        "T_ji", nqno_ijkl, nqno_ijkl);
+                    permute(Indices{index::b, index::a},
+                            &T_ij_list[j_idx * FOUR + i_idx],
+                            Indices{index::a, index::b},
+                            T_ij_list[i_idx * FOUR + j_idx]);
+                }
             } // end j_idx
         } // end i_idx
 
@@ -3956,61 +4343,49 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
             } // end m_ijkl
         } // end i_idx
 
-        // Project T_mij amplitudes from TNO space of mij to QNO space of ijkl
-        std::array<Tensor<double, 4>, 16> T_mij_list;
-        std::array<Tensor<double, 4>, 16> Z_mij_list;
+        // T_mni_list[j](m,i,...) is exactly T_mij.  Keep that five-index bank
+        // as the single source of truth and expose the needed block as a view,
+        // eliminating sixteen repeated T3 projections and the resident
+        // T_mij/Z_mij tensor banks.
+        std::array<int, 4> occupied_domain_positions;
         for (int i_idx = 0; i_idx < FOUR; ++i_idx) {
-            int i = ijkl_list[i_idx];
-            for (int j_idx = 0; j_idx < FOUR; ++j_idx) {
-                int j = ijkl_list[j_idx];
-                T_mij_list[i_idx * FOUR + j_idx] = Tensor<double, 4>("T_mij", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                Z_mij_list[i_idx * FOUR + j_idx] = Tensor<double, 4>("Z_mij", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                T_mij_list[i_idx * FOUR + j_idx].zero();
-                Z_mij_list[i_idx * FOUR + j_idx].zero();
-
-                for (int m_ijkl = 0; m_ijkl < nlmo_ijkl; ++m_ijkl) {
-                    int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
-                    const size_t mij_idx = triplet_key(m, i, j, naocc);
-                    int mij = i_j_k_to_ijk_.count(mij_idx) ? i_j_k_to_ijk_[mij_idx] : -1;
-                    if (mij == -1) continue;
-
-                    auto S_ijkl_mij = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[mij]);
-                    S_ijkl_mij = linalg::triplet(X_qno_[ijkl], S_ijkl_mij, X_tno_[mij], true, false, false);
-
-                    Tensor<double, 3> T_mij = matmul_3d_einsums(triples_permuter_einsums(T_iajbkc_clone_[mij], m, i, j), 
-                                                S_ijkl_mij, n_tno_[mij], n_qno_[ijkl]);
-                    // Z_mij^{abc} = 2 T_mij^{abc} - T_mij^{bac} - T_mij^{cba}.
-                    Tensor<double, 3> T_mij_bac("T_mij_bac", nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                    permute(Indices{index::b, index::a, index::c}, &T_mij_bac, Indices{index::a, index::b, index::c}, T_mij);
-                    Tensor<double, 3> T_mij_cba("T_mij_cba", nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                    permute(Indices{index::c, index::b, index::a}, &T_mij_cba, Indices{index::a, index::b, index::c}, T_mij);
-
-                    Tensor<double, 3> Z_mij = T_mij;
-                    Z_mij *= 2.0;
-                    Z_mij -= T_mij_bac;
-                    Z_mij -= T_mij_cba;
-
-                    ::memcpy(&T_mij_list[i_idx * FOUR + j_idx](m_ijkl, 0, 0, 0), T_mij.data(), nqno_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
-                    ::memcpy(&Z_mij_list[i_idx * FOUR + j_idx](m_ijkl, 0, 0, 0), Z_mij.data(), nqno_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
-                }
-            } // end j_idx
-        } // end i_idx
+            occupied_domain_positions[i_idx] =
+                std::find(lmoquadruplet_to_lmos_[ijkl].begin(),
+                          lmoquadruplet_to_lmos_[ijkl].end(), ijkl_list[i_idx]) -
+                lmoquadruplet_to_lmos_[ijkl].begin();
+        }
+        auto T_mij_view = [&](int i_idx, int j_idx) {
+            return T_mni_list[j_idx](All, occupied_domain_positions[i_idx], All,
+                                      All, All);
+        };
+        auto form_Z_mij = [&](int i_idx, int j_idx) {
+            auto T_mij = T_mij_view(i_idx, j_idx);
+            Tensor<double, 4> Z_mij("Z_mij", nlmo_ijkl, nqno_ijkl,
+                                     nqno_ijkl, nqno_ijkl);
+            permute(Indices{index::m, index::a, index::b, index::c}, &Z_mij,
+                    Indices{index::m, index::a, index::b, index::c}, T_mij);
+            Z_mij *= 2.0;
+            Tensor<double, 4> permutation_buffer(
+                "Z_mij permutation", nlmo_ijkl, nqno_ijkl, nqno_ijkl,
+                nqno_ijkl);
+            permute(Indices{index::m, index::a, index::b, index::c},
+                    &permutation_buffer,
+                    Indices{index::m, index::b, index::a, index::c}, T_mij);
+            Z_mij -= permutation_buffer;
+            permute(Indices{index::m, index::a, index::b, index::c},
+                    &permutation_buffer,
+                    Indices{index::m, index::c, index::b, index::a}, T_mij);
+            Z_mij -= permutation_buffer;
+            return Z_mij;
+        };
 
         // Quadruples amplitude intermediates
         // (i -> jkl), (j -> ikl), (k -> ijl), (l -> ijk)
-        std::array<Tensor<double, 5>, 4> T_nijk_complement;
-        std::array<Tensor<double, 5>, 4> alpha_nijk_complement;
         std::array<Tensor<double, 5>, 4> T_nijk_complement_unsorted;
 
         for (int idx = 0; idx < FOUR; ++idx) {
             auto &[i, j, k] = complementary_triplets[idx];
             
-            T_nijk_complement[idx] = Tensor<double, 5>("T_nijk", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-            T_nijk_complement[idx].zero();
-
-            alpha_nijk_complement[idx] = Tensor<double, 5>("alpha_nijk", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-            alpha_nijk_complement[idx].zero();
-
             T_nijk_complement_unsorted[idx] = Tensor<double, 5>("T_nijk_unsorted", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
             T_nijk_complement_unsorted[idx].zero();
 
@@ -4025,13 +4400,6 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
 
                 Tensor<double, 4> T_nijk_unsorted = matmul_4d(T_iajbkcld_[nijk], S_ijkl_nijk, n_qno_[nijk], n_qno_[ijkl]);
                 ::memcpy(&T_nijk_complement_unsorted[idx](n_ijkl, 0, 0, 0, 0), T_nijk_unsorted.data(), nqno_ijkl * nqno_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
-                
-                Tensor<double, 4> T_nijk = quadruples_permuter(T_nijk_unsorted, n, i, j, k);
-                ::memcpy(&T_nijk_complement[idx](n_ijkl, 0, 0, 0, 0), T_nijk.data(), nqno_ijkl * nqno_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
-
-                Tensor<double, 4> alpha_nijk = form_alpha_ijkl(T_nijk);
-                ::memcpy(&alpha_nijk_complement[idx](n_ijkl, 0, 0, 0, 0), alpha_nijk.data(), nqno_ijkl * nqno_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
-                
             } // end n_ijkl
         } // end i_idx
 
@@ -4082,8 +4450,6 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
         
         Tensor<double, 4> g_menf_t("<mn|ef>", nlmo_ijkl, nlmo_ijkl, nqno_ijkl, nqno_ijkl); // Stored as (m, n, e, f)... Physicist's notation
         permute(Indices{index::m, index::n, index::e, index::f}, &g_menf_t, Indices{index::m, index::e, index::n, index::f}, g_menf);
-        Tensor<double, 4> L_menf_t("L_mnef_t", nlmo_ijkl, nlmo_ijkl, nqno_ijkl, nqno_ijkl); // Stored as (m, n, e, f)
-        permute(Indices{index::m, index::n, index::e, index::f}, &L_menf_t, Indices{index::m, index::e, index::n, index::f}, L_menf);
 
         // (ov|vo) integrals
 
@@ -4168,18 +4534,22 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                     Tensor<double, 2> g_nm_slice = g_menf_t(n_ijkl, m_ijkl, All, All); // (f, e)
 
                     const size_t nmj_idx = triplet_key(n, m, j, naocc);
-                    int nmj = (i_j_k_to_ijk_.count(nmj_idx)) ? i_j_k_to_ijk_[nmj_idx] : -1;
-
-                    if (nmj != -1) {
-                        auto S_ijkl_nmj = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[nmj]);
-                        S_ijkl_nmj = linalg::triplet(X_qno_[ijkl], S_ijkl_nmj, X_tno_[nmj], true, false, false);
-                        Tensor<double, 3> Z_nmj = matmul_3d_einsums(triples_permuter_einsums(T_iajbkc_clone_[nmj], n, m, j),
-                                                                        S_ijkl_nmj, n_tno_[nmj], n_qno_[ijkl]);
+                    if (i_j_k_to_ijk_.count(nmj_idx)) {
+                        // T_mni_list[j](n,m,...) is the same already projected
+                        // T_nmj block used here; avoid a second TNO->QNO transform.
+                        auto T_nmj = T_mni_list[j_idx](n_ijkl, m_ijkl, All, All,
+                                                       All);
+                        Tensor<double, 3> Z_nmj("Z_nmj", nqno_ijkl, nqno_ijkl,
+                                                 nqno_ijkl);
+                        permute(Indices{index::a, index::b, index::c}, &Z_nmj,
+                                Indices{index::a, index::b, index::c}, T_nmj);
                         // Z_nmj^{abc} = 2 T_nmj^{abc} - T_nmj^{bac} - T_nmj^{cba}.
                         Tensor<double, 3> T_nmj_bac("T_nmj_bac", nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                        permute(Indices{index::b, index::a, index::c}, &T_nmj_bac, Indices{index::a, index::b, index::c}, Z_nmj);
+                        permute(Indices{index::b, index::a, index::c}, &T_nmj_bac,
+                                Indices{index::a, index::b, index::c}, T_nmj);
                         Tensor<double, 3> T_nmj_cba("T_nmj_cba", nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                        permute(Indices{index::c, index::b, index::a}, &T_nmj_cba, Indices{index::a, index::b, index::c}, Z_nmj);
+                        permute(Indices{index::c, index::b, index::a}, &T_nmj_cba,
+                                Indices{index::a, index::b, index::c}, T_nmj);
 
                         Z_nmj *= 2.0;
                         Z_nmj -= T_nmj_bac;
@@ -4242,17 +4612,29 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                         
                 // Final term of SI Eq. (S2): (me|nf) Z_nij^{fae}.
                 // Transpose Z_nij into the contraction order used below.
+                Tensor<double, 4> Z_nij = form_Z_mij(i_idx, j_idx);
                 Tensor<double, 4> Z_nij_transposed("Z_nij_transposed", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                permute(Indices{index::n, index::e, index::f, index::a}, &Z_nij_transposed, Indices{index::n, index::f, index::a, index::e}, Z_mij_list[i_idx * FOUR + j_idx]);
+                permute(Indices{index::n, index::e, index::f, index::a},
+                        &Z_nij_transposed,
+                        Indices{index::n, index::f, index::a, index::e}, Z_nij);
                 einsum(1.0, Indices{index::m, index::a}, &B_ijam_list[i_idx * FOUR + j_idx], 1.0, Indices{index::m, index::n, index::e, index::f}, g_menf_t,
                         Indices{index::n, index::e, index::f, index::a}, Z_nij_transposed);
             } // end j_idx
         } // end i_idx
 
+        // The (m,n,e,f) orientation is needed only by the adjacent tilde-F
+        // contractions. Release it before constructing E--M instead of
+        // retaining a second full L_menf tensor through the complete residual.
+        Tensor<double, 4> L_menf_t("L_mnef_t", nlmo_ijkl, nlmo_ijkl,
+                                    nqno_ijkl, nqno_ijkl);
+        permute(Indices{index::m, index::n, index::e, index::f}, &L_menf_t,
+                Indices{index::m, index::e, index::n, index::f}, L_menf);
+
         // Tilde F_ae: canonical Eq. (39), local SI Eq. (S3); dimensions (a, e).
         Tensor<double, 2> F_ae_tilde = F_ae;
-        einsum(1.0, Indices{index::a, index::e}, &F_ae_tilde, -1.0, Indices{index::n, index::m, index::f, index::a}, T_mn,
-                Indices{index::n, index::m, index::f, index::e}, L_menf_t);
+        einsum(1.0, Indices{index::a, index::e}, &F_ae_tilde, -1.0,
+               Indices{index::n, index::m, index::f, index::a}, T_mn,
+               Indices{index::n, index::m, index::f, index::e}, L_menf_t);
 
         // Tilde F_mi: canonical Eq. (40), local SI Eq. (S4); dimensions 4 * (m).
         std::array<Tensor<double, 1>, 4> F_mi_tilde_list;
@@ -4265,6 +4647,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
             einsum(1.0, Indices{index::m}, &F_mi_tilde_list[i_idx], 1.0, Indices{index::m, index::n, index::e, index::f}, L_menf_t,
                     Indices{index::n, index::e, index::f}, T_mi_t);
         }
+        L_menf_t = Tensor<double, 4>("released", 0, 0, 0, 0);
 
         // E_ei^{ma}: canonical Eq. (41), local SI Eq. (S5); dimensions 4 * (m, e, a).
         std::array<Tensor<double, 3>, 4> E_eima_list;
@@ -4324,241 +4707,465 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                     Indices{index::m, index::n, index::e, index::f}, g_menf_t, Indices{index::m, index::n, index::a, index::b}, T_mn);
         }
 
-        // I_eij^{mab}: canonical Eq. (45), local SI Eq. (S9); dimensions 16 * (m, e, a, b).
-        std::array<Tensor<double, 4>, 16> I_eijmab_list; {
-            std::array<Tensor<double, 4>, 16> I_eijmab_temp; 
-            for (int i_idx = 0; i_idx < FOUR; ++i_idx) {
-                for (int j_idx = 0; j_idx < FOUR; ++j_idx) {
-                    I_eijmab_temp[i_idx * FOUR + j_idx] = Tensor<double, 4>("I_eijmab", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
+        // I_eij^{mab}: canonical Eq. (45), local SI Eq. (S9).  Only the six
+        // upper positional pairs enter Eq. (50).  Build the two raw orientations
+        // for one pair, symmetrize immediately, and release the work tensors;
+        // the former schedule retained sixteen raw rank-four tensors alongside
+        // the final bank.
+        std::array<Tensor<double, 4>, 16> I_eijmab_list;
+        auto build_I_eijmab_raw = [&](int i_idx, int j_idx) {
+            Tensor<double, 4> I_eijmab("I_eijmab raw", nlmo_ijkl, nqno_ijkl,
+                                        nqno_ijkl, nqno_ijkl);
 
-                    // First term of SI Eq. (S9): [2(me|af) - (mf|ae)] T_ij^{fb}.
-                    einsum(0.0, Indices{index::m, index::e, index::a, index::b}, &I_eijmab_temp[i_idx * FOUR + j_idx], 1.0, 
-                            Indices{index::m, index::e, index::a, index::f}, L_mfae_t, Indices{index::f, index::b}, T_ij_list[i_idx * FOUR + j_idx]);
+            // First term of SI Eq. (S9): [2(me|af) - (mf|ae)] T_ij^{fb}.
+            einsum(0.0, Indices{index::m, index::e, index::a, index::b},
+                   &I_eijmab, 1.0,
+                   Indices{index::m, index::e, index::a, index::f}, L_mfae_t,
+                   Indices{index::f, index::b},
+                   T_ij_list[i_idx * FOUR + j_idx]);
 
-                    // Second term of SI Eq. (S9): -[2(me|ni) - (mi|ne)] T_nj^{ab}.
-                    einsum(1.0, Indices{index::m, index::e, index::a, index::b}, &I_eijmab_temp[i_idx * FOUR + j_idx], -1.0, 
-                            Indices{index::m, index::e, index::n}, L_menj_t_list[i_idx], Indices{index::n, index::a, index::b}, T_mi_list[j_idx]);
-                } // end j_idx
-            } // end i_idx
+            // Second term of SI Eq. (S9): -[2(me|ni) - (mi|ne)] T_nj^{ab}.
+            einsum(1.0, Indices{index::m, index::e, index::a, index::b},
+                   &I_eijmab, -1.0,
+                   Indices{index::m, index::e, index::n}, L_menj_t_list[i_idx],
+                   Indices{index::n, index::a, index::b}, T_mi_list[j_idx]);
+            return I_eijmab;
+        };
+        for (int i_idx = 0; i_idx < FOUR; ++i_idx) {
+            for (int j_idx = i_idx + 1; j_idx < FOUR; ++j_idx) {
+                Tensor<double, 4> I_eijmab = build_I_eijmab_raw(i_idx, j_idx);
+                Tensor<double, 4> I_ejimab = build_I_eijmab_raw(j_idx, i_idx);
+                Tensor<double, 4> I_ejimba_buffer(
+                    "I_ejimba", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
+                permute(Indices{index::m, index::e, index::b, index::a},
+                        &I_ejimba_buffer,
+                        Indices{index::m, index::e, index::a, index::b},
+                        I_ejimab);
 
-            // Symmetrization P_{ij}^{ab}
-            for (int i_idx = 0; i_idx < FOUR; ++i_idx) {
-                for (int j_idx = i_idx; j_idx < FOUR; ++j_idx) {
-                    I_eijmab_list[i_idx * FOUR + j_idx] = I_eijmab_temp[i_idx * FOUR + j_idx];
-                    Tensor<double, 4> I_ejimba_buffer = Tensor<double, 4>("I_ejimba", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                    permute(Indices{index::m, index::e, index::b, index::a}, &I_ejimba_buffer, 
-                            Indices{index::m, index::e, index::a, index::b}, I_eijmab_temp[j_idx * FOUR + i_idx]);
-                    I_eijmab_list[i_idx * FOUR + j_idx] += I_ejimba_buffer;
+                const int ij_position = i_idx * FOUR + j_idx;
+                I_eijmab_list[ij_position] = std::move(I_eijmab);
+                I_eijmab_list[ij_position] += I_ejimba_buffer;
 
-                    // Final term of SI Eq. (S9): 1/4 [2(me|nf) - (mf|ne)] Z_nij^{fab};
-                    // the factor below includes the paired P_ij^{ab} contribution.
-                    einsum(1.0, Indices{index::m, index::e, index::a, index::b}, &I_eijmab_list[i_idx * FOUR + j_idx], 0.5,
-                            Indices{index::m, index::e, index::n, index::f}, L_menf, Indices{index::n, index::f, index::a, index::b}, Z_mij_list[i_idx * FOUR + j_idx]);
-                } // end j_idx
-            } // end i_idx
+                // Final term of SI Eq. (S9): 1/4 [2(me|nf) - (mf|ne)]
+                // Z_nij^{fab}; the factor includes P_ij^{ab}.
+                Tensor<double, 4> Z_nij = form_Z_mij(i_idx, j_idx);
+                einsum(1.0, Indices{index::m, index::e, index::a, index::b},
+                       &I_eijmab_list[ij_position], 0.5,
+                       Indices{index::m, index::e, index::n, index::f}, L_menf,
+                       Indices{index::n, index::f, index::a, index::b}, Z_nij);
+            }
         }
 
-        // J_iej^{mab}: canonical Eq. (46), local SI Eq. (S10); dimensions 16 * (m, e, a, b).
-        std::array<Tensor<double, 4>, 16> J_iejmab_list; {
+        // J_iej^{mab}: canonical Eq. (46), local SI Eq. (S10).  Build one
+        // ordered-pair block and immediately consume both complementary (k,l)
+        // orientations into a single rank-four residual.  This prevents the J
+        // bank from coexisting with the I/K/L/M intermediates.
+        Tensor<double, 4> R_J_ijkl("R_J_ijkl", nqno_ijkl, nqno_ijkl,
+                                    nqno_ijkl, nqno_ijkl);
+        R_J_ijkl.zero();
+        {
             Tensor<double, 4> g_mfae_v("g_mfae_v", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
             permute(Indices{index::m, index::e, index::a, index::f}, &g_mfae_v, Indices{index::m, index::f, index::e, index::a}, g_mfae);
             Tensor<double, 4> g_menf_v("g_menf_v", nlmo_ijkl, nqno_ijkl, nlmo_ijkl, nqno_ijkl);
             permute(Indices{index::m, index::e, index::n, index::f}, &g_menf_v, Indices{index::m, index::f, index::n, index::e}, g_menf);
 
-            for (int i_idx = 0; i_idx < FOUR; ++i_idx) {
-                for (int j_idx = 0; j_idx < FOUR; ++j_idx) {
-                    J_iejmab_list[i_idx * FOUR + j_idx] = Tensor<double, 4>("J_iejmab", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
+            auto build_J_iejmab = [&](int i_idx, int j_idx) {
+                Tensor<double, 4> J_iejmab("J_iejmab", nlmo_ijkl, nqno_ijkl,
+                                            nqno_ijkl, nqno_ijkl);
 
-                    // First term of SI Eq. (S10): (mf|ae) T_ij^{fb}.
-                    einsum(0.0, Indices{index::m, index::e, index::a, index::b}, &J_iejmab_list[i_idx * FOUR + j_idx], 1.0, 
-                            Indices{index::m, index::e, index::a, index::f}, g_mfae_v, Indices{index::f, index::b}, T_ij_list[i_idx * FOUR + j_idx]);
+                // First term of SI Eq. (S10): (mf|ae) T_ij^{fb}.
+                einsum(0.0, Indices{index::m, index::e, index::a, index::b},
+                       &J_iejmab, 1.0,
+                       Indices{index::m, index::e, index::a, index::f}, g_mfae_v,
+                       Indices{index::f, index::b},
+                       T_ij_list[i_idx * FOUR + j_idx]);
 
-                    // Second term of SI Eq. (S10): -(mi|ne) T_nj^{ab}.
-                    Tensor<double, 3> g_menj_u("g_menj_u", nlmo_ijkl, nqno_ijkl, nlmo_ijkl);
-                    permute(Indices{index::m, index::e, index::n}, &g_menj_u, Indices{index::e, index::n, index::m}, g_menj_list[i_idx]);
-                    einsum(1.0, Indices{index::m, index::e, index::a, index::b}, &J_iejmab_list[i_idx * FOUR + j_idx], -1.0,
-                            Indices{index::m, index::e, index::n}, g_menj_u, Indices{index::n, index::a, index::b}, T_mi_list[j_idx]);
+                // Second term of SI Eq. (S10): -(mi|ne) T_nj^{ab}.
+                Tensor<double, 3> g_menj_u("g_menj_u", nlmo_ijkl, nqno_ijkl,
+                                            nlmo_ijkl);
+                permute(Indices{index::m, index::e, index::n}, &g_menj_u,
+                        Indices{index::e, index::n, index::m},
+                        g_menj_list[i_idx]);
+                einsum(1.0, Indices{index::m, index::e, index::a, index::b},
+                       &J_iejmab, -1.0,
+                       Indices{index::m, index::e, index::n}, g_menj_u,
+                       Indices{index::n, index::a, index::b}, T_mi_list[j_idx]);
 
-                    Tensor<double, 4> T_mij_t("T_mij_t", nlmo_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                    permute(Indices{index::n, index::f, index::a, index::b}, &T_mij_t, Indices{index::n, index::a, index::f, index::b}, T_mij_list[i_idx * FOUR + j_idx]);
+                Tensor<double, 4> T_mij_t("T_mij_t", nlmo_ijkl, nqno_ijkl,
+                                           nqno_ijkl, nqno_ijkl);
+                auto T_mij = T_mij_view(i_idx, j_idx);
+                permute(Indices{index::n, index::f, index::a, index::b},
+                        &T_mij_t,
+                        Indices{index::n, index::a, index::f, index::b}, T_mij);
 
-                    // Final term of SI Eq. (S10): -1/2 (mf|ne) T_nij^{afb}.
-                    einsum(1.0, Indices{index::m, index::e, index::a, index::b}, &J_iejmab_list[i_idx * FOUR + j_idx], -0.5,
-                            Indices{index::m, index::e, index::n, index::f}, g_menf_v, Indices{index::n, index::f, index::a, index::b}, T_mij_t);
-                } // end j_idx
-            } // end i_idx
-        } // end scope
+                // Final term of SI Eq. (S10): -1/2 (mf|ne) T_nij^{afb}.
+                einsum(1.0, Indices{index::m, index::e, index::a, index::b},
+                       &J_iejmab, -0.5,
+                       Indices{index::m, index::e, index::n, index::f}, g_menf_v,
+                       Indices{index::n, index::f, index::a, index::b}, T_mij_t);
+                return J_iejmab;
+            };
 
-        // K_ijk^{amn}: canonical Eq. (47), local SI Eq. (S11); dimensions 24 * (a, m, n).
-        std::unordered_map<int, Tensor<double, 3>> K_ijkamn_map; {
-            std::unordered_map<int, Tensor<double, 3>> K_ijkamn_temp;
-
+            // Preserve the historical first representative for repeated
+            // occupied indices, then schedule those representatives by their
+            // ordered (i,j) source block.
+            std::array<bool, 24> first_J_representative{};
+            std::unordered_set<size_t> J_occupied_orbits;
             einsums::for_sequence<24UL>([&](auto perm_idx) {
-                auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
-                int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-                const size_t ijk_idx = triplet_key(i, j, k, naocc);
-
-                K_ijkamn_temp[perm_idx] = Tensor<double, 3>("K_ijkamn", nqno_ijkl, nlmo_ijkl, nlmo_ijkl);
-
-                // First term of SI Eq. (S11): (me|nk) T_ij^{ae}.
-                einsum(0.0, Indices{index::a, index::m, index::n}, &K_ijkamn_temp[perm_idx], 1.0,
-                        Indices{index::a, index::e}, T_ij_list[i_idx * FOUR + j_idx], Indices{index::e, index::m, index::n}, g_menj_list[k_idx]);
-
-                // Second term of SI Eq. (S11): 1/2 T_ijk^{aef} (me|nf).
-                if (i_j_k_to_ijk_.count(ijk_idx)) {
-                    int ijk = i_j_k_to_ijk_[ijk_idx];
-                    auto S_ijkl_ijk = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[ijk]);
-                    S_ijkl_ijk = linalg::triplet(X_qno_[ijkl], S_ijkl_ijk, X_tno_[ijk], true, false, false);
-
-                    Tensor<double, 3> T_ijk = matmul_3d_einsums(triples_permuter_einsums(T_iajbkc_clone_[ijk], i, j, k), S_ijkl_ijk, n_tno_[ijk], n_qno_[ijkl]);
-                
-                    einsum(1.0, Indices{index::a, index::m, index::n}, &K_ijkamn_temp[perm_idx], 0.5, 
-                            Indices{index::a, index::e, index::f}, T_ijk, Indices{index::m, index::n, index::e, index::f}, g_menf_t);
-                } // end if
+                auto &[i_idx, j_idx, k_idx, l_idx] =
+                    quadruple_permutations_[perm_idx];
+                const size_t occupied_key = quadruplet_key(
+                    ijkl_list[i_idx], ijkl_list[j_idx], ijkl_list[k_idx],
+                    ijkl_list[l_idx], naocc);
+                first_J_representative[perm_idx] =
+                    J_occupied_orbits.insert(occupied_key).second;
             });
 
-            // (1 + P_{jk}^{mn})
-            einsums::for_sequence<24UL>([&](auto perm_idx) {
-                auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
-                int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-                const size_t ijk_idx = triplet_key(i, j, k, naocc);
+            for (int source_i_idx = 0; source_i_idx < FOUR; ++source_i_idx) {
+                for (int source_j_idx = 0; source_j_idx < FOUR; ++source_j_idx) {
+                    if (source_i_idx == source_j_idx) continue;
+                    Tensor<double, 4> J_iejmab =
+                        build_J_iejmab(source_i_idx, source_j_idx);
 
-                K_ijkamn_map[perm_idx] = K_ijkamn_temp[perm_idx];
+                    einsums::for_sequence<24UL>([&](auto representative_perm_idx) {
+                        auto &[i_idx, j_idx, k_idx, l_idx] =
+                            quadruple_permutations_[representative_perm_idx];
+                        if (!first_J_representative[representative_perm_idx] ||
+                            i_idx != source_i_idx || j_idx != source_j_idx)
+                            return;
 
-                size_t twin_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(i, k, j, naocc)];
-                Tensor<double, 3> K_ikjanm_temp("K_ikjanm_temp", nqno_ijkl, nlmo_ijkl, nlmo_ijkl);
-                permute(Indices{index::a, index::n, index::m}, &K_ikjanm_temp, Indices{index::a, index::m, index::n}, K_ijkamn_temp[twin_perm_idx]);
+                        const size_t occupied_key = quadruplet_key(
+                            ijkl_list[i_idx], ijkl_list[j_idx], ijkl_list[k_idx],
+                            ijkl_list[l_idx], naocc);
+                        Tensor<double, 4> R_ijkl_perm(
+                            "R_ijkl_perm J", nqno_ijkl, nqno_ijkl,
+                            nqno_ijkl, nqno_ijkl);
+                        R_ijkl_perm.zero();
+                        Tensor<double, 4> R_ijkl_buffer_a(
+                            "R_ijkl_buffer_a J", nqno_ijkl, nqno_ijkl,
+                            nqno_ijkl, nqno_ijkl);
+                        Tensor<double, 4> R_ijkl_buffer_b(
+                            "R_ijkl_buffer_b J", nqno_ijkl, nqno_ijkl,
+                            nqno_ijkl, nqno_ijkl);
 
-                K_ijkamn_map[perm_idx] += K_ikjanm_temp;
-            });
+                        Tensor<double, 4> T_mkl_t(
+                            "T_mkl_t", nlmo_ijkl, nqno_ijkl, nqno_ijkl,
+                            nqno_ijkl);
+                        auto T_mkl = T_mij_view(k_idx, l_idx);
+                        permute(Indices{index::m, index::e, index::c, index::d},
+                                &T_mkl_t,
+                                Indices{index::m, index::c, index::e, index::d},
+                                T_mkl);
+
+                        // J_iej^{mab} contribution to canonical Eq. (50), local
+                        // SI Eq. (S31).
+                        einsum(0.0,
+                               Indices{index::a, index::b, index::c, index::d},
+                               &R_ijkl_buffer_a, 1.0,
+                               Indices{index::m, index::e, index::a, index::b},
+                               J_iejmab,
+                               Indices{index::m, index::e, index::c, index::d},
+                               T_mkl_t);
+                        permute(Indices{index::c, index::b, index::a, index::d},
+                                &R_ijkl_buffer_b,
+                                Indices{index::a, index::b, index::c, index::d},
+                                R_ijkl_buffer_a);
+                        R_ijkl_buffer_a *= -0.5;
+                        R_ijkl_perm += R_ijkl_buffer_a;
+                        R_ijkl_buffer_b *= -1.0;
+                        R_ijkl_perm += R_ijkl_buffer_b;
+
+                        einsums::for_sequence<24UL>([&](auto target_perm_idx) {
+                            auto &[target_i_idx, target_j_idx, target_k_idx,
+                                   target_l_idx] =
+                                quadruple_permutations_[target_perm_idx];
+                            const size_t target_key = quadruplet_key(
+                                ijkl_list[target_i_idx], ijkl_list[target_j_idx],
+                                ijkl_list[target_k_idx], ijkl_list[target_l_idx],
+                                naocc);
+                            if (target_key != occupied_key) return;
+                            permute(
+                                Indices{index::a, index::b, index::c, index::d},
+                                &R_ijkl_buffer_a,
+                                std::get<target_perm_idx>(einsum_indices),
+                                R_ijkl_perm);
+                            R_J_ijkl += R_ijkl_buffer_a;
+                        });
+                    });
+                }
+            }
         }
 
-        // L_ijk^{abm}: canonical Eq. (48), local SI Eqs. (S12)--(S13);
-        // dimensions 24 * (m, a, b).
-        std::unordered_map<int, Tensor<double, 3>> L_ijkabm_map; {
-            std::unordered_map<int, Tensor<double, 3>> L_ijkabm_temp;
+        std::vector<int> needed_triplet_permutations;
+        needed_triplet_permutations.reserve(ijk_to_ijkl_perm_idx.size());
+        for (const auto& entry : ijk_to_ijkl_perm_idx) {
+            needed_triplet_permutations.push_back(
+                static_cast<int>(entry.second));
+        }
+        std::sort(needed_triplet_permutations.begin(),
+                  needed_triplet_permutations.end());
+        needed_triplet_permutations.erase(
+            std::unique(needed_triplet_permutations.begin(),
+                        needed_triplet_permutations.end()),
+            needed_triplet_permutations.end());
 
-            einsums::for_sequence<24UL>([&](auto perm_idx) {
-                auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
-                int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-                int ij = i_j_to_ij_[i][j];
-                const size_t ijk_idx = triplet_key(i, j, k, naocc);
+        // K_ijk^{amn}: canonical Eq. (47), local SI Eq. (S11).  Only final
+        // representatives addressable through ijk_to_ijkl_perm_idx are retained.
+        // Raw tensors are cached until their final symmetrization use and then
+        // released, instead of keeping raw and final 24-banks simultaneously.
+        std::unordered_map<int, Tensor<double, 3>> K_ijkamn_map;
+        {
+            auto K_twin = [&](int perm_idx) {
+                auto &[i_idx, j_idx, k_idx, l_idx] =
+                    quadruple_permutations_[perm_idx];
+                return static_cast<int>(ijk_to_ijkl_perm_idx.at(triplet_key(
+                    ijkl_list[i_idx], ijkl_list[k_idx], ijkl_list[j_idx],
+                    naocc)));
+            };
+            auto build_K_raw = [&](int perm_idx) {
+                auto &[i_idx, j_idx, k_idx, l_idx] =
+                    quadruple_permutations_[perm_idx];
+                Tensor<double, 3> K_ijkamn("K_ijkamn raw", nqno_ijkl,
+                                            nlmo_ijkl, nlmo_ijkl);
 
-                Tensor<double, 3> F_mae("F_mae", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
-                permute(Indices{index::m, index::a, index::e}, &F_mae, Indices{index::m, index::e, index::a}, F_iema_list[k_idx]);
-                
-                Tensor<double, 3> EF_mea_sum = E_eima_list[i_idx]; // (m, e, a) dimensions
-                EF_mea_sum += F_iema_list[i_idx];
-                Tensor<double, 3> EF_mae("EF_mae", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
-                permute(Indices{index::m, index::a, index::e}, &EF_mae, Indices{index::m, index::e, index::a}, EF_mea_sum);
-                    
-                L_ijkabm_temp[perm_idx] = Tensor<double, 3>("L_ijkabm_temp", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
-                L_ijkabm_temp[perm_idx].zero();
+                // First term of SI Eq. (S11): (me|nk) T_ij^{ae}.
+                einsum(0.0, Indices{index::a, index::m, index::n},
+                       &K_ijkamn, 1.0, Indices{index::a, index::e},
+                       T_ij_list[i_idx * FOUR + j_idx],
+                       Indices{index::e, index::m, index::n},
+                       g_menj_list[k_idx]);
 
-                if (i_j_k_to_ijk_.count(ijk_idx)) {
-                    int ijk = i_j_k_to_ijk_[ijk_idx];
-                    auto S_ijkl_ijk = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[ijk]);
-                    S_ijkl_ijk = linalg::triplet(X_qno_[ijkl], S_ijkl_ijk, X_tno_[ijk], true, false, false);
+                // Second term of SI Eq. (S11): 1/2 T_ijk^{aef} (me|nf).
+                // T_mni_list[k](i,j,...) is the already projected T_ijk block.
+                auto T_ijk = T_mni_list[k_idx](
+                    occupied_domain_positions[i_idx],
+                    occupied_domain_positions[j_idx], All, All, All);
+                Tensor<double, 3> K_second_mna("K second (m,n,a)", nlmo_ijkl,
+                                                nlmo_ijkl, nqno_ijkl);
+                einsum(0.0, Indices{index::m, index::n, index::a},
+                       &K_second_mna, 0.5,
+                       Indices{index::m, index::n, index::e, index::f},
+                       g_menf_t, Indices{index::a, index::e, index::f}, T_ijk);
+                Tensor<double, 3> K_second_amn("K second (a,m,n)", nqno_ijkl,
+                                                nlmo_ijkl, nlmo_ijkl);
+                permute(Indices{index::a, index::m, index::n}, &K_second_amn,
+                        Indices{index::m, index::n, index::a}, K_second_mna);
+                K_ijkamn += K_second_amn;
+                return K_ijkamn;
+            };
 
-                    Tensor<double, 3> T_ijk = matmul_3d_einsums(triples_permuter_einsums(T_iajbkc_clone_[ijk], i, j, k), S_ijkl_ijk, n_tno_[ijk], n_qno_[ijkl]);
-
-                    // First term of SI Eq. (S12): (mf|ae) T_ijk^{ebf}.
-                    Tensor<double, 3> T_ijk_t("T_ijk_t", nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                    permute(Indices{index::f, index::e, index::b}, &T_ijk_t, Indices{index::e, index::b, index::f}, T_ijk);
-                    einsum(1.0, Indices{index::m, index::a, index::b}, &L_ijkabm_temp[perm_idx], 1.0, 
-                            Indices{index::m, index::a, index::f, index::e}, g_mfae_u, Indices{index::f, index::e, index::b}, T_ijk_t);
+            std::unordered_map<int, int> raw_use_count;
+            for (int perm_idx : needed_triplet_permutations) {
+                ++raw_use_count[perm_idx];
+                ++raw_use_count[K_twin(perm_idx)];
+            }
+            std::unordered_map<int, Tensor<double, 3>> raw_cache;
+            auto get_K_raw = [&](int perm_idx) -> Tensor<double, 3>& {
+                auto found = raw_cache.find(perm_idx);
+                if (found == raw_cache.end()) {
+                    found = raw_cache.emplace(perm_idx, build_K_raw(perm_idx)).first;
                 }
+                return found->second;
+            };
+            auto release_K_raw = [&](int perm_idx) {
+                if (--raw_use_count[perm_idx] == 0) raw_cache.erase(perm_idx);
+            };
 
-                // Second term of SI Eq. (S12): 1/2 (E_ei^{ma} + F_ie^{ma}) T_jk^{be}.
-                einsum(1.0, Indices{index::m, index::a, index::b}, &L_ijkabm_temp[perm_idx], 0.5,
-                        Indices{index::m, index::a, index::e}, EF_mae, Indices{index::b, index::e}, T_ij_list[j_idx * FOUR + k_idx]);
+            for (int perm_idx : needed_triplet_permutations) {
+                const int twin_perm_idx = K_twin(perm_idx);
+                Tensor<double, 3> K_ijkamn = get_K_raw(perm_idx);
+                Tensor<double, 3> K_ikjanm("K_ikjanm", nqno_ijkl, nlmo_ijkl,
+                                            nlmo_ijkl);
+                permute(Indices{index::a, index::n, index::m}, &K_ikjanm,
+                        Indices{index::a, index::m, index::n},
+                        get_K_raw(twin_perm_idx));
+                K_ijkamn += K_ikjanm;
+                K_ijkamn_map.emplace(perm_idx, std::move(K_ijkamn));
+                release_K_raw(perm_idx);
+                release_K_raw(twin_perm_idx);
+            }
+        }
+
+        // L_ijk^{abm}: canonical Eq. (48), local SI Eqs. (S12)--(S13).
+        // Apply the same reference-counted orbit schedule as K.
+        std::unordered_map<int, Tensor<double, 3>> L_ijkabm_map;
+        {
+            auto L_twin = [&](int perm_idx) {
+                auto &[i_idx, j_idx, k_idx, l_idx] =
+                    quadruple_permutations_[perm_idx];
+                return static_cast<int>(ijk_to_ijkl_perm_idx.at(triplet_key(
+                    ijkl_list[j_idx], ijkl_list[i_idx], ijkl_list[k_idx],
+                    naocc)));
+            };
+            auto build_L_raw = [&](int perm_idx) {
+                auto &[i_idx, j_idx, k_idx, l_idx] =
+                    quadruple_permutations_[perm_idx];
+                const int i = ijkl_list[i_idx];
+                const int j = ijkl_list[j_idx];
+                const int k = ijkl_list[k_idx];
+                const int ij = i_j_to_ij_[i][j];
+
+                Tensor<double, 3> F_mae("F_mae", nlmo_ijkl, nqno_ijkl,
+                                         nqno_ijkl);
+                permute(Indices{index::m, index::a, index::e}, &F_mae,
+                        Indices{index::m, index::e, index::a},
+                        F_iema_list[k_idx]);
+                Tensor<double, 3> EF_mea_sum = E_eima_list[i_idx];
+                EF_mea_sum += F_iema_list[i_idx];
+                Tensor<double, 3> EF_mae("EF_mae", nlmo_ijkl, nqno_ijkl,
+                                          nqno_ijkl);
+                permute(Indices{index::m, index::a, index::e}, &EF_mae,
+                        Indices{index::m, index::e, index::a}, EF_mea_sum);
+
+                Tensor<double, 3> L_ijkabm("L_ijkabm raw", nlmo_ijkl,
+                                            nqno_ijkl, nqno_ijkl);
+                L_ijkabm.zero();
+
+                // First term of SI Eq. (S12): (mf|ae) T_ijk^{ebf}.
+                // Reuse T_mni_list[k](i,j,...) instead of projecting T3 again.
+                auto T_ijk = T_mni_list[k_idx](
+                    occupied_domain_positions[i_idx],
+                    occupied_domain_positions[j_idx], All, All, All);
+                Tensor<double, 3> T_ijk_t("T_ijk_t", nqno_ijkl, nqno_ijkl,
+                                           nqno_ijkl);
+                permute(Indices{index::f, index::e, index::b}, &T_ijk_t,
+                        Indices{index::e, index::b, index::f}, T_ijk);
+                einsum(1.0, Indices{index::m, index::a, index::b}, &L_ijkabm,
+                       1.0, Indices{index::m, index::a, index::f, index::e},
+                       g_mfae_u, Indices{index::f, index::e, index::b}, T_ijk_t);
+
+                // Second term of SI Eq. (S12):
+                // 1/2 (E_ei^{ma} + F_ie^{ma}) T_jk^{be}.
+                einsum(1.0, Indices{index::m, index::a, index::b}, &L_ijkabm,
+                       0.5, Indices{index::m, index::a, index::e}, EF_mae,
+                       Indices{index::b, index::e},
+                       T_ij_list[j_idx * FOUR + k_idx]);
 
                 // Third term of SI Eq. (S12): F_ke^{ma} T_ij^{eb}.
-                einsum(1.0, Indices{index::m, index::a, index::b}, &L_ijkabm_temp[perm_idx], 1.0,
-                        Indices{index::m, index::a, index::e}, F_mae, Indices{index::e, index::b}, T_ij_list[i_idx * FOUR + j_idx]);
+                einsum(1.0, Indices{index::m, index::a, index::b}, &L_ijkabm,
+                       1.0, Indices{index::m, index::a, index::e}, F_mae,
+                       Indices{index::e, index::b},
+                       T_ij_list[i_idx * FOUR + j_idx]);
 
                 // Fourth term of SI Eq. (S12): -1/2 G_ki^{mn} T_nj^{ab}.
-                einsum(1.0, Indices{index::m, index::a, index::b}, &L_ijkabm_temp[perm_idx], -0.5,
-                        Indices{index::m, index::n}, G_ijmn_list[k_idx * FOUR + i_idx], Indices{index::n, index::a, index::b}, T_mi_list[j_idx]);
+                einsum(1.0, Indices{index::m, index::a, index::b}, &L_ijkabm,
+                       -0.5, Indices{index::m, index::n},
+                       G_ijmn_list[k_idx * FOUR + i_idx],
+                       Indices{index::n, index::a, index::b}, T_mi_list[j_idx]);
 
-                // Pair-domain delta L term, SI Eq. (S13) and main-text Eqs. (98)--(99).
-                auto S_ijkl_ij = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmopair_to_paos_[ij]);
-                S_ijkl_ij = linalg::triplet(X_qno_[ijkl], S_ijkl_ij, X_pno_[ij], true, false, false);
-                Tensor<double, 2> S_ijkl_ij_ein("S_ijkl_ij_ein", nqno_ijkl, n_pno_[ij]);
-                ::memcpy(S_ijkl_ij_ein.data(), S_ijkl_ij->get_pointer(), nqno_ijkl * n_pno_[ij] * sizeof(double));
+                // Pair-domain delta L term, SI Eq. (S13) and main-text
+                // Eqs. (98)--(99).  Each two-index projection is a GEMM.
+                auto S_ijkl_ij = submatrix_rows_and_cols(
+                    *S_pao_, lmoquadruplet_to_paos_[ijkl], lmopair_to_paos_[ij]);
+                S_ijkl_ij = linalg::triplet(X_qno_[ijkl], S_ijkl_ij,
+                                            X_pno_[ij], true, false, false);
+                Tensor<double, 2> S_ijkl_ij_ein("S_ijkl_ij_ein", nqno_ijkl,
+                                                 n_pno_[ij]);
+                ::memcpy(S_ijkl_ij_ein.data(), S_ijkl_ij->get_pointer(),
+                         static_cast<size_t>(nqno_ijkl) * n_pno_[ij] *
+                             sizeof(double));
 
-                Tensor<double, 3> L_ijkabm_cont("L_ijkabm_cont", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
-                L_ijkabm_cont.zero();
-                int k_ij = lmopair_to_lmos_dense_[ij][k];
-
+                const int k_ij = lmopair_to_lmos_dense_[ij][k];
                 for (int m_ijkl = 0; m_ijkl < nlmo_ijkl; ++m_ijkl) {
-                    int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
-                    int m_ij = lmopair_to_lmos_dense_[ij][m];
-
+                    const int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
+                    const int m_ij = lmopair_to_lmos_dense_[ij][m];
                     if (m_ij == -1) continue;
 
-                    Tensor<double, 2> delta_L_pair_slice = (delta_L_ijk_abm_list[ij])(k_ij, m_ij, All, All);
-                    Tensor<double, 2> delta_L_qno_pno("delta_L_qno_pno", nqno_ijkl, n_pno_[ij]);
-                    einsum(0.0, Indices{index::c, index::b}, &delta_L_qno_pno, 1.0, Indices{index::c, index::a}, S_ijkl_ij_ein,
-                            Indices{index::a, index::b}, delta_L_pair_slice);
-                    Tensor<double, 2> delta_L_qno_qno("delta_L_qno_qno", nqno_ijkl, nqno_ijkl);
-                    einsum(0.0, Indices{index::a, index::d}, &delta_L_qno_qno, 1.0, Indices{index::a, index::b}, delta_L_qno_pno,
-                            Indices{index::d, index::b}, S_ijkl_ij_ein);
+                    auto delta_L_pair_slice =
+                        delta_L_ijk_abm_list[ij](k_ij, m_ij, All, All);
+                    Tensor<double, 2> delta_L_qno_pno(
+                        "delta_L_qno_pno", nqno_ijkl, n_pno_[ij]);
+                    einsum(0.0, Indices{index::c, index::b},
+                           &delta_L_qno_pno, 1.0,
+                           Indices{index::c, index::a}, S_ijkl_ij_ein,
+                           Indices{index::a, index::b}, delta_L_pair_slice);
+                    auto L_ijkabm_slice = L_ijkabm(m_ijkl, All, All);
+                    einsum(1.0, Indices{index::a, index::d},
+                           &L_ijkabm_slice, 1.0,
+                           Indices{index::a, index::b}, delta_L_qno_pno,
+                           Indices{index::d, index::b}, S_ijkl_ij_ein);
+                }
+                return L_ijkabm;
+            };
 
-                    (L_ijkabm_cont)(m_ijkl, All, All) = delta_L_qno_qno;
-                } // end m_ijkl
+            std::unordered_map<int, int> raw_use_count;
+            for (int perm_idx : needed_triplet_permutations) {
+                ++raw_use_count[perm_idx];
+                ++raw_use_count[L_twin(perm_idx)];
+            }
+            std::unordered_map<int, Tensor<double, 3>> raw_cache;
+            auto get_L_raw = [&](int perm_idx) -> Tensor<double, 3>& {
+                auto found = raw_cache.find(perm_idx);
+                if (found == raw_cache.end()) {
+                    found = raw_cache.emplace(perm_idx, build_L_raw(perm_idx)).first;
+                }
+                return found->second;
+            };
+            auto release_L_raw = [&](int perm_idx) {
+                if (--raw_use_count[perm_idx] == 0) raw_cache.erase(perm_idx);
+            };
 
-                L_ijkabm_temp[perm_idx] += L_ijkabm_cont;
-            });
+            for (int perm_idx : needed_triplet_permutations) {
+                const int twin_perm_idx = L_twin(perm_idx);
+                Tensor<double, 3> L_ijkabm = get_L_raw(perm_idx);
+                Tensor<double, 3> L_jikbam("L_jikbam", nlmo_ijkl, nqno_ijkl,
+                                            nqno_ijkl);
+                permute(Indices{index::m, index::a, index::b}, &L_jikbam,
+                        Indices{index::m, index::b, index::a},
+                        get_L_raw(twin_perm_idx));
+                L_ijkabm += L_jikbam;
+                L_ijkabm_map.emplace(perm_idx, std::move(L_ijkabm));
+                release_L_raw(perm_idx);
+                release_L_raw(twin_perm_idx);
+            }
+        }
 
-            // (1 + P_{ij}^{ab})
-            einsums::for_sequence<24UL>([&](auto perm_idx) {
-                auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
-                int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-                const size_t ijk_idx = triplet_key(i, j, k, naocc);
-
-                L_ijkabm_map[perm_idx] = L_ijkabm_temp[perm_idx];
-
-                size_t twin_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(j, i, k, naocc)];
-                Tensor<double, 3> L_jikbam("L_jikbam", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
-                permute(Indices{index::m, index::a, index::b}, &L_jikbam, Indices{index::m, index::b, index::a}, L_ijkabm_temp[twin_perm_idx]);
-                L_ijkabm_map[perm_idx] += L_jikbam;
-            });
-        } // end k_ij
-
-        // M_ejk^{abc}: canonical Eq. (49), local SI Eqs. (S14)--(S15);
-        // dimensions 16 * (e, a, b, c).
-        std::array<Tensor<double, 4>, 16> M_ejkabc_list; {
-            std::array<Tensor<double, 4>, 16> M_ejkabc_temp;
+        // M_ejk^{abc}: canonical Eq. (49), local SI Eqs. (S14)--(S15).
+        // Eq. (50) consumes only the six upper positional pairs.  Construct the
+        // two raw orientations for one pair and symmetrize directly, avoiding
+        // the former 16-tensor raw bank and ten unused final entries.
+        std::array<Tensor<double, 4>, 16> M_ejkabc_list;
+        {
             Tensor<double, 4> H_efab_transpose("H_efab_transpose", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
             permute(Indices{index::e, index::a, index::b, index::f}, &H_efab_transpose, Indices{index::e, index::f, index::a, index::b}, H_efab);
 
+            auto build_M_raw = [&](int j_idx, int k_idx) {
+                const int j = ijkl_list[j_idx];
+                const int k = ijkl_list[k_idx];
+                const int jk = i_j_to_ij_[j][k];
+                Tensor<double, 4> M_ejkabc("M_ejkabc raw", nqno_ijkl,
+                                            nqno_ijkl, nqno_ijkl, nqno_ijkl);
+
+                // First term of SI Eq. (S14): 1/2 H_ef^{ab} T_jk^{fc}.
+                einsum(0.0, Indices{index::e, index::a, index::b, index::c},
+                       &M_ejkabc, 0.5,
+                       Indices{index::e, index::a, index::b, index::f},
+                       H_efab_transpose, Indices{index::f, index::c},
+                       T_ij_list[j_idx * FOUR + k_idx]);
+
+                // Pair-domain delta M term, SI Eq. (S15) and main-text
+                // Eqs. (101)--(102).
+                auto S_ijkl_jk = submatrix_rows_and_cols(
+                    *S_pao_, lmoquadruplet_to_paos_[ijkl], lmopair_to_paos_[jk]);
+                S_ijkl_jk = linalg::triplet(X_qno_[ijkl], S_ijkl_jk,
+                                            X_pno_[jk], true, false, false);
+                M_ejkabc += matmul_4d(delta_M_ejk_abc_list[jk], S_ijkl_jk,
+                                      n_pno_[jk], n_qno_[ijkl]);
+                return M_ejkabc;
+            };
+
             for (int j_idx = 0; j_idx < FOUR; ++j_idx) {
-                int j = ijkl_list[j_idx];
-                for (int k_idx = 0; k_idx < FOUR; ++k_idx) {
-                    int k = ijkl_list[k_idx];
-                    int jk = i_j_to_ij_[j][k];
-
-                    // First term of SI Eq. (S14): 1/2 H_ef^{ab} T_jk^{fc}.
-                    M_ejkabc_temp[j_idx * FOUR + k_idx] = Tensor<double, 4>("M_ejkabc_temp", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                    einsum(0.0, Indices{index::e, index::a, index::b, index::c}, &M_ejkabc_temp[j_idx * FOUR + k_idx], 0.5,
-                            Indices{index::e, index::a, index::b, index::f}, H_efab_transpose, Indices{index::f, index::c}, T_ij_list[j_idx * FOUR + k_idx]);
-
-                    // Pair-domain delta M term, SI Eq. (S15) and main-text Eqs. (101)--(102).
-                    auto S_ijkl_jk = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmopair_to_paos_[jk]);
-                    S_ijkl_jk = linalg::triplet(X_qno_[ijkl], S_ijkl_jk, X_pno_[jk], true, false, false);
-                    M_ejkabc_temp[j_idx * FOUR + k_idx] += matmul_4d(delta_M_ejk_abc_list[jk], S_ijkl_jk, n_pno_[jk], n_qno_[ijkl]);
-                } // end k_idx
-            } // j_idx
-
-            // (1 + P_{jk}^{bc})
-            for (int j_idx = 0; j_idx < FOUR; ++j_idx) {
-                for (int k_idx = 0; k_idx < FOUR; ++k_idx) {
-                    M_ejkabc_list[j_idx * FOUR + k_idx] = M_ejkabc_temp[j_idx * FOUR + k_idx];
-
+                for (int k_idx = j_idx + 1; k_idx < FOUR; ++k_idx) {
+                    Tensor<double, 4> M_ejkabc = build_M_raw(j_idx, k_idx);
+                    Tensor<double, 4> M_ekjacb_source = build_M_raw(k_idx, j_idx);
                     Tensor<double, 4> M_ekjacb("M_ekjacb", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                    permute(Indices{index::e, index::a, index::b, index::c}, &M_ekjacb, Indices{index::e, index::a, index::c, index::b}, M_ejkabc_temp[k_idx * FOUR + j_idx]);
-                    M_ejkabc_list[j_idx * FOUR + k_idx] += M_ekjacb;
+                    permute(Indices{index::e, index::a, index::b, index::c},
+                            &M_ekjacb,
+                            Indices{index::e, index::a, index::c, index::b},
+                            M_ekjacb_source);
+                    const int jk_position = j_idx * FOUR + k_idx;
+                    M_ejkabc_list[jk_position] = std::move(M_ejkabc);
+                    M_ejkabc_list[jk_position] += M_ekjacb;
                 }
             }
         }
@@ -4566,8 +5173,6 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
         // => Form all possible R_ijkl's over unique (i, j, k, l)
         Tensor<double, 4> R_ijkl("R_ijkl", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
         R_ijkl.zero();
-
-        std::unordered_map<size_t, Tensor<double, 4>> R_ijkl_list;
 
         // Terms with (i, jkl)-type symmetry
         for (int i_idx = 0; i_idx < FOUR; ++i_idx) {
@@ -4586,13 +5191,28 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
 
             // Tilde-F_mi contribution to canonical Eq. (50), arranged as local
             // SI Eqs. (S24)--(S25); spin/permutation adaptation gives coefficient -1.
-            einsum(1.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer, -1.0,
-                    Indices{index::m, index::a, index::b, index::c, index::d}, T_nijk_complement[i_idx], Indices{index::m}, F_mi_tilde_list[i_idx]);
+            // The raw, occupied-permuted, and alpha complement banks formerly
+            // occupied 12*nlmo*nqno^4 doubles.  Retain only the raw four-bank
+            // source and consume one sorted/alpha m slice at a time.
+            for (int m_ijkl = 0; m_ijkl < nlmo_ijkl; ++m_ijkl) {
+                const int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
+                Tensor<double, 4> T_mijk_unsorted =
+                    T_nijk_complement_unsorted[i_idx](m_ijkl, All, All, All, All);
+                Tensor<double, 4> T_mijk =
+                    quadruples_permuter(T_mijk_unsorted, m, j, k, l);
 
-            // E_ei^{ma} contribution to canonical Eq. (50) and local SI Eq. (S26);
-            // spin/permutation adaptation gives coefficient 1/2.
-            einsum(1.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer, 0.5,
-                    Indices{index::m, index::e, index::a}, E_eima_list[i_idx], Indices{index::m, index::e, index::b, index::c, index::d}, alpha_nijk_complement[i_idx]);
+                const size_t nqno2 = static_cast<size_t>(nqno_ijkl) * nqno_ijkl;
+                C_DAXPY(nqno2 * nqno2, -F_mi_tilde_list[i_idx](m_ijkl),
+                        T_mijk.data(), 1, R_ijkl_buffer.data(), 1);
+
+                Tensor<double, 4> alpha_mijk = form_alpha_ijkl(T_mijk);
+                auto E_eia = E_eima_list[i_idx](m_ijkl, All, All);
+                einsum(1.0, Indices{index::a, index::b, index::c, index::d},
+                       &R_ijkl_buffer, 0.5,
+                       Indices{index::e, index::a}, E_eia,
+                       Indices{index::e, index::b, index::c, index::d},
+                       alpha_mijk);
+            }
 
             if (i_idx == 0) {
                 R_ijkl += R_ijkl_buffer;
@@ -4653,11 +5273,20 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
             }
 
             // B_ij^{am} contribution to canonical Eq. (50), local SI Eq. (S21).
+            // Fixing the second occupied axis of T_mni leaves a strided view in
+            // the leading m dimension. Pack this one block so both B*T3 calls
+            // are ordinary GEMMs over a contiguous (m,b,c,d) operand.
+            auto T_mkl_view = T_mij_view(k_idx, l_idx);
+            Tensor<double, 4> T_mkl("T_mkl contiguous", nlmo_ijkl,
+                                     nqno_ijkl, nqno_ijkl, nqno_ijkl);
+            permute(Indices{index::m, index::b, index::c, index::d}, &T_mkl,
+                    Indices{index::m, index::b, index::c, index::d},
+                    T_mkl_view);
             einsum(1.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, -1.0,
-                    Indices{index::m, index::a}, B_ijam_list[i_idx * FOUR + j_idx], Indices{index::m, index::b, index::c, index::d}, T_mij_list[k_idx * FOUR + l_idx]);
+                    Indices{index::m, index::a}, B_ijam_list[i_idx * FOUR + j_idx], Indices{index::m, index::b, index::c, index::d}, T_mkl);
 
             einsum(0.0, Indices{index::b, index::a, index::c, index::d}, &R_ijkl_buffer_b, -1.0,
-                    Indices{index::m, index::b}, B_ijam_list[j_idx * FOUR + i_idx], Indices{index::m, index::a, index::c, index::d}, T_mij_list[k_idx * FOUR + l_idx]);
+                    Indices{index::m, index::b}, B_ijam_list[j_idx * FOUR + i_idx], Indices{index::m, index::a, index::c, index::d}, T_mkl);
 
             R_ijkl_buffer_a += quadruples_permuter(R_ijkl_buffer_b, 1, 0, 2, 3);
 
@@ -4700,17 +5329,47 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                     int mnkl = i_j_k_l_to_ijkl_.count(mnkl_idx) ? i_j_k_l_to_ijkl_[mnkl_idx] : -1;
                     if (mn == -1 || mnkl == -1) continue;
                     
-                    Tensor<double, 4> T_mnkl("T_mnkl", n_xpno_[kl], n_xpno_[kl], n_xpno_[kl], n_xpno_[kl]);
-                    int lk = ij_to_ji_[kl], nm = ij_to_ji_[mn];
-
-                    if (m > n && k > l) {
-                        permute(Indices{index::b, index::a, index::d, index::c}, &T_mnkl, Indices{index::a, index::b, index::c, index::d}, T_mnkl_xpno_[lk][nm]);
-                    } else if (m > n) {
-                        permute(Indices{index::b, index::a, index::c, index::d}, &T_mnkl, Indices{index::a, index::b, index::c, index::d}, T_mnkl_xpno_[kl][nm]);
-                    } else if (k > l) {
-                        permute(Indices{index::a, index::b, index::d, index::c}, &T_mnkl, Indices{index::a, index::b, index::c, index::d}, T_mnkl_xpno_[lk][mn]);
+                    Tensor<double, 4> T_mnkl;
+                    if (stream_xpno_t4_) {
+                        // Low-memory path: project only the block being consumed.
+                        // Perform four canonical GEMMs and apply both occupied
+                        // pair orientations only in the smaller XPNO target
+                        // space, so no persistent [kl][mn] bank or old-space
+                        // rank-four permutation is required.
+                        const int canonical_kl = (k <= l) ? kl : ij_to_ji_[kl];
+                        auto S_mnkl_kl = submatrix_rows_and_cols(
+                            *S_pao_, lmoquadruplet_to_paos_[mnkl],
+                            lmopair_to_paos_ext_[canonical_kl]);
+                        S_mnkl_kl = linalg::triplet(
+                            X_qno_[mnkl], S_mnkl_kl, X_xpno_[canonical_kl],
+                            true, false, false);
+                        T_mnkl = matmul_4d_permuted(
+                            T_iajbkcld_[mnkl], S_mnkl_kl->transpose(),
+                            n_qno_[mnkl], n_xpno_[canonical_kl], m, n, k, l);
                     } else {
-                        T_mnkl = T_mnkl_xpno_[kl][mn];
+                        T_mnkl = Tensor<double, 4>(
+                            "T_mnkl", n_xpno_[kl], n_xpno_[kl], n_xpno_[kl],
+                            n_xpno_[kl]);
+                        int lk = ij_to_ji_[kl], nm = ij_to_ji_[mn];
+
+                        if (m > n && k > l) {
+                            permute(Indices{index::b, index::a, index::d, index::c},
+                                    &T_mnkl,
+                                    Indices{index::a, index::b, index::c, index::d},
+                                    T_mnkl_xpno_[lk][nm]);
+                        } else if (m > n) {
+                            permute(Indices{index::b, index::a, index::c, index::d},
+                                    &T_mnkl,
+                                    Indices{index::a, index::b, index::c, index::d},
+                                    T_mnkl_xpno_[kl][nm]);
+                        } else if (k > l) {
+                            permute(Indices{index::a, index::b, index::d, index::c},
+                                    &T_mnkl,
+                                    Indices{index::a, index::b, index::c, index::d},
+                                    T_mnkl_xpno_[lk][mn]);
+                        } else {
+                            T_mnkl = T_mnkl_xpno_[kl][mn];
+                        }
                     }
 
                     const size_t nxpno = static_cast<size_t>(n_xpno_[kl]);
@@ -4730,28 +5389,37 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                     Indices{index::e, index::f, index::c, index::d}, T_ijkl);
 
             // I_eij^{mab} contribution to canonical Eq. (50), local SI Eq. (S30).
+            Tensor<double, 4> Z_mkl = form_Z_mij(k_idx, l_idx);
             einsum(1.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, 0.5, Indices{index::m, index::e, index::a, index::b}, 
-                    I_eijmab_list[i_idx * FOUR + j_idx], Indices{index::m, index::e, index::c, index::d}, Z_mij_list[k_idx * FOUR + l_idx]);
+                    I_eijmab_list[i_idx * FOUR + j_idx], Indices{index::m, index::e, index::c, index::d}, Z_mkl);
 
             // K_ijk^{amn} contribution to canonical Eq. (50), local SI Eq. (S32).
             // (becomes) T_{mnk}^{abc} K_{lij}^{dmn}
-            size_t lij_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(l, i, j, naocc)];
+            size_t lij_perm_idx =
+                ijk_to_ijkl_perm_idx.at(triplet_key(l, i, j, naocc));
             einsum(1.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, 1.0, Indices{index::m, index::n, index::a, index::b, index::c}, 
-                    T_mni_list[k_idx], Indices{index::d, index::m, index::n}, K_ijkamn_map[lij_perm_idx]);
+                    T_mni_list[k_idx], Indices{index::d, index::m, index::n},
+                    K_ijkamn_map.at(static_cast<int>(lij_perm_idx)));
 
-            size_t kij_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(k, i, j, naocc)];
+            size_t kij_perm_idx =
+                ijk_to_ijkl_perm_idx.at(triplet_key(k, i, j, naocc));
             einsum(0.0, Indices{index::a, index::b, index::d, index::c}, &R_ijkl_buffer_b, 1.0, Indices{index::m, index::n, index::a, index::b, index::d},
-                    T_mni_list[l_idx], Indices{index::c, index::m, index::n}, K_ijkamn_map[kij_perm_idx]);
+                    T_mni_list[l_idx], Indices{index::c, index::m, index::n},
+                    K_ijkamn_map.at(static_cast<int>(kij_perm_idx)));
             R_ijkl_buffer_a += quadruples_permuter(R_ijkl_buffer_b, 0, 1, 3, 2);
 
             // L_ijk^{abm} contribution to canonical Eq. (50), local SI Eq. (S33).
-            size_t ijk_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(i, j, k, naocc)];
+            size_t ijk_perm_idx =
+                ijk_to_ijkl_perm_idx.at(triplet_key(i, j, k, naocc));
             einsum(1.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, -1.0, Indices{index::m, index::a, index::b}, 
-                    L_ijkabm_map[ijk_perm_idx], Indices{index::m, index::c, index::d}, T_mi_list[l_idx]);
+                    L_ijkabm_map.at(static_cast<int>(ijk_perm_idx)),
+                    Indices{index::m, index::c, index::d}, T_mi_list[l_idx]);
             
-            size_t ijl_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(i, j, l, naocc)];
+            size_t ijl_perm_idx =
+                ijk_to_ijkl_perm_idx.at(triplet_key(i, j, l, naocc));
             einsum(0.0, Indices{index::a, index::b, index::d, index::c}, &R_ijkl_buffer_b, -1.0, Indices{index::m, index::a, index::b}, 
-                    L_ijkabm_map[ijl_perm_idx], Indices{index::m, index::d, index::c}, T_mi_list[k_idx]);
+                    L_ijkabm_map.at(static_cast<int>(ijl_perm_idx)),
+                    Indices{index::m, index::d, index::c}, T_mi_list[k_idx]);
             R_ijkl_buffer_a += quadruples_permuter(R_ijkl_buffer_b, 0, 1, 3, 2);
 
             // M_ejk^{abc} contribution to canonical Eq. (50), local SI Eq. (S34).
@@ -4777,45 +5445,9 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
             }
         }
 
-        // Loop over all possible quadruplet permutations
-        einsums::for_sequence<24UL>([&](auto perm_idx) {
-            auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
-            int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-            const size_t ijkl_idx = quadruplet_key(i, j, k, l, naocc);
-
-            // Accumulate the occupied/virtual permutations of local SI Eq. (S31).
-            if (!R_ijkl_list.count(ijkl_idx)) {
-                Tensor<double, 4> R_ijkl_perm("R_ijkl_perm", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                R_ijkl_perm.zero();
-
-                // => Buffer used to keep track of contributions <= //
-                Tensor<double, 4> R_ijkl_buffer_a("R_ijkl_buffer_a", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                Tensor<double, 4> R_ijkl_buffer_b("R_ijkl_buffer_b", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-
-                // J_iej^{mab} contribution to canonical Eq. (50), local SI Eq. (S31).
-                Tensor<double, 4> T_mkl_t = T_mij_list[k_idx * FOUR + l_idx];
-                permute(Indices{index::m, index::e, index::c, index::d}, &T_mkl_t, Indices{index::m, index::c, index::e, index::d}, T_mij_list[k_idx * FOUR + l_idx]);
-
-                einsum(0.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, 1.0, Indices{index::m, index::e, index::a, index::b},
-                        J_iejmab_list[i_idx * FOUR + j_idx], Indices{index::m, index::e, index::c, index::d}, T_mkl_t);
-                permute(Indices{index::c, index::b, index::a, index::d}, &R_ijkl_buffer_b, Indices{index::a, index::b, index::c, index::d}, R_ijkl_buffer_a);
-
-                R_ijkl_buffer_a *= -0.5;
-                R_ijkl_perm += R_ijkl_buffer_a;
-
-                R_ijkl_buffer_b *= -1.0;
-                R_ijkl_perm += R_ijkl_buffer_b;
-
-                // Add permutation to buffer
-                R_ijkl_list[ijkl_idx] = R_ijkl_perm;
-                permute(Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, std::get<perm_idx>(einsum_indices), R_ijkl_list[ijkl_idx]);
-                R_ijkl += R_ijkl_buffer_a;
-            } else {
-                Tensor<double, 4> R_ijkl_buffer_a("R_ijkl_buffer_a", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
-                permute(Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, std::get<perm_idx>(einsum_indices), R_ijkl_list[ijkl_idx]);
-                R_ijkl += R_ijkl_buffer_a;
-            }
-        }); // end if
+        // The J contribution was produced pair-by-pair before the K/L/M banks;
+        // add it in the historical final position to preserve accumulation order.
+        R_ijkl += R_J_ijkl;
 
         if (disk_qno_integrals_) {
             q_ov_ijkl_[ijkl] = Tensor<double, 3>(q_ov_ijkl_[ijkl].name(), 0, 0, 0);
@@ -5018,11 +5650,11 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
             // compute quadruples amplitude
             timer_on("DLPNO-CCSDTQ : R_iajbkcld");
             if (miter == 0) {
-                form_T_mnkl_xpno();
+                if (!stream_xpno_t4_) form_T_mnkl_xpno();
                 compute_quadruples_residual(R_iajbkcld);
                 // Equation (85) consumes the XPNO-projected amplitudes completely;
                 // release them before the T3/T2/T1 residual phases begin.
-                T_mnkl_xpno_.clear();
+                if (!stream_xpno_t4_) T_mnkl_xpno_.clear();
 
             #pragma omp parallel for schedule(dynamic, 1)
                 for (int ijkl_sorted = 0; ijkl_sorted < n_lmo_quadruplets; ++ijkl_sorted) {

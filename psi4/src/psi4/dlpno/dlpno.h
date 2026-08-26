@@ -233,6 +233,10 @@ class DLPNO : public Wavefunction {
 
     // Helper functions
     void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B);
+    /// Factor A once and solve A X = B for several right-hand-side blocks.
+    /// The blocks are solved one at a time so the shared LU factorization does
+    /// not require a concatenated (and potentially very large) RHS buffer.
+    void C_DGESV_shared_factorization(SharedMatrix A, const std::vector<SharedMatrix>& rhs_blocks);
 
     std::pair<SharedMatrix, SharedVector> canonicalizer(SharedMatrix C, SharedMatrix F);
     std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix S, SharedMatrix F);
@@ -548,6 +552,11 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     // Contravariant (spin-summed) triples amplitudes; manuscript Eq. (79)
     std::vector<einsums::Tensor<double, 3>> U_iajbkc_;
 
+    /// Cached (ia|jb), (ia|kb), and (ja|kb) TNO-domain exchange matrices.
+    /// They are invariant during the CCSDT iterations and are shared by the
+    /// separate T3 -> R1 and T3 -> R2 contraction passes.
+    std::vector<std::array<einsums::Tensor<double, 2>, 3>> K_ovov_tno_cache_;
+
     // List of triples sorted by number of TNOs
     std::vector<int> sorted_triplets_;
     // Number of threads
@@ -669,7 +678,17 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     void sort_quadruplets(double e_total);
 
     /// Transform all four virtual indices between QNO spaces (semidirect overlaps, Eqs. (58)-(61)).
-    einsums::Tensor<double, 4> matmul_4d(const einsums::Tensor<double, 4>& A, const SharedMatrix &X, int dim_old, int dim_new, bool contract_first=true);
+    einsums::Tensor<double, 4> matmul_4d(const einsums::Tensor<double, 4>& A,
+                                         const SharedMatrix& X, int dim_old, int dim_new);
+    /// Transform in canonical storage order and apply the occupied-column
+    /// permutation only in the smaller target space, avoiding a permuted
+    /// dim_old^4 input copy while keeping all four contractions as GEMMs.
+    einsums::Tensor<double, 4> matmul_4d_permuted(
+        const einsums::Tensor<double, 4>& A, const SharedMatrix& X, int dim_old,
+        int dim_new, int i, int j, int k, int l);
+    /// Return the permutation row that maps the stored sorted occupied tuple to
+    /// the requested (i,j,k,l) column order.
+    size_t quadruples_permutation_index(int i, int j, int k, int l) const;
     /// Apply the occupied/QNO permutation maps of Eqs. (51)-(55).
     einsums::Tensor<double, 4> quadruples_permuter(const einsums::Tensor<double, 4>& X, int i, int j, int k, int l);
 
@@ -725,6 +744,9 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     bool disk_qno_integrals_ = true;
     /// Include T4 amplitudes and residuals in the on-disk DIIS vectors.
     bool extrapolate_t4_ = true;
+    /// Recompute one XPNO-projected T4 block at a time instead of retaining the
+    /// complete [kl][mn] bank when the memory estimator selects low-memory mode.
+    bool stream_xpno_t4_ = false;
     /// Fraction of the preceding T4 amplitude retained when damping is activated.
     double quadruples_damping_ratio_ = 0.0;
     /// Local CCSDTQ correlation energy.
@@ -761,10 +783,11 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     /// to reduce the cost of the computationally dominant contractions.
     void form_T_mnkl_xpno();
 
-    /// Form delta L_ijk^{abm}[ij] in a pair domain (main-text Eqs. (98)--(99); SI Eq. (S13)).
-    std::vector<einsums::Tensor<double, 4>> compute_delta_L_ijk_abm();
-    /// Form delta M_ejk^{abc}[jk] in a pair domain (main-text Eqs. (101)--(102); SI Eq. (S15)).
-    std::vector<einsums::Tensor<double, 4>> compute_delta_M_ejk_abc();
+    /// Form the pair-domain delta-L and delta-M corrections together, sharing
+    /// streamed (me|nf) slices (main-text Eqs. (98)--(102); SI Eqs. (S13),(S15)).
+    std::pair<std::vector<einsums::Tensor<double, 4>>,
+              std::vector<einsums::Tensor<double, 4>>>
+    compute_delta_L_M();
 
     /// Add the T4-dependent doubles residual (main-text Eq. (93); SI Eq. (S16)).
     void add_t4_to_doubles_residual(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb,
