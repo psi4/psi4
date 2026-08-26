@@ -465,7 +465,7 @@ void Matrix::copy_from(double ***c) {
 
 void Matrix::copy_from(const double *const data, int h) {
         size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
-        if (size) memcpy(&(matrix_[h][0][0]), data, size * sizeof(double));
+        if (size) memcpy(&(matrix_[h][0][0]), data, size);
 }
 
 // Sets all elements of matrix to val
