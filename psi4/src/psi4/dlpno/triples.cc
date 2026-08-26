@@ -56,15 +56,36 @@
 namespace psi {
 namespace dlpno {
 
+using einsums::All;
+using einsums::Indices;
+using einsums::Tensor;
+using einsums::TensorView;
+using einsums::tensor_algebra::einsum;
+using einsums::tensor_algebra::permute;
+namespace index = einsums::index;
+namespace linear_algebra = einsums::linear_algebra;
+
+namespace {
+
+size_t triplet_key(int i, int j, int k, size_t nocc) {
+    return (static_cast<size_t>(i) * nocc + j) * nocc + k;
+}
+
+}  // namespace
+
 DLPNOCCSD_T::DLPNOCCSD_T(SharedWavefunction ref_wfn, Options &options) : DLPNOCCSD(ref_wfn, options) {}
 DLPNOCCSD_T::~DLPNOCCSD_T() {}
 
 void DLPNOCCSD_T::print_header() {
-    bool t0_only = options_.get_bool("T0_APPROXIMATION");
+    const bool full_triples_follow = algorithm_ != DLPNOMethod::CCSD_T;
+    const bool t0_only = !full_triples_follow && options_.get_bool("T0_APPROXIMATION");
     std::string triples_algorithm = (t0_only) ? "SEMICANONICAL (T0)" : "ITERATIVE (T)";
     double t_cut_tno = options_.get_double("T_CUT_TNO");
-    double t_cut_tno_strong_scale = options_.get_double("T_CUT_TNO_STRONG_SCALE");
-    double t_cut_tno_weak_scale = options_.get_double("T_CUT_TNO_WEAK_SCALE");
+    const double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
+    const double t_cut_tno_strong =
+        full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_STRONG");
+    const double t_cut_tno_weak =
+        full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_WEAK");
 
     outfile->Printf("   --------------------------------------------\n");
     outfile->Printf("                    DLPNO-CCSD(T)              \n");
@@ -82,13 +103,21 @@ void DLPNOCCSD_T::print_header() {
     outfile->Printf("    T_CUT_DO_TRIPLES_PRE (T0)  = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES_PRE"));
     outfile->Printf("    T_CUT_MKN_TRIPLES_PRE (T0) = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES_PRE"));
     if (!t0_only) {
-        outfile->Printf("    T_CUT_TNO_STRONG (T)       = %6.3e \n", t_cut_tno * t_cut_tno_strong_scale);
-        outfile->Printf("    T_CUT_TNO_WEAK (T)         = %6.3e \n", t_cut_tno * t_cut_tno_weak_scale);
+        outfile->Printf("    T_CUT_TNO_STRONG (T)       = %6.3e \n", t_cut_tno_strong);
+        outfile->Printf("    T_CUT_TNO_WEAK (T)         = %6.3e \n", t_cut_tno_weak);
         outfile->Printf("    F_CUT_T (T)                = %6.3e \n", options_.get_double("F_CUT_T"));
         outfile->Printf("    T_CUT_ITER (T)             = %6.3e \n", options_.get_double("T_CUT_ITER"));
     }
     outfile->Printf("    MIN_TNOS                   = %6d   \n", options_.get_int("MIN_TNOS"));
     outfile->Printf("    TRIPLES_MAX_WEAK_PAIRS     = %6d   \n", options_.get_int("TRIPLES_MAX_WEAK_PAIRS"));
+    if (full_triples_follow &&
+        (options_["T_CUT_TNO_STRONG"].has_changed() || options_["T_CUT_TNO_WEAK"].has_changed())) {
+        outfile->Printf(
+            "\n    WARNING: T_CUT_TNO_STRONG/T_CUT_TNO_WEAK apply only when DLPNO-CCSD(T)\n"
+            "             is the final method. Full triples were requested, so both iterative-(T)\n"
+            "             cutoffs are overridden by T_CUT_TNO_FULL = %6.3e.\n",
+            t_cut_tno_full);
+    }
     outfile->Printf("\n\n");
 }
 
@@ -156,17 +185,17 @@ void DLPNOCCSD_T::triples_sparsity(bool prescreening) {
                 if (weak_pair_count > MAX_WEAK_PAIRS) continue;
 
                 ijk_to_i_j_k_.push_back(std::make_tuple(i, j, k));
-                i_j_k_to_ijk_[i * naocc * naocc + j * naocc + k] = ijk;
-                i_j_k_to_ijk_[i * naocc * naocc + k * naocc + j] = ijk;
-                i_j_k_to_ijk_[j * naocc * naocc + i * naocc + k] = ijk;
-                i_j_k_to_ijk_[j * naocc * naocc + k * naocc + i] = ijk;
-                i_j_k_to_ijk_[k * naocc * naocc + i * naocc + j] = ijk;
-                i_j_k_to_ijk_[k * naocc * naocc + j * naocc + i] = ijk;
+                i_j_k_to_ijk_[triplet_key(i, j, k, naocc)] = ijk;
+                i_j_k_to_ijk_[triplet_key(i, k, j, naocc)] = ijk;
+                i_j_k_to_ijk_[triplet_key(j, i, k, naocc)] = ijk;
+                i_j_k_to_ijk_[triplet_key(j, k, i, naocc)] = ijk;
+                i_j_k_to_ijk_[triplet_key(k, i, j, naocc)] = ijk;
+                i_j_k_to_ijk_[triplet_key(k, j, i, naocc)] = ijk;
                 ++ijk;
             }
         }
     } else {
-        std::unordered_map<int, int> i_j_k_to_ijk_new;
+        std::unordered_map<size_t, int> i_j_k_to_ijk_new;
         std::vector<std::tuple<int, int, int>> ijk_to_i_j_k_new;
 
         double t_cut_triples_weak = options_.get_double("T_CUT_TRIPLES_WEAK");
@@ -179,12 +208,12 @@ void DLPNOCCSD_T::triples_sparsity(bool prescreening) {
 
             if (std::fabs(e_ijk_[ijk]) >= t_cut_triples_weak) {
                 ijk_to_i_j_k_new.push_back(std::make_tuple(i, j, k));
-                i_j_k_to_ijk_new[i * naocc * naocc + j * naocc + k] = ijk_new;
-                i_j_k_to_ijk_new[i * naocc * naocc + k * naocc + j] = ijk_new;
-                i_j_k_to_ijk_new[j * naocc * naocc + i * naocc + k] = ijk_new;
-                i_j_k_to_ijk_new[j * naocc * naocc + k * naocc + i] = ijk_new;
-                i_j_k_to_ijk_new[k * naocc * naocc + i * naocc + j] = ijk_new;
-                i_j_k_to_ijk_new[k * naocc * naocc + j * naocc + i] = ijk_new;
+                i_j_k_to_ijk_new[triplet_key(i, j, k, naocc)] = ijk_new;
+                i_j_k_to_ijk_new[triplet_key(i, k, j, naocc)] = ijk_new;
+                i_j_k_to_ijk_new[triplet_key(j, i, k, naocc)] = ijk_new;
+                i_j_k_to_ijk_new[triplet_key(j, k, i, naocc)] = ijk_new;
+                i_j_k_to_ijk_new[triplet_key(k, i, j, naocc)] = ijk_new;
+                i_j_k_to_ijk_new[triplet_key(k, j, i, naocc)] = ijk_new;
                 ++ijk_new;
             } else {
                 de_lccsd_t_screened_ += e_ijk_[ijk];
@@ -197,9 +226,6 @@ void DLPNOCCSD_T::triples_sparsity(bool prescreening) {
     int n_lmo_triplets = ijk_to_i_j_k_.size();
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
-
-    tno_scale_.clear();
-    tno_scale_.resize(n_lmo_triplets, 1.0);
 
     // => Local density fitting domains <= //
 
@@ -315,16 +341,19 @@ void DLPNOCCSD_T::sort_triplets(double e_total) {
     });
 
     double e_curr = 0.0;
-    double strong_scale = options_.get_double("T_CUT_TNO_STRONG_SCALE");
-    double weak_scale = options_.get_double("T_CUT_TNO_WEAK_SCALE");
+    const bool full_triples_follow = algorithm_ != DLPNOMethod::CCSD_T;
+    const double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
+    const double strong_cutoff =
+        full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_STRONG");
+    const double weak_cutoff =
+        full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_WEAK");
     is_strong_triplet_.resize(n_lmo_triplets, false);
-    tno_scale_.clear();
-    tno_scale_.resize(n_lmo_triplets, weak_scale);
+    tno_cutoff_.assign(n_lmo_triplets, weak_cutoff);
 
     int strong_count = 0;
     for (int idx = 0; idx < n_lmo_triplets; ++idx) {
         is_strong_triplet_[ijk_e_pairs[idx].first] = true;
-        tno_scale_[ijk_e_pairs[idx].first] = strong_scale;
+        tno_cutoff_[ijk_e_pairs[idx].first] = strong_cutoff;
         e_curr += ijk_e_pairs[idx].second;
         ++strong_count;
         if (e_curr / e_total > 0.9) break;
@@ -336,7 +365,7 @@ void DLPNOCCSD_T::sort_triplets(double e_total) {
     timer_off("Sort Triplets");
 }
 
-void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
+void DLPNOCCSD_T::tno_transform(double t_cut_tno, bool use_tuple_cutoffs) {
     // Computes TNOs from converged LCCSD densities of triplets ij, jk, and ik
     
     timer_on("TNO transform");
@@ -345,6 +374,10 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
     int n_lmo_pairs = ij_to_i_j_.size();
     int n_lmo_triplets = ijk_to_i_j_k_.size();
     const int MIN_TNOS = options_.get_int("MIN_TNOS");
+
+    if (use_tuple_cutoffs && tno_cutoff_.size() != n_lmo_triplets) {
+        throw PSIEXCEPTION("Triplet-specific TNO cutoffs were not initialized before the iterative (T) transform.");
+    }
 
     X_tno_.clear();
     e_tno_.clear();
@@ -432,11 +465,11 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
         Vector tno_occ("eigenvalues", nvir_ijk);
         D_ijk->diagonalize(*X_tno_ijk, tno_occ, descending);
 
-        double tno_scale = tno_scale_[ijk];
+        const double tno_cutoff = use_tuple_cutoffs ? tno_cutoff_[ijk] : t_cut_tno;
 
         int nvir_ijk_final = 0;
         for (size_t a = 0; a < nvir_ijk; ++a) {
-            if (fabs(tno_occ.get(a)) >= tno_scale * t_cut_tno || a < MIN_TNOS) {
+            if (fabs(tno_occ.get(a)) >= tno_cutoff || a < MIN_TNOS) {
                 nvir_ijk_final++;
             }
         }
@@ -940,16 +973,16 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
             V_iajbkc_[ijk] = V_ijk;
         } else if (save_memory && write_intermediates_) {
 #pragma omp critical
-            W_ijk->save(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+            W_ijk->save(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
 #pragma omp critical
-            V_ijk->save(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+            V_ijk->save(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
         }
 
         if (save_memory && !write_amplitudes_) {
             T_iajbkc_[ijk] = T_ijk;
         } else if (save_memory && write_amplitudes_) {
 #pragma omp critical
-            T_ijk->save(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+            T_ijk->save(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
         }
 
         if (thread == 0) {
@@ -992,11 +1025,11 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
         int ntno_ijk = n_tno_[ijk];
         if (ntno_ijk == 0) continue;
 
-        int kji = i_j_k_to_ijk_[k * naocc * naocc + j * naocc + i];
-        int ikj = i_j_k_to_ijk_[i * naocc * naocc + k * naocc + j];
-        int jik = i_j_k_to_ijk_[j * naocc * naocc + i * naocc + k];
-        int jki = i_j_k_to_ijk_[j * naocc * naocc + k * naocc + i];
-        int kij = i_j_k_to_ijk_[k * naocc * naocc + i * naocc + j];
+        int kji = i_j_k_to_ijk_[triplet_key(k, j, i, naocc)];
+        int ikj = i_j_k_to_ijk_[triplet_key(i, k, j, naocc)];
+        int jik = i_j_k_to_ijk_[triplet_key(j, i, k, naocc)];
+        int jki = i_j_k_to_ijk_[triplet_key(j, k, i, naocc)];
+        int kij = i_j_k_to_ijk_[triplet_key(k, i, j, naocc)];
 
         double prefactor = 1.0;
         if (i == j && j == k) {
@@ -1014,7 +1047,7 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
             v_name << "V " << (ijk);
             V_ijk = std::make_shared<Matrix>(v_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-            V_ijk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+            V_ijk->load(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
         } else {
             V_ijk = V_iajbkc_[ijk];
         }
@@ -1024,7 +1057,7 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
             t_name << "T " << (ijk);
             T_ijk = std::make_shared<Matrix>(t_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-            T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+            T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
         } else {
             T_ijk = T_iajbkc_[ijk];
         }
@@ -1121,9 +1154,9 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
 
         // Compute the cost of the TNO projections per triple
         for (int l = 0; l < naocc; ++l) {
-            int ijl_dense = i * naocc * naocc + j * naocc + l;
-            int ilk_dense = i * naocc * naocc + l * naocc + k;
-            int ljk_dense = l * naocc * naocc + j * naocc + k;
+            const size_t ijl_dense = triplet_key(i, j, l, naocc);
+            const size_t ilk_dense = triplet_key(i, l, k, naocc);
+            const size_t ljk_dense = triplet_key(l, j, k, naocc);
             
             if (l != k && i_j_k_to_ijk_.count(ijl_dense) && std::fabs((*F_lmo_)(l, k)) >= F_CUT) {
                 int ijl = i_j_k_to_ijk_[ijl_dense];
@@ -1183,9 +1216,9 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
             // S integrals
             std::vector<int> triplet_ext_domain;
             for (int l = 0; l < naocc; ++l) {
-                int ijl_dense = i * naocc * naocc + j * naocc + l;
-                int ilk_dense = i * naocc * naocc + l * naocc + k;
-                int ljk_dense = l * naocc * naocc + j * naocc + k;
+                const size_t ijl_dense = triplet_key(i, j, l, naocc);
+                const size_t ilk_dense = triplet_key(i, l, k, naocc);
+                const size_t ljk_dense = triplet_key(l, j, k, naocc);
                 
                 if (l != k && i_j_k_to_ijk_.count(ijl_dense) && std::fabs((*F_lmo_)(l, k)) >= F_CUT) {
                     int ijl = i_j_k_to_ijk_[ijl_dense];
@@ -1219,7 +1252,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                 w_name << "W " << (ijk);
                 W_ijk = std::make_shared<Matrix>(w_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-                W_ijk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+                W_ijk->load(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
             } else {
                 W_ijk = W_iajbkc_[ijk];
             }
@@ -1229,7 +1262,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                 t_name << "T " << (ijk);
                 T_ijk = std::make_shared<Matrix>(t_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-                T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+                T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
             } else {
                 T_ijk = T_iajbkc_[ijk];
             }
@@ -1253,7 +1286,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
             // This inner loop performs the operation
             // R_{ijk}^{abc} += - f_{il} t_{ljk}^{abc} - f_{jl} t_{ilk}^{abc} - f_{kl} t_{ijl}^{abc}
             for (int l = 0; l < naocc; l++) {
-                int ijl_dense = i * naocc * naocc + j * naocc + l;
+                const size_t ijl_dense = triplet_key(i, j, l, naocc);
                 if (l != k && i_j_k_to_ijk_.count(ijl_dense) && std::fabs((*F_lmo_)(l, k)) >= F_CUT) {
                     int ijl = i_j_k_to_ijk_[ijl_dense];
 
@@ -1267,7 +1300,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                         t_name << "T " << (ijl);
                         T_ijl = std::make_shared<Matrix>(t_name.str(), n_tno_[ijl], n_tno_[ijl] * n_tno_[ijl]);
 #pragma omp critical
-                        T_ijl->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+                        T_ijl->load(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
                     } else {
                         T_ijl = T_iajbkc_[ijl];
                     }
@@ -1279,7 +1312,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                             &(*R_ijk)(0, 0), 1);
                 }
 
-                int ilk_dense = i * naocc * naocc + l * naocc + k;
+                const size_t ilk_dense = triplet_key(i, l, k, naocc);
                 if (l != j && i_j_k_to_ijk_.count(ilk_dense) && std::fabs((*F_lmo_)(l, j)) >= F_CUT) {
                     int ilk = i_j_k_to_ijk_[ilk_dense];
 
@@ -1293,7 +1326,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                         t_name << "T " << (ilk);
                         T_ilk = std::make_shared<Matrix>(t_name.str(), n_tno_[ilk], n_tno_[ilk] * n_tno_[ilk]);
 #pragma omp critical
-                        T_ilk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+                        T_ilk->load(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
                     } else {
                         T_ilk = T_iajbkc_[ilk];
                     }
@@ -1305,7 +1338,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                             &(*R_ijk)(0, 0), 1);
                 }
 
-                int ljk_dense = l * naocc * naocc + j * naocc + k;
+                const size_t ljk_dense = triplet_key(l, j, k, naocc);
                 if (l != i && i_j_k_to_ijk_.count(ljk_dense) && std::fabs((*F_lmo_)(l, i)) >= F_CUT) {
                     int ljk = i_j_k_to_ijk_[ljk_dense];
 
@@ -1319,7 +1352,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                         t_name << "T " << (ljk);
                         T_ljk = std::make_shared<Matrix>(t_name.str(), n_tno_[ljk], n_tno_[ljk] * n_tno_[ljk]);
 #pragma omp critical
-                        T_ljk->load(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+                        T_ljk->load(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
                     } else {
                         T_ljk = T_iajbkc_[ljk];
                     }
@@ -1345,7 +1378,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
 
             if (write_amplitudes_) {
 #pragma omp critical
-                T_ijk->save(psio_, PSIF_DLPNO_TRIPLES, ::psi::Matrix::SubBlocks);
+                T_ijk->save(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
             }
             
             R_iajbkc_rms[ijk] = R_ijk->rms();
@@ -1447,17 +1480,25 @@ double DLPNOCCSD_T::compute_energy() {
 
     // Step 3: Compute full DLPNO-CCSD(T) energy if NOT using T0 approximation
 
-    if (!options_.get_bool("T0_APPROXIMATION")) {
+    // Full triples and higher methods always form the iterative-(T) amplitudes
+    // used as their starting point; T0_APPROXIMATION applies only when
+    // DLPNO-CCSD(T) is the final requested method.
+    const bool t0_only = algorithm_ == DLPNOMethod::CCSD_T && options_.get_bool("T0_APPROXIMATION");
+    if (!t0_only) {
         outfile->Printf("\n\n  ==> Computing Full Iterative (T) <==\n\n");
 
         sort_triplets(E_T0);
 
-        double t_cut_tno_strong_scale = options_.get_double("T_CUT_TNO_STRONG_SCALE");
-        double t_cut_tno_weak_scale = options_.get_double("T_CUT_TNO_WEAK_SCALE");
-        outfile->Printf("     T_CUT_TNO (re)set to %6.3e for strong triples \n", t_cut_tno * t_cut_tno_strong_scale);
-        outfile->Printf("     T_CUT_TNO (re)set to %6.3e for weak triples   \n\n", t_cut_tno * t_cut_tno_weak_scale);
+        const bool full_triples_follow = algorithm_ != DLPNOMethod::CCSD_T;
+        const double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
+        const double t_cut_tno_strong =
+            full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_STRONG");
+        const double t_cut_tno_weak =
+            full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_WEAK");
+        outfile->Printf("     T_CUT_TNO set to %6.3e for strong triplets \n", t_cut_tno_strong);
+        outfile->Printf("     T_CUT_TNO set to %6.3e for weak triplets   \n\n", t_cut_tno_weak);
 
-        tno_transform(t_cut_tno);
+        tno_transform(t_cut_tno, true);
         estimate_memory();
 
         double E_T0_crude = compute_lccsd_t0(true);
@@ -1644,8 +1685,7 @@ Tensor<double, 3> DLPNOCCSDT::triples_spin_desummation(const Tensor<double, 3> &
 
 void DLPNOCCSDT::print_header() {
     double t_cut_tno = options_.get_double("T_CUT_TNO");
-    double t_cut_tno_strong_scale = options_.get_double("T_CUT_TNO_STRONG_SCALE");
-    double t_cut_tno_weak_scale = options_.get_double("T_CUT_TNO_WEAK_SCALE");
+    const double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
 
     outfile->Printf("   --------------------------------------------\n");
     outfile->Printf("                    DLPNO-CCSDT                \n");
@@ -1656,9 +1696,9 @@ void DLPNOCCSDT::print_header() {
     outfile->Printf("  Inherited CCSD parameters are reported in the preceding DLPNO-CCSD header.\n");
     outfile->Printf("  Full-triples and inherited triples parameters:\n");
     outfile->Printf("    T_CUT_TNO                  = %6.3e \n", t_cut_tno);
-    outfile->Printf("    T_CUT_TNO_FULL             = %6.3e \n", options_.get_double("T_CUT_TNO_FULL"));
-    outfile->Printf("    T_CUT_TNO_STRONG           = %6.3e \n", t_cut_tno * t_cut_tno_strong_scale);
-    outfile->Printf("    T_CUT_TNO_WEAK             = %6.3e \n", t_cut_tno * t_cut_tno_weak_scale);
+    outfile->Printf("    T_CUT_TNO_FULL             = %6.3e \n", t_cut_tno_full);
+    outfile->Printf("    T_CUT_TNO_STRONG           = %6.3e \n", t_cut_tno_full);
+    outfile->Printf("    T_CUT_TNO_WEAK             = %6.3e \n", t_cut_tno_full);
     outfile->Printf("    T_CUT_TNO_PRE              = %6.3e \n", options_.get_double("T_CUT_TNO_PRE"));
     outfile->Printf("    T_CUT_TRIPLES_WEAK         = %6.3e \n", options_.get_double("T_CUT_TRIPLES_WEAK"));
     outfile->Printf("    T_CUT_DO_TRIPLES           = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES"));
@@ -2014,10 +2054,10 @@ void DLPNOCCSDT::compute_integrals() {
 
         if (disk_ints_) {
 #pragma omp critical
-            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_TNO, ::psi::Matrix::SubBlocks);
+            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_TNO, Matrix::SubBlocks);
 
 #pragma omp critical
-            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_TNO, ::psi::Matrix::ThreeIndexLowerTriangle);
+            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_TNO, Matrix::ThreeIndexLowerTriangle);
 
             q_ov_name << "(Q_ijk | m a) " << (ijk);
             q_vv_name << "(Q_ijk | a b) " << (ijk);
@@ -2028,7 +2068,7 @@ void DLPNOCCSDT::compute_integrals() {
     } // end ijk
 }
 
-Tensor<double, 3> DLPNOCCSDT::QIA_TNO(const int ijk) {
+void DLPNOCCSDT::load_qia_tno(int ijk) {
     if (disk_ints_) {
         int naux_ijk = lmotriplet_to_ribfs_[ijk].size();
         int nlmo_ijk = lmotriplet_to_lmos_[ijk].size();
@@ -2039,16 +2079,14 @@ Tensor<double, 3> DLPNOCCSDT::QIA_TNO(const int ijk) {
 
         auto q_ov = std::make_shared<Matrix>(q_ov_name.str(), naux_ijk, nlmo_ijk * ntno_ijk);
 #pragma omp critical
-        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_TNO, ::psi::Matrix::SubBlocks);
+        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_TNO, Matrix::SubBlocks);
 
         q_ov_[ijk] = Tensor<double, 3>(q_ov->name(), naux_ijk, nlmo_ijk, ntno_ijk);
         ::memcpy(q_ov_[ijk].data(), q_ov->get_pointer(), naux_ijk * nlmo_ijk * ntno_ijk * sizeof(double));
     }
-
-    return q_ov_[ijk];
 }
 
-Tensor<double, 3> DLPNOCCSDT::QAB_TNO(const int ijk) {
+void DLPNOCCSDT::load_qab_tno(int ijk) {
     if (disk_ints_) {
         int naux_ijk = lmotriplet_to_ribfs_[ijk].size();
         int ntno_ijk = n_tno_[ijk];
@@ -2058,13 +2096,11 @@ Tensor<double, 3> DLPNOCCSDT::QAB_TNO(const int ijk) {
 
         auto q_vv = std::make_shared<Matrix>(q_vv_name.str(), naux_ijk, ntno_ijk * ntno_ijk);
 #pragma omp critical
-        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_TNO, ::psi::Matrix::ThreeIndexLowerTriangle);
+        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_TNO, Matrix::ThreeIndexLowerTriangle);
 
-        q_vv_[ijk] = Tensor<double, 3>(q_vv_[ijk].name(), naux_ijk, ntno_ijk, ntno_ijk);
+        q_vv_[ijk] = Tensor<double, 3>(q_vv->name(), naux_ijk, ntno_ijk, ntno_ijk);
         ::memcpy(q_vv_[ijk].data(), q_vv->get_pointer(), naux_ijk * ntno_ijk * ntno_ijk * sizeof(double));
     }
-
-    return q_vv_[ijk];
 }
 
 void DLPNOCCSDT::compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vector<std::vector<SharedMatrix>>& R_ia_buffer) {
@@ -2192,8 +2228,8 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
 
         // Read integrals when disk-backed storage is enabled.
         if (disk_ints_) {
-            q_ov_[ijk] = QIA_TNO(ijk);
-            q_vv_[ijk] = QAB_TNO(ijk);
+            load_qia_tno(ijk);
+            load_qab_tno(ijk);
         }
 
         // => (i l_{ijk} | j b_{ijk}) integrals <= //
@@ -2445,7 +2481,7 @@ std::vector<Tensor<double, 3>> DLPNOCCSDT::rho_dbck_contribution() {
             for (int l_k = 0; l_k < nlmo_k; ++l_k) {
                 int l = lmopair_to_lmos_[kk][l_k];
 
-                int mlk_dense = m * naocc * naocc + l * naocc + k;
+                const size_t mlk_dense = triplet_key(m, l, k, naocc);
                 if (!i_j_k_to_ijk_.count(mlk_dense)) continue;
                 int mlk = i_j_k_to_ijk_[mlk_dense];
 
@@ -2495,8 +2531,8 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
         // Read integrals when disk-backed storage is enabled.
         if (disk_ints_) {
-            q_ov_[ijk] = QIA_TNO(ijk);
-            q_vv_[ijk] = QAB_TNO(ijk);
+            load_qia_tno(ijk);
+            load_qab_tno(ijk);
         }
 
         // Form extended domain for overlap integrals
@@ -2510,19 +2546,19 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[mj]);
             triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[mk]);
 
-            int mjk_dense = m * naocc * naocc + j * naocc + k;
+            const size_t mjk_dense = triplet_key(m, j, k, naocc);
             if (i_j_k_to_ijk_.count(mjk_dense)) {
                 int mjk = i_j_k_to_ijk_[mjk_dense];
                 triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[mjk]);
             } // end if
 
-            int imk_dense = i * naocc * naocc + m * naocc + k;
+            const size_t imk_dense = triplet_key(i, m, k, naocc);
             if (i_j_k_to_ijk_.count(imk_dense)) {
                 int imk = i_j_k_to_ijk_[imk_dense];
                 triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[imk]);
             } // end if
 
-            int ijm_dense = i * naocc * naocc + j * naocc + m;
+            const size_t ijm_dense = triplet_key(i, j, m, naocc);
             if (i_j_k_to_ijk_.count(ijm_dense)) {
                 int ijm = i_j_k_to_ijk_[ijm_dense];
                 triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[ijm]);
@@ -2538,19 +2574,19 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
                 triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[lk]);
                 triplet_ext_domain = merge_lists(triplet_ext_domain, lmopair_to_paos_[ml]);
 
-                int mli_dense = m * naocc * naocc + l * naocc + i;
+                const size_t mli_dense = triplet_key(m, l, i, naocc);
                 if (i_j_k_to_ijk_.count(mli_dense)) {
                     int mli = i_j_k_to_ijk_[mli_dense];
                     triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[mli]);
                 } // end if
 
-                int mlj_dense = m * naocc * naocc + l * naocc + j;
+                const size_t mlj_dense = triplet_key(m, l, j, naocc);
                 if (i_j_k_to_ijk_.count(mlj_dense)) {
                     int mlj = i_j_k_to_ijk_[mlj_dense];
                     triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[mlj]);
                 } // end if
 
-                int mlk_dense = m * naocc * naocc + l * naocc + k;
+                const size_t mlk_dense = triplet_key(m, l, k, naocc);
                 if (i_j_k_to_ijk_.count(mlk_dense)) {
                     int mlk = i_j_k_to_ijk_[mlk_dense];
                     triplet_ext_domain = merge_lists(triplet_ext_domain, lmotriplet_to_paos_[mlk]);
@@ -2869,7 +2905,7 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
             for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
                 int m = lmotriplet_to_lmos_[ijk][m_ijk];
-                int mjk_dense = m * naocc * naocc + j * naocc + k;
+                const size_t mjk_dense = triplet_key(m, j, k, naocc);
                 if (!i_j_k_to_ijk_.count(mjk_dense)) continue;
 
                 int mjk = i_j_k_to_ijk_[mjk_dense];
@@ -3110,7 +3146,7 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             // T_ljk contributions
             for (int l_ijk = 0; l_ijk < nlmo_ijk; ++l_ijk) {
                 int l = lmotriplet_to_lmos_[ijk][l_ijk];
-                int ljk_dense = l * naocc * naocc + j * naocc + k;
+                const size_t ljk_dense = triplet_key(l, j, k, naocc);
                 if (!i_j_k_to_ijk_.count(ljk_dense)) continue;
                 int ljk = i_j_k_to_ijk_[ljk_dense];
 
@@ -3156,7 +3192,7 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
                 for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
                     int m = lmotriplet_to_lmos_[ijk][m_ijk];
-                    int ilm_dense = i * naocc * naocc + l * naocc + m;
+                    const size_t ilm_dense = triplet_key(i, l, m, naocc);
                     if (!i_j_k_to_ijk_.count(ilm_dense)) continue;
                     int ilm = i_j_k_to_ijk_[ilm_dense];
                     int lm_idx = (l_ijk > m_ijk) ? m_ijk * nlmo_ijk + l_ijk : l_ijk * nlmo_ijk + m_ijk;

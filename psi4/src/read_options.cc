@@ -2710,7 +2710,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_TRACE", 0.999);
         /*- MP2 pair energy tolerance for removing PNOs !expert -*/
         options.add_double("T_CUT_ENERGY", 0.997);
-        /*- The tolerance to decide between "Weak Pairs" and "SC-MP2 Pairs" after dipole screening !expert -*/
+        /*- The tolerance to decide between "Weak Pairs" and "SC-MP2 Pairs" after dipole screening.
+            For DLPNO-CCSDT and higher methods, this value is overridden by T_CUT_PAIRS so that
+            no separate weak-pair interval remains. !expert -*/
         options.add_double("T_CUT_PAIRS_MP2", 1e-6);
         /*- Occupation number threshold for removing PNOs (for preceding DLPNO-MP2 computation) !expert -*/
         options.add_double("T_CUT_PNO_MP2", 1e-10);
@@ -2726,10 +2728,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_TNO", 1e-9);
         /*- Maximum number of weak pairs in (ij, jk, ik) to consider when forming triplet ijk !expert -*/
         options.add_int("TRIPLES_MAX_WEAK_PAIRS", 1);
-        /*- T_CUT_TNO scaling for strong triplets in the iterative (T) algorithm !expert -*/
-        options.add_double("T_CUT_TNO_STRONG_SCALE", 10.0);
-        /*- T_CUT_TNO scaling for weak triplets in the iterative (T) algorithm !expert -*/
-        options.add_double("T_CUT_TNO_WEAK_SCALE", 100.0);
+        /*- Absolute TNO occupation cutoff for strong triplets in an iterative DLPNO-CCSD(T)
+            calculation. Ignored when full triples are requested. !expert -*/
+        options.add_double("T_CUT_TNO_STRONG", 1.0e-8);
+        /*- Absolute TNO occupation cutoff for weak triplets in an iterative DLPNO-CCSD(T)
+            calculation. Ignored when full triples are requested. !expert -*/
+        options.add_double("T_CUT_TNO_WEAK", 1.0e-7);
         /*- Occupation number threshold used in the prescreening step !expert -*/
         options.add_double("T_CUT_TNO_PRE", 1e-7);
         /*- Local density fitting tolerance for the prescreening portion of the (T) algorithm !expert -*/
@@ -2765,12 +2769,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_QNO", 3.33e-7);
         /*- How much to scale T_CUT_QNO by for quadruplets containing two of the same orbitals (iijk) !expert -*/
         options.add_double("T_CUT_QNO_DIAG_SCALE", 1.0);
-        /*- Maximum number of weak pairs in (ij, jk, ik, il, jl, kl) to consider when forming quadruplet ijkl !expert -*/
-        options.add_int("QUADS_MAX_WEAK_PAIRS", 3);
-        /*- T_CUT_QNO scaling for strong quadruplets in the iterative (Q) algorithm !expert -*/
-        options.add_double("T_CUT_QNO_STRONG_SCALE", 10.0);
-        /*- T_CUT_QNO scaling for weak quadruplets in the iterative (Q) algorithm !expert -*/
-        options.add_double("T_CUT_QNO_WEAK_SCALE", 10.0);
+        /*- Absolute QNO occupation cutoff for strong quadruplets in an iterative
+            DLPNO-CCSDT(Q) calculation. Ignored when full quadruples are requested. !expert -*/
+        options.add_double("T_CUT_QNO_STRONG", 1.0e-6);
+        /*- Absolute QNO occupation cutoff for weak quadruplets in an iterative
+            DLPNO-CCSDT(Q) calculation. Ignored when full quadruples are requested. !expert -*/
+        options.add_double("T_CUT_QNO_WEAK", 3.33e-6);
         /*- Occupation number threshold used in the quadruples prescreening step !expert -*/
         options.add_double("T_CUT_QNO_PRE", 3.33e-6);
         /*- Local density fitting tolerance for the prescreening portion of the (Q) algorithm !expert -*/

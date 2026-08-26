@@ -3042,6 +3042,15 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("    F_CUT            = %6.4e \n", options_.get_double("F_CUT"));
     outfile->Printf("    INTS_TOL (AO)    = %6.4e \n", options_.get_double("DLPNO_AO_INTS_TOL"));
     outfile->Printf("    MIN_PNOS         = %6d   \n", options_.get_int("MIN_PNOS"));
+    const bool post_ccsd_t = algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q ||
+                             algorithm_ == DLPNOMethod::CCSDTQ;
+    if (post_ccsd_t && options_["T_CUT_PAIRS_MP2"].has_changed()) {
+        outfile->Printf(
+            "\n    WARNING: T_CUT_PAIRS_MP2 does not define a separate weak-pair interval for\n"
+            "             DLPNO-CCSDT and higher methods. Its value is overridden by\n"
+            "             T_CUT_PAIRS = %6.4e, and every retained pair is treated as strong.\n",
+            T_CUT_PAIRS_);
+    }
     outfile->Printf("\n\n");
 
     outfile->Printf("  ==> Basis Set Information <==\n\n");

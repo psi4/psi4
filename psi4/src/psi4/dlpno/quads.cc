@@ -59,6 +59,14 @@
 namespace psi {
 namespace dlpno {
 
+using einsums::All;
+using einsums::Indices;
+using einsums::Tensor;
+using einsums::tensor_algebra::einsum;
+using einsums::tensor_algebra::permute;
+namespace index = einsums::index;
+namespace linear_algebra = einsums::linear_algebra;
+
 namespace {
 
 std::string quadruples_record_name(const std::string& label, int ijkl, int component = -1) {
@@ -67,8 +75,12 @@ std::string quadruples_record_name(const std::string& label, int ijkl, int compo
     return name;
 }
 
-int quadruplet_key(int i, int j, int k, int l, int nocc) {
-    return ((i * nocc + j) * nocc + k) * nocc + l;
+size_t triplet_key(int i, int j, int k, size_t nocc) {
+    return (static_cast<size_t>(i) * nocc + j) * nocc + k;
+}
+
+size_t quadruplet_key(int i, int j, int k, int l, size_t nocc) {
+    return (triplet_key(i, j, k, nocc) * nocc) + l;
 }
 
 void save_quads_record(const std::shared_ptr<PSIO>& psio, const std::string& name, size_t rows, size_t cols,
@@ -95,6 +107,13 @@ DLPNOCCSDT_Q::~DLPNOCCSDT_Q() {}
 
 void DLPNOCCSDT_Q::print_header() {
     const double t_cut_qno = options_.get_double("T_CUT_QNO");
+    const bool full_quadruples_follow = algorithm_ == DLPNOMethod::CCSDTQ;
+    const bool q0_only = !full_quadruples_follow && options_.get_bool("Q0_APPROXIMATION");
+    const double t_cut_qno_full = options_.get_double("T_CUT_QNO_FULL");
+    const double t_cut_qno_strong =
+        full_quadruples_follow ? t_cut_qno_full : options_.get_double("T_CUT_QNO_STRONG");
+    const double t_cut_qno_weak =
+        full_quadruples_follow ? t_cut_qno_full : options_.get_double("T_CUT_QNO_WEAK");
 
     outfile->Printf("   --------------------------------------------\n");
     outfile->Printf("                  DLPNO-CCSDT(Q)              \n");
@@ -108,10 +127,8 @@ void DLPNOCCSDT_Q::print_header() {
     outfile->Printf("    T_CUT_QNO                       = %6.3e \n", t_cut_qno);
     outfile->Printf("    T_CUT_QNO_DIAG_SCALE            = %6.3e \n",
                     options_.get_double("T_CUT_QNO_DIAG_SCALE"));
-    outfile->Printf("    T_CUT_QNO_STRONG                = %6.3e \n",
-                    t_cut_qno * options_.get_double("T_CUT_QNO_STRONG_SCALE"));
-    outfile->Printf("    T_CUT_QNO_WEAK                  = %6.3e \n",
-                    t_cut_qno * options_.get_double("T_CUT_QNO_WEAK_SCALE"));
+    outfile->Printf("    T_CUT_QNO_STRONG                = %6.3e \n", t_cut_qno_strong);
+    outfile->Printf("    T_CUT_QNO_WEAK                  = %6.3e \n", t_cut_qno_weak);
     outfile->Printf("    T_CUT_QNO_PRE                   = %6.3e \n",
                     options_.get_double("T_CUT_QNO_PRE"));
     outfile->Printf("    T_CUT_QUADS_WEAK                = %6.3e \n",
@@ -130,8 +147,6 @@ void DLPNOCCSDT_Q::print_header() {
                     options_.get_double("T_CUT_ITER_Q"));
     outfile->Printf("    MIN_QNOS                        = %6d   \n",
                     options_.get_int("MIN_QNOS"));
-    outfile->Printf("    QUADS_MAX_WEAK_PAIRS            = %6d   \n",
-                    options_.get_int("QUADS_MAX_WEAK_PAIRS"));
     outfile->Printf("    E_CONVERGENCE                   = %6.3e \n",
                     options_.get_double("E_CONVERGENCE"));
     outfile->Printf("    R_CONVERGENCE                   = %6.3e \n",
@@ -139,11 +154,19 @@ void DLPNOCCSDT_Q::print_header() {
     outfile->Printf("    DLPNO_MAXITER                   = %6d   \n",
                     options_.get_int("DLPNO_MAXITER"));
     outfile->Printf("    Q0_APPROXIMATION                = %6s   \n",
-                    options_.get_bool("Q0_APPROXIMATION") ? "TRUE" : "FALSE");
+                    q0_only ? "TRUE" : "FALSE");
     outfile->Printf("    DLPNO_TOGGLE_MEMORY             = %6s   \n",
                     toggle_memory_ ? "TRUE" : "FALSE");
     outfile->Printf("    WRITE_QUADRUPLES_INTERMEDIATES  = %6s   \n\n",
                     write_quadruples_intermediates_ ? "TRUE" : "FALSE");
+    if (full_quadruples_follow &&
+        (options_["T_CUT_QNO_STRONG"].has_changed() || options_["T_CUT_QNO_WEAK"].has_changed())) {
+        outfile->Printf(
+            "    WARNING: T_CUT_QNO_STRONG/T_CUT_QNO_WEAK apply only when DLPNO-CCSDT(Q)\n"
+            "             is the final method. Full quadruples were requested, so both iterative-(Q)\n"
+            "             cutoffs are overridden by T_CUT_QNO_FULL = %6.3e.\n\n",
+            t_cut_qno_full);
+    }
 }
 
 void DLPNOCCSDT_Q::save_quadruples_tensor(const Tensor<double, 4>& tensor, const std::string& label,
@@ -294,15 +317,20 @@ Tensor<double, 4> DLPNOCCSDT_Q::quadruples_permuter(const Tensor<double, 4>& X, 
 void DLPNOCCSDT_Q::quadruples_sparsity(bool prescreening) {
     timer_on("Quadruples Sparsity");
 
+    // Post-CCSD(T) methods collapse T_CUT_PAIRS_MP2 onto T_CUT_PAIRS, so every
+    // pair retained after MP2 prescreening must be a strong pair. Keep this
+    // invariant explicit rather than maintaining an unreachable weak-pair path.
+    if (!ij_to_i_j_weak_.empty()) {
+        throw PSIEXCEPTION(
+            "Post-CCSD(T) quadruplet construction requires all retained LMO pairs to be strong.");
+    }
+
     int naocc = nalpha_ - nfrzc();
     int n_lmo_pairs = ij_to_i_j_.size();
-    int npao = C_pao_->colspi(0);
-
-    int max_weak_pairs = options_.get_int("QUADS_MAX_WEAK_PAIRS");
 
     if (prescreening) {
         int ijkl = 0;
-        // Every quadruplet contains at least three strong pairs
+        // Form unique quadruplets from the retained strong-pair connectivity graph.
         for (int ij = 0; ij < n_lmo_pairs; ij++) {
             int i, j;
             std::tie(i, j) = ij_to_i_j_[ij];
@@ -310,27 +338,12 @@ void DLPNOCCSDT_Q::quadruples_sparsity(bool prescreening) {
             for (int k : lmopair_to_lmos_[ij]) {
                 if (i > k || j > k) continue;
                 if (i == j && j == k) continue;
-                int ij_weak = i_j_to_ij_weak_[i][j], ik_weak = i_j_to_ij_weak_[i][k], kj_weak = i_j_to_ij_weak_[k][j];
-
-                int weak_pair_count = 0;
-                if (ij_weak != -1) weak_pair_count += 1;
-                if (ik_weak != -1) weak_pair_count += 1;
-                if (kj_weak != -1) weak_pair_count += 1;
-
-                if (weak_pair_count > max_weak_pairs) continue;
 
                 for (int l : lmopair_to_lmos_[ij]) {
                     int kl = i_j_to_ij_[k][l];
                     if (kl == -1) continue;
                     if (i > l || j > l || k > l) continue;
-                    int il_weak = i_j_to_ij_weak_[i][l], jl_weak = i_j_to_ij_weak_[j][l], kl_weak = i_j_to_ij_weak_[k][l];
                     if (i == j && j == l || j == k && k == l || i == k && k == l) continue;
-
-                    if (il_weak != -1) weak_pair_count += 1;
-                    if (jl_weak != -1) weak_pair_count += 1;
-                    if (kl_weak != -1) weak_pair_count += 1;
-
-                    if (weak_pair_count > max_weak_pairs) continue;
 
                     ijkl_to_i_j_k_l_.push_back(std::make_tuple(i, j, k, l));
 
@@ -345,7 +358,7 @@ void DLPNOCCSDT_Q::quadruples_sparsity(bool prescreening) {
             } // end k
         } // end ij
     } else {
-        std::unordered_map<int, int> i_j_k_l_to_ijkl_new;
+        std::unordered_map<size_t, int> i_j_k_l_to_ijkl_new;
         std::vector<std::tuple<int, int, int, int>> ijkl_to_i_j_k_l_new;
         std::vector<double> e_ijkl_new;
 
@@ -378,9 +391,6 @@ void DLPNOCCSDT_Q::quadruples_sparsity(bool prescreening) {
     int n_lmo_quadruplets = ijkl_to_i_j_k_l_.size();
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
-
-    qno_scale_.clear();
-    qno_scale_.resize(n_lmo_quadruplets, 1.0);
 
     // => Local density fitting domains <= //
 
@@ -506,7 +516,7 @@ void DLPNOCCSDT_Q::quadruples_sparsity(bool prescreening) {
                 if (i == j && j == l || j == k && k == l || i == k && k == l) continue;
 
                 // Is any permutation of this a quadruplet?
-                int ijkl_dense = quadruplet_key(i, j, k, l, naocc);
+                const size_t ijkl_dense = quadruplet_key(i, j, k, l, naocc);
                 if (i_j_k_l_to_ijkl_.count(ijkl_dense)) {
                     int ijkl = i_j_k_l_to_ijkl_[ijkl_dense];
                     ijkl_to_i_j_k_l_full_.push_back(std::make_tuple(i, j, k, l));
@@ -536,16 +546,19 @@ void DLPNOCCSDT_Q::sort_quadruplets(double e_total) {
     });
 
     double e_curr = 0.0;
-    double strong_scale = options_.get_double("T_CUT_QNO_STRONG_SCALE");
-    double weak_scale = options_.get_double("T_CUT_QNO_WEAK_SCALE");
+    const bool full_quadruples_follow = algorithm_ == DLPNOMethod::CCSDTQ;
+    const double t_cut_qno_full = options_.get_double("T_CUT_QNO_FULL");
+    const double strong_cutoff =
+        full_quadruples_follow ? t_cut_qno_full : options_.get_double("T_CUT_QNO_STRONG");
+    const double weak_cutoff =
+        full_quadruples_follow ? t_cut_qno_full : options_.get_double("T_CUT_QNO_WEAK");
     is_strong_quadruplet_.resize(n_lmo_quadruplets, false);
-    qno_scale_.clear();
-    qno_scale_.resize(n_lmo_quadruplets, weak_scale);
+    qno_cutoff_.assign(n_lmo_quadruplets, weak_cutoff);
 
     int strong_count = 0;
     for (int idx = 0; idx < n_lmo_quadruplets; ++idx) {
         is_strong_quadruplet_[ijkl_e_pairs[idx].first] = true;
-        qno_scale_[ijkl_e_pairs[idx].first] = strong_scale;
+        qno_cutoff_[ijkl_e_pairs[idx].first] = strong_cutoff;
         e_curr += ijkl_e_pairs[idx].second;
         ++strong_count;
         if (e_curr / e_total > 0.9) break;
@@ -557,13 +570,18 @@ void DLPNOCCSDT_Q::sort_quadruplets(double e_total) {
     timer_off("Sort Quadruplets");
 }
 
-void DLPNOCCSDT_Q::qno_transform(double t_cut_qno) {
+void DLPNOCCSDT_Q::qno_transform(double t_cut_qno, bool use_tuple_cutoffs) {
     timer_on("QNO transform");
 
     int naocc = nalpha_ - nfrzc();
     int n_lmo_pairs = ij_to_i_j_.size();
     int n_lmo_quadruplets = ijkl_to_i_j_k_l_.size();
     int min_qnos = options_.get_int("MIN_QNOS");
+
+    if (use_tuple_cutoffs && qno_cutoff_.size() != n_lmo_quadruplets) {
+        throw PSIEXCEPTION(
+            "Quadruplet-specific QNO cutoffs were not initialized before the iterative (Q) transform.");
+    }
 
     double t_cut_qno_diag_scale = options_.get_double("T_CUT_QNO_DIAG_SCALE");
 
@@ -678,13 +696,13 @@ void DLPNOCCSDT_Q::qno_transform(double t_cut_qno) {
             occ_total += qno_occ.get(a);
         }
 
-        double qno_scale = qno_scale_[ijkl];
-        if (i == j || i == k || i == l || j == k || j == l || k == l) qno_scale *= t_cut_qno_diag_scale;
+        double qno_cutoff = use_tuple_cutoffs ? qno_cutoff_[ijkl] : t_cut_qno;
+        if (i == j || i == k || i == l || j == k || j == l || k == l) qno_cutoff *= t_cut_qno_diag_scale;
 
         int nvir_ijkl_final = 0;
         double occ_curr = 0.0;
         for (size_t a = 0; a < nvir_ijkl; ++a) {
-            if (fabs(qno_occ.get(a)) >= qno_scale * t_cut_qno || a < min_qnos) {
+            if (fabs(qno_occ.get(a)) >= qno_cutoff || a < min_qnos) {
                 occ_curr += qno_occ.get(a);
                 nvir_ijkl_final++;
             }
@@ -1157,7 +1175,7 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
 
                 for (int m_ijkl = 0; m_ijkl < nlmo_ijkl; ++m_ijkl) {
                     int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
-                    int mkl_dense = m * naocc * naocc + k * naocc + l;
+                    const size_t mkl_dense = triplet_key(m, k, l, naocc);
                     if (i_j_k_to_ijk_.count(mkl_dense)) {
                         int mkl = i_j_k_to_ijk_[mkl_dense];
                         auto S_ijkl_mkl = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[mkl]);
@@ -1278,11 +1296,11 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
         // Algorithm 2 reuses the same contraction when repeated occupied indices make
         // several positional permutations equivalent. Apply all corresponding adjoint
         // permutations immediately so only one rank-four source tensor is resident.
-        std::unordered_set<int> computed_permutations;
+        std::unordered_set<size_t> computed_permutations;
         einsums::for_sequence<24UL>([&](auto perm_idx) {
             auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
             int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-            const int occupied_permutation = quadruplet_key(i, j, k, l, naocc);
+            const size_t occupied_permutation = quadruplet_key(i, j, k, l, naocc);
             if (!computed_permutations.insert(occupied_permutation).second) return;
 
             const int ij_idx = i_idx * n_occupied_positions + j_idx;
@@ -1299,7 +1317,7 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
 
             // Canonical Eq. (19), term 1; DLPNO Algorithm 2:
             // (i'a|be) t_{j'k'l'}^{ecd}.
-            const int jkl_dense = j * naocc * naocc + k * naocc + l;
+            const size_t jkl_dense = triplet_key(j, k, l, naocc);
             if (i_j_k_to_ijk_.count(jkl_dense)) {
                 const int jkl = i_j_k_to_ijk_[jkl_dense];
                 auto S_ijkl_jkl =
@@ -1377,7 +1395,7 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             einsums::for_sequence<24UL>([&](auto target_perm_idx) {
                 auto &[target_i_idx, target_j_idx, target_k_idx, target_l_idx] =
                     quadruple_permutations_[target_perm_idx];
-                const int target_permutation =
+                const size_t target_permutation =
                     quadruplet_key(ijkl_list[target_i_idx], ijkl_list[target_j_idx],
                                     ijkl_list[target_k_idx], ijkl_list[target_l_idx], naocc);
                 if (target_permutation != occupied_permutation) return;
@@ -1460,7 +1478,7 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
     const int nqno_ijkl = n_qno_[ijkl];
 
     double quadruplet_energy = 0.0;
-    std::unordered_map<int, double> e_perm_energy;
+    std::unordered_map<size_t, double> e_perm_energy;
 
     std::array<Tensor<double, 4>, 16> T_ijm_list;
     for (int i_idx = 0; i_idx < n_occupied_positions; ++i_idx) {
@@ -1475,7 +1493,7 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
 
             for (int m_ijkl = 0; m_ijkl < nlmo_ijkl; ++m_ijkl) {
                 int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
-                int ijm_dense = i * naocc * naocc + j * naocc + m;
+                const size_t ijm_dense = triplet_key(i, j, m, naocc);
                 if (i_j_k_to_ijk_.count(ijm_dense)) {
                     int ijm = i_j_k_to_ijk_[ijm_dense];
                     auto S_ijkl_ijm = submatrix_rows_and_cols(*S_pao_, lmoquadruplet_to_paos_[ijkl], lmotriplet_to_paos_[ijm]);
@@ -1493,7 +1511,7 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
     einsums::for_sequence<24UL>([&](auto perm_idx) {
         auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
         int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-        int ijkl_idx = quadruplet_key(i, j, k, l, naocc);
+        const size_t ijkl_idx = quadruplet_key(i, j, k, l, naocc);
 
         if (!e_perm_energy.count(ijkl_idx)) {
             // Set up e_perm_energy
@@ -1657,10 +1675,10 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
             // S integrals
             std::vector<int> quadruplet_ext_domain;
             for (int m = 0; m < naocc; ++m) {
-                int ijkm_dense = quadruplet_key(i, j, k, m, naocc);
-                int ijml_dense = quadruplet_key(i, j, m, l, naocc);
-                int imkl_dense = quadruplet_key(i, m, k, l, naocc);
-                int mjkl_dense = quadruplet_key(m, j, k, l, naocc);
+                const size_t ijkm_dense = quadruplet_key(i, j, k, m, naocc);
+                const size_t ijml_dense = quadruplet_key(i, j, m, l, naocc);
+                const size_t imkl_dense = quadruplet_key(i, m, k, l, naocc);
+                const size_t mjkl_dense = quadruplet_key(m, j, k, l, naocc);
 
                 if (l != m && i_j_k_l_to_ijkl_.count(ijkm_dense) && std::fabs((*F_lmo_)(l, m)) >= f_cut) {
                     int ijkm = i_j_k_l_to_ijkl_[ijkm_dense];
@@ -1715,10 +1733,10 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
             } // end a_ijkl
 
             for (int m = 0; m < naocc; ++m) {
-                int ijkm_dense = quadruplet_key(i, j, k, m, naocc);
-                int ijml_dense = quadruplet_key(i, j, m, l, naocc);
-                int imkl_dense = quadruplet_key(i, m, k, l, naocc);
-                int mjkl_dense = quadruplet_key(m, j, k, l, naocc);
+                const size_t ijkm_dense = quadruplet_key(i, j, k, m, naocc);
+                const size_t ijml_dense = quadruplet_key(i, j, m, l, naocc);
+                const size_t imkl_dense = quadruplet_key(i, m, k, l, naocc);
+                const size_t mjkl_dense = quadruplet_key(m, j, k, l, naocc);
 
                 if (l != m && i_j_k_l_to_ijkl_.count(ijkm_dense) && std::fabs((*F_lmo_)(l, m)) >= f_cut) {
                     int ijkm = i_j_k_l_to_ijkl_[ijkm_dense];
@@ -1934,18 +1952,26 @@ double DLPNOCCSDT_Q::compute_energy() {
 
     double e_total = e_ccsdt_q_total;
 
-    if (!options_.get_bool("Q0_APPROXIMATION")) {
+    // Full quadruples always form the iterative-(Q) amplitudes used as their
+    // starting point; Q0_APPROXIMATION applies only when DLPNO-CCSDT(Q) is the
+    // final requested method.
+    const bool q0_only = algorithm_ == DLPNOMethod::CCSDT_Q && options_.get_bool("Q0_APPROXIMATION");
+    if (!q0_only) {
         // Step 3: iterative non-semicanonical (Q), Algorithm 5 and Eq. (62).
         outfile->Printf("\n\n  ==> Computing Full Iterative (Q) <==\n\n");
 
-        double t_cut_qno_strong_scale = options_.get_double("T_CUT_QNO_STRONG_SCALE");
-        double t_cut_qno_weak_scale = options_.get_double("T_CUT_QNO_WEAK_SCALE");
-        outfile->Printf("     T_CUT_QNO (re)set to %6.3e for strong quadruplets \n", t_cut_qno * t_cut_qno_strong_scale);
-        outfile->Printf("     T_CUT_QNO (re)set to %6.3e for weak quadruplets   \n\n", t_cut_qno * t_cut_qno_weak_scale);
+        const bool full_quadruples_follow = algorithm_ == DLPNOMethod::CCSDTQ;
+        const double t_cut_qno_full = options_.get_double("T_CUT_QNO_FULL");
+        const double t_cut_qno_strong =
+            full_quadruples_follow ? t_cut_qno_full : options_.get_double("T_CUT_QNO_STRONG");
+        const double t_cut_qno_weak =
+            full_quadruples_follow ? t_cut_qno_full : options_.get_double("T_CUT_QNO_WEAK");
+        outfile->Printf("     T_CUT_QNO set to %6.3e for strong quadruplets \n", t_cut_qno_strong);
+        outfile->Printf("     T_CUT_QNO set to %6.3e for weak quadruplets   \n\n", t_cut_qno_weak);
 
         // Sort quadruplets into "strong" and "weak" quadruplets
         sort_quadruplets(E_Q0);
-        qno_transform(t_cut_qno);
+        qno_transform(t_cut_qno, true);
         estimate_memory();
 
         if (write_quadruples_intermediates_) {
@@ -2032,7 +2058,8 @@ void DLPNOCCSDT_Q::print_results() {
     }
     set_scalar_variable("CC T1 DIAGNOSTIC", t1_diagnostic);
 
-    const bool q0_approximation = options_.get_bool("Q0_APPROXIMATION");
+    const bool q0_approximation =
+        algorithm_ == DLPNOMethod::CCSDT_Q && options_.get_bool("Q0_APPROXIMATION");
     const char* quadruples_label = q0_approximation ? "DLPNO-(Q0) Contribution" : "DLPNO-(Q) Contribution";
     const double lower_rank_correlation =
         e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ +
@@ -2073,6 +2100,8 @@ void DLPNOCCSDTQ::print_header() {
     outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
     outfile->Printf("  Full-quadruples orbital thresholds:\n");
     outfile->Printf("    T_CUT_QNO_FULL              = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
+    outfile->Printf("    T_CUT_QNO_STRONG            = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
+    outfile->Printf("    T_CUT_QNO_WEAK              = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
     outfile->Printf("    MIN_QNOS                    = %6d   \n", options_.get_int("MIN_QNOS"));
     outfile->Printf("    T_CUT_XPNO                  = %6.3e \n", options_.get_double("T_CUT_XPNO"));
     outfile->Printf("    T_CUT_XPNO_DIAG_SCALE       = %6.3e \n", options_.get_double("T_CUT_XPNO_DIAG_SCALE"));
@@ -2081,7 +2110,6 @@ void DLPNOCCSDTQ::print_header() {
     outfile->Printf("\n  Quadruplet domains and local density fitting:\n");
     outfile->Printf("    T_CUT_DO_QUADS              = %6.3e \n", options_.get_double("T_CUT_DO_QUADS"));
     outfile->Printf("    T_CUT_MKN_QUADS             = %6.3e \n", options_.get_double("T_CUT_MKN_QUADS"));
-    outfile->Printf("    QUADS_MAX_WEAK_PAIRS        = %6d   \n", options_.get_int("QUADS_MAX_WEAK_PAIRS"));
     outfile->Printf("\n  Iterative solver settings:\n");
     outfile->Printf("    E_CONVERGENCE               = %6.3e \n", options_.get_double("E_CONVERGENCE"));
     outfile->Printf("    R_CONVERGENCE               = %6.3e \n", options_.get_double("R_CONVERGENCE"));
@@ -2205,9 +2233,7 @@ void DLPNOCCSDTQ::estimate_memory() {
             for (const int n : lmopair_to_lmos_[kl]) {
                 if (m > n) continue;
                 const int mn = i_j_to_ij_[m][n];
-                const int mnkl_index = ((m * static_cast<int>(naocc) + n) * static_cast<int>(naocc) + k) *
-                                           static_cast<int>(naocc) +
-                                       l;
+                const size_t mnkl_index = quadruplet_key(m, n, k, l, naocc);
                 if (mn == -1 || i_j_k_l_to_ijkl_.count(mnkl_index) == 0) continue;
                 xpno_projected_t4_memory += nxpno4;
             }
@@ -2487,10 +2513,6 @@ void DLPNOCCSDTQ::xpno_transform(double xpno_tolerance) {
         for (int mn = 0; mn < n_lmo_pairs; ++mn) {
             auto &[m, n] = ij_to_i_j_[mn];
 
-            // int mnkl_idx = m * std::pow(naocc, 3) + n * std::pow(naocc, 2) + k * naocc + l;
-            // int mnkl = i_j_k_l_to_ijkl_.count(mnkl_idx) ? i_j_k_l_to_ijkl_[mnkl_idx] : -1;
-            // if (mnkl == -1) continue;
-
             int mk = i_j_to_ij_[m][k], ml = i_j_to_ij_[m][l], nk = i_j_to_ij_[n][k], nl = i_j_to_ij_[n][l];
             if (mk == -1 || ml == -1 || nk == -1 || nl == -1) continue;
 
@@ -2585,7 +2607,7 @@ void DLPNOCCSDTQ::xpno_transform(double xpno_tolerance) {
             S_nl = linalg::triplet(X_pao_kl_ext, S_nl, X_pno_[nl], true, false, false);
             D_kl_sum->add(linalg::triplet(S_nl, D_nl, S_nl, false, false, true));
 
-            int mnkl_idx = m * std::pow(naocc, 3) + n * std::pow(naocc, 2) + k * naocc + l;
+            const size_t mnkl_idx = quadruplet_key(m, n, k, l, naocc);
             int mnkl = i_j_k_l_to_ijkl_.count(mnkl_idx) ? i_j_k_l_to_ijkl_[mnkl_idx] : -1;
             if (mnkl != -1) nvir_ijkl_avg += n_qno_[mnkl];
             
@@ -2826,10 +2848,10 @@ void DLPNOCCSDTQ::compute_integrals() {
 
         if (disk_qno_integrals_) {
 #pragma omp critical
-            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_QNO, ::psi::Matrix::SubBlocks);
+            q_ov->save(psio_.get(), PSIF_DLPNO_QIA_QNO, Matrix::SubBlocks);
 
 #pragma omp critical
-            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_QNO, ::psi::Matrix::ThreeIndexLowerTriangle);
+            q_vv->save(psio_.get(), PSIF_DLPNO_QAB_QNO, Matrix::ThreeIndexLowerTriangle);
 
             q_ov_name << "(Q_ijkl | m a) " << (ijkl);
             q_vv_name << "(Q_ijkl | a b) " << (ijkl);
@@ -2840,7 +2862,7 @@ void DLPNOCCSDTQ::compute_integrals() {
     }
 }
 
-inline Tensor<double, 3> DLPNOCCSDTQ::QIA_QNO(const int ijkl) {
+void DLPNOCCSDTQ::load_qia_qno(int ijkl) {
     if (disk_qno_integrals_) {
         int naux_ijkl = lmoquadruplet_to_ribfs_[ijkl].size();
         int nlmo_ijkl = lmoquadruplet_to_lmos_[ijkl].size();
@@ -2851,16 +2873,14 @@ inline Tensor<double, 3> DLPNOCCSDTQ::QIA_QNO(const int ijkl) {
 
         auto q_ov = std::make_shared<Matrix>(q_ov_name.str(), naux_ijkl, nlmo_ijkl * nqno_ijkl);
 #pragma omp critical
-        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_QNO, ::psi::Matrix::SubBlocks);
+        q_ov->load(psio_.get(), PSIF_DLPNO_QIA_QNO, Matrix::SubBlocks);
 
         q_ov_ijkl_[ijkl] = Tensor<double, 3>(q_ov->name(), naux_ijkl, nlmo_ijkl, nqno_ijkl);
         ::memcpy(q_ov_ijkl_[ijkl].data(), q_ov->get_pointer(), naux_ijkl * nlmo_ijkl * nqno_ijkl * sizeof(double));
     }
-
-    return q_ov_ijkl_[ijkl];
 }
 
-inline Tensor<double, 3> DLPNOCCSDTQ::QAB_QNO(const int ijkl) {
+void DLPNOCCSDTQ::load_qab_qno(int ijkl) {
     if (disk_qno_integrals_) {
         int naux_ijkl = lmoquadruplet_to_ribfs_[ijkl].size();
         int nqno_ijkl = n_qno_[ijkl];
@@ -2870,13 +2890,11 @@ inline Tensor<double, 3> DLPNOCCSDTQ::QAB_QNO(const int ijkl) {
 
         auto q_vv = std::make_shared<Matrix>(q_vv_name.str(), naux_ijkl, nqno_ijkl * nqno_ijkl);
 #pragma omp critical
-        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_QNO, ::psi::Matrix::ThreeIndexLowerTriangle);
+        q_vv->load(psio_.get(), PSIF_DLPNO_QAB_QNO, Matrix::ThreeIndexLowerTriangle);
 
         q_vv_ijkl_[ijkl] = Tensor<double, 3>(q_vv->name(), naux_ijkl, nqno_ijkl, nqno_ijkl);
         ::memcpy(q_vv_ijkl_[ijkl].data(), q_vv->get_pointer(), naux_ijkl * nqno_ijkl * nqno_ijkl * sizeof(double));
     }
-
-    return q_vv_ijkl_[ijkl];
 }
 
 inline Tensor<double, 4> DLPNOCCSDTQ::form_alpha_ijkl(const Tensor<double, 4>& T_ijkl) {
@@ -3057,13 +3075,13 @@ void DLPNOCCSDTQ::add_t4_to_doubles_residual(std::vector<SharedMatrix>& R_iajb, 
         thread = omp_get_thread_num();
 #endif
 
-        std::unordered_set<int> computed_perms;
+        std::unordered_set<size_t> computed_perms;
 
         // Loop over all possible quadruplet permutations
         einsums::for_sequence<24UL>([&](auto perm_idx) {
             auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
             int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-            int ijkl_idx = i * std::pow(naocc, 3) + j * std::pow(naocc, 2) + k * naocc + l;
+            const size_t ijkl_idx = quadruplet_key(i, j, k, l, naocc);
             int kl = i_j_to_ij_[k][l];
 
             if (!computed_perms.count(ijkl_idx)) {
@@ -3131,8 +3149,8 @@ void DLPNOCCSDTQ::add_t4_to_triples_residual(std::vector<SharedMatrix>& R_iajbkc
 
         // Read integrals when disk-backed storage is enabled.
         if (disk_ints_) {
-            q_ov_[ijk] = QIA_TNO(ijk);
-            q_vv_[ijk] = QAB_TNO(ijk);
+            load_qia_tno(ijk);
+            load_qab_tno(ijk);
         }
 
         // => STEP 0: T1-dress DF integrals <= //
@@ -3233,7 +3251,7 @@ void DLPNOCCSDTQ::add_t4_to_triples_residual(std::vector<SharedMatrix>& R_iajbkc
 
             for (int m_ijk = 0; m_ijk < nlmo_ijk; ++m_ijk) {
                 int m = lmotriplet_to_lmos_[ijk][m_ijk];
-                int mijk_idx = m * std::pow(naocc, 3) + i * std::pow(naocc, 2) + j * naocc + k;
+                const size_t mijk_idx = quadruplet_key(m, i, j, k, naocc);
                 int mijk = i_j_k_l_to_ijkl_.count(mijk_idx) ? (i_j_k_l_to_ijkl_[mijk_idx]) : -1;
 
                 if (mijk != -1) {
@@ -3273,7 +3291,7 @@ void DLPNOCCSDTQ::add_t4_to_triples_residual(std::vector<SharedMatrix>& R_iajbkc
 
                 for (int n_ijk = 0; n_ijk < nlmo_ijk; ++n_ijk) {
                     int n = lmotriplet_to_lmos_[ijk][n_ijk];
-                    int mnjk_idx = m * std::pow(naocc, 3) + n * std::pow(naocc, 2) + j * naocc + k;
+                    const size_t mnjk_idx = quadruplet_key(m, n, j, k, naocc);
                     int mnjk = i_j_k_l_to_ijkl_.count(mnjk_idx) ? (i_j_k_l_to_ijkl_[mnjk_idx]) : -1;
                     if (mnjk == -1) continue;
 
@@ -3359,7 +3377,7 @@ std::vector<Tensor<double, 4>> DLPNOCCSDTQ::compute_delta_L_ijk_abm() {
             for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
                 int n = lmopair_to_lmos_[ij][n_ij];
 
-                int nijk_idx = n * std::pow(naocc, 3) + i * std::pow(naocc, 2) + j * naocc + k;
+                const size_t nijk_idx = quadruplet_key(n, i, j, k, naocc);
                 int nijk = i_j_k_l_to_ijkl_.count(nijk_idx) ? i_j_k_l_to_ijkl_[nijk_idx] : -1;
 
                 if (nijk == -1) continue;
@@ -3430,7 +3448,7 @@ std::vector<Tensor<double, 4>> DLPNOCCSDTQ::compute_delta_M_ejk_abc() {
             int n = lmopair_to_lmos_[jk][n_jk];
             for (int m_jk = 0; m_jk < nlmo_jk; ++m_jk) {
                 int m = lmopair_to_lmos_[jk][m_jk];
-                int nmjk_idx = n * std::pow(naocc, 3) + m * std::pow(naocc, 2) + j * naocc + k;
+                const size_t nmjk_idx = quadruplet_key(n, m, j, k, naocc);
                 int nmjk = i_j_k_l_to_ijkl_.count(nmjk_idx) ? i_j_k_l_to_ijkl_[nmjk_idx] : -1;
 
                 if (nmjk == -1) continue;
@@ -3478,7 +3496,7 @@ void DLPNOCCSDTQ::form_T_mnkl_xpno() {
                 int mn = i_j_to_ij_[m][n];
                 if (m > n) continue;
 
-                int mnkl_idx = m * std::pow(naocc, 3) + n * std::pow(naocc, 2) + k * naocc + l;
+                const size_t mnkl_idx = quadruplet_key(m, n, k, l, naocc);
                 int mnkl = i_j_k_l_to_ijkl_.count(mnkl_idx) ? i_j_k_l_to_ijkl_[mnkl_idx] : -1;
 
                 if (mn == -1 || mnkl == -1) continue;
@@ -3526,12 +3544,12 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
         const int nqno_ijkl = n_qno_[ijkl];
 
         // Bookkeeping for permutations of ijk (ijkl choose ijk)
-        std::unordered_map<int, int> ijk_to_ijkl_perm_idx;
+        std::unordered_map<size_t, size_t> ijk_to_ijkl_perm_idx;
 
         einsums::for_sequence<24UL>([&](auto perm_idx) {
             auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
             int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-            int ijk_idx = i * std::pow(naocc, 2) + j * naocc + k;
+            const size_t ijk_idx = triplet_key(i, j, k, naocc);
 
             ijk_to_ijkl_perm_idx[ijk_idx] = perm_idx;
         });
@@ -3553,9 +3571,11 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
 
         // Read in expensive integrals
         // (Q | m a) integrals
-        Tensor<double, 3> q_ov = QIA_QNO(ijkl);
+        load_qia_qno(ijkl);
+        const Tensor<double, 3>& q_ov = q_ov_ijkl_[ijkl];
         // (Q | a b) integrals
-        Tensor<double, 3> q_vv = QAB_QNO(ijkl);
+        load_qab_qno(ijkl);
+        const Tensor<double, 3>& q_vv = q_vv_ijkl_[ijkl];
 
         // T1-dress q_io and q_iv; checked orbital indices denote T1-dressed quantities.
         std::array<Tensor<double, 2>, 4> q_io_t1_list; // (Q | m \check{i}) = (Q | m i) + (Q | m a) t_{i}^{a}
@@ -3712,7 +3732,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                 int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
                 for (int n_ijkl = 0; n_ijkl < nlmo_ijkl; ++n_ijkl) {
                     int n = lmoquadruplet_to_lmos_[ijkl][n_ijkl];
-                    int mni_idx = m * std::pow(naocc, 2) + n * naocc + i;
+                    const size_t mni_idx = triplet_key(m, n, i, naocc);
                     int mni = (i_j_k_to_ijk_.count(mni_idx)) ? i_j_k_to_ijk_[mni_idx] : -1;
                     if (mni == -1) continue;
 
@@ -3740,7 +3760,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
 
                 for (int m_ijkl = 0; m_ijkl < nlmo_ijkl; ++m_ijkl) {
                     int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
-                    int mij_idx = m * std::pow(naocc, 2) + i * naocc + j;
+                    const size_t mij_idx = triplet_key(m, i, j, naocc);
                     int mij = i_j_k_to_ijk_.count(mij_idx) ? i_j_k_to_ijk_[mij_idx] : -1;
                     if (mij == -1) continue;
 
@@ -3786,7 +3806,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
 
             for (int n_ijkl = 0; n_ijkl < nlmo_ijkl; ++n_ijkl) {
                 int n = lmoquadruplet_to_lmos_[ijkl][n_ijkl];
-                int nijk_idx = n * std::pow(naocc, 3) + i * std::pow(naocc, 2) + j * naocc + k;
+                const size_t nijk_idx = quadruplet_key(n, i, j, k, naocc);
                 int nijk = i_j_k_l_to_ijkl_.count(nijk_idx) ? (i_j_k_l_to_ijkl_[nijk_idx]) : -1;
                 if (nijk == -1) continue;
 
@@ -3937,7 +3957,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                     int m = lmoquadruplet_to_lmos_[ijkl][m_ijkl];
                     Tensor<double, 2> g_nm_slice = g_menf_t(n_ijkl, m_ijkl, All, All); // (f, e)
 
-                    int nmj_idx = n * std::pow(naocc, 2) + m * naocc + j;
+                    const size_t nmj_idx = triplet_key(n, m, j, naocc);
                     int nmj = (i_j_k_to_ijk_.count(nmj_idx)) ? i_j_k_to_ijk_[nmj_idx] : -1;
 
                     if (nmj != -1) {
@@ -4166,7 +4186,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
             einsums::for_sequence<24UL>([&](auto perm_idx) {
                 auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
                 int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-                int ijk_idx = i * std::pow(naocc, 2) + j * naocc + k;
+                const size_t ijk_idx = triplet_key(i, j, k, naocc);
 
                 K_ijkamn_temp[perm_idx] = Tensor<double, 3>("K_ijkamn", nqno_ijkl, nlmo_ijkl, nlmo_ijkl);
 
@@ -4191,11 +4211,11 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
             einsums::for_sequence<24UL>([&](auto perm_idx) {
                 auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
                 int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-                int ijk_idx = i * std::pow(naocc, 2) + j * naocc + k;
+                const size_t ijk_idx = triplet_key(i, j, k, naocc);
 
                 K_ijkamn_map[perm_idx] = K_ijkamn_temp[perm_idx];
 
-                size_t twin_perm_idx = ijk_to_ijkl_perm_idx[i * std::pow(naocc, 2) + k * naocc + j];
+                size_t twin_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(i, k, j, naocc)];
                 Tensor<double, 3> K_ikjanm_temp("K_ikjanm_temp", nqno_ijkl, nlmo_ijkl, nlmo_ijkl);
                 permute(Indices{index::a, index::n, index::m}, &K_ikjanm_temp, Indices{index::a, index::m, index::n}, K_ijkamn_temp[twin_perm_idx]);
 
@@ -4212,7 +4232,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                 auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
                 int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
                 int ij = i_j_to_ij_[i][j];
-                int ijk_idx = i * std::pow(naocc, 2) + j * naocc + k;
+                const size_t ijk_idx = triplet_key(i, j, k, naocc);
 
                 Tensor<double, 3> F_mae("F_mae", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
                 permute(Indices{index::m, index::a, index::e}, &F_mae, Indices{index::m, index::e, index::a}, F_iema_list[k_idx]);
@@ -4285,11 +4305,11 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
             einsums::for_sequence<24UL>([&](auto perm_idx) {
                 auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
                 int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-                int ijk_idx = i * std::pow(naocc, 2) + j * naocc + k;
+                const size_t ijk_idx = triplet_key(i, j, k, naocc);
 
                 L_ijkabm_map[perm_idx] = L_ijkabm_temp[perm_idx];
 
-                size_t twin_perm_idx = ijk_to_ijkl_perm_idx[j * std::pow(naocc, 2) + i * naocc + k];
+                size_t twin_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(j, i, k, naocc)];
                 Tensor<double, 3> L_jikbam("L_jikbam", nlmo_ijkl, nqno_ijkl, nqno_ijkl);
                 permute(Indices{index::m, index::a, index::b}, &L_jikbam, Indices{index::m, index::b, index::a}, L_ijkabm_temp[twin_perm_idx]);
                 L_ijkabm_map[perm_idx] += L_jikbam;
@@ -4337,7 +4357,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
         Tensor<double, 4> R_ijkl("R_ijkl", nqno_ijkl, nqno_ijkl, nqno_ijkl, nqno_ijkl);
         R_ijkl.zero();
 
-        std::unordered_map<int, Tensor<double, 4>> R_ijkl_list;
+        std::unordered_map<size_t, Tensor<double, 4>> R_ijkl_list;
 
         // Terms with (i, jkl)-type symmetry
         for (int i_idx = 0; i_idx < FOUR; ++i_idx) {
@@ -4396,7 +4416,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
             R_ijkl_buffer_c.zero();
 
             // A_ej^{ab} contribution to canonical Eq. (50), local SI Eq. (S20).
-            int ikl_dense = i * naocc * naocc + k * naocc + l;
+            const size_t ikl_dense = triplet_key(i, k, l, naocc);
             if (i_j_k_to_ijk_.count(ikl_dense)) {
                 // (j, i, k, l) contribution
                 int ikl = i_j_k_to_ijk_[ikl_dense];
@@ -4408,7 +4428,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                         Indices{index::e, index::a, index::b}, A_ejab_list[j_idx], Indices{index::e, index::c, index::d}, T_ikl);
             }
 
-            int jkl_dense = j * naocc * naocc + k * naocc + l;
+            const size_t jkl_dense = triplet_key(j, k, l, naocc);
             if (i_j_k_to_ijk_.count(jkl_dense)) {
                 // (i, j, k, l) contribution
                 int jkl = i_j_k_to_ijk_[jkl_dense];
@@ -4466,7 +4486,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                 for (int n_ijkl = 0; n_ijkl < nlmo_ijkl; ++n_ijkl) {
                     int n = lmoquadruplet_to_lmos_[ijkl][n_ijkl];
                     int mn = i_j_to_ij_[m][n];
-                    int mnkl_idx = m * std::pow(naocc, 3) + n * std::pow(naocc, 2) + k * naocc + l;
+                    const size_t mnkl_idx = quadruplet_key(m, n, k, l, naocc);
                     int mnkl = i_j_k_l_to_ijkl_.count(mnkl_idx) ? i_j_k_l_to_ijkl_[mnkl_idx] : -1;
                     if (mn == -1 || mnkl == -1) continue;
                     
@@ -4483,7 +4503,9 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
                         T_mnkl = T_mnkl_xpno_[kl][mn];
                     }
 
-                    size_t length = std::pow(n_xpno_[kl], 4);
+                    const size_t nxpno = static_cast<size_t>(n_xpno_[kl]);
+                    const size_t nxpno2 = nxpno * nxpno;
+                    const size_t length = nxpno2 * nxpno2;
                     C_DAXPY(length, (G_ijmn_list[i_idx * FOUR + j_idx])(m_ijkl, n_ijkl), T_mnkl.data(), 1, R_ijkl_buffer_c.data(), 1);
                 } // end n_ijkl
             } // end m_ijkl
@@ -4503,21 +4525,21 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
 
             // K_ijk^{amn} contribution to canonical Eq. (50), local SI Eq. (S32).
             // (becomes) T_{mnk}^{abc} K_{lij}^{dmn}
-            size_t lij_perm_idx = ijk_to_ijkl_perm_idx[l * std::pow(naocc, 2) + i * naocc + j];
+            size_t lij_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(l, i, j, naocc)];
             einsum(1.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, 1.0, Indices{index::m, index::n, index::a, index::b, index::c}, 
                     T_mni_list[k_idx], Indices{index::d, index::m, index::n}, K_ijkamn_map[lij_perm_idx]);
 
-            size_t kij_perm_idx = ijk_to_ijkl_perm_idx[k * std::pow(naocc, 2) + i * naocc + j];
+            size_t kij_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(k, i, j, naocc)];
             einsum(0.0, Indices{index::a, index::b, index::d, index::c}, &R_ijkl_buffer_b, 1.0, Indices{index::m, index::n, index::a, index::b, index::d},
                     T_mni_list[l_idx], Indices{index::c, index::m, index::n}, K_ijkamn_map[kij_perm_idx]);
             R_ijkl_buffer_a += quadruples_permuter(R_ijkl_buffer_b, 0, 1, 3, 2);
 
             // L_ijk^{abm} contribution to canonical Eq. (50), local SI Eq. (S33).
-            size_t ijk_perm_idx = ijk_to_ijkl_perm_idx[i * std::pow(naocc, 2) + j * naocc + k];
+            size_t ijk_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(i, j, k, naocc)];
             einsum(1.0, Indices{index::a, index::b, index::c, index::d}, &R_ijkl_buffer_a, -1.0, Indices{index::m, index::a, index::b}, 
                     L_ijkabm_map[ijk_perm_idx], Indices{index::m, index::c, index::d}, T_mi_list[l_idx]);
             
-            size_t ijl_perm_idx = ijk_to_ijkl_perm_idx[i * std::pow(naocc, 2) + j * naocc + l];
+            size_t ijl_perm_idx = ijk_to_ijkl_perm_idx[triplet_key(i, j, l, naocc)];
             einsum(0.0, Indices{index::a, index::b, index::d, index::c}, &R_ijkl_buffer_b, -1.0, Indices{index::m, index::a, index::b}, 
                     L_ijkabm_map[ijl_perm_idx], Indices{index::m, index::d, index::c}, T_mi_list[k_idx]);
             R_ijkl_buffer_a += quadruples_permuter(R_ijkl_buffer_b, 0, 1, 3, 2);
@@ -4549,7 +4571,7 @@ void DLPNOCCSDTQ::compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_
         einsums::for_sequence<24UL>([&](auto perm_idx) {
             auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
             int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-            int ijkl_idx = i * std::pow(naocc, 3) + j * std::pow(naocc, 2) + k * naocc + l;
+            const size_t ijkl_idx = quadruplet_key(i, j, k, l, naocc);
 
             // Accumulate the occupied/virtual permutations of local SI Eq. (S31).
             if (!R_ijkl_list.count(ijkl_idx)) {
