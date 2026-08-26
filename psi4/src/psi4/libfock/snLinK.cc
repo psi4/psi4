@@ -185,8 +185,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // create ERI ordering permutation matrix to handle integral ordering
     if (!is_cca_ && primary_->has_puream()) {
-        permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(primary_->generate_permutation_to_cca()
-        );
+        permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(linalg::generate_permutation_to_cca(*primary_));
     } else {
         permutation_matrix_ = std::nullopt;
     }

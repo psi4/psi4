@@ -148,14 +148,14 @@ std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
     Eigen::MatrixXd eigen_d = psi::linalg::eigen_map(*D_AO_[0]);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
-        auto permuter = primary_->generate_permutation_to_cca();
+        auto permuter = linalg::generate_permutation_to_cca(*primary_);
         eigen_d = permuter * eigen_d * permuter.transpose();
     }
 #endif
     auto [e_xc, v_xc] = integrator_->eval_exc_vxc(eigen_d);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
-        auto permuter = primary_->generate_permutation_to_cca();
+        auto permuter = linalg::generate_permutation_to_cca(*primary_);
         v_xc = permuter.transpose() * v_xc * permuter;
     }
 #endif
@@ -191,7 +191,7 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
     Eigen::MatrixXd eigen_dz = psi::linalg::eigen_map(*Dz);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
-        auto permuter = primary_->generate_permutation_to_cca();
+        auto permuter = linalg::generate_permutation_to_cca(*primary_);
         eigen_ds = permuter * eigen_ds * permuter.transpose();
         eigen_dz = permuter * eigen_dz * permuter.transpose();
     }
@@ -201,7 +201,7 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
     auto v_b = static_cast<Eigen::MatrixXd>(v_s - v_z);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
-        auto permuter = primary_->generate_permutation_to_cca();
+        auto permuter = linalg::generate_permutation_to_cca(*primary_);
         v_a = permuter.transpose() * v_a * permuter;
         v_b = permuter.transpose() * v_b * permuter;
     }
@@ -235,7 +235,7 @@ SharedMatrix GauRV::compute_gradient() {
     Eigen::MatrixXd eigen_d = psi::linalg::eigen_map(*D_AO_[0]);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
-        auto permuter = primary_->generate_permutation_to_cca();
+        auto permuter = linalg::generate_permutation_to_cca(*primary_);
         eigen_d = permuter * eigen_d * permuter.transpose();
     }
 #endif
@@ -268,7 +268,7 @@ SharedMatrix GauUV::compute_gradient() {
     Eigen::MatrixXd eigen_dz = psi::linalg::eigen_map(*Dz);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
-        auto permuter = primary_->generate_permutation_to_cca();
+        auto permuter = linalg::generate_permutation_to_cca(*primary_);
         eigen_ds = permuter * eigen_ds * permuter.transpose();
         eigen_dz = permuter * eigen_dz * permuter.transpose();
     }

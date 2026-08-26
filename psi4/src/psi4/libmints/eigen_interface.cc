@@ -58,5 +58,39 @@ Matrix matrix_from_eigen(const Eigen::MatrixXd& eigen_mat, const std::string& na
     return new_matrix;
 }
 
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_to_cca(const BasisSet& basis) {
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(basis.nbf());
+
+    bool needs_reorder = basis.has_puream();
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+    needs_reorder = false;
+#elif psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+    #error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
+
+    // maps an index to the am of the associated basis fn in
+    // CCA order
+    std::vector<int> cca_integral_order(2*basis.max_am() + 1, 0);
+
+    for (size_t l = 1, idx = 1; l <= basis.max_am(); idx += 2, ++l) {
+        cca_integral_order[idx] = l;
+        cca_integral_order[idx + 1] = -l;
+    }
+
+    for (int ish = 0, ibf = 0; ish != basis.nshell(); ++ish) {
+        auto& sh = basis.shell(ish);
+        auto am = sh.am();
+
+        auto ibf_base = ibf;
+        for (int ishbf = 0; ishbf != 2*am + 1; ++ishbf, ++ibf) {
+            auto tgt = needs_reorder ? ibf_base + cca_integral_order[ishbf] + am : ibf;
+            permutation_matrix.indices()[ibf] = tgt;
+        }
+    }
+
+    return permutation_matrix;
+
+}
+
 }  // namespace linalg
 }  // namespace psi
