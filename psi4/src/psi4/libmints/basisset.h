@@ -416,10 +416,6 @@ class PSI_API BasisSet {
     void negative_gaussian_normalization_to_coefficients();
     
 #ifdef USING_gauxc
-    // Generates the PermutationMatrix that transforms AOs from Gaussian to standard basis.
-    // This will only build if GauXC is present to reduce Psi's external dependencies.
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_to_cca() const;
-
 // converts a Psi4::BasisSet object to a GauXC::BasisSet object
 template <typename T>
 GauXC::BasisSet<T> to_gauxc_basisset(double basis_tol, bool force_cartesian) const {
