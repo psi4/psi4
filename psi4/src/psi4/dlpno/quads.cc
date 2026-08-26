@@ -62,6 +62,10 @@ namespace dlpno {
 using einsums::All;
 using einsums::Indices;
 using einsums::Tensor;
+using einsums::index::a;
+using einsums::index::b;
+using einsums::index::c;
+using einsums::index::d;
 using einsums::tensor_algebra::einsum;
 using einsums::tensor_algebra::permute;
 namespace index = einsums::index;
@@ -73,10 +77,6 @@ std::string quadruples_record_name(const std::string& label, int ijkl, int compo
     std::string name = label + " " + std::to_string(ijkl);
     if (component >= 0) name += " " + std::to_string(component);
     return name;
-}
-
-size_t triplet_key(int i, int j, int k, size_t nocc) {
-    return (static_cast<size_t>(i) * nocc + j) * nocc + k;
 }
 
 size_t quadruplet_key(int i, int j, int k, int l, size_t nocc) {

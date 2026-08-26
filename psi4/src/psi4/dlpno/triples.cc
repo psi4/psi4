@@ -67,14 +67,6 @@ namespace index = einsums::index;
 namespace linear_algebra = einsums::linear_algebra;
 #endif
 
-namespace {
-
-size_t triplet_key(int i, int j, int k, size_t nocc) {
-    return (static_cast<size_t>(i) * nocc + j) * nocc + k;
-}
-
-}  // namespace
-
 DLPNOCCSD_T::DLPNOCCSD_T(SharedWavefunction ref_wfn, Options &options) : DLPNOCCSD(ref_wfn, options) {}
 DLPNOCCSD_T::~DLPNOCCSD_T() {}
 

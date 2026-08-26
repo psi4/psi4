@@ -56,6 +56,13 @@ namespace dlpno {
 
 enum class DLPNOMethod { MP2, CCSD, CCSD_T, CCSDT, CCSDT_Q, CCSDTQ };
 
+/// Flatten an occupied-orbital triplet into a dense, size-safe lookup key.
+/// Shared by the triples and quadruples implementations so unity builds do not
+/// define two same-named anonymous-namespace helpers in one translation unit.
+inline size_t triplet_key(int i, int j, int k, size_t nocc) {
+    return (static_cast<size_t>(i) * nocc + j) * nocc + k;
+}
+
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
 class DLPNO : public Wavefunction {
