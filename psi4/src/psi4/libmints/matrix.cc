@@ -75,7 +75,8 @@ Matrix::Matrix(const std::string &name, int symmetry)
     : name_(name), symmetry_(symmetry) {}
 
 Matrix::Matrix(const Matrix &c)
-    : rowspi_(c.rowspi_), colspi_(c.colspi_), nirrep_(c.nirrep_), symmetry_(c.symmetry_), name_(c.name_) {
+    : rowspi_(c.rowspi_), colspi_(c.colspi_), nirrep_(c.nirrep_), symmetry_(c.symmetry_),
+      name_(c.name_), numpy_shape_(c.numpy_shape_) {
     alloc();
     copy_from(c.matrix_);
 }
@@ -87,6 +88,7 @@ Matrix& Matrix::operator=(const Matrix &c) {
     name_ = c.name();
     rowspi_ = c.rowspi_;
     colspi_ = c.colspi_;
+    numpy_shape_ = c.numpy_shape_;
     alloc();
     copy_from(c.matrix_);
 
@@ -98,6 +100,8 @@ Matrix::Matrix(Matrix&& m) noexcept
       symmetry_(m.symmetry_), name_(std::move(m.name_)), numpy_shape_(std::move(m.numpy_shape_)) {
     // Copy pointer to data then nullify the previous pointer to prevent double free.
     m.matrix_ = nullptr;
+    // Zero out m.nirrep_ so it is left in a default state.
+    m.nirrep_ = 0;
 }
 
 Matrix& Matrix::operator=(Matrix&& m) noexcept {
@@ -114,6 +118,7 @@ Matrix& Matrix::operator=(Matrix&& m) noexcept {
     // Copy pointer to data then nullify the previous pointer to prevent double free.
     matrix_ = m.matrix_;
     m.matrix_ = nullptr;
+    m.nirrep_ = 0;
 
     return *this;
 }
