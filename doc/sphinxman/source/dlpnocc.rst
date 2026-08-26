@@ -249,6 +249,132 @@ An example input file for an iterative DLPNO-CCSDT(Q) computation is::
 
    energy('dlpno-ccsdt(q)')  # Use dlpno-ccsdt(q0) for the semicanonical (Q0) correction
 
+Representative Semibullvalene Calculation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Cope rearrangement of semibullvalene provides a representative small-molecule
+application of post-CCSD(T) local correlation. Fishman *et al.* used this reaction to
+benchmark canonical and LNO-based higher-order coupled-cluster methods
+[Fishman:2026:3233]_. A corresponding frozen-core Psi4 calculation used the same
+equilibrium and transition-state geometries and modified ``cc-pVDZ(p,p)`` primary basis,
+``VERY_TIGHT`` PNO settings, 16 OpenMP threads, and an AMD EPYC 9534 processor. The
+input, output, and timer files are available with the
+`PR 3506 benchmark archive <https://github.com/psi4/psi4/pull/3506#issuecomment-5415257893>`__.
+
+The table below compares post-CCSD(T) contributions to the barrier height. All values are
+in :math:`\mathrm{kcal\,mol^{-1}}`; the error column is the absolute error in the combined
+:math:`\mathrm{CCSDT(Q)}-\mathrm{CCSD(T)}` contribution relative to the canonical value.
+Comparing increments, rather than total energies from different local-correlation models,
+isolates the higher-order triples and quadruples effects of interest.
+
+.. list-table:: Semibullvalene post-CCSD(T) barrier-height contributions.
+   :header-rows: 1
+   :widths: 27 18 18 22 15
+
+   * - Method
+     - :math:`\mathrm{CCSDT}-\mathrm{CCSD(T)}`
+     - :math:`\mathrm{CCSDT(Q)}-\mathrm{CCSDT}`
+     - :math:`\mathrm{CCSDT(Q)}-\mathrm{CCSD(T)}`
+     - Absolute error
+   * - Canonical [Fishman:2026:3233]_
+     - 0.139
+     - -0.268
+     - -0.129
+     - --
+   * - LNO Loose [Fishman:2026:3233]_
+     - 0.104
+     - -0.220
+     - -0.116
+     - 0.013
+   * - LNO Normal [Fishman:2026:3233]_
+     - 0.152
+     - -0.255
+     - -0.103
+     - 0.026
+   * - Psi4 DLPNO ``VERY_TIGHT``
+     - 0.110
+     - -0.264
+     - -0.154
+     - 0.025
+
+For this example, the DLPNO quadruples contribution differs from the canonical value by
+only :math:`0.004\ \mathrm{kcal\,mol^{-1}}`. Its combined post-CCSD(T) error is
+:math:`0.025\ \mathrm{kcal\,mol^{-1}}`, comparable to the
+:math:`0.026\ \mathrm{kcal\,mol^{-1}}` LNO Normal error and somewhat larger than the
+:math:`0.013\ \mathrm{kcal\,mol^{-1}}` LNO Loose error. The resulting Psi4
+DLPNO-CCSDT(Q) barrier is :math:`6.545\ \mathrm{kcal\,mol^{-1}}`.
+
+The calculation contains 16 atoms and 56 electrons. The 112-function primary basis gives
+28 doubly occupied and 84 canonical virtual orbitals; freezing eight carbon core orbitals
+leaves 20 active occupied orbitals. The correlation and SCF density-fitting bases contain
+560 and 744 auxiliary functions, respectively. Local natural-orbital compression and the
+reported resource estimates are summarized below. Parentheses give minimum--maximum
+numbers of retained natural orbitals.
+
+.. list-table:: Local-space sizes and resources for the semibullvalene calculations.
+   :header-rows: 1
+   :widths: 44 28 28
+
+   * - Quantity
+     - Equilibrium structure
+     - Transition state
+   * - Active occupied / canonical virtual orbitals
+     - 20 / 84
+     - 20 / 84
+   * - Retained triplets
+     - 1520 of 1520
+     - 1520 of 1520
+   * - Strong triplets
+     - 619 (40.7%)
+     - 672 (44.2%)
+   * - Full-:math:`T_3` TNOs per triplet, average (range)
+     - 32 (18--44)
+     - 35 (18--53)
+   * - Retained quadruplets after energy screening
+     - 6670 of 8455 (78.9%)
+     - 7048 of 8455 (83.4%)
+   * - Strong quadruplets among retained quadruplets
+     - 2055 (30.8%)
+     - 2603 (36.9%)
+   * - :math:`(Q0)` QNOs per quadruplet, average (range)
+     - 32 (21--41)
+     - 35 (21--48)
+   * - Iterative-:math:`(Q)` QNOs per quadruplet, average (range)
+     - 17 (12--24)
+     - 19 (12--28)
+   * - Estimated resident memory
+     - 14.6 GB
+     - 20.8 GB
+   * - Estimated peak memory
+     - 16.9 GB
+     - 24.6 GB
+   * - Wall time, 16 threads
+     - 56 min 44 s
+     - 80 min 48 s
+
+The configured ``memory 200 GB`` value was an allocation ceiling, not the amount consumed.
+The values above are Psi4's internal estimates; the archived timer files do not contain an
+operating-system maximum-resident-set measurement. On both structures, nearly all wall time
+is concentrated in three stages. Construction of the quadruples source and semicanonical
+:math:`T_4` amplitudes (the ``gamma ijkl`` timer) required 1573 s (46%) and 2337 s (48%)
+for the equilibrium and transition structures, respectively. The iterative CCSDT stage
+required 1260 s (37%) and 1498 s (31%), with construction of the :math:`R_3` residual
+accounting for most of that time. Finally, the iterative :math:`(Q)` stage required 481 s
+(14%) and 918 s (19%); its repeated :math:`(Q)` energy contractions were the dominant
+substep. SCF, PNO construction, lower-rank CCSD iterations, and TNO/QNO transformations
+were comparatively inexpensive for this case.
+
+.. note::
+
+   This archived benchmark predates the replacement of QNO scale factors by separate
+   absolute strong- and weak-quadruplet cutoffs. It effectively used
+   ``T_CUT_QNO_STRONG = T_CUT_QNO_WEAK = 3.33e-6``. To reproduce the tabulated
+   energies and local-space sizes with the current interface, set both options explicitly.
+   The current defaults are ``T_CUT_QNO_STRONG = 1.0e-6`` and
+   ``T_CUT_QNO_WEAK = 3.33e-6``; the tighter strong-quadruplet default can increase the
+   corresponding QNO spaces and may change timings, memory requirements, and the final
+   energy slightly.
+
 DLPNO-CCSDTQ
 ~~~~~~~~~~~~
 
