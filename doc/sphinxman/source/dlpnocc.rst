@@ -113,6 +113,67 @@ used for DLPNO-CCSD(T) are applied to full triples, perturbative quadruples, and
 quadruples, with local natural-orbital spaces constructed for each significant occupied
 orbital tuple.
 
+.. note::
+
+   For DLPNO-CCSDT and higher methods, |PSIfour| sets
+   |dlpno__t_cut_pairs_mp2| equal to |dlpno__t_cut_pairs|. This collapses the
+   separate weak-pair interval used by the lower-order DLPNO methods: pairs below
+   the common threshold are eliminated, while every retained pair is treated as
+   strong. Triplets and quadruplets in these post-CCSD(T) methods are therefore
+   constructed only from retained strong pairs, and quadruplet construction has no
+   separate maximum-weak-pairs option.
+
+Strong and Weak Pairs Versus Occupied Tuples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The words *strong* and *weak* describe two different screening concepts in the
+DLPNO implementation:
+
+* **Strong and weak pairs** refer to individual occupied-orbital pairs
+  :math:`ij`, classified from their estimated pair-correlation energies. This
+  distinction controls whether a pair is treated at the coupled-cluster level,
+  retained only through a lower-level correction, or eliminated. As noted above,
+  the separate weak-pair interval is collapsed for DLPNO-CCSDT and higher methods,
+  so every pair retained by those methods is a strong pair.
+
+* **Strong and weak triplets or quadruplets** refer instead to energy-ranked
+  occupied-orbital tuples :math:`ijk` or :math:`ijkl`. After the semicanonical
+  :math:`(T0)` or :math:`(Q0)` contributions are evaluated, tuples are sorted by
+  the magnitudes of those contributions. The leading tuples recovering 90% of the
+  corresponding energy are labeled strong and the remainder weak. These labels
+  select different TNO or QNO truncation thresholds; they do **not** imply that a
+  tuple contains any weak occupied-orbital pairs.
+
+For an iterative DLPNO-CCSD(T) calculation that is the final requested method,
+|dlpno__t_cut_tno_strong| (default ``1.0e-8``) and
+|dlpno__t_cut_tno_weak| (default ``1.0e-7``) are the absolute TNO occupation
+cutoffs for the two energy-ranked triplet classes. If DLPNO-CCSDT or a still
+higher method is requested, both values are superseded by
+|dlpno__t_cut_tno_full| (default ``1.0e-7``) while constructing the iterative
+:math:`(T)` amplitudes that precede the full-:math:`T_3` calculation.
+
+Analogously, when iterative DLPNO-CCSDT(Q) is the final requested method,
+|dlpno__t_cut_qno_strong| (default ``1.0e-6``) and
+|dlpno__t_cut_qno_weak| (default ``3.33e-6``) are the absolute QNO occupation
+cutoffs for the energy-ranked quadruplet classes. If DLPNO-CCSDTQ is requested,
+both are superseded by |dlpno__t_cut_qno_full| (default ``3.33e-6``) while
+constructing the iterative :math:`(Q)` amplitudes that precede the full-
+:math:`T_4` calculation. The semicanonical ``dlpno-ccsd(t0)`` and
+``dlpno-ccsdt(q0)`` variants do not perform the corresponding iterative step.
+These semicanonical-only controls apply only when the associated perturbative
+method is the final requested method: DLPNO-CCSDT and higher always form the
+iterative :math:`(T)` amplitudes, and DLPNO-CCSDTQ always forms the iterative
+:math:`(Q)` amplitudes, before proceeding to full amplitudes of the next rank.
+
+.. warning::
+
+   User-specified ``T_CUT_TNO_STRONG`` or ``T_CUT_TNO_WEAK`` values are ignored
+   when DLPNO-CCSDT or higher is requested; ``T_CUT_TNO_FULL`` controls both
+   triplet classes instead. Likewise, user-specified ``T_CUT_QNO_STRONG`` or
+   ``T_CUT_QNO_WEAK`` values are ignored for DLPNO-CCSDTQ, where
+   ``T_CUT_QNO_FULL`` controls both quadruplet classes. |PSIfour| prints a runtime
+   warning when explicitly set values are superseded in this way.
+
 DLPNO-CCSDT
 ~~~~~~~~~~~
 

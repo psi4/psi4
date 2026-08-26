@@ -54,13 +54,6 @@
 namespace psi {
 namespace dlpno {
 
-#ifdef USING_Einsums
-using namespace einsums;
-using namespace einsums::index;
-using namespace einsums::linear_algebra;
-using namespace einsums::tensor_algebra;
-#endif
-
 enum class DLPNOMethod { MP2, CCSD, CCSD_T, CCSDT, CCSDT_Q, CCSDTQ };
 
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
@@ -462,7 +455,7 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     SparseMap lmotriplet_to_ribfs_; ///< which ribfs are on an LMO triplet (i, j, k)
     SparseMap lmotriplet_to_lmos_; ///< which LMOs l form a significant pair with (i, j, or k)
     SparseMap lmotriplet_to_paos_; ///< which PAOs span the virtual space of a triplet of LMOs?
-    std::unordered_map<int, int> i_j_k_to_ijk_; ///< LMO indices (i, j, k) to significant LMO triplet index (ijk), -1 if not found
+    std::unordered_map<size_t, int> i_j_k_to_ijk_; ///< LMO indices (i, j, k) to significant LMO triplet index (ijk), -1 if not found
     std::vector<std::tuple<int, int, int>> ijk_to_i_j_k_; ///< LMO triplet index (ijk) to LMO index tuple (i, j, k)
 
     /// triplet natural orbitals (TNOs)
@@ -473,7 +466,7 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     std::vector<SharedVector> e_tno_; ///< TNO orbital energies
     std::vector<int> n_tno_; ///< number of tnos per triplet domain
     std::vector<double> e_ijk_; ///< energy of triplet ijk (used for pre-screening and convergence purposes)
-    std::vector<double> tno_scale_; ///< scaling factor to apply to each triplet for strong/weak triplets in iterative (T)
+    std::vector<double> tno_cutoff_; ///< absolute TNO cutoff for each energy-ranked triplet in iterative (T)
     std::vector<bool> is_strong_triplet_; ///< whether or not triplet is strong
 
     /// Write intermediates (W and V) to disk?
@@ -489,7 +482,7 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     /// Create sparsity maps for triples
     void triples_sparsity(bool prescreening);
     /// Create TNOs (Triplet Natural Orbitals) for DLPNO-(T)
-    void tno_transform(double tno_tolerance);
+    void tno_transform(double tno_tolerance, bool use_tuple_cutoffs = false);
     /// Sort triplets to split between "strong" and "weak" triplets (for (T) iterations)
     void sort_triplets(double e_total);
 
@@ -525,16 +518,16 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
 class DLPNOCCSDT : public DLPNOCCSD_T {
    protected:
     // DF integrals in the domain of triplet ijk
-    std::vector<Tensor<double, 2>> q_io_;
-    std::vector<Tensor<double, 2>> q_jo_;
-    std::vector<Tensor<double, 2>> q_ko_;
+    std::vector<einsums::Tensor<double, 2>> q_io_;
+    std::vector<einsums::Tensor<double, 2>> q_jo_;
+    std::vector<einsums::Tensor<double, 2>> q_ko_;
 
-    std::vector<Tensor<double, 2>> q_iv_;
-    std::vector<Tensor<double, 2>> q_jv_;
-    std::vector<Tensor<double, 2>> q_kv_;
+    std::vector<einsums::Tensor<double, 2>> q_iv_;
+    std::vector<einsums::Tensor<double, 2>> q_jv_;
+    std::vector<einsums::Tensor<double, 2>> q_kv_;
 
-    std::vector<Tensor<double, 3>> q_ov_;
-    std::vector<Tensor<double, 3>> q_vv_;
+    std::vector<einsums::Tensor<double, 3>> q_ov_;
+    std::vector<einsums::Tensor<double, 3>> q_vv_;
 
     // Write expensive integrals (q_{ijk}| m_{ijk} a_{ijk}) and (q_{ijk} | a_{ijk} b_{ijk}) to disk?
     bool disk_ints_;
@@ -542,11 +535,11 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     double damping_ratio_;
 
     // Singles Amplitudes
-    std::vector<Tensor<double, 2>> T_n_ijk_;
+    std::vector<einsums::Tensor<double, 2>> T_n_ijk_;
     // Einsums clone of Psi4 T3 amplitudes
-    std::vector<Tensor<double, 3>> T_iajbkc_clone_;
+    std::vector<einsums::Tensor<double, 3>> T_iajbkc_clone_;
     // Contravariant (spin-summed) triples amplitudes; manuscript Eq. (79)
-    std::vector<Tensor<double, 3>> U_iajbkc_;
+    std::vector<einsums::Tensor<double, 3>> U_iajbkc_;
 
     // List of triples sorted by number of TNOs
     std::vector<int> sorted_triplets_;
@@ -562,24 +555,24 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     /// The CCSDTQ estimator combines this with its T4-dependent residual workspaces.
     size_t ccsdt_iteration_workspace_doubles_ = 0;
 
-    /// Encapsulates the reading in of (Q_{ijk}|m_{ijk} a_{ijk}) integrals (regardless of core or disk)
-    Tensor<double, 3> QIA_TNO(const int ijk);
-    /// Encapsulates the reading in of (Q_{ijk}|a_{ijk} b_{ijk}) integrals (regardless of core or disk)
-    Tensor<double, 3> QAB_TNO(const int ijk);
+    /// Load disk-backed (Q_{ijk}|m_{ijk} a_{ijk}) integrals into q_ov_[ijk].
+    void load_qia_tno(int ijk);
+    /// Load disk-backed (Q_{ijk}|a_{ijk} b_{ijk}) integrals into q_vv_[ijk].
+    void load_qab_tno(int ijk);
 
     /// Helper function for transforming amplitudes from one TNO space to another
-    Tensor<double, 3> matmul_3d_einsums(const Tensor<double, 3> &A, const SharedMatrix &X, int dim_old, int dim_new);
+    einsums::Tensor<double, 3> matmul_3d_einsums(const einsums::Tensor<double, 3> &A, const SharedMatrix &X, int dim_old, int dim_new);
     /// Helper function for transforming amplitudes from one TNO space to another (one index only)
-    Tensor<double, 3> matmul_3d_index(const Tensor<double, 3> &A, const SharedMatrix &X, int index);
+    einsums::Tensor<double, 3> matmul_3d_index(const einsums::Tensor<double, 3> &A, const SharedMatrix &X, int index);
     /// Apply the direct or conjugate triples permutation operators, manuscript Eqs. (81)-(86) or (91)-(96)
-    Tensor<double, 3> triples_permuter_einsums(const Tensor<double, 3> &X, int i, int j, int k, bool reverse=false);
+    einsums::Tensor<double, 3> triples_permuter_einsums(const einsums::Tensor<double, 3> &X, int i, int j, int k, bool reverse=false);
     /// Spin-sum a triples orbital tensor following Matthews and Stanton, JCP 142, 064108 (2015)
-    Tensor<double, 3> triples_spin_summation(const Tensor<double, 3> &X);
+    einsums::Tensor<double, 3> triples_spin_summation(const einsums::Tensor<double, 3> &X);
     /// Recover an equivalent orbital triples tensor using Matthews and Stanton Eq. (27)
-    Tensor<double, 3> triples_spin_desummation(const Tensor<double, 3> &X);
+    einsums::Tensor<double, 3> triples_spin_desummation(const einsums::Tensor<double, 3> &X);
 
     /// Factorized cross-domain contribution implied by rho_k(d,b,c), manuscript Eq. (101) and SI Algorithm S3
-    std::vector<Tensor<double, 3>> rho_dbck_contribution();
+    std::vector<einsums::Tensor<double, 3>> rho_dbck_contribution();
     /// Add triples to the singles residual: canonical Eq. (32), DLPNO Eq. (80), Algorithm 1
     void compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vector<std::vector<SharedMatrix>>& R_ia_buffer);
     /// Add triples to the doubles residual: canonical Eqs. (33)-(34), DLPNO Eqs. (87)-(90), Algorithm 2
@@ -606,13 +599,13 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
    protected:
     struct QuadrupletEnergyIntermediates {
         /// g_i'(a,b,e) = (i'a|be), Algorithm 1; used by Eq. (19), term 1, and Algorithm 4.
-        std::array<Tensor<double, 3>, 4> K_iabe;
+        std::array<einsums::Tensor<double, 3>, 4> K_iabe;
         /// g_i'j'(a,m) = (i'a|j'm), Algorithm 1; used by Eq. (19), term 2, and Algorithm 4.
-        std::array<Tensor<double, 2>, 16> K_iajm;
+        std::array<einsums::Tensor<double, 2>, 16> K_iajm;
         /// g_i'j'(a,b) = (i'a|j'b), Algorithm 1; used by canonical Eqs. (25)-(26).
-        std::array<Tensor<double, 2>, 16> K_iajb;
+        std::array<einsums::Tensor<double, 2>, 16> K_iajb;
         /// Projected contravariant doubles U_i'j'(a,b), Algorithm 1 and canonical Eq. (25).
-        std::array<Tensor<double, 2>, 16> U_iajb;
+        std::array<einsums::Tensor<double, 2>, 16> U_iajb;
     };
 
     // All 24 permutations of four occupied-orbital positions.
@@ -627,14 +620,14 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     SparseMap lmoquadruplet_to_ribfs_; ///< RI basis functions in each LMO quadruplet domain (i, j, k, l)
     SparseMap lmoquadruplet_to_lmos_; ///< which LMOs m form a significant pair with (i, j, k, or l)
     SparseMap lmoquadruplet_to_paos_; ///< which PAOs span the virtual space of a quadruplet of LMOs?
-    std::unordered_map<int, int> i_j_k_l_to_ijkl_; ///< LMO indices (i, j, k, l) to significant LMO quadruplet index (ijkl), -1 if not found
+    std::unordered_map<size_t, int> i_j_k_l_to_ijkl_; ///< LMO indices (i, j, k, l) to significant LMO quadruplet index (ijkl), -1 if not found
     std::vector<std::tuple<int, int, int, int>> ijkl_to_i_j_k_l_; ///< LMO quadruplet index (ijkl) to LMO index tuple (i, j, k, l)
     std::vector<std::tuple<int, int, int, int>> ijkl_to_i_j_k_l_full_; ///< LMO quadruplet indices with no i <= j <= k <= l restriction
     std::vector<int> sorted_quadruplets_; ///< quadruplets sorted by number of QNOs
 
     /// Quadruples natural orbitals (QNOs), formed from the six-pair density of Eq. (41).
-    std::vector<Tensor<double, 4>> T_iajbkcld_; ///< T4 amplitudes, canonical Eqs. (20), (23)-(24)
-    std::vector<Tensor<double, 4>> gamma_ijkl_; ///< T4 source term, canonical Eq. (19), DLPNO Algorithm 2
+    std::vector<einsums::Tensor<double, 4>> T_iajbkcld_; ///< T4 amplitudes, canonical Eqs. (20), (23)-(24)
+    std::vector<einsums::Tensor<double, 4>> gamma_ijkl_; ///< T4 source term, canonical Eq. (19), DLPNO Algorithm 2
     /// Reusable inputs to the [Q] and (Q) energy contractions, grouped by quadruplet
     /// so their lifetime and optional disk backing can be managed as one unit.
     std::vector<QuadrupletEnergyIntermediates> quadruplet_energy_intermediates_;
@@ -643,7 +636,7 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     std::vector<int> n_qno_; ///< number of qnos per quadruplet domain
     std::vector<double> e_ijkl_; ///< energy of quadruplet ijkl (used for pre-screening and convergence purposes)
     std::vector<double> ijkl_scale_; ///< Scaling factor applied to quadruplet energy ijkl based on MP2 scaling
-    std::vector<double> qno_scale_; ///< Scaling factor applied to each quadruplet to account for QNO truncation error
+    std::vector<double> qno_cutoff_; ///< absolute QNO cutoff for each energy-ranked quadruplet in iterative (Q)
     std::vector<bool> is_strong_quadruplet_; ///< whether or not quadruplet is strong
 
     /// Store iterative-(Q) source, amplitudes, and reusable energy intermediates on disk.
@@ -657,18 +650,18 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     /// Create sparsity maps for quadruples
     void quadruples_sparsity(bool prescreening);
     /// Create QNOs (Quadruplet Natural Orbitals) for DLPNO-(Q)
-    void qno_transform(double qno_tolerance);
+    void qno_transform(double qno_tolerance, bool use_tuple_cutoffs = false);
     /// Sort quadruplets to split between "strong" and "weak" quadruplets (for (Q) iterations)
     void sort_quadruplets(double e_total);
 
     /// Transform all four virtual indices between QNO spaces (semidirect overlaps, Eqs. (58)-(61)).
-    Tensor<double, 4> matmul_4d(const Tensor<double, 4>& A, const SharedMatrix &X, int dim_old, int dim_new, bool contract_first=true);
+    einsums::Tensor<double, 4> matmul_4d(const einsums::Tensor<double, 4>& A, const SharedMatrix &X, int dim_old, int dim_new, bool contract_first=true);
     /// Apply the occupied/QNO permutation maps of Eqs. (51)-(55).
-    Tensor<double, 4> quadruples_permuter(const Tensor<double, 4>& X, int i, int j, int k, int l);
+    einsums::Tensor<double, 4> quadruples_permuter(const einsums::Tensor<double, 4>& X, int i, int j, int k, int l);
 
     /// Save/load rank-four tensors and the reusable Algorithm 1 energy bundle through PSIO.
-    void save_quadruples_tensor(const Tensor<double, 4>& tensor, const std::string& label, int ijkl);
-    Tensor<double, 4> load_quadruples_tensor(const std::string& label, int ijkl);
+    void save_quadruples_tensor(const einsums::Tensor<double, 4>& tensor, const std::string& label, int ijkl);
+    einsums::Tensor<double, 4> load_quadruples_tensor(const std::string& label, int ijkl);
     void save_quadruplet_energy_intermediates(const QuadrupletEnergyIntermediates& intermediates, int ijkl);
     QuadrupletEnergyIntermediates load_quadruplet_energy_intermediates(int ijkl);
 
@@ -676,7 +669,7 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     /// and return the semicanonical (Q0) energy of Eqs. (25)-(26).
     double compute_gamma_ijkl(bool store_amplitudes=false);
     /// Evaluate the [Q] and (Q) energy contractions (canonical Eqs. (25)-(26), Algorithms 3-4).
-    double compute_quadruplet_energy(int ijkl, const Tensor<double, 4>& T4,
+    double compute_quadruplet_energy(int ijkl, const einsums::Tensor<double, 4>& T4,
                                      const QuadrupletEnergyIntermediates& intermediates);
     /// Estimate iterative-(Q) resident and thread-workspace peaks and select disk backing.
     void estimate_memory();
@@ -698,10 +691,10 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
 class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
    protected:
     // DF domain integrals
-    std::vector<std::array<Tensor<double, 2>, 4>> q_io_list_; ///< (Q_{ijkl} | [i, j, k, l] m_{ijkl})
-    std::vector<std::array<Tensor<double, 2>, 4>> q_iv_list_; ///< (Q_{ijkl} | [i, j, k, l] a_{ijkl})
-    std::vector<Tensor<double, 3>> q_ov_ijkl_; ///< (Q_{ijkl} | m_{ijkl} a_{ijkl})
-    std::vector<Tensor<double, 3>> q_vv_ijkl_; ///< (Q_{ijkl} | a_{ijkl} b_{ijkl})
+    std::vector<std::array<einsums::Tensor<double, 2>, 4>> q_io_list_; ///< (Q_{ijkl} | [i, j, k, l] m_{ijkl})
+    std::vector<std::array<einsums::Tensor<double, 2>, 4>> q_iv_list_; ///< (Q_{ijkl} | [i, j, k, l] a_{ijkl})
+    std::vector<einsums::Tensor<double, 3>> q_ov_ijkl_; ///< (Q_{ijkl} | m_{ijkl} a_{ijkl})
+    std::vector<einsums::Tensor<double, 3>> q_vv_ijkl_; ///< (Q_{ijkl} | a_{ijkl} b_{ijkl})
 
     // Extended PNO (XPNO) information
     SparseMap lmopair_to_paos_ext_;           ///< LMO pair to extended PAO domain
@@ -709,10 +702,10 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     std::vector<SharedVector> e_xpno_;         ///< Canonical XPNO orbital energies
     std::vector<int> n_xpno_;                  ///< Number of XPNOs in each extended pair domain
 
-    /// Encapsulates the reading in of (Q_{ijkl} | m_{ijkl} a_{ijkl})
-    inline Tensor<double, 3> QIA_QNO(const int ijkl);
-    /// Encapsulates the reading in of (Q_{ijkl} | a_{ijkl} b_{ijkl})
-    inline Tensor<double, 3> QAB_QNO(const int ijkl);
+    /// Load disk-backed (Q_{ijkl} | m_{ijkl} a_{ijkl}) integrals into q_ov_ijkl_[ijkl].
+    void load_qia_qno(int ijkl);
+    /// Load disk-backed (Q_{ijkl} | a_{ijkl} b_{ijkl}) integrals into q_vv_ijkl_[ijkl].
+    void load_qab_qno(int ijkl);
 
     /// Write the largest QNO-basis integral tensors to disk (enabled by default).
     bool disk_qno_integrals_ = true;
@@ -724,28 +717,28 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     double e_lccsdtq_ = 0.0;
 
     /// Singles amplitudes t_m^a projected into the QNO space of ijkl.
-    std::vector<Tensor<double, 2>> T_m_ijkl_;
+    std::vector<einsums::Tensor<double, 2>> T_m_ijkl_;
     /// T_mnkl projected into the XPNO space of kl (main-text Eq. (83)).
-    std::vector<std::vector<Tensor<double, 4>>> T_mnkl_xpno_;
+    std::vector<std::vector<einsums::Tensor<double, 4>>> T_mnkl_xpno_;
 
     /// Form alpha_ijkl from T_ijkl (main-text Eq. (30)).
-    inline Tensor<double, 4> form_alpha_ijkl(const Tensor<double, 4>& T_ijkl);
+    inline einsums::Tensor<double, 4> form_alpha_ijkl(const einsums::Tensor<double, 4>& T_ijkl);
     /// Form beta_ijkl from alpha_ijkl (main-text Eq. (31)).
-    inline Tensor<double, 4> form_beta_ijkl(const Tensor<double, 4>& alpha_ijkl);
+    inline einsums::Tensor<double, 4> form_beta_ijkl(const einsums::Tensor<double, 4>& alpha_ijkl);
     /// Form the spin-summed quadruples tensor used by the closed-shell equations.
-    Tensor<double, 4> quadruples_spin_summation(const Tensor<double, 4> &X);
+    einsums::Tensor<double, 4> quadruples_spin_summation(const einsums::Tensor<double, 4> &X);
     /// Apply the minimum-norm spin pseudoinverse of Matthews and Stanton, Eq. (28)
     /// (JCP 142, 064108, 2015; DOI: 10.1063/1.4907278), removing the redundant
     /// components of the nonorthogonal spin-adapted quadruples representation.
-    Tensor<double, 4> quadruples_spin_desummation(const Tensor<double, 4> &X);
+    einsums::Tensor<double, 4> quadruples_spin_desummation(const einsums::Tensor<double, 4> &X);
 
     /// Flatten Psi4 matrices and, optionally, native Einsums T4/R4 tensors into one DIIS vector.
     SharedVector flatten_ccsdtq_diis(const std::vector<SharedMatrix>& matrices,
-                                     const std::vector<Tensor<double, 4>>& rank4_tensors,
+                                     const std::vector<einsums::Tensor<double, 4>>& rank4_tensors,
                                      bool include_t4) const;
     /// Scatter an extrapolated DIIS vector back into the Psi4 matrices and native T4/R4 tensors.
     void copy_ccsdtq_diis(const SharedVector& flat, std::vector<SharedMatrix>& matrices,
-                          std::vector<Tensor<double, 4>>& rank4_tensors, bool include_t4) const;
+                          std::vector<einsums::Tensor<double, 4>>& rank4_tensors, bool include_t4) const;
 
     /// Create extended pair natural orbitals (XPNOs) for the T_mnkl contractions.
     void xpno_transform(double xpno_tolerance);
@@ -755,9 +748,9 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     void form_T_mnkl_xpno();
 
     /// Form delta L_ijk^{abm}[ij] in a pair domain (main-text Eqs. (98)--(99); SI Eq. (S13)).
-    std::vector<Tensor<double, 4>> compute_delta_L_ijk_abm();
+    std::vector<einsums::Tensor<double, 4>> compute_delta_L_ijk_abm();
     /// Form delta M_ejk^{abc}[jk] in a pair domain (main-text Eqs. (101)--(102); SI Eq. (S15)).
-    std::vector<Tensor<double, 4>> compute_delta_M_ejk_abc();
+    std::vector<einsums::Tensor<double, 4>> compute_delta_M_ejk_abc();
 
     /// Add the T4-dependent doubles residual (main-text Eq. (93); SI Eq. (S16)).
     void add_t4_to_doubles_residual(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb,
@@ -765,7 +758,7 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     /// Add the T4-dependent triples residual (main-text Eqs. (94)--(96); SI Eqs. (S17)--(S19)).
     void add_t4_to_triples_residual(std::vector<SharedMatrix>& R_iajbkc);
     /// Form the local quadruples residual (main-text Eq. (50); SI Eqs. (S20)--(S34)).
-    void compute_quadruples_residual(std::vector<Tensor<double, 4>>& R_iajbkcld);
+    void compute_quadruples_residual(std::vector<einsums::Tensor<double, 4>>& R_iajbkcld);
 
     /// Print full-quadruples thresholds, iteration controls, and requested storage policy.
     void print_header();

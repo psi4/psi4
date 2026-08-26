@@ -4592,10 +4592,6 @@ def run_dlpno(name, **kwargs):
         ["DLPNO", "DLPNO_ALGORITHM"],
         ["DLPNO", "T0_APPROXIMATION"],
         ["DLPNO", "Q0_APPROXIMATION"],
-        ["DLPNO", "T_CUT_TNO_STRONG_SCALE"],
-        ["DLPNO", "T_CUT_TNO_WEAK_SCALE"],
-        ["DLPNO", "T_CUT_QNO_STRONG_SCALE"],
-        ["DLPNO", "T_CUT_QNO_WEAK_SCALE"],
         ["DLPNO", "T_CUT_XPNO"],
     )
 
@@ -4658,20 +4654,8 @@ def run_dlpno(name, **kwargs):
         if "q0" in method:
             core.set_local_option("DLPNO", "Q0_APPROXIMATION", method["q0"])
 
-        if algorithm in {"CCSDT", "CCSDT(Q)", "CCSDTQ"}:
-            t_cut_tno = core.get_option("DLPNO", "T_CUT_TNO")
-            t_cut_tno_full = core.get_option("DLPNO", "T_CUT_TNO_FULL")
-            tno_scale = t_cut_tno_full / t_cut_tno
-            core.set_local_option("DLPNO", "T_CUT_TNO_STRONG_SCALE", tno_scale)
-            core.set_local_option("DLPNO", "T_CUT_TNO_WEAK_SCALE", tno_scale)
-
         if algorithm == "CCSDTQ":
-            t_cut_qno = core.get_option("DLPNO", "T_CUT_QNO")
             t_cut_qno_full = core.get_option("DLPNO", "T_CUT_QNO_FULL")
-            qno_scale = t_cut_qno_full / t_cut_qno
-            core.set_local_option("DLPNO", "T_CUT_QNO_STRONG_SCALE", qno_scale)
-            core.set_local_option("DLPNO", "T_CUT_QNO_WEAK_SCALE", qno_scale)
-
             if not core.has_option_changed("DLPNO", "T_CUT_XPNO"):
                 core.set_local_option("DLPNO", "T_CUT_XPNO", 3.0 * t_cut_qno_full)
 
