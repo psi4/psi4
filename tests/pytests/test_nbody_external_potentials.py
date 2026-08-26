@@ -6,7 +6,6 @@ import pytest
 import psi4
 from psi4.driver.driver_nbody import ManyBodyComputer
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.task_planner import task_planner
 
 from addons import uusing
 
@@ -149,11 +148,11 @@ def test_nbody_external_potentials_trimer_plan(water_cluster):
     from qcmanybody.utils import delabeler
 
     trimer, _, b_external_potential = water_cluster
-    plan = task_planner(
-        "energy",
+    plan = psi4.energy(
         "hf/sto-3g",
-        trimer,
+        molecule=trimer,
         bsse_type=["nocp", "cp"],
+        return_plan=True,
         external_potentials={2: b_external_potential},
     )
 
@@ -174,11 +173,11 @@ def test_nbody_external_potentials_trimer_plan(water_cluster):
     assert real_fragments_seen == {(1,), (2,), (3,), (1, 2), (1, 3), (2, 3), (1, 2, 3)}
 
     with pytest.raises(ValidationError, match="1-indexed fragment integers"):
-        task_planner(
-            "energy",
+        psi4.energy(
             "hf/sto-3g",
-            trimer,
+            molecule=trimer,
             bsse_type="nocp",
+            return_plan=True,
             external_potentials={0: b_external_potential},
         )
 
@@ -196,11 +195,11 @@ def test_nbody_global_external_potential_dict_plan(water_cluster, spelling):
     trimer, _, b_external_potential = water_cluster
     global_potential = {spelling: b_external_potential}
 
-    plan = task_planner(
-        "energy",
+    plan = psi4.energy(
         "hf/sto-3g",
-        trimer,
+        molecule=trimer,
         bsse_type="nocp",
+        return_plan=True,
         external_potentials=global_potential,
     )
 
@@ -247,11 +246,11 @@ def test_nbody_external_potentials_with_embedding_charges(water_cluster, monkeyp
     monkeypatch.setenv("QCMANYBODY_EMBEDDING_CHARGES", "1")
 
     _, dimer, b_external_potential = water_cluster
-    plan = task_planner(
-        "energy",
+    plan = psi4.energy(
         "hf/sto-3g",
-        dimer,
+        molecule=dimer,
         bsse_type="nocp",
+        return_plan=True,
         return_total_data=True,
         embedding_charges={1: [0.417, -0.834, 0.417], 2: [0.417, -0.834, 0.417]},
         external_potentials={2: b_external_potential},
@@ -398,11 +397,11 @@ def test_nbody_positional_external_potentials_with_embedding_charges(
         "points-trailing-none": ([points, None], points, {"points"}),
     }[spelling]
 
-    plan = task_planner(
-        "energy",
+    plan = psi4.energy(
         "hf/sto-3g",
-        dimer,
+        molecule=dimer,
         bsse_type="nocp",
+        return_plan=True,
         return_total_data=True,
         embedding_charges={1: [0.417, -0.834, 0.417], 2: [0.417, -0.834, 0.417]},
         external_potentials=global_potential,
@@ -455,11 +454,11 @@ def test_nbody_fragment_potential_rejects_non_point_charge_values(water_cluster,
     _, dimer, b_external_potential = water_cluster
 
     with pytest.raises(ValidationError, match="flat point-charge list"):
-        task_planner(
-            "energy",
+        psi4.energy(
             "hf/sto-3g",
-            dimer,
+            molecule=dimer,
             bsse_type="nocp",
+            return_plan=True,
             external_potentials={1: b_external_potential, 2: value},
         )
 
@@ -473,11 +472,11 @@ def test_nbody_fragment_potentials_combine_across_fragments(water_cluster):
     pot_1 = [[0.4, [1.0, 2.0, 3.0]]]
     pot_2 = np.array([[0.5, 4.0, 5.0, 6.0], [-0.5, 7.0, 8.0, 9.0]])
 
-    plan = task_planner(
-        "energy",
+    plan = psi4.energy(
         "hf/sto-3g",
-        trimer,
+        molecule=trimer,
         bsse_type="nocp",
+        return_plan=True,
         external_potentials={1: pot_1, 2: pot_2},
     )
 
@@ -522,11 +521,11 @@ def test_nbody_external_potentials_string_key_names_whole_molecule_keys(water_cl
     _, dimer, _ = water_cluster
 
     with pytest.raises(ValidationError) as exc:
-        task_planner(
-            "energy",
+        psi4.energy(
             "hf/sto-3g",
-            dimer,
+            molecule=dimer,
             bsse_type="nocp",
+            return_plan=True,
             external_potentials={key: [[0.5, [0.0, 0.0, 1.0]]]},
         )
 
