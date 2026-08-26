@@ -779,7 +779,23 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         # print("\n<<<  (RRR 2) Psi4 ManyBodyComputer.get_results component_properties  >>>")
         # pprint.pprint(component_properties, width=200)
 
-        analyze_back = self.qcmb_core.analyze(component_properties)
+        # QCManyBody suppresses interaction-energy values for embedding charges because the component
+        # Hamiltonians differ. Fragment-scoped external potentials have the same reporting semantics.
+        fragment_scoped_external_potentials = any(
+            _is_fragment_keyed_external_potential(
+                specification.keywords.get("function_kwargs", {}).get("external_potentials")
+            )
+            for specification in self.input_data.specification.specification.values()
+        )
+        embedding_charges = self.qcmb_core.embedding_charges
+        if fragment_scoped_external_potentials and not embedding_charges:
+            self.qcmb_core.embedding_charges = {1: []}
+        try:
+            analyze_back = self.qcmb_core.analyze(component_properties)
+        finally:
+            self.qcmb_core.embedding_charges = embedding_charges
+        # TODO(QCManyBody): print_nbody_energy() should emit "N/A", not formatted NaNs, for embedded
+        # interaction-energy columns when tot_e is false; fix the formatter there rather than rewriting stdout here.
         analyze_back["nbody_number"] = len(component_properties)
 
         nbody_model = super().get_results(external_results=analyze_back, component_results=component_results, client=client)
