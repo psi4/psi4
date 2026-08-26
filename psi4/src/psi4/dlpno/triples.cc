@@ -2196,17 +2196,17 @@ void DLPNOCCSDT::compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vect
             if (perm_idx == 1) {
                 U_ijk_permuted = Tensor<double, 3>(
                     "U_ijk R1 permutation", ntno_ijk, ntno_ijk, ntno_ijk);
-                permute(Indices{index::a, index::b, index::c},
+                permute(Indices{index::b, index::a, index::c},
                         &U_ijk_permuted,
-                        Indices{index::b, index::a, index::c},
+                        Indices{index::a, index::b, index::c},
                         U_iajbkc_[ijk]);
                 U_ijk = &U_ijk_permuted;
             } else if (perm_idx == 2) {
                 U_ijk_permuted = Tensor<double, 3>(
                     "U_ijk R1 permutation", ntno_ijk, ntno_ijk, ntno_ijk);
-                permute(Indices{index::a, index::b, index::c},
+                permute(Indices{index::c, index::a, index::b},
                         &U_ijk_permuted,
-                        Indices{index::b, index::c, index::a},
+                        Indices{index::a, index::b, index::c},
                         U_iajbkc_[ijk]);
                 U_ijk = &U_ijk_permuted;
             }
@@ -2364,15 +2364,20 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                 U_ijk_permuted = Tensor<double, 3>(
                     "U_ijk R2 Fock permutation", ntno_ijk, ntno_ijk,
                     ntno_ijk);
+                // The destination labels encode the physical occupied-column
+                // order stored in this fresh contiguous tensor. The following
+                // contraction then assigns its physical axes the canonical
+                // (a,b,c) labels. This direction matters for the three-cycle:
+                // P(j,k,i) and its inverse are distinct.
                 if (idx == 1) {
-                    permute(Indices{index::a, index::b, index::c},
+                    permute(Indices{index::a, index::c, index::b},
                             &U_ijk_permuted,
-                            Indices{index::a, index::c, index::b},
+                            Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 } else {
-                    permute(Indices{index::a, index::b, index::c},
+                    permute(Indices{index::b, index::c, index::a},
                             &U_ijk_permuted,
-                            Indices{index::b, index::c, index::a},
+                            Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 }
                 U_ijk = &U_ijk_permuted;
@@ -2424,29 +2429,29 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                 U_ijk_permuted = Tensor<double, 3>(
                     "U_ijk R2 permutation", ntno_ijk, ntno_ijk, ntno_ijk);
                 if (idx == 1) {
-                    permute(Indices{index::a, index::b, index::c},
+                    permute(Indices{index::a, index::c, index::b},
                             &U_ijk_permuted,
-                            Indices{index::a, index::c, index::b},
+                            Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 } else if (idx == 2) {
-                    permute(Indices{index::a, index::b, index::c},
+                    permute(Indices{index::b, index::a, index::c},
                             &U_ijk_permuted,
-                            Indices{index::b, index::a, index::c},
+                            Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 } else if (idx == 3) {
-                    permute(Indices{index::a, index::b, index::c},
+                    permute(Indices{index::b, index::c, index::a},
                             &U_ijk_permuted,
-                            Indices{index::b, index::c, index::a},
+                            Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 } else if (idx == 4) {
-                    permute(Indices{index::a, index::b, index::c},
+                    permute(Indices{index::c, index::a, index::b},
                             &U_ijk_permuted,
-                            Indices{index::c, index::a, index::b},
+                            Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 } else {
-                    permute(Indices{index::a, index::b, index::c},
+                    permute(Indices{index::c, index::b, index::a},
                             &U_ijk_permuted,
-                            Indices{index::c, index::b, index::a},
+                            Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 }
                 U_ijk = &U_ijk_permuted;
@@ -2493,8 +2498,12 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                            Indices{index::d, index::b}, q_db);
                 }
 
-                // T1 dressing: -U_3^{abc}(lb|kc)t_l^d. Contract the common
-                // (b,c) pair first and finish with one GEMM over l.
+                // T1 dressing of the first virtual integral index, as in
+                // manuscript Eq. (26) and DLPNO Algorithm 2:
+                // (db|kc)_t1 = (db|kc) - (lb|kc)t_l^d. This is intentionally
+                // different from the second-index q_vv_t1 convention used
+                // later in the R3 implementation. Contract (b,c) first and
+                // finish with one GEMM over l.
                 Tensor<double, 2> U_al("U_al", ntno_ijk, nlmo_ijk);
                 einsum(0.0, Indices{index::a, index::l}, &U_al, 1.0,
                        Indices{index::a, index::b, index::c}, *U_ijk,
