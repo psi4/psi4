@@ -250,6 +250,25 @@ __geoms = {
     }, id='methylamine_rpw6b95_vacuum_spherical'),
 
     pytest.param({
+        "geom": __geoms["methylamine_cation"],
+        "methodname": "pw6b95",
+        "args": {
+            "basis": "def2-svp",
+            "dft_spherical_points": 590,
+            "dft_radial_points": 100,
+            "reference": "uhf",
+            },
+        "ref_energy":  -95.545516905743852,
+        "ref_gradient":  [[-0.0641789973, -0.0162144750,  0.0475569199],
+                          [ 0.0298746048,  0.0250976880, -0.0373331997],
+                          [-0.0036131281, -0.0046448509, -0.0008717052],
+                          [-0.0024133635, -0.0111916599,  0.0109828317],
+                          [-0.0001348544,  0.0011744476,  0.0057748601],
+                          [ 0.0259943907,  0.0125974876, -0.0019683850],
+                          [ 0.0144707663, -0.0068188042, -0.0241408920]]
+    }, id='methylamine_upw6b95_vacuum_spherical'),
+
+    pytest.param({
         "geom": __geoms["methylamine"],
         "methodname": "b97m-v",
         "args": {
