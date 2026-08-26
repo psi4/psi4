@@ -56,6 +56,7 @@
 namespace psi {
 namespace dlpno {
 
+#ifdef USING_Einsums
 using einsums::All;
 using einsums::Indices;
 using einsums::Tensor;
@@ -64,6 +65,7 @@ using einsums::tensor_algebra::einsum;
 using einsums::tensor_algebra::permute;
 namespace index = einsums::index;
 namespace linear_algebra = einsums::linear_algebra;
+#endif
 
 namespace {
 

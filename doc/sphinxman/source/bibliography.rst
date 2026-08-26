@@ -830,6 +830,11 @@ Bibliography
    *J. Chem. Theory Comput.* **22**, 2825-2845 (2026).
    https://doi.org/10.1021/acs.jctc.5c01910
 
+.. [Fishman:2026:3233]
+   V. Fishman, B. D. Lorincz, E. Semidalas, A. Barman, J. M. L. Martin, P. R. Nagy, and M. Kallay,
+   *J. Phys. Chem. A* **130**, 3233-3248 (2026).
+   https://doi.org/10.1021/acs.jpca.6c00607
+
 .. [Bomble:2005:054101]
    Y. J. Bomble, J. F. Stanton, M. Kallay, and J. Gauss,
    *J. Chem. Phys.* **123**, 054101 (2005).
