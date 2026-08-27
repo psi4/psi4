@@ -28,6 +28,9 @@
 
 #include "mp2.h"
 
+#include <algorithm>
+#include <sstream>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -58,6 +61,26 @@
 
 namespace psi {
 namespace dfmp2 {
+
+namespace {
+
+void require_memory(size_t available, size_t required, const std::string& stage) {
+    if (available < required) {
+        constexpr double doubles_per_gib = 1024.0 * 1024.0 * 1024.0 / sizeof(double);
+        std::ostringstream message;
+        message << "DFMP2: " << stage << " requires at least " << required / doubles_per_gib
+                << " GiB, but only " << available / doubles_per_gib << " GiB is available.";
+        throw PSIEXCEPTION(message.str());
+    }
+}
+
+size_t auxiliary_block_rows(size_t available, size_t row_cost, size_t max_shell, size_t naux,
+                            const std::string& stage) {
+    require_memory(available, max_shell * row_cost, stage + " (one auxiliary shell)");
+    return std::min(naux, available / row_cost);
+}
+
+}  // namespace
 
 void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ) {
     // The density matrix
@@ -400,7 +423,8 @@ SharedMatrix DFMP2::form_inverse_metric() {
         auto Jm12 = std::make_shared<Matrix>("SO Basis Fitting Inverse (Eig)", naux, naux);
         outfile->Printf("\t Will attempt to load fitting metric from file %d.\n\n", PSIF_DFSCF_BJ);
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
-        psio_->read_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*)Jm12->pointer()[0], sizeof(double) * naux * naux);
+        psio_->read_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*)Jm12->pointer()[0],
+                          sizeof(double) * static_cast<size_t>(naux) * naux);
         psio_->close(PSIF_DFSCF_BJ, 1);
 
         timer_off("DFMP2 Metric");
@@ -417,7 +441,8 @@ SharedMatrix DFMP2::form_inverse_metric() {
         if (options_.get_str("DF_INTS_IO") == "SAVE") {
             outfile->Printf("\t Will save fitting metric to file %d.\n\n", PSIF_DFSCF_BJ);
             psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
-            psio_->write_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*)Jm12->pointer()[0], sizeof(double) * naux * naux);
+            psio_->write_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*)Jm12->pointer()[0],
+                               sizeof(double) * static_cast<size_t>(naux) * naux);
             psio_->close(PSIF_DFSCF_BJ, 1);
         }
 
@@ -428,7 +453,7 @@ SharedMatrix DFMP2::form_inverse_metric() {
 }
 void DFMP2::apply_fitting(SharedMatrix Jm12, size_t file, size_t naux, size_t nia) {
     // Memory constraints
-    size_t Jmem = naux * naux;
+    size_t Jmem = naux * static_cast<size_t>(naux);
     size_t doubles = (size_t)(options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
     if (doubles < 2L * Jmem) {
         throw PSIEXCEPTION("DFMP2: More memory required for tractable disk transpose");
@@ -488,7 +513,7 @@ void DFMP2::apply_fitting(SharedMatrix Jm12, size_t file, size_t naux, size_t ni
 }
 void DFMP2::apply_fitting_grad(SharedMatrix Jm12, size_t file, size_t naux, size_t nia) {
     // Memory constraints
-    size_t Jmem = naux * naux;
+    size_t Jmem = naux * static_cast<size_t>(naux);
     size_t doubles = (size_t)(options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
     if (doubles < 2L * Jmem) {
         throw PSIEXCEPTION("DFMP2: More memory required for tractable disk transpose");
@@ -543,11 +568,9 @@ void DFMP2::apply_fitting_grad(SharedMatrix Jm12, size_t file, size_t naux, size
     psio_->close(file, 1);
 }
 void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
-    size_t Jmem = naux * naux;
+    size_t Jmem = naux * static_cast<size_t>(naux);
     size_t doubles = (size_t)(options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
-    if (doubles < 1L * Jmem) {
-        throw PSIEXCEPTION("DFMP2: More memory required for gamma");
-    }
+    require_memory(doubles, Jmem + 2L * naux, "gamma formation");
     size_t rem = (doubles - Jmem) / 2L;
     size_t max_nia = (rem / naux);
     max_nia = (max_nia > nia ? nia : max_nia);
@@ -607,9 +630,9 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
 void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
     // Memory constraints
     size_t doubles = (size_t)(options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
-    size_t max_nia = (doubles / naux);
-    max_nia = (max_nia > nia ? nia : max_nia);
-    max_nia = (max_nia < 1L ? 1L : max_nia);
+    const size_t row_cost = 2L * naux;
+    require_memory(doubles, row_cost, "G transpose");
+    size_t max_nia = std::min(nia, doubles / row_cost);
 
     // Block sizing
     std::vector<size_t> ia_starts;
@@ -624,6 +647,7 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
     // block_status(ia_starts, __FILE__,__LINE__);
 
     // Prestripe
+    require_memory(doubles, nia, "G transpose prestripe");
     psio_->open(file, PSIO_OPEN_OLD);
     psio_address next_QIA = PSIO_ZERO;
     std::vector<double> temp(nia, 0);
@@ -672,14 +696,14 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
 void DFMP2::apply_B_transpose(size_t file, size_t naux, size_t naocc, size_t navir) {
     // Memory constraints
     size_t doubles = (size_t)(options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
-    size_t rows = doubles / (1L * naocc * naux);
-    int max_A = (rows <= 0L ? 1L : rows);
-    max_A = (rows > navir ? navir : rows);
+    const size_t row_cost = naocc * naux;
+    require_memory(doubles, row_cost, "B transpose");
+    const size_t max_A = std::max<size_t>(1, std::min(navir, doubles / row_cost));
 
     // Block sizing
-    std::vector<int> a_starts;
+    std::vector<size_t> a_starts;
     a_starts.push_back(0);
-    for (int a = 0; a < navir; a += max_A) {
+    for (size_t a = 0; a < navir; a += max_A) {
         if (a + max_A >= navir) {
             a_starts.push_back(navir);
         } else {
@@ -696,14 +720,14 @@ void DFMP2::apply_B_transpose(size_t file, size_t naux, size_t naocc, size_t nav
     psio_->open(file, PSIO_OPEN_OLD);
     psio_address next_BIA = PSIO_ZERO;
     psio_address next_BAI = PSIO_ZERO;
-    for (int block = 0; block < a_starts.size() - 1; block++) {
+    for (size_t block = 0; block < a_starts.size() - 1; block++) {
         // Sizing
-        int a_start = a_starts[block];
-        int a_stop = a_starts[block + 1];
-        int na = a_stop - a_start;
+        size_t a_start = a_starts[block];
+        size_t a_stop = a_starts[block + 1];
+        size_t na = a_stop - a_start;
 
-        for (int a = 0; a < na; a++) {
-            for (int i = 0; i < naocc; i++) {
+        for (size_t a = 0; a < na; a++) {
+            for (size_t i = 0; i < naocc; i++) {
                 next_BIA = psio_get_address(PSIO_ZERO, sizeof(double) * (i * navir * naux + (a + a_start) * naux));
                 psio_->read(file, "B(ia|Q)", (char*)Biap[a * naocc + i], sizeof(double) * naux, next_BIA, &next_BIA);
             }
@@ -863,9 +887,7 @@ void RDFMP2::form_Aia() {
     size_t Aia_cost_per_row = naocc * (size_t)navir;
     size_t total_cost_per_row = Amn_cost_per_row + Ami_cost_per_row + Aia_cost_per_row;
     size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    size_t max_temp = doubles / (total_cost_per_row);
-    int max_naux = (max_temp > (size_t)naux ? naux : max_temp);
-    max_naux = (max_naux < maxQ ? maxQ : max_naux);
+    int max_naux = static_cast<int>(auxiliary_block_rows(doubles, total_cost_per_row, maxQ, naux, "Aia formation"));
 
     // Block extents
     std::vector<int> block_Q_starts;
@@ -908,7 +930,7 @@ void RDFMP2::form_Aia() {
                          : ribasis_->shell(Qstop).function_index() - ribasis_->shell(Qstart).function_index());
 
         // Clear Amn for Schwarz sieve
-        ::memset((void*)Amnp[0], '\0', sizeof(double) * nrows * nso * nso);
+        ::memset((void*)Amnp[0], '\0', sizeof(double) * static_cast<size_t>(nrows) * nso * nso);
 
         // Compute TEI tensor block (A|mn)
         timer_on("DFMP2 (A|mn)");
@@ -964,7 +986,8 @@ void RDFMP2::form_Aia() {
 
         // Stripe (A|ia) out to disk
         timer_on("DFMP2 Aia Write");
-        psio_->write(PSIF_DFMP2_AIA, "A(Q|ia)", (char*)Aiap[0], sizeof(double) * nrows * naocc * navir, next_AIA,
+        psio_->write(PSIF_DFMP2_AIA, "A(Q|ia)", (char*)Aiap[0],
+                     sizeof(double) * static_cast<size_t>(nrows) * naocc * navir, next_AIA,
                      &next_AIA);
         timer_off("DFMP2 Aia Write");
     }
@@ -1127,7 +1150,9 @@ void RDFMP2::form_Pab() {
 
     // Memory
     size_t doubles = static_cast<size_t>(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L);
-    doubles -= static_cast<double>(navir) * static_cast<double>(navir);
+    const size_t fixed_memory = static_cast<size_t>(navir) * navir;
+    require_memory(doubles, fixed_memory + 1L, "Pab formation");
+    doubles -= fixed_memory;
     double C = -(double)doubles;
     double B = 4.0 * navir * naux;
     double A = 2.0 * navir * (double)navir;
@@ -1323,7 +1348,9 @@ void RDFMP2::form_Pij() {
 
     // Memory
     size_t doubles = static_cast<size_t>(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L);
-    doubles -= naocc * naocc;
+    const size_t fixed_memory = static_cast<size_t>(naocc) * naocc;
+    require_memory(doubles, fixed_memory + 1L, "Pij formation");
+    doubles -= fixed_memory;
     double C = -(double)doubles;
     double B = 2.0 * naocc * naux;
     double A = 2.0 * naocc * (double)naocc;
@@ -1496,7 +1523,7 @@ void RDFMP2::form_Amn_x_terms() {
     int nso = basisset_->nbf();
     int naocc = Caocc_->colspi()[0];
     int navir = Cavir_->colspi()[0];
-    int nia = Caocc_->colspi()[0] * Cavir_->colspi()[0];
+    size_t nia = static_cast<size_t>(Caocc_->colspi()[0]) * Cavir_->colspi()[0];
     int naux = ribasis_->nbf();
 
     // => Thread Count <= //
@@ -1531,10 +1558,7 @@ void RDFMP2::form_Amn_x_terms() {
     row_cost += nso * (size_t)nso;
     row_cost += nso * (size_t)naocc;
     row_cost += naocc * (size_t)navir;
-    size_t rows = memory / row_cost;
-    rows = (rows > naux ? naux : rows);
-    rows = (rows < maxP ? maxP : rows);
-    max_rows = (int)rows;
+    max_rows = static_cast<int>(auxiliary_block_rows(memory, row_cost, maxP, naux, "Amn gradient formation"));
 
     // => Block Sizing <= //
 
@@ -1554,8 +1578,8 @@ void RDFMP2::form_Amn_x_terms() {
 
     // => Temporary Buffers <= //
 
-    auto Gia = std::make_shared<Matrix>("Gia", max_rows, naocc * navir);
-    auto Gmi = std::make_shared<Matrix>("Gmi", max_rows, nso * naocc);
+    auto Gia = std::make_shared<Matrix>("Gia", max_rows, static_cast<size_t>(naocc) * navir);
+    auto Gmi = std::make_shared<Matrix>("Gmi", max_rows, static_cast<size_t>(nso) * naocc);
     auto Gmn = std::make_shared<Matrix>("Gmn", max_rows, nso * (size_t)nso);
 
     double** Giap = Gia->pointer();
@@ -1698,7 +1722,7 @@ void RDFMP2::form_L() {
     int nso = basisset_->nbf();
     int naocc = Caocc_->colspi()[0];
     int navir = Cavir_->colspi()[0];
-    int nia = Caocc_->colspi()[0] * Cavir_->colspi()[0];
+    size_t nia = static_cast<size_t>(Caocc_->colspi()[0]) * Cavir_->colspi()[0];
     int naux = ribasis_->nbf();
 
     // => Thread Count <= //
@@ -1724,9 +1748,10 @@ void RDFMP2::form_L() {
     // => Memory Constraints <= //
 
     size_t memory = static_cast<size_t>((options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    memory -= static_cast<size_t>(naocc) * static_cast<size_t>(nso);
-    memory -= static_cast<size_t>(navir) * static_cast<size_t>(nso);
-    memory -= static_cast<size_t>(naocc) * static_cast<size_t>(navir);
+    const size_t fixed_memory = static_cast<size_t>(naocc) * nso + static_cast<size_t>(navir) * nso +
+                                static_cast<size_t>(naocc) * navir;
+    require_memory(memory, fixed_memory + 1L, "L intermediate fixed storage");
+    memory -= fixed_memory;
     int max_rows;
     int maxP = ribasis_->max_function_per_shell();
     size_t row_cost = 0L;
@@ -1734,10 +1759,7 @@ void RDFMP2::form_L() {
     row_cost += static_cast<size_t>(nso)   * static_cast<size_t>(naocc);
     row_cost += static_cast<size_t>(nso)   * static_cast<size_t>(navir);
     row_cost += static_cast<size_t>(naocc) * static_cast<size_t>(navir);
-    size_t rows = memory / row_cost;
-    rows = (rows > naux ? naux : rows);
-    rows = (rows < maxP ? maxP : rows);
-    max_rows = static_cast<int>(rows);
+    max_rows = static_cast<int>(auxiliary_block_rows(memory, row_cost, maxP, naux, "L intermediate formation"));
 
     // => Block Sizing <= //
 
@@ -1757,9 +1779,9 @@ void RDFMP2::form_L() {
 
     // => Temporary Buffers <= //
 
-    auto Gia = std::make_shared<Matrix>("Gia", max_rows, naocc * navir);
-    auto Gim = std::make_shared<Matrix>("Pim", max_rows, nso * naocc);
-    auto Gam = std::make_shared<Matrix>("Pam", max_rows, nso * navir);
+    auto Gia = std::make_shared<Matrix>("Gia", max_rows, static_cast<size_t>(naocc) * navir);
+    auto Gim = std::make_shared<Matrix>("Pim", max_rows, static_cast<size_t>(nso) * naocc);
+    auto Gam = std::make_shared<Matrix>("Pam", max_rows, static_cast<size_t>(nso) * navir);
     auto Gmn = std::make_shared<Matrix>("Pmn", max_rows, nso * (size_t)nso);
 
     auto Giap = Gia->pointer();
@@ -1770,7 +1792,7 @@ void RDFMP2::form_L() {
     auto Caoccp = Caocc_->pointer();
     auto Cavirp = Cavir_->pointer();
 
-    std::vector<double> temp(naocc * navir);
+    std::vector<double> temp(static_cast<size_t>(naocc) * navir);
 
     // => Targets <= //
 
@@ -1852,7 +1874,7 @@ void RDFMP2::form_L() {
 
         // Sort G_P^ia to G_P^ai
         for (int p = 0; p < np; p++) {
-            ::memcpy((void*)temp.data(), (void*)Giap[p], sizeof(double) * naocc * navir);
+            ::memcpy((void*)temp.data(), (void*)Giap[p], sizeof(double) * static_cast<size_t>(naocc) * navir);
             for (int i = 0; i < naocc; i++) {
                 C_DCOPY(navir, &temp[i * navir], 1, &Giap[p][i], naocc);
             }
@@ -2684,9 +2706,8 @@ void UDFMP2::form_Aia() {
     size_t Aia_cost_per_row = naocc * (size_t)navir;
     size_t total_cost_per_row = Amn_cost_per_row + Ami_cost_per_row + Aia_cost_per_row;
     size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    size_t max_temp = doubles / (total_cost_per_row);
-    int max_naux = (max_temp > (size_t)naux ? naux : max_temp);
-    max_naux = (max_naux < maxQ ? maxQ : max_naux);
+    int max_naux =
+        static_cast<int>(auxiliary_block_rows(doubles, total_cost_per_row, maxQ, naux, "unrestricted Aia formation"));
 
     // Block extents
     std::vector<int> block_Q_starts;
@@ -2733,7 +2754,7 @@ void UDFMP2::form_Aia() {
                          : ribasis_->shell(Qstop).function_index() - ribasis_->shell(Qstart).function_index());
 
         // Clear Amn for Schwarz sieve
-        ::memset((void*)Amnp[0], '\0', sizeof(double) * nrows * nso * nso);
+        ::memset((void*)Amnp[0], '\0', sizeof(double) * static_cast<size_t>(nrows) * nso * nso);
 
         // Compute TEI tensor block (A|mn)
         timer_on("DFMP2 (A|mn)");
