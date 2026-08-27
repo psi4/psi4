@@ -232,24 +232,6 @@ DLPNOCCSDT_Q::QuadrupletEnergyIntermediates DLPNOCCSDT_Q::load_quadruplet_energy
     return intermediates;
 }
 
-size_t DLPNOCCSDT_Q::quadruples_permutation_index(int i, int j, int k, int l) const {
-    const std::array<int, 4> occupied = {i, j, k, l};
-    std::array<int, 4> sorted_positions = {0, 1, 2, 3};
-    std::stable_sort(sorted_positions.begin(), sorted_positions.end(),
-                     [&](int lhs, int rhs) { return occupied[lhs] < occupied[rhs]; });
-
-    for (size_t permutation = 0; permutation < quadruple_permutations_.size(); ++permutation) {
-        const auto& candidate = quadruple_permutations_[permutation];
-        if (std::get<0>(candidate) == sorted_positions[0] &&
-            std::get<1>(candidate) == sorted_positions[1] &&
-            std::get<2>(candidate) == sorted_positions[2] &&
-            std::get<3>(candidate) == sorted_positions[3]) {
-            return permutation;
-        }
-    }
-    throw PSIEXCEPTION("Unable to determine a DLPNO quadruples column permutation.");
-}
-
 Tensor<double, 4> DLPNOCCSDT_Q::matmul_4d(const Tensor<double, 4>& A,
                                            const SharedMatrix& X, int dim_old,
                                            int dim_new) {
@@ -323,7 +305,13 @@ Tensor<double, 4> DLPNOCCSDT_Q::matmul_4d_permuted(
     // Transforming before the occupied-column permutation makes every
     // contraction a GEMM regardless of the requested order.  Only the smaller
     // dim_new^4 result is permuted; the old-space amplitude is never copied.
-    if (quadruples_permutation_index(i, j, k, l) == 0) return result;
+    // With four distinct occupied indices, the only identity ordering is the
+    // strictly increasing one. Do not use a stable-sort identity shortcut
+    // here: for repeated indices, quadruples_permuter() deliberately applies
+    // its historical first-match tie convention (for example, an i == j
+    // column swap). Skipping that permutation changes iterative-(Q) couplings
+    // for repeated-index quadruplets.
+    if (i < j && j < k && k < l) return result;
     return quadruples_permuter(result, i, j, k, l);
 }
 

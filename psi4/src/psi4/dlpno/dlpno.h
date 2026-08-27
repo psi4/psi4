@@ -686,9 +686,6 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     einsums::Tensor<double, 4> matmul_4d_permuted(
         const einsums::Tensor<double, 4>& A, const SharedMatrix& X, int dim_old,
         int dim_new, int i, int j, int k, int l);
-    /// Return the permutation row that maps the stored sorted occupied tuple to
-    /// the requested (i,j,k,l) column order.
-    size_t quadruples_permutation_index(int i, int j, int k, int l) const;
     /// Apply the occupied/QNO permutation maps of Eqs. (51)-(55).
     einsums::Tensor<double, 4> quadruples_permuter(const einsums::Tensor<double, 4>& X, int i, int j, int k, int l);
 
