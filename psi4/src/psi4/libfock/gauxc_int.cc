@@ -94,7 +94,7 @@ void GauXCBase::initialize() {
         GauXC::RadialSize(radial_points),
         GauXC::AngularSize(spherical_points)
     );
-    auto gauxc_primary = linalg::to_gauxc_basisset<double>(*primary_, 1.0e-10, false); // TODO: Allow customization
+    auto gauxc_primary = primary_->to_gauxc_basisset<double>(1.0e-10, false); // TODO: Allow customization
     auto load_balancer = lb_factory.get_shared_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
     GauXC::MolecularWeightsFactory mw_factory(gauxc_execspace, "Default",
                                           GauXC::MolecularWeightsSettings{});
