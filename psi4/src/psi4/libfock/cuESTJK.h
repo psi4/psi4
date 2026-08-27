@@ -53,6 +53,8 @@ class PSI_API cuESTJK : public JK {
 
     double condition_;
     double pq_threshold_;
+    uint64_t dfk_slices_;
+    uint64_t dfk_moduli_;
 
     bool initialized_;
 
@@ -86,6 +88,10 @@ class PSI_API cuESTJK : public JK {
     ~cuESTJK() override;
 
     void set_condition(double condition) { condition_ = condition; }
+    void set_do_wK(bool do_wK) override {
+        do_wK_ = do_wK;
+        do_K_ = do_K_ || do_wK;  // cuEST returns full- and long-range exchange together in K.
+    }
     void print_header() const override;
 
     cuestDFIntPlan_t cuest_df_plan() { return cuest_df_plan_; }
