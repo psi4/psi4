@@ -203,11 +203,8 @@ OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpac
     // Transform the overlap into the orbital basis of both spaces, C1^T S12 C2.
     // The row dimension of space1 is its number of orbitals, which is smaller than its
     // number of basis functions whenever linear dependencies were removed from it.
-    auto O12C2 = std::make_shared<Matrix>("S12 C2", O12->rowspi(), space2.C()->colspi());
-    O12C2->gemm(false, false, 1.0, O12, space2.C(), 0.0);
-
-    auto C12 = std::make_shared<Matrix>("C12", space1.C()->colspi(), space2.C()->colspi());
-    C12->gemm(true, false, 1.0, space1.C(), O12C2, 0.0);
+    auto C12 = linalg::triplet(space1.C(), O12, space2.C(), true, false, false);
+    C12->set_name("C12");
 
     // SVD of MO overlap matrix
     auto [U, S, Vt] = C12->svd_a_temps();
