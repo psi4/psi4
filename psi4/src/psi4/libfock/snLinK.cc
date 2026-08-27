@@ -262,7 +262,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = primary_->molecule()->to_gauxc_molecule();
-    auto gauxc_primary = linalg::to_gauxc_basisset<double>(*primary_, basis_tol_, force_cartesian);
+    auto gauxc_primary = primary_->to_gauxc_basisset<double>(basis_tol_, force_cartesian);
 
     // create snLinK grid for GauXC
     auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
