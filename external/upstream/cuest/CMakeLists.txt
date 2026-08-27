@@ -1,5 +1,5 @@
 if(ENABLE_cuEST)
-    find_package(cuEST 0.1 CONFIG QUIET)  # edit in codedeps
+    find_package(cuEST 0.2 CONFIG QUIET)  # edit in codedeps
 
     if(NOT cuEST_FOUND)
         find_package(cuEST MODULE QUIET)
