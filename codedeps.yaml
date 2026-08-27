@@ -1614,7 +1614,7 @@ data:
     repository: null
     cmake:
       name: cuEST
-      constraint: ">=0.2.1"
+      constraint: "0.2.1"
       target: cuEST::cuEST
       components: null
     conda:
