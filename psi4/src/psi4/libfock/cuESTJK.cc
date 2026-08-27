@@ -88,6 +88,8 @@ cuESTJK::cuESTJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 
     condition_ = options.get_double("DF_FITTING_CONDITION");
     pq_threshold_ = options.get_double("INTS_TOLERANCE");
+    dfk_slices_ = options.get_int("CUEST_DFK_SLICES");
+    dfk_moduli_ = options.get_int("CUEST_DFK_MODULI");
 }
 
 cuESTJK::~cuESTJK() {
@@ -121,6 +123,33 @@ void cuESTJK::preiterations()
     // DF Int Plan List
     cuestDFIntPlanParameters_t dfint_params;
     CHECK_CUEST(cuestParametersCreate(CUEST_DFINTPLAN_PARAMETERS, reinterpret_cast<void**>(&dfint_params)));
+    
+    // Psi4 and cuEST both represent exact exchange as alpha / r + beta erf(omega r) / r.
+    double exchange_fraction = omega_alpha_;
+    double lrc_exchange_fraction = omega_beta_;
+    double lr_exchange_omega = omega_;
+
+    //Set omega params if applicable 
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_DFINTPLAN_PARAMETERS, 
+        dfint_params,
+        CUEST_DFINTPLAN_PARAMETERS_EXCHANGE_FRACTION,
+        &exchange_fraction,
+        sizeof(double)));
+
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_DFINTPLAN_PARAMETERS, 
+        dfint_params,
+        CUEST_DFINTPLAN_PARAMETERS_LRC_EXCHANGE_FRACTION,
+        &lrc_exchange_fraction,
+        sizeof(double)));
+
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_DFINTPLAN_PARAMETERS, 
+        dfint_params,
+        CUEST_DFINTPLAN_PARAMETERS_LRC_EXCHANGE_OMEGA,
+        &lr_exchange_omega,
+        sizeof(double)));
 
     CHECK_CUEST(cuestDFIntPlanCreateWorkspaceQuery(cuest_handle,
         cuest_primary_basis_, cuest_auxiliary_basis_, cuest_pair_list_,
@@ -142,6 +171,29 @@ void cuESTJK::preiterations()
     // Create J/K parameters
     CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
+
+    // Set J & K compute parameters
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
+        cuest_exchange_compute_params_,
+        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_SLICE_COUNT,
+        &dfk_slices_,
+        sizeof(uint64_t)));
+
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, 
+        cuest_exchange_compute_params_,
+        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_MODULUS_COUNT,
+        &dfk_moduli_,
+        sizeof(uint64_t)));
+
+    // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off
+    if (!options_.get_bool("CUEST_MIXED_PRECISION")) {
+        CHECK_CUEST(cuestSetMathMode(
+            cuest_handle,
+            CUEST_NATIVE_FP64_MATH_MODE
+        ));
+    }
 
     initialized_ = true;
 }

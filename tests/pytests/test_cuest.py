@@ -233,6 +233,43 @@ __geoms = {
 
     pytest.param({
         "geom": __geoms["methylamine"],
+        "methodname": "pw6b95",
+        "args": {
+            "basis": "def2-svp",
+            "dft_spherical_points": 590,
+            "dft_radial_points": 100,
+            },
+        "ref_energy": -95.891979193935711,
+        "ref_gradient": [[ 0.0035623300,  0.0011535385, -0.0028500117],
+                         [ 0.0092168605, -0.0094680146,  0.0034988231],
+                         [-0.0011688988,  0.0010378132, -0.0014311974],
+                         [-0.0116414462,  0.0032048803,  0.0032445416],
+                         [-0.0005877578,  0.0020011832, -0.0003293703],
+                         [-0.0009796034, -0.0011343016, -0.0035287499],
+                         [ 0.0015980964,  0.0032045977,  0.0013964163]]
+    }, id='methylamine_rpw6b95_vacuum_spherical'),
+
+    pytest.param({
+        "geom": __geoms["methylamine_cation"],
+        "methodname": "pw6b95",
+        "args": {
+            "basis": "def2-svp",
+            "dft_spherical_points": 590,
+            "dft_radial_points": 100,
+            "reference": "uhf",
+            },
+        "ref_energy":  -95.545516905743852,
+        "ref_gradient":  [[-0.0641789973, -0.0162144750,  0.0475569199],
+                          [ 0.0298746048,  0.0250976880, -0.0373331997],
+                          [-0.0036131281, -0.0046448509, -0.0008717052],
+                          [-0.0024133635, -0.0111916599,  0.0109828317],
+                          [-0.0001348544,  0.0011744476,  0.0057748601],
+                          [ 0.0259943907,  0.0125974876, -0.0019683850],
+                          [ 0.0144707663, -0.0068188042, -0.0241408920]]
+    }, id='methylamine_upw6b95_vacuum_spherical'),
+
+    pytest.param({
+        "geom": __geoms["methylamine"],
         "methodname": "b97m-v",
         "args": {
             "basis": "def2-svp",
@@ -323,10 +360,12 @@ def test_cuest_scf(inp, request):
         'dft_nuclear_scheme': 'stratmann', # To get cuEST and Psi4 to agree exactly for DFT
         'df_basis_scf': 'def2-universal-JKFIT',
         'maxiter': 300,
+        'e_convergence': 10, 
         'd_convergence': 9,
         "puream": True,
         "reference": "rhf",
         'use_cuest': True,
+        'cuest_mixed_precision': False,
     })
 
     # Override with the test-specific options from above
