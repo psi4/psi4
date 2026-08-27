@@ -403,8 +403,6 @@ SharedMatrix SCFDeriv::compute_hessian()
     }
 
     // => Potential/Functional <= //
-    std::shared_ptr<IntegratorDispatcher> potential;
-
     if (functional_->needs_xc()) {
         if (options_.get_str("REFERENCE") == "RKS") {
             potential_->set_D({Da_});

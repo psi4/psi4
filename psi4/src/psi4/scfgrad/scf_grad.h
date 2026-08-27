@@ -36,7 +36,7 @@
 
 namespace psi {
 class SuperFunctional;
-class IntegratorManager;
+class IntegratorDispatcher;
 namespace scf {
     class RHF;
     class UHF;
