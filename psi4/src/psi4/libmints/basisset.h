@@ -47,7 +47,6 @@
 #include <memory>
 
 #ifdef USING_gauxc
-#include <eigen3/Eigen/Core>
 #include <gauxc/basisset.hpp>
 #endif
 
