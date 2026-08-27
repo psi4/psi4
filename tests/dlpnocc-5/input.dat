@@ -30,13 +30,6 @@ set r_convergence 1.0e-8
 set pno_convergence very_tight
 set write_quadruples_intermediates false
 
-# These perturbative-only cutoffs are intentionally loose. A CCSDTQ call must
-# override them with T_CUT_TNO_FULL and T_CUT_QNO_FULL, respectively.
-set t_cut_tno_strong 1.0e-3
-set t_cut_tno_weak 1.0e-3
-set t_cut_qno_strong 1.0e-3
-set t_cut_qno_weak 1.0e-3
-
 # Algorithm 5 is a Jacobi iteration.  Exercise the immutable old/new T4
 # generations in both storage modes and with different OpenMP schedules before
 # the full CCSDTQ regression.  The two answers must be storage- and
