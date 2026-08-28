@@ -63,11 +63,6 @@
 #include <omp.h>
 #endif
 
-#ifdef USING_BrianQC
-extern bool brianEnable;
-extern bool brianEnableDFT;
-#endif
-
 namespace psi {
 
 VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
@@ -695,13 +690,6 @@ RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> pr
 RV::~RV() {}
 void RV::initialize() {
     VBase::initialize();
-#ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT)
-    {
-        brianqc_integrator_ = std::make_shared<BrianRV>(functional_, primary_, options_);
-        brianqc_integrator_->initialize();
-    }
-#endif
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {
@@ -2007,13 +1995,6 @@ UV::UV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> pr
 UV::~UV() {}
 void UV::initialize() {
     VBase::initialize();
-#ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT)
-    {
-        brianqc_integrator_ = std::make_shared<BrianUV>(functional_, primary_, options_);
-        brianqc_integrator_->initialize();
-    }
-#endif
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {

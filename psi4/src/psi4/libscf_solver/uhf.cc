@@ -76,7 +76,6 @@
 extern void checkBrian();
 extern BrianCookie brianCookie;
 extern bool brianEnable;
-extern bool brianEnableDFT;
 
 #endif
 
@@ -222,7 +221,7 @@ void UHF::form_G() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -383,7 +382,7 @@ double UHF::compute_E() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -644,7 +643,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -1240,6 +1239,11 @@ std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 void UHF::setup_potential() {
     if (functional_->needs_xc()) {
 	std::vector<std::shared_ptr<IntegratorManager>> managers;
+#ifdef USING_BrianQC
+        if (options_.get_bool("BRIANQC_INTEGRATE")) {
+            managers.push_back(std::make_shared<BrianUV>(functional_, basisset_, options_));
+        }
+#endif
 #ifdef USING_gauxc
         if (options_.get_bool("GAUXC_INTEGRATE")) {
             managers.push_back(std::make_shared<GauUV>(functional_, basisset_, options_));
@@ -1248,7 +1252,7 @@ void UHF::setup_potential() {
         if (options_.get_bool("DFT_ENABLE_PSI")) {
 	    managers.push_back(std::make_shared<UV>(functional_, basisset_, options_));
 	}
-	if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but request DFT.");
+	if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but requested DFT.");
         potential_ = std::make_shared<IntegratorDispatcher>(managers);
         potential_->initialize();
     } else {
@@ -1336,7 +1340,7 @@ void UHF::openorbital_scf() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
       // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
       alpha = 1.0;
       beta = 1.0;
