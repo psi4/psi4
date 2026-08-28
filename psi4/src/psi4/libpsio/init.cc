@@ -51,28 +51,19 @@ std::string PSIO::default_namespace_;
 psio_address PSIO_ZERO = {0, 0};
 
 PSIO::PSIO() {
-    int i, j;
+    int i;
 
-    psio_unit = (psio_ud *)malloc(sizeof(psio_ud) * PSIO_MAXUNIT);
+    psio_unit.resize(PSIO_MAXUNIT);
 #ifdef PSIO_STATS
-    psio_readlen = (size_t *)malloc(sizeof(size_t) * PSIO_MAXUNIT);
-    psio_writlen = (size_t *)malloc(sizeof(size_t) * PSIO_MAXUNIT);
+    psio_readlen.assign(PSIO_MAXUNIT, 0);
+    psio_writlen.assign(PSIO_MAXUNIT, 0);
 #endif
     state_ = 1;
 
-    if (psio_unit == nullptr) {
-        throw std::runtime_error("Error in PSIO_INIT()!\n");
-    }
-
     for (i = 0; i < PSIO_MAXUNIT; i++) {
-#ifdef PSIO_STATS
-        psio_readlen[i] = psio_writlen[i] = 0;
-#endif
-        psio_unit[i].numvols = 0;
-        for (j = 0; j < PSIO_MAXVOL; j++) {
-            psio_unit[i].vol[j].path = nullptr;
-            psio_unit[i].vol[j].stream = -1;
-        }
+        // path is default-constructed to "" by the vector; only stream needs
+        // the non-zero sentinel.
+        psio_unit[i].stream = -1;
         psio_unit[i].toclen = 0;
         psio_unit[i].toc = nullptr;
     }
@@ -93,15 +84,8 @@ PSIO::PSIO() {
    1) checkpoint file should by default be in "./"
    2) all other files should go to "/tmp/"
    3) default name is psi_file_prefix
-   4) 1 volume
    */
-    for (i = 1; i <= PSIO_MAXVOL; ++i) {
-        char kwd[20];
-        sprintf(kwd, "VOLUME%u", i);
-        filecfg_kwd("DEFAULT", kwd, -1, "/tmp/");
-    }
     filecfg_kwd("DEFAULT", "NAME", -1, psi_file_prefix);
-    filecfg_kwd("DEFAULT", "NVOLUME", -1, "1");
 
     pid_ = getpid();
 }

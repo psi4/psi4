@@ -42,35 +42,17 @@
 namespace psi {
 
 void PSIO::change_file_namespace(size_t unit, const std::string& ns1, const std::string& ns2) {
-    char *old_name, *new_name, *old_fullpath, *new_fullpath;
-    _default_psio_lib_->get_filename(unit, &old_name, true);
-    _default_psio_lib_->get_filename(unit, &new_name, true);
-    //_default_psio_lib_->get_volpath(unit, 0, &path);
-    std::string tpath = PSIOManager::shared_object()->get_file_path(unit);
-    const char* path = tpath.c_str();
+    // The namespace is spliced into the filename here (unlike get_unit_filename),
+    // so compose the paths directly. Both endpoints share the same base name.
+    const std::string name = _default_psio_lib_->get_filename(unit, true);
+    const std::string path = PSIOManager::shared_object()->get_file_path(unit);
+    const std::string suffix = "." + std::to_string(unit);
 
-    old_fullpath = (char*)malloc((strlen(path) + strlen(old_name) + 80) * sizeof(char));
-    new_fullpath = (char*)malloc((strlen(path) + strlen(new_name) + 80) * sizeof(char));
+    const std::string old_fullpath = path + name + (ns1.empty() ? "" : "." + ns1) + suffix;
+    const std::string new_fullpath = path + name + (ns2.empty() ? "" : "." + ns2) + suffix;
 
-    if (ns1 == "") {
-        sprintf(old_fullpath, "%s%s.%zu", path, old_name, unit);
-    } else {
-        sprintf(old_fullpath, "%s%s.%s.%zu", path, old_name, ns1.c_str(), unit);
-    }
-    if (ns2 == "") {
-        sprintf(new_fullpath, "%s%s.%zu", path, new_name, unit);
-    } else {
-        sprintf(new_fullpath, "%s%s.%s.%zu", path, new_name, ns2.c_str(), unit);
-    }
-
-    // printf("%s\n",old_fullpath);
-    // printf("%s\n",new_fullpath);
-
-    PSIOManager::shared_object()->move_file(std::string(old_fullpath), std::string(new_fullpath));
-    ::rename(old_fullpath, new_fullpath);
-
-    free(old_fullpath);
-    free(new_fullpath);
+    PSIOManager::shared_object()->move_file(old_fullpath, new_fullpath);
+    ::rename(old_fullpath.c_str(), new_fullpath.c_str());
 }
 
 }  // namespace psi
