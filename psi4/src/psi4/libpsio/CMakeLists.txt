@@ -11,8 +11,6 @@ list(APPEND sources
   get_address.cc
   get_filename.cc
   get_global_address.cc
-  get_numvols.cc
-  get_volpath.cc
   getpid.cc
   init.cc
   open.cc
