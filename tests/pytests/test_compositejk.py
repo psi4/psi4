@@ -1,11 +1,56 @@
+from pathlib import Path
+
 import pytest
 
 from utils import compare_values, compare
-from addons import using, uusing
+from addons import using
 
 import psi4
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+# snLinK executes on either the host or a GPU, selected by SNLINK_USE_GPU. The
+# other composite K algorithms (LINK, COSX) are CPU-only, so only the snLinK
+# cases carry an execution-space axis.
+SNLINK_CPU_MARKS = [*using("gauxc")]
+SNLINK_GPU_MARKS = [*using("gauxc_gpu"), *using("cuda")]
+
+# Shared by every snLinK case in test_seminum: the spherical and cartesian paths
+# agree to well within the test tolerance, as do the host and device paths.
+SNLINK_SEMINUM_REF = {
+    "h2o (rhf)" : -76.026788692185,
+    "h2o (rks)" : -76.420403557357,
+    "nh2 (uhf)" : -55.566911357539,
+    "nh2 (rohf)" : -55.562710424257,
+    "h2o/na+ (rhf ie)" : -0.040118757043,
+}
+
+
+def outfile_offset():
+    """Byte offset of the end of the shared pytest output file."""
+
+    psi4.core.flush_outfile()
+    outfile = Path("pytest_output.dat")
+    return outfile.stat().st_size if outfile.exists() else 0
+
+
+def assert_snlink_execution_space(use_gpu, offset):
+    """Confirm snLinK actually ran in the requested execution space.
+
+    conftest reopens ``pytest_output.dat`` in append mode for every test, so only
+    the text written past ``offset`` belongs to the current test. Searching the
+    whole file would happily match a banner printed by an earlier test.
+    """
+
+    psi4.core.flush_outfile()
+    with open("pytest_output.dat", "rb") as fp:
+        fp.seek(offset)
+        output = fp.read().decode(errors="replace")
+
+    expected, unexpected = ("Device (GPU)", "Host (CPU)") if use_gpu else ("Host (CPU)", "Device (GPU)")
+
+    assert f"K Execution Space: {expected}" in output, f"snLinK did not report running on {expected}"
+    assert f"K Execution Space: {unexpected}" not in output, f"snLinK unexpectedly reported {unexpected}"
 
 @pytest.fixture
 def mols():
@@ -41,13 +86,14 @@ units au
         pytest.param("DFDIRJ") 
     ]
 ) #to be extended in the future
-@pytest.mark.parametrize("k_algo", [ 
-        pytest.param("LINK"),
-        pytest.param("COSX"),
-        pytest.param("SNLINK", marks=using('gauxc')),
+@pytest.mark.parametrize("k_algo, snlink_use_gpu", [ 
+        pytest.param("LINK", None, id="LINK"),
+        pytest.param("COSX", None, id="COSX"),
+        pytest.param("SNLINK", False, id="SNLINK-cpu", marks=SNLINK_CPU_MARKS),
+        pytest.param("SNLINK", True, id="SNLINK-gpu", marks=SNLINK_GPU_MARKS),
     ]
 ) #to be extended in the future
-def test_composite_call(j_algo, k_algo, mols, request):
+def test_composite_call(j_algo, k_algo, snlink_use_gpu, mols, request):
     """Test all SCF_TYPE={J}+{K} combinations for an HF calculation.
     The correct algorithm pair should be called in each case.""" 
 
@@ -64,8 +110,16 @@ def test_composite_call(j_algo, k_algo, mols, request):
     else:
         psi4.set_options({ "screening" : "density" })
 
+    if snlink_use_gpu is not None:
+        psi4.set_options({ "snlink_use_gpu" : snlink_use_gpu })
+
     # run composite JK algorithm
+    offset = outfile_offset()
     E, wfn = psi4.energy("hf/6-31g", molecule=molecule, return_wfn=True) 
+
+    # check that snLinK ran in the requested execution space
+    if snlink_use_gpu is not None:
+        assert_snlink_execution_space(snlink_use_gpu, offset)
 
     clean_j_name, clean_k_name = wfn.jk().name().split("+")
 
@@ -84,6 +138,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
+                      "id" : "h2o (rhf)",
                       },
                       marks=pytest.mark.quick,
                       id="h2o (rhf)"),
@@ -91,6 +146,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
+                      "id" : "h2o (rks)",
                       },
                       marks=pytest.mark.quick,
                       id="h2o (rks)"),
@@ -98,18 +154,21 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       "options": {"reference" : "uhf"},
                       "molecule" : "nh2",
                       "bsse_type" : None,
+                      "id" : "nh2 (uhf)",
                       },
                       id="nh2 (uhf)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "rohf"},
                       "molecule" : "nh2",
                       "bsse_type" : None,
+                      "id" : "nh2 (rohf)",
                       },
                       id="nh2 (rohf)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
+                      "id" : "h2o/na+ (rhf ie)",
                       },
                       marks=using("qcmanybody"),
                       id="h2o/na+ (rhf ie)"),
@@ -128,28 +187,33 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       },
                       },
                       id="cosx"),
+        # snLinK spherical/cartesian reference values are identical, so both
+        # execution spaces share SNLINK_SEMINUM_REF. Note that a GPU run with a
+        # spherical basis transparently turns SNLINK_FORCE_CARTESIAN back on.
         pytest.param({"scf_type" : "dfdirj+snlink",
                       "snlink_force_cartesian": False,
-                      "ref" : { 
-                          "h2o (rhf)" : -76.026788692185, 
-                          "h2o (rks)" : -76.420403557357,
-                          "nh2 (uhf)" : -55.566911357539,
-                          "nh2 (rohf)" : -55.562710424257,
-                          "h2o/na+ (rhf ie)" : -0.040118757043,
+                      "use_gpu": False,
+                      "ref" : SNLINK_SEMINUM_REF,
                       },
+                      id="snlink (spherical) cpu", marks=SNLINK_CPU_MARKS),
+        pytest.param({"scf_type" : "dfdirj+snlink",
+                      "snlink_force_cartesian": False,
+                      "use_gpu": True,
+                      "ref" : SNLINK_SEMINUM_REF,
                       },
-                      id="snlink (spherical)", marks=using("gauxc")),
+                      id="snlink (spherical) gpu", marks=SNLINK_GPU_MARKS),
         pytest.param({"scf_type" : "dfdirj+snlink",
                       "snlink_force_cartesian": True,
-                      "ref" : { 
-                          "h2o (rhf)" : -76.026788692185, 
-                          "h2o (rks)" : -76.420403557357,
-                          "nh2 (uhf)" : -55.566911357539,
-                          "nh2 (rohf)" : -55.562710424257,
-                          "h2o/na+ (rhf ie)" : -0.040118757043,
+                      "use_gpu": False,
+                      "ref" : SNLINK_SEMINUM_REF,
                       },
+                      id="snlink (cartesian) cpu", marks=SNLINK_CPU_MARKS),
+        pytest.param({"scf_type" : "dfdirj+snlink",
+                      "snlink_force_cartesian": True,
+                      "use_gpu": True,
+                      "ref" : SNLINK_SEMINUM_REF,
                       },
-                      id="snlink (cartesian)", marks=using("gauxc")),
+                      id="snlink (cartesian) gpu", marks=SNLINK_GPU_MARKS),
  
     ]
 )
@@ -162,7 +226,8 @@ def test_seminum(inp, scf, mols, request):
     psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz"})
     psi4.set_options(inp["options"])
     if "snlink_force_cartesian" in scf.keys():
-        psi4.set_options({"snlink_force_cartesian": scf["snlink_force_cartesian"]})
+        psi4.set_options({"snlink_force_cartesian": scf["snlink_force_cartesian"],
+                          "snlink_use_gpu": scf["use_gpu"]})
 
         #SNLINK_FORCE_CARTESIAN doesnt work with symmetry currently
         molecule.reset_point_group("C1")
@@ -173,8 +238,14 @@ def test_seminum(inp, scf, mols, request):
         tol = 7e-6
 
     # does the SCF energy match a pre-computed reference?
+    offset = outfile_offset()
     energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, tol, f'{test_id} accurate to reference (1e-6 threshold)')
+
+    # did snLinK run in the requested execution space?
+    if "use_gpu" in scf.keys():
+        assert_snlink_execution_space(scf["use_gpu"], offset)
+
+    assert compare_values(scf["ref"][inp["id"]], energy_seminum, tol, f'{test_id} accurate to reference (1e-6 threshold)')
 
     # is the SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
@@ -182,8 +253,14 @@ def test_seminum(inp, scf, mols, request):
     assert compare_values(energy_pk, energy_seminum, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
 
 
-@uusing("gauxc")
-def test_snlink_force_cartesian_guard(mols):
+@pytest.mark.parametrize(
+    "snlink_use_gpu",
+    [
+        pytest.param(False, id="cpu", marks=SNLINK_CPU_MARKS),
+        pytest.param(True, id="gpu", marks=SNLINK_GPU_MARKS),
+    ],
+)
+def test_snlink_force_cartesian_guard(snlink_use_gpu, mols):
     """Sentinel for snLinK cartesian transform path."""
 
     molecule = mols["h2o"]
@@ -195,10 +272,13 @@ def test_snlink_force_cartesian_guard(mols):
             "basis": "cc-pvdz",
             "reference": "rhf",
             "snlink_force_cartesian": True,
+            "snlink_use_gpu": snlink_use_gpu,
         }
     )
 
+    offset = outfile_offset()
     energy = psi4.energy("hf", molecule=molecule)
+    assert_snlink_execution_space(snlink_use_gpu, offset)
     assert compare_values(-76.026788692185, energy, 6, "snlink force-cartesian sentinel energy")
 
 
@@ -243,8 +323,10 @@ def test_snlink_force_cartesian_guard(mols):
     [
         pytest.param({"scf_type" : "dfdirj+cosx"},
                       id="cosx"),
-        pytest.param({"scf_type" : "dfdirj+snlink"},
-                      id="snlink", marks=using("gauxc")),
+        pytest.param({"scf_type" : "dfdirj+snlink", "use_gpu": False},
+                      id="snlink-cpu", marks=SNLINK_CPU_MARKS),
+        pytest.param({"scf_type" : "dfdirj+snlink", "use_gpu": True},
+                      id="snlink-gpu", marks=SNLINK_GPU_MARKS),
     ]
 )
 def test_seminum_incfock(inp, scf, mols, request):
@@ -255,10 +337,17 @@ def test_seminum_incfock(inp, scf, mols, request):
     molecule = mols[inp["molecule"]]
     psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz", "incfock": False})
     psi4.set_options(inp["options"])
+    if "use_gpu" in scf.keys():
+        psi4.set_options({"snlink_use_gpu": scf["use_gpu"]})
 
     # compute energy+wfn without IncFock 
+    offset = outfile_offset()
     energy_seminum_noinc, wfn_seminum_noinc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
     #assert compare_values(inp["ref"], energy_dfjcosk, atol=1e-6)
+
+    # did snLinK run in the requested execution space?
+    if "use_gpu" in scf.keys():
+        assert_snlink_execution_space(scf["use_gpu"], offset)
 
     # compute energy+wfn with Incfock 
     psi4.set_options({"incfock" : True})
@@ -275,18 +364,21 @@ def test_seminum_incfock(inp, scf, mols, request):
 
 @pytest.mark.parametrize("functional", [ "bp86", "b3lyp" ])
 @pytest.mark.parametrize(
-    "scf_type", 
+    "scf_type, snlink_use_gpu", 
     [ 
-        pytest.param("DFDIRJ"), 
-        pytest.param("LINK"),
-        pytest.param("COSX"),
-        pytest.param("SNLINK", marks=using('gauxc')),
-        pytest.param("DFDIRJ+LINK"),
-        pytest.param("DFDIRJ+COSX"),
-        pytest.param("DFDIRJ+SNLINK", marks=using('gauxc')),
+        pytest.param("DFDIRJ", None, id="DFDIRJ"), 
+        pytest.param("LINK", None, id="LINK"),
+        pytest.param("COSX", None, id="COSX"),
+        # bare SNLINK never reaches an energy call (no J algorithm -> ValidationError),
+        # so an execution-space axis would only duplicate the error check.
+        pytest.param("SNLINK", None, id="SNLINK", marks=SNLINK_CPU_MARKS),
+        pytest.param("DFDIRJ+LINK", None, id="DFDIRJ+LINK"),
+        pytest.param("DFDIRJ+COSX", None, id="DFDIRJ+COSX"),
+        pytest.param("DFDIRJ+SNLINK", False, id="DFDIRJ+SNLINK-cpu", marks=SNLINK_CPU_MARKS),
+        pytest.param("DFDIRJ+SNLINK", True, id="DFDIRJ+SNLINK-gpu", marks=SNLINK_GPU_MARKS),
     ]
 )
-def test_dfdirj(functional, scf_type, mols):
+def test_dfdirj(functional, scf_type, snlink_use_gpu, mols):
     """Test the functionality of the SCF_TYPE keyword for CompositeJK methods under varying situations:
       - Using hybrid DFT functionals without specifying a K algorithm should cause a RuntimeError to be thrown.
       - Not specifying a J algorithm should cause a ValidationError to be thrown."""
@@ -312,6 +404,8 @@ def test_dfdirj(functional, scf_type, mols):
     # ... else we continue as normal 
     else:  
         psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening}) 
+        if snlink_use_gpu is not None:
+            psi4.set_options({"snlink_use_gpu": snlink_use_gpu})
     
         is_hybrid = True if functional == "b3lyp" else False
         k_algo_specified = True if any([ algo in scf_type for algo, matrix in composite_algo_to_matrix.items() if matrix == "K" ]) else False
@@ -326,12 +420,21 @@ def test_dfdirj(functional, scf_type, mols):
     
         # ... else code will run fine
         else:
+            offset = outfile_offset()
             E = psi4.energy(functional, molecule=molecule) 
+
+            # only a hybrid functional needs exact exchange; for a pure functional
+            # the K algorithm is never built, so snLinK prints no banner at all
+            if snlink_use_gpu is not None and is_hybrid:
+                assert_snlink_execution_space(snlink_use_gpu, offset)
 
             # we keep this line just for printout purposes; should always pass if done correctly 
             assert compare(type(E), float, f'{scf_type}+{functional} executes')
 
 @pytest.mark.parametrize("j_algo", [ "DFDIRJ" ]) #to be extended in the future
+# NB: no execution-space axis here. BP86 is a pure functional, so no exact
+# exchange is required and the K algorithm is never built -- snLinK does not run
+# at all in this test, on either the host or a device.
 @pytest.mark.parametrize(
     "k_algo", 
     [ 
