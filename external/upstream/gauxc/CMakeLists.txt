@@ -71,7 +71,6 @@ if(${ENABLE_gauxc})
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                    -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
                    -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
-                   -DCMAKE_CUDA_ARCHITECTURES=${CMAKE_CUDA_ARCHITECTURES}
                    -DLibxc_DIR=${Libxc_DIR}
                    -Dgau2grid_DIR=${gau2grid_DIR}
                    -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
@@ -94,6 +93,7 @@ if(${ENABLE_gauxc})
                          -DOpenMP_C_LIB_NAMES:STRING=${OpenMP_C_LIB_NAMES}
                          -DOpenMP_CXX_LIB_NAMES:STRING=${OpenMP_CXX_LIB_NAMES}
                          -DBLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
+                         -DCMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                          # CMAKE_PREFIX_PATH propagates to GauXC's FetchContent builds (ExchCXX)
                          # allowing ExchCXX to find Psi4's LibXC without rebuilding from source
                          -DCMAKE_PREFIX_PATH:STRING=${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH})
