@@ -115,13 +115,14 @@ SharedMatrix IntegratorDispatcher::compute_hessian() {
 std::vector<SharedMatrix> IntegratorDispatcher::compute_fock_derivatives() {
   for (const auto& manager: managers_) {
     auto rval = manager->compute_fock_derivatives();
-    if (!rval.empty()) return manager->compute_fock_derivatives();
+    if (!rval.empty()) return rval;
   }
   throw PSIEXCEPTION("No IntegratorManager has compute_fock_derivatives defined.");
 }
 
 size_t IntegratorDispatcher::collocation_size() const {
   size_t size = 0;
+  // n.b.: this assumes that only one manager collocates. If all collocate, sum.
   for (const auto& manager: managers_) {
     size = std::max(size, manager->collocation_size());
   }
@@ -138,8 +139,8 @@ void IntegratorDispatcher::build_collocation_cache(size_t doubles_per_integrator
 
 void IntegratorDispatcher::clear_collocation_cache() {
   for (const auto& manager: managers_) {
-    if (auto collacting_integrator = dynamic_pointer_cast<VBase>(manager)) {
-      collacting_integrator->clear_collocation_cache();
+    if (auto collocating_integrator = dynamic_pointer_cast<VBase>(manager)) {
+      collocating_integrator->clear_collocation_cache();
     } 
   }
 }
