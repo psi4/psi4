@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 import psi4
 import pytest
 import numpy as np
@@ -374,3 +377,254 @@ def test_cuest_scf(inp, request):
     G, wfn = psi4.gradient(inp['methodname'], return_wfn=True)
     assert psi4.compare_values(inp["ref_energy"], wfn.get_energies("Total Energy"), 5e-6, f'{request.node.callspec.id} energy')
     assert psi4.compare_values(inp["ref_gradient"], G, 5e-5, f'{request.node.callspec.id} gradient')
+
+
+# ===========================================================================
+# Molecular symmetry (non-C1) in the cuEST DFT XC path
+# ===========================================================================
+#
+# The methylamine geometry used above is effectively C1, so none of those cases
+# exercise a symmetry-blocked wavefunction.  cuEST's XC potential code
+# (RV/UV::compute_V) works in the dense AO basis, while Va_/Vb_ are SO-basis,
+# symmetry-blocked matrices; sizing the GPU buffers off ret[i]->size() picked up
+# only the first irrep block, and nothing back-transformed AO -> SO.  Any
+# nirrep() > 1 DFT wavefunction therefore died inside cuestXCPotentialCompute.
+#
+# That was worked around in the driver by forcing C1 for cuEST DFT, and is now
+# fixed properly in v.cc, so the workaround is gone.  These tests pin both
+# halves of that: cuEST must run in the *native* point group (not be silently
+# demoted to C1), and must give the same answer as the same geometry in C1.
+
+__symm_geoms = {
+    "water": """
+    0 1
+    O
+    H 1 0.9584
+    H 1 0.9584 2 104.45
+    """,
+    "water_cation": """
+    1 2
+    O
+    H 1 0.9584
+    H 1 0.9584 2 104.45
+    """,
+}
+
+# Reference energies from regular (non-cuEST) Psi4 in the native C2v point
+# group, same options as the test below.
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize("inp", [
+
+    pytest.param({
+        "geom": "water",
+        "methodname": "hf",
+        "reference": "rhf",
+        "ref_energy": -75.9608932798,
+    }, id='water_c2v_rhf'),
+
+    pytest.param({
+        "geom": "water",
+        "methodname": "b3lyp",
+        "reference": "rhf",
+        "ref_energy": -76.3581721562,
+    }, id='water_c2v_rb3lyp'),
+
+    # VV10 functional: exercises the nonlocal-correlation branch of compute_V,
+    # which folds its contribution into the same AO -> SO round trip.
+    pytest.param({
+        "geom": "water",
+        "methodname": "b97m-v",
+        "reference": "rhf",
+        "ref_energy": -76.3299936452,
+    }, id='water_c2v_rb97m-v'),
+
+    pytest.param({
+        "geom": "water_cation",
+        "methodname": "hf",
+        "reference": "uhf",
+        "ref_energy": -75.5622929120,
+    }, id='water_cation_c2v_uhf'),
+
+    # Open shell: UV::compute_V is a separate code path from RV::compute_V and
+    # was broken in the same way (two Vxc buffers instead of one).
+    pytest.param({
+        "geom": "water_cation",
+        "methodname": "b3lyp",
+        "reference": "uhf",
+        "ref_energy": -75.9020172059,
+    }, id='water_cation_c2v_ub3lyp'),
+
+    pytest.param({
+        "geom": "water_cation",
+        "methodname": "m06",
+        "reference": "uhf",
+        "ref_energy": -75.8633697758,
+    }, id='water_cation_c2v_um06'),
+
+    pytest.param({
+        "geom": "water_cation",
+        "methodname": "b97m-v",
+        "reference": "uhf",
+        "ref_energy": -75.8758535607,
+    }, id='water_cation_c2v_ub97m-v'),
+])
+def test_cuest_symmetry(inp, request):
+    """cuEST must support non-C1 wavefunctions and be invariant to symmetry."""
+    psi4.core.set_num_threads(4)
+
+    psi4.set_options({
+        'scf_type': 'df',
+        'df_basis_scf': 'def2-universal-JKFIT',
+        'basis': 'def2-svp',
+        'puream': True,
+        'dft_nuclear_scheme': 'stratmann',  # To get cuEST and Psi4 to agree exactly for DFT
+        'dft_radial_points': 100,
+        'dft_spherical_points': 590,
+        'd_convergence': 9,
+        'maxiter': 300,
+        'use_cuest': True,
+        'reference': inp['reference'],
+    })
+
+    mol_symm = psi4.geometry(__symm_geoms[inp['geom']])
+    mol_symm.update_geometry()
+
+    # Identical geometry with symmetry switched off. This is exactly what the
+    # removed scf_helper() workaround used to do behind the user's back, so the
+    # two gradients are directly comparable element by element.
+    mol_c1 = mol_symm.clone()
+    mol_c1.reset_point_group('c1')
+    mol_c1.update_geometry()
+
+    G_symm, wfn_symm = psi4.gradient(inp['methodname'], molecule=mol_symm, return_wfn=True)
+    G_c1, wfn_c1 = psi4.gradient(inp['methodname'], molecule=mol_c1, return_wfn=True)
+
+    tid = request.node.callspec.id
+
+    # (1) cuEST really ran in the native point group. Before the v.cc fix, DFT
+    # here was silently demoted to C1 (nirrep 1) by the driver workaround, so
+    # this is the assertion that pins the workaround's removal.
+    assert compare_integers(4, wfn_symm.nirrep(), f'{tid} nirrep')
+    assert compare_strings('c2v', mol_symm.point_group().symbol(), f'{tid} point group')
+    assert compare_integers(1, wfn_c1.nirrep(), f'{tid} C1 reference nirrep')
+
+    # (2) Absolute energy against a non-cuEST Psi4 reference in native symmetry.
+    assert compare_values(inp['ref_energy'], wfn_symm.energy(), 5e-6, f'{tid} energy')
+
+    # (3) Symmetry invariance. These are the same physics, so agreement should
+    # be near machine precision; observed worst case is ~1e-9 (E) and ~3e-10
+    # (gradient) across these cases.
+    assert compare_values(wfn_c1.energy(), wfn_symm.energy(), 1e-7, f'{tid} energy symmetry invariance')
+    assert compare_values(np.array(G_c1), np.array(G_symm), 1e-7, f'{tid} gradient symmetry invariance')
+
+
+# ===========================================================================
+# DFT code paths that cuEST does not implement must fail loudly
+# ===========================================================================
+#
+# Under USE_CUEST the quadrature grid is built on the GPU and the CPU-side grid
+# post-processing is skipped entirely (cubature.cc: "if (is_cuest) return;"
+# before postProcess()), so grid_->blocks() is empty and functional_workers_ is
+# never populated. compute_V()/compute_gradient() have cuEST branches and are
+# fine, but compute_Vx(), compute_fock_derivatives(), SAP::compute_V() and
+# set_grac_shift() do not -- they used to fall through to the CPU code and index
+# an empty std::vector, terminating the process with SIGSEGV.
+#
+# Note that simply populating functional_workers_ is NOT a fix: with no grid
+# blocks the CPU routines integrate over nothing and silently return a *zero* XC
+# contribution. These paths must therefore raise, not "work".
+#
+# Each case runs in a subprocess on purpose. If the guard regresses, the failure
+# mode is a segfault, which would otherwise take down the whole pytest session
+# and report nothing useful; as a subprocess it shows up as a negative return
+# code that we can assert on and describe.
+
+_UNSUPPORTED_ROUTE_SCRIPT = """
+import sys
+import psi4
+
+route, outfile = sys.argv[1], sys.argv[2]
+psi4.core.set_output_file(outfile, False)
+psi4.set_options({
+    'scf_type': 'df',
+    'df_basis_scf': 'def2-universal-JKFIT',
+    'basis': 'def2-svp',
+    'puream': True,
+    'reference': 'rhf',
+    'dft_nuclear_scheme': 'stratmann',
+    'd_convergence': 8,
+    'save_jk': True,
+    'use_cuest': True,
+})
+mol = psi4.geometry('''
+0 1
+O
+H 1 0.9584
+H 1 0.9584 2 104.45
+symmetry c1
+''')
+
+try:
+    if route == 'tdscf':
+        _, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
+        psi4.set_options({'tdscf_states': 2})
+        psi4.tdscf(wfn, states=2)
+    elif route == 'polarizability':
+        psi4.properties('b3lyp', properties=['DIPOLE_POLARIZABILITIES'], molecule=mol)
+    elif route == 'sap_guess':
+        psi4.set_options({'guess': 'sap'})
+        psi4.energy('b3lyp', molecule=mol)
+    elif route == 'grac':
+        psi4.set_options({'dft_grac_shift': 0.5})
+        psi4.energy('b3lyp', molecule=mol)
+    else:
+        raise SystemExit('unknown route ' + route)
+except Exception as exc:
+    print('CAUGHT ' + type(exc).__name__ + ': ' + ' '.join(str(exc).split()))
+else:
+    print('COMPLETED WITHOUT ERROR')
+"""
+
+
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize("route,expected", [
+    # TDDFT and CPHF response properties both go through RV::compute_Vx.
+    pytest.param('tdscf', 'XC response kernel', id='tdscf'),
+    pytest.param('polarizability', 'XC response kernel', id='polarizability'),
+    pytest.param('sap_guess', 'SAP guess', id='sap_guess'),
+    pytest.param('grac', 'GRAC asymptotic correction', id='grac'),
+])
+def test_cuest_unsupported_route(route, expected, tmp_path):
+    """Unimplemented cuEST DFT paths raise a clear error instead of segfaulting."""
+    script = tmp_path / "cuest_unsupported_route.py"
+    script.write_text(_UNSUPPORTED_ROUTE_SCRIPT)
+
+    proc = subprocess.run(
+        [sys.executable, str(script), route, str(tmp_path / "psi.out")],
+        capture_output=True, text=True, timeout=1800,
+    )
+
+    # A negative return code means killed by signal; -11 (SIGSEGV) is precisely
+    # the pre-guard behaviour this test exists to prevent.
+    assert proc.returncode == 0, (
+        f"cuEST '{route}' subprocess exited with returncode {proc.returncode} "
+        f"(negative means killed by a signal; -11 is SIGSEGV).\n"
+        f"stdout:\n{proc.stdout}\nstderr tail:\n{proc.stderr[-2000:]}"
+    )
+
+    # Must actually have raised, rather than quietly returning XC-free numbers.
+    assert 'CAUGHT' in proc.stdout, (
+        f"cuEST '{route}' did not raise. A silent success here means the CPU "
+        f"fallback ran with an empty grid and returned a zero XC contribution.\n"
+        f"stdout:\n{proc.stdout}"
+    )
+
+    # And the error must be the informative cuEST guard, naming the operation.
+    assert 'has no cuEST implementation' in proc.stdout, f"unexpected error:\n{proc.stdout}"
+    assert expected in proc.stdout, (
+        f"cuEST '{route}' raised, but not from the expected guard "
+        f"(wanted {expected!r}).\nstdout:\n{proc.stdout}"
+    )
