@@ -15,7 +15,6 @@ __all__ = [
     "hardware_nvidia_gpu",
     "nvidia_compute_capability",
     "using",
-    "using_gauxc_gpu",
     "uusing",
     "ctest_labeler",
     "ctest_runner",
@@ -68,7 +67,7 @@ def is_nvidia_gpu_present():
 
 
 def nvidia_compute_capability():
-    """Return the maximum visible Nvidia GPU compute capability, or None."""
+    """Return the min/max visible NVIDIA GPU compute capabilities, or None."""
     try:
         completed = subprocess.run(
             ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
@@ -83,10 +82,15 @@ def nvidia_compute_capability():
     capabilities = []
     for line in completed.stdout.splitlines():
         try:
-            capabilities.append(float(line.strip()))
+            major, minor = line.strip().split(".", maxsplit=1)
+            capabilities.append((int(major), int(minor)))
         except ValueError:
             pass
-    return max(capabilities) if capabilities else None
+
+    if not capabilities:
+        return None
+
+    return min(capabilities), max(capabilities)
 
 
 # Figure out what is imported
@@ -135,6 +139,8 @@ _programs = {
     "pandas": which_import("pandas", return_bool=True),
     "otr": psi4.addons("otr"),
     "cint": psi4.addons("cint"),
+    "cuda_cc8": (cc := nvidia_compute_capability()) is not None and cc[1] >= (8, 0),
+    "cuda": (cc := nvidia_compute_capability()) is not None,
 }
 
 
@@ -160,7 +166,12 @@ _using_cache = {}
 def _using(program: str) -> None:
 
     if program not in _using_cache:
-        import_message = f"Not detecting module {program}. Install package if necessary to enable tests."
+        if program == "cuda_cc8":
+            import_message = f"Not detecting Nvidia GPU (8.0). Switch hardware to enable tests."
+        elif program == "cuda":
+            import_message = f"Not detecting Nvidia GPU. Switch hardware to enable tests."
+        else:
+            import_message = f"Not detecting module {program}. Install package if necessary to enable tests."
         skip = pytest.mark.skipif(has_program(program) is False, reason=import_message)
         general = pytest.mark.addon
         particular = getattr(pytest.mark, program)

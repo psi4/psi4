@@ -4,12 +4,12 @@ import pytest
 
 import psi4
 
-from addons import uusing, using_gauxc_gpu
+from addons import using
 
 
 GAUXC_EXEC_PARAMS = [
-    pytest.param({"use_gpu": False, "label": "Host (CPU)"}, id="cpu"),
-    pytest.param({"use_gpu": True, "label": "Device (GPU)"}, id="gpu", marks=using_gauxc_gpu()),
+    pytest.param({"use_gpu": False, "label": "Host (CPU)"}, id="cpu", marks=using("gauxc")),
+    pytest.param({"use_gpu": True, "label": "Device (GPU)"}, id="gpu", marks=[*using("gauxc_gpu"), *using("cuda")]),
 ]
 
 
@@ -20,7 +20,6 @@ def assert_gauxc_execution_space(gauxc_exec):
     assert f"Execution Space        = {gauxc_exec['label']:>14}" in output
 
 
-@uusing("gauxc")
 @pytest.mark.parametrize("gauxc_exec", GAUXC_EXEC_PARAMS)
 @pytest.mark.parametrize("inp", [
     pytest.param({'name': 'svwn'}, id='svwn'),
@@ -69,7 +68,7 @@ def test_rks_energy(inp, symmetry, basis, gauxc_exec):
 
     assert psi4.compare_values(enPsi, enGau, 6, f"{inp['name']} energies")
 
-@uusing("gauxc")
+
 @pytest.mark.parametrize("gauxc_exec", GAUXC_EXEC_PARAMS)
 @pytest.mark.parametrize("inp", [
     pytest.param({'name': 'svwn'}, id='svwn'),
@@ -117,7 +116,7 @@ def test_rks_grad(inp, symmetry, basis, gauxc_exec):
 
     assert psi4.compare_values(findif_gradient, analytic_gradient, 5, "analytic vs. findif gradient")
 
-@uusing("gauxc")
+
 @pytest.mark.parametrize("gauxc_exec", GAUXC_EXEC_PARAMS)
 @pytest.mark.parametrize("inp", [
     pytest.param({'name': 'svwn'}, id='svwn'),
@@ -168,7 +167,7 @@ def test_uks_energy(inp, symmetry, basis, gauxc_exec):
 
     assert psi4.compare_values(enPsi, enGau, 6, f"{inp['name']} energies")
 
-@uusing("gauxc")
+
 @pytest.mark.parametrize("gauxc_exec", GAUXC_EXEC_PARAMS)
 @pytest.mark.parametrize("inp", [
     pytest.param({'name': 'svwn'}, id='svwn'),
