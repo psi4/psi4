@@ -64,7 +64,11 @@ class BrianQCBase : public IntegratorManager {
     MolecularGrid::MolecularGridOptions grid_options_;
 
    public:
-    BrianQCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
+    BrianQCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {
+        if (!options_.get_bool("BRIANQC_INTEGRATE")) {
+            throw PSIEXCEPTION("Brian integration not enabled!");
+	}
+    };
     void initialize() override;
     void print_header() const override;
 
