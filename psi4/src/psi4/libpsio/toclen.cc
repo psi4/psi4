@@ -59,7 +59,7 @@ size_t PSIO::toclen(const size_t unit) {
 /// @param unit : file unit number to rewind
 void PSIO::rewind_toclen(const size_t unit) {
     if (!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
-    const auto stream = psio_unit[unit].vol.stream;
+    const auto stream = psio_unit[unit].stream;
     const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
     const int saved_errno = errno;
     if (errcod == -1) {
@@ -81,7 +81,7 @@ size_t PSIO::rd_toclen(const size_t unit) {
     rewind_toclen(unit);
     // Read the value
     size_t len;
-    const auto stream = psio_unit[unit].vol.stream;
+    const auto stream = psio_unit[unit].stream;
     const auto errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
     const int saved_errno = errno;
     if (errcod != sizeof(size_t)) {
@@ -103,7 +103,7 @@ void PSIO::wt_toclen(const size_t unit, const size_t len) {
     // Seek to the beginning
     rewind_toclen(unit);
     // Write the value
-    const auto stream = psio_unit[unit].vol.stream;
+    const auto stream = psio_unit[unit].stream;
     const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
     const int saved_errno = errno;
     if (errcod != sizeof(size_t)) {

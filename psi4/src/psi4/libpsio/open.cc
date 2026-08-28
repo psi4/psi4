@@ -58,23 +58,23 @@ void PSIO::open(size_t unit, int status) {
     this_unit = &(psio_unit[unit]);
 
     /* Check to see if this unit is already open */
-    if (this_unit->vol.stream != -1) psio_error(unit, PSIO_ERROR_REOPEN);
+    if (this_unit->stream != -1) psio_error(unit, PSIO_ERROR_REOPEN);
 
     /* Build the file name and open the file */
-    this_unit->vol.path = strdup(get_unit_filename(unit).c_str());
+    this_unit->path = strdup(get_unit_filename(unit).c_str());
 
     /* Register the file */
-    PSIOManager::shared_object()->open_file(std::string(this_unit->vol.path), unit);
+    PSIOManager::shared_object()->open_file(std::string(this_unit->path), unit);
 
     /* Now open the file */
     if (status == PSIO_OPEN_OLD) {
-        this_unit->vol.stream = SYSTEM_OPEN(this_unit->vol.path, PSIO_OPEN_OLD_FLAGS, PERMISSION_MODE);
+        this_unit->stream = SYSTEM_OPEN(this_unit->path, PSIO_OPEN_OLD_FLAGS, PERMISSION_MODE);
     } else if (status == PSIO_OPEN_NEW) {
-        this_unit->vol.stream = SYSTEM_OPEN(this_unit->vol.path, PSIO_OPEN_NEW_FLAGS, PERMISSION_MODE);
+        this_unit->stream = SYSTEM_OPEN(this_unit->path, PSIO_OPEN_NEW_FLAGS, PERMISSION_MODE);
     } else
         psio_error(unit, PSIO_ERROR_OSTAT);
 
-    if (this_unit->vol.stream == -1) psio_error(unit, PSIO_ERROR_OPEN);
+    if (this_unit->stream == -1) psio_error(unit, PSIO_ERROR_OPEN);
 
     if (status == PSIO_OPEN_OLD)
         tocread(unit);
@@ -97,7 +97,7 @@ bool PSIO::exists(size_t unit) {
     this_unit = &(psio_unit[unit]);
 
     /* If the unit is already open, the file exists */
-    if (this_unit->vol.stream != -1) return (true);
+    if (this_unit->stream != -1) return (true);
 
     /* Build the file name and test whether it can be opened */
     std::string full_path = get_unit_filename(unit);

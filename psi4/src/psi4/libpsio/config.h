@@ -72,13 +72,10 @@ struct psio_address {
     size_t offset;
 };
 
-struct psio_vol {
-    char *path;
-    int stream;
-};
-
-// Historically a PSIO unit could be striped across several files ("volumes").
-// That feature was removed: each unit is now backed by a single file.
+// Historically a PSIO unit could be striped across several files ("volumes"),
+// so the backing path and stream lived in a separate psio_vol struct. That
+// feature was removed: each unit is now backed by a single file, so the path
+// and stream live directly on the unit descriptor.
 
 typedef struct psio_entry {
     char key[PSIO_KEYLEN];
@@ -89,7 +86,8 @@ typedef struct psio_entry {
 } psio_tocentry;
 
 struct psio_ud {
-    psio_vol vol;
+    char *path;
+    int stream;
     size_t toclen;
     psio_tocentry *toc;
 };
