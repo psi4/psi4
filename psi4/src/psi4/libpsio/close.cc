@@ -68,11 +68,10 @@ void PSIO::close(size_t unit, int keep) {
     int errcod = SYSTEM_CLOSE(this_unit->stream);
     if (errcod == -1) psio_error(unit, PSIO_ERROR_CLOSE);
     /* Delete the file completely if requested */
-    if (!keep) SYSTEM_UNLINK(this_unit->path);
-    PSIOManager::shared_object()->close_file(std::string(this_unit->path), unit, (keep ? true : false));
+    if (!keep) SYSTEM_UNLINK(this_unit->path.c_str());
+    PSIOManager::shared_object()->close_file(this_unit->path, unit, (keep ? true : false));
 
-    free(this_unit->path);
-    this_unit->path = nullptr;
+    this_unit->path.clear();
     this_unit->stream = -1;
 
     /* Reset the global page stats to zero */

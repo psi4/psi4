@@ -67,11 +67,8 @@ PSIO::~PSIO() {
     fprintf(io_out, "Total %10.1f   %10.1f\n", ((double)total_read) / ((double)1024),
             ((double)total_write) / ((double)1024));
     fclose(io_out);
-    free(psio_readlen);
-    free(psio_writlen);
 #endif
 
-    free(psio_unit);
     state_ = 0;
     files_keywords_.clear();
 }

@@ -53,22 +53,16 @@ psio_address PSIO_ZERO = {0, 0};
 PSIO::PSIO() {
     int i;
 
-    psio_unit = (psio_ud *)malloc(sizeof(psio_ud) * PSIO_MAXUNIT);
+    psio_unit.resize(PSIO_MAXUNIT);
 #ifdef PSIO_STATS
-    psio_readlen = (size_t *)malloc(sizeof(size_t) * PSIO_MAXUNIT);
-    psio_writlen = (size_t *)malloc(sizeof(size_t) * PSIO_MAXUNIT);
+    psio_readlen.assign(PSIO_MAXUNIT, 0);
+    psio_writlen.assign(PSIO_MAXUNIT, 0);
 #endif
     state_ = 1;
 
-    if (psio_unit == nullptr) {
-        throw std::runtime_error("Error in PSIO_INIT()!\n");
-    }
-
     for (i = 0; i < PSIO_MAXUNIT; i++) {
-#ifdef PSIO_STATS
-        psio_readlen[i] = psio_writlen[i] = 0;
-#endif
-        psio_unit[i].path = nullptr;
+        // path is default-constructed to "" by the vector; only stream needs
+        // the non-zero sentinel.
         psio_unit[i].stream = -1;
         psio_unit[i].toclen = 0;
         psio_unit[i].toc = nullptr;

@@ -30,6 +30,7 @@
 #define _psi_src_lib_libpsio_config_h_
 
 #include "psi4/pragma.h"
+#include <string>
 
 namespace psi {
 
@@ -86,7 +87,7 @@ typedef struct psio_entry {
 } psio_tocentry;
 
 struct psio_ud {
-    char *path;
+    std::string path;
     int stream;
     size_t toclen;
     psio_tocentry *toc;

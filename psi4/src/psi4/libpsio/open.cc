@@ -42,11 +42,7 @@
 namespace psi {
 
 std::string PSIO::get_unit_filename(size_t unit) {
-    char *name;
-    get_filename(unit, &name);
-    std::string full_path = PSIOManager::shared_object()->get_file_path(unit) + name + "." + std::to_string(unit);
-    free(name);
-    return full_path;
+    return PSIOManager::shared_object()->get_file_path(unit) + get_filename(unit) + "." + std::to_string(unit);
 }
 
 void PSIO::open(size_t unit, int status) {
@@ -61,16 +57,16 @@ void PSIO::open(size_t unit, int status) {
     if (this_unit->stream != -1) psio_error(unit, PSIO_ERROR_REOPEN);
 
     /* Build the file name and open the file */
-    this_unit->path = strdup(get_unit_filename(unit).c_str());
+    this_unit->path = get_unit_filename(unit);
 
     /* Register the file */
-    PSIOManager::shared_object()->open_file(std::string(this_unit->path), unit);
+    PSIOManager::shared_object()->open_file(this_unit->path, unit);
 
     /* Now open the file */
     if (status == PSIO_OPEN_OLD) {
-        this_unit->stream = SYSTEM_OPEN(this_unit->path, PSIO_OPEN_OLD_FLAGS, PERMISSION_MODE);
+        this_unit->stream = SYSTEM_OPEN(this_unit->path.c_str(), PSIO_OPEN_OLD_FLAGS, PERMISSION_MODE);
     } else if (status == PSIO_OPEN_NEW) {
-        this_unit->stream = SYSTEM_OPEN(this_unit->path, PSIO_OPEN_NEW_FLAGS, PERMISSION_MODE);
+        this_unit->stream = SYSTEM_OPEN(this_unit->path.c_str(), PSIO_OPEN_NEW_FLAGS, PERMISSION_MODE);
     } else
         psio_error(unit, PSIO_ERROR_OSTAT);
 

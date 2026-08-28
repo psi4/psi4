@@ -31,6 +31,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <set>
 #include <queue>
 #include <memory>
@@ -311,7 +312,7 @@ class PSI_API PSIO {
     size_t rd_toclen(size_t unit);          // Read the length of the TOC for a given unit directly from the file.
 
     /// grab the filename of unit and strdup into name.
-    void get_filename(size_t unit, char **name, bool remove_namespace = false);
+    std::string get_filename(size_t unit, bool remove_namespace = false);
 
     /// Compose the full on-disk path for a unit: <path><name>.<unit>.
     std::string get_unit_filename(size_t unit);
@@ -321,7 +322,7 @@ class PSI_API PSIO {
 
    private:
     /// vector of units
-    psio_ud *psio_unit;
+    std::vector<psio_ud> psio_unit;
 
     /// Process ID
     std::string pid_;
@@ -334,8 +335,8 @@ class PSI_API PSIO {
     KWDMap files_keywords_;
 
 #ifdef PSIO_STATS
-    size_t *psio_readlen;
-    size_t *psio_writlen;
+    std::vector<size_t> psio_readlen;
+    std::vector<size_t> psio_writlen;
 #endif
 
     /// Library state variable
