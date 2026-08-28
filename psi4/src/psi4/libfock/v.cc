@@ -232,6 +232,20 @@ void VBase::common_init() {
     num_threads_ = omp_get_max_threads();
 #endif
 }
+void VBase::throw_if_cuest_unsupported(const std::string& what) const {
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        throw PSIEXCEPTION(
+            what +
+            " has no cuEST implementation.\n"
+            "  cuEST builds the DFT quadrature grid on the GPU and skips the CPU-side grid\n"
+            "  post-processing, so there are no CPU grid blocks to integrate over.  Falling\n"
+            "  back to the CPU code here would silently produce a zero exchange-correlation\n"
+            "  contribution rather than a wrong-but-visible answer.\n"
+            "  Re-run this computation with USE_CUEST false.");
+    }
+#endif
+}
 std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::shared_ptr<SuperFunctional> functional,
                                       Options& options, const std::string& type) {
     std::shared_ptr<VBase> v;
@@ -912,6 +926,7 @@ std::vector<SharedMatrix> VBase::compute_fock_derivatives() {
     throw PSIEXCEPTION("VBase: compute_fock_derivatives not implemented for this Vx instance.");
 }
 void VBase::set_grac_shift(double grac_shift) {
+    throw_if_cuest_unsupported("The GRAC asymptotic correction (DFT_GRAC_SHIFT)");
     // Well this is a flaw in my plan
     if (!grac_initialized_) {
         double grac_alpha = options_.get_double("DFT_GRAC_ALPHA");
@@ -989,6 +1004,11 @@ void VBase::finalize() { grid_.reset();
 #endif
 }
 void VBase::build_collocation_cache(size_t memory) {
+    // No cuEST guard here, deliberately: this is called on every SCF init
+    // (scf_iterator.py), and it degrades safely under cuEST.  With an empty CPU
+    // grid, collocation_size() is 0 so stride clamps to 1, and the
+    // "stride > grid_->blocks().size()" early return below fires (1 > 0) before
+    // point_workers_ is ever indexed.  The result is simply an empty cache.
     // Figure out many blocks to skip
 
     size_t collocation_size = grid_->collocation_size();
@@ -1368,6 +1388,7 @@ void SAP::print_header() const {
     if (print_ > 2) grid_->print_details("outfile", print_);
 }
 void SAP::compute_V(std::vector<SharedMatrix> ret) {
+    throw_if_cuest_unsupported("The SAP guess");
     timer_on("SAP: Form V");
 
     if (ret.size() != 1) {
@@ -1519,8 +1540,13 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         if ((d_Cocc_noccs_.size() != 1)) {
             throw PSIEXCEPTION("V: RKS should have only one Cocc Matrix");
         }
+        // cuEST works exclusively in the dense AO basis, while ret[0] (Va_) may be an
+        // SO-basis, symmetry-blocked matrix.  Size every GPU buffer from nbf_ (the AO
+        // dimension set by set_D) rather than ret[0]->size(), which is Matrix::size(h=0)
+        // -- i.e. just the first irrep block -- and back-transform AO -> SO at the end.
+        const size_t nbf2 = (size_t)nbf_ * (size_t)nbf_;
         double *d_Vxc = nullptr;
-        cudaError_t err = cudaMalloc((void**)&d_Vxc, ret[0]->size() * sizeof(double));
+        cudaError_t err = cudaMalloc((void**)&d_Vxc, nbf2 * sizeof(double));
         if (err != cudaSuccess) {
             throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
         }
@@ -1890,7 +1916,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 
 
         cudaFree(d_Vxc_grid);
-        err = cudaMemcpy(ret[0]->get_pointer(0), d_Vxc, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+        auto V_AO = std::make_shared<Matrix>("V AO Temp", nbf_, nbf_);
+        err = cudaMemcpy(V_AO->get_pointer(0), d_Vxc, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
         if (err != cudaSuccess) {
             cudaFree(d_Vxc);
             throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
@@ -1961,17 +1988,26 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
             CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, vv10_potential_compute_parameters));
 
             // Add the VV10 contribution to Vxc
-            SharedMatrix VV10 = ret[0]->clone();
-            err = cudaMemcpy(VV10->get_pointer(0), d_Vxc, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+            auto VV10 = std::make_shared<Matrix>("VV10 AO Temp", nbf_, nbf_);
+            err = cudaMemcpy(VV10->get_pointer(0), d_Vxc, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
             if (err != cudaSuccess) {
                 cudaFree(d_Vxc);
                 throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
             }
-            ret[0]->add(VV10);
+            V_AO->add(VV10);
             quad_values_["VV10"] = Evv10;
         }
 
         cudaFree(d_Vxc);
+
+        // Fold the dense AO-basis potential back into ret[0]'s (possibly
+        // symmetry-blocked) SO storage, exactly as the CPU path below does.
+        if (AO2USO_) {
+            ret[0]->apply_symmetry(V_AO, AO2USO_);
+        } else {
+            ret[0]->copy(V_AO);
+        }
+
         timer_off("RV: Form V");
         return;
     }
@@ -2143,6 +2179,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 }
 
 std::vector<SharedMatrix> RV::compute_fock_derivatives() {
+    throw_if_cuest_unsupported("RKS Fock derivatives (compute_fock_derivatives)");
     timer_on("RV: Form Fx");
 
     int natoms = primary_->molecule()->natom();
@@ -2383,6 +2420,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
 }
 
 void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret, bool singlet) {
+    throw_if_cuest_unsupported("The RKS XC response kernel (compute_Vx; used by TDDFT and CPHF response properties)");
     timer_on("RV: Form Vx");
 
     // => Validate object / inputs <=
@@ -3306,6 +3344,7 @@ SharedMatrix RV::compute_gradient() {
 }
 
 SharedMatrix RV::compute_hessian() {
+    throw_if_cuest_unsupported("The RKS analytic XC Hessian");
     // => Validation <=
     if (functional_->is_gga() || functional_->is_meta())
         throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
@@ -3824,13 +3863,19 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         if ((d_Cocc_noccs_.size() != 2)) {
             throw PSIEXCEPTION("V: UKS should have only two Cocc Matrices");
         }
+        // cuEST works exclusively in the dense AO basis, while ret[0]/ret[1] (Va_/Vb_)
+        // may be SO-basis, symmetry-blocked matrices.  Size every GPU buffer from nbf_
+        // (the AO dimension set by set_D) rather than ret[i]->size(), which is
+        // Matrix::size(h=0) -- i.e. just the first irrep block -- and back-transform
+        // AO -> SO at the end.
+        const size_t nbf2 = (size_t)nbf_ * (size_t)nbf_;
         double *d_Vxc_a = nullptr;
-        cudaError_t err = cudaMalloc((void**)&d_Vxc_a, ret[0]->size() * sizeof(double));
+        cudaError_t err = cudaMalloc((void**)&d_Vxc_a, nbf2 * sizeof(double));
         if (err != cudaSuccess) {
             throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
         }
         double *d_Vxc_b = nullptr;
-        err = cudaMalloc((void**)&d_Vxc_b, ret[1]->size() * sizeof(double));
+        err = cudaMalloc((void**)&d_Vxc_b, nbf2 * sizeof(double));
         if (err != cudaSuccess) {
             throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
         }
@@ -3931,7 +3976,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         }
         
         int nbf = primary_->nbf();
-        assert (nbf == ret[0]->colspi()[0] && nbf == ret[1]->colspi()[0]);
+        // NB: compare against nbf_ (the AO dimension), NOT ret[i]->colspi()[0], which is
+        // only the first irrep block for a symmetry-adapted Va_/Vb_.
+        assert (nbf == nbf_);
 
         CHECK_CUEST(cuestXCDensityComputeWorkspaceQuery(
             cuest_handle,
@@ -4335,12 +4382,14 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         cudaFree(d_weights);
         cudaFree(d_Vxc_grid_a);
         cudaFree(d_Vxc_grid_b);
-        err = cudaMemcpy(ret[0]->get_pointer(0), d_Vxc_a, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+        auto Va_AO = std::make_shared<Matrix>("Va AO Temp", nbf_, nbf_);
+        auto Vb_AO = std::make_shared<Matrix>("Vb AO Temp", nbf_, nbf_);
+        err = cudaMemcpy(Va_AO->get_pointer(0), d_Vxc_a, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
         if (err != cudaSuccess) {
             cudaFree(d_Vxc_a);
             throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
         }
-        err = cudaMemcpy(ret[1]->get_pointer(0), d_Vxc_b, ret[1]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+        err = cudaMemcpy(Vb_AO->get_pointer(0), d_Vxc_b, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
         if (err != cudaSuccess) {
             cudaFree(d_Vxc_b);
             throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
@@ -4417,18 +4466,29 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
             CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, vv10_potential_compute_parameters));
 
             // Add the VV10 contribution to Vxc
-            SharedMatrix VV10 = ret[0]->clone();
-            err = cudaMemcpy(VV10->get_pointer(0), d_Vxc_a, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+            auto VV10 = std::make_shared<Matrix>("VV10 AO Temp", nbf_, nbf_);
+            err = cudaMemcpy(VV10->get_pointer(0), d_Vxc_a, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
             if (err != cudaSuccess) {
                 throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
             }
-            ret[0]->add(VV10);
-            ret[1]->add(VV10);
+            Va_AO->add(VV10);
+            Vb_AO->add(VV10);
             quad_values_["VV10"] = Evv10;
         }
 
         cudaFree(d_Vxc_a);
         cudaFree(d_Vxc_b);
+
+        // Fold the dense AO-basis potentials back into ret[0]/ret[1]'s (possibly
+        // symmetry-blocked) SO storage, exactly as the CPU path below does.
+        if (AO2USO_) {
+            ret[0]->apply_symmetry(Va_AO, AO2USO_);
+            ret[1]->apply_symmetry(Vb_AO, AO2USO_);
+        } else {
+            ret[0]->copy(Va_AO);
+            ret[1]->copy(Vb_AO);
+        }
+
         timer_off("UV: Form V");
         return;
     }
@@ -4748,6 +4808,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     timer_off("UV: Form V");
 }
 std::vector<SharedMatrix> UV::compute_fock_derivatives() {
+    throw_if_cuest_unsupported("UKS Fock derivatives (compute_fock_derivatives)");
     timer_on("UV: Form Fx");
 
     int natoms = primary_->molecule()->natom();
@@ -5057,6 +5118,7 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
     return Vx;
 }
 void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+    throw_if_cuest_unsupported("The UKS XC response kernel (compute_Vx; used by TDDFT and CPHF response properties)");
     timer_on("UV: Form Vx");
 
     // => Validate object / inputs <=
@@ -6608,6 +6670,7 @@ SharedMatrix UV::compute_gradient() {
     return G;
 }
 SharedMatrix UV::compute_hessian() {
+    throw_if_cuest_unsupported("The UKS analytic XC Hessian");
     // => Validation <=
     if (functional_->is_gga() || functional_->is_meta())
         throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
