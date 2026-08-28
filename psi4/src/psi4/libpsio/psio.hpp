@@ -313,6 +313,9 @@ class PSI_API PSIO {
     /// grab the filename of unit and strdup into name.
     void get_filename(size_t unit, char **name, bool remove_namespace = false);
 
+    /// Compose the full on-disk path for a unit: <path><name>.<unit>.
+    std::string get_unit_filename(size_t unit);
+
     /// delete a specific TOC entry (only deletes entry, not data)
     bool tocdel(size_t unit, const char *key);
 

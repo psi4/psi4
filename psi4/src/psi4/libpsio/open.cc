@@ -41,8 +41,15 @@
 #include "psi4/psi4-dec.h"
 namespace psi {
 
-void PSIO::open(size_t unit, int status) {
+std::string PSIO::get_unit_filename(size_t unit) {
     char *name;
+    get_filename(unit, &name);
+    std::string full_path = PSIOManager::shared_object()->get_file_path(unit) + name + "." + std::to_string(unit);
+    free(name);
+    return full_path;
+}
+
+void PSIO::open(size_t unit, int status) {
     psio_ud* this_unit;
 
     /* check for too large unit */
@@ -53,32 +60,21 @@ void PSIO::open(size_t unit, int status) {
     /* Check to see if this unit is already open */
     if (this_unit->vol.stream != -1) psio_error(unit, PSIO_ERROR_REOPEN);
 
-    /* Get the file name prefix */
-    get_filename(unit, &name);
-
     /* Build the file name and open the file */
-    {
-        std::string spath = PSIOManager::shared_object()->get_file_path(unit);
-        const char* path = spath.c_str();
+    this_unit->vol.path = strdup(get_unit_filename(unit).c_str());
 
-        char* fullpath = (char*)malloc((strlen(path) + strlen(name) + 80) * sizeof(char));
-        sprintf(fullpath, "%s%s.%zu", path, name, unit);
-        this_unit->vol.path = strdup(fullpath);
-        free(fullpath);
+    /* Register the file */
+    PSIOManager::shared_object()->open_file(std::string(this_unit->vol.path), unit);
 
-        /* Register the file */
-        PSIOManager::shared_object()->open_file(std::string(this_unit->vol.path), unit);
+    /* Now open the file */
+    if (status == PSIO_OPEN_OLD) {
+        this_unit->vol.stream = SYSTEM_OPEN(this_unit->vol.path, PSIO_OPEN_OLD_FLAGS, PERMISSION_MODE);
+    } else if (status == PSIO_OPEN_NEW) {
+        this_unit->vol.stream = SYSTEM_OPEN(this_unit->vol.path, PSIO_OPEN_NEW_FLAGS, PERMISSION_MODE);
+    } else
+        psio_error(unit, PSIO_ERROR_OSTAT);
 
-        /* Now open the file */
-        if (status == PSIO_OPEN_OLD) {
-            this_unit->vol.stream = SYSTEM_OPEN(this_unit->vol.path, PSIO_OPEN_OLD_FLAGS, PERMISSION_MODE);
-        } else if (status == PSIO_OPEN_NEW) {
-            this_unit->vol.stream = SYSTEM_OPEN(this_unit->vol.path, PSIO_OPEN_NEW_FLAGS, PERMISSION_MODE);
-        } else
-            psio_error(unit, PSIO_ERROR_OSTAT);
-
-        if (this_unit->vol.stream == -1) psio_error(unit, PSIO_ERROR_OPEN);
-    }
+    if (this_unit->vol.stream == -1) psio_error(unit, PSIO_ERROR_OPEN);
 
     if (status == PSIO_OPEN_OLD)
         tocread(unit);
@@ -89,14 +85,11 @@ void PSIO::open(size_t unit, int status) {
         wt_toclen(unit, 0);
     } else
         psio_error(unit, PSIO_ERROR_OSTAT);
-
-    free(name);
 }
 
 // Mirrors PSIO::open() but just check to see if the file is there
 // status needs is assumed PSIO_OPEN_OLD if this is called
 bool PSIO::exists(size_t unit) {
-    char *name;
     psio_ud* this_unit;
 
     if (unit > PSIO_MAXUNIT) psio_error(unit, PSIO_ERROR_MAXUNIT);
@@ -106,23 +99,14 @@ bool PSIO::exists(size_t unit) {
     /* If the unit is already open, the file exists */
     if (this_unit->vol.stream != -1) return (true);
 
-    /* Get the file name prefix */
-    get_filename(unit, &name);
-
     /* Build the file name and test whether it can be opened */
-    std::string spath = PSIOManager::shared_object()->get_file_path(unit);
-    const char* path = spath.c_str();
+    std::string full_path = get_unit_filename(unit);
 
-    char* fullpath = (char*)malloc((strlen(path) + strlen(name) + 80) * sizeof(char));
-    sprintf(fullpath, "%s%s.%zu", path, name, unit);
-
-    int stream = SYSTEM_OPEN(fullpath, O_RDWR);
+    int stream = SYSTEM_OPEN(full_path.c_str(), O_RDWR);
     const bool file_exists = (stream != -1);
     /* and close it again, if opening worked */
     if (stream != -1) SYSTEM_CLOSE(stream);
 
-    free(fullpath);
-    free(name);
     return (file_exists);
 }
 
