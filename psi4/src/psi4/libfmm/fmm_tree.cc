@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/pragma.h"
-
 #include "psi4/libfmm/multipoles_helper.h"
 #include "psi4/libfmm/fmm_tree.h"
 #include "psi4/libmints/molecule.h"
@@ -133,7 +131,7 @@ void ShellPair::calculate_mpoles(Vector3 box_center, std::shared_ptr<OneBodyAOIn
         for (int q = q_start; q < q_start + num_q; q++) {
             int dq = q - q_start;
 
-            auto pair_multipoles = std::make_shared<RealSolidHarmonics>(lmax, box_center, Regular);
+            auto pair_multipoles = std::make_shared<RealSolidHarmonics>(lmax, box_center, SolidHarmonicsType::Regular);
 
             pair_multipoles->add(0, 0, sbuffer[dp * num_q + dq]);
 
@@ -332,8 +330,8 @@ void CFMMBox::compute_multipoles(const std::vector<SharedMatrix>& D, Contraction
 
     // Create multipoles and far field vectors for each density matrix
     for (int N = 0; N < D.size(); N++) {
-        mpoles_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, Regular);
-        Vff_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, Irregular);
+        mpoles_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, SolidHarmonicsType::Regular);
+        Vff_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, SolidHarmonicsType::Irregular);
     }
 
     bool is_primary = (contraction_type == ContractionType::DF_AUX_PRI || contraction_type == ContractionType::DIRECT);
@@ -398,8 +396,8 @@ void CFMMBox::compute_mpoles_from_children() {
 
     // Create multipoles and far field vectors for each density matrix
     for (int N = 0; N < nmat; N++) {
-        mpoles_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, Regular);
-        Vff_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, Irregular);
+        mpoles_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, SolidHarmonicsType::Regular);
+        Vff_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, SolidHarmonicsType::Irregular);
     }
 
     for (std::shared_ptr<CFMMBox> child : children_) {
@@ -451,7 +449,7 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
     int num_boxes = (nlevels_ == 1) ? 1 : (0.5 * std::pow(16, nlevels_) + 7) / 15;
     tree_.resize(num_boxes);
 
-    mpole_coefs_ = std::make_shared<HarmonicCoefficients>(lmax_, Regular);
+    mpole_coefs_ = std::make_shared<HarmonicCoefficients>(lmax_, SolidHarmonicsType::Regular);
     double cfmm_extent_tol = options.get_double("CFMM_EXTENT_TOLERANCE");
     if (cfmm_extent_tol <= 0.0 || cfmm_extent_tol >= 1.0) {
         throw PSIEXCEPTION("CFMM_EXTENT_TOLERANCE must be greater than zero and less than one.");

@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/pragma.h"
-
 #include "psi4/libfmm/multipoles_helper.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/vector3.h"
@@ -201,8 +199,8 @@ HarmonicCoefficients::HarmonicCoefficients(int lmax, SolidHarmonicsType type) {
         mpole_terms_[l].resize(2*l+1);
     }
 
-    if (type_ == Regular) compute_terms_regular();
-    if (type_ == Irregular) compute_terms_irregular();
+    if (type_ == SolidHarmonicsType::Regular) compute_terms_regular();
+    if (type_ == SolidHarmonicsType::Irregular) compute_terms_irregular();
 }
 
 void HarmonicCoefficients::compute_terms_irregular() {
@@ -508,9 +506,9 @@ std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::translate(const Vector3&
     if ((new_center - center_).norm() <= std::numeric_limits<double>::epsilon()) return copy();
 
     switch (type_) {
-        case Regular:
+        case SolidHarmonicsType::Regular:
             return translate_regular(new_center);
-        case Irregular:
+        case SolidHarmonicsType::Irregular:
             return translate_irregular(new_center);
         default:
             throw PSIEXCEPTION("RealSolidHarmonics has an invalid solid-harmonic type.");
@@ -526,7 +524,7 @@ std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::translate_irregular(Vect
     // The rotate-translate-back-rotate construction follows the same scaled
     // real-harmonic conventions as Watson et al., J. Chem. Phys. 121, 2915
     // (2004), doi:10.1063/1.1771639, Eqs. (53)-(59).
-    auto translated_harmonics = std::make_shared<RealSolidHarmonics>(lmax_, new_center, Irregular);
+    auto translated_harmonics = std::make_shared<RealSolidHarmonics>(lmax_, new_center, SolidHarmonicsType::Irregular);
     auto rotation_factory = std::make_shared<MultipoleRotationFactory>(center_, new_center, lmax_);
 
     Vector3 translation = new_center - center_;
@@ -584,7 +582,7 @@ std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::translate_regular(Vector
     // pp. 412-414, and Watson et al., J. Chem. Phys. 121, 2915 (2004),
     // doi:10.1063/1.1771639,
     // Eqs. (53)-(59).
-    auto translated_harmonics = std::make_shared<RealSolidHarmonics>(lmax_, new_center, Regular);
+    auto translated_harmonics = std::make_shared<RealSolidHarmonics>(lmax_, new_center, SolidHarmonicsType::Regular);
     auto rotation_factory = std::make_shared<MultipoleRotationFactory>(center_, new_center, lmax_);
 
     Vector3 translation = new_center - center_;
@@ -670,7 +668,7 @@ std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::far_field_vector(const V
         throw PSIEXCEPTION("A far-field expansion requires distinct source and target centers.");
     }
 
-    auto far_field = std::make_shared<RealSolidHarmonics>(lmax_, far_center, Irregular);
+    auto far_field = std::make_shared<RealSolidHarmonics>(lmax_, far_center, SolidHarmonicsType::Irregular);
     auto rotation_factory = std::make_shared<MultipoleRotationFactory>(far_center, center_, lmax_);
 
     for (int l = 0; l <= lmax_; l++) {
