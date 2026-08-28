@@ -65,16 +65,23 @@ class IntegratorManager {
     void set_D(std::vector<SharedMatrix> Dvec);
     virtual void initialize() = 0;
     virtual void print_header() const = 0;
-    /// Must be implemented for any manager.
+
+
+    /// When we need to distinguish between not being defined and throwing, have the function define
+    /// nullptr to signify 'not defined.'
+ 
+    /// Must be implemented for any manager. Computes KS energy and potential (derivative w.r.t D matrix elts).
     virtual std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) = 0;
-    /// Need to distinguish between not being defined and throwing, so proceed to next
+    /// Computes derivative of functional w.r.t nuclear centers.
     virtual SharedMatrix compute_gradient() { return nullptr; };
-    /// Either works or it doesn't.
+    /// Computes matrix-vector products where the matrix is the second derivative of KS energy w.r.t. D matrix elts.
     virtual void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {};
-    /// Either works or it doesn't.
+    /// Computes matrix-vector products, spin-adapted for triplets. This is *only* meaningful for closed-shell
+    /// references and should never be defined otherwise.
     virtual void compute_Vx_triplet(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {};
-    /// Need to distinguish between not being defined and throwing, so proceed to next
+    /// Comptes second derivative of functional w.r.t. nuclear centers.
     virtual SharedMatrix compute_hessian() { return nullptr; };
+    /// Computes first derivative of KS potential w.r.t. D matrix elts.
     virtual std::vector<SharedMatrix> compute_fock_derivatives() { return {}; };
     const std::shared_ptr<Molecule> molecule();
     virtual bool can_compute_gradient() { return can_compute_gradient_; } ;
