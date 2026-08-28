@@ -52,8 +52,6 @@
 
 extern void checkBrian();
 extern BrianCookie brianCookie;
-extern bool brianEnable;
-extern bool brianEnableDFT;
 
 struct BrianGrid {
     std::vector<brianInt> atomBlockCounts;
@@ -98,7 +96,6 @@ void BrianQCBase::print_header() const {
 }
 
 void BrianQCBase::grid_from_options(MolecularGrid::MolecularGridOptions const &opt, bool build_dft) {
-    if (!(brianEnable and brianEnableDFT)) return;
     const auto& tgt_molecule = molecule();
     std::vector<std::vector<double>> atomRotations(tgt_molecule->natom());
     std::vector<std::vector<BrianBlock>> atomBlocks(tgt_molecule->natom());
@@ -238,7 +235,6 @@ void BrianQCBase::grid_from_prune_spec(StandardGridMgr::PruneSpec const& spec, i
 }
 
 void BrianQCBase::initialize_named_grids() {
-    if (!brianEnableDFT) return;
 
     brian_standard_grids[0].resize(18);
     for (int Z = 0; Z < 18; Z++) {
