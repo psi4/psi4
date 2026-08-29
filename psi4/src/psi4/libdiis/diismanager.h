@@ -29,11 +29,11 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 
+#include <string>
 #include <vector>
 #include <map>
 
 #include "psi4/pragma.h"
-#include "psi4/libmints/matrix.h"
 
 #include "psi4/pybind11.h"
 

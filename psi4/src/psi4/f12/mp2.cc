@@ -34,7 +34,6 @@
 
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/dimension.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 
 #include <Einsums/TensorAlgebra.hpp>

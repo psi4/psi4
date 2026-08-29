@@ -47,7 +47,7 @@ dict = {
        "X_METHOD_NAME":  {       must match a LibXC method
                  "alpha": 1.0,   coefficient for (global) GGA exchange, by default 1.0
                  "omega": 0.0,   range-separation parameter
-             "use_libxc": False  whether "x_hf" parameters should be set from LibXC values for this method
+             "use_libxc": True   read this method's exact-exchange parameters from LibXC (default True; set False to ignore them)
                  "tweak": {},    tweak the underlying functional
      },
 
@@ -339,11 +339,32 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
                 x_func = core.LibXCFunctional(x_name, restricted)
                 x_params = x_funcs[x_key]
 
-                # If we're told to use libxc parameters for x_hf from this GGA, do so and set flag
-                if "use_libxc" in x_params and x_params["use_libxc"]:
-                    x_HF.update(x_func.query_libxc("XC_HYB_CAM_COEF"))
-                    x_HF["used"] = True
-                    x_func.set_alpha(1.0)
+                # By default read the exact-exchange parameters LibXC declares for this
+                # component; set "use_libxc": False to ignore them. Only act when they
+                # are actually nonzero, so a plain semilocal component paired with an
+                # explicit "x_hf" block is left untouched.
+                libxc_hf = x_func.query_libxc("XC_HYB_CAM_COEF")
+                is_hybrid = libxc_hf["ALPHA"] != 0.0 or libxc_hf["BETA"] != 0.0
+                if x_params.get("use_libxc", True):
+                    if is_hybrid:
+                        x_HF.update(libxc_hf)
+                        x_HF["used"] = True
+                        x_func.set_alpha(1.0)
+                elif is_hybrid:
+                    # Discarding the exact exchange LibXC declares silently changes the
+                    # functional, so shout -- distinguishing "semilocal only" from the
+                    # case where the definition supplies its own x_hf values instead.
+                    manual = any(k in func_dictionary.get("x_hf", {}) for k in ("alpha", "beta", "omega"))
+                    fate = ("the manual x_hf values in the definition are used instead"
+                            if manual else
+                            "only the semilocal part is used -- this is a DIFFERENT functional")
+                    core.print_out(
+                        "\n" + "!" * 72 + "\n"
+                        "!! WARNING: \"use_libxc\": False for %s ignores the exact exchange\n"
+                        "!! LibXC declares (alpha=%.6g, beta=%.6g, omega=%.6g);\n"
+                        "!! %s.\n"
+                        % (x_name, libxc_hf["ALPHA"], libxc_hf["BETA"], libxc_hf["OMEGA"], fate)
+                        + "!" * 72 + "\n\n")
 
                 if "tweak" in x_params:
                     x_func.set_tweak(x_params["tweak"], quiet=True)
