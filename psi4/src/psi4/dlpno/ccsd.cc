@@ -1710,6 +1710,15 @@ void DLPNOCCSD::compute_pno_integrals() {
             }
         }
 
+        // K_iajb.  recompute_pnos() built this *before* the SOMOs were appended to the PNO
+        // space, so in the open-shell case the cached copy still has the pre-augmentation
+        // dimensions (and is missing the (i a | j s) / (i s | j t) blocks entirely).  Rebuild
+        // it here from the symmetrically fitted DF integrals of the current (augmented) basis.
+        if (somo_augmented_) {
+            K_iajb_[ij] = linalg::doublet(q_iv, q_jv, true, false);
+            if (i != j) K_iajb_[ji] = K_iajb_[ij]->transpose();
+        }
+
         // L_iajb
         L_iajb_[ij] = K_iajb_[ij]->clone();
         L_iajb_[ij]->scale(2.0);
@@ -3153,6 +3162,9 @@ void RO_DLPNOCCSD::extend_virtual_by_somo() {
             n_pno_[ji] = n_pno_[ji] + nsomo;
         } // end if
     } // end for
+
+    // Everything cached in the pre-augmentation PNO basis (K_iajb_ above all) is now stale.
+    somo_augmented_ = true;
 }
 
 SharedMatrix RO_DLPNOCCSD::T_iajb_spin_helper(const int ij, const SpinCase& sigma1, const SpinCase& sigma2) {

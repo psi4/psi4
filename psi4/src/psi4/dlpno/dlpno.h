@@ -181,6 +181,9 @@ class DLPNO : public Wavefunction {
     std::vector<SharedMatrix> X_pno_;   ///< global PAO -> canonical PNO transforms
     std::vector<SharedVector> e_pno_;   ///< PNO orbital energies
     std::vector<int> n_pno_;       ///< number of pnos
+    /// true once the PNO space has been augmented by the SOMOs (open-shell only).  Quantities
+    /// cached by recompute_pnos() are stale in that case and must be rebuilt in the new basis.
+    bool somo_augmented_ = false;
     std::vector<double> occ_pno_;       ///< lowest PNO occupation number per PNO
     std::vector<double> trace_pno_;     ///< total trace(Dij) recovered per PNO
     std::vector<double> e_ratio_pno_;   ///< percentage of correlation energy recovered by PNOs
