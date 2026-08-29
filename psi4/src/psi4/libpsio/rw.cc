@@ -55,23 +55,16 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
     size_t errcod_uli;
     size_t page, offset;
     size_t buf_offset;
-    size_t this_page, this_page_max, this_page_total;
-    size_t first_vol, this_vol, numvols;
+    size_t this_page_max, this_page_total;
     size_t bytes_left, num_full_pages;
     psio_ud *this_unit;
 
     this_unit = &(psio_unit[unit]);
-    numvols = this_unit->numvols;
     page = address.page;
     offset = address.offset;
 
-    /* Seek all volumes to correct starting positions */
-    first_vol = page % numvols;
-    psio_volseek(&(this_unit->vol[first_vol]), page, offset, numvols, unit);
-    for (i = 1, this_page = page + 1; i < numvols; i++, this_page++) {
-        this_vol = this_page % numvols;
-        psio_volseek(&(this_unit->vol[this_vol]), this_page, (size_t)0, numvols, unit);
-    }
+    /* Seek the file to the correct starting position */
+    psio_volseek(&(this_unit->vol), page, offset, unit);
 
     /* Number of bytes left on the first page */
     this_page_max = PSIO_PAGELEN - offset;
@@ -83,7 +76,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
         this_page_total = this_page_max;
     buf_offset = 0;
     if (wrt) {
-        errcod_uli = SYSTEM_WRITE(this_unit->vol[first_vol].stream, &(buffer[buf_offset]), this_page_total);
+        errcod_uli = SYSTEM_WRITE(this_unit->vol.stream, &(buffer[buf_offset]), this_page_total);
         const int saved_errno = errno;
         if (errcod_uli != this_page_total) {
             const std::string beginning =
@@ -94,7 +87,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
             psio_error(unit, PSIO_ERROR_WRITE, errmsg);
         }
     } else {
-        errcod_uli = SYSTEM_READ(this_unit->vol[first_vol].stream, &(buffer[buf_offset]), this_page_total);
+        errcod_uli = SYSTEM_READ(this_unit->vol.stream, &(buffer[buf_offset]), this_page_total);
         const int saved_errno = errno;
         if (errcod_uli != this_page_total) {
             const std::string beginning =
@@ -112,11 +105,10 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
     /* Read/Write all the full pages */
     num_full_pages = bytes_left / PSIO_PAGELEN;
     buf_offset += this_page_total;
-    for (i = 0, this_page = page + 1; i < num_full_pages; i++, this_page++) {
-        this_vol = this_page % numvols;
+    for (i = 0; i < num_full_pages; i++) {
         this_page_total = PSIO_PAGELEN;
         if (wrt) {
-            errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), this_page_total);
+            errcod_uli = SYSTEM_WRITE(this_unit->vol.stream, &(buffer[buf_offset]), this_page_total);
             const int saved_errno = errno;
             if (errcod_uli != this_page_total) {
                 const std::string beginning =
@@ -128,7 +120,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
                 psio_error(unit, PSIO_ERROR_WRITE, errmsg);
             }
         } else {
-            errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), this_page_total);
+            errcod_uli = SYSTEM_READ(this_unit->vol.stream, &(buffer[buf_offset]), this_page_total);
             const int saved_errno = errno;
             if (errcod_uli != this_page_total) {
                 const std::string beginning =
@@ -145,10 +137,9 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
 
     /* Read/Write the final partial page */
     bytes_left -= num_full_pages * PSIO_PAGELEN;
-    this_vol = this_page % numvols;
     if (bytes_left) {
         if (wrt) {
-            errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), bytes_left);
+            errcod_uli = SYSTEM_WRITE(this_unit->vol.stream, &(buffer[buf_offset]), bytes_left);
             const int saved_errno = errno;
             if (errcod_uli != bytes_left) {
                 const std::string beginning =
@@ -160,7 +151,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
                 psio_error(unit, PSIO_ERROR_WRITE, errmsg);
             }
         } else {
-            errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), bytes_left);
+            errcod_uli = SYSTEM_READ(this_unit->vol.stream, &(buffer[buf_offset]), bytes_left);
             const int saved_errno = errno;
             if (errcod_uli != bytes_left) {
                 const std::string beginning =
