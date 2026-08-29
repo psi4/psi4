@@ -48,6 +48,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -580,7 +581,15 @@ void DLPNO::compute_overlap_ints() {
 void DLPNO::compute_dipole_ints() {
     int natom = molecule_->natom();
     int naocc = nalpha_ - nfrzc();
+    int nbocc = nbeta_ - nfrzc();
     int nbf = C_lmo_->nrow();
+    const bool open_shell = naocc != nbocc;
+
+    // The dipole estimate is well-defined only for pairs of doubly occupied
+    // orbitals in a high-spin open-shell reference.  Pairs involving at least
+    // one singly occupied orbital are retained unconditionally below, so no
+    // transition-dipole domains are needed for the SOMOs here.
+    const int ndipole_occ = open_shell ? nbocc : naocc;
 
     const auto ao_dipole = MintsHelper(basisset_, options_).ao_dipole();
 
@@ -596,17 +605,17 @@ void DLPNO::compute_dipole_ints() {
     std::vector<Vector3> R_i;
 
     // < i | dipole | u >
-    std::vector<std::vector<Vector3>> lmo_pao_dr(naocc);
+    std::vector<std::vector<Vector3>> lmo_pao_dr(ndipole_occ);
 
     // e_u
-    std::vector<SharedVector> lmo_pao_e(naocc);
+    std::vector<SharedVector> lmo_pao_e(ndipole_occ);
 
-    for (size_t i = 0; i < naocc; ++i) {
+    for (size_t i = 0; i < ndipole_occ; ++i) {
         R_i.push_back(Vector3(lmo_lmo_dipx->get(i, i), lmo_lmo_dipy->get(i, i), lmo_lmo_dipz->get(i, i)));
     }
 
     double T_CUT_DO_PRE = options_.get_double("T_CUT_DO_PRE");
-    for (size_t i = 0; i < naocc; ++i) {
+    for (size_t i = 0; i < ndipole_occ; ++i) {
         std::vector<int> pao_inds;
         for (size_t u = 0; u < nbf; u++) {
             if (fabs(DOI_iu_->get(i, u)) > T_CUT_DO_PRE) {
@@ -643,8 +652,24 @@ void DLPNO::compute_dipole_ints() {
     dipole_pair_e_ = std::make_shared<Matrix>("Dipole SC MP2 Energies", naocc, naocc);
     dipole_pair_e_bound_ = std::make_shared<Matrix>("Parallel Dipole SC MP2 Energies", naocc, naocc);
 
+    size_t n_somo_pairs_retained = 0;
     for (size_t i = 0; i < naocc; ++i) {
         for (size_t j = i + 1; j < naocc; ++j) {
+            // In the open-shell dipole/SC-NEVPT prescreen, a pair energy cannot
+            // be defined reliably for DOCC-SOMO (ip) or SOMO-SOMO (pq) pairs.
+            // Saitow et al., J. Chem. Phys. 146, 164105 (2017),
+            // DOI: 10.1063/1.4981521, therefore keep every such pair in the
+            // crude guess.  An infinite screening bound makes prep_sparsity()
+            // retain the pair, while leaving its dipole
+            // correction at zero; the later PAO pair-energy screen decides it.
+            if (open_shell && (i >= nbocc || j >= nbocc)) {
+                const double keep_pair = std::numeric_limits<double>::infinity();
+                dipole_pair_e_bound_->set(i, j, keep_pair);
+                dipole_pair_e_bound_->set(j, i, keep_pair);
+                ++n_somo_pairs_retained;
+                continue;
+            }
+
             auto R_ij = R_i[i] - R_i[j];
             auto Rh_ij = R_ij / R_ij.norm();
 
@@ -679,6 +704,10 @@ void DLPNO::compute_dipole_ints() {
             dipole_pair_e_bound_->set(i, j, dipole_pair_e_bound_temp);
             dipole_pair_e_bound_->set(j, i, dipole_pair_e_bound_temp);
         }
+    }
+
+    if (open_shell) {
+        outfile->Printf("    Retained %zu SOMO-containing pairs through dipole prescreening.\n", n_somo_pairs_retained);
     }
 }
 
