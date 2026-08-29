@@ -3097,8 +3097,6 @@ void RO_DLPNOCCSD::extend_virtual_by_somo() {
     int nsomo = nalpha_ - nbeta_;
 
     // Update PAO transformation matrix
-    auto C_aocc = reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC");
-    auto eps_aocc = reference_wavefunction_->epsilon_a_subset("AO", "ACTIVE_OCC");
     auto C_pao_new = std::make_shared<Matrix>(nbf, nbf + nsomo);
 
 #pragma omp parallel for
@@ -3110,7 +3108,10 @@ void RO_DLPNOCCSD::extend_virtual_by_somo() {
 
         // Block with SOMOs
         for (int v = nbf; v < nbf + nsomo; ++v) {
-            C_pao_new->set(u, v, C_aocc->get(u, nbocc + (v-nbf)));
+            // Append the same separately localized SOMOs used in C_lmo_.
+            // Using canonical SOMOs here would give the occupied and beta-
+            // virtual copies different rotations within the SOMO space.
+            C_pao_new->set(u, v, C_lmo_->get(u, nbocc + (v-nbf)));
         } // end for
     } // end for
 
@@ -3149,7 +3150,7 @@ void RO_DLPNOCCSD::extend_virtual_by_somo() {
         } // end for
 
         for (int t = 0; t < nsomo; ++t) {
-            e_pno_new->set(npno_ij + t, eps_aocc->get(nbocc + t));
+            e_pno_new->set(npno_ij + t, F_lmo_->get(nbocc + t, nbocc + t));
         } // end for
 
         X_pno_[ij] = X_pno_new;

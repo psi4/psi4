@@ -47,6 +47,7 @@
 #include "psi4/libqt/qt.h"
 
 #include <algorithm>
+#include <cmath>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -315,6 +316,8 @@ void DLPNO::setup_orbitals() {
     int naux = ribasis_->nbf();
     int nshellri = ribasis_->nshell();
     int naocc = nalpha_ - nfrzc();
+    int nbocc = nbeta_ - nfrzc();
+    int nsomo = naocc - nbocc;
 
     auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
 
@@ -328,21 +331,84 @@ void DLPNO::setup_orbitals() {
     }
 
     timer_on("Local MOs");
-    // Localize active occupied orbitals
-    if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "BOYS") {
-        BoysLocalizer localizer = BoysLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
-        localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
-        localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
-        localizer.localize();
-        C_lmo_ = localizer.L();
-    } else if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "PIPEK_MEZEY") {
-        PMLocalizer localizer = PMLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
-        localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
-        localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
-        localizer.localize();
-        C_lmo_ = localizer.L();
-    } else {
+    const auto localization_method = options_.get_str("DLPNO_LOCAL_ORBITALS");
+    if (localization_method != "BOYS" && localization_method != "PIPEK_MEZEY") {
         throw PSIEXCEPTION("Invalid option for DLPNO_LOCAL_ORBITALS");
+    }
+
+    auto localize_block = [&](const SharedMatrix& C) {
+        // A one-orbital block is already localized.  Skipping the localizer
+        // also handles the all-SOMO limit, where the active DOCC block is
+        // empty.
+        if (C->ncol() <= 1) return C->clone();
+
+        SharedMatrix L;
+        if (localization_method == "BOYS") {
+            BoysLocalizer localizer(basisset_, C);
+            localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
+            localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
+            localizer.localize();
+            L = localizer.L();
+        } else {
+            PMLocalizer localizer(basisset_, C);
+            localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
+            localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
+            localizer.localize();
+            L = localizer.L();
+        }
+        return L;
+    };
+
+    auto C_aocc = reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC");
+    if (nsomo == 0) {
+        // Preserve the established closed-shell localization exactly.
+        C_lmo_ = localize_block(C_aocc);
+    } else {
+        // Every ROHF spin projector below assumes that the first nbocc LMOs
+        // span the beta-occupied (DOCC) space and that the final nsomo LMOs
+        // span the singly occupied space.  Localizing all alpha occupied
+        // orbitals at once violates that assumption because a Boys or PM
+        // rotation may mix the two occupation classes.
+        auto C_docc = reference_wavefunction_->Cb_subset("AO", "ACTIVE_OCC");
+        SharedMatrix C_somo;
+
+        if (nbocc == 0) {
+            C_somo = C_aocc->clone();
+        } else {
+            // Obtain the SOMO space without relying on the energy ordering
+            // used by Ca_subset("AO", ...), which can interleave irreps:
+            // C_somo' = (1 - C_docc C_docc^T S) C_aocc.
+            auto docc_overlap_aocc = linalg::triplet(
+                C_docc, reference_wavefunction_->S(), C_aocc, true, false, false);
+            auto C_somo_projected = C_aocc->clone();
+            C_somo_projected->subtract(linalg::doublet(C_docc, docc_overlap_aocc));
+
+            auto S_somo = linalg::triplet(C_somo_projected, reference_wavefunction_->S(),
+                                          C_somo_projected, true, false, false);
+            auto U_somo = std::make_shared<Matrix>("SOMO subspace eigenvectors", naocc, naocc);
+            auto s_somo = std::make_shared<Vector>("SOMO subspace eigenvalues", naocc);
+            S_somo->diagonalize(U_somo, s_somo, descending);
+
+            auto X_somo = std::make_shared<Matrix>("SOMO orthogonalizer", naocc, nsomo);
+            for (int u = 0; u < nsomo; ++u) {
+                const double eigenvalue = s_somo->get(u);
+                if (eigenvalue <= options_.get_double("S_CUT")) {
+                    throw PSIEXCEPTION("Unable to separate the active ROHF DOCC and SOMO subspaces");
+                }
+                for (int p = 0; p < naocc; ++p) {
+                    X_somo->set(p, u, U_somo->get(p, u) / std::sqrt(eigenvalue));
+                }
+            }
+            C_somo = linalg::doublet(C_somo_projected, X_somo);
+        }
+
+        auto L_docc = localize_block(C_docc);
+        auto L_somo = localize_block(C_somo);
+        C_lmo_ = std::make_shared<Matrix>("Localized Active ROHF Orbitals", nbf, naocc);
+        for (int mu = 0; mu < nbf; ++mu) {
+            for (int i = 0; i < nbocc; ++i) C_lmo_->set(mu, i, L_docc->get(mu, i));
+            for (int u = 0; u < nsomo; ++u) C_lmo_->set(mu, nbocc + u, L_somo->get(mu, u));
+        }
     }
     timer_off("Local MOs");
 
