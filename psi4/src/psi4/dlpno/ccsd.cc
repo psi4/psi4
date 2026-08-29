@@ -4132,21 +4132,29 @@ void RO_DLPNOCCSD::compute_R_ia(
                 if (tau == SpinCase::Beta && k >= nbocc) continue;
                 const double prefactor = (s == t) ? 0.5 : 1.0;
 
-                // 1/2 t(ki,cd)<kc||da>; the explicit spin blocks turn the
-                // 1/2 into 1 for an opposite-spin partner.
-                auto T_ki = T_iajb_spin_helper(ki, tau, sigma)->clone();
+                // Eq. 12 contains u(ki,cd) = t(ki,cd) - t(ki,dc) for a
+                // same-spin partner, not the raw same-spin t amplitude.  The
+                // distinction is essential even though a converged same-spin
+                // amplitude is antisymmetric: in that case u = 2 t, so using
+                // raw t below would make both same-spin R1 contributions too
+                // small by exactly a factor of two.  Opposite-spin u is just t.
+                auto U_ki = T_iajb_spin_helper(ki, tau, sigma)->clone();
+                if (s == t) U_ki->subtract(U_ki->transpose());
+
+                // 1/2 u(ki,cd)<kc|da> for same spin; the explicit
+                // opposite-spin block carries unit prefactor.
+                auto U_ki_flat = U_ki->clone();
                 auto K_kcad = K_ivvv_[ki]->clone();
                 K_kcad->reshape(npno_ik * npno_ik, npno_ik);
-                T_ki->reshape(npno_ik * npno_ik, 1);
+                U_ki_flat->reshape(npno_ik * npno_ik, 1);
 
                 auto S_ki_ii_s = S_PNO(ki, ii)->clone();
                 matrix_spin_enforcer_vv(S_ki_ii_s, sigma);
-                auto A_i = linalg::triplet(S_ki_ii_s, K_kcad, T_ki, true, true, false);
+                auto A_i = linalg::triplet(S_ki_ii_s, K_kcad, U_ki_flat, true, true, false);
                 A_i->scale(prefactor);
                 R_ia_buffer[s][thread][i]->add(A_i);
 
                 // The T1 part of the transformed three-external integral.
-                auto T_ki_mat = T_iajb_spin_helper(ki, tau, sigma);
                 for (int l_ik = 0; l_ik < nlmo_ik; ++l_ik) {
                     const int l = lmopair_to_lmos_[ik][l_ik];
                     if (sigma == SpinCase::Beta && l >= nbocc) continue;
@@ -4158,12 +4166,12 @@ void RO_DLPNOCCSD::compute_R_ia(
                     matrix_spin_enforcer_vv(S_kl_ki_t, tau);
                     auto S_ki_kl_s = S_PNO(ki, kl)->clone();
                     matrix_spin_enforcer_vv(S_ki_kl_s, sigma);
-                    auto T_proj = linalg::triplet(S_kl_ki_t, T_ki_mat, S_ki_kl_s);
+                    auto U_proj = linalg::triplet(S_kl_ki_t, U_ki, S_ki_kl_s);
 
                     auto S_ii_ll_s = S_PNO(ii, ll)->clone();
                     matrix_spin_enforcer_vv(S_ii_ll_s, sigma);
                     auto T_l = linalg::doublet(S_ii_ll_s, T_ia_spin_[s][l]);
-                    T_l->scale(prefactor * T_proj->vector_dot(K_iajb_[kl]));
+                    T_l->scale(prefactor * U_proj->vector_dot(K_iajb_[kl]));
                     R_ia_buffer[s][thread][i]->subtract(T_l);
                 }
 
@@ -4198,8 +4206,10 @@ void RO_DLPNOCCSD::compute_R_ia(
 
                 auto K_kilc = K_mibj_[kl]->clone();
                 K_kilc->add(linalg::doublet(T_n_ij_spin_[s][kl], K_iajb_[kl]));
-                auto T_kl = T_iajb_spin_helper(kl, sigma, tau);
-                auto B_ia = linalg::doublet(K_kilc, T_kl, false, true);
+                // The same-spin term in Eq. 12 again contracts u, not raw t.
+                auto U_kl = T_iajb_spin_helper(kl, sigma, tau)->clone();
+                if (s == t) U_kl->subtract(U_kl->transpose());
+                auto B_ia = linalg::doublet(K_kilc, U_kl, false, true);
                 B_ia->scale(prefactor);
 
                 for (int i_kl = 0; i_kl < nlmo_kl; ++i_kl) {
