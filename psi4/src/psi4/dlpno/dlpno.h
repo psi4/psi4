@@ -486,6 +486,8 @@ class PSI_API DLPNOCCSD : public DLPNO {
 
 class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
    protected:
+    using SpinPairMatrixBlocks = std::array<std::array<std::vector<SharedMatrix>, 2>, 2>;
+
     // T1 amplitudes over A, B
     std::array<std::vector<SharedMatrix>, 2> T_ia_spin_;
     // T1 amplitudes projected into every pair domain, over A, B
@@ -537,8 +539,8 @@ class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
     std::array<std::vector<SharedMatrix>, 3> compute_beta();
     /// Jiang and Toth Eq. 14
     std::array<std::array<std::vector<SharedMatrix>, 2>, 2> compute_gamma();
-    /// Jiang and Toth Eq. 16
-    std::array<std::array<std::vector<SharedMatrix>, 2>, 2> compute_delta();
+    /// Jiang and Toth Eqs. 15 and 16 (unbarred and barred delta, respectively)
+    std::array<SpinPairMatrixBlocks, 2> compute_delta();
     /// Jiang and Toth Eq. 17
     std::array<std::vector<SharedMatrix>, 2> compute_Fbc_double_tilde();
     /// Jiang and Toth Eq. 18
