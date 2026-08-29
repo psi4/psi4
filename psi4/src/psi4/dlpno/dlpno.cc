@@ -699,15 +699,18 @@ void DLPNO::compute_dipole_ints() {
                     double num_actual = iu.dot(jv) - 3 * (iu.dot(Rh_ij) * jv.dot(Rh_ij));
                     num_actual *= num_actual;
 
-                    double num_linear = -2 * iu.dot(jv);
-                    num_linear *= num_linear;
+                    // Conservative parallel-dipole bound (Guo et al.,
+                    // J. Chem. Phys. 144, 094111 (2016), Eq. 25).  The norm
+                    // product is essential: using iu.dot(jv) can vanish for
+                    // orthogonal transition dipoles and underestimate a pair.
+                    double num_bound = 4 * iu.dot(iu) * jv.dot(jv);
 
                     double denom =
                         (lmo_pao_e[i]->get(u) + lmo_pao_e[j]->get(v)) -
                         (F_lmo_dipole->get(i, i) + F_lmo_dipole->get(j, j));
 
                     dipole_pair_e_temp += (num_actual / denom);
-                    dipole_pair_e_bound_temp += (num_linear / denom);
+                    dipole_pair_e_bound_temp += (num_bound / denom);
                 }
             }
 
