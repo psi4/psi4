@@ -415,7 +415,7 @@ def highest_analytic_properties_available(method: str,
             try:
                 proc["properties"][method](method, probe=True, **managed_keywords)
             except ManagedMethodError as e:
-                proc_messages[0] = e.message
+                proc_messages[0] = e.stats
                 raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
     if dertype == '(auto)':

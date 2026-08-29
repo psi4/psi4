@@ -26,8 +26,12 @@
  * @END LICENSE
  */
 
+#include <algorithm>
 #include <cmath>
+#include <iomanip>
+#include <sstream>
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/process.h"
 #include "dfocc.h"
@@ -361,6 +365,111 @@ void DFOCC::omp2_manager() {
 void DFOCC::mp2_manager() {
     time4grad = 0;     // means i will not compute the gradient
     mo_optimized = 0;  // means MOs are not optimized
+
+    // This implementation is entirely in-core. Estimate each sequential stage's
+    // peak before the first large allocation rather than merely printing the
+    // amplitude cost after the integral transformation has completed.
+    nQ = get_basisset("DF_BASIS_CC")->nbf();
+    const bool transform_all =
+        !(dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE");
+    // mp2_manager() only runs with orb_opt_ == "FALSE", so this one flag is both
+    // trans_corr()'s all-orbital-vs-active branch and omp2_tpdm()'s guard.
+    const bool form_densities = dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE";
+    if (transform_all) nQ_ref = get_basisset("DF_BASIS_SCF")->nbf();
+
+    const long double bytes_per_double = sizeof(double);
+    const long double nso = nso_;
+    const long double cc_ao = nQ * nso * nso * bytes_per_double;
+    const long double cc_metric = nQ * static_cast<long double>(nQ) * bytes_per_double;
+    const long double cc_ao_build = 2.0L * cc_ao + cc_metric;
+
+    const int max_nocc = reference_ == "RESTRICTED" ? noccA : std::max(noccA, noccB);
+    const int max_naocc = reference_ == "RESTRICTED" ? naoccA : std::max(naoccA, naoccB);
+    const int max_nvir = reference_ == "RESTRICTED" ? nvirA : std::max(nvirA, nvirB);
+    const int max_navir = reference_ == "RESTRICTED" ? navirA : std::max(navirA, navirB);
+    const long double cc_active_vv =
+        nQ * static_cast<long double>(max_navir) * max_navir * bytes_per_double;
+    const long double cc_active_ov =
+        nQ * static_cast<long double>(max_naocc) * max_navir * bytes_per_double;
+    // Direct MP2 forms only the active B(Q|IA), inside b_so(), where B(Q|mn) and J^-1/2 are
+    // both still resident alongside (Q|mA) and (Q|IA). The following (Q|IA)+(Q|IA) step is
+    // smaller because nso >= naocc, and the AO build is covered by cc_ao_build below.
+    const long double cc_direct_transform =
+        cc_ao + cc_metric + nQ * nso * max_navir * bytes_per_double + cc_active_ov;
+    // Every MO transform stage holds B(Q|mn) plus a half-transformed (Q|m x) and a fully
+    // transformed (Q|x y). The (Q|ov) stage is dominated by whichever of oo/vv is larger,
+    // so only those two need comparing -- oo wins whenever there are more occ than vir.
+    auto transform_stage = [&](long double ao, int naux, int n) {
+        return ao + naux * nso * n * bytes_per_double + naux * static_cast<long double>(n) * n * bytes_per_double;
+    };
+    // trans_corr() transforms all orbitals for the density path and actives otherwise.
+    const int tr_nocc = form_densities ? max_nocc : max_naocc;
+    const int tr_nvir = form_densities ? max_nvir : max_navir;
+    const long double cc_full_transform =
+        std::max(transform_stage(cc_ao, nQ, tr_nocc), transform_stage(cc_ao, nQ, tr_nvir));
+    const long double cc_transform =
+        std::max(cc_ao_build, transform_all ? cc_full_transform : cc_direct_transform);
+
+    long double ref_transform = 0.0L;
+    if (transform_all) {
+        const long double ref_ao = nQ_ref * nso * nso * bytes_per_double;
+        const long double ref_metric = nQ_ref * static_cast<long double>(nQ_ref) * bytes_per_double;
+        const long double ref_ao_build = 3.0L * ref_ao + ref_metric;
+        // trans_ref() has no active-only variant; it always transforms all orbitals.
+        const long double ref_mo_transform =
+            std::max(transform_stage(ref_ao, nQ_ref, max_nocc), transform_stage(ref_ao, nQ_ref, max_nvir));
+        ref_transform = std::max(ref_ao_build, ref_mo_transform);
+    }
+
+    const long double amp_aa =
+        naoccA * static_cast<long double>(naoccA) * navirA * static_cast<long double>(navirA) * bytes_per_double;
+    long double largest_amp = amp_aa;
+    if (reference_ == "UNRESTRICTED") {
+        const long double amp_ab =
+            naoccA * static_cast<long double>(naoccB) * navirA * static_cast<long double>(navirB) * bytes_per_double;
+        const long double amp_bb =
+            naoccB * static_cast<long double>(naoccB) * navirB * static_cast<long double>(navirB) * bytes_per_double;
+        largest_amp = std::max({amp_aa, amp_ab, amp_bb});
+    }
+    // Restricted energies hold T, K and U at once. Unrestricted ones work a spin block at a
+    // time and never hold more than two of them; the unrelaxed-density path (omp2_tpdm, which
+    // sorts a freshly built T2 while U is live) adds two more.
+    const int amplitude_copies = reference_ == "RESTRICTED" ? 3 : (form_densities ? 4 : 2);
+    const long double amplitude_peak = amplitude_copies * largest_amp;
+    const long double required_bytes = std::max({cc_transform, ref_transform, amplitude_peak});
+    const long double available_bytes = Process::environment.get_memory();
+    const long double mib = 1024.0L * 1024.0L;
+    const long double gib = 1024.0L * mib;
+
+    memory = Process::environment.get_memory();
+    std::ostringstream amplitude_label;
+    amplitude_label << "Amplitude/density (" << amplitude_copies << " tensors)";
+    outfile->Printf("\n\tDFOCC MP2 in-core memory requirements:\n");
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", "Available memory", static_cast<double>(available_bytes / gib));
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", "B-CC (Q|mu nu)", static_cast<double>(cc_ao / gib));
+    if (transform_all)
+        outfile->Printf("\t%-37s: %12.3f [GiB]\n", "B-CC (Q|ab), largest spin",
+                        static_cast<double>(cc_active_vv / gib));
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", "DF-CC integral build/transform",
+                    static_cast<double>(cc_transform / gib));
+    if (transform_all)
+        outfile->Printf("\t%-37s: %12.3f [GiB]\n", "DF-SCF integral build/transform",
+                        static_cast<double>(ref_transform / gib));
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", amplitude_label.str().c_str(),
+                    static_cast<double>(amplitude_peak / gib));
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", "Estimated minimum peak (lower bound)",
+                    static_cast<double>(required_bytes / gib));
+
+    if (required_bytes > available_bytes) {
+        std::ostringstream message;
+        message << "The current " << (reference_ == "RESTRICTED" ? "restricted" : "unrestricted")
+                << " DFOCC MP2 " << (dertype == "FIRST" ? "gradient" : "energy")
+                << " algorithm is in-core and requires at least " << std::fixed << std::setprecision(1)
+                << required_bytes / gib << " GiB, but only " << available_bytes / gib
+                << " GiB is available. Use a memory-blocked MP2 implementation or increase available memory.";
+        throw PSIEXCEPTION(message.str());
+    }
+
     timer_on("DF CC Integrals");
     df_corr();
     if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE") {
@@ -386,89 +495,6 @@ void DFOCC::mp2_manager() {
     outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
     timer_off("DF CC Integrals");
-
-    if (reference_ == "RESTRICTED") {
-        // mem for amplitudes
-        cost_ampAA = 0.0;
-        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_amp = 3.0 * cost_ampAA;
-        memory = Process::environment.get_memory();
-        memory_mb = (double)memory / (1024.0 * 1024.0);
-        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
-
-        // memory requirements
-        /*
-        // DF-HF B(Q,mn)
-        cost_ampAA = 0;
-        cost_ampAA = nQ_ref * nso2_;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-
-        // DF-HF B(Q,ab)
-        cost_ampAA = 0;
-        cost_ampAA = nQ_ref * nvir2AA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-HF (Q|ab)    : %9.2lf MB \n", cost_ampAA);
-
-        // Cost of Integral transform for DF-HF B(Q,ab)
-        cost_ampAA = 0.0;
-        cost_ampAA = nQ_ref * nso2_;
-        cost_ampAA += nQ_ref * navirA * navirA;
-        cost_ampAA += nQ_ref * nso_ * navirA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for DF-HF int trans: %9.2lf MB \n", cost_ampAA);
-        */
-
-        // DF-CC B(Q,mn)
-        cost_ampAA = 0.0;
-        cost_ampAA = (long long int)nQ * (long long int)nso2_;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-
-        // DF-CC B(Q,ab)
-        cost_ampAA = 0.0;
-        cost_ampAA = (long long int)nQ * (long long int)navirA * (long long int)navirA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for B-CC (Q|ab)    : %9.2lf MB \n", cost_ampAA);
-
-        // Cost of Integral transform for DF-CC B(Q,ab)
-        cost_ampAA = 0.0;
-        cost_ampAA = (long long int)nQ * (long long int)nso2_;
-        cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
-        cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
-    }  // end if (reference_ == "RESTRICTED")
-
-    else if (reference_ == "UNRESTRICTED") {
-        // memory requirements
-        cost_ampAA = 0.0;
-        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
-        cost_ampAA /= 1024.0 * 1024.0;
-        cost_ampAA *= sizeof(double);
-        cost_ampBB = (long long int)naocc2BB * (long long int)nvir2BB;
-        cost_ampBB /= 1024.0 * 1024.0;
-        cost_ampBB *= sizeof(double);
-        cost_ampAB = (long long int)naocc2AB * (long long int)nvir2AB;
-        cost_ampAB /= 1024.0 * 1024.0;
-        cost_ampAB *= sizeof(double);
-        cost_amp = MAX0(cost_ampAA, cost_ampBB);
-        cost_amp = MAX0(cost_amp, cost_ampAB);
-        cost_amp = 3.0 * cost_amp;
-        memory = Process::environment.get_memory();
-        memory_mb = (double)memory / (1024.0 * 1024.0);
-        outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
-        outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
-    }  // end else if (reference_ == "UNRESTRICTED")
 
     // QCHF
     if (qchf_ == "TRUE") qchf();

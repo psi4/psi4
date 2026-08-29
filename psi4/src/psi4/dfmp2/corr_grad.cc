@@ -28,6 +28,8 @@
 
 #include "corr_grad.h"
 
+#include <algorithm>
+
 #include "psi4/libqt/qt.h"
 #include "psi4/lib3index/3index.h"
 #include "psi4/libpsio/psio.hpp"
@@ -53,6 +55,17 @@ using namespace psi;
 
 namespace psi {
 namespace dfmp2 {
+
+namespace {
+
+// Rows to block over for an array indexed by the auxiliary basis. When fewer rows fit in
+// memory than the largest auxiliary shell, DFCorrGrad has always kept the calculation going
+// at the minimum useful block size of one shell rather than erroring out on the request.
+size_t corr_grad_auxiliary_block_rows(size_t available, size_t row_cost, size_t max_shell, size_t naux) {
+    return std::max(max_shell, std::min(naux, available / row_cost));
+}
+
+}  // namespace
 
 CorrGrad::CorrGrad(std::shared_ptr<MintsHelper> mints) : mints_(mints), primary_(mints->get_basisset("ORBITAL")) { common_init(); }
 CorrGrad::~CorrGrad() {}
@@ -198,10 +211,9 @@ void DFCorrGrad::build_Amn_terms() {
     row_cost += nso * (size_t)nso;
     row_cost += nso * (size_t)na;
     row_cost += na * (size_t)nlr;
-    size_t rows = memory_ / row_cost;
-    rows = (rows > naux ? naux : rows);
-    rows = (rows < maxP ? maxP : rows);
-    max_rows = (int)rows;
+    const size_t vector_memory = 2L * naux;
+    const size_t block_memory = (memory_ > vector_memory ? memory_ - vector_memory : 0L);
+    max_rows = static_cast<int>(corr_grad_auxiliary_block_rows(block_memory, row_cost, maxP, naux));
 
     // => Block Sizing <= //
 
@@ -301,7 +313,7 @@ void DFCorrGrad::build_Amn_terms() {
         int np = pstop - pstart;
 
         // > Clear Integrals Register < //
-        ::memset((void*)Amnp[0], '\0', sizeof(double) * np * nso * nso);
+        ::memset((void*)Amnp[0], '\0', sizeof(double) * static_cast<size_t>(np) * nso * nso);
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(df_ints_num_threads_)
@@ -465,8 +477,9 @@ void DFCorrGrad::build_AB_inv_terms() {
 void DFCorrGrad::fitting_helper(SharedMatrix J, size_t file, const std::string& label, size_t naux, size_t nij,
                                 size_t memory) {
     int max_cols;
-    size_t effective_memory = memory - 1L * naux * naux;
+    const size_t fixed_memory = naux * static_cast<size_t>(naux) + 2L * naux;
     size_t col_cost = 2L * naux;
+    size_t effective_memory = (memory > fixed_memory ? memory - fixed_memory : 0L);
     size_t cols = effective_memory / col_cost;
     cols = (cols > nij ? nij : cols);
     cols = (cols < 1L ? 1L : cols);
@@ -537,14 +550,15 @@ void DFCorrGrad::build_UV_terms() {
     } else {
         V->scale(2.0);
     }
-    psio_->write_entry(unit_c_, "V", (char*)Vp[0], sizeof(double) * naux * naux);
+    psio_->write_entry(unit_c_, "V", (char*)Vp[0], sizeof(double) * static_cast<size_t>(naux) * naux);
 }
 void DFCorrGrad::UV_helper(SharedMatrix V, double c, size_t file, const std::string& label, size_t naux, size_t nij,
                            size_t memory) {
     int max_rows;
-    size_t effective_memory = memory - 1L * naux * naux;
+    const size_t metric_memory = naux * static_cast<size_t>(naux);
     size_t row_cost = 2L * nij;
-    size_t rows = memory_ / row_cost;
+    size_t effective_memory = (memory > metric_memory ? memory - metric_memory : 0L);
+    size_t rows = effective_memory / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < 1L ? 1L : rows);
     max_rows = (int)rows;
@@ -586,7 +600,7 @@ void DFCorrGrad::build_AB_x_terms() {
 
     auto K = std::make_shared<Matrix>("K", naux, naux);
     auto Kp = K->pointer();
-    psio_->read_entry(unit_c_, "V", (char*)Kp[0], sizeof(double) * naux * naux);
+    psio_->read_entry(unit_c_, "V", (char*)Kp[0], sizeof(double) * static_cast<size_t>(naux) * naux);
 
     std::map<std::string, SharedMatrix> densities = {{"Coulomb", J}, {"Exchange", K}};
  
@@ -635,10 +649,9 @@ void DFCorrGrad::build_Amn_x_terms() {
     row_cost += nso * (size_t)nso;
     row_cost += nso * (size_t)na;
     row_cost += na * (size_t)nlr;
-    size_t rows = memory_ / row_cost;
-    rows = (rows > naux ? naux : rows);
-    rows = (rows < maxP ? maxP : rows);
-    max_rows = (int)rows;
+    const size_t vector_memory = 2L * naux;
+    const size_t block_memory = (memory_ > vector_memory ? memory_ - vector_memory : 0L);
+    max_rows = static_cast<int>(corr_grad_auxiliary_block_rows(block_memory, row_cost, maxP, naux));
 
     // => Block Sizing <= //
 
