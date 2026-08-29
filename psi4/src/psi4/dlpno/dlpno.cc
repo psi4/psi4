@@ -591,6 +591,21 @@ void DLPNO::compute_dipole_ints() {
     // transition-dipole domains are needed for the SOMOs here.
     const int ndipole_occ = open_shell ? nbocc : naocc;
 
+    // The inactive/external part of the high-spin Dyall Hamiltonian uses the
+    // spin-free ROHF Fock matrix (Saitow et al., Eq. 9).  For a high-spin
+    // determinant this is exactly (F_alpha + F_beta) / 2, giving J - K / 2
+    // for each SOMO.  Keep the original matrices in the RHF path so its
+    // arithmetic remains unchanged.
+    auto F_lmo_dipole = F_lmo_;
+    auto F_pao_dipole = F_pao_;
+    if (open_shell) {
+        auto F_rohf = reference_wavefunction_->Fa()->clone();
+        F_rohf->add(reference_wavefunction_->Fb());
+        F_rohf->scale(0.5);
+        F_lmo_dipole = linalg::triplet(C_lmo_, F_rohf, C_lmo_, true, false, false);
+        F_pao_dipole = linalg::triplet(C_pao_, F_rohf, C_pao_, true, false, false);
+    }
+
     const auto ao_dipole = MintsHelper(basisset_, options_).ao_dipole();
 
     auto lmo_lmo_dipx = linalg::triplet(C_lmo_, ao_dipole[0], C_lmo_, true, false, false);
@@ -626,7 +641,7 @@ void DLPNO::compute_dipole_ints() {
 
         auto C_pao_i = submatrix_cols(*C_pao_, pao_inds);
         auto S_pao_i = submatrix_rows_and_cols(*S_pao_, pao_inds, pao_inds);
-        auto F_pao_i = submatrix_rows_and_cols(*F_pao_, pao_inds, pao_inds);
+        auto F_pao_i = submatrix_rows_and_cols(*F_pao_dipole, pao_inds, pao_inds);
 
         SharedMatrix X_pao_i;
         SharedVector e_pao_i;
@@ -688,7 +703,8 @@ void DLPNO::compute_dipole_ints() {
                     num_linear *= num_linear;
 
                     double denom =
-                        (lmo_pao_e[i]->get(u) + lmo_pao_e[j]->get(v)) - (F_lmo_->get(i, i) + F_lmo_->get(j, j));
+                        (lmo_pao_e[i]->get(u) + lmo_pao_e[j]->get(v)) -
+                        (F_lmo_dipole->get(i, i) + F_lmo_dipole->get(j, j));
 
                     dipole_pair_e_temp += (num_actual / denom);
                     dipole_pair_e_bound_temp += (num_linear / denom);
