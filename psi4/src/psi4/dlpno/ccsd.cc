@@ -3621,19 +3621,59 @@ void RO_DLPNOCCSD::t1_fock_spin() {
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         auto &[i, j] = ij_to_i_j_[ij];
         const int ji = ij_to_ji_[ij];
-        const int pair_idx = (i > j) ? ji : ij;
-        const int i_pair = lmopair_to_lmos_dense_[pair_idx][i];
         const bool strong = (i_j_to_ij_strong_[i][j] != -1);
 
         for (SpinCase sigma : spins) {
             const int s = static_cast<int>(sigma);
 
-            Fkc_tilde_spin_[s][ij] = std::make_shared<Matrix>(n_pno_[ij], 1);
-            if (Fkc_bar[s][pair_idx] && i_pair != -1) {
-                auto row = submatrix_rows(*Fkc_bar[s][pair_idx], std::vector<int>(1, i_pair));
-                Fkc_tilde_spin_[s][ij]->copy(row->transpose());
+            // Eq. 6 is unchanged by the free-index T1 transformation, but in
+            // the local algorithm it must be formed by the direct analogue of
+            // Jiang Eq. 95.  Taking a row of Fkc_bar evaluates the contraction
+            // after projecting every T1 amplitude into the current ij domain;
+            // that is not the RHF DLPNO projection convention and does not
+            // recover the closed-shell implementation at finite PNO cutoffs.
+            auto Fia_pao = submatrix_rows_and_cols(
+                *F_lmo_pao_spin[s], std::vector<int>(1, i), lmopair_to_paos_[ij]);
+            Fkc_tilde_spin_[s][ij] =
+                linalg::doublet(Fia_pao, X_pno_[ij], false, false)->transpose();
+
+            for (int k_ij = 0; k_ij < static_cast<int>(lmopair_to_lmos_[ij].size()); ++k_ij) {
+                const int k = lmopair_to_lmos_[ij][k_ij];
+                const int ik = i_j_to_ij_[i][k];
+                const int kk = i_j_to_ij_[k][k];
+                if (ik == -1 || kk == -1) continue;
+
+                auto S_ij_ik_s = S_PNO(ij, ik)->clone();
+                matrix_spin_enforcer_vv(S_ij_ik_s, sigma);
+
+                // Coulomb density: sum the alpha and beta T1 amplitudes.
+                for (SpinCase tau : spins) {
+                    if (tau == SpinCase::Beta && k >= nbocc) continue;
+                    const int t = static_cast<int>(tau);
+                    auto S_ik_kk_t = S_PNO(ik, kk)->clone();
+                    matrix_spin_enforcer_vv(S_ik_kk_t, tau);
+                    auto T_k = linalg::doublet(S_ik_kk_t, T_ia_spin_[t][k]);
+                    Fkc_tilde_spin_[s][ij]->add(linalg::triplet(
+                        S_ij_ik_s, K_iajb_[ik], T_k));
+                }
+
+                // Exchange density: same spin only.
+                if (!(sigma == SpinCase::Beta && k >= nbocc)) {
+                    auto S_ik_kk_s = S_PNO(ik, kk)->clone();
+                    matrix_spin_enforcer_vv(S_ik_kk_s, sigma);
+                    auto T_k = linalg::doublet(S_ik_kk_s, T_ia_spin_[s][k]);
+                    Fkc_tilde_spin_[s][ij]->subtract(linalg::triplet(
+                        S_ij_ik_s, K_iajb_[ik], T_k, false, true, false));
+                }
             }
-            if (sigma == SpinCase::Beta && i >= nbocc) Fkc_tilde_spin_[s][ij]->zero();
+
+            if (sigma == SpinCase::Alpha) {
+                for (int a = 0; a < nsomo; ++a) {
+                    (*Fkc_tilde_spin_[s][ij])(n_pno_[ij] - a - 1, 0) = 0.0;
+                }
+            } else if (i >= nbocc) {
+                Fkc_tilde_spin_[s][ij]->zero();
+            }
 
             if (i <= j) {
                 Fab_tilde_spin_[s][ij] = Fab_bar[s][ij]->clone();
