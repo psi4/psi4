@@ -524,6 +524,9 @@ class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
     void matrix_spin_enforcer_qv(SharedMatrix &X, const SpinCase &sigma);
     /// A helper function to enforce spin in matrix elements in the occupied-occupied block of a matrix, given pair ij
     void matrix_spin_enforcer_oo(SharedMatrix &X, const int &ij, const SpinCase &sigma);
+    /// Enforce potentially different spin cases on the row and column occupied indices
+    void matrix_spin_enforcer_oo(SharedMatrix &X, const int &ij, const SpinCase &row_sigma,
+                                 const SpinCase &col_sigma);
     /// A helper function to enforce spin in matrix elements in the virtual-virtual block of a matrix
     void matrix_spin_enforcer_vv(SharedMatrix &X, const SpinCase &sigma);
     /// Project alpha and beta singles amplitudes into every pair domain

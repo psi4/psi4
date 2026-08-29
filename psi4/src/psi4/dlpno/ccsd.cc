@@ -3306,24 +3306,26 @@ void RO_DLPNOCCSD::matrix_spin_enforcer_qv(SharedMatrix &X, const SpinCase &sigm
 }
 
 void RO_DLPNOCCSD::matrix_spin_enforcer_oo(SharedMatrix &X, const int &ij, const SpinCase &sigma) {
-    const int n_lmo_pairs = ij_to_i_j_.size();
-    const int naocc = nalpha_ - nfrzc();
+    matrix_spin_enforcer_oo(X, ij, sigma, sigma);
+}
+
+void RO_DLPNOCCSD::matrix_spin_enforcer_oo(SharedMatrix &X, const int &ij,
+                                            const SpinCase &row_sigma,
+                                            const SpinCase &col_sigma) {
     const int nbocc = nbeta_ - nfrzc();
-    const int nsomo = naocc - nbocc;
 
-    // Do nothing in alpha case, all occupied indices are valid
-    if (sigma == SpinCase::Alpha) return;
-
-    // Zero out occupied indices greater than nbocc (they are not occupied in beta case)
-    if (sigma == SpinCase::Beta) {
+    // Rows and columns can carry different spins (for example, beta_ijkl in
+    // an alpha-beta block).  Project each occupied index independently.
+    if (row_sigma == SpinCase::Beta) {
         for (int k_ij = 0; k_ij < X->rowspi(0); ++k_ij) {
-            int k = lmopair_to_lmos_[ij][k_ij];
-            for (int l_ij = 0; l_ij < X->colspi(0); ++l_ij) {
-                int l = lmopair_to_lmos_[ij][l_ij];
-                if (k >= nbocc || l >= nbocc) (*X)(k_ij, l_ij) = 0.0;
-            }
-        } // end for
-    } // end if
+            if (lmopair_to_lmos_[ij][k_ij] >= nbocc) X->zero_row(0, k_ij);
+        }
+    }
+    if (col_sigma == SpinCase::Beta) {
+        for (int l_ij = 0; l_ij < X->colspi(0); ++l_ij) {
+            if (lmopair_to_lmos_[ij][l_ij] >= nbocc) X->zero_column(0, l_ij);
+        }
+    }
 }
 
 void RO_DLPNOCCSD::matrix_spin_enforcer_vv(SharedMatrix &X, const SpinCase &sigma) {
@@ -3426,6 +3428,11 @@ void RO_DLPNOCCSD::t1_ints_spin() {
                     }
                 }
             }
+            // The T1 addition above is formed from the common spatial QIA
+            // tensor and can repopulate SOMO columns that are not occupied
+            // beta orbitals.  Reapply the occupied projector to the complete
+            // transformed tensor, not only to its bare QKI contribution.
+            matrix_spin_enforcer_qo(i_Qk_t1_spin_[s][ij], ij, sigma);
 
             // Eq. 3: B~(Q,ai) = B(Q,ai) - t(k,a) B~(Q,ki)
             //                         + B(Q,ab) t(i,b).
@@ -3769,6 +3776,11 @@ std::array<std::vector<SharedMatrix>, 3> RO_DLPNOCCSD::compute_beta() {
                 beta_temp->scale(prefactor);
                 beta_ijkl[ds][ij]->add(beta_temp);
             }
+
+            // beta_ijkl carries an occupied sigma1 row and occupied sigma2
+            // column.  The bare QIA factors are spatial tensors, so the T2
+            // contribution must be projected explicitly in mixed-spin cases.
+            matrix_spin_enforcer_oo(beta_ijkl[ds][ij], ij, sigma1, sigma2);
         }
     }
 
@@ -4666,6 +4678,14 @@ void RO_DLPNOCCSD::lccsd_iterations() {
             linalg::triplet(X_pno_[ij], F_pao_ij_a, X_pno_[ij], true, false, false);
         F_pno_spin_[static_cast<int>(SpinCase::Beta)][ij] =
             linalg::triplet(X_pno_[ij], F_pao_ij_b, X_pno_[ij], true, false, false);
+
+        // These are spin-labelled virtual-virtual blocks, even though both
+        // are stored in the common augmented PNO space.  Keep the forbidden
+        // alpha/SOMO rows and columns identically zero at their source.
+        matrix_spin_enforcer_vv(F_pno_spin_[static_cast<int>(SpinCase::Alpha)][ij],
+                                SpinCase::Alpha);
+        matrix_spin_enforcer_vv(F_pno_spin_[static_cast<int>(SpinCase::Beta)][ij],
+                                SpinCase::Beta);
     }
 
     outfile->Printf("\n  ==> Restricted Open Shell Local CCSD <==\n\n");
