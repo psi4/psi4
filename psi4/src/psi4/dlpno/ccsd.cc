@@ -4645,10 +4645,15 @@ void RO_DLPNOCCSD::lccsd_iterations() {
     }
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        // F_pao_a_/F_pao_b_ span the *full* (nbf + nsomo) PAO space, while X_pno_[ij] only spans the
+        // PAO domain of pair ij. Restrict the Fock matrices to that domain before transforming.
+        auto F_pao_ij_a = submatrix_rows_and_cols(*F_pao_a_, lmopair_to_paos_[ij], lmopair_to_paos_[ij]);
+        auto F_pao_ij_b = submatrix_rows_and_cols(*F_pao_b_, lmopair_to_paos_[ij], lmopair_to_paos_[ij]);
+
         F_pno_spin_[static_cast<int>(SpinCase::Alpha)][ij] =
-            linalg::triplet(X_pno_[ij], F_pao_a_, X_pno_[ij], true, false, false);
+            linalg::triplet(X_pno_[ij], F_pao_ij_a, X_pno_[ij], true, false, false);
         F_pno_spin_[static_cast<int>(SpinCase::Beta)][ij] =
-            linalg::triplet(X_pno_[ij], F_pao_b_, X_pno_[ij], true, false, false);
+            linalg::triplet(X_pno_[ij], F_pao_ij_b, X_pno_[ij], true, false, false);
     }
 
     outfile->Printf("\n  ==> Restricted Open Shell Local CCSD <==\n\n");
