@@ -47,8 +47,14 @@ SharedWavefunction dlpno(SharedWavefunction ref_wfn, Options& options) {
         } else {
             throw PSIEXCEPTION("Requested DLPNO method is not yet available!");
         }
+    } else if (options.get_str("REFERENCE") == "ROHF") {
+        if (options.get_str("DLPNO_ALGORITHM") == "CCSD") {
+            dlpno = std::make_shared<RO_DLPNOCCSD>(ref_wfn, options);
+        } else {
+            throw PSIEXCEPTION("Requested DLPNO method is not yet available for ROHF reference!");
+        }
     } else {
-        throw PSIEXCEPTION("DLPNO requires closed-shell reference"); 
+        throw PSIEXCEPTION("DLPNO methods currently only support restricted orbitals! TODO: Implement QROs\n");
     }
 
     return dlpno;
