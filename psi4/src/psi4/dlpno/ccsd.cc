@@ -3108,7 +3108,7 @@ void RO_DLPNOCCSD::extend_virtual_by_somo() {
     C_pao_ = C_pao_new;
     // Recompute S_pao and F_pao
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
-    F_pao_ = linalg::triplet(C_pao_, F_ao_, C_pao_, true, false, false);
+    F_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
 
 #pragma omp parallel for
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
