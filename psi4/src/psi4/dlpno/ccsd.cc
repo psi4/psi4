@@ -4563,7 +4563,7 @@ void RO_DLPNOCCSD::compute_R_iajb(std::array<std::vector<SharedMatrix>, 3> &R_ia
                         auto delta_full_ik = delta_jk[s1][g][ik]->clone();
                         delta_full_ik->add(delta_bar_jk[s1][g][ik]);
                         R_iajb[ds][ij]->add(linalg::triplet(
-                            S_ij_kj_s1, delta_full_ik, T_jk_proj,
+                            S_ij_ik_s1, delta_full_ik, T_jk_proj,
                             false, false, true));
                     } // end for
                 } // end else
