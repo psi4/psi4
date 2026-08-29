@@ -74,10 +74,11 @@ void require_memory(size_t available, size_t required, const std::string& stage)
     }
 }
 
-size_t auxiliary_block_rows(size_t available, size_t row_cost, size_t max_shell, size_t naux,
-                            const std::string& stage) {
-    require_memory(available, max_shell * row_cost, stage + " (one auxiliary shell)");
-    return std::min(naux, available / row_cost);
+// Rows to block over for an array indexed by the auxiliary basis. When fewer rows fit in
+// memory than the largest auxiliary shell, DFMP2 has always kept the calculation going at the
+// minimum useful block size of one shell rather than erroring out on the requested memory.
+size_t auxiliary_block_rows(size_t available, size_t row_cost, size_t max_shell, size_t naux) {
+    return std::max(max_shell, std::min(naux, available / row_cost));
 }
 
 }  // namespace
@@ -570,7 +571,7 @@ void DFMP2::apply_fitting_grad(SharedMatrix Jm12, size_t file, size_t naux, size
 void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
     size_t Jmem = naux * static_cast<size_t>(naux);
     size_t doubles = (size_t)(options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
-    require_memory(doubles, Jmem + 2L * naux, "gamma formation");
+    require_memory(doubles, Jmem, "gamma formation");
     size_t rem = (doubles - Jmem) / 2L;
     size_t max_nia = (rem / naux);
     max_nia = (max_nia > nia ? nia : max_nia);
@@ -631,8 +632,7 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
     // Memory constraints
     size_t doubles = (size_t)(options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
     const size_t row_cost = 2L * naux;
-    require_memory(doubles, row_cost, "G transpose");
-    size_t max_nia = std::min(nia, doubles / row_cost);
+    size_t max_nia = std::max<size_t>(1, std::min(nia, doubles / row_cost));
 
     // Block sizing
     std::vector<size_t> ia_starts;
@@ -647,7 +647,6 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
     // block_status(ia_starts, __FILE__,__LINE__);
 
     // Prestripe
-    require_memory(doubles, nia, "G transpose prestripe");
     psio_->open(file, PSIO_OPEN_OLD);
     psio_address next_QIA = PSIO_ZERO;
     std::vector<double> temp(nia, 0);
@@ -697,7 +696,6 @@ void DFMP2::apply_B_transpose(size_t file, size_t naux, size_t naocc, size_t nav
     // Memory constraints
     size_t doubles = (size_t)(options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
     const size_t row_cost = naocc * naux;
-    require_memory(doubles, row_cost, "B transpose");
     const size_t max_A = std::max<size_t>(1, std::min(navir, doubles / row_cost));
 
     // Block sizing
@@ -887,7 +885,7 @@ void RDFMP2::form_Aia() {
     size_t Aia_cost_per_row = naocc * (size_t)navir;
     size_t total_cost_per_row = Amn_cost_per_row + Ami_cost_per_row + Aia_cost_per_row;
     size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    int max_naux = static_cast<int>(auxiliary_block_rows(doubles, total_cost_per_row, maxQ, naux, "Aia formation"));
+    int max_naux = static_cast<int>(auxiliary_block_rows(doubles, total_cost_per_row, maxQ, naux));
 
     // Block extents
     std::vector<int> block_Q_starts;
@@ -1558,7 +1556,7 @@ void RDFMP2::form_Amn_x_terms() {
     row_cost += nso * (size_t)nso;
     row_cost += nso * (size_t)naocc;
     row_cost += naocc * (size_t)navir;
-    max_rows = static_cast<int>(auxiliary_block_rows(memory, row_cost, maxP, naux, "Amn gradient formation"));
+    max_rows = static_cast<int>(auxiliary_block_rows(memory, row_cost, maxP, naux));
 
     // => Block Sizing <= //
 
@@ -1750,8 +1748,7 @@ void RDFMP2::form_L() {
     size_t memory = static_cast<size_t>((options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
     const size_t fixed_memory = static_cast<size_t>(naocc) * nso + static_cast<size_t>(navir) * nso +
                                 static_cast<size_t>(naocc) * navir;
-    require_memory(memory, fixed_memory + 1L, "L intermediate fixed storage");
-    memory -= fixed_memory;
+    memory = (memory > fixed_memory ? memory - fixed_memory : 0L);
     int max_rows;
     int maxP = ribasis_->max_function_per_shell();
     size_t row_cost = 0L;
@@ -1759,7 +1756,7 @@ void RDFMP2::form_L() {
     row_cost += static_cast<size_t>(nso)   * static_cast<size_t>(naocc);
     row_cost += static_cast<size_t>(nso)   * static_cast<size_t>(navir);
     row_cost += static_cast<size_t>(naocc) * static_cast<size_t>(navir);
-    max_rows = static_cast<int>(auxiliary_block_rows(memory, row_cost, maxP, naux, "L intermediate formation"));
+    max_rows = static_cast<int>(auxiliary_block_rows(memory, row_cost, maxP, naux));
 
     // => Block Sizing <= //
 
@@ -2706,8 +2703,7 @@ void UDFMP2::form_Aia() {
     size_t Aia_cost_per_row = naocc * (size_t)navir;
     size_t total_cost_per_row = Amn_cost_per_row + Ami_cost_per_row + Aia_cost_per_row;
     size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    int max_naux =
-        static_cast<int>(auxiliary_block_rows(doubles, total_cost_per_row, maxQ, naux, "unrestricted Aia formation"));
+    int max_naux = static_cast<int>(auxiliary_block_rows(doubles, total_cost_per_row, maxQ, naux));
 
     // Block extents
     std::vector<int> block_Q_starts;

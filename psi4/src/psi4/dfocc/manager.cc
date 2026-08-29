@@ -372,6 +372,9 @@ void DFOCC::mp2_manager() {
     nQ = get_basisset("DF_BASIS_CC")->nbf();
     const bool transform_all =
         !(dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE");
+    // mp2_manager() only runs with orb_opt_ == "FALSE", so this one flag is both
+    // trans_corr()'s all-orbital-vs-active branch and omp2_tpdm()'s guard.
+    const bool form_densities = dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE";
     if (transform_all) nQ_ref = get_basisset("DF_BASIS_SCF")->nbf();
 
     const long double bytes_per_double = sizeof(double);
@@ -381,17 +384,29 @@ void DFOCC::mp2_manager() {
     const long double cc_ao_build = 2.0L * cc_ao + cc_metric;
 
     const int max_nocc = reference_ == "RESTRICTED" ? noccA : std::max(noccA, noccB);
+    const int max_naocc = reference_ == "RESTRICTED" ? naoccA : std::max(naoccA, naoccB);
     const int max_nvir = reference_ == "RESTRICTED" ? nvirA : std::max(nvirA, nvirB);
     const int max_navir = reference_ == "RESTRICTED" ? navirA : std::max(navirA, navirB);
     const long double cc_active_vv =
         nQ * static_cast<long double>(max_navir) * max_navir * bytes_per_double;
-    const long double cc_ov = nQ * static_cast<long double>(max_nocc) * max_nvir * bytes_per_double;
+    const long double cc_active_ov =
+        nQ * static_cast<long double>(max_naocc) * max_navir * bytes_per_double;
+    // Direct MP2 forms only the active B(Q|IA), inside b_so(), where B(Q|mn) and J^-1/2 are
+    // both still resident alongside (Q|mA) and (Q|IA). The following (Q|IA)+(Q|IA) step is
+    // smaller because nso >= naocc, and the AO build is covered by cc_ao_build below.
     const long double cc_direct_transform =
-        std::max({2.0L * cc_ao, cc_ao + nQ * nso * max_nvir * bytes_per_double + cc_ov,
-                  cc_ao + 2.0L * cc_ov + cc_metric});
+        cc_ao + cc_metric + nQ * nso * max_navir * bytes_per_double + cc_active_ov;
+    // Every MO transform stage holds B(Q|mn) plus a half-transformed (Q|m x) and a fully
+    // transformed (Q|x y). The (Q|ov) stage is dominated by whichever of oo/vv is larger,
+    // so only those two need comparing -- oo wins whenever there are more occ than vir.
+    auto transform_stage = [&](long double ao, int naux, int n) {
+        return ao + naux * nso * n * bytes_per_double + naux * static_cast<long double>(n) * n * bytes_per_double;
+    };
+    // trans_corr() transforms all orbitals for the density path and actives otherwise.
+    const int tr_nocc = form_densities ? max_nocc : max_naocc;
+    const int tr_nvir = form_densities ? max_nvir : max_navir;
     const long double cc_full_transform =
-        cc_ao + nQ * nso * max_nvir * bytes_per_double +
-        nQ * static_cast<long double>(max_nvir) * max_nvir * bytes_per_double;
+        std::max(transform_stage(cc_ao, nQ, tr_nocc), transform_stage(cc_ao, nQ, tr_nvir));
     const long double cc_transform =
         std::max(cc_ao_build, transform_all ? cc_full_transform : cc_direct_transform);
 
@@ -400,9 +415,9 @@ void DFOCC::mp2_manager() {
         const long double ref_ao = nQ_ref * nso * nso * bytes_per_double;
         const long double ref_metric = nQ_ref * static_cast<long double>(nQ_ref) * bytes_per_double;
         const long double ref_ao_build = 3.0L * ref_ao + ref_metric;
+        // trans_ref() has no active-only variant; it always transforms all orbitals.
         const long double ref_mo_transform =
-            ref_ao + nQ_ref * nso * max_nvir * bytes_per_double +
-            nQ_ref * static_cast<long double>(max_nvir) * max_nvir * bytes_per_double;
+            std::max(transform_stage(ref_ao, nQ_ref, max_nocc), transform_stage(ref_ao, nQ_ref, max_nvir));
         ref_transform = std::max(ref_ao_build, ref_mo_transform);
     }
 
@@ -416,7 +431,10 @@ void DFOCC::mp2_manager() {
             naoccB * static_cast<long double>(naoccB) * navirB * static_cast<long double>(navirB) * bytes_per_double;
         largest_amp = std::max({amp_aa, amp_ab, amp_bb});
     }
-    const int amplitude_copies = reference_ == "UNRESTRICTED" && dertype == "FIRST" ? 4 : 3;
+    // Restricted energies hold T, K and U at once. Unrestricted ones work a spin block at a
+    // time and never hold more than two of them; the unrelaxed-density path (omp2_tpdm, which
+    // sorts a freshly built T2 while U is live) adds two more.
+    const int amplitude_copies = reference_ == "RESTRICTED" ? 3 : (form_densities ? 4 : 2);
     const long double amplitude_peak = amplitude_copies * largest_amp;
     const long double required_bytes = std::max({cc_transform, ref_transform, amplitude_peak});
     const long double available_bytes = Process::environment.get_memory();
@@ -424,23 +442,22 @@ void DFOCC::mp2_manager() {
     const long double gib = 1024.0L * mib;
 
     memory = Process::environment.get_memory();
-    memory_mb = static_cast<double>(available_bytes / mib);
-    cost_df = static_cast<double>(cc_transform / mib);
-    cost_amp = static_cast<double>(amplitude_peak / mib);
+    std::ostringstream amplitude_label;
+    amplitude_label << "Amplitude/density (" << amplitude_copies << " tensors)";
     outfile->Printf("\n\tDFOCC MP2 in-core memory requirements:\n");
-    outfile->Printf("\tAvailable memory [GiB]                 : %12.4f\n",
-                    static_cast<double>(available_bytes / gib));
-    outfile->Printf("\tB-CC (Q|mu nu) [GiB]                  : %12.4f\n", static_cast<double>(cc_ao / gib));
-    outfile->Printf("\tB-CC (Q|ab), largest spin [GiB]       : %12.4f\n",
-                    static_cast<double>(cc_active_vv / gib));
-    outfile->Printf("\tDF-CC integral build/transform [GiB]   : %12.4f\n",
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", "Available memory", static_cast<double>(available_bytes / gib));
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", "B-CC (Q|mu nu)", static_cast<double>(cc_ao / gib));
+    if (transform_all)
+        outfile->Printf("\t%-37s: %12.3f [GiB]\n", "B-CC (Q|ab), largest spin",
+                        static_cast<double>(cc_active_vv / gib));
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", "DF-CC integral build/transform",
                     static_cast<double>(cc_transform / gib));
     if (transform_all)
-        outfile->Printf("\tDF-SCF integral build/transform [GiB]  : %12.4f\n",
+        outfile->Printf("\t%-37s: %12.3f [GiB]\n", "DF-SCF integral build/transform",
                         static_cast<double>(ref_transform / gib));
-    outfile->Printf("\tAmplitude/density (%d tensors) [GiB]   : %12.4f\n", amplitude_copies,
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", amplitude_label.str().c_str(),
                     static_cast<double>(amplitude_peak / gib));
-    outfile->Printf("\tEstimated minimum peak [GiB]           : %12.4f\n",
+    outfile->Printf("\t%-37s: %12.3f [GiB]\n", "Estimated minimum peak (lower bound)",
                     static_cast<double>(required_bytes / gib));
 
     if (required_bytes > available_bytes) {
