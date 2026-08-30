@@ -261,6 +261,18 @@ def scf_initialize(self):
                    ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
 
+#: How many times to restart OpenTrustRegion when canonicalizing its solution changes the
+#: orbital occupation. Two consecutive occupations that disagree usually means the guess was
+#: poor; more than a handful of restarts means the occupation is oscillating.
+_OTR_MAX_OCCUPATION_RESTARTS = 5
+
+
+def _occupation(wfn):
+    """Snapshot the alpha and beta occupations per irrep as plain tuples."""
+    na, nb = wfn.nalphapi(), wfn.nbetapi()
+    return (tuple(na[h] for h in range(na.n())), tuple(nb[h] for h in range(nb.n())))
+
+
 def scf_iterate(self, e_conv=None, d_conv=None):
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
@@ -385,33 +397,50 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.form_F()
             self.form_C()
         self.form_D()
-        otr_error = self.opentrustregion_scf()
+        # OpenTrustRegion optimizes orbitals at fixed occupation, while the internal solver
+        # re-runs find_occupation at every iteration. From a poor guess -- a bare core guess
+        # for triplet O2, say -- OTR will happily converge onto the stationary point of the
+        # guess occupation rather than the aufbau one. Canonicalizing reveals that, so
+        # reconverge whenever the occupation moves.
+        self.iteration_ = 0
+        for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
+            occupation = _occupation(self)
+            otr_error = self.opentrustregion_scf()
 
-        # OpenTrustRegion's last call back into Psi4 is often a Hessian-vector product,
-        # and cphf_Hx reuses the JK object that form_G has aliased J_/K_ onto. Rebuild
-        # the two-electron quantities from the converged orbitals before taking the energy,
-        # or J_/K_ still hold CPHF intermediates and compute_E returns garbage.
-        self.form_D()
-        self.form_G()
-        self.form_F()
+            # OpenTrustRegion's last call back into Psi4 is often a Hessian-vector product,
+            # and cphf_Hx reuses the JK object that form_G has aliased J_/K_ onto. Rebuild
+            # the two-electron quantities from the converged orbitals before taking the
+            # energy, or J_/K_ still hold CPHF intermediates and compute_E returns garbage.
+            self.form_D()
+            self.form_G()
+            self.form_F()
 
-        SCFE = self.compute_E()
-        self.set_energies("Total Energy", SCFE)
-        self.set_variable("SCF ITERATION ENERGY", SCFE)
+            SCFE = self.compute_E()
+            self.set_energies("Total Energy", SCFE)
+            self.set_variable("SCF ITERATION ENERGY", SCFE)
 
-        # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL ENERGIES
-        # mean the same thing they do for the internal solver.
-        # The first entry is the energy of the guess (OTR macro-iteration 0), so the
-        # macro-iteration count is one less than the number of recorded energies. Set
-        # rather than increment: iteration_ is -1 after a SAD or READ guess and 0 otherwise.
-        otr_energies = list(self.otr_iteration_energies())
-        otr_energies[-1:] = [SCFE]
-        self.iteration_energies.extend(otr_energies)
-        self.iteration_ = max(len(otr_energies) - 1, 0)
+            # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL
+            # ENERGIES mean the same thing they do for the internal solver. The first entry
+            # is the energy of the guess (macro-iteration 0), so the iteration count is one
+            # less than the number of recorded energies.
+            otr_energies = list(self.otr_iteration_energies())
+            otr_energies[-1:] = [SCFE]
+            self.iteration_energies.extend(otr_energies)
+            self.iteration_ += max(len(otr_energies) - 1, 0)
 
-        # Ensure canonical orbitals/eigenvalues are ready for post-SCF methods.
-        self.form_C()
-        self.form_D()
+            # Ensure canonical orbitals/eigenvalues are ready for post-SCF methods. form_C
+            # also re-runs find_occupation, which is what surfaces an occupation change.
+            self.form_C()
+            self.form_D()
+
+            if otr_error or _occupation(self) == occupation:
+                break
+            core.print_out("    Note: aufbau occupation differs from the one OpenTrustRegion "
+                           "optimized. Reconverging.\n")
+        else:
+            core.print_out(f"    Note: occupation still changing after "
+                           f"{_OTR_MAX_OCCUPATION_RESTARTS} OpenTrustRegion restarts.\n")
+            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
 
         if otr_error:
             core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
