@@ -598,6 +598,8 @@ Convergence Stabilization
 
 A summary of Psi's supported convergence stabilization techniques is presented below.
 Alternatively, stabilization can run through the OpenOrbitalOptimizer library. See :ref:`options:ooo` for details.
+The OpenTrustRegion library sidesteps the question by minimizing the energy directly with a
+second-order trust-region method. See :ref:`options:otr` for details.
 
 DIIS [On by Default]
     DIIS uses previous iterates of the Fock matrix together
