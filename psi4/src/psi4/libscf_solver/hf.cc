@@ -1511,7 +1511,7 @@ bool HF::otr_converged() const {
 }
 #endif
 
-void HF::opentrustregion_scf() {
+int HF::opentrustregion_scf() {
 #ifndef USING_OpenTrustRegion
     throw PSIEXCEPTION("OpenTrustRegion support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenTrustRegion=ON`.\n");
 #else
@@ -1531,7 +1531,7 @@ void HF::opentrustregion_scf() {
     // orbitals are already the solution and OpenTrustRegion rejects n_param == 0.
     if (otr_n_param_ == 0) {
         otr_iteration_energies_.push_back(compute_E());
-        return;
+        return 0;
     }
 
     // initialize settings
@@ -1563,12 +1563,11 @@ void HF::opentrustregion_scf() {
     if (std::getenv("PSI4_OTR_DEBUG"))
         outfile->Printf("DBG post-solver: |Da|=%.6e E=%.10f\n", Da_->rms(), compute_E());
 
-    // check if solver completed successfully
-    if (error) {
-        std::ostringstream oss;
-        oss << "HF::opentrustregion_scf: OpenTrustRegion solver returned error " << error << "\n";
-        throw PSIEXCEPTION(oss.str());
-    }
+    // Every OpenTrustRegion failure mode -- running out of macro-iterations, or a line
+    // search that could not lower the objective along an unstable mode -- means the
+    // orbitals are not converged. Hand the code back instead of throwing so the driver can
+    // turn it into an SCFConvergenceError and honour FAIL_ON_MAXITER.
+    return static_cast<int>(error);
 #endif
 }
 

@@ -257,8 +257,9 @@ class HF : public Wavefunction {
     /// Runs the SCF using OpenOrbitalOptimizer
     virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
 
-    /// Runs the SCF using OpenTrustRegion
-    void opentrustregion_scf();
+    /// Runs the SCF using OpenTrustRegion. Returns the solver's error code (0 on success)
+    /// rather than throwing, so the driver can honour FAIL_ON_MAXITER.
+    int opentrustregion_scf();
 
     /// Total energy at each OpenTrustRegion macro-iteration, so the Python driver can
     /// report SCF ITERATIONS / SCF TOTAL ENERGIES the same way the internal solver does.
