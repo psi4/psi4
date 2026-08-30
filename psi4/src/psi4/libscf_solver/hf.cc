@@ -1496,6 +1496,7 @@ extern "C" void otr_logger(const char* message) {
 }
 
 void HF::otr_record_iteration(OTR::c_real func, const OTR::c_real* grad) {
+    otr_iteration_energies_.push_back(func);
     otr_prev_func_ = otr_curr_func_;
     otr_has_prev_func_ = otr_has_curr_func_;
     otr_curr_func_ = func;
@@ -1525,6 +1526,7 @@ void HF::opentrustregion_scf() {
 
     // number of parameters
     otr_n_param_ = otr_n_param();
+    otr_iteration_energies_.clear();
     otr_has_prev_func_ = false;
     otr_has_curr_func_ = false;
     otr_prev_func_ = 0.0;
