@@ -16,7 +16,12 @@ solver_n_root 2
 scf_type pk
 }
 
-ref_eigenvalues = psi4.Matrix.from_list([[-0.0142], [0.0203]]) # TEST
+if psi4.core.get_option("scf", "orbital_optimizer_package") in ["OTR", "OPENTRUSTREGION"]:  # KP-LOGIC
+    # OpenTrustRegion converges to the stable UKS solution at -48.98153, 1.6 mEh below the
+    # one DIIS lands on, so there is no negative eigenvalue left for the check to report.
+    ref_eigenvalues = psi4.Matrix.from_list([[0.0206], [0.0206]]) # TEST
+else:
+    ref_eigenvalues = psi4.Matrix.from_list([[-0.0142], [0.0203]]) # TEST
 
 energy('svwn')
 compare_matrices(ref_eigenvalues, variable("SCF STABILITY EIGENVALUES"), 4, "Instability Eigenvalues") # TEST
