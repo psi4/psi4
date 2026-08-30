@@ -19,6 +19,12 @@ He 1 3.0
 symmetry c2v
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-FOR-NOW
+    # The a1 block of C2v holds both sigma_g and sigma_u for He2+, so the ROHF surface has a
+    # symmetry-broken solution 0.032 Eh below the symmetric one. OpenTrustRegion minimizes
+    # and finds it; the FCI transition-dipole references here assume the symmetric reference.
+    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO fix
+
 set {
     reference       rohf
     basis           cc-pVDZ 

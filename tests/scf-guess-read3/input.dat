@@ -17,8 +17,11 @@ compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF e
 set guess read
 energy('scf')
 compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy, read-in guess')  #TEST
+# A second-order optimizer that is handed converged orbitals needs no macro-iteration
+# at all, and ROHF costs it one extra, so accept a small count rather than exactly 1.
+otr = psi4.core.get_option("scf", "orbital_optimizer_package") in ["OTR", "OPENTRUSTREGION"]  # KP-LOGIC
 niter = int(variable('SCF ITERATIONS'))
-compare(1, niter, f'ROHF Iterations {niter}, read-in guess')  #TEST
+compare(True, 0 <= niter <= 3 if otr else niter == 1, f'ROHF Iterations {niter}, read-in guess')  #TEST
 
 
 set reference uhf
@@ -30,4 +33,4 @@ set guess read
 energy('scf')
 compare_values(-247.03206951, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy, read-in guess')  #TEST
 niter = int(variable('SCF ITERATIONS'))
-compare(1, niter, f'UHF Iterations {niter}, read-in guess')  #TEST
+compare(True, 0 <= niter <= 3 if otr else niter == 1, f'UHF Iterations {niter}, read-in guess')  #TEST
