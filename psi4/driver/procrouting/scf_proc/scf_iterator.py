@@ -351,14 +351,21 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.reset_occupation()
             self.find_occupation()
         self.opentrustregion_scf()
+
+        # OpenTrustRegion's last call back into Psi4 is often a Hessian-vector product,
+        # and cphf_Hx reuses the JK object that form_G has aliased J_/K_ onto. Rebuild
+        # the two-electron quantities from the converged orbitals before taking the energy,
+        # or J_/K_ still hold CPHF intermediates and compute_E returns garbage.
+        self.form_D()
+        self.form_G()
+        self.form_F()
+
         SCFE = self.compute_E()
         self.set_energies("Total Energy", SCFE)
         self.set_variable("SCF ITERATION ENERGY", SCFE)
         self.iteration_energies.append(SCFE)
 
         # Ensure canonical orbitals/eigenvalues are ready for post-SCF methods.
-        self.form_G()
-        self.form_F()
         self.form_C()
         self.form_D()
         return
