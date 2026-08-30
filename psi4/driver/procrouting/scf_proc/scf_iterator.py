@@ -370,7 +370,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.form_initial_C()
             self.reset_occupation()
             self.find_occupation()
-        self.opentrustregion_scf()
+        otr_error = self.opentrustregion_scf()
 
         # OpenTrustRegion's last call back into Psi4 is often a Hessian-vector product,
         # and cphf_Hx reuses the JK object that form_G has aliased J_/K_ onto. Rebuild
@@ -397,6 +397,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         # Ensure canonical orbitals/eigenvalues are ready for post-SCF methods.
         self.form_C()
         self.form_D()
+
+        if otr_error:
+            core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
+            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
         return
 
     # maximum number of scf iterations to run after early screening is disabled
