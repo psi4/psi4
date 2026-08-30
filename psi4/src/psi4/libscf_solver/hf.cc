@@ -1525,6 +1525,10 @@ void HF::opentrustregion_scf() {
     otr_curr_func_ = 0.0;
     otr_grad_rms_ = 0.0;
 
+    // Nothing to optimize (e.g. a closed-shell system with no virtual orbitals). The guess
+    // orbitals are already the solution and OpenTrustRegion rejects n_param == 0.
+    if (otr_n_param_ == 0) return;
+
     // initialize settings
     OTR::solver_settings_type settings = OTR::solver_settings_init();
 

@@ -343,8 +343,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         otr_scf = False
 
     if otr_scf:
-        # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
-        if self.sad_ and self.iteration_ <= 0:
+        # OpenTrustRegion rotates a fixed set of orbitals, so it needs a complete orthonormal
+        # C to start from. HF::guess sets iteration_ = -1 in exactly the two cases where the
+        # guess doesn't supply one: SAD makes no orbitals at all, and READ/cast-up fills in
+        # only the occupied columns and leaves the virtuals zero. In the latter case C
+        # trivially "diagonalizes" F over the occ-virt block, so OTR sees a zero gradient and
+        # declares convergence on the guess. Build the missing orbitals the way the internal
+        # solver's first iteration would.
+        if self.iteration_ < 0:
             self.form_G()
             self.form_initial_F()
             self.form_initial_C()
