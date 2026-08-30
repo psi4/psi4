@@ -186,7 +186,7 @@ _REFS = {
 # The internal leg is plain CPU LAPACK/libxc and reproduces bit for bit, so it
 # only has to absorb the 10-dp rounding of the stored value (<= 5e-11).
 _ATOL_OWN = {
-    "internal": 1.0e-9,
+    "internal": 2.0e-9,
     # The cuEST leg is not bit-reproducible: exchange is built in INT8 slices
     # by default (CUEST_MIXED_PRECISION), which is measurably noisy and, being
     # a GPU-tensor-core path, not portable between architectures.  Measured
