@@ -1427,11 +1427,9 @@ OTR::c_int ROHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
     auto hess_x_shared = std::make_shared<Matrix>("hess_x_shared", doccpi + soccpi, soccpi + virpi);
     Hx(x_shared, hess_x_shared);
 
-    // loop over irreps
+    // loop over irreps. No irrep may be skipped here: unpack() and otr_n_param() lay the
+    // parameter vector out over every irrep, so skipping one desynchronizes the counter.
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
-        // skip if dimensions are zero
-        if (!doccpi[h] || !virpi[h]) continue;
-
         // get the pointer to the memory block for this irrep in shared matrix
         auto hess_x_irrep = hess_x_shared->pointer(h);
 
@@ -1483,11 +1481,9 @@ OTR::c_int ROHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OT
     // form Fock matrix
     form_F();
 
-    // loop over irreps
+    // loop over irreps. No irrep may be skipped here: unpack() and otr_n_param() lay the
+    // parameter vector out over every irrep, so skipping one desynchronizes the counter.
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
-        // skip if dimensions are zero
-        if (!doccpi[h] || !virpi[h]) continue;
-
         // get the pointer to the memory block for this irrep in shared matrix
         auto fp = moFeff_->pointer(h);
 
