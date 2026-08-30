@@ -39,6 +39,7 @@
 #include "psi4/psifiles.h"
 
 #include <map>
+#include <array>
 #include <tuple>
 #include <string>
 #include <unordered_map>
@@ -490,6 +491,7 @@ class PSI_API DLPNOCCSD : public DLPNO {
 class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
    protected:
     using SpinPairMatrixBlocks = std::array<std::array<std::vector<SharedMatrix>, 2>, 2>;
+    using SpinPairEnergies = std::array<std::vector<double>, 3>;
 
     // T1 amplitudes over A, B
     std::array<std::vector<SharedMatrix>, 2> T_ia_spin_;
@@ -497,6 +499,14 @@ class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
     std::array<std::vector<SharedMatrix>, 2> T_n_ij_spin_;
     // T2 amplitudes over AA, AB, BB
     std::array<std::vector<SharedMatrix>, 3> T_iajb_spin_;
+    // Fixed spin-adapted SROLMP2 amplitudes.  These initialize every RCCSD
+    // pair and remain fixed for weak pairs, so that weak pairs can couple to
+    // strong-pair RCCSD amplitudes (and are available to a future ROHF (T)).
+    std::array<std::vector<SharedMatrix>, 3> T_iajb_srolmp2_spin_;
+
+    // Physical AA, AB, and BB pair-energy components obtained from the one
+    // spin-free SROMP2 amplitude set used to select the common spatial PNOs.
+    SpinPairEnergies sromp2_pair_energies_;
 
     // Spin-resolved T1-transformed DF integrals
     std::array<std::vector<SharedMatrix>, 2> i_Qk_t1_spin_;
@@ -508,6 +518,28 @@ class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
     std::array<std::vector<SharedMatrix>, 2> Fkc_tilde_spin_;
     std::array<std::vector<SharedMatrix>, 2> Fai_tilde_spin_;
     std::array<std::vector<SharedMatrix>, 2> Fab_tilde_spin_;
+
+    /// ROHF/SROMP2 versions of the pair-prescreening pipeline.  These hide
+    /// the closed-shell implementations intentionally (the base functions
+    /// are non-virtual, and templated functions cannot be virtual).
+    template<bool crude> void pair_prescreening();
+    template<bool crude> std::vector<double> compute_pair_energies();
+    template<bool crude> double filter_pairs(const std::vector<double>& e_ijs);
+    std::vector<double> pno_lmp2_iterations();
+    void recompute_pnos();
+
+    /// Evaluate semicanonical spin-adapted pair energies in the current PAO
+    /// domains without changing the common (closed-shell-form) PNO selector.
+    std::vector<double> compute_semicanonical_sromp2_pair_energies(bool print_header);
+    /// Recompute physical spin-channel energies from the current common
+    /// SROMP2 amplitudes in the PNO basis.
+    std::vector<double> update_sromp2_pair_energies();
+    /// Cache the spin-adapted amplitudes in the pre-SOMO-augmentation PNO
+    /// space for use as fixed weak-pair amplitudes in RCCSD.
+    void cache_srolmp2_spin_amplitudes();
+    /// Restore fixed weak amplitudes after DIIS, which otherwise has no
+    /// knowledge of the strong/weak distinction.
+    void restore_srolmp2_weak_amplitudes();
 
     /// extend PAO and PNO rank for each pair by nsomo (for open-shell case)... that is, by nalpha - nbeta
     /// see: https://doi.org/10.1063/1.4981521
