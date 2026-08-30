@@ -363,19 +363,28 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.jk().set_COSX_grid("Initial")
 
     if otr_scf:
-        # OpenTrustRegion rotates a fixed set of orbitals, so it needs a complete orthonormal
-        # C to start from. HF::guess sets iteration_ = -1 in exactly the two cases where the
-        # guess doesn't supply one: SAD makes no orbitals at all, and READ/cast-up fills in
-        # only the occupied columns and leaves the virtuals zero. In the latter case C
-        # trivially "diagonalizes" F over the occ-virt block, so OTR sees a zero gradient and
-        # declares convergence on the guess. Build the missing orbitals the way the internal
-        # solver's first iteration would.
+        # OpenTrustRegion rotates a fixed set of orbitals at a fixed occupation, so run one
+        # pass of what the internal solver's first iteration does before handing over. That
+        # covers two things the guess alone doesn't give us:
+        #   * a complete orthonormal C. HF::guess sets iteration_ = -1 in exactly the two
+        #     cases where the guess doesn't supply one: SAD makes no orbitals at all, and
+        #     READ/cast-up fills in only the occupied columns and leaves the virtuals zero.
+        #     In the latter case C trivially "diagonalizes" F over the occ-virt block, so OTR
+        #     reads a zero gradient and declares convergence on the guess.
+        #   * an occupation relaxed against the guess Fock rather than against the guess
+        #     itself. Core-guess occupations can be badly wrong -- triplet O2/cc-pVTZ lands
+        #     on a stationary point 0.34 Eh above the ground state -- and OTR, unlike the
+        #     internal solver, never revisits the occupation once it starts.
+        self.form_G()
         if self.iteration_ < 0:
-            self.form_G()
             self.form_initial_F()
             self.form_initial_C()
             self.reset_occupation()
             self.find_occupation()
+        else:
+            self.form_F()
+            self.form_C()
+        self.form_D()
         otr_error = self.opentrustregion_scf()
 
         # OpenTrustRegion's last call back into Psi4 is often a Hessian-vector product,
