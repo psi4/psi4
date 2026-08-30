@@ -579,8 +579,6 @@ class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
     std::array<std::array<std::vector<SharedMatrix>, 2>, 2> compute_gamma();
     /// Jiang and Toth Eqs. 15 and 16 (unbarred and barred delta, respectively)
     std::array<SpinPairMatrixBlocks, 2> compute_delta();
-    /// Jiang and Toth Eq. 17
-    std::array<std::vector<SharedMatrix>, 2> compute_Fbc_double_tilde();
     /// Jiang and Toth Eq. 18
     std::array<SharedMatrix, 2> compute_Fki_double_tilde();
 
