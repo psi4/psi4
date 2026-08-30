@@ -5127,7 +5127,12 @@ void RO_DLPNOCCSD::lccsd_iterations() {
 
     for (DoubleSpinCase double_sigma : doubles_spin_cases) {
         const int ds = static_cast<int>(double_sigma);
-        const auto [sigma1, sigma2] = get_spin_pair(double_sigma);
+        // NOTE: plain variables, not a structured binding.  These names are read inside the
+        // `omp parallel for` below, and clang cannot capture structured bindings in an OpenMP
+        // region.  (Elsewhere the binding is declared *inside* the loop body, which is fine.)
+        const std::pair<SpinCase, SpinCase> spin_pair = get_spin_pair(double_sigma);
+        const SpinCase sigma1 = spin_pair.first;
+        const SpinCase sigma2 = spin_pair.second;
         const int s1 = static_cast<int>(sigma1);
         const int s2 = static_cast<int>(sigma2);
         R_iajb_spin[ds].clear();
