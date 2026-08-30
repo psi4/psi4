@@ -110,6 +110,12 @@ assign def2-universal-jkfit
 set reference uhf
 set s_orthogonalization partialcholesky
 set d_convergence  10
+# Pin the occupation. This benzene anion has a second UHF solution 14 mEh higher with the
+# extra alpha electron in Au rather than Ag, and which one you land in depends on the
+# optimizer: OpenTrustRegion rotates orbitals within an irrep at fixed occupation, so unlike
+# DIIS it cannot migrate an electron between irreps on the way down.
+set docc [6, 1, 1, 3, 0, 5, 4, 1]
+set socc [1, 0, 0, 0, 0, 0, 0, 0]
     
 set s_cholesky_tolerance 1e-4
 set print 3
