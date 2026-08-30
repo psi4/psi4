@@ -9,6 +9,5 @@ from addons import *
     pytest.param("otr", id="opentrustregion", marks=using("otr")),
 ])
 def test_scf_ecp(oopkg):
-    setenv = ["_PSI4_USE_OOPKG"] if oopkg == "ooo" else None
-    setenv = ["_PSI4_USE_OTRPKG"] if oopkg == "otr" else None
+    setenv = {"ooo": ["_PSI4_USE_OOPKG"], "otr": ["_PSI4_USE_OTRPKG"]}.get(oopkg)
     ctest_runner(__file__, setenv=setenv)
