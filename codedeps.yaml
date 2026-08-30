@@ -1616,7 +1616,9 @@ data:
       commit: v2.0.1
     cmake:
       name: OpenTrustRegion
-      constraint: "2.0.1"
+      # v2.0.1 still declares project(OpenTrustRegion VERSION 2.0.0), so a 2.0.1
+      # constraint is unsatisfiable against a correct install.
+      constraint: "2.0.0"
       components:
         - int32
       target: OpenTrustRegion::OpenTrustRegion

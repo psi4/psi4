@@ -29,7 +29,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -1559,9 +1558,6 @@ int HF::opentrustregion_scf() {
     // call the Fortran solver
     auto error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, 
                              otr_n_param_, settings);
-
-    if (std::getenv("PSI4_OTR_DEBUG"))
-        outfile->Printf("DBG post-solver: |Da|=%.6e E=%.10f\n", Da_->rms(), compute_E());
 
     // Every OpenTrustRegion failure mode -- running out of macro-iterations, or a line
     // search that could not lower the objective along an unstable mode -- means the

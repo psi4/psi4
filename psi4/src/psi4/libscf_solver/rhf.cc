@@ -30,7 +30,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
 #include <ctime>
 #include <vector>
 #include <utility>
@@ -1347,8 +1346,6 @@ SharedMatrix RHF::unpack(const OTR::c_real* matrix, const std::string name, cons
     return shared_matrix;
 }
 
-static bool otr_dbg() { static bool v = (std::getenv("PSI4_OTR_DEBUG") != nullptr); return v; }
-
 OTR::c_int RHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
     // get doubly occupied and virtual dimensions per irrep
     auto doccpi = nalphapi_;
@@ -1390,7 +1387,6 @@ OTR::c_int RHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
         potential_->set_D({Da_});
     }
 
-    if (otr_dbg()) outfile->Printf("DBG otr_obj_func: E=%.10f |J|=%.6e |K|=%.6e |D|=%.6e\n", *func, J_->rms(), K_->rms(), Da_->rms());
     return 0;
 }
 
@@ -1474,13 +1470,6 @@ OTR::c_int RHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR
     // set pointer
     *hess_x_fp = otr_hess_x_wrapper;
 
-    if (otr_dbg()) {
-        double gs = 0.0, hs = 0.0;
-        for (int q = 0; q < otr_n_param_; ++q) { gs += grad[q] * grad[q]; hs += h_diag[q] * h_diag[q]; }
-        outfile->Printf("DBG otr_update_orbs: E=%.10f |J|=%.6e |K|=%.6e |D|=%.6e nparam=%d |g|=%.6e |hd|=%.6e CtSC-I=%.3e\n",
-                        *func, J_->rms(), K_->rms(), Da_->rms(), otr_n_param_, std::sqrt(gs), std::sqrt(hs),
-                        linalg::triplet(Ca_, S_, Ca_, true, false, false)->rms());
-    }
     return 0;
 }
 
