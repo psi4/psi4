@@ -356,11 +356,17 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         ddx_enabled = core.get_option('SCF', 'DDX')
         pe_enabled = core.get_option('SCF', 'PE')
         link_enabled = "LINK" in core.get_option('SCF', 'SCF_TYPE')
+        # The GRAC shift splices the asymptotically-corrected potential into V_xc outside
+        # the kernel that cphf_Hx differentiates, so the Hessian doesn't see it.
+        grac_enabled = (core.get_option("SCF", "DFT_GRAC_SHIFT") != 0.0
+                        or core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE")
         if (reference == "CUHF" or metavv10_enabled or link_enabled or self.MOM_excited_
-                or frac_enabled or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled):
+                or frac_enabled or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled
+                or grac_enabled):
             core.print_out("    Note: OpenTrustRegion not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
             core.print_out(f"          {reference=}, meta/vv10={metavv10_enabled}, link={link_enabled}, mom={self.MOM_excited_},\n")
-            core.print_out(f"          frac={frac_enabled}, efp={efp_enabled}, pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}\n")
+            core.print_out(f"          frac={frac_enabled}, efp={efp_enabled}, pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled},\n")
+            core.print_out(f"          grac={grac_enabled}\n")
             otr_scf = False
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
