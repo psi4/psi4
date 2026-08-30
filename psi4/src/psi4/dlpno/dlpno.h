@@ -582,6 +582,15 @@ class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
     /// Jiang and Toth Eq. 18
     std::array<SharedMatrix, 2> compute_Fki_double_tilde();
 
+    /// ROHF-specific memory estimate.  The base implementation is
+    /// intentionally non-virtual, so this is dispatched from the ROHF
+    /// compute-energy path by name hiding.
+    void estimate_memory();
+    /// Print the ROHF/SROMP2 method header and orbital-space dimensions.
+    void print_header();
+    /// Print spin-resolved diagnostics and final ROHF-DLPNO-CCSD energies.
+    void print_results();
+
     /// iteratively solves local CCSD equations for restricted open-shell case
     void lccsd_iterations();
     /// computes DLPNO-CCSD energy for restricted open-shell case (decoupled from compute_energy in case Brueckner orbitals are requested)

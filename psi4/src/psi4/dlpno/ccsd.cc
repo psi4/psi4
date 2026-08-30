@@ -3089,6 +3089,507 @@ void DLPNOCCSD::print_results() {
 RO_DLPNOCCSD::RO_DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNOCCSD(ref_wfn, options) {}
 RO_DLPNOCCSD::~RO_DLPNOCCSD() {}
 
+void RO_DLPNOCCSD::print_header() {
+    const int nbf = basisset_->nbf();
+    const int naocc = nalpha_ - nfrzc();
+    const int nbocc = nbeta_ - nfrzc();
+    const int nsomo = nalpha_ - nbeta_;
+
+    outfile->Printf("   --------------------------------------------------\n");
+    outfile->Printf("          ROHF T1-Transformed DLPNO-CCSD            \n");
+    outfile->Printf("                    by Andy Jiang                    \n");
+    outfile->Printf("       Closed-shell engine: DOI 10.1063/5.0219963   \n");
+    outfile->Printf("   --------------------------------------------------\n\n");
+    outfile->Printf("  Reference                    : ROHF\n");
+    outfile->Printf("  PNO selector                 : spin-independent SROMP2\n");
+    outfile->Printf("  SOMO treatment               : appended to every pair space\n");
+    outfile->Printf("  DLPNO convergence            : %s\n\n",
+                    options_.get_str("PNO_CONVERGENCE").c_str());
+
+    outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
+    outfile->Printf("    T_CUT_PNO        = %6.4e \n", T_CUT_PNO_);
+    outfile->Printf("    T_DIAG_SCALE     = %6.4e \n", T_CUT_PNO_DIAG_SCALE_);
+    outfile->Printf("    T_CORE_SCALE     = %6.4e \n", T_CUT_PNO_CORE_SCALE_);
+    outfile->Printf("    T_CUT_TRACE      = %6.4e \n", T_CUT_TRACE_);
+    outfile->Printf("    T_CUT_ENERGY     = %6.4e \n", T_CUT_ENERGY_);
+    outfile->Printf("    T_CUT_PAIRS      = %6.4e \n", T_CUT_PAIRS_);
+    outfile->Printf("    T_CUT_PAIRS_MP2  = %6.4e \n", T_CUT_PAIRS_MP2_);
+    outfile->Printf("    T_CUT_PRE        = %6.4e \n", T_CUT_PRE_);
+    outfile->Printf("    T_CUT_DO_PRE     = %6.4e \n", options_.get_double("T_CUT_DO_PRE"));
+    outfile->Printf("    T_CUT_MKN        = %6.4e \n", T_CUT_MKN_);
+    outfile->Printf("    T_CUT_PNO_MP2    = %6.4e \n", T_CUT_PNO_MP2_);
+    outfile->Printf("    T_CUT_TRACE_MP2  = %6.4e \n", T_CUT_TRACE_MP2_);
+    outfile->Printf("    T_CUT_ENERGY_MP2 = %6.4e \n", T_CUT_ENERGY_MP2_);
+    outfile->Printf("    T_CUT_DO         = %6.4e \n", T_CUT_DO_);
+    outfile->Printf("    T_CUT_DO_IJ      = %6.4e \n", options_.get_double("T_CUT_DO_IJ"));
+    outfile->Printf("    T_CUT_DO_UV      = %6.4e \n", options_.get_double("T_CUT_DO_UV"));
+    outfile->Printf("    T_CUT_CLMO       = %6.4e \n", options_.get_double("T_CUT_CLMO"));
+    outfile->Printf("    T_CUT_CPAO       = %6.4e \n", options_.get_double("T_CUT_CPAO"));
+    outfile->Printf("    S_CUT            = %6.4e \n", options_.get_double("S_CUT"));
+    outfile->Printf("    F_CUT            = %6.4e \n", options_.get_double("F_CUT"));
+    outfile->Printf("    INTS_TOL (AO)    = %6.4e \n", options_.get_double("DLPNO_AO_INTS_TOL"));
+    outfile->Printf("    MIN_PNOS         = %6d   \n\n", options_.get_int("MIN_PNOS"));
+
+    outfile->Printf("  ==> ROHF Orbital-Space Information <==\n\n");
+    outfile->Printf("   -----------------------------------------------------------------------------\n");
+    outfile->Printf("    NBF  NFRZC  ACT-A  ACT-B  DOCC  SOMO  VIRT-A  VIRT-B  NAUX\n");
+    outfile->Printf("   -----------------------------------------------------------------------------\n");
+    outfile->Printf("   %4d  %5d  %5d  %5d  %4d  %4d  %6d  %6d  %4d\n",
+                    nbf, nfrzc(), naocc, nbocc, nbeta_, nsomo,
+                    nbf - nalpha_, nbf - nbeta_, ribasis_->nbf());
+    outfile->Printf("   -----------------------------------------------------------------------------\n\n");
+}
+
+void RO_DLPNOCCSD::print_results() {
+    const int naocc = nalpha_ - nfrzc();
+    const int nbocc = nbeta_ - nfrzc();
+    const int nsomo = naocc - nbocc;
+    const int n_active_electrons = naocc + nbocc;
+    double t1diag_norm = 0.0;
+
+    // This is the standard Psi4 ROHF T1 diagnostic expressed in the common
+    // SOMO-augmented diagonal-pair PNO spaces.  For DOCC -> external
+    // excitations the spin-adapted combination is t(alpha) + t(beta).
+    // DOCC -> SOMO and SOMO -> external excitations are the two allowed
+    // semi-internal sectors and carry the conventional factor of two.
+#pragma omp parallel for reduction(+ : t1diag_norm)
+    for (int i = 0; i < naocc; ++i) {
+        const int ii = i_j_to_ij_[i][i];
+        const int n_external = n_pno_[ii] - nsomo;
+
+        if (i < nbocc) {
+            for (int a = 0; a < n_external; ++a) {
+                const double t_spin_adapted =
+                    (*T_ia_spin_[static_cast<int>(SpinCase::Alpha)][i])(a, 0) +
+                    (*T_ia_spin_[static_cast<int>(SpinCase::Beta)][i])(a, 0);
+                t1diag_norm += t_spin_adapted * t_spin_adapted;
+            }
+            for (int a = n_external; a < n_pno_[ii]; ++a) {
+                const double t_beta =
+                    (*T_ia_spin_[static_cast<int>(SpinCase::Beta)][i])(a, 0);
+                t1diag_norm += 2.0 * t_beta * t_beta;
+            }
+        } else {
+            for (int a = 0; a < n_external; ++a) {
+                const double t_alpha =
+                    (*T_ia_spin_[static_cast<int>(SpinCase::Alpha)][i])(a, 0);
+                t1diag_norm += 2.0 * t_alpha * t_alpha;
+            }
+        }
+    }
+
+    const double t1diag = (n_active_electrons > 0)
+                              ? 0.5 * std::sqrt(t1diag_norm / n_active_electrons)
+                              : 0.0;
+    outfile->Printf("\n  ROHF T1 Diagnostic: %8.8f \n", t1diag);
+    if (t1diag > 0.02) {
+        outfile->Printf(
+            "    WARNING: ROHF T1 Diagnostic is greater than 0.02; "
+            "CCSD results may be unreliable!\n");
+    }
+    set_scalar_variable("CC T1 DIAGNOSTIC", t1diag);
+
+    const double e_corr =
+        e_lccsd_ + de_weak_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_;
+    const double e_total = variables_["SCF TOTAL ENERGY"] + e_corr;
+
+    outfile->Printf("  \n");
+    outfile->Printf("  Total ROHF-DLPNO-CCSD Correlation Energy: %16.12f \n", e_corr);
+    outfile->Printf("    Strong-Pair RCCSD Contribution:         %16.12f \n", e_lccsd_);
+    outfile->Printf("    SROLMP2 Weak-Pair Contribution:         %16.12f \n", de_weak_);
+    outfile->Printf("    Semicanonical SROMP2 Correction:        %16.12f \n",
+                    de_lmp2_eliminated_);
+    outfile->Printf("    ROHF Dipole-Pair Correction:            %16.12f \n", de_dipole_);
+    outfile->Printf("    PNO Truncation Correction:              %16.12f \n", de_pno_total_);
+    outfile->Printf("\n\n  @Total ROHF-DLPNO-CCSD Energy: %16.12f \n", e_total);
+    outfile->Printf("    *** Spin-adapted and SOMO-safe. A thousand hallelujahs!!! \n\n");
+}
+
+void RO_DLPNOCCSD::estimate_memory() {
+    const int naocc = nalpha_ - nfrzc();
+    const int n_lmo_pairs = ij_to_i_j_.size();
+
+    // The cached inexpensive overlaps are required in both modes.  The
+    // expensive S(ij,kl) blocks are stored only in the high-memory mode; in
+    // low-memory mode the general overlaps are formed one target pair at a
+    // time and are included in the per-thread buffer estimate below.
+    size_t low_overlap_memory = 0;
+    size_t high_overlap_memory = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : low_overlap_memory, high_overlap_memory)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        const int i = ij_to_i_j_[ij].first;
+        const int j = ij_to_i_j_[ij].second;
+        const int nlmo_ij = lmopair_to_lmos_[ij].size();
+        const size_t npno_ij = n_pno_[ij];
+
+        for (int k = 0; k < naocc; ++k) {
+            const int kj = i_j_to_ij_[k][j];
+            if (kj != -1) {
+                const size_t words = npno_ij * static_cast<size_t>(n_pno_[kj]);
+                high_overlap_memory += words;
+                low_overlap_memory += words;
+            }
+
+            if (i <= j && lmopair_to_lmos_dense_[ij][k] != -1) {
+                const int kk = i_j_to_ij_[k][k];
+                const size_t words = npno_ij * static_cast<size_t>(n_pno_[kk]);
+                high_overlap_memory += words;
+                low_overlap_memory += words;
+            }
+        }
+
+        if (i <= j) {
+            for (int mn_ij = 0; mn_ij < nlmo_ij * nlmo_ij; ++mn_ij) {
+                const int m_ij = mn_ij / nlmo_ij;
+                const int n_ij = mn_ij % nlmo_ij;
+                const int m = lmopair_to_lmos_[ij][m_ij];
+                const int n = lmopair_to_lmos_[ij][n_ij];
+                const int mn = i_j_to_ij_[m][n];
+                if (i == m || i == n || j == m || j == n || m == n) continue;
+                if (mn == -1 || m_ij > n_ij) continue;
+                high_overlap_memory += npno_ij * static_cast<size_t>(n_pno_[mn]);
+            }
+        }
+    }
+
+    // Spin-independent integral storage inherited from the RHF engine.
+    size_t spatial_ov = 0;
+    size_t spatial_vv = 0;
+    size_t spatial_vv_non_proj = 0;
+    size_t spatial_vvv = 0;
+    size_t spatial_qo = 0;
+    size_t spatial_qv = 0;
+    size_t spatial_qov = 0;
+    size_t spatial_qvv = 0;
+
+    // Persistent spin-resolved quantities used by the ROHF iterations.
+    size_t ro_t2_amplitudes = 0;
+    size_t ro_t2_residuals = 0;
+    size_t ro_fock_pair_storage = 0;
+    size_t ro_projected_singles = 0;
+    size_t ro_transformed_df = 0;
+    size_t ro_single_storage = 0;
+    size_t ro_pair_vector_storage = 0;
+    size_t srolmp2_cache = 0;
+    size_t diis_vector_words = 0;
+    size_t diagonal_pno_words = 0;
+
+    // Iteration-wide intermediates.  beta, gamma, delta, and delta-bar are
+    // alive together during compute_R_iajb().
+    size_t ro_residual_intermediates = 0;
+    size_t ro_fock_intermediates = 0;
+
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        const int i = ij_to_i_j_[ij].first;
+        const int j = ij_to_i_j_[ij].second;
+        const size_t naux_ij = lmopair_to_ribfs_[ij].size();
+        const size_t nlmo_ij = lmopair_to_lmos_[ij].size();
+        const size_t npno_ij = n_pno_[ij];
+        const size_t ov_words = nlmo_ij * npno_ij;
+        const size_t vv_words = npno_ij * npno_ij;
+        const bool is_strong_pair = i_j_to_ij_strong_[i][j] != -1;
+
+        // K_mibj, J_ijmb, L_mibj and K_iajb, T_iajb, Tt_iajb, L_iajb.
+        spatial_ov += 3 * ov_words;
+        spatial_vv += 4 * vv_words;
+        spatial_vvv += npno_ij * vv_words;
+
+        // Three RCCSD amplitudes plus the three fixed SROLMP2 copies.
+        ro_t2_amplitudes += 6 * vv_words;
+        srolmp2_cache += 3 * vv_words;
+        // R and Rn for AA, AB, and BB.
+        ro_t2_residuals += 6 * vv_words;
+        // F_pno(alpha/beta) is allocated for every ordered pair.
+        ro_fock_pair_storage += 2 * vv_words;
+        // Projected T1(alpha/beta), and transformed Qk/Qa(alpha/beta).
+        ro_projected_singles += 2 * ov_words;
+        ro_transformed_df += 2 * naux_ij * (nlmo_ij + npno_ij);
+        // Fkc_tilde(alpha/beta), one PNO vector per ordered pair.
+        ro_pair_vector_storage += 2 * npno_ij;
+
+        // DIIS extrapolates two singles and three doubles blocks.
+        diis_vector_words += 3 * vv_words;
+
+        // beta(AA/AB/BB), gamma(AA/AB/BA/BB), and both delta families.
+        ro_residual_intermediates += 3 * nlmo_ij * nlmo_ij;
+        ro_residual_intermediates += 12 * vv_words;
+
+        if (i == j) {
+            // T1, R1, Fai_tilde, and the bare Fia energy block, each for A/B.
+            diagonal_pno_words += npno_ij;
+            ro_single_storage += 8 * npno_ij;
+            diis_vector_words += 2 * npno_ij;
+        }
+
+        if (i <= j) {
+            // Fab_tilde(alpha/beta) is shared by ij and ji.
+            ro_fock_pair_storage += 2 * vv_words;
+            // Fkc_bar and Fab_bar for both spins coexist while t1_fock_spin runs.
+            ro_fock_intermediates += 2 * (ov_words + vv_words);
+        }
+
+        if (!is_strong_pair) continue;
+
+        for (size_t k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+            const int k = lmopair_to_lmos_[ij][k_ij];
+            const int jk = i_j_to_ij_[j][k];
+            if (jk == -1) continue;
+            spatial_vv_non_proj += 2 * npno_ij * static_cast<size_t>(n_pno_[jk]);
+        }
+
+        spatial_qo += 2 * naux_ij * nlmo_ij;
+        spatial_qv += 2 * naux_ij * npno_ij;
+        if (i <= j) {
+            spatial_qov += naux_ij * ov_words;
+            spatial_qvv += naux_ij * vv_words;
+        }
+    }
+
+    // Global spin Fock matrices retained by lccsd_iterations(): Fa/Fb in the
+    // LMO and PAO bases, and the two bare LMO-PAO energy blocks.
+    const size_t npao_global = C_pao_->colspi(0);
+    const size_t global_spin_fock_storage =
+        2 * (static_cast<size_t>(naocc) * static_cast<size_t>(naocc) +
+             npao_global * npao_global +
+             static_cast<size_t>(naocc) * npao_global);
+
+    // Two persistent transformed occupied blocks and two temporary
+    // twice-transformed blocks in the residual build.
+    const size_t occupied_fock_storage =
+        2 * static_cast<size_t>(naocc) * static_cast<size_t>(naocc);
+    // t1_fock_spin() forms an additional pair of LMO-PAO Fock matrices.
+    ro_fock_intermediates +=
+        2 * static_cast<size_t>(naocc) * npao_global;
+    ro_fock_intermediates += occupied_fock_storage;
+    ro_residual_intermediates += occupied_fock_storage;
+
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    // Thread buffers for integral transformation and for the ROHF residual.
+    size_t eri_thread_buffer = 0;
+    size_t q_iteration_thread_buffer = 0;
+    size_t high_overlap_thread_buffer = 0;
+    size_t low_overlap_thread_buffer = 0;
+
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        const int i = ij_to_i_j_[ij].first;
+        const int j = ij_to_i_j_[ij].second;
+        const size_t naux_ij = lmopair_to_ribfs_[ij].size();
+        const size_t nlmo_ij = lmopair_to_lmos_[ij].size();
+        const size_t npno_ij = n_pno_[ij];
+
+        std::vector<int> integral_ext_domain = lmopair_to_paos_[ij];
+        for (size_t k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+            const int k = lmopair_to_lmos_[ij][k_ij];
+            integral_ext_domain = merge_lists(integral_ext_domain, lmo_to_paos_[k]);
+        }
+        const size_t npao_ext_ij = integral_ext_domain.size();
+
+        size_t eri_buffer = naux_ij * npao_ext_ij * (nlmo_ij + npno_ij);
+        eri_buffer += naux_ij * npno_ij * (nlmo_ij + npno_ij);
+        eri_thread_buffer = std::max(eri_thread_buffer, eri_buffer);
+
+        const size_t q_buffer =
+            2 * naux_ij * npno_ij * (nlmo_ij + npno_ij);
+        q_iteration_thread_buffer = std::max(q_iteration_thread_buffer, q_buffer);
+
+        if (i_j_to_ij_strong_[i][j] == -1) continue;
+
+        std::vector<int> pair_ext_domain;
+        size_t max_npao_kl = 0;
+        size_t max_npno_kl = 0;
+        for (size_t k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+            const int k = lmopair_to_lmos_[ij][k_ij];
+            for (size_t l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
+                const int l = lmopair_to_lmos_[ij][l_ij];
+                const int kl = i_j_to_ij_[k][l];
+                if (kl == -1 || n_pno_[kl] == 0) continue;
+                pair_ext_domain = merge_lists(pair_ext_domain, lmopair_to_paos_[kl]);
+                max_npao_kl = std::max(max_npao_kl, lmopair_to_paos_[kl].size());
+                max_npno_kl = std::max(max_npno_kl, static_cast<size_t>(n_pno_[kl]));
+            }
+        }
+
+        // B(AA/AB/BB), Fbc''(A/B), spin-masked rectangular overlaps, and
+        // the largest pair-projection temporaries alive in the grouped block.
+        const size_t grouped_pair_buffer =
+            7 * npno_ij * npno_ij + 4 * max_npno_kl * npno_ij +
+            2 * max_npno_kl * max_npno_kl;
+        high_overlap_thread_buffer =
+            std::max(high_overlap_thread_buffer, grouped_pair_buffer);
+
+        const size_t semidirect_extra =
+            pair_ext_domain.size() * npno_ij + max_npao_kl * npno_ij;
+        low_overlap_thread_buffer =
+            std::max(low_overlap_thread_buffer, grouped_pair_buffer + semidirect_extra);
+    }
+
+    low_memory_overlap_ = options_.get_bool("LOW_MEMORY_OVERLAP");
+    write_qia_pno_ = options_.get_bool("WRITE_QIA_PNO");
+    write_qab_pno_ = options_.get_bool("WRITE_QAB_PNO");
+    if (write_qia_pno_) spatial_qov = 0;
+    if (write_qab_pno_) spatial_qvv = 0;
+
+    const size_t total_df_memory = qij_memory_ + qia_memory_ + qab_memory_;
+    const size_t ro_fixed_storage =
+        ro_t2_amplitudes + ro_t2_residuals + ro_fock_pair_storage +
+        ro_projected_singles + ro_transformed_df + ro_single_storage +
+        ro_pair_vector_storage + global_spin_fock_storage +
+        occupied_fock_storage +
+        2 * static_cast<size_t>(nthreads) * diagonal_pno_words;
+
+    const int diis_max_vecs = std::max(0, options_.get_int("DIIS_MAX_VECS"));
+    const size_t diis_history =
+        2 * static_cast<size_t>(diis_max_vecs) * diis_vector_words;
+    const size_t flattened_diis_buffers = 2 * diis_vector_words;
+
+    auto spatial_pno_memory = [&]() {
+        return spatial_ov + spatial_vv + spatial_vv_non_proj + spatial_vvv +
+               spatial_qo + spatial_qv + spatial_qov + spatial_qvv;
+    };
+    auto overlap_memory = [&]() {
+        return low_memory_overlap_ ? low_overlap_memory : high_overlap_memory;
+    };
+    auto iteration_thread_buffer = [&]() {
+        return q_iteration_thread_buffer +
+               (low_memory_overlap_ ? low_overlap_thread_buffer
+                                    : high_overlap_thread_buffer);
+    };
+    auto transient_iteration_memory = [&]() {
+        const size_t fock_peak =
+            ro_fock_intermediates + q_iteration_thread_buffer * nthreads;
+        const size_t residual_peak =
+            ro_residual_intermediates + iteration_thread_buffer() * nthreads;
+        return std::max({fock_peak, residual_peak, flattened_diis_buffers});
+    };
+    auto memory_integrals = [&]() {
+        // The SROLMP2 cache already exists while the augmented PNO integrals
+        // are transformed; count it conservatively at the augmented rank.
+        return total_df_memory + spatial_pno_memory() + srolmp2_cache +
+               eri_thread_buffer * nthreads;
+    };
+    auto memory_ccsd = [&]() {
+        return total_df_memory + spatial_pno_memory() + overlap_memory() +
+               ro_fixed_storage + diis_history + transient_iteration_memory();
+    };
+
+    constexpr double doubles_to_gb = 1.0e-9 * sizeof(double);
+    constexpr double bytes_to_gb = 1.0e-9;
+
+    auto print_estimate = [&](bool updated) {
+        outfile->Printf("  ==> %sROHF-DLPNO-CCSD Memory Requirements <== \n\n",
+                        updated ? "(Updated) " : "");
+        outfile->Printf("    *** Spin-Independent Spatial Quantities ***\n");
+        outfile->Printf("    (q | i j) [AUX, LMO]          : %8.3f [GB]\n",
+                        qij_memory_ * doubles_to_gb);
+        outfile->Printf("    (q | i a) [AUX, LMO, PAO]     : %8.3f [GB]\n",
+                        qia_memory_ * doubles_to_gb);
+        outfile->Printf("    (q | a b) [AUX, PAO]          : %8.3f [GB]\n",
+                        qab_memory_ * doubles_to_gb);
+        outfile->Printf("    (k_{ij}, c_{ij}) integrals    : %8.3f [GB]\n",
+                        spatial_ov * doubles_to_gb);
+        outfile->Printf("    (a_{ij}, b_{ij}) integrals    : %8.3f [GB]\n",
+                        spatial_vv * doubles_to_gb);
+        outfile->Printf("    Non-projected two-ext. ERIs   : %8.3f [GB]\n",
+                        spatial_vv_non_proj * doubles_to_gb);
+        outfile->Printf("    Three-external ERIs           : %8.3f [GB]\n",
+                        spatial_vvv * doubles_to_gb);
+        outfile->Printf("    Spatial DF PNO tensors        : %8.3f [GB]\n\n",
+                        (spatial_qo + spatial_qv + spatial_qov + spatial_qvv) *
+                            doubles_to_gb);
+
+        outfile->Printf("    *** ROHF Spin-Resolved Iteration Quantities ***\n");
+        outfile->Printf("    RCCSD + SROLMP2 T2 blocks     : %8.3f [GB]\n",
+                        ro_t2_amplitudes * doubles_to_gb);
+        outfile->Printf("    R2 and non-symmetric R2       : %8.3f [GB]\n",
+                        ro_t2_residuals * doubles_to_gb);
+        outfile->Printf("    Spin Fock pair blocks         : %8.3f [GB]\n",
+                        ro_fock_pair_storage * doubles_to_gb);
+        outfile->Printf("    Global spin Fock blocks       : %8.3f [GB]\n",
+                        global_spin_fock_storage * doubles_to_gb);
+        outfile->Printf("    Projected spin T1 blocks      : %8.3f [GB]\n",
+                        ro_projected_singles * doubles_to_gb);
+        outfile->Printf("    T1-transformed spin DF blocks : %8.3f [GB]\n",
+                        ro_transformed_df * doubles_to_gb);
+        outfile->Printf("    PNO overlaps                  : %8.3f [GB]\n",
+                        overlap_memory() * doubles_to_gb);
+        outfile->Printf("    DIIS history (maximum)        : %8.3f [GB]\n\n",
+                        diis_history * doubles_to_gb);
+
+        outfile->Printf("    Maximum ERI buffer per thread : %8.3f [GB]\n",
+                        eri_thread_buffer * doubles_to_gb);
+        outfile->Printf("    Maximum CC buffer per thread  : %8.3f [GB]\n",
+                        iteration_thread_buffer() * doubles_to_gb);
+        outfile->Printf("    Total Memory Required (ERIs)  : %8.3f [GB]\n",
+                        memory_integrals() * doubles_to_gb);
+        outfile->Printf("    Total Memory Required (RCCSD) : %8.3f [GB]\n",
+                        memory_ccsd() * doubles_to_gb);
+        outfile->Printf("    Total Memory Given            : %8.3f [GB]\n\n",
+                        memory_ * bytes_to_gb);
+    };
+
+    print_estimate(false);
+
+    auto memory_exceeded = [&]() {
+        return std::max(memory_ccsd(), memory_integrals()) * sizeof(double) >
+               0.9 * memory_;
+    };
+    bool memory_changed = false;
+
+    if (toggle_memory_ && !low_memory_overlap_ && memory_exceeded()) {
+        const size_t high_memory_requirement =
+            std::max(memory_ccsd(), memory_integrals());
+        low_memory_overlap_ = true;
+        const size_t low_memory_requirement =
+            std::max(memory_ccsd(), memory_integrals());
+        if (low_memory_requirement < high_memory_requirement) {
+            outfile->Printf("  Required memory exceeds 90%% of available memory.\n");
+            outfile->Printf(
+                "    Switching to semi-direct low-memory PNO overlaps...\n\n");
+            memory_changed = true;
+        } else {
+            // For very small pair spaces, the semi-direct per-thread buffer
+            // can exceed the stored general-overlap blocks.
+            low_memory_overlap_ = false;
+        }
+    }
+
+    if (toggle_memory_ && !write_qia_pno_ && memory_exceeded()) {
+        outfile->Printf("  Required memory still exceeds 90%% of available memory.\n");
+        outfile->Printf("    Writing (Q_{ij}|m_{ij} a_{ij}) tensors to disk...\n\n");
+        write_qia_pno_ = true;
+        spatial_qov = 0;
+        memory_changed = true;
+    }
+
+    if (toggle_memory_ && !write_qab_pno_ && memory_exceeded()) {
+        outfile->Printf("  Required memory still exceeds 90%% of available memory.\n");
+        outfile->Printf("    Writing (Q_{ij}|a_{ij} b_{ij}) tensors to disk...\n\n");
+        write_qab_pno_ = true;
+        spatial_qvv = 0;
+        memory_changed = true;
+    }
+
+    if (memory_changed) print_estimate(true);
+
+    if (toggle_memory_ && memory_exceeded()) {
+        throw PSIEXCEPTION(
+            "Too little memory given for the spin-resolved ROHF-DLPNO-CCSD algorithm!");
+    }
+
+    outfile->Printf("    Using %s-memory PNO overlap algorithm...\n\n",
+                    low_memory_overlap_ ? "semi-direct low" : "high");
+    outfile->Printf("    %s (Q_{ij}|m_{ij} a_{ij}) tensors %s.\n",
+                    write_qia_pno_ ? "Writing" : "Keeping",
+                    write_qia_pno_ ? "to disk" : "in RAM");
+    outfile->Printf("    %s (Q_{ij}|a_{ij} b_{ij}) tensors %s.\n\n",
+                    write_qab_pno_ ? "Writing" : "Keeping",
+                    write_qab_pno_ ? "to disk" : "in RAM");
+}
+
 std::vector<double> RO_DLPNOCCSD::compute_semicanonical_sromp2_pair_energies(bool print_header) {
     /*
      * The selector amplitudes deliberately have the same spatial form as
@@ -4762,7 +5263,12 @@ void RO_DLPNOCCSD::compute_R_iajb(std::array<std::vector<SharedMatrix>, 3> &R_ia
                     S_kl_ij = linalg::doublet(
                         X_pno_[kl], S_kl_ij_pao, true, false);
                 } else {
-                    S_kl_ij = S_PNO(kl, ij);
+                    // The high-memory cache is organized by the target ij
+                    // domain.  Request that orientation and transpose it so
+                    // this grouped contraction uses the same S_kl_ij shape
+                    // as the semi-direct path without falling back to an
+                    // uncached PAO transformation from the kl side.
+                    S_kl_ij = S_PNO(ij, kl)->transpose();
                 }
 
                 std::array<SharedMatrix, 2> S_kl_ij_spin;
@@ -5602,7 +6108,7 @@ double RO_DLPNOCCSD::compute_dlpno_ccsd_energy() {
     // Bye bye (Q_ij | a_ij b_ij) integrals. You won't be missed
     psio_->close(PSIF_DLPNO_QAB_PNO, 0);
 
-    // print_results();
+    print_results();
 
     timer_off("DLPNO-CCSD");
 
