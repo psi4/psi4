@@ -338,9 +338,23 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.jk().set_COSX_grid("Initial")
 
     otr_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OTR", "OPENTRUSTREGION"]
-    if otr_scf and self.functional().needs_xc() and (self.functional().is_meta() or self.functional().needs_vv10()):
-        core.print_out("    Note: OpenTrustRegion unavailable for meta/VV10 functionals. Falling back to Internal.\n")
-        otr_scf = False
+    if otr_scf:
+        # OpenTrustRegion replaces this iteration loop wholesale, so anything applied
+        # per-iteration from Python (EFP/PCM/DDX/PE) or through form_C (MOM, FRAC) would be
+        # silently dropped. It also needs an orbital Hessian, which rules out CUHF (no
+        # cphf_Hx), the LinK K-build (no non-symmetric K), and meta/VV10 functionals.
+        metavv10_enabled = self.functional().needs_xc() and (self.functional().is_meta()
+                                                             or self.functional().needs_vv10())
+        pcm_enabled = core.get_option('SCF', 'PCM')
+        ddx_enabled = core.get_option('SCF', 'DDX')
+        pe_enabled = core.get_option('SCF', 'PE')
+        link_enabled = "LINK" in core.get_option('SCF', 'SCF_TYPE')
+        if (reference == "CUHF" or metavv10_enabled or link_enabled or self.MOM_excited_
+                or frac_enabled or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled):
+            core.print_out("    Note: OpenTrustRegion not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
+            core.print_out(f"          {reference=}, meta/vv10={metavv10_enabled}, link={link_enabled}, mom={self.MOM_excited_},\n")
+            core.print_out(f"          frac={frac_enabled}, efp={efp_enabled}, pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}\n")
+            otr_scf = False
 
     if otr_scf:
         # OpenTrustRegion rotates a fixed set of orbitals, so it needs a complete orthonormal
@@ -371,10 +385,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.set_variable("SCF ITERATION ENERGY", SCFE)
 
         # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL ENERGIES
-        # mean the same thing they do for the internal solver. The first entry is the energy
-        # of the guess (macro-iteration 0), so the iteration count is one less than the
-        # number of recorded energies. Set rather than increment: iteration_ is -1 after a
-        # SAD or READ guess and 0 otherwise.
+        # mean the same thing they do for the internal solver.
+        # The first entry is the energy of the guess (OTR macro-iteration 0), so the
+        # macro-iteration count is one less than the number of recorded energies. Set
+        # rather than increment: iteration_ is -1 after a SAD or READ guess and 0 otherwise.
         otr_energies = list(self.otr_iteration_energies())
         otr_energies[-1:] = [SCFE]
         self.iteration_energies.extend(otr_energies)
@@ -678,7 +692,7 @@ def scf_finalize_energy(self):
 
     # Perform wavefunction stability analysis before doing
     # anything on a wavefunction that may not be truly converged.
-    if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE" and not core.get_global_option('OTR_SCF'):
+    if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE":
 
         # We need the integral file, make sure it is written and
         # compute it if needed

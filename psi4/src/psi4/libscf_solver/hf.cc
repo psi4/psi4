@@ -1529,13 +1529,20 @@ void HF::opentrustregion_scf() {
 
     // Nothing to optimize (e.g. a closed-shell system with no virtual orbitals). The guess
     // orbitals are already the solution and OpenTrustRegion rejects n_param == 0.
-    if (otr_n_param_ == 0) return;
+    if (otr_n_param_ == 0) {
+        otr_iteration_energies_.push_back(compute_E());
+        return;
+    }
 
     // initialize settings
     OTR::solver_settings_type settings = OTR::solver_settings_init();
 
     // override default settings
-    settings.stability = options_.get_str("STABILITY_ANALYSIS") != "NONE";
+    // Psi4 runs its own stability analysis in scf_finalize_energy, which is what fills
+    // SCF STABILITY EIGENVALUES and drives the follow-and-reconverge loop. Leave OTR's
+    // per-macro-iteration stability check off rather than doing the work twice and
+    // landing on a different solution than the internal solver would.
+    settings.stability = false;
     settings.conv_tol = options_.get_double("D_CONVERGENCE");
     if (options_["SOSCF_CONV"].has_changed()) {
         settings.conv_tol = std::min(settings.conv_tol, options_.get_double("SOSCF_CONV"));
@@ -1552,6 +1559,9 @@ void HF::opentrustregion_scf() {
     // call the Fortran solver
     auto error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, 
                              otr_n_param_, settings);
+
+    if (std::getenv("PSI4_OTR_DEBUG"))
+        outfile->Printf("DBG post-solver: |Da|=%.6e E=%.10f\n", Da_->rms(), compute_E());
 
     // check if solver completed successfully
     if (error) {
