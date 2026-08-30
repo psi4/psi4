@@ -30,9 +30,6 @@
     \defgroup PSI4
 */
 
-#include <cstdlib>
-#include <string>
-
 #include "psi4/physconst.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
@@ -195,20 +192,16 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
-    // TEMPORARY DEV SWITCH -- REVERT BEFORE MERGE. Lets a whole ctest sweep be run
-    // against a different orbital optimizer without recompiling.
-    std::string _oop_default = "INTERNAL";
-    if (const char* _oop_env = std::getenv("PSI4_ORBITAL_OPTIMIZER_PACKAGE")) _oop_default = _oop_env;
 #if defined(USING_OpenOrbitalOptimizer) && defined(USING_OpenTrustRegion)
     /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer
         or OpenTrustRegion support, change this to use it or the internal code. -*/
-    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", _oop_default, "INTERNAL OOO OPENORBITALOPTIMIZER OTR OPENTRUSTREGION");
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER OTR OPENTRUSTREGION");
 #elif defined(USING_OpenOrbitalOptimizer)
     /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
-    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", _oop_default, "INTERNAL OOO OPENORBITALOPTIMIZER");
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
 #elif defined(USING_OpenTrustRegion)
     /*- Orbital optimizer package to use for SCF. If compiled with OpenTrustRegion support, change this to use it or the internal code. -*/
-    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", _oop_default, "INTERNAL OTR OPENTRUSTREGION");
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OTR OPENTRUSTREGION");
 #else
     /*- Orbital optimizer package to use for SCF. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
