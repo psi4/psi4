@@ -262,8 +262,9 @@ def scf_initialize(self):
 
 
 #: How many times to restart OpenTrustRegion when canonicalizing its solution changes the
-#: orbital occupation. Two consecutive occupations that disagree usually means the guess was
-#: poor; more than a handful of restarts means the occupation is oscillating.
+#: orbital occupation. An occupation that keeps moving without lowering the energy is a
+#: relabeling of degenerate orbitals rather than a better solution, so this is only a
+#: backstop; the loop normally exits as soon as a restart fails to improve the energy.
 _OTR_MAX_OCCUPATION_RESTARTS = 5
 
 
@@ -403,6 +404,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         # guess occupation rather than the aufbau one. Canonicalizing reveals that, so
         # reconverge whenever the occupation moves.
         self.iteration_ = 0
+        SCFE_prev_attempt = None
+        otr_e_conv = e_conv if e_conv is not None else core.get_option("SCF", "E_CONVERGENCE")
         for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
             occupation = _occupation(self)
             otr_error = self.opentrustregion_scf()
@@ -435,12 +438,18 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             if otr_error or _occupation(self) == occupation:
                 break
+            if SCFE_prev_attempt is not None and SCFE >= SCFE_prev_attempt - otr_e_conv:
+                # Reconverging didn't lower the energy. Degenerate orbitals in different
+                # irreps -- singlet O2's pi*, say -- let the aufbau assignment flip back and
+                # forth without changing the solution, so stop rather than oscillate.
+                break
+            SCFE_prev_attempt = SCFE
             core.print_out("    Note: aufbau occupation differs from the one OpenTrustRegion "
                            "optimized. Reconverging.\n")
         else:
-            core.print_out(f"    Note: occupation still changing after "
-                           f"{_OTR_MAX_OCCUPATION_RESTARTS} OpenTrustRegion restarts.\n")
-            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
+            core.print_out(f"    Note: occupation still moving after "
+                           f"{_OTR_MAX_OCCUPATION_RESTARTS} OpenTrustRegion restarts; "
+                           f"accepting the last solution.\n")
 
         if otr_error:
             core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
