@@ -4448,62 +4448,6 @@ std::array<RO_DLPNOCCSD::SpinPairMatrixBlocks, 2> RO_DLPNOCCSD::compute_delta() 
     return {std::move(delta), std::move(delta_bar)};
 }
 
-std::array<std::vector<SharedMatrix>, 2> RO_DLPNOCCSD::compute_Fbc_double_tilde() {
-
-    const int n_lmo_pairs = ij_to_i_j_.size();
-    const int nbocc = nbeta_ - nfrzc();
-
-    std::array<std::vector<SharedMatrix>, 2> F_bc_double_tilde;
-
-    constexpr std::array<SpinCase, 2> singles_spin_cases = { SpinCase::Alpha, SpinCase::Beta };
-    F_bc_double_tilde[static_cast<int>(SpinCase::Alpha)].resize(n_lmo_pairs);
-    F_bc_double_tilde[static_cast<int>(SpinCase::Beta)].resize(n_lmo_pairs);
-
-#pragma omp parallel for schedule(dynamic, 1)
-    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-        auto &[i, j] = ij_to_i_j_[ij];
-        const int ji = ij_to_ji_[ij];
-
-        int nlmo_ij = lmopair_to_lmos_[ij].size();
-
-        if (i > j) continue;
-
-        for (SpinCase sigma : singles_spin_cases) {
-            const int s = static_cast<int>(sigma);
-            F_bc_double_tilde[s][ij] = Fab_tilde_spin_[s][ij]->clone();
-
-            for (SpinCase gamma : singles_spin_cases) {
-                for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                    int k = lmopair_to_lmos_[ij][k_ij];
-                    if (sigma == SpinCase::Beta && k >= nbocc) continue;
-
-                    for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
-                        int l = lmopair_to_lmos_[ij][l_ij];
-                        if (gamma == SpinCase::Beta && l >= nbocc) continue;
-                        int kl = i_j_to_ij_[k][l];
-                        if (kl == -1) continue;
-
-                        auto S_ij_kl_s = S_PNO(ij, kl)->clone();
-                        matrix_spin_enforcer_vv(S_ij_kl_s, sigma);
-
-                        auto T_iajb_s_g = T_iajb_spin_helper(kl, sigma, gamma);
-                        auto F_bc_double_tilde_temp = linalg::doublet(T_iajb_s_g, K_iajb_[kl], false, true); // (b, d) (c, d) -> (b, c)
-                        F_bc_double_tilde[s][ij]->subtract(linalg::triplet(S_ij_kl_s, F_bc_double_tilde_temp, S_ij_kl_s, false, false, true));
-                    } // end l_ij
-                } // end k_ij
-
-            } // end gamma
-
-            // Probably not necessary, since enforcing spin on overlap matrices takes care of this
-            matrix_spin_enforcer_vv(F_bc_double_tilde[s][ij], sigma);
-            if (i != j) F_bc_double_tilde[s][ji] = F_bc_double_tilde[s][ij];
-        } // end sigma
-
-    } // end ij
-
-    return F_bc_double_tilde;
-}
-
 std::array<SharedMatrix, 2> RO_DLPNOCCSD::compute_Fki_double_tilde() {
 
     int n_lmo_pairs = ij_to_i_j_.size();
@@ -4724,7 +4668,6 @@ void RO_DLPNOCCSD::compute_R_ia(
 void RO_DLPNOCCSD::compute_R_iajb(std::array<std::vector<SharedMatrix>, 3> &R_iajb, std::array<std::vector<SharedMatrix>, 3> &Rn_iajb) {
 
     int n_lmo_pairs = ij_to_i_j_.size();
-    int naocc = nalpha_ - nfrzc();
     int nbocc = nbeta_ - nfrzc();
 
     auto beta_ijkl = compute_beta();
@@ -4732,7 +4675,6 @@ void RO_DLPNOCCSD::compute_R_iajb(std::array<std::vector<SharedMatrix>, 3> &R_ia
     auto delta_terms = compute_delta();
     auto& delta_jk = delta_terms[0];
     auto& delta_bar_jk = delta_terms[1];
-    auto F_bc_double_tilde = compute_Fbc_double_tilde();
     auto F_ki_double_tilde = compute_Fki_double_tilde();
 
     constexpr std::array<SpinCase, 2> singles_spin_cases = { SpinCase::Alpha, SpinCase::Beta };
@@ -4763,6 +4705,117 @@ void RO_DLPNOCCSD::compute_R_iajb(std::array<std::vector<SharedMatrix>, 3> &R_ia
 
         auto qma_ij = QIA_PNO(ij);
         auto qab_ij = QAB_PNO(ij);
+
+        /*
+         * The beta*T2 term (Eq. 21) and F_bc'' (used in Eq. 22) are the only
+         * ROHF doubles terms that require general S(PNO_kl, PNO_ij)
+         * overlaps.  Group them so LOW_MEMORY_OVERLAP can use the same
+         * semi-direct algorithm as the RHF implementation: construct one
+         * extended-PAO-by-PNO_ij overlap, then transform only the rows needed
+         * by each kl pair.  This avoids rebuilding the PAO overlap for every
+         * spin block and every contraction.
+         */
+        std::array<SharedMatrix, 3> B_ij_spin;
+        for (DoubleSpinCase double_sigma : doubles_spin_cases) {
+            const int ds = static_cast<int>(double_sigma);
+            B_ij_spin[ds] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
+            B_ij_spin[ds]->zero();
+        }
+
+        std::array<SharedMatrix, 2> F_bc_double_tilde_ij;
+        for (SpinCase sigma : singles_spin_cases) {
+            const int s = static_cast<int>(sigma);
+            F_bc_double_tilde_ij[s] = Fab_tilde_spin_[s][ij]->clone();
+        }
+
+        SharedMatrix S_ij;
+        std::vector<int> pair_ext_domain;
+        if (low_memory_overlap_) {
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                const int k = lmopair_to_lmos_[ij][k_ij];
+                for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
+                    const int l = lmopair_to_lmos_[ij][l_ij];
+                    const int kl = i_j_to_ij_[k][l];
+                    if (kl == -1 || n_pno_[kl] == 0) continue;
+                    pair_ext_domain = merge_lists(pair_ext_domain, lmopair_to_paos_[kl]);
+                }
+            }
+
+            if (!pair_ext_domain.empty()) {
+                S_ij = submatrix_rows_and_cols(
+                    *S_pao_, pair_ext_domain, lmopair_to_paos_[ij]);
+                S_ij = linalg::doublet(S_ij, X_pno_[ij], false, false);
+            }
+        }
+
+        for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+            const int k = lmopair_to_lmos_[ij][k_ij];
+            for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
+                const int l = lmopair_to_lmos_[ij][l_ij];
+                const int kl = i_j_to_ij_[k][l];
+                if (kl == -1 || n_pno_[kl] == 0) continue;
+
+                SharedMatrix S_kl_ij;
+                if (low_memory_overlap_) {
+                    auto S_kl_ij_pao = submatrix_rows(
+                        *S_ij, index_list(pair_ext_domain, lmopair_to_paos_[kl]));
+                    S_kl_ij = linalg::doublet(
+                        X_pno_[kl], S_kl_ij_pao, true, false);
+                } else {
+                    S_kl_ij = S_PNO(kl, ij);
+                }
+
+                std::array<SharedMatrix, 2> S_kl_ij_spin;
+                for (SpinCase sigma : singles_spin_cases) {
+                    const int s = static_cast<int>(sigma);
+                    S_kl_ij_spin[s] = S_kl_ij->clone();
+                    matrix_spin_enforcer_vv(S_kl_ij_spin[s], sigma);
+                }
+
+                // Eq. 21: B_ij(s1,s2) += beta_kl^ij T_kl(s1,s2).
+                for (DoubleSpinCase double_sigma : doubles_spin_cases) {
+                    const int ds = static_cast<int>(double_sigma);
+                    const std::pair<SpinCase, SpinCase> spin_pair =
+                        get_spin_pair(double_sigma);
+                    const SpinCase sigma1 = spin_pair.first;
+                    const SpinCase sigma2 = spin_pair.second;
+                    const int s1 = static_cast<int>(sigma1);
+                    const int s2 = static_cast<int>(sigma2);
+
+                    if (sigma1 == SpinCase::Beta && k >= nbocc) continue;
+                    if (sigma2 == SpinCase::Beta && l >= nbocc) continue;
+
+                    auto T_kl = linalg::triplet(
+                        S_kl_ij_spin[s1], T_iajb_spin_[ds][kl],
+                        S_kl_ij_spin[s2], true, false, false);
+                    T_kl->scale((*beta_ijkl[ds][ij])(k_ij, l_ij));
+                    B_ij_spin[ds]->add(T_kl);
+                }
+
+                // Eq. 17: F_bc''(sigma) -=
+                // sum_gamma u_kl(sigma,gamma) K_kl, projected to PNO_ij.
+                for (SpinCase sigma : singles_spin_cases) {
+                    if (sigma == SpinCase::Beta && k >= nbocc) continue;
+                    const int s = static_cast<int>(sigma);
+
+                    for (SpinCase gamma : singles_spin_cases) {
+                        if (gamma == SpinCase::Beta && l >= nbocc) continue;
+
+                        auto T_kl_s_g = T_iajb_spin_helper(kl, sigma, gamma);
+                        auto F_bc_temp = linalg::doublet(
+                            T_kl_s_g, K_iajb_[kl], false, true);
+                        F_bc_double_tilde_ij[s]->subtract(linalg::triplet(
+                            S_kl_ij_spin[s], F_bc_temp, S_kl_ij_spin[s],
+                            true, false, false));
+                    }
+                }
+            }
+        }
+
+        for (SpinCase sigma : singles_spin_cases) {
+            const int s = static_cast<int>(sigma);
+            matrix_spin_enforcer_vv(F_bc_double_tilde_ij[s], sigma);
+        }
 
         for (DoubleSpinCase double_sigma : doubles_spin_cases) {
             auto [sigma1, sigma2] = get_spin_pair(double_sigma);
@@ -4800,34 +4853,15 @@ void RO_DLPNOCCSD::compute_R_iajb(std::array<std::vector<SharedMatrix>, 3> &R_ia
                 R_iajb[ds][ij]->add(linalg::triplet(Qab_t1_s1, T_ij, Qab_t1_s2, false, false, true)); // (a, c) (c, d) (b, d)
             } // end for
 
-            // Jiang and Toth Eq. 21
-            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                int k = lmopair_to_lmos_[ij][k_ij];
-                if (sigma1 == SpinCase::Beta && k >= nbocc) continue;
-
-                for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
-                    int l = lmopair_to_lmos_[ij][l_ij];
-                    int kl = i_j_to_ij_[k][l];
-                    if (kl == -1) continue;
-
-                    if (sigma2 == SpinCase::Beta && l >= nbocc) continue;
-
-                    auto S_ij_kl_s1 = S_PNO(ij, kl)->clone();
-                    matrix_spin_enforcer_vv(S_ij_kl_s1, sigma1);
-                    auto S_ij_kl_s2 = S_PNO(ij, kl)->clone();
-                    matrix_spin_enforcer_vv(S_ij_kl_s2, sigma2);
-                    auto T_kl = T_iajb_spin_[ds][kl]->clone();
-
-                    T_kl = linalg::triplet(S_ij_kl_s1, T_kl, S_ij_kl_s2, false, false, true);
-                    T_kl->scale((*beta_ijkl[static_cast<int>(double_sigma)][ij])(k_ij, l_ij));
-
-                    R_iajb[ds][ij]->add(T_kl);
-                } // end for
-            } // end for
+            // Jiang and Toth Eq. 21 (formed with F_bc'' above so both terms
+            // share the semi-direct PNO overlaps).
+            R_iajb[ds][ij]->add(B_ij_spin[ds]);
 
             // Jiang and Toth Eq. 22
-            R_iajb[ds][ij]->add(linalg::doublet(T_ij, F_bc_double_tilde[s2][ij], false, true));
-            R_iajb[ds][ij]->add(linalg::doublet(F_bc_double_tilde[s1][ij], T_ij, false, false));
+            R_iajb[ds][ij]->add(linalg::doublet(
+                T_ij, F_bc_double_tilde_ij[s2], false, true));
+            R_iajb[ds][ij]->add(linalg::doublet(
+                F_bc_double_tilde_ij[s1], T_ij, false, false));
 
             // Jiang and Toth Eq. 23
             for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
