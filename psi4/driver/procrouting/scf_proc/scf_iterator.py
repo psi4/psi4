@@ -390,13 +390,20 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         #     internal solver, never revisits the occupation once it starts.
         self.form_G()
         if self.iteration_ < 0:
+            # SAD supplies no orbitals and READ/cast-up only the occupied ones, so build a
+            # starting set the way the internal solver's iteration 0 does...
             self.form_initial_F()
             self.form_initial_C()
             self.reset_occupation()
             self.find_occupation()
-        else:
-            self.form_F()
-            self.form_C()
+            self.form_D()
+            self.form_G()
+        # ...and then take a normal step. The second pass matters for ROHF, where
+        # form_initial_C does not use the effective Fock matrix: on triplet Ne2 it leaves the
+        # open shells in B1u/B2u instead of Ag/B2u, and OTR would optimize that state to a
+        # stationary point 0.12 Eh above the ground state.
+        self.form_F()
+        self.form_C()
         self.form_D()
         # OpenTrustRegion optimizes orbitals at fixed occupation, while the internal solver
         # re-runs find_occupation at every iteration. From a poor guess -- a bare core guess
