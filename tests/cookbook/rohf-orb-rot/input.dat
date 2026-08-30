@@ -68,6 +68,12 @@ scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-FOR-NOW
+    # The rotation below prepares an excited state that nothing but the guess holds in place.
+    # In C1 there is no symmetry to keep it there, so OpenTrustRegion minimizes straight back
+    # down to the X state. The Cs cases above are fine because docc/socc pin the state.
+    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO fix
+
 # Rotate HOMO and SOMO by 90 degrees to obtain guess for A state of HO2 in C1.
 # N.B. the orbitals are numbered using zero based indexing.
 import math
