@@ -369,7 +369,16 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         SCFE = self.compute_E()
         self.set_energies("Total Energy", SCFE)
         self.set_variable("SCF ITERATION ENERGY", SCFE)
-        self.iteration_energies.append(SCFE)
+
+        # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL ENERGIES
+        # mean the same thing they do for the internal solver. The first entry is the energy
+        # of the guess (macro-iteration 0), so the iteration count is one less than the
+        # number of recorded energies. Set rather than increment: iteration_ is -1 after a
+        # SAD or READ guess and 0 otherwise.
+        otr_energies = list(self.otr_iteration_energies())
+        otr_energies[-1:] = [SCFE]
+        self.iteration_energies.extend(otr_energies)
+        self.iteration_ = max(len(otr_energies) - 1, 0)
 
         # Ensure canonical orbitals/eigenvalues are ready for post-SCF methods.
         self.form_C()
