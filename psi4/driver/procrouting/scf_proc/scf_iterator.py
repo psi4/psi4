@@ -331,12 +331,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 self.form_D()
                 return
 
-    # does the JK algorithm use severe screening approximations for early SCF iterations?
-    early_screening = False
-    if cosx_enabled:
-        early_screening = True
-        self.jk().set_COSX_grid("Initial")
-
     otr_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OTR", "OPENTRUSTREGION"]
     if otr_scf:
         # OpenTrustRegion replaces this iteration loop wholesale, so anything applied
@@ -355,6 +349,18 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             core.print_out(f"          {reference=}, meta/vv10={metavv10_enabled}, link={link_enabled}, mom={self.MOM_excited_},\n")
             core.print_out(f"          frac={frac_enabled}, efp={efp_enabled}, pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}\n")
             otr_scf = False
+
+    # does the JK algorithm use severe screening approximations for early SCF iterations?
+    # OpenTrustRegion has no notion of loosening screening for early macro-iterations, and a
+    # coarse COSX grid makes the orbital Hessian noisy enough that its Krylov space goes
+    # linearly dependent, so give it the final grid from the start.
+    early_screening = False
+    if cosx_enabled:
+        if otr_scf:
+            self.jk().set_COSX_grid("Final")
+        else:
+            early_screening = True
+            self.jk().set_COSX_grid("Initial")
 
     if otr_scf:
         # OpenTrustRegion rotates a fixed set of orbitals, so it needs a complete orthonormal
