@@ -553,10 +553,12 @@ PSI Variables by Alpha
    level of theory.
 
 .. psivar:: CCSDTQ - CCSDT ENERGY
-   CCSDTQ - CCSDT(Q) ENERGY
 
-   The difference between the CCSDTQ total energy and the CCSDT or CCSDT(Q)
-   total energy, respectively [E_h].
+   The difference between the CCSDTQ and CCSDT total energies [E_h].
+
+.. psivar:: CCSDTQ - CCSDT(Q) ENERGY
+
+   The difference between the CCSDTQ and CCSDT(Q) total energies [E_h].
 
 .. psivar:: CCSD(T) TOTAL ENERGY
    CCSD(T) CORRELATION ENERGY
