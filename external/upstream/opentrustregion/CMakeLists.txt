@@ -1,5 +1,5 @@
 if(${ENABLE_OpenTrustRegion})
-    find_package(OpenTrustRegion CONFIG COMPONENTS int32)
+    find_package(OpenTrustRegion 2.0.0 CONFIG COMPONENTS int32)  # edit in codedeps
 
     if(TARGET OpenTrustRegion::OpenTrustRegion)
         get_property(_loc TARGET OpenTrustRegion::OpenTrustRegion PROPERTY LOCATION)
