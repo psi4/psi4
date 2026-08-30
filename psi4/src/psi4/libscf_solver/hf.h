@@ -260,6 +260,11 @@ class HF : public Wavefunction {
     /// Runs the SCF using OpenTrustRegion
     void opentrustregion_scf();
 
+    /// Total energy at each OpenTrustRegion macro-iteration, so the Python driver can
+    /// report SCF ITERATIONS / SCF TOTAL ENERGIES the same way the internal solver does.
+    const std::vector<double>& otr_iteration_energies() const { return otr_iteration_energies_; }
+    std::vector<double> otr_iteration_energies_;
+
 #ifdef USING_OpenTrustRegion
     void otr_record_iteration(OTR::c_real func, const OTR::c_real* grad);
     bool otr_converged() const;
