@@ -39,7 +39,6 @@ import pytest
 import psi4
 
 from addons import using
-from utils import compare_values
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.scf, pytest.mark.dft, pytest.mark.df]
 
@@ -263,9 +262,9 @@ def test_dft1(mode, tag, func):
     name = f"{label} {func.upper():>7}"
 
     # Regression check: this engine, against a reference this engine produced.
-    assert compare_values(_REFS[mode][tag, func], val, _ATOL_OWN[mode], f"{name} vs {mode} ref")
+    assert psi4.compare_values(_REFS[mode][tag, func], val, _ATOL_OWN[mode], f"{name} vs {mode} ref")
 
     # Cross-engine check.  On the internal leg this repeats the line above and
     # asserts nothing new; it is kept so the two legs read identically.
     atol = _ATOL_CROSS_LRC if func in _LRC else _ATOL_CROSS
-    assert compare_values(_REFS["internal"][tag, func], val, atol, f"{name} vs internal")
+    assert psi4.compare_values(_REFS["internal"][tag, func], val, atol, f"{name} vs internal")
