@@ -1,9 +1,8 @@
 #! Tests the Psi4 SF-SAPT code
 
 
-oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+oopkg = "ooo" if os.environ.get("_PSI4_USE_OOOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
 psi4.set_options({"orbital_optimizer_package": oopkg})
-compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
 molecule dimer {
 # Set the spin of A
 0 2
@@ -34,6 +33,7 @@ compare_dict = { #TEST
 } #TEST
 
 energy("SF-SAPT")
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
 
 for k, v in compare_dict.items():  #TEST
     compare_values(v / 1000.0, psi4.variable(k), 6, k)  #TEST

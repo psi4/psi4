@@ -46,7 +46,7 @@ Interface to OpenTrustRegion by J. Greiner
    <br>
 
 OpenTrustRegion is a black-box second-order orbital optimizer developed by
-J. Greiner and interfaced to |PSIfour|. Rather than iterating the Fock matrix
+J. Greiner in the Eriksen lab and interfaced to |PSIfour|. Rather than iterating the Fock matrix
 to self-consistency, it minimizes the SCF energy directly with respect to the
 orbital rotation parameters, using a trust-region method with the orbital
 Hessian applied on the fly.
@@ -59,11 +59,7 @@ Installation
 
 **Binary**
 
-* A conda package for OpenTrustRegion is in preparation but is not yet
-  published, so for now build it from source (below) or let |PSIfour| build it
-  for you.
-
-* Once the package is available, obtain it through
+* A conda package for OpenTrustRegion is available. Obtain it through
   ``conda install opentrustregion -c conda-forge``, then enable it as a feature
   with :makevar:`ENABLE_OpenTrustRegion`, hint its location with
   :makevar:`CMAKE_PREFIX_PATH`, and rebuild |PSIfour| to detect OpenTrustRegion
@@ -76,7 +72,7 @@ Installation
 
 * If using |PSIfour| built from source and you want OpenTrustRegion built from
   source also,
-  enable it as a feature with :makevar:`ENABLE_OpenTrustRegion`,
+  enable it as a feature with :makevar:`ENABLE_OpenTrustRegion=ON`,
   and let the build system fetch and build it and activate dependent code.
   Note that OpenTrustRegion is written in Fortran, so a Fortran compiler is
   required for the source build.
@@ -140,7 +136,7 @@ Some further differences from the internal optimizer are worth knowing about:
 .. _`cmake:otr`:
 
 How to configure OpenTrustRegion for building Psi4
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Role and Dependencies**
 
@@ -181,7 +177,7 @@ C. Link against pre-built
 
   .. code-block:: bash
 
-    >>> cmake -DENABLE_OpenTrustRegion=ON -DOpenTrustRegion_DIR=/path/to/otr/configdir
+    >>> cmake -DENABLE_OpenTrustRegion=ON -DOpenTrustRegion_DIR=/path/to/otr/cmakeconfigdir
 
 D. Build bundled despite pre-built being detectable
 
