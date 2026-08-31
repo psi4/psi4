@@ -32,6 +32,7 @@
 #include "psi4/lib3index/3index.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/cubature.h"
+#include "psi4/libfock/jk.h"
 #include "psi4/libfock/points.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
@@ -193,13 +194,207 @@ void DLPNO::common_init() {
     name_ = "DLPNO";
     module_ = "dlpno";
 
-    variables_["SCF TOTAL ENERGY"] = reference_wavefunction_->energy();
+    input_scf_energy_ = reference_wavefunction_->energy();
+    reference_energy_ = input_scf_energy_;
+    variables_["SCF TOTAL ENERGY"] = input_scf_energy_;
 
     ribasis_ = (algorithm_ == DLPNOMethod::MP2) ? get_basisset("DF_BASIS_MP2") : get_basisset("DF_BASIS_CC");
     psio_ = _default_psio_lib_;
 
     memory_ = Process::environment.get_memory();
     toggle_memory_ = options_.get_bool("DLPNO_TOGGLE_MEMORY");
+}
+
+void DLPNO::prepare_reference() {
+    if (reference_prepared_) return;
+
+    if (options_.get_str("REFERENCE") == "UHF") {
+        build_qro_reference();
+    } else {
+        C_reference_occ_ = reference_wavefunction_->Ca_subset("AO", "OCC");
+        C_reference_active_a_ = reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC");
+        C_reference_active_b_ = reference_wavefunction_->Cb_subset("AO", "ACTIVE_OCC");
+        F_reference_a_ = reference_wavefunction_->Fa_subset("AO");
+        F_reference_b_ = reference_wavefunction_->Fb_subset("AO");
+        reference_energy_ = input_scf_energy_;
+        set_scalar_variable("CURRENT REFERENCE ENERGY", reference_energy_);
+    }
+
+    reference_prepared_ = true;
+}
+
+void DLPNO::build_qro_reference() {
+    if (nalpha_ < nbeta_) {
+        throw PSIEXCEPTION(
+            "The UHF -> QRO DLPNO-CCSD path requires nalpha >= nbeta. "
+            "Reverse the spin convention of the reference determinant.");
+    }
+
+    const int nbf = basisset_->nbf();
+    const int nsomo = nalpha_ - nbeta_;
+    const int nfrzc = this->nfrzc();
+    if (nfrzc > nbeta_) {
+        throw PSIEXCEPTION(
+            "The frozen-core space cannot contain more orbitals than the QRO doubly occupied space.");
+    }
+    const auto S_ao = reference_wavefunction_->S();
+    const auto Fa_uhf = reference_wavefunction_->Fa_subset("AO");
+    const auto Fb_uhf = reference_wavefunction_->Fb_subset("AO");
+    const auto Da_uhf = reference_wavefunction_->Da_subset("AO");
+    const auto Db_uhf = reference_wavefunction_->Db_subset("AO");
+
+    auto S_half = S_ao->clone();
+    S_half->power(0.5);
+
+    // A broken-symmetry singlet cannot be represented by the high-spin
+    // restricted determinant assumed by RO_DLPNOCCSD.  A collapsed UHF
+    // singlet is allowed and provides a useful closed-shell limit.
+    auto spin_density_orth = Da_uhf->clone();
+    spin_density_orth->subtract(Db_uhf);
+    spin_density_orth->transform(S_half);
+    const double spin_density_norm = std::sqrt(spin_density_orth->sum_of_squares());
+    set_scalar_variable("QRO UHF SPIN DENSITY NORM", spin_density_norm);
+    if (nsomo == 0 && spin_density_norm > 1.0e-6) {
+        throw PSIEXCEPTION(
+            "UHF -> QRO DLPNO-CCSD does not support broken-symmetry singlet references. "
+            "Use a high-spin UHF reference, a collapsed UHF singlet, or an RHF/ROHF reference.");
+    }
+
+    // Neese's QRO construction starts from the natural orbitals of the
+    // spin-summed UHF density: S^(1/2) (Da + Db) S^(1/2).
+    auto density_orth = Da_uhf->clone();
+    density_orth->add(Db_uhf);
+    density_orth->transform(S_half);
+
+    auto uno_vectors = std::make_shared<Matrix>("UHF natural-orbital eigenvectors", nbf, nbf);
+    qro_noons_ = std::make_shared<Vector>("UHF natural occupations", nbf);
+    density_orth->diagonalize(uno_vectors, qro_noons_, descending);
+
+    auto S_half_inverse = S_ao->clone();
+    S_half_inverse->power(-0.5);
+    auto C_uno = linalg::doublet(S_half_inverse, uno_vectors, false, false);
+
+    auto column_block = [](const SharedMatrix& C, int first, int count, const std::string& name) {
+        auto block = std::make_shared<Matrix>(name, C->nrow(), count);
+        for (int mu = 0; mu < C->nrow(); ++mu) {
+            for (int p = 0; p < count; ++p) block->set(mu, p, C->get(mu, first + p));
+        }
+        return block;
+    };
+
+    auto semicanonicalize = [](const SharedMatrix& C, const SharedMatrix& F,
+                               const std::string& name) {
+        if (C->ncol() <= 1) return C->clone();
+        auto F_block = linalg::triplet(C, F, C, true, false, false);
+        auto U = std::make_shared<Matrix>(name + " eigenvectors", C->ncol(), C->ncol());
+        auto epsilon = std::make_shared<Vector>(name + " energies", C->ncol());
+        F_block->diagonalize(U, epsilon, ascending);
+        return linalg::doublet(C, U, false, false);
+    };
+
+    auto C_docc = column_block(C_uno, 0, nbeta_, "QRO DOMOs");
+    auto C_somo = column_block(C_uno, nbeta_, nsomo, "QRO SOMOs");
+    auto C_virtual = column_block(C_uno, nalpha_, nbf - nalpha_, "QRO virtual orbitals");
+
+    // Hansen, Liakos, and Neese, JCP 135, 214102 (2011): DOMOs
+    // diagonalize F_beta, virtuals F_alpha, and SOMOs their average.
+    auto F_average = Fa_uhf->clone();
+    F_average->add(Fb_uhf);
+    F_average->scale(0.5);
+    C_docc = semicanonicalize(C_docc, Fb_uhf, "QRO DOMO");
+    C_somo = semicanonicalize(C_somo, F_average, "QRO SOMO");
+    C_virtual = semicanonicalize(C_virtual, Fa_uhf, "QRO virtual");
+
+    auto C_qro = std::make_shared<Matrix>("Quasi-restricted orbitals", nbf, nbf);
+    for (int mu = 0; mu < nbf; ++mu) {
+        for (int i = 0; i < nbeta_; ++i) C_qro->set(mu, i, C_docc->get(mu, i));
+        for (int u = 0; u < nsomo; ++u) C_qro->set(mu, nbeta_ + u, C_somo->get(mu, u));
+        for (int a = 0; a < nbf - nalpha_; ++a)
+            C_qro->set(mu, nalpha_ + a, C_virtual->get(mu, a));
+    }
+
+    C_reference_occ_ = column_block(C_qro, 0, nalpha_, "QRO alpha occupied orbitals");
+    C_reference_active_a_ =
+        column_block(C_qro, nfrzc, nalpha_ - nfrzc, "Active QRO alpha occupied orbitals");
+    C_reference_active_b_ =
+        column_block(C_qro, nfrzc, nbeta_ - nfrzc, "Active QRO beta occupied orbitals");
+    auto C_occ_beta = column_block(C_qro, 0, nbeta_, "QRO beta occupied orbitals");
+
+    auto D_qro_a = linalg::doublet(C_reference_occ_, C_reference_occ_, false, true);
+    auto D_qro_b = linalg::doublet(C_occ_beta, C_occ_beta, false, true);
+
+    // The input UHF Focks define the QRO rotations above.  The correlation
+    // Hamiltonian must instead be normal ordered with respect to the QRO
+    // determinant, so rebuild its spin Focks once from the QRO densities.
+    auto jk = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false,
+                           std::max<size_t>(1, memory_ / sizeof(double)));
+    jk->set_print(0);
+    jk->set_do_J(true);
+    jk->set_do_K(true);
+    jk->set_memory(std::max<size_t>(1, memory_ / sizeof(double)));
+    jk->initialize();
+    auto& C_left = jk->C_left();
+    C_left.clear();
+    C_left.push_back(C_reference_occ_);
+    C_left.push_back(C_occ_beta);
+    jk->compute();
+    const auto& J = jk->J();
+    const auto& K = jk->K();
+
+    auto J_total = J[0]->clone();
+    J_total->add(J[1]);
+    F_reference_a_ = reference_wavefunction_->H()->clone();
+    F_reference_a_->add(J_total);
+    F_reference_a_->subtract(K[0]);
+    F_reference_b_ = reference_wavefunction_->H()->clone();
+    F_reference_b_->add(J_total);
+    F_reference_b_->subtract(K[1]);
+    jk->finalize();
+
+    reference_energy_ =
+        molecule_->nuclear_repulsion_energy(reference_wavefunction_->get_dipole_field_strength());
+    auto D_qro_total = D_qro_a->clone();
+    D_qro_total->add(D_qro_b);
+    reference_energy_ += 0.5 * D_qro_total->vector_dot(reference_wavefunction_->H());
+    reference_energy_ += 0.5 * D_qro_a->vector_dot(F_reference_a_);
+    reference_energy_ += 0.5 * D_qro_b->vector_dot(F_reference_b_);
+
+    auto qro_orthogonality = linalg::triplet(C_qro, S_ao, C_qro, true, false, false);
+    for (int p = 0; p < nbf; ++p)
+        qro_orthogonality->set(p, p, qro_orthogonality->get(p, p) - 1.0);
+    const double orthogonality_error = std::sqrt(qro_orthogonality->sum_of_squares());
+    const double qro_nalpha = D_qro_a->vector_dot(S_ao);
+    const double qro_nbeta = D_qro_b->vector_dot(S_ao);
+    if (orthogonality_error > 1.0e-6 || std::fabs(qro_nalpha - nalpha_) > 1.0e-6 ||
+        std::fabs(qro_nbeta - nbeta_) > 1.0e-6) {
+        throw PSIEXCEPTION("The UHF -> QRO transformation failed its orthonormality or electron-count check.");
+    }
+
+    qro_reference_ = true;
+    set_scalar_variable("QRO REFERENCE ENERGY", reference_energy_);
+    set_scalar_variable("CURRENT REFERENCE ENERGY", reference_energy_);
+    set_scalar_variable("QRO ORTHONORMALITY ERROR", orthogonality_error);
+    set_scalar_variable("QRO ALPHA ELECTRONS", qro_nalpha);
+    set_scalar_variable("QRO BETA ELECTRONS", qro_nbeta);
+
+    outfile->Printf("\n  ==> UHF -> Quasi-Restricted Orbital Transformation <==\n\n");
+    outfile->Printf("    The UHF natural orbitals are being transformed to a common QRO basis.\n");
+    outfile->Printf("    DLPNO-CCSD will use the QRO determinant and its spin Fock matrices.\n");
+    outfile->Printf("    The reported total energy is E(QRO reference) + E(CCSD correlation).\n\n");
+    outfile->Printf("    Input UHF SCF energy:       %20.12f\n", input_scf_energy_);
+    outfile->Printf("    QRO determinant energy:     %20.12f\n", reference_energy_);
+    outfile->Printf("    QRO - UHF energy:           %20.12f\n", reference_energy_ - input_scf_energy_);
+    outfile->Printf("    QRO orthonormality error:   %20.3e\n", orthogonality_error);
+    outfile->Printf("    QRO electron counts:        alpha = %.8f, beta = %.8f\n", qro_nalpha, qro_nbeta);
+    if (nbeta_ > 0) outfile->Printf("    Last DOMO occupation:       %20.12f\n", qro_noons_->get(nbeta_ - 1));
+    if (nsomo > 0) {
+        outfile->Printf("    First SOMO occupation:      %20.12f\n", qro_noons_->get(nbeta_));
+        outfile->Printf("    Last SOMO occupation:       %20.12f\n", qro_noons_->get(nalpha_ - 1));
+    }
+    if (nalpha_ < nbf)
+        outfile->Printf("    First virtual occupation:   %20.12f\n", qro_noons_->get(nalpha_));
+    outfile->Printf("\n    QROs are not converged ROHF orbitals; nonzero occupied-virtual Fock\n");
+    outfile->Printf("    elements and their singles contributions are retained.\n\n");
 }
 
 /* Utility function for making C_DGESV calls
@@ -311,6 +506,8 @@ std::pair<SharedMatrix, SharedVector> DLPNO::orthocanonicalizer(SharedMatrix S, 
 }
 
 void DLPNO::setup_orbitals() {
+    prepare_reference();
+
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
     int nshell = basisset_->nshell();
@@ -320,7 +517,7 @@ void DLPNO::setup_orbitals() {
     int nbocc = nbeta_ - nfrzc();
     int nsomo = naocc - nbocc;
 
-    auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
+    auto C_occ = C_reference_occ_;
 
     // Compute number of core orbitals
     if (options_.get_str("FREEZE_CORE") == "TRUE" || options_.get_str("FREEZE_CORE") == "1") {
@@ -360,7 +557,7 @@ void DLPNO::setup_orbitals() {
         return L;
     };
 
-    auto C_aocc = reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC");
+    auto C_aocc = C_reference_active_a_;
     if (nsomo == 0) {
         // Preserve the established closed-shell localization exactly.
         C_lmo_ = localize_block(C_aocc);
@@ -370,7 +567,7 @@ void DLPNO::setup_orbitals() {
         // span the singly occupied space.  Localizing all alpha occupied
         // orbitals at once violates that assumption because a Boys or PM
         // rotation may mix the two occupation classes.
-        auto C_docc = reference_wavefunction_->Cb_subset("AO", "ACTIVE_OCC");
+        auto C_docc = C_reference_active_b_;
         SharedMatrix C_somo;
 
         if (nbocc == 0) {
@@ -413,7 +610,7 @@ void DLPNO::setup_orbitals() {
     }
     timer_off("Local MOs");
 
-    F_lmo_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false);
+    F_lmo_ = linalg::triplet(C_lmo_, F_reference_a_, C_lmo_, true, false, false);
 
     timer_on("Projected AOs");
 
@@ -428,8 +625,8 @@ void DLPNO::setup_orbitals() {
         C_pao_->scale_column(0, i, pow(S_pao_->get(i, i), -0.5));
     }
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
-    F_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
-    F_lmo_pao_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
+    F_pao_ = linalg::triplet(C_pao_, F_reference_a_, C_pao_, true, false, false);
+    F_lmo_pao_ = linalg::triplet(C_lmo_, F_reference_a_, C_pao_, true, false, false);
 
     timer_off("Projected AOs");
 
@@ -599,8 +796,8 @@ void DLPNO::compute_dipole_ints() {
     auto F_lmo_dipole = F_lmo_;
     auto F_pao_dipole = F_pao_;
     if (open_shell) {
-        auto F_rohf = reference_wavefunction_->Fa()->clone();
-        F_rohf->add(reference_wavefunction_->Fb());
+        auto F_rohf = F_reference_a_->clone();
+        F_rohf->add(F_reference_b_);
         F_rohf->scale(0.5);
         F_lmo_dipole = linalg::triplet(C_lmo_, F_rohf, C_lmo_, true, false, false);
         F_pao_dipole = linalg::triplet(C_pao_, F_rohf, C_pao_, true, false, false);

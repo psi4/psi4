@@ -4621,10 +4621,6 @@ def run_dlpnoccsd(name, **kwargs):
         raise ValidationError("""  DLPNO-CCSD does not make use of molecular symmetry: """
                               """reference wavefunction must be C1.\n""")
     
-    if core.get_global_option('REFERENCE') == "UHF":
-        raise ValidationError("DLPNO-CCSD is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
-    
     core.tstart()
     core.print_out('\n')
     p4util.banner('DLPNO-CCSD')

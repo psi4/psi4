@@ -139,6 +139,26 @@ class DLPNO : public Wavefunction {
     SharedMatrix full_metric_;
     std::vector<double> J_metric_shell_diag_; ///< used in AO ERI screening
 
+    // => Prepared restricted reference <= //
+
+    /// True when an unrestricted input has been converted to a common-spatial-orbital QRO determinant.
+    bool qro_reference_ = false;
+    /// True once the input reference quantities (and, for UHF, QRO quantities) are ready for use.
+    bool reference_prepared_ = false;
+    /// Input SCF energy.  This remains the value of the SCF TOTAL ENERGY variable for provenance.
+    double input_scf_energy_ = 0.0;
+    /// Determinant energy used to normal order the correlation problem (SCF for RHF/ROHF, QRO for UHF).
+    double reference_energy_ = 0.0;
+    /// Common alpha-occupied, active-alpha, and active-beta orbital spaces used by the local machinery.
+    SharedMatrix C_reference_occ_;
+    SharedMatrix C_reference_active_a_;
+    SharedMatrix C_reference_active_b_;
+    /// Spin-resolved Fock matrices belonging to the determinant used by the correlation problem.
+    SharedMatrix F_reference_a_;
+    SharedMatrix F_reference_b_;
+    /// UHF natural occupations used to diagnose the UHF -> QRO projection.
+    SharedVector qro_noons_;
+
     /// localized molecular orbitals (LMOs)
     SharedMatrix C_lmo_;
     SharedMatrix F_lmo_;
@@ -268,6 +288,11 @@ class DLPNO : public Wavefunction {
     std::shared_ptr<PSIO> psio_;
 
     void common_init();
+
+    /// Prepare common restricted orbitals and spin Focks; constructs QROs when the input reference is UHF.
+    void prepare_reference();
+    /// Build a high-spin QRO determinant from an unrestricted input without modifying the input wavefunction.
+    void build_qro_reference();
 
     // Helper functions
     void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B);

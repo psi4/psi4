@@ -3096,11 +3096,17 @@ void RO_DLPNOCCSD::print_header() {
     const int nsomo = nalpha_ - nbeta_;
 
     outfile->Printf("   --------------------------------------------------\n");
-    outfile->Printf("          ROHF T1-Transformed DLPNO-CCSD            \n");
+    outfile->Printf("     Restricted Open-Shell T1-Transformed DLPNO-CCSD\n");
     outfile->Printf("                    by Andy Jiang                    \n");
     outfile->Printf("       Closed-shell engine: DOI 10.1063/5.0219963   \n");
     outfile->Printf("   --------------------------------------------------\n\n");
-    outfile->Printf("  Reference                    : ROHF\n");
+    outfile->Printf("  Reference                    : %s\n",
+                    qro_reference_ ? "UHF -> QRO" : "ROHF");
+    if (qro_reference_) {
+        outfile->Printf("  Correlation reference energy : QRO determinant\n");
+        outfile->Printf("  Input UHF SCF energy          : %20.12f\n", input_scf_energy_);
+        outfile->Printf("  QRO reference energy          : %20.12f\n", reference_energy_);
+    }
     outfile->Printf("  PNO selector                 : spin-independent SROMP2\n");
     outfile->Printf("  SOMO treatment               : appended to every pair space\n");
     outfile->Printf("  DLPNO convergence            : %s\n\n",
@@ -3191,17 +3197,20 @@ void RO_DLPNOCCSD::print_results() {
 
     const double e_corr =
         e_lccsd_ + de_weak_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_;
-    const double e_total = variables_["SCF TOTAL ENERGY"] + e_corr;
+    const double e_total = reference_energy_ + e_corr;
 
     outfile->Printf("  \n");
-    outfile->Printf("  Total ROHF-DLPNO-CCSD Correlation Energy: %16.12f \n", e_corr);
+    outfile->Printf("  Total Restricted-Open-Shell DLPNO-CCSD Correlation Energy: %16.12f \n", e_corr);
     outfile->Printf("    Strong-Pair RCCSD Contribution:         %16.12f \n", e_lccsd_);
     outfile->Printf("    SROLMP2 Weak-Pair Contribution:         %16.12f \n", de_weak_);
     outfile->Printf("    Semicanonical SROMP2 Correction:        %16.12f \n",
                     de_lmp2_eliminated_);
-    outfile->Printf("    ROHF Dipole-Pair Correction:            %16.12f \n", de_dipole_);
+    outfile->Printf("    Open-Shell Dipole-Pair Correction:       %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:              %16.12f \n", de_pno_total_);
-    outfile->Printf("\n\n  @Total ROHF-DLPNO-CCSD Energy: %16.12f \n", e_total);
+    outfile->Printf("\n\n  @Total Restricted-Open-Shell DLPNO-CCSD Energy: %16.12f \n", e_total);
+    if (qro_reference_)
+        outfile->Printf("    (QRO reference %16.12f + correlation %16.12f)\n",
+                        reference_energy_, e_corr);
     outfile->Printf("    *** Spin-adapted and SOMO-safe. A thousand hallelujahs!!! \n\n");
 }
 
@@ -3607,14 +3616,14 @@ std::vector<double> RO_DLPNOCCSD::compute_semicanonical_sromp2_pair_energies(boo
     const int nbocc = nbeta_ - nfrzc();
     const int n_lmo_pairs = ij_to_i_j_.size();
     const std::array<SharedMatrix, 2> F_lmo_spin = {
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false),
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fb(), C_lmo_, true, false, false)};
+        linalg::triplet(C_lmo_, F_reference_a_, C_lmo_, true, false, false),
+        linalg::triplet(C_lmo_, F_reference_b_, C_lmo_, true, false, false)};
     const std::array<SharedMatrix, 2> F_pao_spin = {
-        linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false),
-        linalg::triplet(C_pao_, reference_wavefunction_->Fb(), C_pao_, true, false, false)};
+        linalg::triplet(C_pao_, F_reference_a_, C_pao_, true, false, false),
+        linalg::triplet(C_pao_, F_reference_b_, C_pao_, true, false, false)};
     const std::array<SharedMatrix, 2> F_lmo_pao_spin = {
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_pao_, true, false, false),
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fb(), C_pao_, true, false, false)};
+        linalg::triplet(C_lmo_, F_reference_a_, C_pao_, true, false, false),
+        linalg::triplet(C_lmo_, F_reference_b_, C_pao_, true, false, false)};
 
     if (print_header) {
         outfile->Printf("\n  ==> Spin-Restricted Open-Shell Semicanonical MP2 Pair Prescreening <==\n\n");
@@ -3728,14 +3737,14 @@ std::vector<double> RO_DLPNOCCSD::update_sromp2_pair_energies() {
     const int nbocc = nbeta_ - nfrzc();
     const int n_lmo_pairs = ij_to_i_j_.size();
     const std::array<SharedMatrix, 2> F_lmo_spin = {
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false),
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fb(), C_lmo_, true, false, false)};
+        linalg::triplet(C_lmo_, F_reference_a_, C_lmo_, true, false, false),
+        linalg::triplet(C_lmo_, F_reference_b_, C_lmo_, true, false, false)};
     const std::array<SharedMatrix, 2> F_pao_spin = {
-        linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false),
-        linalg::triplet(C_pao_, reference_wavefunction_->Fb(), C_pao_, true, false, false)};
+        linalg::triplet(C_pao_, F_reference_a_, C_pao_, true, false, false),
+        linalg::triplet(C_pao_, F_reference_b_, C_pao_, true, false, false)};
     const std::array<SharedMatrix, 2> F_lmo_pao_spin = {
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_pao_, true, false, false),
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fb(), C_pao_, true, false, false)};
+        linalg::triplet(C_lmo_, F_reference_a_, C_pao_, true, false, false),
+        linalg::triplet(C_lmo_, F_reference_b_, C_pao_, true, false, false)};
     for (auto& block : sromp2_pair_energies_) block.assign(n_lmo_pairs, 0.0);
     std::vector<double> e_ijs(n_lmo_pairs, 0.0);
 
@@ -4023,7 +4032,7 @@ void RO_DLPNOCCSD::extend_virtual_by_somo() {
     C_pao_ = C_pao_new;
     // Recompute S_pao and F_pao
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
-    F_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
+    F_pao_ = linalg::triplet(C_pao_, F_reference_a_, C_pao_, true, false, false);
 
 #pragma omp parallel for
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
@@ -4374,8 +4383,8 @@ void RO_DLPNOCCSD::t1_fock_spin() {
     constexpr std::array<SpinCase, 2> spins = {SpinCase::Alpha, SpinCase::Beta};
 
     std::array<SharedMatrix, 2> F_lmo_pao_spin = {
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_pao_, true, false, false),
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fb(), C_pao_, true, false, false)};
+        linalg::triplet(C_lmo_, F_reference_a_, C_pao_, true, false, false),
+        linalg::triplet(C_lmo_, F_reference_b_, C_pao_, true, false, false)};
 
     // The bars denote dressing over contracted indices.  The Coulomb part
     // contains alpha + beta T1 density; exchange is same-spin only.
@@ -5575,11 +5584,11 @@ void RO_DLPNOCCSD::lccsd_iterations() {
     std::array<SharedMatrix, 2> F_lmo_spin;
     std::array<std::vector<SharedMatrix>, 2> Fia_energy_spin;
 
-    F_lmo_a_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false);
-    F_lmo_b_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fb(), C_lmo_, true, false, false);
+    F_lmo_a_ = linalg::triplet(C_lmo_, F_reference_a_, C_lmo_, true, false, false);
+    F_lmo_b_ = linalg::triplet(C_lmo_, F_reference_b_, C_lmo_, true, false, false);
 
-    F_pao_a_ = linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
-    F_pao_b_ = linalg::triplet(C_pao_, reference_wavefunction_->Fb(), C_pao_, true, false, false);
+    F_pao_a_ = linalg::triplet(C_pao_, F_reference_a_, C_pao_, true, false, false);
+    F_pao_b_ = linalg::triplet(C_pao_, F_reference_b_, C_pao_, true, false, false);
 
     F_lmo_spin[static_cast<int>(SpinCase::Alpha)] = F_lmo_a_;
     F_lmo_spin[static_cast<int>(SpinCase::Beta)] = F_lmo_b_;
@@ -5587,8 +5596,8 @@ void RO_DLPNOCCSD::lccsd_iterations() {
     // Bare f(ia) blocks for the spin-resolved CCSD energy.  These vanish in
     // the canonical closed-shell limit, but not for a general ROHF reference.
     std::array<SharedMatrix, 2> F_lmo_pao_spin = {
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_pao_, true, false, false),
-        linalg::triplet(C_lmo_, reference_wavefunction_->Fb(), C_pao_, true, false, false)};
+        linalg::triplet(C_lmo_, F_reference_a_, C_pao_, true, false, false),
+        linalg::triplet(C_lmo_, F_reference_b_, C_pao_, true, false, false)};
     for (SpinCase sigma : {SpinCase::Alpha, SpinCase::Beta}) {
         Fia_energy_spin[static_cast<int>(sigma)].resize(naocc);
     }
@@ -5982,6 +5991,7 @@ void RO_DLPNOCCSD::lccsd_iterations() {
 double RO_DLPNOCCSD::compute_dlpno_ccsd_energy() {
     timer_on("DLPNO-CCSD");
 
+    prepare_reference();
     print_header();
 
     timer_on("Setup Orbitals");
@@ -5990,8 +6000,8 @@ double RO_DLPNOCCSD::compute_dlpno_ccsd_energy() {
     // SROMP2/PNO-RCCSD uses one spin-free Fock operator for the common
     // spatial selector amplitudes and PNOs.  The actual RCCSD equations and
     // Jacobi denominators below continue to use F^alpha and F^beta.
-    auto F_spin_free_ao = reference_wavefunction_->Fa()->clone();
-    F_spin_free_ao->add(reference_wavefunction_->Fb());
+    auto F_spin_free_ao = F_reference_a_->clone();
+    F_spin_free_ao->add(F_reference_b_);
     F_spin_free_ao->scale(0.5);
     F_lmo_ = linalg::triplet(C_lmo_, F_spin_free_ao, C_lmo_, true, false, false);
     F_pao_ = linalg::triplet(C_pao_, F_spin_free_ao, C_pao_, true, false, false);
@@ -6002,8 +6012,6 @@ double RO_DLPNOCCSD::compute_dlpno_ccsd_energy() {
     compute_overlap_ints();
     timer_off("Overlap Ints");
 
-    /* TODO: Update this function to account for alpha and beta spin cases
-    (This function currently assumes nalpha = ndocc, but nalpha > ndocc in ROHF) */
     timer_on("Dipole Ints");
     compute_dipole_ints();
     timer_off("Dipole Ints");
@@ -6054,10 +6062,11 @@ double RO_DLPNOCCSD::compute_dlpno_ccsd_energy() {
     timer_off("Refined Pair Prescreening");
 
     // Set variables from LMP2
-    double e_scf = variables_["SCF TOTAL ENERGY"];
+    const double e_reference = reference_energy_;
     double e_lmp2_corr = e_lmp2_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
-    double e_lmp2_total = e_scf + e_lmp2_corr;
+    double e_lmp2_total = e_reference + e_lmp2_corr;
 
+    set_scalar_variable("CURRENT REFERENCE ENERGY", e_reference);
     set_scalar_variable("MP2 CORRELATION ENERGY", e_lmp2_corr);
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_lmp2_corr);
     set_scalar_variable("MP2 TOTAL ENERGY", e_lmp2_total);
@@ -6069,7 +6078,8 @@ double RO_DLPNOCCSD::compute_dlpno_ccsd_energy() {
     outfile->Printf("    Semicanonical MP2 Correction:     %16.12f \n", de_lmp2_eliminated_);
     outfile->Printf("    Dipole Correction:                %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:        %16.12f \n", de_pno_total_);
-    outfile->Printf("\n\n  @Total DLPNO-MP2 Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_lmp2_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_);
+    outfile->Printf("\n\n  @Total DLPNO-MP2 Energy: %16.12f \n",
+                    e_reference + e_lmp2_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_);
     outfile->Printf("\n   * WARNING: This answer will likely vary from one obtained by a energy('dlpno-mp2') call");
     outfile->Printf("\n                due to lack of a semi-canonical MP2 prescreening step in DLPNO-MP2, as well");
     outfile->Printf("\n                as slightly tighter cutoffs utilized to increase accuracy in the context of CC!!!\n\n");
@@ -6113,8 +6123,9 @@ double RO_DLPNOCCSD::compute_dlpno_ccsd_energy() {
     timer_off("DLPNO-CCSD");
 
     double e_ccsd_corr = e_lccsd_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
-    double e_ccsd_total = e_scf + e_ccsd_corr;
+    double e_ccsd_total = e_reference + e_ccsd_corr;
 
+    set_scalar_variable("CURRENT REFERENCE ENERGY", e_reference);
     set_scalar_variable("CCSD CORRELATION ENERGY", e_ccsd_corr);
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsd_corr);
     set_scalar_variable("CCSD TOTAL ENERGY", e_ccsd_total);
