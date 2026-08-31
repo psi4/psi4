@@ -4516,7 +4516,7 @@ def run_dfep2(name, **kwargs):
 
 
 def run_dlpno(name, **kwargs):
-    """Run any density-fitted local-PNO method from DLPNO-MP2 through DLPNO-CCSDTQ."""
+    """Run the standalone DLPNO-MP2 method and the DLPNO coupled-cluster hierarchy through DLPNO-CCSDTQ."""
 
     method_name = name.lower()
     methods = {
