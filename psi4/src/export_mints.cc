@@ -43,6 +43,7 @@
 #include "psi4/libmints/local.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/complexmatrix.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/sobasis.h"
@@ -74,6 +75,7 @@
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/thc_eri.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include <algorithm>
 #include <string>
 
 using namespace psi;
@@ -326,6 +328,52 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     if (!unsettled) mol->update_geometry();
     return mol;
 }
+
+namespace {
+
+#ifdef USING_Einsums
+
+/// NumPy views for a ComplexMatrix (einsums TiledTensor).
+py::list tiled_tensor_array_interface(psi::ComplexMatrix& tt, bool allocate_tiles, bool writable) {
+    using ValueT = std::complex<double>;
+    py::list ret;
+    py::object owner = py::cast(&tt);
+    const auto& tensor = static_cast<const psi::ComplexMatrix::TiledT&>(tt);
+
+    auto append_view = [&](const auto& tile) {
+        const auto r = static_cast<py::ssize_t>(tile.dim(0));
+        const auto c = static_cast<py::ssize_t>(tile.dim(1));
+        ValueT* ptr = (r != 0 && c != 0) ? const_cast<ValueT*>(tile.data()) : nullptr;
+        std::vector<py::ssize_t> shape{r, c};
+        std::vector<py::ssize_t> strides{static_cast<py::ssize_t>(tile.stride(0) * sizeof(ValueT)),
+                                         static_cast<py::ssize_t>(tile.stride(1) * sizeof(ValueT))};
+        py::array arr(py::dtype::of<ValueT>(), shape, strides, ptr, owner);
+        if (!writable) arr.attr("setflags")(false);
+        ret.append(arr);
+    };
+
+    for (int h = 0; h < tt.nirrep(); ++h) {
+        if (!allocate_tiles && !tensor.has_tile(h, h)) {
+            const auto r = static_cast<py::ssize_t>(tt.rowdim(h));
+            const auto c = static_cast<py::ssize_t>(tt.coldim(h));
+            std::vector<py::ssize_t> shape{r, c};
+            py::array_t<ValueT> zero(shape);
+            const auto size = static_cast<std::size_t>(r) * static_cast<std::size_t>(c);
+            if (size != 0) std::fill_n(zero.mutable_data(), size, ValueT{});
+            zero.attr("setflags")(false);
+            ret.append(zero);
+        } else if (allocate_tiles) {
+            append_view(tt.get(h));  // allocates missing tiles for writable callers
+        } else {
+            append_view(tensor.tile(h, h));
+        }
+    }
+    return ret;
+}
+
+#endif  // USING_Einsums
+
+}  // namespace
 
 void export_mints(py::module& m) {
     typedef void (Vector::*vector_setitem_1)(int, double);
@@ -706,6 +754,105 @@ void export_mints(py::module& m) {
                 return ret;
             },
             py::return_value_policy::reference_internal);
+
+    // ComplexMatrix is einsums::TiledTensor<complex<double>, 2>. NumPy conversion
+    // (to_array/from_array) lives in Python (p4util/numpy_helper.py) and is built on the
+    // array_interface method below, mirroring the real Matrix class above.
+    // Diagonal tiles tile(h, h) play the role of BlockTensor::block(h); tiles may be
+    // rectangular when row and column grids differ (e.g. occupied-only MO coefficients).
+#ifdef USING_Einsums
+    py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
+                                                             "Complex blocked matrix (einsums TiledTensor).")
+        .def(py::init([](const std::string& name, const std::vector<size_t>& block_sizes) {
+                 // One size list --> same tiling on both axes (square diagonal tiles).
+                 Dimension dim({block_sizes.begin(), block_sizes.end()});
+                 return std::make_shared<ComplexMatrix>(name, dim);
+             }),
+             "name"_a, "block_sizes"_a,
+             "Construct a ComplexMatrix with one lazy, zero-valued square diagonal tile per entry in block_sizes.")
+        .def(py::init([](const std::string& name, const std::vector<size_t>& row_sizes,
+                         const std::vector<size_t>& col_sizes) {
+                 if (row_sizes.size() != col_sizes.size()) {
+                     throw py::value_error(
+                         "ComplexMatrix: row_sizes and col_sizes must have the same number of irreps.");
+                 }
+                 Dimension row_dim({row_sizes.begin(), row_sizes.end()});
+                 Dimension col_dim({col_sizes.begin(), col_sizes.end()});
+                 return std::make_shared<ComplexMatrix>(name, row_dim, col_dim);
+             }),
+             "name"_a, "row_sizes"_a, "col_sizes"_a,
+             "Construct a ComplexMatrix with lazy diagonal tiles of shape (row_sizes[h], col_sizes[h]).")
+        .def("nirrep", [](const ComplexMatrix& m) { return m.nirrep(); }, "Returns number of tiles")
+        .def("rowdim", static_cast<Dimension (ComplexMatrix::*)() const>(&ComplexMatrix::rowspi),
+             py::return_value_policy::move, "Per-irrep row tile sizes as a Dimension (C1 returns size-1 Dimension).")
+        .def("coldim", static_cast<Dimension (ComplexMatrix::*)() const>(&ComplexMatrix::colspi),
+             py::return_value_policy::move, "Per-irrep column tile sizes as a Dimension.")
+        .def("array_interface",
+             [](ComplexMatrix& matrix) { return tiled_tensor_array_interface(matrix, true, true); },
+             py::return_value_policy::reference_internal,
+             "List of writable per-irrep NumPy views sharing the tensor's memory. "
+             "Missing tiles are allocated. Views retain the parent ComplexMatrix, but are invalid after "
+             "zero() or any operation that destroys or replaces tile storage.")
+        .def("array_interface_readonly",
+             [](ComplexMatrix& matrix) { return tiled_tensor_array_interface(matrix, false, false); },
+             py::return_value_policy::reference_internal,
+             "List of read-only per-irrep NumPy views. Existing tiles share the tensor's memory; "
+             "missing tiles are returned as zero arrays without allocating tensor storage.")
+        .def_property("name", [](const ComplexMatrix& m) { return m.name(); },
+                      [](ComplexMatrix& m, const std::string& name) { m.set_name(name); },
+                      "The name of this ComplexMatrix.")
+        .def("zero", &ComplexMatrix::zero, "Zeros out the tensor (drops all tile storage).")
+        .def("clone", &ComplexMatrix::clone, "Returns a deep copy of this ComplexMatrix.")
+        .def("axpy", &ComplexMatrix::axpy, "alpha"_a, "other"_a,
+             "In-place self += alpha * other (diagonal tiles only).")
+        .def("subtract", &ComplexMatrix::subtract, "other"_a,
+             "In-place self -= other (diagonal tiles only).")
+        .def("vector_dot", &ComplexMatrix::vector_dot, "other"_a,
+             "Re(Tr(self^H other)), summed over diagonal tiles (Hermitian inner product).")
+        .def("save", &ComplexMatrix::save, "psio"_a, "fileno"_a,
+             "Saves diagonal tiles as raw complex sub-blocks to a PSIO file.")
+        .def("load", &ComplexMatrix::load, "psio"_a, "fileno"_a,
+             "Loads diagonal tiles as raw complex sub-blocks from a PSIO file. The "
+             "ComplexMatrix must already have the correct tile grid (e.g. from the "
+             "(name, block_sizes) constructor).")
+        .def("product_trace", &ComplexMatrix::product_trace, "other"_a,
+             "Replicates einsum('ij,ji->', self, other)")
+        .def("conjT", &ComplexMatrix::conjT, "Returns the conjugate transpose of this ComplexMatrix.")
+        .def("rms", &ComplexMatrix::rms, "Returns sqrt(mean(|z|^2)) over the declared tile grid.")
+        .def("absmax", &ComplexMatrix::absmax, "Returns the maximum |z| over allocated diagonal tiles.")
+        .def_static("diagonalize", static_cast<std::tuple<SharedVector, SharedComplexMatrix>
+            (*)(const ComplexMatrix&)>(&linalg::diagonalize), "Forth"_a,
+            "Diagonalize a Hermitian ComplexMatrix Forth.\n\n"
+            "Uses a Hermitian eigensolver, and returns (eigenvalues: Vector, U^H: ComplexMatrix) "
+            "where U^H has eigenvectors as columns.")
+        .def_static("diagonalize", static_cast<std::tuple<SharedVector, SharedComplexMatrix>
+            (*)(const ComplexMatrix&, const ComplexMatrix&)>(&linalg::diagonalize), "F"_a, "X"_a,
+            "Diagonalize a Hermitian ComplexMatrix F with metric X.\n\n"
+            "Forms Forth = X^H @ F @ X, diagonalizes it with a Hermitian eigensolver,\n"
+            "and returns (eigenvalues: Vector, U^H: ComplexMatrix) where U^H has\n"
+            "eigenvectors as columns.  The caller typically computes MO coefficients\n"
+            "as C = X @ U^H.  X should be real (e.g. S^{-1/2} of the overlap matrix).")
+        .def_static("doublet",
+            static_cast<SharedComplexMatrix (*)(const SharedComplexMatrix&, const SharedComplexMatrix&,
+                bool, bool)>(&linalg::doublet),
+            "A"_a, "B"_a, "AdjoinA"_a = false, "AdjoinB"_a = false,
+            "Compute A times B with optional boolean arguments to adjoin (A.conjT()) "
+            "respective matrices.")
+        .def_static("triplet",
+            static_cast<SharedComplexMatrix (*)(const SharedComplexMatrix&, const SharedComplexMatrix&,
+                const SharedComplexMatrix&, bool, bool, bool)>(&linalg::triplet),
+            "A"_a, "B"_a, "C"_a, "AdjoinA"_a = false, "AdjoinB"_a = false, "AdjoinC"_a = false,
+            "Compute A @ B @ C with optional boolean arguments to conjugate transpose "
+            "respective matrices.")
+        .def_static("expm", &linalg::expm, "A"_a, "c"_a = std::complex<double>{1},
+            "Matrix exponential for a Hermitian ``A`` and optional prefactor ``c``.\n\n"
+            "Computes :math:`e^{cA}` using diagonalization. Does **not** check for Hermiticity.");
+
+#else
+    // Type-only stubs so Python monkey-patches and isinstance checks still resolve.
+    py::class_<ComplexMatrix, std::shared_ptr<ComplexMatrix>>(m, "ComplexMatrix",
+                                                             "Complex blocked matrix (requires Einsums).");
+#endif
 
     // Free functions
     typedef Matrix (*doublet_shared)(const Matrix&, const Matrix&, bool, bool);
@@ -1319,6 +1466,10 @@ void export_mints(py::module& m) {
         .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells")
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
              "Determines if the P,Q,R,S shell combination is significant")
+#ifdef USING_Einsums
+        .def("update_density", &TwoBodyAOInt::update_density_complex,
+             "Update density matrix (c1 symmetry) for Density-matrix based integral screening")
+#endif
         .def("update_density", &TwoBodyAOInt::update_density,
              "Update density matrix (c1 symmetry) for Density-matrix based integral screening");
 
@@ -1492,6 +1643,7 @@ void export_mints(py::module& m) {
         // One-electron properties and
         .def("ao_pvp", &MintsHelper::ao_pvp, "AO pvp integrals")
         .def("ao_dkh", &MintsHelper::ao_dkh, "AO dkh integrals")
+        .def("ao_zora_spin_orbit", &MintsHelper::ao_zora_spin_orbit, "AO ZORA Spin-orbit coupling integrals")
         .def("so_dkh", &MintsHelper::so_dkh, "SO dkh integrals")
         .def("ao_dipole", &MintsHelper::ao_dipole, "Vector AO dipole integrals")
         .def("so_dipole", &MintsHelper::so_dipole, "Vector SO dipole integrals")

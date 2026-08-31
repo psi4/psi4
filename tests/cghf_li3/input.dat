@@ -1,0 +1,38 @@
+# CGHF test that you get the correct converged energy for Li3 trimer.
+#
+# Unfortunately, we do not have stability yet, but we can still supply orbitals
+# that have been converged (with stability analysis) in PySCF. The occupied
+# spinor MO guess is a plain-text file (li3_cocc_guess.dat, produced by
+# gen_reference_data.py + make_psi4_guess.py) that we load directly with
+# NumPy and feed to energy() via the `guess_C` kwarg -- no checkpoint file,
+# and no manually-constructed Wavefunction, required.
+
+import numpy as np
+
+reference_e = -21.256848
+
+molecule lithium_trimer {
+0 4
+  Li 0 0 0
+  Li 1 0 0
+  Li .5 0 .866
+symmetry C1
+}
+
+set = {
+    basis                      sto-3g
+    reference                  cghf
+    scf_type                   direct
+    df_scf_guess               false
+    orbital_optimizer_package  internal
+}
+
+C_occ_guess = np.loadtxt("li3_cocc_guess.dat", dtype=complex)
+
+e, wfn = energy('scf', guess_C=C_occ_guess, return_wfn=True)
+
+ss, mult = wfn.spin_square()
+
+compare_values(e, reference_e, 6, "Total energy")   #TEST
+compare_values(ss, 2.392, 2, "Spin-squared")        #TEST
+compare_values(mult, 3.2507, 2, "Multiplicity")     #TEST

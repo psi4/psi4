@@ -326,6 +326,9 @@
 #define PSIF_AO_NablaX           "AO-basis Nabla-X Ints"     /* integrals of nabla operator */
 #define PSIF_AO_NablaY           "AO-basis Nabla-Y Ints"
 #define PSIF_AO_NablaZ           "AO-basis Nabla-Z Ints"
+#define PSIF_AO_SOCX             "AO-basis spin-orbit X"     /* Spin-orbit coupling integrals */
+#define PSIF_AO_SOCY             "AO-basis spin-orbit Y"
+#define PSIF_AO_SOCZ             "AO-basis spin-orbit Z"
 
 // These integrals are pure imaginary Hermitian. We write the full matrix of the imaginary part of these integrals out (i.e. multiply by i=sqrt(-1) to get the integrals)
 #define PSIF_AO_LX               "AO-basis LX Ints"          /* integrals of angular momentum operator */

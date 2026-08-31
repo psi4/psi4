@@ -16,6 +16,7 @@ list(APPEND sources
   apps.cc
   cubature.cc
   hamiltonian.cc
+  basejk.cc
   jk.cc
   points.cc
   sap.cc
@@ -27,6 +28,14 @@ list(APPEND sources
   )
 
 psi4_add_module(lib fock sources)
+
+if(TARGET Einsums::Einsums)
+  target_sources(fock
+    PRIVATE
+      ComplexJK.cc
+      ComplexDirectJK.cc
+    )
+endif()
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(fock REUSE_FROM psio)
 endif()
