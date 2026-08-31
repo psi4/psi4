@@ -103,13 +103,16 @@ An example input file for a DLPNO-CCSD(T) computation is::
 Open-Shell References and UHF-to-QRO Transformation
 ----------------------------------------------------
 
-``DLPNO-CCSD`` supports high-spin ``ROHF`` references.  When ``REFERENCE UHF``
-is requested, |PSIfour| first constructs a common set of quasi-restricted
-orbitals (QROs) and then invokes the restricted open-shell DLPNO-CCSD solver.
+``DLPNO-CCSD`` and ``DLPNO-CCSD(T)`` support high-spin ``ROHF`` references.
+When ``REFERENCE UHF`` is requested for DLPNO-CCSD, |PSIfour| first constructs
+a common set of quasi-restricted orbitals (QROs) and then invokes the restricted
+open-shell DLPNO-CCSD solver.
 The QRO construction follows Neese [Neese:2006:10213]_ and the open-shell
 local-correlation formulation of Hansen, Liakos, and Neese
 [Hansen:2011:214102]_.  Related restricted-orbital open-shell local-correlation
-considerations are discussed by Szabó *et al.* [Szabo:2021:2886]_.
+considerations are discussed by Szabó *et al.* [Szabo:2021:2886]_.  The
+spin-resolved semicanonical and iterative triples corrections follow the
+open-shell DLPNO-(T0/T) formulation of Guo *et al.* [Guo:2020:024116]_.
 
 The spin-summed UHF density is diagonalized to obtain unrestricted natural
 orbitals.  The first :math:`N_\beta` orbitals define the doubly occupied space,
@@ -187,7 +190,8 @@ Practical Advice
 
 * DLPNO-CCSD is available for closed-shell RHF, high-spin ROHF, and high-spin
   UHF references transformed to QROs.  The perturbative triples correction is
-  presently available only for closed-shell RHF computations.
+  available for closed-shell RHF and high-spin ROHF computations; the UHF-to-QRO
+  route is presently available only for DLPNO-CCSD.
 
 Computation Size Limits
 -----------------------

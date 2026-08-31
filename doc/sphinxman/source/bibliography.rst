@@ -810,6 +810,11 @@ Bibliography
    *J. Chem. Phys.* **148**, 011101 (2018).
    https://doi.org/10.1063/1.5011798
 
+.. [Guo:2020:024116]
+   Y. Guo, C. Riplinger, D. G. Liakos, U. Becker, M. Saitow, and F. Neese,
+   *J. Chem. Phys.* **152**, 024116 (2020).
+   https://doi.org/10.1063/1.5127550
+
 .. [Jiang:2024:082502]
    A. Jiang, Z. Glick, D. Poole, J. M. Turney, C. D. Sherrill, and H. F. Schaefer III,
    *J. Chem. Phys.* **161**, 082502 (2024).

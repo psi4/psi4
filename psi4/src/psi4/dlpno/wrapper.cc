@@ -50,6 +50,8 @@ SharedWavefunction dlpno(SharedWavefunction ref_wfn, Options& options) {
     } else if (options.get_str("REFERENCE") == "ROHF") {
         if (options.get_str("DLPNO_ALGORITHM") == "CCSD") {
             dlpno = std::make_shared<RO_DLPNOCCSD>(ref_wfn, options);
+        } else if (options.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
+            dlpno = std::make_shared<RO_DLPNOCCSD_T>(ref_wfn, options);
         } else {
             throw PSIEXCEPTION("Requested DLPNO method is not yet available for ROHF reference!");
         }

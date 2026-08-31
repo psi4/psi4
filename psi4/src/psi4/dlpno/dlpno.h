@@ -66,6 +66,13 @@ enum class SpinCase { Alpha = 0, Beta = 1 };
 enum class DoubleSpinCase { AA = 0, AB = 1, BB = 2 };
 
 /**
+ * @enum TripleSpinCase
+ *
+ * @brief Denotes the four unique triples spin cases.
+ */
+enum class TripleSpinCase { AAA = 0, AAB = 1, BBA = 2, BBB = 3 };
+
+/**
  * @brief Converts a pair of SpinCases to a DoubleSpinCase
  */
 constexpr DoubleSpinCase to_double_spin(SpinCase spin1, SpinCase spin2) {
@@ -91,6 +98,21 @@ constexpr std::pair<SpinCase,SpinCase> get_spin_pair(DoubleSpinCase double_spin_
    } else {
       return std::make_pair(SpinCase::Beta, SpinCase::Beta);
    }
+}
+
+/**
+ * @brief Converts a TripleSpinCase to three SpinCases
+ */
+constexpr std::array<SpinCase, 3> get_spin_triple(TripleSpinCase triple_spin_case) {
+    if (triple_spin_case == TripleSpinCase::AAA) {
+        return {SpinCase::Alpha, SpinCase::Alpha, SpinCase::Alpha};
+    } else if (triple_spin_case == TripleSpinCase::AAB) {
+        return {SpinCase::Alpha, SpinCase::Alpha, SpinCase::Beta};
+    } else if (triple_spin_case == TripleSpinCase::BBA) {
+        return {SpinCase::Beta, SpinCase::Beta, SpinCase::Alpha};
+    } else {
+        return {SpinCase::Beta, SpinCase::Beta, SpinCase::Beta};
+    }
 }
 
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
@@ -688,6 +710,66 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
    public:
     DLPNOCCSD_T(SharedWavefunction ref_wfn, Options& options);
     ~DLPNOCCSD_T() override;
+
+    double compute_energy() override;
+};
+
+class PSI_API RO_DLPNOCCSD_T : public RO_DLPNOCCSD {
+   protected:
+    // Common sparsity information for all four triples spin cases.  Unlike the
+    // closed-shell implementation, the occupied triples retain their oriented
+    // ordering because mixed-spin amplitudes are not fully permutation symmetric.
+    SparseMap lmotriplet_to_ribfs_ro_;
+    SparseMap lmotriplet_to_lmos_ro_;
+    SparseMap lmotriplet_to_paos_ro_;
+    std::vector<std::tuple<int, int, int>> ijk_to_i_j_k_ro_;
+    std::array<std::unordered_map<int, int>, 4> i_j_k_to_ijk_spin_;
+    std::array<std::vector<bool>, 4> active_ijk_spin_;
+
+    // Triples intermediates and amplitudes over AAA, AAB, BBA, and BBB.
+    std::array<std::vector<SharedMatrix>, 4> W_iajbkc_spin_;
+    std::array<std::vector<SharedMatrix>, 4> V_iajbkc_spin_;
+    std::array<std::vector<SharedMatrix>, 4> T_iajbkc_spin_;
+
+    // A common spatial TNO basis is used for all spin cases; only its Fock
+    // representation and orbital energies are spin resolved.
+    std::vector<SharedMatrix> X_tno_ro_;
+    std::array<std::vector<SharedMatrix>, 2> F_tno_spin_;
+    std::vector<int> n_tno_ro_;
+
+    // Per-spin and spin-summed triplet energies used in screening/iterations.
+    std::array<std::vector<double>, 4> e_ijk_spin_;
+    std::vector<double> e_ijk_ro_;
+    std::vector<double> tno_scale_ro_;
+    std::vector<bool> is_strong_triplet_ro_;
+
+    bool write_intermediates_ro_ = false;
+    bool write_amplitudes_ro_ = false;
+
+    std::array<double, 4> de_lccsd_t_screened_spin_ro_{};
+    double de_lccsd_t_screened_ro_ = 0.0;
+    double e_lccsd_t_ro_ = 0.0;
+    double E_T_ro_ = 0.0;
+
+    void ro_triples_sparsity(bool prescreening);
+    void ro_sort_triplets(double e_total);
+    void ro_tno_transform(double tno_tolerance);
+    void ro_estimate_memory();
+
+    double compute_ro_lccsd_t0(bool save_memory = false);
+    double compute_ro_t_iteration_energy();
+    double ro_lccsd_t_iterations();
+
+    SharedMatrix ro_matmul_3d(SharedMatrix A, SharedMatrix X, int dim_old, int dim_new);
+    SharedMatrix ro_triples_permuter(const SharedMatrix& X, TripleSpinCase spin, int i, int j, int k);
+    void triples_spin_enforcer(SharedMatrix& X, TripleSpinCase spin, int i, int j, int k);
+
+    void ro_print_header();
+    void ro_print_results();
+
+   public:
+    RO_DLPNOCCSD_T(SharedWavefunction ref_wfn, Options& options);
+    ~RO_DLPNOCCSD_T() override;
 
     double compute_energy() override;
 };
