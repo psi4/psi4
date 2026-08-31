@@ -253,12 +253,9 @@ def scf_initialize(self):
         self.functional().set_do_vv10(False)
         self.functional().set_lock(True)
 
-    # Print iteration header
-    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
-    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
+    # Print iteration header. The column header comes later, from scf_iterate, once the
+    # orbital optimizer that will actually run is known.
     core.print_out("  ==> Iterations <==\n\n")
-    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
-                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
 
 #: How many times to restart OpenTrustRegion when canonicalizing its solution changes the
@@ -277,6 +274,7 @@ def _occupation(wfn):
 def scf_iterate(self, e_conv=None, d_conv=None):
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
+    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
     verbose = core.get_option('SCF', "PRINT")
     reference = core.get_option('SCF', "REFERENCE")
 
@@ -304,45 +302,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             core.print_out(f"          {reference=}, soscf={soscf_enabled}, mom={self.MOM_excited_}, frac={frac_enabled}, efp={efp_enabled},\n")
             core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, autograc={autograc_enabled}, level_shift={level_shift_enabled},\n")
             core.print_out(f"          guess_mix={guessmix_enabled}\n")
-        else:
-            # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
-            if self.sad_ and self.iteration_ <= 0:
-                self.iteration_ += 1
-                self.form_G()
-                self.form_initial_F()
-                self.form_initial_C()
-                self.reset_occupation()
-                self.find_occupation()
-                ene_sad = self.compute_E()
-                core.print_out(
-                    "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
-                    ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
-            if core.get_option("SCF", "GUESS") == "READ" and self.iteration_ <= 0:
-                self.form_G()
-                self.form_initial_F()
-                self.form_initial_C()
-                self.reset_occupation()
-                self.find_occupation()
-                ene_sad = self.compute_E()
-
-            try:
-                self.openorbital_scf()
-            except RuntimeError as ex:
-                if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
-                    core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
-                else:
-                    raise ex
-            else:
-                SCFE = self.compute_E()
-                self.set_energies("Total Energy", SCFE)
-                self.set_variable("SCF ITERATION ENERGY", SCFE)
-                self.iteration_energies.append(SCFE)  # note 1-len array, not niter-len array like INTERNAL
-
-                self.form_G()
-                self.form_F()
-                self.form_C()
-                self.form_D()
-                return
+            ooo_scf = False
 
     otr_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OTR", "OPENTRUSTREGION"]
     if otr_scf:
@@ -374,6 +334,53 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             core.print_out(f"          frac={frac_enabled}, efp={efp_enabled}, pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled},\n")
             core.print_out(f"          grac={grac_enabled}\n")
             otr_scf = False
+
+    # Name the optimizer that will actually drive the SCF. Both fallback guards have run
+    # by now, so a package demoted above is reported as Internal rather than as requested.
+    pkg_label = "OpenOrbitalOptimizer" if ooo_scf else "OpenTrustRegion" if otr_scf else "Internal"
+    core.print_out(f"  The orbital optimizer module is {pkg_label}\n\n")
+    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
+                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+
+    if ooo_scf:
+        # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
+        if self.sad_ and self.iteration_ <= 0:
+            self.iteration_ += 1
+            self.form_G()
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+            ene_sad = self.compute_E()
+            core.print_out(
+                "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+                ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
+        if core.get_option("SCF", "GUESS") == "READ" and self.iteration_ <= 0:
+            self.form_G()
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+            ene_sad = self.compute_E()
+
+        try:
+            self.openorbital_scf()
+        except RuntimeError as ex:
+            if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
+                core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
+            else:
+                raise ex
+        else:
+            SCFE = self.compute_E()
+            self.set_energies("Total Energy", SCFE)
+            self.set_variable("SCF ITERATION ENERGY", SCFE)
+            self.iteration_energies.append(SCFE)  # note 1-len array, not niter-len array like INTERNAL
+
+            self.form_G()
+            self.form_F()
+            self.form_C()
+            self.form_D()
+            return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = False
