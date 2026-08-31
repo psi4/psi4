@@ -4622,7 +4622,7 @@ def run_dlpno(name, **kwargs):
             ref_wfn = scf_helper(method_name, use_c1=True, **kwargs)
         elif ref_wfn.molecule().schoenflies_symbol() != "c1":
             raise ValidationError(
-                f"{method['banner']} does not make use of molecular symmetry: "
+                f"The {method['banner']} implementation does not make use of molecular symmetry: "
                 "reference wavefunction must be C1."
             )
 
