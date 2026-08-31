@@ -86,7 +86,55 @@ def test_nbody_external_potentials_nocp_dimer(water_cluster):
 
 
 @uusing("qcmanybody")
-def test_nbody_external_potentials_report_as_embedded(water_cluster):
+def test_nbody_external_potentials_nocp_qcvars(water_cluster):
+    """Verify a whole-system potential numerically modifies the expected many-body QCVariables."""
+    _, dimer, b_external_potential = water_cluster
+    psi4.set_options(
+        {
+            "basis": "sto-3g",
+            "scf_type": "pk",
+            "e_convergence": 10,
+            "d_convergence": 10,
+        }
+    )
+
+    expected = {
+        "plain": {
+            "CURRENT ENERGY": -149.935635149729,
+            "NOCP-CORRECTED TOTAL ENERGY": -149.935635149729,
+            "NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY": -149.930475883110,
+            "NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY": -149.935635149729,
+            "NOCP-CORRECTED INTERACTION ENERGY": -0.005159266619,
+            "NOCP-CORRECTED INTERACTION ENERGY THROUGH 1-BODY": 0.0,
+            "NOCP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY": -0.005159266619,
+            "NOCP-CORRECTED 2-BODY CONTRIBUTION TO ENERGY": -0.005159266619,
+        },
+        "external_potential": {
+            "CURRENT ENERGY": -149.946102415478,
+            "NOCP-CORRECTED TOTAL ENERGY": -149.946102415478,
+            "NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY": -149.939926652461,
+            "NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY": -149.946102415478,
+            "NOCP-CORRECTED INTERACTION ENERGY": -0.006175763017,
+            "NOCP-CORRECTED INTERACTION ENERGY THROUGH 1-BODY": 0.0,
+            "NOCP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY": -0.006175763017,
+            "NOCP-CORRECTED 2-BODY CONTRIBUTION TO ENERGY": -0.006175763017,
+        },
+    }
+
+    assert expected["plain"].keys() == expected["external_potential"].keys()
+    for label, kwargs in [
+        ("plain", {}),
+        ("external_potential", {"external_potentials": b_external_potential}),
+    ]:
+        psi4.core.clean_variables()
+        psi4.energy("hf", molecule=dimer, bsse_type="nocp", return_total_data=True, **kwargs)
+        observed = psi4.core.variables()
+        for qcvar, reference in expected[label].items():
+            assert observed[qcvar] == pytest.approx(reference, abs=1.0e-8)
+
+
+@uusing("qcmanybody")
+def test_nbody_external_potentials_reporting(water_cluster):
     """Report fragment-scoped potentials without a misleading interaction energy."""
     _, dimer, b_external_potential = water_cluster
     psi4.set_options(
