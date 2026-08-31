@@ -1,7 +1,8 @@
 #! Ne-Xe dimer MP2 energies with ECP, with electrons correlated then frozen.
 
-oopkg = os.environ.get("_PSI4_USE_OOPKG", False)
-psi4.set_options({"orbital_optimizer_package": "ooo" if oopkg else "internal"})
+oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+psi4.set_options({"orbital_optimizer_package": oopkg})
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
 
 refnuc =   45.862024925                                                                  #TEST
 refall = -457.47320868249                                                                #TEST
@@ -42,7 +43,9 @@ set guess read
 # [He] electrons on Ne frozen,  only ECP electrons on Xe frozen
 EfHe = energy('mp2')
 compare_values(reffHe, EfHe, 8, "MP2 energy with frozen [He] and ECP")                   #TEST
-compare_integers(1, int(variable('SCF ITERATIONS')), 'niter')                            #TEST
+# A second-order optimizer handed converged orbitals needs no macro-iteration at all.
+niter = int(variable('SCF ITERATIONS'))                                                  #TEST
+compare(True, 0 <= niter <= 3 if oopkg == "otr" else niter == 1, f'niter {niter}')        #TEST
 
 molecule ghne {
     0 1
