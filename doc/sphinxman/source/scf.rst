@@ -786,6 +786,9 @@ and recommended option. However, the in-memory or on-disk algorithms for MEM_DF 
 Note that an exception will be thrown if 
 ``SCF_SUBTYPE = INCORE`` is used without allocating sufficient memory to 
 |PSIfour|.
+The Cholesky-decomposition algorithm, ``SCF_TYPE = CD``, has no on-disk counterpart, so it accepts only
+``SCF_SUBTYPE = AUTO`` and ``SCF_SUBTYPE = INCORE``, while ``SCF_SUBTYPE = OUT_OF_CORE`` (and any other
+``SCF_SUBTYPE``) throws an exception. Use ``SCF_TYPE = DISK_DF`` if an out-of-core algorithm is needed.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
