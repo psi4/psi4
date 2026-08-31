@@ -3,6 +3,11 @@
 #!   Now also testing that CSX harvesting PSI variables correctly
 #!   update ref_dft_2e/xc due to new BraggSlater radii
 
+
+oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+psi4.set_options({"orbital_optimizer_package": oopkg})
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+
 molecule meth {
 0 1
 C
