@@ -194,7 +194,8 @@ jobs:
                 -DCMAKE_C_COMPILER=clang-cl ^
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=OFF ^
-                -DCMAKE_CXX_FLAGS="/arch:AVX" ^
+                -DCMAKE_C_FLAGS="/Wall /Wextra" ^
+                -DCMAKE_CXX_FLAGS="/arch:AVX /Wall /Wextra" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniforge3/python.exe" ^
                 -DEigen3_ROOT="C:/tools/miniforge3/Library" ^
