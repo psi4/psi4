@@ -26,32 +26,31 @@
  * @END LICENSE
  */
 
-/*!
- \file
- \ingroup PSIO
- */
-
-#include "psi4/pragma.h"
-#include <memory>
-#include <cstdio>
-#include <cstdlib>
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
+#include "psi4/libmints/matrix_eigen.h"
 
 namespace psi {
+namespace linalg {
 
-size_t PSIO::get_numvols(size_t unit) {
-    std::string charnum;
-    charnum = filecfg_kwd("PSI", "NVOLUME", unit);
-    if (!charnum.empty()) return ((size_t)atoi(charnum.c_str()));
-    charnum = filecfg_kwd("PSI", "NVOLUME", -1);
-    if (!charnum.empty()) return ((size_t)atoi(charnum.c_str()));
-    charnum = filecfg_kwd("DEFAULT", "NVOLUME", unit);
-    if (!charnum.empty()) return ((size_t)atoi(charnum.c_str()));
-    charnum = filecfg_kwd("DEFAULT", "NVOLUME", -1);
-    if (!charnum.empty()) return ((size_t)atoi(charnum.c_str()));
+Eigen::Map<Eigen::MatrixXd> eigen_map(Matrix& matrix) {
+    if (matrix.nirrep() != 1) {
+        std::string message = "linalg::eigen_map() called, but matrix only has one irrep! ";
+        message += "Use linalg::eigen_maps() instead.";
+        throw PSIEXCEPTION(message);
+    }
 
-    // assume that the default has been provided already
-    abort();
+    return Eigen::Map<Eigen::MatrixXd>(matrix.get_pointer(), matrix.nrow(), matrix.ncol());
 }
+
+std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps(Matrix& matrix) {
+    std::vector<Eigen::Map<Eigen::MatrixXd>> maps;
+    maps.reserve(matrix.nirrep());
+
+    for (int h = 0; h != matrix.nirrep(); ++h) {
+        maps.emplace_back(matrix.get_pointer(h), matrix.rowdim(h), matrix.coldim(h));
+    }
+
+    return maps;
+}
+
+}  // namespace linalg
 }  // namespace psi
