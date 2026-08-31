@@ -14,7 +14,7 @@ Eref = {
           "DFDirJ+COSX"    : {
             "INTERNAL":      -149.58722317236171, #TEST
             "OOO":           -149.58726907,       #TEST  # -0.00004645
-            "OTR":           -149.58726962,       #TEST  # -0.00004645
+            "OTR":           -149.58722317236171, #TEST  # no OTR for semi-numerical K, falls back
             },
           "DFDirJ+LinK"    : -149.58726772171027  #TEST
         } 
@@ -26,7 +26,7 @@ Eref = {
           "DFDirJ+COSX"    : {
             "INTERNAL":      -149.67132922581225, #TEST
             "OOO":           -149.67136954,       #TEST  # -0.00004031
-            "OTR":           -149.67136954,       #TEST  # -0.00004031
+            "OTR":           -149.67132922581225, #TEST  # no OTR for semi-numerical K, falls back
             },
           "DFDirJ+LinK"    : -149.67137328005577  #TEST
         }
@@ -38,7 +38,7 @@ Eref = {
           "DFDirJ+COSX"    : {
             "INTERNAL":      -149.65168894156605, #TEST
             "OOO":           -149.65168894156605, #TEST  # no OOO for ROHF, falls back
-            "OTR":           -149.65172279,       #TEST  # +0.00003385
+            "OTR":           -149.65168894156605, #TEST  # no OTR for semi-numerical K, falls back
             },
           "DFDirJ+LinK"    : -149.65172557470324  #TEST
         }
