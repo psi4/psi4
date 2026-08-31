@@ -1027,7 +1027,9 @@ def test_hessian_vs_cfour(scf_type, subject, dertype, request):
         if scf_type == "pk":
             toldict["IR_intensity"] = 1.e-1
             toldict["omega"] = 2.e-1
-            toldict["svd"] = 2.e-5
+            # methane's triply-degenerate modes come out mixed slightly differently, which
+            # shows up here and not in omega or the IR intensities
+            toldict["svd"] = 5.e-5
 
     verbose = 2
     forgive = ['gamma'] if subject in ['co2', 'ch4', 'nh3'] else []  # since Psi can't classify degen symmetries
