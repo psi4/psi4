@@ -355,31 +355,31 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         pcm_enabled = core.get_option('SCF', 'PCM')
         ddx_enabled = core.get_option('SCF', 'DDX')
         pe_enabled = core.get_option('SCF', 'PE')
-        link_enabled = "LINK" in core.get_option('SCF', 'SCF_TYPE')
+        # OTR's Krylov micro-iterations need a Hessian-vector product that is consistent
+        # from one application to the next. LinK refuses non-symmetric K outright; COSX and
+        # snLinK evaluate K on a quadrature grid, which is consistent enough for a Fock
+        # iteration but not for a trust region -- steps get rejected over and over and a
+        # 12-second SCF turns into ten minutes. ("SNLINK" matches on "LINK".)
+        seminumerical_k = any(alg in core.get_option('SCF', 'SCF_TYPE')
+                              for alg in ("LINK", "COSX"))
         # The GRAC shift splices the asymptotically-corrected potential into V_xc outside
         # the kernel that cphf_Hx differentiates, so the Hessian doesn't see it.
         grac_enabled = (core.get_option("SCF", "DFT_GRAC_SHIFT") != 0.0
                         or core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE")
-        if (reference == "CUHF" or metavv10_enabled or link_enabled or self.MOM_excited_
+        if (reference == "CUHF" or metavv10_enabled or seminumerical_k or self.MOM_excited_
                 or frac_enabled or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled
                 or grac_enabled):
             core.print_out("    Note: OpenTrustRegion not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
-            core.print_out(f"          {reference=}, meta/vv10={metavv10_enabled}, link={link_enabled}, mom={self.MOM_excited_},\n")
+            core.print_out(f"          {reference=}, meta/vv10={metavv10_enabled}, seminum_k={seminumerical_k}, mom={self.MOM_excited_},\n")
             core.print_out(f"          frac={frac_enabled}, efp={efp_enabled}, pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled},\n")
             core.print_out(f"          grac={grac_enabled}\n")
             otr_scf = False
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
-    # OpenTrustRegion has no notion of loosening screening for early macro-iterations, and a
-    # coarse COSX grid makes the orbital Hessian noisy enough that its Krylov space goes
-    # linearly dependent, so give it the final grid from the start.
     early_screening = False
     if cosx_enabled:
-        if otr_scf:
-            self.jk().set_COSX_grid("Final")
-        else:
-            early_screening = True
-            self.jk().set_COSX_grid("Initial")
+        early_screening = True
+        self.jk().set_COSX_grid("Initial")
 
     if otr_scf:
         # OpenTrustRegion rotates a fixed set of orbitals at a fixed occupation, so run one
