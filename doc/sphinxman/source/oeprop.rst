@@ -81,6 +81,7 @@ summarized in the table below.
    | Natural orbital occupations        | NO_OCCUPATIONS        |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Stockholder Atomic Multipoles      | MBIS_CHARGES          | Generates atomic charges, dipoles, etc. See :ref:`sec:oeprop_mbis`                |
+   | Stockholder Atomic Multipoles      | MBIS                  | Generates atomic charges, dipoles, etc. See :ref:`sec:oeprop_mbis`                |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Hirshfeld volume ratios            | MBIS_VOLUME_RATIOS    | Generate the AIM to free atom volume ratios                                       |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
