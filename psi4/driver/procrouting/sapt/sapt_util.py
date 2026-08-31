@@ -137,8 +137,9 @@ def print_sapt_dft_summary(data, name, dimer_wfn, do_dft=True, short=False, do_d
     if extern_extern_IE != 0:
         ret += print_sapt_var("  Elst (extern-extern)", data["extern_extern_IE"]) + "\n"
     ret += "\n"
-    core.set_variable("SAPT ELST ENERGY", data["Elst10,r"] + extern_extern_IE)
-    dimer_wfn.set_variable("SAPT ELST ENERGY", data["Elst10,r"])
+    elst = data["Elst10,r"] + extern_extern_IE
+    core.set_variable("SAPT ELST ENERGY", elst)
+    dimer_wfn.set_variable("SAPT ELST ENERGY", elst)
 
     # Exchange
     ret += print_sapt_var("Exchange", data["Exch10"]) + "\n"
@@ -171,6 +172,7 @@ def print_sapt_dft_summary(data, name, dimer_wfn, do_dft=True, short=False, do_d
 
     ret += "\n"
     core.set_variable("SAPT IND ENERGY", ind)
+    dimer_wfn.set_variable("SAPT IND ENERGY", ind)
 
     # Dispersion
     disp = 0.0

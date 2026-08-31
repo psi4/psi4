@@ -650,7 +650,8 @@ def build_sapt_jk_cache(
     cache["eps_vir_B"] = wfn_B.epsilon_a_subset("AO", "VIR")
 
     # localization
-    if core.get_option("SAPT", "SAPT_DFT_DO_FSAPT"):
+    do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT").upper() != "NONE"
+    if do_fsapt:
         cache["Cfocc"] = wfn_dimer.Ca_subset("AO", "FROZEN_OCC")
         cache["eps_all"] = wfn_dimer.epsilon_a_subset("AO", "ALL")
 
@@ -683,7 +684,9 @@ def build_sapt_jk_cache(
     mints = core.MintsHelper(wfn_B.basisset())
     cache["V_B"] = mints.ao_potential()
 
-    # External Potentials need to add to V_A and V_B
+    # External Potentials need to add to V_A and V_B. Preserve the
+    # normalized metadata for downstream F-SAPT partitioning.
+    cache["external_potentials"] = external_potentials
     if external_potentials:
         if external_potentials.get("A") is not None:
             ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())

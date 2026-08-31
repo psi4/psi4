@@ -1462,11 +1462,11 @@ class Molecule(LibmintsMolecule):
             },
         }
         if func:
-            resinp['model']['method'] = func
+            resinp["specification"]["model"]["method"] = func
         else:
-            resinp['model']['method'] = ""
+            resinp["specification"]["model"]["method"] = ""
         if property:
-            resinp['keywords']['property'] = True
+            resinp["specification"]["keywords"]["property"] = True
         if dashlvl:
             resinp["specification"]['keywords']['level_hint'] = dashlvl
         if dashparam:

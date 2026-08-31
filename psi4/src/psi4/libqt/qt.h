@@ -40,13 +40,9 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
-<<<<<<< HEAD
 #include <map>
-||||||| 144882d942
-=======
+#include <string>
 #include <vector>
->>>>>>> upstream/master
 
 #include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"

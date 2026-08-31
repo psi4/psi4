@@ -106,7 +106,7 @@ def test_sapt_dft_compute_ddft_d4():
     "method, expected_disp",
     [
         ("SAPT(DFT)-D4(S)", -0.003605830),
-        ("SAPT(DFT)-D4(I)", -0.0040379796),
+        ("SAPT(DFT)-D4(I)", -0.0042277709),
         ("DFT-D4(SAPT)", -0.0057317156),
     ],
 )
@@ -132,10 +132,33 @@ units bohr
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
+    managed_options = (
+        "SAPT_DFT_DO_DISP",
+        "SAPT_DFT_DO_DDFT",
+        "SAPT_DFT_D3_IE",
+        "SAPT_DFT_D4_IE",
+        "SAPT_DFT_D_TYPE",
+    )
+    before = {
+        option: (
+            psi4.core.get_option("SAPT", option),
+            psi4.core.has_option_changed("SAPT", option),
+        )
+        for option in managed_options
+    }
+
     psi4.energy(method)
     vars = psi4.core.variables()
     DISP = vars["SAPT DISP ENERGY"]
     assert compare_values(expected_disp, DISP, 8, f"{method} DISP")
+    after = {
+        option: (
+            psi4.core.get_option("SAPT", option),
+            psi4.core.has_option_changed("SAPT", option),
+        )
+        for option in managed_options
+    }
+    assert after == before
 
 
 @pytest.mark.saptdft
@@ -1209,7 +1232,21 @@ def test_charge_field_inputs():
     e_A = psi4.energy(
         "sapt(dft)", external_potentials={"a": Chargefield}, molecule=dimer
     )
+    e_A_structured, structured_wfn = psi4.energy(
+        "sapt(dft)",
+        external_potentials={"A": {"points": Chargefield.tolist()}},
+        molecule=dimer,
+        return_wfn=True,
+    )
     assert compare_values(e_A, e_a, 7, "e_A==e_a")
+    assert compare_values(e_A_structured, e_A, 7, "structured points == array")
+    for variable in ("SAPT ELST ENERGY", "SAPT IND ENERGY"):
+        assert compare_values(
+            psi4.core.variable(variable),
+            structured_wfn.variable(variable),
+            12,
+            f"global/wfn {variable}",
+        )
     e_b = psi4.energy(
         "sapt(dft)", external_potentials={"b": Chargefield}, molecule=dimer
     )

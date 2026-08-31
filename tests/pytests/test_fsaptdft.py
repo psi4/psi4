@@ -12,6 +12,7 @@ hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
+@pytest.mark.saptdft
 @uusing("pandas")
 def test_fsaptdft_timer():
     """Ensure SAPT(DFT) timer CSV output contains expected timing columns."""
@@ -49,15 +50,23 @@ units angstrom
     psi4.core.clean_timers()
     _ = psi4.energy("sapt(dft)", molecule=mol)
     compute_time_saptdft_fi_ein = psi4.core.get_timer_dict()["SAPT(DFT) Energy"]
-    psi4.driver.p4util.write_timer_csv("saptdft_fi_useEin_timers.csv")
+    csv_text = psi4.driver.p4util.write_timer_csv("saptdft_fi_useEin_timers.csv")
     df = pd.read_csv("saptdft_fi_useEin_timers.csv")
     os.remove("saptdft_fi_useEin_timers.csv")
     print(f"compute_time_fi_ein: {compute_time_saptdft_fi_ein['wall_time']:.2f}s\n")
     print(df)
     timer_cols = ["timer_name", "wall_time", "user_time", "system_time", "n_calls"]
-    for col in timer_cols:
-        assert col in df.columns, f"Expected column '{col}' not found in timer CSV"
-    return
+    assert list(df.columns) == timer_cols
+    timer_row = df.loc[df["timer_name"] == "SAPT(DFT) Energy"]
+    assert len(timer_row) == 1
+    assert compute_time_saptdft_fi_ein["n_calls"] >= 1
+    assert compute_time_saptdft_fi_ein["wall_time"] >= 0.0
+    assert timer_row.iloc[0]["n_calls"] == compute_time_saptdft_fi_ein["n_calls"]
+    assert timer_row.iloc[0]["wall_time"] == pytest.approx(
+        compute_time_saptdft_fi_ein["wall_time"]
+    )
+    assert csv_text.startswith("timer_name,wall_time,user_time,system_time,n_calls\n")
+    assert "SAPT(DFT) Energy" in csv_text
 
 
 @pytest.mark.saptdft
@@ -270,13 +279,11 @@ no_com
 
 @pytest.mark.saptdft
 @pytest.mark.fsapt
-@uusing("pandas")
-@pytest.mark.saptdft
-@uusing("dftd4")
 @pytest.mark.dftd4
+@uusing("pandas")
 @uusing("dftd4")
 def test_fsaptdftd4_psivars():
-    """Validate SAPT(DFT)-D4(s) scalar variables and FSAPT terms vs references."""
+    """Validate SAPT(DFT)-D4(s) scalar variables and qualitative FSAPT terms."""
     import pandas as pd
 
     mol = psi4.geometry(
@@ -632,15 +639,15 @@ no_com
             0.0,
         ],
         "EDisp": [
-            -0.013635081934517781,
-            -0.2986013898239719,
-            -0.052012447785209845,
-            -3.3086784527471322,
-            -0.3122364717584897,
-            -3.360690900532342,
-            -0.06564752971972762,
-            -3.607279842571104,
-            -3.6729273722908315,
+            -0.013237448828860325,
+            -0.2823607191933717,
+            -0.04991058305999568,
+            -3.1467725043345403,
+            -0.295598168022232,
+            -3.1966830873945358,
+            -0.06314803188885601,
+            -3.429133223527912,
+            -3.492281255416768,
         ],
         "Elst": [
             0.6885821033339496,
@@ -709,15 +716,15 @@ no_com
             -0.07802976904432303,
         ],
         "Total": [
-            0.6667826558499702,
-            -0.3805542855363413,
-            -0.8399621403660978,
-            -0.5891098407707545,
-            0.2862283703136289,
-            -1.4290719811368522,
-            -0.17317948451612764,
-            -0.9696641263070958,
-            -1.1428436108232232,
+            0.6671802953775555,
+            -0.3643136023345064,
+            -0.8378602728703071,
+            -0.42720388737761317,
+            0.30286669304304914,
+            -1.2650641602479202,
+            -0.17067997749275154,
+            -0.7915174897121195,
+            -0.9621974672048711,
         ],
     }
 
@@ -994,6 +1001,7 @@ no_com
         }
     )
     _, wfn = psi4.energy("sapt(dft)-d4(i)", molecule=mol, return_wfn=True)
+    assert wfn.has_variable("FSAPT_EMPIRICAL_DISP")
 
     # Collect SAPT(DFT) energies
     saptdft_energies = {

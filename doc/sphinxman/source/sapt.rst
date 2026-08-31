@@ -546,9 +546,9 @@ estimated by scaling from the uncoupled value either by a fitted fixed value
 ratio of coupled and uncoupled dispersion energy (suggested by
 [Podeszwa:2006:400]_ ). This can be controlled by keyword
 |sapt__sapt_dft_exch_disp_scale_scheme|, with ``FIXED`` using the
-Hesselmann/Xie approach (|PSIfours| default prior to Nov 2022), ``DISP`` using
-the Podeszwa approach (|PSIfours| default after Nov 2022), or ``NONE`` for not
-scaling and using the uncoupled exchange-dispersion energy directly.
+Hesselmann/Xie approach (the current default, with the Xie factor of 0.770 versus |PSIfours| default prior to Nov 2022),
+``DISP`` using the Podeszwa approach (|PSIfours| default after Nov 2022), or ``NONE`` for not scaling and using the
+uncoupled exchange-dispersion energy directly.
 
 .. warning:: Since Nov 2022, the defaults of options |sapt__sapt_dft_exch_disp_scale_scheme| and |sapt__sapt_dft_exch_disp_fixed_scale|
              have been changed. Before, the former defaulted to ``FIXED`` with Hesselmann value of 0.686 for the latter. Now, the former defaults to ``DISP`` and should you instead select ``FIXED``, the default for the latter is the Xie value of 0.770. This might cause
@@ -569,10 +569,13 @@ SAPT(DFT) variants where the SAPT(DFT) dispersion term is replaced by semi-empir
     energy('dft-d3(sapt)')
     energy('dft-d4(sapt)')
 
-where ``(i)`` denotes an intermolecular pairwise dispersion treatment and
-``(s)`` denotes a supermolecular treatment both with their own damping function
-parameters. Currently support only exists for setting the `SAPT_DFT_FUNCTIONAL`
-equal to HF, PBE0, or B3LYP for these methods.
+where ``(i)`` denotes an intermolecular pairwise dispersion treatment using
+the corresponding ``(i)`` damping-parameter record, while ``(s)`` denotes a
+supermolecular treatment using the corresponding ``(s)`` record. The four
+``sapt(dft)-d3/d4(i/s)`` variants currently support
+``SAPT_DFT_FUNCTIONAL`` values HF, PBE0, and B3LYP. The
+``dft-d3(sapt)`` and ``dft-d4(sapt)`` methods instead support any functional
+with damping parameters available from their respective dispersion engine.
 
 When a semi-empirical variant is used, the total SAPT(DFT) decomposition is
 still reported through standard SAPT variables (electrostatics, exchange,

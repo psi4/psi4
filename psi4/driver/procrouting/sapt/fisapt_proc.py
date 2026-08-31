@@ -32,8 +32,6 @@ import numpy as np
 
 from psi4 import core
 
-from ...p4util.exceptions import ValidationError
-
 
 def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
     """Computes the FSAPT energy. FISAPT::compute_energy"""
@@ -156,29 +154,26 @@ def fisapt_fdrop(self, external_potentials=None):
         with open(psi4file, "w") as fh:
             fh.write(self.molecule().to_string(dtype="psi4", units="Angstrom"))
 
-    # write external potential geometries
-    if external_potentials is not None and isinstance(external_potentials, dict):
+    # Write point and diffuse external-potential centers. Matrix-only
+    # potentials have no geometry to serialize.
+    if external_potentials is not None:
+        from ..proc import validate_external_potential
+
+        normalized_potentials = validate_external_potential(external_potentials)
         for frag in "ABC":
-            potential = external_potentials.get(frag, None)
-            if potential is not None:
-                xyz = str(len(potential)) + "\n\n"
-                potential_lst = []
-                for qxyz in potential:
-                    if len(qxyz) == 2:
-                        xyz += "Ch %f %f %f\n" % (qxyz[1][0], qxyz[1][1], qxyz[1][2])
-                        potential_lst.append(qxyz[1])
-                    elif len(qxyz) == 4:
-                        xyz += "Ch %f %f %f\n" % (qxyz[1], qxyz[2], qxyz[3])
-                        potential_lst.append(qxyz[1:])
-                    else:
-                        raise ValidationError(
-                            f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'"
-                        )
-                potential_lst = np.array(potential_lst)
-                core.set_variable("FSAPT_EXTERN_POTENTIAL_{}".format(frag), potential_lst)
-                if write_output_files:
-                    with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
-                        fh.write(xyz)
+            potential = normalized_potentials.get(frag, {})
+            potential_lst = [row[1:4] for row in potential.get("points", [])]
+            potential_lst.extend(row[1:4] for row in potential.get("diffuse", []))
+            if not potential_lst:
+                continue
+
+            xyz = f"{len(potential_lst)}\n\n"
+            xyz += "".join("Ch %f %f %f\n" % tuple(xyz_row) for xyz_row in potential_lst)
+            potential_array = np.asarray(potential_lst)
+            core.set_variable(f"FSAPT_EXTERN_POTENTIAL_{frag}", potential_array)
+            if write_output_files:
+                with open(filepath + os.sep + f"Extern_{frag}.xyz", "w") as fh:
+                    fh.write(xyz)
 
     vectors = self.vectors()
     matrices = self.matrices()

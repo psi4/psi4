@@ -306,9 +306,8 @@ double sapt_nuclear_external_potential_python(
         matrices_[item.first.cast<std::string>()] = item.second.cast<std::shared_ptr<Matrix>>();
     }
     double Enuc = psi::sapt_nuclear_external_potential_matrix(reference_, matrices_, options_);
-    for (auto item : matrices_) {
+    for (const auto& item : matrices_) {
         py_matrices_[item.first.c_str()] = item.second;
-        std::cout << item.first.c_str() << " => " << item.second->name() << std::endl;
     }
     return Enuc;
 }

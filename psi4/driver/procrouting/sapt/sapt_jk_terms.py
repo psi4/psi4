@@ -70,7 +70,8 @@ def build_sapt_jk_cache(
     cache["eps_vir_B"] = wfn_B.epsilon_a_subset("AO", "VIR")
 
     # localization
-    if core.get_option("SAPT", "SAPT_DFT_DO_FSAPT"):
+    do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT").upper() != "NONE"
+    if do_fsapt:
         cache["Cfocc"] = wfn_dimer.Ca_subset("AO", "FROZEN_OCC")
         cache["eps_all"] = wfn_dimer.epsilon_a_subset("AO", "ALL")
 

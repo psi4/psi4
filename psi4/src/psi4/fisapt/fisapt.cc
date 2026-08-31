@@ -681,14 +681,11 @@ void FISAPT::nuclear() {
     // Apparently, we were using C full strength, but the others I think get scaled by 0.5 because Rob counts
     // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
     matrices_["Enucs"] = Enucs;
-    Enucs->print();
     Etot += psi::sapt_nuclear_external_potential_matrix(
         reference_,
         matrices_,
         options_
     );
-    // Enucs->print();
-    Enucs = matrices_["Enucsp"];
 
     // => Print <= //
 
@@ -1118,9 +1115,6 @@ void FISAPT::unify() {
         vectors_["ZA"] = ZA;
         vectors_["ZB"] = ZB;
         vectors_["ZC"] = ZC;
-        vectors_["ZA"]->print();
-        vectors_["ZB"]->print();
-        vectors_["ZC"]->print();
         for (int i = 0; i < nlink; i++) {
           link_orbs.push_back(0);
           for (int k = 0; k < nm; k++) {
