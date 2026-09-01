@@ -63,6 +63,7 @@
 #include <regex>
 #include <tuple>
 #include <memory>
+#include <utility>
 
 // In molecule.cc
 namespace psi {
@@ -70,119 +71,98 @@ extern int str_to_int(const std::string &s);
 
 extern double str_to_double(const std::string &s);
 
-Matrix::Matrix() {
-    matrix_ = nullptr;
-    nirrep_ = 0;
-    symmetry_ = 0;
-}
-
 Matrix::Matrix(const std::string &name, int symmetry)
-    : matrix_(nullptr), nirrep_(0), name_(name), symmetry_(symmetry) {}
+    : name_(name), symmetry_(symmetry) {}
 
-Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
-    matrix_ = nullptr;
-    nirrep_ = c.nirrep_;
-    symmetry_ = c.symmetry_;
-    name_ = c.name();
+Matrix::Matrix(const Matrix &c)
+    : rowspi_(c.rowspi_), colspi_(c.colspi_), nirrep_(c.nirrep_), symmetry_(c.symmetry_),
+      name_(c.name_), numpy_shape_(c.numpy_shape_) {
     alloc();
     copy_from(c.matrix_);
 }
 
-Matrix &Matrix::operator=(const Matrix &c) {
+Matrix& Matrix::operator=(const Matrix &c) {
     release();
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
     name_ = c.name();
     rowspi_ = c.rowspi_;
     colspi_ = c.colspi_;
+    numpy_shape_ = c.numpy_shape_;
     alloc();
     copy_from(c.matrix_);
 
     return *this;
 }
 
-Matrix::Matrix(const SharedMatrix &c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
-    matrix_ = nullptr;
-    nirrep_ = c->nirrep_;
-    symmetry_ = c->symmetry_;
-    name_ = c->name();
-    alloc();
-    copy_from(c->matrix_);
+Matrix::Matrix(Matrix&& m) noexcept
+    : rowspi_(std::move(m.rowspi_)), colspi_(std::move(m.colspi_)), nirrep_(m.nirrep_), matrix_(m.matrix_),
+      symmetry_(m.symmetry_), name_(std::move(m.name_)), numpy_shape_(std::move(m.numpy_shape_)) {
+    // Copy pointer to data then nullify the previous pointer to prevent double free.
+    m.matrix_ = nullptr;
+    // Zero out m.nirrep_ so it is left in a default state.
+    m.nirrep_ = 0;
 }
 
-Matrix::Matrix(const Matrix *c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
-    matrix_ = nullptr;
-    nirrep_ = c->nirrep_;
-    symmetry_ = c->symmetry_;
-    name_ = c->name();
-    alloc();
-    copy_from(c->matrix_);
+Matrix& Matrix::operator=(Matrix&& m) noexcept {
+    if (this == &m) return *this;
+
+    release();
+    nirrep_ = m.nirrep_;
+    symmetry_ = m.symmetry_;
+    name_ = std::move(m.name_);
+    rowspi_ = std::move(m.rowspi_);
+    colspi_ = std::move(m.colspi_);
+    numpy_shape_ = std::move(m.numpy_shape_);
+
+    // Copy pointer to data then nullify the previous pointer to prevent double free.
+    matrix_ = m.matrix_;
+    m.matrix_ = nullptr;
+    m.nirrep_ = 0;
+
+    return *this;
 }
+
+Matrix::Matrix(const SharedMatrix &c)
+    : Matrix(*c) {}
+
+Matrix::Matrix(const Matrix *c)
+    : Matrix(*c) {}
 
 Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
-    : rowspi_(l_nirreps), colspi_(l_nirreps) {
-    matrix_ = nullptr;
-    nirrep_ = l_nirreps;
-    symmetry_ = symmetry;
-    rowspi_ = l_rowspi;
-    colspi_ = l_colspi;
-    alloc();
-}
+    : Matrix("", l_nirreps, l_rowspi, l_colspi, symmetry) {}
 
 Matrix::Matrix(const std::string &name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
-    : rowspi_(l_nirreps), colspi_(l_nirreps), name_(name) {
-    matrix_ = nullptr;
-    nirrep_ = l_nirreps;
-    symmetry_ = symmetry;
-    rowspi_ = l_rowspi;
-    colspi_ = l_colspi;
+    : nirrep_(l_nirreps), symmetry_(symmetry), name_(name), matrix_(nullptr),
+      rowspi_(std::vector<int>(l_rowspi, l_rowspi + l_nirreps)),
+      colspi_(std::vector<int>(l_colspi, l_colspi + l_nirreps)) {
     alloc();
 }
 
-Matrix::Matrix(const std::string &name, int rows, int cols) : rowspi_(1), colspi_(1), name_(name) {
-    matrix_ = nullptr;
-    nirrep_ = 1;
-    symmetry_ = 0;
-    rowspi_[0] = rows;
-    colspi_[0] = cols;
+Matrix::Matrix(const std::string &name, int rows, int cols)
+    : rowspi_(std::vector<int>{rows}), colspi_(std::vector<int>{cols}), name_(name),
+      nirrep_(1), symmetry_(0), matrix_(nullptr) {
     alloc();
 }
 
-Matrix::Matrix(int rows, int cols) : rowspi_(1), colspi_(1) {
-    matrix_ = nullptr;
-    nirrep_ = 1;
-    symmetry_ = 0;
-    rowspi_[0] = rows;
-    colspi_[0] = cols;
+Matrix::Matrix(int rows, int cols)
+    : Matrix("", rows, cols) {}
+
+Matrix::Matrix(int nirrep, int rows, const int *colspi)
+    : nirrep_(nirrep), matrix_(nullptr), symmetry_(0), rowspi_(std::vector<int>(nirrep, rows)),
+      colspi_(std::vector<int>(colspi, colspi + nirrep)) {
     alloc();
 }
 
-Matrix::Matrix(int nirrep, int rows, const int *colspi) : rowspi_(nirrep), colspi_(nirrep) {
-    matrix_ = nullptr;
-    symmetry_ = 0;
-    nirrep_ = nirrep;
-    for (int i = 0; i < nirrep_; ++i) {
-        rowspi_[i] = rows;
-        colspi_[i] = colspi[i];
-    }
+Matrix::Matrix(int nirrep, const int *rowspi, int cols)
+    : nirrep_(nirrep), matrix_(nullptr), symmetry_(0), colspi_(std::vector<int>(nirrep, cols)),
+      rowspi_(std::vector<int>(rowspi, rowspi + nirrep)) {
     alloc();
 }
 
-Matrix::Matrix(int nirrep, const int *rowspi, int cols) : rowspi_(nirrep), colspi_(nirrep) {
-    matrix_ = nullptr;
-    symmetry_ = 0;
-    nirrep_ = nirrep;
-    for (int i = 0; i < nirrep_; ++i) {
-        rowspi_[i] = rowspi[i];
-        colspi_[i] = cols;
-    }
-    alloc();
-}
-
-Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &cols, int symmetry) {
-    name_ = name;
-    matrix_ = nullptr;
-    symmetry_ = symmetry;
+Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &cols, int symmetry)
+    : name_(name), matrix_(nullptr), symmetry_(symmetry) {
+    // Oh brother, this code stinks!
 
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
@@ -206,29 +186,18 @@ Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &
     alloc();
 }
 
-Matrix::Matrix(const Dimension &rows, const Dimension &cols, int symmetry) {
-    matrix_ = nullptr;
-    symmetry_ = symmetry;
+Matrix::Matrix(const Dimension &rows, const Dimension &cols, int symmetry)
+    : Matrix("", rows, cols, symmetry) {}
 
-    // This will happen in PetiteList::aotoso()
-    if (rows.n() == 1) {
-        nirrep_ = cols.n();
-        rowspi_ = Dimension(nirrep_);
-        colspi_ = Dimension(nirrep_);
-        for (int i = 0; i < nirrep_; ++i) {
-            rowspi_[i] = rows[0];
-            colspi_[i] = cols[i];
-        }
-    } else {
-        nirrep_ = rows.n();
-        rowspi_ = Dimension(nirrep_);
-        colspi_ = Dimension(nirrep_);
-        for (int i = 0; i < nirrep_; ++i) {
-            rowspi_[i] = rows[i];
-            colspi_[i] = cols[i];
-        }
-    }
+Matrix::Matrix(const std::string &name, const Dimension& rows, const int cols, int symmetry)
+    : nirrep_(rows.n()), rowspi_(rows), colspi_(Dimension(std::vector<int>(nirrep_, cols))),
+      name_(name), matrix_(nullptr), symmetry_(symmetry) {
+    alloc();
+}
 
+Matrix::Matrix(const std::string &name, const int rows, const Dimension& cols, int symmetry)
+    : nirrep_(cols.n()), rowspi_(Dimension(std::vector<int>(nirrep_, rows))), colspi_(cols),
+    name_(name), matrix_(nullptr), symmetry_(symmetry) {
     alloc();
 }
 
@@ -384,11 +353,10 @@ SharedMatrix Matrix::matrix_3d_rotation(Vector3 axis, double phi, bool Sn) {
         R(2, 1) = R(1, 2) = 2 * wy * wz;
         Matrix tmp(nrow(), 3);
         tmp.gemm(false, true, 1.0, rotated_coord, R, 0.0);
-        rotated_coord.copy(tmp);
+        rotated_coord = std::move(tmp);
     }
 
-    SharedMatrix to_return = rotated_coord.clone();
-    return to_return;
+    return std::make_shared<Matrix>(std::move(rotated_coord));
 }
 
 void Matrix::copy_to_row(int h, int row, double const *const data) {
@@ -926,7 +894,7 @@ void Matrix::symmetrize_gradient(std::shared_ptr<Molecule> molecule) {
     // Obtain atom mapping of atom * symm op to atom
     auto atom_map = compute_atom_map(molecule);
 
-    SharedMatrix ret(clone());
+    auto ret = std::make_shared<Matrix>(name_, rowspi_, colspi_, symmetry_);
     ret->zero();
     Matrix temp = *this;
 
@@ -962,7 +930,7 @@ void Matrix::symmetrize_hessian(SharedMolecule molecule) {
 
     auto atom_map = compute_atom_map(molecule);
 
-    auto symm = std::make_shared<Matrix>(clone());
+    auto symm = std::make_shared<Matrix>(name_, rowspi_, colspi_, symmetry_);
     symm->zero();
     double **pH = pointer();
     double **pS = symm->pointer();
@@ -1328,7 +1296,9 @@ void Matrix::transform(const Matrix &L, const Matrix &F, const Matrix &R) {
         gemm(true, false, 1.0, L, temp, 0.0);
     } else {
         // The dimensions of this matrix need to change, so gemm is out.
-        copy(linalg::doublet(L, temp, true, false));
+        auto result = linalg::doublet(L, temp, true, false);
+        result.set_name(name_);
+        *this = std::move(result);
     }
 }
 
@@ -1771,7 +1741,7 @@ std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps() {
     auto S = std::make_shared<Vector>("S", rank);
     auto V = std::make_shared<Matrix>("V", rank, colspi_);
 
-    return std::tuple<SharedMatrix, SharedVector, SharedMatrix>(U, S, V);
+    return std::tuple<SharedMatrix, SharedVector, SharedMatrix>(std::move(U), std::move(S), std::move(V));
 }
 
 std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_a_temps() {
@@ -1784,7 +1754,7 @@ std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_a_temps() {
     auto U = std::make_shared<Matrix>("U", rowspi_, rowspi_);
     auto S = std::make_shared<Vector>("S", rank);
     auto V = std::make_shared<Matrix>("V", colspi_, colspi_);
-    return std::tuple<SharedMatrix, SharedVector, SharedMatrix>(U, S, V);
+    return std::tuple<SharedMatrix, SharedVector, SharedMatrix>(std::move(U), std::move(S), std::move(V));
 }
 
 void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
@@ -1892,9 +1862,9 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
 
 SharedMatrix Matrix::pseudoinverse(double condition, int &nremoved) {
     std::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temp = svd_temps();
-    SharedMatrix U = std::get<0>(svd_temp);
-    SharedVector S = std::get<1>(svd_temp);
-    SharedMatrix V = std::get<2>(svd_temp);
+    SharedMatrix U = std::move(std::get<0>(svd_temp));
+    SharedVector S = std::move(std::get<1>(svd_temp));
+    SharedMatrix V = std::move(std::get<2>(svd_temp));
 
     svd(U, S, V);
 
@@ -1913,7 +1883,7 @@ SharedMatrix Matrix::pseudoinverse(double condition, int &nremoved) {
         }
     }
 
-    SharedMatrix Q(clone());
+    auto Q = std::make_shared<Matrix>(name_, rowspi_, colspi_, symmetry_);
 
     for (int h = 0; h < nirrep_; h++) {
         int m = rowspi_[h];
@@ -2096,7 +2066,7 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot, 
             }
         }
         // Switch to the properly sized matrix
-        *this = *U;
+        *this = std::move(*U);
     } else {
         auto L = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
         L->zero();
@@ -2109,7 +2079,7 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot, 
             }
         }
         // Switch to the properly sized matrix
-        *this = *L;
+        *this = std::move(*L);
     }
 }
 
@@ -2264,7 +2234,7 @@ std::pair<SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta) 
         }
     }
 
-    return std::pair<SharedMatrix, SharedMatrix>(P, N);
+    return std::pair<SharedMatrix, SharedMatrix>(std::move(P), std::move(N));
 }
 
 void Matrix::invert() {
@@ -2680,7 +2650,7 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     }
 
     // Create temporary matrix of proper size.
-    Matrix temp(nirrep(), a->nrow(), transformer->colspi());
+    Matrix temp(a->nrow(), transformer->colspi());
 
     char ta = 'n';
     char tb = 'n';
@@ -2788,7 +2758,9 @@ void Matrix::back_transform(const Matrix &a, const Matrix &transformer) {
         gemm(false, false, 1.0, transformer, temp, 0.0);
     } else {
         // The dimensions of this matrix need to change, so gemm is out.
-        copy(linalg::doublet(transformer, temp, false, false));
+        auto result = linalg::doublet(transformer, temp, false, false);
+        result.set_name(name_);
+        *this = std::move(result);
     }
 }
 
