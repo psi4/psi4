@@ -70,6 +70,18 @@ namespace index = einsums::index;
 namespace linear_algebra = einsums::linear_algebra;
 #endif
 
+namespace {
+
+double iterative_tno_cutoff(Options& options, const char* absolute_option,
+                            const char* legacy_scale_option) {
+    if (options[absolute_option].has_changed()) {
+        return options.get_double(absolute_option);
+    }
+    return options.get_double("T_CUT_TNO") * options.get_double(legacy_scale_option);
+}
+
+}  // namespace
+
 DLPNOCCSD_T::DLPNOCCSD_T(SharedWavefunction ref_wfn, Options &options) : DLPNOCCSD(ref_wfn, options) {}
 DLPNOCCSD_T::~DLPNOCCSD_T() {}
 
@@ -80,9 +92,13 @@ void DLPNOCCSD_T::print_header() {
     double t_cut_tno = options_.get_double("T_CUT_TNO");
     const double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
     const double t_cut_tno_strong =
-        full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_STRONG");
+        full_triples_follow
+            ? t_cut_tno_full
+            : iterative_tno_cutoff(options_, "T_CUT_TNO_STRONG", "T_CUT_TNO_STRONG_SCALE");
     const double t_cut_tno_weak =
-        full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_WEAK");
+        full_triples_follow
+            ? t_cut_tno_full
+            : iterative_tno_cutoff(options_, "T_CUT_TNO_WEAK", "T_CUT_TNO_WEAK_SCALE");
 
     outfile->Printf("   --------------------------------------------\n");
     outfile->Printf("                    DLPNO-CCSD(T)              \n");
@@ -108,9 +124,10 @@ void DLPNOCCSD_T::print_header() {
     outfile->Printf("    MIN_TNOS                   = %6d   \n", options_.get_int("MIN_TNOS"));
     outfile->Printf("    TRIPLES_MAX_WEAK_PAIRS     = %6d   \n", options_.get_int("TRIPLES_MAX_WEAK_PAIRS"));
     if (full_triples_follow &&
-        (options_["T_CUT_TNO_STRONG"].has_changed() || options_["T_CUT_TNO_WEAK"].has_changed())) {
+        (options_["T_CUT_TNO_STRONG"].has_changed() || options_["T_CUT_TNO_WEAK"].has_changed() ||
+         options_["T_CUT_TNO_STRONG_SCALE"].has_changed() || options_["T_CUT_TNO_WEAK_SCALE"].has_changed())) {
         outfile->Printf(
-            "\n    WARNING: T_CUT_TNO_STRONG/T_CUT_TNO_WEAK apply only when DLPNO-CCSD(T)\n"
+            "\n    WARNING: Iterative-(T) strong/weak TNO cutoff options apply only when DLPNO-CCSD(T)\n"
             "             is the final method. Full triples were requested, so both iterative-(T)\n"
             "             cutoffs are overridden by T_CUT_TNO_FULL = %6.3e.\n",
             t_cut_tno_full);
@@ -341,9 +358,13 @@ void DLPNOCCSD_T::sort_triplets(double e_total) {
     const bool full_triples_follow = algorithm_ != DLPNOMethod::CCSD_T;
     const double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
     const double strong_cutoff =
-        full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_STRONG");
+        full_triples_follow
+            ? t_cut_tno_full
+            : iterative_tno_cutoff(options_, "T_CUT_TNO_STRONG", "T_CUT_TNO_STRONG_SCALE");
     const double weak_cutoff =
-        full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_WEAK");
+        full_triples_follow
+            ? t_cut_tno_full
+            : iterative_tno_cutoff(options_, "T_CUT_TNO_WEAK", "T_CUT_TNO_WEAK_SCALE");
     is_strong_triplet_.resize(n_lmo_triplets, false);
     tno_cutoff_.assign(n_lmo_triplets, weak_cutoff);
 
@@ -1482,9 +1503,13 @@ double DLPNOCCSD_T::compute_energy() {
         const bool full_triples_follow = algorithm_ != DLPNOMethod::CCSD_T;
         const double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
         const double t_cut_tno_strong =
-            full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_STRONG");
+            full_triples_follow
+                ? t_cut_tno_full
+                : iterative_tno_cutoff(options_, "T_CUT_TNO_STRONG", "T_CUT_TNO_STRONG_SCALE");
         const double t_cut_tno_weak =
-            full_triples_follow ? t_cut_tno_full : options_.get_double("T_CUT_TNO_WEAK");
+            full_triples_follow
+                ? t_cut_tno_full
+                : iterative_tno_cutoff(options_, "T_CUT_TNO_WEAK", "T_CUT_TNO_WEAK_SCALE");
         outfile->Printf("     T_CUT_TNO set to %6.3e for strong triplets \n", t_cut_tno_strong);
         outfile->Printf("     T_CUT_TNO set to %6.3e for weak triplets   \n\n", t_cut_tno_weak);
 
@@ -1517,8 +1542,34 @@ double DLPNOCCSD_T::compute_energy() {
 
     // psivars for the selected perturbative-triples energy components
     set_scalar_variable(triples_correction_label + " CORRECTION ENERGY", e_lccsd_t_ - e_lccsd_);
+    if (t0_only) {
+        // Preserve the long-standing generic aliases used by CBS assembly,
+        // scripts, and external harvesters while also publishing T0-specific
+        // labels for callers that need to distinguish the approximation.
+        set_scalar_variable("CCSD(T) CORRELATION ENERGY", e_ccsd_t_corr);
+        set_scalar_variable("CCSD(T) TOTAL ENERGY", e_ccsd_t_total);
+        set_scalar_variable("(T) CORRECTION ENERGY", e_lccsd_t_ - e_lccsd_);
+    }
     set_scalar_variable("DLPNO SEMICANONICAL (T0) ENERGY", E_T0 + de_lccsd_t_screened_);
     set_scalar_variable("DLPNO SCREENED TRIPLETS ENERGY", de_lccsd_t_screened_);
+
+    // Iterative CCSDT needs the converged T3 amplitudes in memory. If the
+    // preceding (T) stage used disk storage, hydrate that final generation
+    // before deleting its PSIO file.
+    const bool ccsdt_follows = algorithm_ != DLPNOMethod::CCSD_T;
+    if (ccsdt_follows && write_amplitudes_) {
+        const int n_lmo_triplets = ijk_to_i_j_k_.size();
+#pragma omp parallel for schedule(dynamic, 1)
+        for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
+            const int ntno_ijk = n_tno_[ijk];
+            std::stringstream t_name;
+            t_name << "T " << ijk;
+            auto T_ijk = std::make_shared<Matrix>(t_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
+#pragma omp critical
+            T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, Matrix::SubBlocks);
+            T_iajbkc_[ijk] = std::move(T_ijk);
+        }
+    }
 
     print_results();
     

@@ -2923,10 +2923,14 @@ double DLPNOCCSD::compute_energy() {
     lccsd_iterations();
     timer_off("LCCSD");
 
-    // Bye bye (Q_ij | m_ij a_ij) integrals. You won't be missed
-    psio_->close(PSIF_DLPNO_QIA_PNO, 0);
-    // Bye bye (Q_ij | a_ij b_ij) integrals. You won't be missed
-    psio_->close(PSIF_DLPNO_QAB_PNO, 0);
+    // CCSDT consumes disk-backed PNO integrals built in this stage. Preserve
+    // each file only when a higher-order method follows and that storage path
+    // is active; the last consumer deletes it.
+    const bool ccsdt_follows = algorithm_ == DLPNOMethod::CCSDT ||
+                               algorithm_ == DLPNOMethod::CCSDT_Q ||
+                               algorithm_ == DLPNOMethod::CCSDTQ;
+    psio_->close(PSIF_DLPNO_QIA_PNO, ccsdt_follows && write_qia_pno_ ? 1 : 0);
+    psio_->close(PSIF_DLPNO_QAB_PNO, ccsdt_follows && write_qab_pno_ ? 1 : 0);
 
     print_results();
 

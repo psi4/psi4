@@ -584,13 +584,22 @@ void DLPNOCCSDT_Q::quadruples_sparsity(bool prescreening) {
     timer_off("Quadruples Sparsity");
 }
 
-void DLPNOCCSDT_Q::sort_quadruplets(double e_total) {
+void DLPNOCCSDT_Q::sort_quadruplets() {
     timer_on("Sort Quadruplets");
 
     outfile->Printf("  ==> Sorting Quadruplets <== \n\n");
 
     int n_lmo_quadruplets = ijkl_to_i_j_k_l_.size();
     std::vector<std::pair<int, double>> ijkl_e_pairs(n_lmo_quadruplets);
+
+    if (n_lmo_quadruplets == 0) {
+        is_strong_quadruplet_.clear();
+        qno_cutoff_.clear();
+        outfile->Printf("    Number of Strong Quadruplets: %6d, Total Quadruplets: %6d, Ratio: %.4f\n\n",
+                        0, 0, 0.0);
+        timer_off("Sort Quadruplets");
+        return;
+    }
 
 #pragma omp parallel for
     for (int ijkl = 0; ijkl < n_lmo_quadruplets; ++ijkl) {
@@ -601,7 +610,12 @@ void DLPNOCCSDT_Q::sort_quadruplets(double e_total) {
         return (std::fabs(a.second) > std::fabs(b.second));
     });
 
-    double e_curr = 0.0;
+    double e_magnitude_total = 0.0;
+    for (const auto& ijkl_e : ijkl_e_pairs) {
+        e_magnitude_total += std::fabs(ijkl_e.second);
+    }
+
+    double e_magnitude_curr = 0.0;
     const bool full_quadruples_follow = algorithm_ == DLPNOMethod::CCSDTQ;
     const double t_cut_qno_full = options_.get_double("T_CUT_QNO_FULL");
     const double strong_cutoff =
@@ -615,9 +629,11 @@ void DLPNOCCSDT_Q::sort_quadruplets(double e_total) {
     for (int idx = 0; idx < n_lmo_quadruplets; ++idx) {
         is_strong_quadruplet_[ijkl_e_pairs[idx].first] = true;
         qno_cutoff_[ijkl_e_pairs[idx].first] = strong_cutoff;
-        e_curr += ijkl_e_pairs[idx].second;
+        e_magnitude_curr += std::fabs(ijkl_e_pairs[idx].second);
         ++strong_count;
-        if (e_curr / e_total > 0.9) break;
+        // For an exactly zero energy distribution, retain the previous
+        // conservative behavior and classify every quadruplet as strong.
+        if (e_magnitude_total > 0.0 && e_magnitude_curr / e_magnitude_total >= 0.9) break;
     }
 
     outfile->Printf("    Number of Strong Quadruplets: %6d, Total Quadruplets: %6d, Ratio: %.4f\n\n", strong_count, n_lmo_quadruplets, 
@@ -633,6 +649,12 @@ void DLPNOCCSDT_Q::qno_transform(double t_cut_qno, bool use_tuple_cutoffs) {
     int n_lmo_pairs = ij_to_i_j_.size();
     int n_lmo_quadruplets = ijkl_to_i_j_k_l_.size();
     int min_qnos = options_.get_int("MIN_QNOS");
+    const size_t nocc = static_cast<size_t>(std::max(naocc, 0));
+    // Allowed unique occupied-index patterns are (1+1+1+1), (2+2), and
+    // (2+1+1): C(N,4) + C(N,2) + 3 C(N,3). Triply repeated indices are excluded.
+    const size_t n_total_possible = (nocc >= 4 ? nocc * (nocc - 1) * (nocc - 2) * (nocc - 3) / 24 : 0) +
+                                    (nocc >= 2 ? nocc * (nocc - 1) / 2 : 0) +
+                                    (nocc >= 3 ? nocc * (nocc - 1) * (nocc - 2) / 2 : 0);
 
     if (use_tuple_cutoffs && qno_cutoff_.size() != n_lmo_quadruplets) {
         throw PSIEXCEPTION(
@@ -650,6 +672,17 @@ void DLPNOCCSDT_Q::qno_transform(double t_cut_qno, bool use_tuple_cutoffs) {
     n_qno_.resize(n_lmo_quadruplets);
 
     ijkl_scale_.resize(n_lmo_quadruplets, 1.0);
+
+    if (n_lmo_quadruplets == 0) {
+        sorted_quadruplets_.clear();
+        outfile->Printf("  \n");
+        outfile->Printf("    Number of (Unique) Local MO quadruplets: 0\n");
+        outfile->Printf("    Max Number of Possible (Unique) LMO Quadruplets: %zu (Ratio: %.4f)\n",
+                        n_total_possible, 0.0);
+        outfile->Printf("    No surviving quadruplets; no QNO transformation is required.\n  \n");
+        timer_off("QNO transform");
+        return;
+    }
 
     std::vector<SharedMatrix> D_ij_list(n_lmo_pairs);
 
@@ -746,29 +779,32 @@ void DLPNOCCSDT_Q::qno_transform(double t_cut_qno, bool use_tuple_cutoffs) {
         Vector qno_occ("eigenvalues", nvir_ijkl);
         D_ijkl->diagonalize(*X_qno_ijkl, qno_occ, descending);
 
-        // Compute trace sum
+        // The pair-density sum is positive semidefinite. Treat negative
+        // eigenvalues as numerical noise for selection and trace statistics;
+        // using their absolute values would retain the wrong leading columns.
         double occ_total = 0.0;
         for (size_t a = 0; a < nvir_ijkl; ++a) {
-            occ_total += qno_occ.get(a);
+            occ_total += std::max(0.0, qno_occ.get(a));
         }
 
         double qno_cutoff = use_tuple_cutoffs ? qno_cutoff_[ijkl] : t_cut_qno;
         if (i == j || i == k || i == l || j == k || j == l || k == l) qno_cutoff *= t_cut_qno_diag_scale;
 
-        int nvir_ijkl_final = 0;
-        double occ_curr = 0.0;
-        for (size_t a = 0; a < nvir_ijkl; ++a) {
-            if (fabs(qno_occ.get(a)) >= qno_cutoff || a < min_qnos) {
-                occ_curr += qno_occ.get(a);
-                nvir_ijkl_final++;
-            }
+        const size_t minimum_qnos =
+            std::min(nvir_ijkl, static_cast<size_t>(std::max(1, min_qnos)));
+        size_t nvir_ijkl_final = minimum_qnos;
+        while (nvir_ijkl_final < nvir_ijkl && qno_occ.get(nvir_ijkl_final) >= qno_cutoff) {
+            ++nvir_ijkl_final;
         }
 
-        nvir_ijkl_final = std::max(1, nvir_ijkl_final);
+        double occ_curr = 0.0;
+        for (size_t a = 0; a < nvir_ijkl_final; ++a) {
+            occ_curr += std::max(0.0, qno_occ.get(a));
+        }
 
         Dimension zero(1);
         Dimension dim_final(1);
-        dim_final.fill(nvir_ijkl_final);
+        dim_final.fill(static_cast<int>(nvir_ijkl_final));
 
         // This transformation gives orbitals that are orthonormal but not canonical
         X_qno_ijkl = X_qno_ijkl->get_block({zero, X_qno_ijkl->rowspi()}, {zero, dim_final});
@@ -784,8 +820,8 @@ void DLPNOCCSDT_Q::qno_transform(double t_cut_qno, bool use_tuple_cutoffs) {
         X_qno_[ijkl] = X_qno_ijkl;
         e_qno_[ijkl] = e_qno_ijkl;
         n_qno_[ijkl] = X_qno_ijkl->colspi(0);
-        occ_qno[ijkl] = qno_occ.get(n_qno_[ijkl] - 1);
-        trace_qno[ijkl] = occ_curr / occ_total;
+        occ_qno[ijkl] = std::max(0.0, qno_occ.get(n_qno_[ijkl] - 1));
+        trace_qno[ijkl] = occ_total > 0.0 ? occ_curr / occ_total : 1.0;
     }
 
     int qno_count_total = 0, qno_count_min = C_pao_->colspi(0), qno_count_max = 0;
@@ -803,15 +839,10 @@ void DLPNOCCSDT_Q::qno_transform(double t_cut_qno, bool use_tuple_cutoffs) {
         trace_max = std::max(trace_max, trace_qno[ijkl]);
     }
 
-    // Allowed unique occupied-index patterns are (1+1+1+1), (2+2), and
-    // (2+1+1): C(N,4) + C(N,2) + 3 C(N,3). Triply repeated indices are excluded.
-    size_t n_total_possible = (naocc) * (naocc - 1) * (naocc - 2) * (naocc - 3) / 24 + (naocc) * (naocc - 1) / 2 
-        + 3 * (naocc) * (naocc - 1) * (naocc - 2) / 6;
-
     outfile->Printf("  \n");
     outfile->Printf("    Number of (Unique) Local MO quadruplets: %d\n", n_lmo_quadruplets);
     outfile->Printf("    Max Number of Possible (Unique) LMO Quadruplets: %zu (Ratio: %.4f)\n", n_total_possible,
-                    (double)n_lmo_quadruplets / n_total_possible);
+                    n_total_possible > 0 ? (double)n_lmo_quadruplets / n_total_possible : 0.0);
     outfile->Printf("    Natural Orbitals per Local MO quadruplet:\n");
     outfile->Printf("      Avg: %3d NOs \n", qno_count_total / n_lmo_quadruplets);
     outfile->Printf("      Min: %3d NOs \n", qno_count_min);
@@ -2078,6 +2109,12 @@ double DLPNOCCSDT_Q::lccsdt_q_iterations() {
     int n_lmo_quadruplets = ijkl_to_i_j_k_l_.size();
 
     outfile->Printf("\n  ==> Local CCSDT(Q) <==\n\n");
+    if (n_lmo_quadruplets == 0) {
+        outfile->Printf("    No surviving quadruplets; the iterative (Q) correction is zero.\n\n");
+        timer_off("LCCSDT(Q) Iterations");
+        return 0.0;
+    }
+
     outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
     outfile->Printf("    R_CONVERGENCE = %.2e\n\n", options_.get_double("R_CONVERGENCE"));
     outfile->Printf("                         Corr. Energy    Delta E     Max R     Time (s)\n");
@@ -2461,7 +2498,7 @@ double DLPNOCCSDT_Q::compute_energy() {
         outfile->Printf("     T_CUT_QNO set to %6.3e for weak quadruplets   \n\n", t_cut_qno_weak);
 
         // Sort quadruplets into "strong" and "weak" quadruplets
-        sort_quadruplets(E_Q0);
+        sort_quadruplets();
         qno_transform(t_cut_qno, true);
         estimate_memory();
 
@@ -3188,31 +3225,39 @@ void DLPNOCCSDTQ::xpno_transform(double xpno_tolerance) {
         Vector xpno_occupations("XPNO occupations", nvir_kl_ext);
         D_kl_sum->diagonalize(*X_xpno_kl, xpno_occupations, descending);
 
-        // Compute trace sum
+        // The extended pair density is positive semidefinite. Select a
+        // contiguous prefix of its descending, nonnegative spectrum so a
+        // negative roundoff eigenvalue in the tail cannot inflate the count.
         double occ_total = 0.0;
         for (size_t a = 0; a < nvir_kl_ext; ++a) {
-            occ_total += xpno_occupations.get(a);
+            occ_total += std::max(0.0, xpno_occupations.get(a));
         }
 
-        int nxpno_kl = 0;
+        const size_t minimum_pnos =
+            std::min(nvir_kl_ext, static_cast<size_t>(std::max(1, min_pnos)));
+        size_t nxpno_kl = 0;
         double occ_curr = 0.0;
 
         double xpno_scale = 1.0;
         if (k == l) xpno_scale = xpno_diag_scale;
 
         for (size_t a = 0; a < nvir_kl_ext; ++a) {
-            if (fabs(xpno_occupations.get(a)) >= xpno_scale * xpno_tolerance ||
-                occ_curr / occ_total < xpno_occ_tolerance || a < min_pnos) {
-                occ_curr += xpno_occupations.get(a);
-                nxpno_kl++;
-            } // end if
+            const bool below_trace_target =
+                occ_total > 0.0 && occ_curr / occ_total < xpno_occ_tolerance;
+            if (a < minimum_pnos || xpno_occupations.get(a) >= xpno_scale * xpno_tolerance ||
+                below_trace_target) {
+                occ_curr += std::max(0.0, xpno_occupations.get(a));
+                ++nxpno_kl;
+            } else {
+                // Occupations are descending. Once the occupation and trace
+                // tests both fail, no later orbital can re-enter the prefix.
+                break;
+            }
         } // end a
-
-        nxpno_kl = std::max(min_pnos, nxpno_kl);
 
         Dimension zero(1);
         Dimension dim_final(1);
-        dim_final.fill(nxpno_kl);
+        dim_final.fill(static_cast<int>(nxpno_kl));
 
         // This transformation gives orbitals that are orthonormal but not canonical
         X_xpno_kl = X_xpno_kl->get_block({zero, X_xpno_kl->rowspi()}, {zero, dim_final});
@@ -3229,8 +3274,8 @@ void DLPNOCCSDTQ::xpno_transform(double xpno_tolerance) {
         X_xpno_[kl] = X_xpno_kl;
         e_xpno_[kl] = e_xpno_kl;
         n_xpno_[kl] = X_xpno_kl->colspi(0);
-        occ_xpno[kl] = xpno_occupations.get(n_xpno_[kl] - 1);
-        trace_xpno[kl] = occ_curr / occ_total;
+        occ_xpno[kl] = std::max(0.0, xpno_occupations.get(n_xpno_[kl] - 1));
+        trace_xpno[kl] = occ_total > 0.0 ? occ_curr / occ_total : 1.0;
 
         // account for symmetry
         if (k < l) {
@@ -5684,7 +5729,9 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
                     R_iajbkcld_rms[ijkl] = residual_rms;
                     r_curr4 += R_iajbkcld_rms[ijkl] * R_iajbkcld_rms[ijkl];
                 }
-                r_curr4 = std::sqrt(r_curr4 / n_lmo_quadruplets);
+                r_curr4 = n_lmo_quadruplets > 0
+                              ? std::sqrt(r_curr4 / n_lmo_quadruplets)
+                              : 0.0;
             }
             timer_off("DLPNO-CCSDTQ : R_iajbkcld");
 

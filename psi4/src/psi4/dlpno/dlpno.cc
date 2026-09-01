@@ -114,6 +114,7 @@ void DLPNO::common_init() {
     const bool T_CUT_MKN_changed = options_["T_CUT_MKN"].has_changed();
     const bool T_CUT_PAIRS_changed = options_["T_CUT_PAIRS"].has_changed();
     const bool T_CUT_PRE_changed = options_["T_CUT_PRE"].has_changed();
+    const bool PNO_CONVERGENCE_changed = options_["PNO_CONVERGENCE"].has_changed();
 
     // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
     if (algorithm_ == DLPNOMethod::MP2) {
@@ -187,7 +188,6 @@ void DLPNO::common_init() {
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
         }
-        if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
     }
 
     // Post-CCSD(T) methods do not use a separate weak-pair treatment. Collapsing the
@@ -195,24 +195,33 @@ void DLPNO::common_init() {
     const bool post_ccsd_t =
         algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q || algorithm_ == DLPNOMethod::CCSDTQ;
     if (post_ccsd_t) {
-        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
-        if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
-        if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
-        if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
-        if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
-        if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
-        if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
-        if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        // An explicitly selected preset is just as intentional as setting each
+        // expert option separately. Apply the post-CCSD(T) defaults only when
+        // neither source supplied a value.
+        if (!PNO_CONVERGENCE_changed && !T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
+        if (!PNO_CONVERGENCE_changed && !T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
+        if (!PNO_CONVERGENCE_changed && !T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
+        if (!PNO_CONVERGENCE_changed && !T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
+        if (!PNO_CONVERGENCE_changed && !T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
+        if (!PNO_CONVERGENCE_changed && !T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+        if (!PNO_CONVERGENCE_changed && !T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
+        if (!PNO_CONVERGENCE_changed && !T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
 
         // Post-CCSD(T) methods do not retain a separate weak-pair category. Honor an
         // explicitly requested pair cutoff, but otherwise use the method default and
         // collapse the MP2 screening boundary onto the same value.
-        if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1.0e-8;
+        if (!PNO_CONVERGENCE_changed && !T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1.0e-8;
         T_CUT_PAIRS_MP2_ = T_CUT_PAIRS_;
     }
 
     if (!post_ccsd_t && !options_["T_CUT_PAIRS_MP2"].has_changed()) {
         T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
+    }
+
+    // Derive dipole prescreening from the final pair cutoff. In particular,
+    // post-CCSD(T) defaults can tighten T_CUT_PAIRS after the preset block.
+    if (algorithm_ != DLPNOMethod::MP2 && !T_CUT_PRE_changed) {
+        T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
     }
 
     name_ = "DLPNO";

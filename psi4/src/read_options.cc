@@ -2728,11 +2728,21 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_TNO", 1e-9);
         /*- Maximum number of weak pairs in (ij, jk, ik) to consider when forming triplet ijk !expert -*/
         options.add_int("TRIPLES_MAX_WEAK_PAIRS", 1);
+        /*- Legacy multiplier that sets the strong-triplet iterative-(T) cutoff relative to
+            T_CUT_TNO when T_CUT_TNO_STRONG is not explicitly set. Prefer the absolute option
+            for new inputs. !expert -*/
+        options.add_double("T_CUT_TNO_STRONG_SCALE", 10.0);
+        /*- Legacy multiplier that sets the weak-triplet iterative-(T) cutoff relative to
+            T_CUT_TNO when T_CUT_TNO_WEAK is not explicitly set. Prefer the absolute option
+            for new inputs. !expert -*/
+        options.add_double("T_CUT_TNO_WEAK_SCALE", 100.0);
         /*- Absolute TNO occupation cutoff for strong triplets in an iterative DLPNO-CCSD(T)
-            calculation. Ignored when full triples are requested. !expert -*/
+            calculation. Takes precedence over T_CUT_TNO_STRONG_SCALE when explicitly set and
+            is ignored when full triples are requested. !expert -*/
         options.add_double("T_CUT_TNO_STRONG", 1.0e-8);
         /*- Absolute TNO occupation cutoff for weak triplets in an iterative DLPNO-CCSD(T)
-            calculation. Ignored when full triples are requested. !expert -*/
+            calculation. Takes precedence over T_CUT_TNO_WEAK_SCALE when explicitly set and
+            is ignored when full triples are requested. !expert -*/
         options.add_double("T_CUT_TNO_WEAK", 1.0e-7);
         /*- Occupation number threshold used in the prescreening step !expert -*/
         options.add_double("T_CUT_TNO_PRE", 1e-7);

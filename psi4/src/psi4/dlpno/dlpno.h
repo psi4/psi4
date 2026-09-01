@@ -675,7 +675,7 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
     /// Create QNOs (Quadruplet Natural Orbitals) for DLPNO-(Q)
     void qno_transform(double qno_tolerance, bool use_tuple_cutoffs = false);
     /// Sort quadruplets to split between "strong" and "weak" quadruplets (for (Q) iterations)
-    void sort_quadruplets(double e_total);
+    void sort_quadruplets();
 
     /// Transform all four virtual indices between QNO spaces (semidirect overlaps, Eqs. (58)-(61)).
     einsums::Tensor<double, 4> matmul_4d(const einsums::Tensor<double, 4>& A,
