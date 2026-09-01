@@ -410,6 +410,178 @@ An example input file for a DLPNO-CCSDTQ computation is::
 
    energy('dlpno-ccsdtq')
 
+Representative Benzene-Dimer DLPNO-CCSDTQ Calculation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A cofacial benzene sandwich dimer with a 3.9 Angstrom interplanar separation
+provides a representative noncovalent test of the complete local hierarchy through
+DLPNO-CCSDTQ. The archived calculations used the frozen-core ``cc-pVDZ`` basis,
+``VERY_TIGHT`` PNO settings, Pipek--Mezey localized orbitals, direct SCF, energy
+and residual convergence thresholds of ``1.0e-7``, and 48 OpenMP threads on an
+AMD Genoa node. The dimer and counterpoise (CP) monomer calculations each used
+228 primary basis functions; 114 of the CP-monomer functions were ghosts on the
+partner fragment. The non-counterpoise (noCP) monomer used 114 primary basis
+functions.
+
+For the symmetric dimer, the interaction energies were evaluated as
+
+.. math::
+
+   \Delta E_\mathrm{int}^\mathrm{CP}
+      = E_{AB}^{AB} - 2 E_A^{AB},
+   \qquad
+   \Delta E_\mathrm{int}^\mathrm{noCP}
+      = E_{AB}^{AB} - 2 E_A^A.
+
+Negative values are attractive. The absolute CP and noCP interaction energies
+differ because the latter retain basis-set superposition error, but the focal-point
+increments from the higher-order correlation models are much less sensitive to the
+counterpoise convention.
+
+.. list-table:: Benzene-dimer interaction energies and post-CCSD(T) focal-point increments.
+   :header-rows: 1
+   :widths: 46 18 18 18
+
+   * - Quantity
+     - CP
+     - noCP
+     - Absolute difference
+   * - :math:`\Delta E_\mathrm{int}[\mathrm{CCSD(T)}]`
+     - 0.207
+     - -1.081
+     - 1.288
+   * - :math:`\Delta E_\mathrm{int}[\mathrm{CCSDT}]`
+     - 0.256
+     - -1.009
+     - 1.265
+   * - :math:`\Delta E_\mathrm{int}[\mathrm{CCSDT(Q)}]`
+     - 0.217
+     - -1.055
+     - 1.271
+   * - :math:`\Delta E_\mathrm{int}[\mathrm{CCSDTQ}]`
+     - -0.183
+     - -1.457
+     - 1.273
+   * - :math:`\mathrm{CCSDT}-\mathrm{CCSD(T)}`
+     - 0.049
+     - 0.071
+     - 0.022
+   * - :math:`\mathrm{CCSDT(Q)}-\mathrm{CCSDT}`
+     - -0.039
+     - -0.045
+     - 0.006
+   * - :math:`\mathrm{CCSDTQ}-\mathrm{CCSDT(Q)}`
+     - -0.400
+     - -0.402
+     - 0.002
+   * - :math:`\mathrm{CCSDTQ}-\mathrm{CCSD(T)}`
+     - -0.391
+     - -0.376
+     - 0.015
+
+All values in the preceding table are in :math:`\mathrm{kcal\,mol^{-1}}`.
+In particular, the full-quadruples increment relative to perturbative quadruples
+changes by only :math:`0.002\ \mathrm{kcal\,mol^{-1}}` between CP and noCP,
+while the complete post-CCSD(T) contribution changes by
+:math:`0.015\ \mathrm{kcal\,mol^{-1}}`. Slight differences from previously
+circulated benchmark values are expected because those calculations used a
+different cutoff set. The table above records the internally consistent CP/noCP
+results from the supplied calculation archive.
+
+The resource profile is summarized below. The memory values are Psi4's internal
+peak estimates for each stage, rather than operating-system maximum-resident-set
+measurements. The configured ``memory 2880 GB`` value was only an allocation
+ceiling. All three calculations wrote the largest TNO- and QNO-basis density-fitting
+integrals to disk.
+
+.. list-table:: Local-space sizes and resources for the benzene-dimer calculations.
+   :header-rows: 1
+   :widths: 43 19 19 19
+
+   * - Quantity
+     - Dimer
+     - CP monomer
+     - noCP monomer
+   * - Primary basis functions
+     - 228
+     - 228 (114 ghost)
+     - 114
+   * - Active occupied / canonical virtual orbitals
+     - 30 / 186
+     - 15 / 207
+     - 15 / 93
+   * - Retained triplets
+     - 4132 of 4930
+     - 665 of 665
+     - 665 of 665
+   * - Strong triplets
+     - 568 (13.7%)
+     - 270 (40.6%)
+     - 270 (40.6%)
+   * - Retained quadruplets
+     - 8652 of 40020
+     - 2552 of 2835
+     - 2550 of 2835
+   * - Strong quadruplets
+     - 1625 (18.8%)
+     - 752 (29.5%)
+     - 752 (29.5%)
+   * - Estimated DLPNO-CCSDT peak memory
+     - 89.1 GB
+     - 48.0 GB
+     - 42.4 GB
+   * - Estimated DLPNO-CCSDT(Q) peak memory
+     - 113.5 GB
+     - 41.4 GB
+     - 40.7 GB
+   * - Estimated DLPNO-CCSDTQ peak memory
+     - 446.7 GB
+     - 324.5 GB
+     - 286.7 GB
+   * - DLPNO-CCSDT wall time
+     - 51 min 54 s
+     - 6 min 39 s
+     - 6 min 18 s
+   * - ``gamma ijkl`` wall time
+     - 38 min 14 s
+     - 10 min 27 s
+     - 10 min 20 s
+   * - Iterative-(Q) wall time
+     - 16 min 21 s
+     - 5 min 25 s
+     - 5 min 27 s
+   * - DLPNO-CCSDTQ wall time
+     - 4 d 2 h 25 min
+     - 10 h 19 min
+     - 9 h 19 min
+   * - Total wall time
+     - 4 d 4 h 13 min
+     - 10 h 43 min
+     - 9 h 42 min
+   * - Full-quadruples iterations
+     - 69
+     - 24
+     - 24
+
+The dimer timing is conservative for this archived input: it explicitly set
+|dlpno__extrapolate_t4| to ``FALSE``, excluding the :math:`T_4` amplitudes
+from DIIS, whereas both monomer calculations used the default ``TRUE`` setting.
+Consequently, the dimer required 69 full-quadruples iterations and spent about
+98 hours in the DLPNO-CCSDTQ stage alone. Including :math:`T_4` in DIIS
+normally improves convergence at the cost of larger DIIS vectors. The monomer
+comparison also shows the cost of the ghost basis: the CP monomer required about
+10% more wall time and a 13% larger estimated DLPNO-CCSDTQ peak than the noCP
+monomer.
+
+.. note::
+
+   These calculations used ``T_CUT_TNO_STRONG = T_CUT_TNO_WEAK = 1.0e-7``,
+   ``T_CUT_QNO_STRONG = T_CUT_QNO_WEAK = T_CUT_QNO_FULL = 3.33e-6``, and
+   ``T_CUT_XPNO = 9.99e-6``. Because natural-orbital cutoffs control both the
+   retained local spaces and the computational cost, timings and memory
+   requirements should be interpreted as order-of-magnitude planning data for
+   these settings and this hardware, not as universal performance guarantees.
+
 PNO Convergence Settings
 ------------------------
 
