@@ -28,6 +28,10 @@ set nat_orbs False
 set e_convergence 1.0e-8
 set r_convergence 1.0e-8
 set pno_convergence very_tight
+# Preserve the historical high-order regression domain while allowing an
+# explicitly selected PNO_CONVERGENCE preset to control production inputs.
+set t_cut_pairs 1.0e-8
+set t_cut_pre 1.0e-8
 set write_quadruples_intermediates false
 
 # Algorithm 5 is a Jacobi iteration.  Exercise the immutable old/new T4
@@ -45,7 +49,12 @@ compare_values(ref_dlpnoccsdt_q_tot, val_q_incore, 6,
                'in-core standalone ccsdt(q) total')  #TEST
 clean()
 
-set_options({'WRITE_QUADRUPLES_INTERMEDIATES': True})
+set_options({
+    'WRITE_QIA_PNO': True,
+    'WRITE_QAB_PNO': True,
+    'WRITE_TRIPLES_AMPLITUDES': True,
+    'WRITE_QUADRUPLES_INTERMEDIATES': True,
+})
 set_num_threads(2)
 val_q_disk = energy('dlpno-ccsdt(q)')
 compare_values(val_q_incore, val_q_disk, 8, 'ccsdt(q) Jacobi storage/thread equivalence')  #TEST

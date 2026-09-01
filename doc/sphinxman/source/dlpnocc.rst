@@ -139,10 +139,12 @@ DLPNO implementation:
 * **Strong and weak triplets or quadruplets** refer instead to energy-ranked
   occupied-orbital tuples :math:`ijk` or :math:`ijkl`. After the semicanonical
   :math:`(T0)` or :math:`(Q0)` contributions are evaluated, tuples are sorted by
-  the magnitudes of those contributions. The leading tuples recovering 90% of the
-  corresponding energy are labeled strong and the remainder weak. These labels
-  select different TNO or QNO truncation thresholds; they do **not** imply that a
-  tuple contains any weak occupied-orbital pairs.
+  the magnitudes of those contributions. Triplets are classified by the leading
+  contribution to their signed total, while quadruplets are classified by the
+  leading 90% of the summed absolute contribution so cancellation cannot make
+  the running criterion non-monotonic. The remainder are labeled weak. These
+  labels select different TNO or QNO truncation thresholds; they do **not** imply
+  that a tuple contains any weak occupied-orbital pairs.
 
 For an iterative DLPNO-CCSD(T) calculation that is the final requested method,
 |dlpno__t_cut_tno_strong| (default ``1.0e-8``) and
@@ -151,6 +153,10 @@ cutoffs for the two energy-ranked triplet classes. If DLPNO-CCSDT or a still
 higher method is requested, both values are superseded by
 |dlpno__t_cut_tno_full| (default ``1.0e-7``) while constructing the iterative
 :math:`(T)` amplitudes that precede the full-:math:`T_3` calculation.
+For backward compatibility, ``T_CUT_TNO_STRONG_SCALE`` and
+``T_CUT_TNO_WEAK_SCALE`` remain available: unless the corresponding absolute
+cutoff is explicitly set, the effective cutoff is that scale multiplied by
+|dlpno__t_cut_tno|. An explicitly set absolute cutoff takes precedence.
 
 Analogously, when iterative DLPNO-CCSDT(Q) is the final requested method,
 |dlpno__t_cut_qno_strong| (default ``1.0e-6``) and
