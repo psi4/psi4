@@ -4542,7 +4542,7 @@ def run_dlpno(name, **kwargs):
             "algorithm": "CCSD(T)",
             "banner": "DLPNO-CCSD(T0)",
             "aux_basis": "DF_BASIS_CC",
-            "energy_label": "CCSD(T)",
+            "energy_label": "CCSD(T0)",
             "t0": True,
         },
         "dlpno-ccsd(t)": {
@@ -4562,7 +4562,7 @@ def run_dlpno(name, **kwargs):
             "algorithm": "CCSDT(Q)",
             "banner": "DLPNO-CCSDT(Q0)",
             "aux_basis": "DF_BASIS_CC",
-            "energy_label": "CCSDT(Q)",
+            "energy_label": "CCSDT(Q0)",
             "q0": True,
         },
         "dlpno-ccsdt(q)": {

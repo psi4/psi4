@@ -2514,11 +2514,14 @@ double DLPNOCCSDT_Q::compute_energy() {
     }
     outfile->Printf("  DLPNO-CCSDT(Q) computation complete.\n\n");
 
-    set_scalar_variable("CCSDT(Q) CORRELATION ENERGY", e_ccsdt_q_corr);
+    const std::string quadruples_energy_label = q0_only ? "CCSDT(Q0)" : "CCSDT(Q)";
+    const std::string quadruples_correction_label = q0_only ? "(Q0)" : "(Q)";
+
+    set_scalar_variable(quadruples_energy_label + " CORRELATION ENERGY", e_ccsdt_q_corr);
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsdt_q_corr);
-    set_scalar_variable("CCSDT(Q) TOTAL ENERGY", e_ccsdt_q_total);
+    set_scalar_variable(quadruples_energy_label + " TOTAL ENERGY", e_ccsdt_q_total);
     set_scalar_variable("CURRENT ENERGY", e_ccsdt_q_total);
-    set_scalar_variable("(Q) CORRECTION ENERGY",
+    set_scalar_variable(quadruples_correction_label + " CORRECTION ENERGY",
                         e_ccsdt_q_total - variables_["CCSDT TOTAL ENERGY"]);
 
     print_results();
@@ -5939,6 +5942,8 @@ double DLPNOCCSDTQ::compute_energy() {
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsdtq_corr);
     set_scalar_variable("CCSDTQ TOTAL ENERGY", e_ccsdtq_total);
     set_scalar_variable("CURRENT ENERGY", e_ccsdtq_total);
+    set_scalar_variable("Q CORRECTION ENERGY",
+                        e_ccsdtq_total - variables_["CCSDT TOTAL ENERGY"]);
 
     print_results();
 
@@ -5962,9 +5967,6 @@ void DLPNOCCSDTQ::print_results() {
     const double total_energy = variables_["SCF TOTAL ENERGY"] + total_correlation;
     const double ccsdtq_minus_ccsdt = total_energy - variables_["CCSDT TOTAL ENERGY"];
     const double ccsdtq_minus_ccsdt_q = total_energy - variables_["CCSDT(Q) TOTAL ENERGY"];
-
-    set_scalar_variable("CCSDTQ - CCSDT ENERGY", ccsdtq_minus_ccsdt);
-    set_scalar_variable("CCSDTQ - CCSDT(Q) ENERGY", ccsdtq_minus_ccsdt_q);
 
     outfile->Printf("  \n");
     outfile->Printf("  Total DLPNO-CCSDTQ Correlation Energy: %16.12f \n", total_correlation);
