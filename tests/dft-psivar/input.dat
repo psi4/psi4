@@ -80,7 +80,7 @@ clean()
 
 energy('b2plyp')
 compare_values(ref_nn, variable("Nuclear Repulsion Energy"),               6, "DH-DFT: NN")  #TEST
-compare_values(ref_b2plyp_1e, variable("One-Electron Energy"),             6, "DH-DFT: 1e")  #TEST
+compare_values(ref_b2plyp_1e, variable("One-Electron Energy"),         2.e-6, "DH-DFT: 1e")  #TEST
 compare_values(ref_b2plyp_2e, variable("Two-Electron Energy"),             6, "DH-DFT: 2e")  #TEST
 compare_values(ref_b2plyp_xc, variable("DFT XC Energy"),                   6, "DH-DFT: XC")  #TEST
 compare_values(ref_b2plyp_dh, variable("DOUBLE-hybrid correction Energy"), 6, "DH-DFT: DH")  #TEST

@@ -10,7 +10,6 @@ molecule h2o {
 }
 
 set basis cc-pVDZ
-set ORBITAL_OPTIMIZER_PACKAGE otr
 energy('scf')
 
 compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
