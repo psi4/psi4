@@ -17,7 +17,3 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
 endif()
 
 target_link_libraries(dlpno PUBLIC diis)
-
-if(TARGET Einsums::Einsums)
-    target_link_libraries(dlpno PRIVATE Einsums::Einsums)
-endif()

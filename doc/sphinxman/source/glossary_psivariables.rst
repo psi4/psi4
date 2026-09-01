@@ -50,11 +50,22 @@ PSI Variables by Alpha
 
 .. psivar:: (Q) CORRECTION ENERGY
 
-   The coupled-cluster perturbative quadruples correction [E_h].
+   The coupled-cluster perturbative quadruples correction [E_h] as the
+   difference between CCSDT(Q) and CCSDT.
+
+.. psivar:: (Q0) CORRECTION ENERGY
+
+   The semicanonical coupled-cluster perturbative quadruples correction [E_h]
+   as the difference between CCSDT(Q0) and CCSDT.
 
 .. psivar:: (T) CORRECTION ENERGY
 
    The coupled-cluster perturbative triples correction [E_h].
+
+.. psivar:: (T0) CORRECTION ENERGY
+
+   The semicanonical coupled-cluster perturbative triples correction [E_h]
+   as the difference between CCSD(T0) and CCSD.
 
 .. psivar:: (AT) CORRECTION ENERGY
    A-(T) CORRECTION ENERGY
@@ -552,28 +563,25 @@ PSI Variables by Alpha
    for the requested full coupled-cluster (CCSD, CCSDT, up to CC\ *n*)
    level of theory.
 
-.. psivar:: CCSDTQ - CCSDT ENERGY
-
-   The difference between the CCSDTQ and CCSDT total energies [E_h].
-
-.. psivar:: CCSDTQ - CCSDT(Q) ENERGY
-
-   The difference between the CCSDTQ and CCSDT(Q) total energies [E_h].
-
-.. psivar:: CCSD(T) TOTAL ENERGY
+.. psivar:: CCSD(T0) TOTAL ENERGY
+   CCSD(T0) CORRELATION ENERGY
+   CCSD(T) TOTAL ENERGY
    CCSD(T) CORRELATION ENERGY
    CCSD(AT) TOTAL ENERGY
    CCSD(AT) CORRELATION ENERGY
    A-CCSD(T) TOTAL ENERGY
    A-CCSD(T) CORRELATION ENERGY
+   CCSDT(Q0) TOTAL ENERGY
+   CCSDT(Q0) CORRELATION ENERGY
    CCSDT(Q) TOTAL ENERGY
    CCSDT(Q) CORRELATION ENERGY
    CC(n-1)(n) TOTAL ENERGY
    CC(n-1)(n) CORRELATION ENERGY
 
    The total electronic energy [E_h] and correlation energy component [E_h]
-   for the perturbatively corrected coupled-cluster (CCSD(T), A-CCSD(T) = CCSD(AT), CCSDT(Q),
-   up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
+   for the perturbatively corrected coupled-cluster (CCSD(T0), CCSD(T),
+   A-CCSD(T) = CCSD(AT), CCSDT(Q0), CCSDT(Q), up to
+   CC(\ *n*\ -1)(\ *n*\ )) level of theory.
 
 .. psivar:: CCSDT-1a TOTAL ENERGY
    CCSDT-1a CORRELATION ENERGY
@@ -1449,6 +1457,11 @@ PSI Variables by Alpha
 
    The energy contribution [E_h] from the polarizable embedding model for solvation.
 
+.. psivar:: Q CORRECTION ENERGY
+
+   The full quadruples correction [E_h] as the difference between CCSDTQ
+   and CCSDT.
+
 .. psivar:: QCISD TOTAL ENERGY
    QCISD CORRELATION ENERGY
 
@@ -1917,6 +1930,11 @@ PSI Variables by Alpha
    for the MP2-like method formed by reweighting :psivar:`MP2 DOUBLES ENERGY`
    by 1.4 opposite-spin and 0 same-spin contributions, with
    any singles carried along.
+
+.. psivar:: T CORRECTION ENERGY
+
+   The full triples correction [E_h] as the difference between CCSDT and
+   CCSD.
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
 

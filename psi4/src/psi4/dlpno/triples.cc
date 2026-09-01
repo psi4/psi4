@@ -1507,13 +1507,16 @@ double DLPNOCCSD_T::compute_energy() {
     double e_ccsd_t_corr = e_lccsd_t_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_ccsd_t_total = e_scf + e_ccsd_t_corr;
 
-    set_scalar_variable("CCSD(T) CORRELATION ENERGY", e_ccsd_t_corr);
+    const std::string triples_energy_label = t0_only ? "CCSD(T0)" : "CCSD(T)";
+    const std::string triples_correction_label = t0_only ? "(T0)" : "(T)";
+
+    set_scalar_variable(triples_energy_label + " CORRELATION ENERGY", e_ccsd_t_corr);
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsd_t_corr);
-    set_scalar_variable("CCSD(T) TOTAL ENERGY", e_ccsd_t_total);
+    set_scalar_variable(triples_energy_label + " TOTAL ENERGY", e_ccsd_t_total);
     set_scalar_variable("CURRENT ENERGY", e_ccsd_t_total);
 
-    // psivars for (T) energy components
-    set_scalar_variable("(T) CORRECTION ENERGY", e_lccsd_t_ - e_lccsd_);
+    // psivars for the selected perturbative-triples energy components
+    set_scalar_variable(triples_correction_label + " CORRECTION ENERGY", e_lccsd_t_ - e_lccsd_);
     set_scalar_variable("DLPNO SEMICANONICAL (T0) ENERGY", E_T0 + de_lccsd_t_screened_);
     set_scalar_variable("DLPNO SCREENED TRIPLETS ENERGY", de_lccsd_t_screened_);
 
@@ -3845,6 +3848,8 @@ double DLPNOCCSDT::compute_energy() {
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsdt_corr);
     set_scalar_variable("CCSDT TOTAL ENERGY", e_ccsdt_total);
     set_scalar_variable("CURRENT ENERGY", e_ccsdt_total);
+    set_scalar_variable("T CORRECTION ENERGY",
+                        e_ccsdt_total - variables_["CCSD TOTAL ENERGY"]);
 
     print_results();
 

@@ -466,7 +466,7 @@ def return_energy_components():
                              'hf': 'HF TOTAL ENERGY',
                       'dlpno-mp2': 'MP2 TOTAL ENERGY',
                      'dlpno-ccsd': 'CCSD TOTAL ENERGY',
-                 'dlpno-ccsd(t0)': 'CCSD(T) TOTAL ENERGY'}
+                 'dlpno-ccsd(t0)': 'CCSD(T0) TOTAL ENERGY'}
     VARH['dlpno-ccsd(t)'] = {
                              'hf': 'HF TOTAL ENERGY',
                       'dlpno-mp2': 'MP2 TOTAL ENERGY',
@@ -484,7 +484,7 @@ def return_energy_components():
                      'dlpno-ccsd': 'CCSD TOTAL ENERGY',
                   'dlpno-ccsd(t)': 'CCSD(T) TOTAL ENERGY',
                     'dlpno-ccsdt': 'CCSDT TOTAL ENERGY',
-                'dlpno-ccsdt(q0)': 'CCSDT(Q) TOTAL ENERGY'}
+                'dlpno-ccsdt(q0)': 'CCSDT(Q0) TOTAL ENERGY'}
     VARH['dlpno-ccsdt(q)'] = {
                              'hf': 'HF TOTAL ENERGY',
                       'dlpno-mp2': 'MP2 TOTAL ENERGY',
