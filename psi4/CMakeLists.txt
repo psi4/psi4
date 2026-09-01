@@ -239,6 +239,15 @@ else()
     message(STATUS "Disabled simint ${simint_DIR}")
 endif()
 
+if(${ENABLE_libcint})
+    find_package(libcint CONFIG REQUIRED)
+    get_property(_loc TARGET libcint::libcint PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using libcint${ColourReset}: ${_loc} (version ${libcint_VERSION})")
+else()
+    message(STATUS "Disabled libcint ${libcint_DIR}")
+endif()
+
 if(${ENABLE_BrianQC})
     find_package(BrianQC 1.1 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET BrianQC::static_wrapper PROPERTY LOCATION)
