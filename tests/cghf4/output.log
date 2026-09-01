@@ -1,0 +1,3 @@
+2026-03-31:00:46:32,328 INFO     [psi4.driver.task_planner:259] PLANNING Atomic:  keywords={'E_CONVERGENCE': 1e-09, 'GUESS': 'SAD', 'REFERENCE': 'CGHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2026-03-31:00:46:32,330 INFO     [psi4.driver.driver:529] Compute energy(): method=scf, basis=sto-3g, molecule=h3, nre=1.5875316354786722
+2026-03-31:00:46:32,445 INFO     [psi4.driver.driver:532] Return energy(): -1.3359800548593497
