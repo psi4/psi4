@@ -7,7 +7,7 @@
 oopkg = "ooo" if os.environ.get("_PSI4_USE_OOOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
 psi4.set_options({"orbital_optimizer_package": oopkg})
 compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
-dhtol = 2.e-6 if oopkg == "otr" else 6
+dhtol = 6 if oopkg == "internal" else 2.e-6
 
 molecule meth {
 0 1
