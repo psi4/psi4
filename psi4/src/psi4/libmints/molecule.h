@@ -402,7 +402,7 @@ class PSI_API Molecule {
     Matrix distance_matrix() const;
 
     /// Compute inertia tensor.
-    Matrix* inertia_tensor() const;
+    SharedMatrix inertia_tensor() const;
 
     /// Compute the rotational constants and return them in wavenumbers
     Vector rotational_constants(double tol = FULL_PG_TOL) const;
