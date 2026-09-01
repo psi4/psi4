@@ -34,15 +34,20 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libpsi4util/exception.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace psi {
 
+// TODO: Investigate whether the Regular/Irregular split would be better expressed as a template parameter.
 enum class SolidHarmonicsType { Regular, Irregular };
 
 static inline int ncart(int l) { return (l + 1) * (l + 2) / 2; }
@@ -72,8 +77,24 @@ static inline int m_addr(int m) {
     }
 }
 
-static inline double cfmm_factorial(const double n) {
-    return std::tgamma(n + 1.0);
+inline constexpr int max_cfmm_order = 32;
+inline constexpr int max_cfmm_factorial = 2 * max_cfmm_order;
+
+inline constexpr auto cfmm_factorial_table = [] {
+    std::array<double, max_cfmm_factorial + 1> table{};
+    table[0] = 1.0;
+    for (std::size_t n = 1; n < table.size(); ++n) {
+        table[n] = table[n - 1] * static_cast<double>(n);
+    }
+    return table;
+}();
+
+constexpr double cfmm_factorial(const int n) {
+    if (n < 0 || n > max_cfmm_factorial) {
+        throw PSIEXCEPTION("cfmm_factorial: argument outside the tabulated range of [0, " +
+                           std::to_string(max_cfmm_factorial) + "].");
+    }
+    return cfmm_factorial_table[static_cast<std::size_t>(n)];
 }
 
 class PSI_API MultipoleRotationFactory {

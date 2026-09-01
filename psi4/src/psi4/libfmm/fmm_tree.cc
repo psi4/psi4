@@ -46,6 +46,7 @@
 #include <cmath>
 #include <cstring>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -432,6 +433,9 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
     lmax_ = options_.get_int("CFMM_ORDER");
     if (lmax_ < 0) {
         throw PSIEXCEPTION("CFMM_ORDER must be nonnegative.");
+    } else if (lmax_ > max_cfmm_order) {
+        throw PSIEXCEPTION("The maximum CFMM_ORDER supported by the implementation is " +
+                           std::to_string(max_cfmm_order) + ".");
     }
 
     nthread_ = 1;

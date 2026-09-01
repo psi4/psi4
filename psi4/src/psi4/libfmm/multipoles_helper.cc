@@ -199,8 +199,15 @@ HarmonicCoefficients::HarmonicCoefficients(int lmax, SolidHarmonicsType type) {
         mpole_terms_[l].resize(2*l+1);
     }
 
-    if (type_ == SolidHarmonicsType::Regular) compute_terms_regular();
-    if (type_ == SolidHarmonicsType::Irregular) compute_terms_irregular();
+    switch (type_) {
+        case SolidHarmonicsType::Regular:
+            compute_terms_regular();
+            return;
+        case SolidHarmonicsType::Irregular:
+            compute_terms_irregular();
+            return;
+    }
+    throw PSIEXCEPTION("HarmonicCoefficients has an invalid solid-harmonic type.");
 }
 
 void HarmonicCoefficients::compute_terms_irregular() {
@@ -229,10 +236,8 @@ void HarmonicCoefficients::compute_terms_regular() {
                 double denom = (l+m)*(l-m);
 
                 // Rc_[l-1][m] contributions to Rc_[l][m]
-                for (const std::pair<int, double>& rpair : Rc_[l-1][m]) {
+                for (const auto& [ind, coef] : Rc_[l-1][m]) {
                     int ncl1 = ncart(l-1);
-                    int ind = rpair.first;
-                    double coef = rpair.second;
                     if (std::abs(coef) < 1.0e-16) continue;
                     int a = ind / (ncl1*ncl1);
                     int bc = ind % (ncl1*ncl1);
@@ -246,10 +251,8 @@ void HarmonicCoefficients::compute_terms_regular() {
                 }
 
                 // Rc_[l-2][m] contributions to Rc_[l][m]
-                for (const std::pair<int, double>& rpair : Rc_[l-2][m]) {
+                for (const auto& [ind, coef] : Rc_[l-2][m]) {
                     int ncl2 = ncart(l-2);
-                    int ind = rpair.first;
-                    double coef = rpair.second;
                     if (std::abs(coef) < 1.0e-16) continue;
                     int a = ind / (ncl2*ncl2);
                     int bc = ind % (ncl2*ncl2);
@@ -266,10 +269,8 @@ void HarmonicCoefficients::compute_terms_regular() {
                 }
 
                 // Rs_[l-1][m] contributions to Rs_[l][m]
-                for (const std::pair<int, double>& rpair : Rs_[l-1][m]) {
+                for (const auto& [ind, coef] : Rs_[l-1][m]) {
                     int ncl1 = ncart(l-1);
-                    int ind = rpair.first;
-                    double coef = rpair.second;
                     if (std::abs(coef) < 1.0e-16) continue;
                     int a = ind / (ncl1*ncl1);
                     int bc = ind % (ncl1*ncl1);
@@ -283,10 +284,8 @@ void HarmonicCoefficients::compute_terms_regular() {
                 }
 
                 // Rs_[l-2][m] contributions to Rs_[l][m]
-                for (const std::pair<int, double>& rpair : Rs_[l-2][m]) {
+                for (const auto& [ind, coef] : Rs_[l-2][m]) {
                     int ncl2 = ncart(l-2);
-                    int ind = rpair.first;
-                    double coef = rpair.second;
                     if (std::abs(coef) < 1.0e-16) continue;
                     int a = ind / (ncl2*ncl2);
                     int bc = ind % (ncl2*ncl2);
@@ -306,10 +305,8 @@ void HarmonicCoefficients::compute_terms_regular() {
             // => m = l-1 <= //
 
             // Rc[l][l-1]
-            for (const std::pair<int, double>& rpair : Rc_[l-1][l-1]) {
+            for (const auto& [ind, coef] : Rc_[l-1][l-1]) {
                 int ncl1 = ncart(l-1);
-                int ind = rpair.first;
-                double coef = rpair.second;
                 if (std::abs(coef) < 1.0e-16) continue;
                 int a = ind / (ncl1*ncl1);
                 int bc = ind % (ncl1*ncl1);
@@ -322,10 +319,8 @@ void HarmonicCoefficients::compute_terms_regular() {
             }
 
             // Rs[l][l-1]
-            for (const std::pair<int, double>& rpair : Rs_[l-1][l-1]) {
+            for (const auto& [ind, coef] : Rs_[l-1][l-1]) {
                 int ncl1 = ncart(l-1);
-                int ind = rpair.first;
-                double coef = rpair.second;
                 if (std::abs(coef) < 1.0e-16) continue;
                 int a = ind / (ncl1*ncl1);
                 int bc = ind % (ncl1*ncl1);
@@ -340,10 +335,8 @@ void HarmonicCoefficients::compute_terms_regular() {
             // => m = l <= //
 
             // Rc[l-1][l-1] contribution to Rc[l][l]
-            for (const std::pair<int, double>& rpair : Rc_[l-1][l-1]) {
+            for (const auto& [ind, coef] : Rc_[l-1][l-1]) {
                 int ncl1 = ncart(l-1);
-                int ind = rpair.first;
-                double coef = rpair.second;
                 if (std::abs(coef) < 1.0e-16) continue;
                 int a = ind / (ncl1*ncl1);
                 int bc = ind % (ncl1*ncl1);
@@ -357,10 +350,8 @@ void HarmonicCoefficients::compute_terms_regular() {
             }
 
             // Rs[l-1][l-1] contribution to Rc[l][l]
-            for (const std::pair<int, double>& rpair : Rs_[l-1][l-1]) {
+            for (const auto& [ind, coef] : Rs_[l-1][l-1]) {
                 int ncl1 = ncart(l-1);
-                int ind = rpair.first;
-                double coef = rpair.second;
                 if (std::abs(coef) < 1.0e-16) continue;
                 int a = ind / (ncl1*ncl1);
                 int bc = ind % (ncl1*ncl1);
@@ -374,10 +365,8 @@ void HarmonicCoefficients::compute_terms_regular() {
             }
 
             // Rc[l-1][l-1] contribution to Rs[l][l]
-            for (const std::pair<int, double>& rpair : Rc_[l-1][l-1]) {
+            for (const auto& [ind, coef] : Rc_[l-1][l-1]) {
                 int ncl1 = ncart(l-1);
-                int ind = rpair.first;
-                double coef = rpair.second;
                 if (std::abs(coef) < 1.0e-16) continue;
                 int a = ind / (ncl1*ncl1);
                 int bc = ind % (ncl1*ncl1);
@@ -391,10 +380,8 @@ void HarmonicCoefficients::compute_terms_regular() {
             }
 
             // Rs[l-1][l-1] contribution to Rs[l][l]
-            for (const std::pair<int, double>& rpair : Rs_[l-1][l-1]) {
+            for (const auto& [ind, coef] : Rs_[l-1][l-1]) {
                 int ncl1 = ncart(l-1);
-                int ind = rpair.first;
-                double coef = rpair.second;
                 if (std::abs(coef) < 1.0e-16) continue;
                 int a = ind / (ncl1*ncl1);
                 int bc = ind % (ncl1*ncl1);
@@ -420,18 +407,14 @@ void HarmonicCoefficients::compute_terms_regular() {
                 } else {
                     prefactor = std::pow(-1.0, (double) m) * std::sqrt(2.0 * cfmm_factorial(l-m) * cfmm_factorial(l+m));
                 }
-                for (const std::pair<int, double>& rpair : Rc_[l][m]) {
-                    int ind = rpair.first;
-                    double coef = rpair.second;
+                for (const auto& [ind, coef] : Rc_[l][m]) {
                     if (std::abs(coef) < 1.0e-16) continue;
                     mpole_terms_[l][mu][ind] = prefactor * coef;
                 }
 
             } else {
                 prefactor = std::pow(-1.0, (double) m) * std::sqrt(2.0 * cfmm_factorial(l-m) * cfmm_factorial(l+m));
-                for (const std::pair<int, double>& rpair : Rs_[l][-m]) {
-                    int ind = rpair.first;
-                    double coef = rpair.second;
+                for (const auto& [ind, coef] : Rs_[l][-m]) {
                     if (std::abs(coef) < 1.0e-16) continue;
                     mpole_terms_[l][mu][ind] = prefactor * coef;
                 }
@@ -510,9 +493,8 @@ std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::translate(const Vector3&
             return translate_regular(new_center);
         case SolidHarmonicsType::Irregular:
             return translate_irregular(new_center);
-        default:
-            throw PSIEXCEPTION("RealSolidHarmonics has an invalid solid-harmonic type.");
     }
+    throw PSIEXCEPTION("RealSolidHarmonics has an invalid solid-harmonic type.");
 }
 
 std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::translate_irregular(Vector3 new_center) {
