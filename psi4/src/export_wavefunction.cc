@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <cstring>
 #include <string>
 
 #include "psi4/pybind11.h"
@@ -39,8 +40,10 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/extern.h"
+#include "psi4/libmints/complexwavefunction.h"
 
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/ComplexJK.h"
 #include "psi4/libfock/soscf.h"
 
 #include "psi4/cc/ccwave.h"
@@ -53,11 +56,13 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
 
+#include "psi4/libscf_solver/basehf.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
+#include "psi4/libscf_solver/cghf.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfock/v.h"
 
@@ -82,7 +87,79 @@ using namespace pybind11::literals;
 
 void export_wavefunction(py::module& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
-    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
+
+    py::class_<BaseWavefunction, std::shared_ptr<BaseWavefunction>>(m, "BaseWavefunction",
+                                                                    "Base class for real and complex wavefunctions.",
+                                                                    py::dynamic_attr())
+        .def(py::init<>())
+        .def("molecule", &BaseWavefunction::molecule, "Returns the wavefunction's molecule.")
+        .def("basisset", &BaseWavefunction::basisset, "Returns the current orbital basis.")
+        .def("nfrzc", &BaseWavefunction::nfrzc, "Number of frozen core electrons.")
+        .def("nso", &BaseWavefunction::nso, "Number of symmetry orbitals.")
+        .def("nmo", &BaseWavefunction::nmo, "Number of molecule orbitals.")
+        .def("nirrep", &BaseWavefunction::nirrep, "Number of irreps in the system.")
+        .def("efzc", &BaseWavefunction::efzc, "Returns the frozen-core energy")
+        .def("mintshelper", &BaseWavefunction::mintshelper, "Returns the current MintsHelper object.")
+        .def("sobasisset", &BaseWavefunction::sobasisset, "Returns the symmetry orbitals basis.")
+        .def("get_basisset", &BaseWavefunction::get_basisset, "Returns the requested auxiliary basis.")
+        .def("set_basisset", &BaseWavefunction::set_basisset, "Sets the requested auxiliary basis.")
+        .def("energy", &BaseWavefunction::energy, "Returns the Wavefunction's energy.")
+        .def("options", &BaseWavefunction::options, "Returns the Wavefunction's options object")
+        .def("set_energy", &BaseWavefunction::set_energy,
+             "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
+        .def("get_dipole_field_strength", &BaseWavefunction::get_dipole_field_strength,
+             "Returns a vector of length 3, containing the x, y, and z dipole field strengths.")
+        .def("set_name", &BaseWavefunction::set_name, "Sets the level of theory this wavefunction corresponds to.")
+        .def("name", &BaseWavefunction::name, py::return_value_policy::copy,
+             "The level of theory this wavefunction corresponds to.")
+        .def("set_module", &BaseWavefunction::set_module, "module"_a,
+             "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
+        .def("module", &BaseWavefunction::module, py::return_value_policy::copy,
+             "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
+        .def("nsopi", &BaseWavefunction::nsopi, py::return_value_policy::copy,
+             "Returns the number of symmetry orbitals per irrep.")
+        .def("nmopi", &BaseWavefunction::nmopi, py::return_value_policy::copy,
+             "Returns the number of molecular orbitals per irrep.")
+        .def("frzcpi", &BaseWavefunction::frzcpi, py::return_value_policy::copy,
+             "Returns the number of frozen core orbitals per irrep.")
+        .def("frzvpi", &BaseWavefunction::frzvpi, py::return_value_policy::copy,
+             "Returns the number of frozen virtual orbitals per irrep.")
+        .def("set_print", &BaseWavefunction::set_print, "Sets the print level of the Wavefunction.")
+        .def("get_print", &BaseWavefunction::get_print, "Get the print level of the Wavefunction.")
+        .def("set_external_potential", &BaseWavefunction::set_external_potential, "Sets the requested external potential.")
+        .def("external_pot", &BaseWavefunction::external_pot, "Gets the requested external potential.")
+        .def("has_scalar_variable", &BaseWavefunction::has_scalar_variable,
+             "Is the double QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.BaseWavefunction.has_variable`.")
+        .def("has_potential_variable", &BaseWavefunction::has_potential_variable,
+             "Is the ExternalPotential QC variable (case-insensitive) set? "
+             "(This function is provisional and might be removed in the future.)")
+        .def("scalar_variable", &BaseWavefunction::scalar_variable,
+             "Returns the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.BaseWavefunction.variable`.")
+        .def("potential_variable", &BaseWavefunction::potential_variable,
+             "key"_a, "Returns copy of the requested (case-insensitive) ExternalPotential QC variable *key*. "
+             "(This function is provisional and might be removed in the future.)")
+        .def("set_scalar_variable", &BaseWavefunction::set_scalar_variable,
+             "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT "
+             "ENERGY. Prefer :meth:`~psi4.core.BaseWavefunction.set_variable`.")
+        .def("set_potential_variable", &BaseWavefunction::set_potential_variable,
+             "Sets the requested (case-insensitive) ExternalPotential QC variable. "
+             "(This function is provisional and might be removed in the future.)")
+        .def("del_scalar_variable", &BaseWavefunction::del_scalar_variable,
+             "Removes the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.BaseWavefunction.del_variable`.")
+        .def("del_potential_variable", &BaseWavefunction::del_potential_variable,
+             "Removes the requested (case-insensitive) ExternalPotential QC variable. "
+             "(This function is provisional and might be removed in the future.)")
+        .def("scalar_variables", &BaseWavefunction::scalar_variables,
+             "Returns the dictionary of all double QC variables. Prefer :meth:`~psi4.core.BaseWavefunction.variables`.")
+        .def("potential_variables", &BaseWavefunction::potential_variables, "Returns the dictionary of all ExternalPotential QC variables. "
+             "(This function is provisional and might be removed in the future.)")
+#ifdef USING_PCMSolver
+        .def("set_PCM", &BaseWavefunction::set_PCM, "Set the PCM object")
+        .def("get_PCM", &BaseWavefunction::get_PCM, "Get the PCM object")
+#endif
+        .def("PCM_enabled", &BaseWavefunction::PCM_enabled, "Whether running a PCM calculation");
+
+    py::class_<Wavefunction, std::shared_ptr<Wavefunction>, BaseWavefunction>(m, "Wavefunction", "Real Wavefunction")
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>,
@@ -99,13 +176,8 @@ void export_wavefunction(py::module& m) {
         .def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "Returns true if the alpha and beta orbitals are the same.")
         .def("same_a_b_dens", &Wavefunction::same_a_b_dens,
              "Returns true if the alpha and beta densities are the same.")
-        .def("nfrzc", &Wavefunction::nfrzc, "Number of frozen core electrons.")
         .def("nalpha", &Wavefunction::nalpha, "Number of Alpha electrons.")
         .def("nbeta", &Wavefunction::nbeta, "Number of Beta electrons.")
-        .def("nso", &Wavefunction::nso, "Number of symmetry orbitals.")
-        .def("nmo", &Wavefunction::nmo, "Number of molecule orbitals.")
-        .def("nirrep", &Wavefunction::nirrep, "Number of irreps in the system.")
-        .def("efzc", &Wavefunction::efzc, "Returns the frozen-core energy")
         .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
         .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
         .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership, R"pbdoc(
@@ -198,16 +270,7 @@ void export_wavefunction(py::module& m) {
              "Projects a orbital matrix from one basis to another.")
         .def("H", &Wavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.")
         .def("S", &Wavefunction::S, "Returns the One-electron Overlap Matrix.")
-        .def("mintshelper", &Wavefunction::mintshelper, "Returns the current MintsHelper object.")
         .def("aotoso", &Wavefunction::aotoso, "Returns the Atomic Orbital to Symmetry Orbital transformer.")
-        .def("basisset", &Wavefunction::basisset, "Returns the current orbital basis.")
-        .def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.")
-        .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
-        .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
-        .def("energy", &Wavefunction::energy, "Returns the Wavefunction's energy.")
-        .def("options", &Wavefunction::options, "Returns the Wavefunction's options object")
-        .def("set_energy", &Wavefunction::set_energy,
-             "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
         .def("gradient", &Wavefunction::gradient, "Returns the Wavefunction's gradient.")
         .def("set_gradient", &Wavefunction::set_gradient,
              "Sets the Wavefunction's gradient. Syncs with Wavefunction's QC variable ``CURRENT GRADIENT``.")
@@ -219,15 +282,6 @@ void export_wavefunction(py::module& m) {
         .def("no_occupations", &Wavefunction::get_no_occupations,
              "returns the natural orbital occupations on the wavefunction.")
         .def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "Returns the set atomic point charges.")
-        .def("get_dipole_field_strength", &Wavefunction::get_dipole_field_strength,
-             "Returns a vector of length 3, containing the x, y, and z dipole field strengths.")
-        .def("set_name", &Wavefunction::set_name, "Sets the level of theory this wavefunction corresponds to.")
-        .def("name", &Wavefunction::name, py::return_value_policy::copy,
-             "The level of theory this wavefunction corresponds to.")
-        .def("set_module", &Wavefunction::set_module, "module"_a,
-             "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
-        .def("module", &Wavefunction::module, py::return_value_policy::copy,
-             "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
         .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "id"_a, "basis"_a, "subset"_a, R"pbdoc(
             Creates OrbitalSpace with information about the requested alpha orbital space.
 
@@ -248,7 +302,6 @@ void export_wavefunction(py::module& m) {
                 Information on *subset* alpha orbitals.
             )pbdoc")
         .def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring")
-        .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of doubly occupied orbitals per irrep.")
         .def("force_occpi", &Wavefunction::force_occpi,
@@ -256,81 +309,123 @@ void export_wavefunction(py::module& m) {
              "results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of singly occupied orbitals per irrep.")
-        .def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy,
-             "Returns the number of symmetry orbitals per irrep.")
-        .def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy,
-             "Returns the number of molecular orbitals per irrep.")
         .def("nalphapi", &Wavefunction::nalphapi, py::return_value_policy::copy,
              "Returns the number of alpha orbitals per irrep.")
         .def("nbetapi", &Wavefunction::nbetapi, py::return_value_policy::copy,
              "Returns the number of beta orbitals per irrep.")
-        .def("frzcpi", &Wavefunction::frzcpi, py::return_value_policy::copy,
-             "Returns the number of frozen core orbitals per irrep.")
-        .def("frzvpi", &Wavefunction::frzvpi, py::return_value_policy::copy,
-             "Returns the number of frozen virtual orbitals per irrep.")
-        .def("set_print", &Wavefunction::set_print, "Sets the print level of the Wavefunction.")
-        .def("get_print", &Wavefunction::get_print, "Get the print level of the Wavefunction.")
         .def("compute_energy", &Wavefunction::compute_energy, "Computes the energy of the Wavefunction.")
         .def("compute_gradient", &Wavefunction::compute_gradient, "Computes the gradient of the Wavefunction")
         .def("compute_hessian", &Wavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.")
-        .def("set_external_potential", &Wavefunction::set_external_potential, "Sets the requested external potential.")
-        .def("external_pot", &Wavefunction::external_pot, "Gets the requested external potential.")
-        .def("has_scalar_variable", &Wavefunction::has_scalar_variable,
-             "Is the double QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.Wavefunction.has_variable`.")
         .def("has_array_variable", &Wavefunction::has_array_variable,
-             "Is the Matrix QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.Wavefunction.has_variable`.")
-        .def("has_potential_variable", &Wavefunction::has_potential_variable,
-             "Is the ExternalPotential QC variable (case-insensitive) set? "
-             "(This function is provisional and might be removed in the future.)")
-        .def("scalar_variable", &Wavefunction::scalar_variable,
-             "Returns the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.Wavefunction.variable`.")
+             "Is the Matrix QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.BaseWavefunction.has_variable`.")
         .def("array_variable", &Wavefunction::array_variable,
-             "Returns copy of the requested (case-insensitive) Matrix QC variable. Prefer :meth:`~psi4.core.Wavefunction.variable`.")
-        .def("potential_variable", &Wavefunction::potential_variable,
-             "key"_a, "Returns copy of the requested (case-insensitive) ExternalPotential QC variable *key*. "
-             "(This function is provisional and might be removed in the future.)")
-        .def("set_scalar_variable", &Wavefunction::set_scalar_variable,
-             "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT "
-             "ENERGY. Prefer :meth:`~psi4.core.Wavefunction.set_variable`.")
+             "Returns copy of the requested (case-insensitive) Matrix QC variable. Prefer :meth:`~psi4.core.BaseWavefunction.variable`.")
         .def("set_array_variable", &Wavefunction::set_array_variable,
              "Sets the requested (case-insensitive) Matrix QC variable. Syncs with ``Wavefunction.gradient_`` or "
-             "``hessian_`` if CURRENT GRADIENT or HESSIAN. Prefer :meth:`~psi4.core.Wavefunction.set_variable`.")
-        .def("set_potential_variable", &Wavefunction::set_potential_variable,
-             "Sets the requested (case-insensitive) ExternalPotential QC variable. "
-             "(This function is provisional and might be removed in the future.)")
-        .def("del_scalar_variable", &Wavefunction::del_scalar_variable,
-             "Removes the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.Wavefunction.del_variable`.")
+             "``hessian_`` if CURRENT GRADIENT or HESSIAN. Prefer :meth:`~psi4.core.BaseWavefunction.set_variable`.")
         .def("del_array_variable", &Wavefunction::del_array_variable,
-             "Removes the requested (case-insensitive) Matrix QC variable. Prefer :meth:`~psi4.core.Wavefunction.del_variable`.")
-        .def("del_potential_variable", &Wavefunction::del_potential_variable,
-             "Removes the requested (case-insensitive) ExternalPotential QC variable. "
-             "(This function is provisional and might be removed in the future.)")
-        .def("scalar_variables", &Wavefunction::scalar_variables,
-             "Returns the dictionary of all double QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
+             "Removes the requested (case-insensitive) Matrix QC variable. Prefer :meth:`~psi4.core.BaseWavefunction.del_variable`.")
         .def("array_variables", &Wavefunction::array_variables,
-             "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
-        .def("potential_variables", &Wavefunction::potential_variables, "Returns the dictionary of all ExternalPotential QC variables. "
-             "(This function is provisional and might be removed in the future.)")
-
-#ifdef USING_PCMSolver
-        .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
-        .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
-#endif
-        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
+             "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.BaseWavefunction.variables`.")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
-    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
-        .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
-        .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
-        .def("form_initial_C", &scf::HF::form_initial_C,
+#ifdef USING_Einsums
+    py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m,
+            "ComplexWavefunction", "ComplexWavefunction class docstring")
+        .def(py::init<>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
+        .def(py::init<Options&>())
+        .def("nelec", &ComplexWavefunction::nelec, "Number of electrons.")
+        .def("nelecpi", &ComplexWavefunction::nelecpi, py::return_value_policy::copy,
+             "Returns the number of electrons per irrep.")
+        .def("S", &ComplexWavefunction::S, "Returns the One-electron Overlap Matrix.")
+        .def("set_S", &ComplexWavefunction::set_S, "Sets the overlap matrix.")
+        .def("H", &ComplexWavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.")
+        .def("set_H", &ComplexWavefunction::set_H, "Sets the core Hamiltonian matrix.")
+        .def("C", &ComplexWavefunction::C, "Returns the MO coefficients.")
+        .def("set_C", &ComplexWavefunction::set_C, "Sets the MO coefficients.")
+        .def("D", &ComplexWavefunction::D, "Returns the Density Matrix.")
+        .def("set_D", &ComplexWavefunction::set_D, "Sets the density matrix.")
+        .def("F", &ComplexWavefunction::F, "Returns the Fock Matrix.")
+        .def("set_F", &ComplexWavefunction::set_F, "Sets the Fock matrix.")
+        .def("epsilon", &ComplexWavefunction::epsilon, "Returns the orbital energies.")
+        .def("set_epsilon", &ComplexWavefunction::set_epsilon, "Sets the orbital energies.")
+        .def("lagrangian", &ComplexWavefunction::lagrangian, "Returns the Lagrangian Matrix.")
+        .def("set_lagrangian", &ComplexWavefunction::set_lagrangian, "Sets the orbital Lagrangian matrix.")
+        .def("gradient", &ComplexWavefunction::gradient, "Returns the Wavefunction's gradient.")
+        .def("set_gradient", &ComplexWavefunction::set_gradient,
+             "Sets the Wavefunction's gradient. Syncs with QC variable ``CURRENT GRADIENT``.")
+        .def("hessian", &ComplexWavefunction::hessian, "Returns the Wavefunction's Hessian.")
+        .def("set_hessian", &ComplexWavefunction::set_hessian,
+             "Sets the Wavefunction's Hessian. Syncs with QC variable ``CURRENT HESSIAN``.")
+        .def("mo_extents", &ComplexWavefunction::mo_extents, "Returns the wavefunction's electronic orbital extents.")
+        .def("compute_energy", &ComplexWavefunction::compute_energy, "Computes the energy of the Wavefunction.")
+        .def("compute_gradient", &ComplexWavefunction::compute_gradient, "Computes the gradient of the Wavefunction")
+        .def("compute_hessian", &ComplexWavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.")
+        .def("has_array_variable", &ComplexWavefunction::has_array_variable,
+             "Is the Matrix QC variable (case-insensitive) set?")
+        .def("array_variable", &ComplexWavefunction::array_variable,
+             "Returns copy of the requested (case-insensitive) Matrix QC variable.")
+        .def("set_array_variable", &ComplexWavefunction::set_array_variable,
+             "Sets the requested (case-insensitive) Matrix QC variable.")
+        .def("del_array_variable", &ComplexWavefunction::del_array_variable,
+             "Removes the requested (case-insensitive) Matrix QC variable.")
+        .def("array_variables", &ComplexWavefunction::array_variables,
+             "Returns the dictionary of all Matrix QC variables.")
+        .def("get_density", [](ComplexWavefunction& wfn, std::string name) { return wfn.density_map_[name]; },
+             "Experimental!");
+
+#else
+    // Type-only stubs so Python monkey-patches and isinstance checks still resolve.
+    py::class_<ComplexWavefunction, std::shared_ptr<ComplexWavefunction>, BaseWavefunction>(m, "ComplexWavefunction",
+                                                                                            "ComplexWavefunction (requires Einsums)")
+        .def(py::init<>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
+        .def(py::init<Options&>());
+#endif
+
+        py::class_<scf::BaseHF, std::shared_ptr<scf::BaseHF>>(m, "BaseHF",
+                                                          "Shared SCF-loop state for real and complex Hartree–Fock.")
+        .def("form_C", &scf::BaseHF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
+        .def("form_initial_C", &scf::BaseHF::form_initial_C,
              "Forms the initial Orbital Matrices from the current Fock Matrices.")
-        .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
-        .def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
-        .def("form_G", &scf::HF::form_G, "Forms the G matrix.")
-        .def("form_F", &scf::HF::form_F, "Forms the F matrix.")
-        .def("form_initial_F", &scf::HF::form_initial_F, "Forms the initial F matrix.")
-        .def("form_H", &scf::HF::form_H, "Forms the core Hamiltonian")
-        .def("form_Shalf", &scf::HF::form_Shalf, "Forms the S^1/2 matrix")
+        .def("form_D", &scf::BaseHF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
+        .def("form_V", &scf::BaseHF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
+        .def("form_G", &scf::BaseHF::form_G, "Forms the G matrix.")
+        .def("form_F", &scf::BaseHF::form_F, "Forms the F matrix.")
+        .def("form_initial_F", &scf::BaseHF::form_initial_F, "Forms the initial F matrix.")
+        .def("form_H", &scf::BaseHF::form_H, "Forms the core Hamiltonian")
+        .def("form_Shalf", &scf::BaseHF::form_Shalf, "Forms the S^1/2 matrix")
+        .def("compute_initial_E", &scf::BaseHF::compute_initial_E, "Compute initial energy (nuclear + Tr(HD)).")
+        .def("compute_E", &scf::BaseHF::compute_E, "Compute total energy for the iteration.")
+        .def("get_energies", &scf::BaseHF::get_energies, "docstring")
+        .def("set_energies", &scf::BaseHF::set_energies, "docstring")
+        .def("print_orbitals", &scf::BaseHF::print_orbitals, "docstring")
+        .def("functional", &scf::BaseHF::functional, "Returns the internal DFT Superfunctional.")
+        .def("scf_type", &scf::BaseHF::scf_type, "Return the value of scf_type used in the SCF computation.")
+        .def_property("reset_occ_", &scf::BaseHF::reset_occ, &scf::BaseHF::set_reset_occ,
+                      "Do reset the occupation after the guess to the inital occupation.")
+        .def_property("sad_", &scf::BaseHF::sad, &scf::BaseHF::set_sad,
+                      "Do assume a non-idempotent density matrix and no orbitals after the guess.")
+        .def_property("diis_manager_", &scf::BaseHF::diis_manager, &scf::BaseHF::set_diis_manager, "The DIIS object.")
+        .def_property("initialized_diis_manager_", &scf::BaseHF::initialized_diis_manager,
+                      &scf::BaseHF::set_initialized_diis_manager, "Has the DIIS object been initialized?")
+        .def_property("iteration_", &scf::BaseHF::iteration, &scf::BaseHF::set_iteration,
+                      "Internal iterator for SCF cycles. After completion, this equals the number of iterations taken "
+                      "to converge the SCF equations.")
+        .def_property("diis_enabled_", &scf::BaseHF::diis_enabled, &scf::BaseHF::set_diis_enabled, "docstring")
+        .def_property("diis_start_", &scf::BaseHF::diis_start, &scf::BaseHF::set_diis_start, "docstring")
+        .def_property("MOM_excited_", &scf::BaseHF::MOM_excited, &scf::BaseHF::set_MOM_excited,
+                      "Are we to do excited-state MOM?")
+        .def_property("MOM_performed_", &scf::BaseHF::MOM_performed, &scf::BaseHF::set_MOM_performed,
+                      "MOM performed current iteration?")
+        .def_property("attempt_number_", &scf::BaseHF::attempt_number, &scf::BaseHF::set_attempt_number,
+                      "Current macroiteration (1-indexed) for stability analysis");
+
+    py::class_<scf::HF, scf::BaseHF, Wavefunction, std::shared_ptr<scf::HF>>(m, "HF", py::multiple_inheritance(), "docstring")
+        .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_FDSmSDF", &scf::HF::form_FDSmSDF, "Forms the residual of SCF theory")
         .def("guess", &scf::HF::guess, "Forms the guess (guarantees C, D, and E)")
         .def("initialize_gtfock_jk", &scf::HF::initialize_gtfock_jk, "Sets up a GTFock JK object")
@@ -342,58 +437,36 @@ void export_wavefunction(py::module& m) {
         .def("cphf_converged", &scf::HF::cphf_converged, "Adds occupied guess alpha orbitals.")
         .def("guess_Ca", &scf::HF::guess_Ca, "Sets the guess Alpha Orbital Matrix")
         .def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix")
-        .def_property("reset_occ_", &scf::HF::reset_occ, &scf::HF::set_reset_occ,
-                      "Do reset the occupation after the guess to the inital occupation.")
-        .def_property("sad_", &scf::HF::sad, &scf::HF::set_sad,
-                      "Do assume a non-idempotent density matrix and no orbitals after the guess.")
         .def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
         .def("Va", &scf::HF::Va, "Returns the Alpha Kohn-Sham Potential Matrix.")
         .def("Vb", &scf::HF::Vb, "Returns the Beta Kohn-Sham Potential Matrix.")
-        .def("jk", &scf::HF::jk, "Returns the internal JK object.")
-        .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
-        .def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
         .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunction's temporary data.")
         .def("soscf_update", &scf::HF::soscf_update, "Computes a second-order SCF update.")
         .def("occupation_a", &scf::HF::occupation_a, "Returns the Alpha occupation numbers.")
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
         .def("reset_occupation", &scf::HF::reset_occupation, "docstring")
-        .def("compute_E", &scf::HF::compute_E, "docstring")
-        .def("compute_initial_E", &scf::HF::compute_initial_E, "docstring")
         .def("rotate_orbitals", &scf::HF::rotate_orbitals, "docstring")
         .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
-        .def_property("diis_manager_", &scf::HF::diis_manager, &scf::HF::set_diis_manager, "The DIIS object.")
-        .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager,
-                      &scf::HF::set_initialized_diis_manager, "Has the DIIS object been initialized?")
         .def("damping_update", &scf::HF::damping_update, "docstring")
         .def("check_phases", &scf::HF::check_phases, "docstring")
-        .def("print_orbitals", &scf::HF::print_orbitals, "docstring")
         .def("print_header", &scf::HF::print_header, "docstring")
-        .def("get_energies", &scf::HF::get_energies, "docstring")
-        .def("set_energies", &scf::HF::set_energies, "docstring")
-        .def("scf_type", &scf::HF::scf_type, "Return the value of scf_type used in the SCF computation.")
         .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear private external_potentials list")
         .def("push_back_external_potential", &scf::HF::push_back_external_potential,
              "Add an external potential to the private external_potentials list", "V"_a)
         .def("set_external_cpscf_perturbation", &scf::HF::set_external_cpscf_perturbation,
              "Add an external potential/perturbation to the private external_cpscf_perturbations map for CPSCF", "name"_a, "function"_a)
         .def("clear_external_cpscf_perturbations", &scf::HF::clear_external_cpscf_perturbations, "Clear private external_cpscf_perturbations map")
-        .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "Internal iterator for SCF cycles. After completion, this equals the number of iterations taken to converge the SCF equations.")
-        .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")
-        .def_property("diis_start_", &scf::HF::diis_start, &scf::HF::set_diis_start, "docstring")
+        .def("jk", &scf::HF::jk, "Returns the internal JK object.")
+        .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
+        .def("build_jk", [](scf::HF& self, double memory) { return self.build_jk(static_cast<size_t>(memory)); }, "Returns a fresh JK object with correct type.")
         .def_property("frac_performed_", &scf::HF::frac_performed, &scf::HF::set_frac_performed,
                       "Frac performed current iteration?")
-        .def_property("MOM_excited_", &scf::HF::MOM_excited, &scf::HF::set_MOM_excited,
-                      "Are we to do excited-state MOM?")
-        .def_property("MOM_performed_", &scf::HF::MOM_performed, &scf::HF::set_MOM_performed,
-                      "MOM performed current iteration?")
-        .def_property("attempt_number_", &scf::HF::attempt_number, &scf::HF::set_attempt_number,
-                      "Current macroiteration (1-indexed) for stability analysis")
         .def("stability_analysis", &scf::HF::stability_analysis, "Assess wfn stability and correct if requested")
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
@@ -434,6 +507,44 @@ void export_wavefunction(py::module& m) {
              "BasisSet *basis*",
              "basis"_a)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
+
+#ifdef USING_Einsums
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, scf::BaseHF, ComplexWavefunction>(m, "CGHF", py::multiple_inheritance(), "docstring")
+        .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("V_potential", &scf::CGHF::V_potential, "Returns the internal DFT V object.")
+        .def("set_sad_basissets", &scf::CGHF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
+        .def("set_sad_fitting_basissets", &scf::CGHF::set_sad_fitting_basissets,
+             "Sets the Superposition of Atomic Densities density-fitted basisset.")
+        .def("guess", &scf::CGHF::guess, "Form SCF guess.")
+        .def("guess_C", &scf::CGHF::guess_C, "Sets the spinor MO coefficient guess matrix (occupied columns).")
+        .def("find_occupation", &scf::CGHF::find_occupation, "Determine orbital occupations from orbital energies.")
+        .def("reset_occupation", &scf::CGHF::reset_occupation,
+             "Reset occupations after SAD guess (no-op for CGHF).")
+        .def("same_a_b_orbs", [](scf::CGHF& self) { return false; }, "Alpha and beta orbitals are equated? (always returns False for CGHF)")
+        .def("same_a_b_dens", [](scf::CGHF& self) { return false; }, "Alpha and beta densities are equated? (always returns False for CGHF)")
+        .def("finalize", &scf::CGHF::finalize, "Clean up temporary data after SCF.")
+        .def("jk", &scf::CGHF::jk, "Returns the internal JK object.")
+        .def("set_jk", &scf::CGHF::set_jk, "Sets the internal JK object !expert.")
+        .def("build_jk", [](scf::CGHF& self, double memory) { return self.build_jk(static_cast<size_t>(memory)); }, "Returns a fresh JK object with correct type.")
+        .def("get_T", &scf::CGHF::get_T, "Returns the kinetic energy matrix (spin-blocked).")
+        .def("get_V", &scf::CGHF::get_V, "Returns the one-electron potential matrix (spin-blocked).")
+        .def("get_X", &scf::CGHF::get_X, "Returns the orthogonalization matrix (spin-blocked).")
+        .def("get_G", &scf::CGHF::get_G, "Returns the G (J-K) matrix (spin-blocked).")
+        .def("get_J", &scf::CGHF::get_J, "Returns the Coulomb matrix (spin-blocked).")
+        .def("get_K", &scf::CGHF::get_K, "Returns the exchange matrix (spin-blocked).")
+        .def("openorbital_scf", &scf::CGHF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer")
+        .def("spin_square", &scf::CGHF::spin_square,
+             "Returns (S^2, multiplicity) for the complex GHF wavefunction.")
+        .def("check_phases", &scf::CGHF::check_phases,
+             "Fix MO column phases in place so the first significant AO coefficient is real and positive.")
+        .def("form_FDSmSDF", &scf::CGHF::form_FDSmSDF,
+             "Forms the SCF residual FDS-SDF in the X-orthogonal basis.", "Fso"_a, "Dso"_a);
+
+#else
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, ComplexWavefunction, scf::BaseHF>(m, "CGHF", py::multiple_inheritance(),
+                                                                                        "CGHF (requires Einsums)")
+        .def(py::init<std::shared_ptr<ComplexWavefunction>, std::shared_ptr<SuperFunctional>>());
+#endif
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())

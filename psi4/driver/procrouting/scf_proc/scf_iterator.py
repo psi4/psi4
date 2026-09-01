@@ -100,30 +100,25 @@ def scf_compute_energy(self):
     return scf_energy
 
 
-def _build_jk(wfn, memory):
-    jk = core.JK.build(wfn.get_basisset("ORBITAL"),
-                       aux=wfn.get_basisset("DF_BASIS_SCF"),
-                       do_wK=wfn.functional().is_x_lrc(),
-                       memory=memory)
-    return jk
-
-
 def initialize_jk(self, memory, jk=None):
 
     functional = self.functional()
     if jk is None:
-        jk = _build_jk(self, memory)
+        jk = self.build_jk(memory)
 
     self.set_jk(jk)
 
     jk.set_print(self.get_print())
     jk.set_memory(memory)
     jk.set_do_K(functional.is_x_hybrid())
-    jk.set_do_wK(functional.is_x_lrc())
-    jk.set_omega(functional.x_omega())
 
-    jk.set_omega_alpha(functional.x_alpha())
-    jk.set_omega_beta(functional.x_beta())
+    # core.ComplexJK does not support any of these yet.
+    if isinstance(jk, core.JK):
+        jk.set_do_wK(functional.is_x_lrc())
+        jk.set_omega(functional.x_omega())
+
+        jk.set_omega_alpha(functional.x_alpha())
+        jk.set_omega_beta(functional.x_beta())
 
     jk.initialize()
     jk.print_header()
@@ -150,12 +145,12 @@ def scf_initialize(self):
 
     # Change allocation for collocation matrices based on DFT type
     initialize_jk_obj = False
-    if isinstance(self.jk(), core.JK):
+    if isinstance(self.jk(), core.BaseJK):
         core.print_out("\nRe-using passed JK object instead of rebuilding\n")
         jk = self.jk()
     else:
         initialize_jk_obj = True
-        jk = _build_jk(self, total_memory)
+        jk = self.build_jk(total_memory)
     jk_size = jk.memory_estimate()
 
     # Give remaining to collocation
@@ -229,6 +224,14 @@ def scf_initialize(self):
         core.timer_on("HF: Guess")
         self.guess()
         core.timer_off("HF: Guess")
+
+        # User hook to modify the wavefunction after the guess but before SCF.
+        # The hook receives the wavefunction (self) and can modify C/Ca/Cb;
+        # the density is then rebuilt from the modified orbitals so the first
+        # Fock build sees the change.
+        if hasattr(core, 'pre_scf_hook') and callable(core.pre_scf_hook):
+            core.pre_scf_hook(self)
+            self.form_D()
 
         optstash.restore()
 
@@ -314,8 +317,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             try:
                 self.openorbital_scf()
-            except RuntimeError as ex:
-                if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
+            except (RuntimeError, AttributeError) as ex:
+                # AttributeError: wavefunction types that do not expose openorbital_scf.
+                # RuntimeError: subclasses that leave the virtual unimplemented.
+                if isinstance(ex, AttributeError) or "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
                     core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
                 else:
                     raise ex
@@ -631,6 +636,8 @@ def scf_finalize_energy(self):
     # Perform wavefunction stability analysis before doing
     # anything on a wavefunction that may not be truly converged.
     if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE":
+        if isinstance(self, core.CGHF):
+            raise NotImplementedError('Stability analysis not supported for CGHF.')
 
         # We need the integral file, make sure it is written and
         # compute it if needed
@@ -722,9 +729,13 @@ def scf_finalize_energy(self):
             core.print_out(f"      Ntotal   = {rho_ab:15.10f} ; deviation = {dev_b+dev_a:.3e} \n\n")
         if ((dev_b+dev_a) > 0.1):
             core.print_out("   WARNING: large deviation in the electron count on grid detected. Check grid size!")
-    self.check_phases()
-    self.compute_spin_contamination()
-    self.frac_renormalize()
+    if isinstance(self, core.HF):
+        self.check_phases()
+        self.compute_spin_contamination()
+        self.frac_renormalize()
+    else:
+        self.check_phases()
+        self.spin_square()
     reference = core.get_option("SCF", "REFERENCE")
 
     energy = self.get_energies("Total Energy")
@@ -756,7 +767,8 @@ def scf_finalize_energy(self):
     iteration_energies = np.array(self.iteration_energies).reshape(-1, 1)
     iteration_energies = core.Matrix.from_array(iteration_energies)
     core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
-    self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
+    if not isinstance(self, core.ComplexWavefunction):
+        self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
 
     self.clear_external_potentials()
     if core.get_option('SCF', 'PCM'):
@@ -883,6 +895,9 @@ def scf_print_preiterations(self,small=False):
     # available
     ct = self.molecule().point_group().char_table()
 
+    if isinstance(self, core.CGHF):
+        small = True
+
     if not small:
         core.print_out("   -------------------------------------------------------\n")
         core.print_out("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n")
@@ -915,15 +930,21 @@ def scf_print_preiterations(self,small=False):
         core.print_out("   -------------------------\n\n")
 
 
-# Bind functions to core.HF class
-core.HF.initialize = scf_initialize
-core.HF.initialize_jk = initialize_jk
-core.HF.iterations = scf_iterate
-core.HF.compute_energy = scf_compute_energy
-core.HF.finalize_energy = scf_finalize_energy
-core.HF.print_energies = scf_print_energies
-core.HF.print_preiterations = scf_print_preiterations
-core.HF.iteration_energies = []
+# Bind functions to core classes
+core.BaseHF.initialize = scf_initialize
+core.BaseHF.initialize_jk = initialize_jk
+core.BaseHF.iterations = scf_iterate
+core.BaseHF.compute_energy = scf_compute_energy
+core.BaseHF.finalize_energy = scf_finalize_energy
+core.BaseHF.print_energies = scf_print_energies
+core.BaseHF.print_preiterations = scf_print_preiterations
+core.BaseHF.iteration_energies = []
+
+# Damping update and external potentials are not implemented for CGHF.
+def _noop(*args, **kwargs):
+    pass
+core.CGHF.save_density_and_energy = _noop
+core.CGHF.clear_external_potentials = _noop
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
@@ -1082,7 +1103,7 @@ def _validate_soscf():
 
     return enabled
 
-core.HF.validate_diis = _validate_diis
+core.BaseHF.validate_diis = _validate_diis
 
 def efp_field_fn(xyz):
     """Callback function for PylibEFP to compute electric field from electrons
