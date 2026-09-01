@@ -16,7 +16,7 @@ import pytest
 
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 def _water():
