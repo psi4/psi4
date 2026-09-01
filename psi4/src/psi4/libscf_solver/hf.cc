@@ -321,6 +321,9 @@ void HF::save_density_and_energy() {
 void HF::form_G() { throw PSIEXCEPTION("Sorry, the base HF wavefunction does not understand."); }
 void HF::form_F() { throw PSIEXCEPTION("Sorry, the base HF wavefunction does not understand Roothan."); }
 double HF::compute_E() { throw PSIEXCEPTION("Sorry, the base HF wavefunction does not understand Hall."); }
+std::map<std::string, double> HF::evaluate_fixed_density_dft_energy(std::shared_ptr<SuperFunctional> functional) {
+    throw PSIEXCEPTION("Sorry, fixed-density DFT energy evaluation is not implemented for this SCF wavefunction type.");
+}
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     // => Rotate orbitals <= //
     auto U = std::make_shared<Matrix>("Ck", nmopi_, nmopi_);
