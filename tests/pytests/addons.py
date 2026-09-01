@@ -93,6 +93,7 @@ _programs = {
     "qcmanybody": which_import("qcmanybody", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": psi4.addons("einsums"),
+    "einsums2": psi4.addons("einsums2"),
     "pyeinsums": which_import("einsums", return_bool=True),
     "gauxc": psi4.addons("gauxc"),
     "ooo": psi4.addons("ooo"),

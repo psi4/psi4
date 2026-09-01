@@ -70,7 +70,11 @@ endif()
 
 if(TARGET Einsums::Einsums)
   target_link_libraries(psi4_optional_deps INTERFACE Einsums::Einsums)
-  target_compile_definitions(psi4_optional_deps INTERFACE USING_Einsums)
+  if(ENABLE_Einsums2)
+    target_compile_definitions(psi4_optional_deps INTERFACE USING_Einsums2)
+  else()
+    target_compile_definitions(psi4_optional_deps INTERFACE USING_Einsums)
+  endif()
 endif()
 
 foreach(dir_name
