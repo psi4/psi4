@@ -36,13 +36,9 @@ __author__ = 'Lori A. Burns'
 import sys
 from .constants import constants
 from .molecule import Molecule, compute_atom_map
-from .dbproc import *
 from .options import *
-from .qcformat import *
 from . import cfour
 from . import jajo
-from . import orca
-from .dbwrap import Database, DB4  #DatabaseWrapper, ReactionDatum, Reagent, Reaction
 from .libmintspointgrp import SymmetryOperation, PointGroup
 from .libmintsbasisset import BasisSet
 from .libmintsmolecule import LibmintsMolecule
