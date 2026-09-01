@@ -33,7 +33,7 @@
 
 namespace py = pybind11;
 
-void export_blas_lapack(py::module& m) {
+void export_blas_lapack(py::module_& m) {
     // BLAS Static Wrappers
     m.def("DGBMV", &psi::PSI_DGBMV, "docstring");
     m.def("DGEMM", &psi::PSI_DGEMM, "docstring");

@@ -144,7 +144,7 @@ jobs:
                         ninja ^
                         numpy ^
                         pint ^
-                        pybind11 ^
+                        pybind11>=3.0.0 ^
                         pytest=7 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
@@ -306,4 +306,3 @@ jobs:
       #    ANACONDA_API_TOKEN: $(conda.anaconda_org_token)
       #  condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
       #  displayName: "Upload Psi4 package to anaconda.org"
-
