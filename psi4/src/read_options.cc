@@ -2832,10 +2832,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("COUPLING_TERMS", true);
         /*- Do print the effective Hamiltonian? -*/
         options.add_bool("HEFF_PRINT", false);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_bool("PERTURB_CBS", false);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_bool("PERTURB_CBS_COUPLING", true);
         /*- Do use Tikhonow regularization in (T) computations? !expert -*/
         options.add_bool("TIKHONOW_TRIPLES", false);
         /*- The type of perturbation theory computation to perform -*/
@@ -3151,22 +3147,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-4);
         /*- Maximum step size in orbital-optimization procedure -*/
         options.add_double("MO_STEP_MAX", 0.5);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_double("LEVEL_SHIFT", 0.02);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_double("MP2_OS_SCALE", 6.0 / 5.0);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_double("MP2_SS_SCALE", 1.0 / 3.0);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_double("MP2_SOS_SCALE", 1.3);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_double("MP2_SOS_SCALE2", 1.2);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_double("CEPA_OS_SCALE", 1.27);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_double("CEPA_SS_SCALE", 1.13);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_double("CEPA_SOS_SCALE", 1.3);
         /*- A custom scaling parameter for opposite-spin terms in OCC. The result goes to a CUSTOM SCS variable, exact name method-dependent. -*/
         options.add_double("OS_SCALE", 1);
         /*- A custom scaling parameter for same-spin terms in OCC. The result goes to a CUSTOM SCS variable, exact name method-dependent. -*/
@@ -3211,14 +3191,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Do compute natural orbitals? -*/
         options.add_bool("NAT_ORBS", false);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_bool("DO_LEVEL_SHIFT", true);
         /*- Do print OCC orbital energies? -*/
         options.add_bool("OCC_ORBS_PRINT", false);
-        /*- Removed in 1.4. Will raise an error in 1.5. Pass the method name, like scs-mp2, to energy instead. -*/
-        options.add_bool("DO_SCS", false);
-        /*- Removed in 1.4. Will raise an error in 1.5. Pass the method name, like scs-mp2, to energy instead. -*/
-        options.add_bool("DO_SOS", false);
         /*- Do write coefficient matrices to external files for direct reading MOs in a subsequent job? -*/
         options.add_bool("MO_WRITE", false);
         /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
