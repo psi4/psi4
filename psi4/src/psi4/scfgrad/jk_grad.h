@@ -40,6 +40,7 @@ class BasisSet;
 class PSIO;
 class TwoBodyAOInt;
 class MintsHelper;
+class Options;
 
 namespace scfgrad {
 
@@ -259,5 +260,51 @@ public:
 
 };
 
+class DFJCOSKGrad : public JKGrad {
+
+protected:
+    // Number of threads to use
+    int ints_num_threads_;
+    Options& options_;
+
+    std::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<MintsHelper> mints_;
+    double condition_;
+
+    void common_init();
+
+    void build_JGrad();
+    void build_KGrad();
+
+    /// Coulomb Metric
+    SharedMatrix J_metric_;
+    /// per-thread TwoBodyAOInt object (for computing three-center ERIs)
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri_computers_;
+
+   public:
+    DFJCOSKGrad(int deriv, std::shared_ptr<MintsHelper> mints, Options& options);
+    ~DFJCOSKGrad() override;
+
+    void compute_gradient() override;
+    void compute_hessian() override;
+
+    void print_header() const override;
+
+    /**
+     * Minimum relative eigenvalue to retain in fitting inverse
+     * All eigenvectors with \epsilon_i < condition * \epsilon_max
+     * will be discarded
+     * @param condition, minimum relative eigenvalue allowed,
+     *        defaults to 1.0E-12
+     */
+    void set_condition(double condition) { condition_ = condition; }
+
+    /**
+     * What number of threads to compute integrals on
+     * @param val a positive integer
+     */
+    void set_ints_num_threads(int val) { ints_num_threads_ = val; }
+
+};
 }} // Namespaces
 #endif

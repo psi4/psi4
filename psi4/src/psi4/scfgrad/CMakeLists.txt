@@ -1,4 +1,5 @@
 list(APPEND sources
+  dfjcosk_grad.cc
   jk_grad.cc
   response.cc
   scf_grad.cc
