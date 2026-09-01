@@ -1357,8 +1357,8 @@ void DCTSolver::compute_orbital_response_intermediates() {
 // Returns RMS of the orbital response vector
 double DCTSolver::update_orbital_response() {
     dpdfile2 X_ia, X_ai, z_ia, zI_ai, zI_ia, r_ia;
-    auto a_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Alpha)", nirrep_, naoccpi_, navirpi_);
-    auto b_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Beta)", nirrep_, nboccpi_, nbvirpi_);
+    auto a_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Alpha)", naoccpi_, navirpi_);
+    auto b_ria = std::make_shared<Matrix>("MO basis Orbital Response Residual (Beta)", nboccpi_, nbvirpi_);
 
     // Alpha spin
     global_dpd_->file2_init(&zI_ia, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "zI <O|V>");
@@ -3749,8 +3749,8 @@ void DCTSolver::compute_ewdm_dc() {
     /* Save the SO EWDM to the wavefunction as Lagrangian_.
      * All other EWDM processing operations are then redundant, but it's what deriv.cc:compute expects...
      */
-    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
-    auto temp_lagrangian = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nsopi_, nsopi_);
+    auto temp_lagrangian = std::make_shared<Matrix>("temp", nsopi_, nsopi_);
     Lagrangian_->back_transform(aW, *Ca_);
     temp_lagrangian->back_transform(bW, *Cb_);
     Lagrangian_->add(temp_lagrangian);
@@ -4567,8 +4567,8 @@ void DCTSolver::compute_ewdm_odc() {
     /* Save the SO EWDM to the wavefunction as Lagrangian_.
      * All other EWDM processing operations are then redundant, but it's what deriv.cc:compute expects...
      */
-    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
-    auto temp_lagrangian = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nsopi_, nsopi_);
+    auto temp_lagrangian = std::make_shared<Matrix>("temp", nsopi_, nsopi_);
     Lagrangian_->back_transform(aW, *Ca_);
     temp_lagrangian->back_transform(bW, *Cb_);
     Lagrangian_->add(temp_lagrangian);

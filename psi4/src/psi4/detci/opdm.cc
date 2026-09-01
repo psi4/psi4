@@ -141,9 +141,9 @@ void CIWavefunction::form_opdm() {
     // Figure out which OPDM should be current
     if (Parameters_->opdm_ave) {
         Dimension act_dim = get_dimension("ACT");
-        opdm_a_ = std::make_shared<Matrix>("MO-basis Alpha OPDM", nirrep_, act_dim, act_dim);
-        opdm_b_ = std::make_shared<Matrix>("MO-basis Beta OPDM", nirrep_, act_dim, act_dim);
-        opdm_ = std::make_shared<Matrix>("MO-basis OPDM", nirrep_, act_dim, act_dim);
+        opdm_a_ = std::make_shared<Matrix>("MO-basis Alpha OPDM", act_dim, act_dim);
+        opdm_b_ = std::make_shared<Matrix>("MO-basis Beta OPDM", act_dim, act_dim);
+        opdm_ = std::make_shared<Matrix>("MO-basis OPDM", act_dim, act_dim);
 
         for (int i = 0; i < Parameters_->average_num; i++) {
             int croot = Parameters_->average_states[i];
@@ -445,15 +445,15 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
 
         std::stringstream opdm_name;
         opdm_name << "MO-basis Alpha OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-        auto new_OPDM_a = std::make_shared<Matrix>(opdm_name.str(), nirrep_, act_dim, act_dim);
+        auto new_OPDM_a = std::make_shared<Matrix>(opdm_name.str(), act_dim, act_dim);
 
         opdm_name.str(std::string());
         opdm_name << "MO-basis Beta OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-        auto new_OPDM_b = std::make_shared<Matrix>(opdm_name.str(), nirrep_, act_dim, act_dim);
+        auto new_OPDM_b = std::make_shared<Matrix>(opdm_name.str(), act_dim, act_dim);
 
         opdm_name.str(std::string());
         opdm_name << "MO-basis OPDM <" << Iroot << "| Etu |" << Jroot << ">";
-        auto new_OPDM = std::make_shared<Matrix>(opdm_name.str(), nirrep_, act_dim, act_dim);
+        auto new_OPDM = std::make_shared<Matrix>(opdm_name.str(), act_dim, act_dim);
 
         int offset = 0;
         for (int h = 0; h < nirrep_; h++) {

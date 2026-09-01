@@ -138,12 +138,12 @@ void DCTSolver::init() {
 
     // Quadratically-convergent algorithm or orbital-optimized methods
     if (options_.get_str("ALGORITHM") == "QC" || orbital_optimized_) {
-        orbital_gradient_a_ = std::make_shared<Matrix>("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_);
-        orbital_gradient_b_ = std::make_shared<Matrix>("MO basis Orbital Gradient (Beta)", nirrep_, nmopi_, nmopi_);
+        orbital_gradient_a_ = std::make_shared<Matrix>("MO basis Orbital Gradient (Alpha)", nmopi_, nmopi_);
+        orbital_gradient_b_ = std::make_shared<Matrix>("MO basis Orbital Gradient (Beta)", nmopi_, nmopi_);
         Xtotal_a_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)",
-                                             nirrep_, nmopi_, nmopi_);
+                                             nmopi_, nmopi_);
         Xtotal_b_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. reference orbitals (Beta)",
-                                             nirrep_, nmopi_, nmopi_);
+                                             nmopi_, nmopi_);
     }
 
     if (options_.get_str("ALGORITHM") == "QC") {

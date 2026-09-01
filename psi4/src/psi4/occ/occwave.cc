@@ -200,17 +200,17 @@ void OCCWave::common_init() {
 
     if (reference_ == "RESTRICTED") {
         // Memory allocation
-        HmoA = std::make_shared<Matrix>("MO-basis alpha one-electron ints", nirrep_, nmopi_, nmopi_);
-        FockA = std::make_shared<Matrix>("MO-basis alpha Fock matrix", nirrep_, nmopi_, nmopi_);
-        gamma1corr = std::make_shared<Matrix>("MO-basis alpha correlation OPDM", nirrep_, nmopi_, nmopi_);
-        g1symm = std::make_shared<Matrix>("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_);
-        GFock = std::make_shared<Matrix>("MO-basis alpha generalized Fock matrix", nirrep_, nmopi_, nmopi_);
-        UorbA = std::make_shared<Matrix>("Alpha MO rotation matrix", nirrep_, nmopi_, nmopi_);
-        KorbA = std::make_shared<Matrix>("K alpha MO rotation", nirrep_, nmopi_, nmopi_);
-        HG1 = std::make_shared<Matrix>("h*g1symm", nirrep_, nmopi_, nmopi_);
-        WorbA = std::make_shared<Matrix>("Alpha MO gradient matrix", nirrep_, nmopi_, nmopi_);
-        GooA = std::make_shared<Matrix>("Alpha Goo intermediate", nirrep_, aoccpiA, aoccpiA);
-        GvvA = std::make_shared<Matrix>("Alpha Gvv intermediate", nirrep_, avirtpiA, avirtpiA);
+        HmoA = std::make_shared<Matrix>("MO-basis alpha one-electron ints", nmopi_, nmopi_);
+        FockA = std::make_shared<Matrix>("MO-basis alpha Fock matrix", nmopi_, nmopi_);
+        gamma1corr = std::make_shared<Matrix>("MO-basis alpha correlation OPDM", nmopi_, nmopi_);
+        g1symm = std::make_shared<Matrix>("MO-basis alpha OPDM", nmopi_, nmopi_);
+        GFock = std::make_shared<Matrix>("MO-basis alpha generalized Fock matrix", nmopi_, nmopi_);
+        UorbA = std::make_shared<Matrix>("Alpha MO rotation matrix", nmopi_, nmopi_);
+        KorbA = std::make_shared<Matrix>("K alpha MO rotation", nmopi_, nmopi_);
+        HG1 = std::make_shared<Matrix>("h*g1symm", nmopi_, nmopi_);
+        WorbA = std::make_shared<Matrix>("Alpha MO gradient matrix", nmopi_, nmopi_);
+        GooA = std::make_shared<Matrix>("Alpha Goo intermediate", aoccpiA, aoccpiA);
+        GvvA = std::make_shared<Matrix>("Alpha Gvv intermediate", avirtpiA, avirtpiA);
 
         Molecule &mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
@@ -300,33 +300,33 @@ void OCCWave::common_init() {
 
     else if (reference_ == "UNRESTRICTED") {
         // Memory allocation
-        HmoA = std::make_shared<Matrix>("MO-basis alpha one-electron ints", nirrep_, nmopi_, nmopi_);
-        HmoB = std::make_shared<Matrix>("MO-basis beta one-electron ints", nirrep_, nmopi_, nmopi_);
-        FockA = std::make_shared<Matrix>("MO-basis alpha Fock matrix", nirrep_, nmopi_, nmopi_);
-        FockB = std::make_shared<Matrix>("MO-basis beta Fock matrix", nirrep_, nmopi_, nmopi_);
-        gamma1corrA = std::make_shared<Matrix>("MO-basis alpha correlation OPDM", nirrep_, nmopi_, nmopi_);
-        gamma1corrB = std::make_shared<Matrix>("MO-basis beta correlation OPDM", nirrep_, nmopi_, nmopi_);
-        g1symmA = std::make_shared<Matrix>("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_);
-        g1symmB = std::make_shared<Matrix>("MO-basis beta OPDM", nirrep_, nmopi_, nmopi_);
-        GFockA = std::make_shared<Matrix>("MO-basis alpha generalized Fock matrix", nirrep_, nmopi_, nmopi_);
-        GFockB = std::make_shared<Matrix>("MO-basis beta generalized Fock matrix", nirrep_, nmopi_, nmopi_);
-        UorbA = std::make_shared<Matrix>("Alpha MO rotation matrix", nirrep_, nmopi_, nmopi_);
-        UorbB = std::make_shared<Matrix>("Beta MO rotation matrix", nirrep_, nmopi_, nmopi_);
-        KorbA = std::make_shared<Matrix>("K alpha MO rotation", nirrep_, nmopi_, nmopi_);
-        KorbB = std::make_shared<Matrix>("K beta MO rotation", nirrep_, nmopi_, nmopi_);
-        HG1A = std::make_shared<Matrix>("Alpha h*g1symm", nirrep_, nmopi_, nmopi_);
-        HG1B = std::make_shared<Matrix>("Beta h*g1symm", nirrep_, nmopi_, nmopi_);
-        WorbA = std::make_shared<Matrix>("Alpha MO gradient matrix", nirrep_, nmopi_, nmopi_);
-        WorbB = std::make_shared<Matrix>("Beta MO gradient matrix", nirrep_, nmopi_, nmopi_);
-        GooA = std::make_shared<Matrix>("Alpha Goo intermediate", nirrep_, aoccpiA, aoccpiA);
-        GooB = std::make_shared<Matrix>("Beta Goo intermediate", nirrep_, aoccpiB, aoccpiB);
-        GvvA = std::make_shared<Matrix>("Alpha Gvv intermediate", nirrep_, avirtpiA, avirtpiA);
-        GvvB = std::make_shared<Matrix>("Beta Gvv intermediate", nirrep_, avirtpiB, avirtpiB);
+        HmoA = std::make_shared<Matrix>("MO-basis alpha one-electron ints", nmopi_, nmopi_);
+        HmoB = std::make_shared<Matrix>("MO-basis beta one-electron ints", nmopi_, nmopi_);
+        FockA = std::make_shared<Matrix>("MO-basis alpha Fock matrix", nmopi_, nmopi_);
+        FockB = std::make_shared<Matrix>("MO-basis beta Fock matrix", nmopi_, nmopi_);
+        gamma1corrA = std::make_shared<Matrix>("MO-basis alpha correlation OPDM", nmopi_, nmopi_);
+        gamma1corrB = std::make_shared<Matrix>("MO-basis beta correlation OPDM", nmopi_, nmopi_);
+        g1symmA = std::make_shared<Matrix>("MO-basis alpha OPDM", nmopi_, nmopi_);
+        g1symmB = std::make_shared<Matrix>("MO-basis beta OPDM", nmopi_, nmopi_);
+        GFockA = std::make_shared<Matrix>("MO-basis alpha generalized Fock matrix", nmopi_, nmopi_);
+        GFockB = std::make_shared<Matrix>("MO-basis beta generalized Fock matrix", nmopi_, nmopi_);
+        UorbA = std::make_shared<Matrix>("Alpha MO rotation matrix", nmopi_, nmopi_);
+        UorbB = std::make_shared<Matrix>("Beta MO rotation matrix", nmopi_, nmopi_);
+        KorbA = std::make_shared<Matrix>("K alpha MO rotation", nmopi_, nmopi_);
+        KorbB = std::make_shared<Matrix>("K beta MO rotation", nmopi_, nmopi_);
+        HG1A = std::make_shared<Matrix>("Alpha h*g1symm", nmopi_, nmopi_);
+        HG1B = std::make_shared<Matrix>("Beta h*g1symm", nmopi_, nmopi_);
+        WorbA = std::make_shared<Matrix>("Alpha MO gradient matrix", nmopi_, nmopi_);
+        WorbB = std::make_shared<Matrix>("Beta MO gradient matrix", nmopi_, nmopi_);
+        GooA = std::make_shared<Matrix>("Alpha Goo intermediate", aoccpiA, aoccpiA);
+        GooB = std::make_shared<Matrix>("Beta Goo intermediate", aoccpiB, aoccpiB);
+        GvvA = std::make_shared<Matrix>("Alpha Gvv intermediate", avirtpiA, avirtpiA);
+        GvvB = std::make_shared<Matrix>("Beta Gvv intermediate", avirtpiB, avirtpiB);
 
         // ROHF-MP2
         if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ == "OMP2") {
-            t1A = std::make_shared<Matrix>("t_I^A", nirrep_, aoccpiA, avirtpiA);
-            t1B = std::make_shared<Matrix>("t_i^a", nirrep_, aoccpiB, avirtpiB);
+            t1A = std::make_shared<Matrix>("t_I^A", aoccpiA, avirtpiA);
+            t1B = std::make_shared<Matrix>("t_i^a", aoccpiB, avirtpiB);
         }
 
         Molecule &mol = *reference_wavefunction_->molecule().get();
@@ -508,7 +508,7 @@ void OCCWave::nbo() {
     outfile->Printf("\n Diagonalizing one-particle response density matrix... \n");
     outfile->Printf("\n");
 
-    auto Udum = std::make_shared<Matrix>("Udum", nirrep_, nmopi_, nmopi_);
+    auto Udum = std::make_shared<Matrix>("Udum", nmopi_, nmopi_);
     auto diag = std::make_shared<Vector>("Natural orbital occupation numbers", nmopi_);
 
     // Diagonalizing Alpha-OPDM
