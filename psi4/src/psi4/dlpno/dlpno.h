@@ -744,7 +744,12 @@ class PSI_API RO_DLPNOCCSD_T : public RO_DLPNOCCSD {
     std::vector<bool> is_strong_triplet_ro_;
 
     bool write_intermediates_ro_ = false;
+    // Keep the immutable current Jacobi generation independent from the
+    // storage selected for the generation under construction.  This allows
+    // current T amplitudes to remain in memory while next T is streamed to
+    // disk, avoiding repeated disk reads of Fock-coupled neighbors.
     bool write_amplitudes_ro_ = false;
+    bool write_next_amplitudes_ro_ = false;
 
     std::array<double, 4> de_lccsd_t_screened_spin_ro_{};
     double de_lccsd_t_screened_ro_ = 0.0;

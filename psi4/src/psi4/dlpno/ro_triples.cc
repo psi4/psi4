@@ -621,6 +621,9 @@ double RO_DLPNOCCSD_T::compute_ro_lccsd_t0(bool save_memory) {
         }
         auto q_vv = std::make_shared<Matrix>(naux, ntno * ntno);
 
+        // Reuse the PAO work buffer for every auxiliary function.  The old
+        // path allocated a new npao-by-npao matrix for every q_local.
+        auto q_vv_pao = std::make_shared<Matrix>(npao, npao);
         for (int q_local = 0; q_local < naux; ++q_local) {
             const int q = lmotriplet_to_ribfs_ro_[ijk][q_local];
             const int center = ribasis_->function_to_center(q);
@@ -641,7 +644,7 @@ double RO_DLPNOCCSD_T::compute_ro_lccsd_t0(bool save_memory) {
                 }
             }
 
-            auto q_vv_pao = std::make_shared<Matrix>(npao, npao);
+            q_vv_pao->zero();
             for (int u_local = 0; u_local < npao; ++u_local) {
                 const int u = lmotriplet_to_paos_ro_[ijk][u_local];
                 for (int v_local = 0; v_local < npao; ++v_local) {
@@ -650,20 +653,62 @@ double RO_DLPNOCCSD_T::compute_ro_lccsd_t0(bool save_memory) {
                     if (uv != -1) q_vv_pao->set(u_local, v_local, qab_[q]->get(uv, 0));
                 }
             }
-            q_vv_pao = linalg::triplet(X_tno_ro_[ijk], q_vv_pao, X_tno_ro_[ijk], true, false, false);
-            ::memcpy(q_vv->get_pointer() + q_local * ntno * ntno, q_vv_pao->get_pointer(),
+            auto q_vv_tno =
+                linalg::triplet(X_tno_ro_[ijk], q_vv_pao, X_tno_ro_[ijk], true, false, false);
+            ::memcpy(q_vv->get_pointer() + q_local * ntno * ntno, q_vv_tno->get_pointer(),
                      ntno * ntno * sizeof(double));
         }
 
         for (int p = 0; p < 3; ++p) q_ov[p] = linalg::doublet(q_ov[p], X_tno_ro_[ijk]);
-        std::array<SharedMatrix, 3> q_ov_metric = {q_ov[0]->clone(), q_ov[1]->clone(), q_ov[2]->clone()};
         auto metric =
             submatrix_rows_and_cols(*full_metric_, lmotriplet_to_ribfs_ro_[ijk], lmotriplet_to_ribfs_ro_[ijk]);
-        for (int p = 0; p < 3; ++p) C_DGESV_wrapper(metric->clone(), q_ov_metric[p]);
+
+        // Factor the Coulomb metric once for all three occupied rows instead
+        // of repeating the same DGESV factorization for each right-hand side.
+        auto q_ov_metric_rhs = std::make_shared<Matrix>(naux, 3 * ntno);
+        for (int q_local = 0; q_local < naux; ++q_local) {
+            for (int p = 0; p < 3; ++p) {
+                ::memcpy(q_ov_metric_rhs->get_pointer() + q_local * 3 * ntno + p * ntno,
+                         q_ov[p]->get_pointer() + q_local * ntno, ntno * sizeof(double));
+            }
+        }
+        C_DGESV_wrapper(metric->clone(), q_ov_metric_rhs);
+        std::array<SharedMatrix, 3> q_ov_metric;
+        for (int p = 0; p < 3; ++p) q_ov_metric[p] = std::make_shared<Matrix>(naux, ntno);
+        for (int q_local = 0; q_local < naux; ++q_local) {
+            for (int p = 0; p < 3; ++p) {
+                ::memcpy(q_ov_metric[p]->get_pointer() + q_local * ntno,
+                         q_ov_metric_rhs->get_pointer() + q_local * 3 * ntno + p * ntno,
+                         ntno * sizeof(double));
+            }
+        }
+
         metric->power(0.5, 1.0e-14);
-        for (int p = 0; p < 3; ++p) {
-            C_DGESV_wrapper(metric->clone(), q_ov[p]);
-            C_DGESV_wrapper(metric->clone(), q_oo[p]);
+
+        // The inverse-square-root metric transform has six right-hand-side
+        // blocks.  Solve them together so DGESV performs one factorization.
+        const int metric_rhs_stride = ntno + nlmo;
+        auto metric_rhs = std::make_shared<Matrix>(naux, 3 * metric_rhs_stride);
+        for (int q_local = 0; q_local < naux; ++q_local) {
+            for (int p = 0; p < 3; ++p) {
+                const int offset = p * metric_rhs_stride;
+                ::memcpy(metric_rhs->get_pointer() + q_local * 3 * metric_rhs_stride + offset,
+                         q_ov[p]->get_pointer() + q_local * ntno, ntno * sizeof(double));
+                ::memcpy(metric_rhs->get_pointer() + q_local * 3 * metric_rhs_stride + offset + ntno,
+                         q_oo[p]->get_pointer() + q_local * nlmo, nlmo * sizeof(double));
+            }
+        }
+        C_DGESV_wrapper(metric->clone(), metric_rhs);
+        for (int q_local = 0; q_local < naux; ++q_local) {
+            for (int p = 0; p < 3; ++p) {
+                const int offset = p * metric_rhs_stride;
+                ::memcpy(q_ov[p]->get_pointer() + q_local * ntno,
+                         metric_rhs->get_pointer() + q_local * 3 * metric_rhs_stride + offset,
+                         ntno * sizeof(double));
+                ::memcpy(q_oo[p]->get_pointer() + q_local * nlmo,
+                         metric_rhs->get_pointer() + q_local * 3 * metric_rhs_stride + offset + ntno,
+                         nlmo * sizeof(double));
+            }
         }
 
         // These twelve spatial integral blocks are formed once and reused by every spin case.
@@ -1069,50 +1114,112 @@ double RO_DLPNOCCSD_T::compute_ro_lccsd_t0(bool save_memory) {
         }
     }
 
-    outfile->Printf("    RO semicanonical (T0) completed in %d s\n\n",
-                    static_cast<int>(std::time(nullptr) - start_time));
+    if (save_memory) {
+        outfile->Printf("    RO iterative triples initialization completed in %d s\n\n",
+                        static_cast<int>(std::time(nullptr) - start_time));
+    } else {
+        outfile->Printf("    RO semicanonical (T0) completed in %d s\n\n",
+                        static_cast<int>(std::time(nullptr) - start_time));
+    }
     timer_off("RO LCCSD(T0)");
     return total_energy;
 }
 
 void RO_DLPNOCCSD_T::ro_estimate_memory() {
     size_t cube_elements = 0;
+    size_t max_cube_elements = 0;
+    size_t active_spin_blocks = 0;
     for (int ijk = 0; ijk < static_cast<int>(ijk_to_i_j_k_ro_.size()); ++ijk) {
         const size_t n = n_tno_ro_[ijk];
         const size_t elements = n * n * n;
         for (int ts = 0; ts < 4; ++ts) {
-            if (active_ijk_spin_[ts][ijk]) cube_elements += elements;
+            if (active_ijk_spin_[ts][ijk]) {
+                cube_elements += elements;
+                max_cube_elements = std::max(max_cube_elements, elements);
+                ++active_spin_blocks;
+            }
         }
     }
 
     write_intermediates_ro_ = options_.get_bool("WRITE_TRIPLES_INTERMEDIATES");
     write_amplitudes_ro_ = options_.get_bool("WRITE_TRIPLES_AMPLITUDES");
-    size_t intermediate_memory = write_intermediates_ro_ ? 0 : 2 * cube_elements;
-    // Jacobi iterations retain an immutable current generation while constructing the next one.
-    size_t amplitude_memory = write_amplitudes_ro_ ? 0 : 2 * cube_elements;
-    size_t total_words = qij_memory_ + qia_memory_ + qab_memory_ + intermediate_memory + amplitude_memory;
+    // An explicit request to write amplitudes places both Jacobi generations
+    // on disk.  Automatic memory control may instead select the hybrid mode
+    // with current T resident and only next T on disk.
+    write_next_amplitudes_ro_ = write_amplitudes_ro_;
 
-    if (toggle_memory_ && !write_intermediates_ro_ && total_words * sizeof(double) > 0.9 * memory_) {
+    const size_t integral_memory = qij_memory_ + qia_memory_ + qab_memory_;
+    const size_t w_memory = cube_elements;
+    const size_t v_memory = cube_elements;
+    const size_t current_t_memory = cube_elements;
+    const size_t next_t_memory = cube_elements;
+
+    size_t nthreads = 1;
+#ifdef _OPENMP
+    nthreads = static_cast<size_t>(omp_get_max_threads());
+#endif
+    // Per worker, allow room for W, a cloned T, the residual, neighbor
+    // permutation/projection buffers, and the transient promoted T block.
+    // This is deliberately conservative; persistent generations are counted
+    // separately below.
+    constexpr size_t workspace_cubes_per_thread = 8;
+    const size_t workspace_memory = nthreads * workspace_cubes_per_thread * max_cube_elements;
+
+    const size_t all_in_core_memory =
+        integral_memory + w_memory + v_memory + current_t_memory + next_t_memory + workspace_memory;
+    size_t resident_memory = integral_memory + workspace_memory;
+    if (!write_intermediates_ro_) resident_memory += w_memory + v_memory;
+    if (!write_amplitudes_ro_) resident_memory += current_t_memory;
+    if (!write_next_amplitudes_ro_) resident_memory += next_t_memory;
+
+    const auto exceeds_memory = [&]() {
+        return static_cast<double>(resident_memory) * sizeof(double) > 0.9 * static_cast<double>(memory_);
+    };
+
+    // Immutable W/V are consumed once per block and are therefore the
+    // highest-throughput tensors to spill.  Preserve current T in memory as
+    // long as possible because every residual can request several neighbor
+    // amplitudes.
+    if (toggle_memory_ && !write_intermediates_ro_ && exceeds_memory()) {
         write_intermediates_ro_ = true;
-        total_words -= intermediate_memory;
-        intermediate_memory = 0;
+        resident_memory -= w_memory + v_memory;
     }
-    if (toggle_memory_ && !write_amplitudes_ro_ && total_words * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && !write_next_amplitudes_ro_ && exceeds_memory()) {
+        write_next_amplitudes_ro_ = true;
+        resident_memory -= next_t_memory;
+    }
+    if (toggle_memory_ && !write_amplitudes_ro_ && exceeds_memory()) {
         write_amplitudes_ro_ = true;
-        total_words -= amplitude_memory;
-        amplitude_memory = 0;
+        write_next_amplitudes_ro_ = true;
+        resident_memory -= current_t_memory;
     }
-    if (toggle_memory_ && total_words * sizeof(double) > 0.9 * memory_)
+    if (toggle_memory_ && exceeds_memory())
         throw PSIEXCEPTION("Too little memory for the RO-DLPNO-(T) intermediates");
 
     constexpr double bytes_to_gb = 1.0e-9;
+    const auto words_to_gb = [&](size_t words) { return words * sizeof(double) * bytes_to_gb; };
     outfile->Printf("\n  ==> RO-DLPNO-(T) Memory Requirements <==\n\n");
-    outfile->Printf("    Spin-resolved W/V/T generations: %.3f [GB]\n",
-                    (intermediate_memory + amplitude_memory) * sizeof(double) * bytes_to_gb);
-    outfile->Printf("    Total estimated memory    : %.3f [GB]\n", total_words * sizeof(double) * bytes_to_gb);
-    outfile->Printf("    Total memory available    : %.3f [GB]\n\n", memory_ * bytes_to_gb);
+    outfile->Printf("    Active spin-resolved T cubes : %zu\n", active_spin_blocks);
+    outfile->Printf("    Integral storage              : %8.3f [GB]\n", words_to_gb(integral_memory));
+    outfile->Printf("    W generation                  : %8.3f [GB]\n", words_to_gb(w_memory));
+    outfile->Printf("    V generation                  : %8.3f [GB]\n", words_to_gb(v_memory));
+    outfile->Printf("    Current T generation          : %8.3f [GB]\n", words_to_gb(current_t_memory));
+    outfile->Printf("    Next T generation             : %8.3f [GB]\n", words_to_gb(next_t_memory));
+    outfile->Printf("    Thread workspace allowance    : %8.3f [GB] (%zu threads)\n",
+                    words_to_gb(workspace_memory), nthreads);
+    outfile->Printf("    All-in-core requirement       : %8.3f [GB]\n", words_to_gb(all_in_core_memory));
+    outfile->Printf("    Selected resident memory      : %8.3f [GB]\n", words_to_gb(resident_memory));
+    outfile->Printf("    Automatic memory limit (90%%)  : %8.3f [GB]\n", 0.9 * memory_ * bytes_to_gb);
+    outfile->Printf("    Total memory available        : %8.3f [GB]\n\n", memory_ * bytes_to_gb);
     if (write_intermediates_ro_) outfile->Printf("    Writing RO W and V intermediates to disk.\n");
-    if (write_amplitudes_ro_) outfile->Printf("    Writing RO T amplitudes to disk.\n");
+    if (write_amplitudes_ro_) {
+        outfile->Printf("    Writing current and next RO T generations to disk.\n");
+    } else if (write_next_amplitudes_ro_) {
+        outfile->Printf("    Keeping current RO T amplitudes in memory.\n");
+        outfile->Printf("    Writing only the next RO T Jacobi generation to disk.\n");
+    } else {
+        outfile->Printf("    Keeping both RO T Jacobi generations in memory.\n");
+    }
     outfile->Printf("\n");
 }
 
@@ -1187,7 +1294,8 @@ double RO_DLPNOCCSD_T::ro_lccsd_t_iterations() {
         const std::time_t iteration_start = std::time(nullptr);
         std::array<std::vector<double>, 4> residual_rms;
         for (auto& residuals : residual_rms) residuals.assign(ntriplets, 0.0);
-        auto next_amplitudes = T_iajbkc_spin_;
+        std::array<std::vector<SharedMatrix>, 4> next_amplitudes;
+        if (!write_next_amplitudes_ro_) next_amplitudes = T_iajbkc_spin_;
         std::array<std::vector<char>, 4> amplitude_updated;
         for (auto& updated : amplitude_updated) updated.assign(ntriplets, 0);
 
@@ -1302,7 +1410,7 @@ double RO_DLPNOCCSD_T::ro_lccsd_t_iterations() {
                 residual_rms[ts][ijk] = allowed_elements == 0 ? 0.0 : std::sqrt(residual_squared / allowed_elements);
                 amplitude_updated[ts][ijk] = 1;
 
-                if (write_amplitudes_ro_) {
+                if (write_next_amplitudes_ro_) {
                     T->set_name(std::string("RO T next ") + triple_spin_label(spin) + " " + std::to_string(ijk));
 #pragma omp critical(ro_triples_psio)
                     T->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
@@ -1314,7 +1422,7 @@ double RO_DLPNOCCSD_T::ro_lccsd_t_iterations() {
 
         // Jacobi semantics require every residual to read the same amplitude generation.  Promote the completed
         // generation only after all triplets have finished reading their neighbors.
-        if (write_amplitudes_ro_) {
+        if (write_next_amplitudes_ro_) {
             for (TripleSpinCase spin : kTripleSpins) {
                 const int ts = static_cast<int>(spin);
                 for (int ijk = 0; ijk < ntriplets; ++ijk) {
@@ -1325,7 +1433,15 @@ double RO_DLPNOCCSD_T::ro_lccsd_t_iterations() {
                         ntno * ntno);
                     T->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
                     T->set_name(std::string("RO T ") + triple_spin_label(spin) + " " + std::to_string(ijk));
-                    T->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+                    if (write_amplitudes_ro_) {
+                        T->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+                    } else {
+                        // All residuals have completed, so replacing one
+                        // current block at a time preserves Jacobi semantics
+                        // without ever materializing a second in-core
+                        // generation.
+                        T_iajbkc_spin_[ts][ijk] = T;
+                    }
                 }
             }
         } else {
