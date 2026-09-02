@@ -30,7 +30,6 @@
 #define LIBFOCK_GAUXC_INT_H
 #ifdef USING_gauxc
 #include <gauxc/xc_integrator.hpp>
-#include <gauxc/xc_integrator/integrator_factory.hpp>
 #include <eigen3/Eigen/Core>
 
 #include "integrator_manager.h"
@@ -60,6 +59,8 @@ class GauRV : public GauXCBase {
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
     bool can_compute_gradient() override { return true; };
     SharedMatrix compute_gradient() override;
+    bool can_compute_Vx() override { return true; };
+    void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
     ExchCXX::Spin spin() const override { return ExchCXX::Spin::Unpolarized; };
 };
 
@@ -69,6 +70,8 @@ class GauUV : public GauXCBase {
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
     bool can_compute_gradient() override { return true; };
     SharedMatrix compute_gradient() override;
+    bool can_compute_Vx() override { return true; };
+    void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
     ExchCXX::Spin spin() const override { return ExchCXX::Spin::Polarized; };
 };
 }
