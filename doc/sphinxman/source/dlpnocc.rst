@@ -143,8 +143,8 @@ DLPNO implementation:
   contribution to their signed total, while quadruplets are classified by the
   leading 90% of the summed absolute contribution so cancellation cannot make
   the running criterion non-monotonic. The remainder are labeled weak. These
-  labels select different TNO or QNO truncation thresholds; they do **not** imply
-  that a tuple contains any weak occupied-orbital pairs.
+  labels can select independently configurable TNO or QNO truncation thresholds;
+  they do **not** imply that a tuple contains any weak occupied-orbital pairs.
 
 For an iterative DLPNO-CCSD(T) calculation that is the final requested method,
 |dlpno__t_cut_tno_strong| (default ``1.0e-8``) and
@@ -159,12 +159,15 @@ cutoff is explicitly set, the effective cutoff is that scale multiplied by
 |dlpno__t_cut_tno|. An explicitly set absolute cutoff takes precedence.
 
 Analogously, when iterative DLPNO-CCSDT(Q) is the final requested method,
-|dlpno__t_cut_qno_strong| (default ``1.0e-6``) and
+|dlpno__t_cut_qno_strong| (default ``3.33e-6``) and
 |dlpno__t_cut_qno_weak| (default ``3.33e-6``) are the absolute QNO occupation
-cutoffs for the energy-ranked quadruplet classes. If DLPNO-CCSDTQ is requested,
-both are superseded by |dlpno__t_cut_qno_full| (default ``3.33e-6``) while
-constructing the iterative :math:`(Q)` amplitudes that precede the full-
-:math:`T_4` calculation. The semicanonical ``dlpno-ccsd(t0)`` and
+cutoffs for the energy-ranked quadruplet classes. The defaults are equal because
+numerical tests found no meaningful accuracy benefit from tightening the strong
+class alone; the separate options remain available for explicit tuning. If
+DLPNO-CCSDTQ is requested, both are superseded by |dlpno__t_cut_qno_full|
+(default ``3.33e-6``) while constructing the iterative :math:`(Q)` amplitudes
+that precede the full-:math:`T_4` calculation. The semicanonical
+``dlpno-ccsd(t0)`` and
 ``dlpno-ccsdt(q0)`` variants do not perform the corresponding iterative step.
 These semicanonical-only controls apply only when the associated perturbative
 method is the final requested method: DLPNO-CCSDT and higher always form the
@@ -374,12 +377,9 @@ were comparatively inexpensive for this case.
 
    This archived benchmark predates the replacement of QNO scale factors by separate
    absolute strong- and weak-quadruplet cutoffs. It effectively used
-   ``T_CUT_QNO_STRONG = T_CUT_QNO_WEAK = 3.33e-6``. To reproduce the tabulated
-   energies and local-space sizes with the current interface, set both options explicitly.
-   The current defaults are ``T_CUT_QNO_STRONG = 1.0e-6`` and
-   ``T_CUT_QNO_WEAK = 3.33e-6``; the tighter strong-quadruplet default can increase the
-   corresponding QNO spaces and may change timings, memory requirements, and the final
-   energy slightly.
+   ``T_CUT_QNO_STRONG = T_CUT_QNO_WEAK = 3.33e-6``. The current defaults now
+   match those archived settings, so no explicit QNO-class overrides are needed
+   to reproduce the tabulated energies and local-space sizes.
 
 DLPNO-CCSDTQ
 ~~~~~~~~~~~~
