@@ -1094,10 +1094,12 @@ void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix>
     if (D_AO_.size() != 1) {
         throw PSIEXCEPTION("Vx: RKS should have only one D Matrix");
     }
-    if ((Dx.size() != ret.size()) || (Dx.size() == 0)) {
+    if ((Dx.size() != ret.size())) {
         throw PSIEXCEPTION("Vx: RKS input and output sizes should be the same.");
     }
-
+    if (Dx.size() == 0) {
+        throw PSIEXCEPTION("Vx: Can't compute with matrix-vector prodcuts with no vectors.");
+    }
     if (functional_->needs_vv10()) {
         throw PSIEXCEPTION("Vx: RKS cannot compute VV10 Vx contribution.");
     }
