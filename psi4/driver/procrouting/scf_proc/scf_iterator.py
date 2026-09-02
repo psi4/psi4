@@ -34,7 +34,7 @@ from psi4 import core
 
 from ... import p4util
 from ...constants import constants
-from ...p4util.exceptions import SCFConvergenceError, ValidationError
+from ...p4util.exceptions import PsiException, SCFConvergenceError, ValidationError
 from ..solvent.efp import get_qm_atoms_opts, modify_Fock_induced, modify_Fock_permanent
 
 #import logging
@@ -258,6 +258,13 @@ def scf_initialize(self):
     core.print_out("  ==> Iterations <==\n\n")
 
 
+#: OpenTrustRegion error codes that mean "ran out of macro-iterations" rather than "the step
+#: machinery failed", for the solver and for its stability check respectively. Anything else
+#: coming back nonzero is a genuine failure. See error_solver_max_iter and
+#: error_stability_check_max_iter in opentrustregion.f90.
+_OTR_MAX_ITER_ERRORS = (102, 202)
+
+
 #: How many times to restart OpenTrustRegion when canonicalizing its solution changes the
 #: orbital occupation. An occupation that keeps moving without lowering the energy is a
 #: relabeling of degenerate orbitals rather than a better solution, so this is only a
@@ -473,7 +480,16 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         if otr_error:
             core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
-            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
+            if otr_error in _OTR_MAX_ITER_ERRORS:
+                # Ordinary non-convergence, so subject to FAIL_ON_MAXITER like any other.
+                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
+            # Anything else is the step machinery giving up -- a line search that could not
+            # descend along an unstable mode, say. That must not be swallowed by
+            # FAIL_ON_MAXITER, which callers such as run_qchf set False to tolerate a
+            # deliberately truncated SCF.
+            raise PsiException(
+                f"OpenTrustRegion solver failed with error {otr_error}. See the output file for "
+                f"the solver's own message.")
         return
 
     # maximum number of scf iterations to run after early screening is disabled
