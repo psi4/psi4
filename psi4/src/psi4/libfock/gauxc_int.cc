@@ -42,8 +42,11 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include "psi4/libqt/qt.h"
+
 #include <gauxc/molecular_weights.hpp>
 #include <gauxc/molgrid/defaults.hpp>
+#include <gauxc/xc_integrator/integrator_factory.hpp>
 
 namespace psi {
 
@@ -145,6 +148,7 @@ void GauXCBase::print_header() const {
 }
 
 std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
+    timer_on("GauRV: Form V");
     Eigen::MatrixXd eigen_d = psi::linalg::eigen_map(*D_AO_[0]);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
@@ -179,10 +183,12 @@ std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values["RHO_BX"] = 0.0;
     quad_values["RHO_BY"] = 0.0;
     quad_values["RHO_BZ"] = 0.0;
+    timer_off("GauRV: Form V");
     return quad_values;
 }
 
 std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
+    timer_on("GauUV: Form V");
     auto Ds = D_AO_[0]->clone();
     Ds->add(D_AO_[1]);
     auto Dz = D_AO_[0]->clone();
@@ -228,6 +234,8 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values_["RHO_BX"] = 0.0;
     quad_values_["RHO_BY"] = 0.0;
     quad_values_["RHO_BZ"] = 0.0;
+
+    timer_off("GauUV: Form V");
     return quad_values_;
 }
 
@@ -244,7 +252,7 @@ SharedMatrix GauRV::compute_gradient() {
     int natom = primary_->molecule()->natom();
     auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
 
-    memcpy(G->get_pointer(), grad_xc.data(), natom * 3 * sizeof(double));
+    G->copy_from(grad_xc.data());
 
     quad_values_["FUNCTIONAL"] = 0.0;
     quad_values_["RHO_A"] = 0.0;
@@ -278,7 +286,7 @@ SharedMatrix GauUV::compute_gradient() {
     int natom = primary_->molecule()->natom();
     auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
 
-    memcpy(G->get_pointer(), grad_xc.data(), natom * 3 * sizeof(double));
+    G->copy_from(grad_xc.data());
 
     quad_values_["FUNCTIONAL"] = 0.0;
     quad_values_["RHO_A"] = 0.0;
@@ -292,6 +300,121 @@ SharedMatrix GauUV::compute_gradient() {
 
     return G;
 }
+
+void GauRV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+    timer_on("GauRV: Form Vx");
+
+    // Validation
+    if (D_AO_.size() != 1) {
+        throw PSIEXCEPTION("Vx: RKS should have only one D Matrix");
+    }
+    if ((Dx.size() != ret.size())) {
+        throw PSIEXCEPTION("Vx: RKS input and output sizes should be the same.");
+    }
+    if (Dx.size() == 0) {
+        throw PSIEXCEPTION("Vx: Can't compute with matrix-vector prodcuts with no vectors.");
+    }
+
+    Eigen::MatrixXd eigen_d = psi::linalg::eigen_map(*D_AO_[0]);
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permuter;
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+    if (primary_->has_puream()) {
+        permuter = linalg::generate_permutation_to_cca(*primary_);
+        eigen_d = permuter * eigen_d * permuter.transpose();
+    }
+#endif
+
+    for (size_t i = 0; i < Dx.size(); i++) {
+        Eigen::MatrixXd eigen_dx = psi::linalg::eigen_map(*Dx[i]);
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+        if (primary_->has_puream()) {
+            eigen_dx = permuter * eigen_dx * permuter.transpose();
+        }
+#endif
+	GauXC::IntegratorSettingsEXC_GRAD set;
+	set.include_weight_derivatives = false;
+        auto vx = integrator_->eval_fxc_contraction(eigen_d, eigen_dx, set);
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+        if (primary_->has_puream()) {
+            vx = permuter.transpose() * vx * permuter;
+        }
+#endif
+        ret[i]->copy_from(vx.data());
+        ret[i]->scale(0.5);
+    }
+    timer_off("GauRV: Form Vx");
+}
+
+void GauUV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+    timer_on("GauUV: Form Vx");
+
+    // Validation
+    if (D_AO_.size() != 2) {
+        throw PSIEXCEPTION("Vx: UKS should have only one D Matrix");
+    }
+    if ((Dx.size() != ret.size())) {
+        throw PSIEXCEPTION("Vx: UKS input and output sizes should be the same.");
+    }
+    if (Dx.size() == 0) {
+        throw PSIEXCEPTION("Vx: Can't compute with matrix-vector prodcuts with no vectors.");
+    }
+    if (Dx.size() % 2) {
+        throw PSIEXCEPTION("Vx: Need an even number of pseudo-densities (alpha, beta pairs).");
+    }
+    auto num_pairs = Dx.size() / 2;
+
+    auto Ds = D_AO_[0]->clone();
+    Ds->add(D_AO_[1]);
+    auto Dz = D_AO_[0]->clone();
+    Dz->subtract(D_AO_[1]);
+    Eigen::MatrixXd eigen_ds = psi::linalg::eigen_map(*Ds);
+    Eigen::MatrixXd eigen_dz = psi::linalg::eigen_map(*Dz);
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permuter;
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+    if (primary_->has_puream()) {
+        permuter = linalg::generate_permutation_to_cca(*primary_);
+        eigen_ds = permuter * eigen_ds * permuter.transpose();
+        eigen_dz = permuter * eigen_dz * permuter.transpose();
+    }
+#endif
+
+    for (size_t i = 0; i < num_pairs; i++) {
+        auto Ds = Dx[2*i]->clone();
+        Ds->add(Dx[2*i+1]);
+        auto Dz = Dx[2*i]->clone();
+        Dz->subtract(Dx[2*i+1]);
+        Eigen::MatrixXd eigen_dxs = psi::linalg::eigen_map(*Ds);
+        Eigen::MatrixXd eigen_dxz = psi::linalg::eigen_map(*Dz);
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+        if (primary_->has_puream()) {
+            eigen_dxs = permuter * eigen_dxs * permuter.transpose();
+            eigen_dxz = permuter * eigen_dxz * permuter.transpose();
+        }
+#endif
+        auto [vxs, vxz] = integrator_->eval_fxc_contraction(eigen_ds, eigen_dz, eigen_dxs, eigen_dxz);
+        auto vx_a = static_cast<Eigen::MatrixXd>(vxs + vxz);
+        auto vx_b = static_cast<Eigen::MatrixXd>(vxs - vxz);
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+        if (primary_->has_puream()) {
+            vx_a = permuter.transpose() * vx_a * permuter;
+            vx_b = permuter.transpose() * vx_b * permuter;
+        }
+#endif
+
+        // Set the result
+        auto ao_a = psi::linalg::matrix_from_eigen(vx_a);
+        auto ao_b = psi::linalg::matrix_from_eigen(vx_b);
+        if (AO2USO_) {
+            (*ret[2*i]).apply_symmetry(ao_a, *AO2USO_);
+            (*ret[2*i+1]).apply_symmetry(ao_b, *AO2USO_);
+        } else {
+            (*ret[2*i]).copy(ao_a);
+            (*ret[2*i+1]).copy(ao_b);
+        }
+    }
+    timer_off("GauUV: Form Vx");
+}
+
 } // namespace psi
 
 #endif
