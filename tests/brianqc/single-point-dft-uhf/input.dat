@@ -1,6 +1,6 @@
 #! Hydroxyl with sto-3g, b3lyp with sg1 grid
 
-refenergy = -74.65828
+refenergy = -74.6582755483698151
 
 molecule hydroxyl {
     symmetry c1
@@ -16,6 +16,7 @@ set = {
     scf_type direct
     df_scf_guess False
     brianqc_enable True
+    d_convergence 9
 }
 
 thisenergy = energy('scf', dft_functional = 'b3lyp')

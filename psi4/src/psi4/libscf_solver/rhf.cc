@@ -64,17 +64,11 @@
 
 #include "rhf.h"
 
+#ifdef USING_gauxc
+#include "psi4/libfock/gauxc_int.h"
+#endif
 #ifdef USING_BrianQC
-
-#include <use_brian_wrapper.h>
-#include <brian_macros.h>
-#include <brian_types.h>
-
-extern void checkBrian();
-extern BrianCookie brianCookie;
-extern bool brianEnable;
-extern bool brianEnableDFT;
-
+#include "psi4/libfock/brian_int.h"
 #endif
 
 namespace psi {
@@ -218,7 +212,7 @@ void RHF::form_G() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -325,7 +319,7 @@ double RHF::compute_E() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -498,7 +492,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bo
             Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
             Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi(), Dx[i]->symmetry()));
         }
-        potential_->compute_Vx_full(Dx, Vx, singlet);
+        if (singlet) {
+            potential_->compute_Vx(Dx, Vx);
+        } else {
+            potential_->compute_Vx_triplet(Dx, Vx);
+        }
     }
 
     std::vector<SharedMatrix> V_ext_pert;
@@ -518,7 +516,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bo
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -1039,7 +1037,22 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void RHF::setup_potential() {
     if (functional_->needs_xc()) {
-        potential_ = std::make_shared<RV>(functional_, basisset_, options_);
+	std::vector<std::shared_ptr<IntegratorManager>> managers;
+#ifdef USING_BrianQC
+        if (options_.get_bool("BRIANQC_INTEGRATE")) {
+            managers.push_back(std::make_shared<BrianRV>(functional_, basisset_, options_));
+        }
+#endif
+#ifdef USING_gauxc
+        if (options_.get_bool("GAUXC_INTEGRATE")) {
+            managers.push_back(std::make_shared<GauRV>(functional_, basisset_, options_));
+        }
+#endif
+        if (options_.get_bool("DFT_ENABLE_PSI")) {
+	    managers.push_back(std::make_shared<RV>(functional_, basisset_, options_));
+	}
+	if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but requested DFT.");
+        potential_ = std::make_shared<IntegratorDispatcher>(managers);
         potential_->initialize();
     } else {
         potential_ = nullptr;
@@ -1101,7 +1114,7 @@ void RHF::openorbital_scf() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
       // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
       alpha = 1.0;
       beta = 1.0;
