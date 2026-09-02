@@ -155,7 +155,6 @@ jobs:
                         libint ^
                         qcelemental ^
                         qcengine ^
-                        qcmanybody ^
                         pydantic ^
                         optking ^
                         scipy
