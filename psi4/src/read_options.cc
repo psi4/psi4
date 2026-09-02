@@ -2781,7 +2781,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_QNO_DIAG_SCALE", 1.0);
         /*- Absolute QNO occupation cutoff for strong quadruplets in an iterative
             DLPNO-CCSDT(Q) calculation. Ignored when full quadruples are requested. !expert -*/
-        options.add_double("T_CUT_QNO_STRONG", 1.0e-6);
+        options.add_double("T_CUT_QNO_STRONG", 3.33e-6);
         /*- Absolute QNO occupation cutoff for weak quadruplets in an iterative
             DLPNO-CCSDT(Q) calculation. Ignored when full quadruples are requested. !expert -*/
         options.add_double("T_CUT_QNO_WEAK", 3.33e-6);
