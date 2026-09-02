@@ -326,7 +326,8 @@ are available pre-built from conda.
 * :ref:`simint <cmake:simint>` |w---w| :ref:`[what is simint?] <sec:simint>` :source:`[simint min version] <external/upstream/simint/CMakeLists.txt#L2>`
 
 * :ref:`OpenOrbitalOptimizer <cmake:ooo>` |w---w| `[what is OpenOrbitalOptimizer?] <sec:ooo>` (August 2025; added by v1.10)
-* :ref:`OpenTrustRegion <cmake:otr>` |w---w| `[what is OpenTrustRegion?] <sec:otr>` (added by v1.11)
+
+* :ref:`OpenTrustRegion <cmake:otr>` |w---w| `[what is OpenTrustRegion?] <sec:otr>` (added by v1.12)
 
 Additionally, there are runtime-loaded capabilities:
 
