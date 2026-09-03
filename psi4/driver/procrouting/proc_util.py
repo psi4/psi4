@@ -45,8 +45,8 @@ def prepare_c1_reference(ref_wfn: core.Wavefunction, basis_name: Optional[str] =
     :math:`C_1` without changing the molecular orientation, then
     :meth:`~psi4.core.Wavefunction.c1_deep_copy` transforms the symmetry-blocked
     matrices and vectors. In particular, the resulting wavefunction contains
-    consistent :math:`C`, :math:`S`, :math:`H`, :math:`D`, :math:`F`, and
-    orbital-energy quantities in a single irrep.
+    consistent :math:`C`, :math:`S`, :math:`H`, :math:`D`, :math:`F`,
+    orbital-energy quantities, and per-irrep dimensions in a single irrep.
 
     Parameters
     ----------
