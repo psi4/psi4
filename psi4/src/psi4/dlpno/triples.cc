@@ -782,11 +782,19 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
         /* These are cloned and inverted by the full coulomb metric (not to the half power)
             to make formation of (i a | b c)-type integrals more efficient later */
 
-        C_DGESV_shared_factorization(A_solve->clone(), {q_iv_clone, q_jv_clone, q_kv_clone});
-        
-        A_solve->power(0.5, 1.0e-14);
+        C_DGESV_wrapper(A_solve->clone(), q_iv_clone);
+        C_DGESV_wrapper(A_solve->clone(), q_jv_clone);
+        C_DGESV_wrapper(A_solve->clone(), q_kv_clone);
 
-        C_DGESV_shared_factorization(A_solve->clone(), {q_iv, q_jv, q_kv, q_io, q_jo, q_ko});
+        A_solve->power(-0.5, 1.0e-14);
+
+        q_iv = linalg::doublet(A_solve, q_iv);
+        q_jv = linalg::doublet(A_solve, q_jv);
+        q_kv = linalg::doublet(A_solve, q_kv);
+        q_io = linalg::doublet(A_solve, q_io);
+        q_jo = linalg::doublet(A_solve, q_jo);
+        q_ko = linalg::doublet(A_solve, q_ko);
+        A_solve.reset();
 
         if (thread == 0) timer_off("LCCSD(T0): Setup Integrals");
 
@@ -2101,11 +2109,19 @@ void DLPNOCCSDT::compute_integrals() {
         q_kv = linalg::doublet(q_kv, X_tno_[ijk]);
 
         // Multiply by (P|Q)^{-1/2}
-        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmotriplet_to_ribfs_[ijk], lmotriplet_to_ribfs_[ijk]);
-        A_solve->power(0.5, 1.0e-14);
+        auto metric_inverse_sqrt =
+            submatrix_rows_and_cols(*full_metric_, lmotriplet_to_ribfs_[ijk], lmotriplet_to_ribfs_[ijk]);
+        metric_inverse_sqrt->power(-0.5, 1.0e-14);
 
-        C_DGESV_shared_factorization(A_solve->clone(),
-                                     {q_io, q_jo, q_ko, q_iv, q_jv, q_kv, q_ov, q_vv});
+        q_io = linalg::doublet(metric_inverse_sqrt, q_io);
+        q_jo = linalg::doublet(metric_inverse_sqrt, q_jo);
+        q_ko = linalg::doublet(metric_inverse_sqrt, q_ko);
+        q_iv = linalg::doublet(metric_inverse_sqrt, q_iv);
+        q_jv = linalg::doublet(metric_inverse_sqrt, q_jv);
+        q_kv = linalg::doublet(metric_inverse_sqrt, q_kv);
+        q_ov = linalg::doublet(metric_inverse_sqrt, q_ov);
+        q_vv = linalg::doublet(metric_inverse_sqrt, q_vv);
+        metric_inverse_sqrt.reset();
 
         q_io_[ijk] = Tensor<double, 2>("(Q_ijk | m i)", naux_ijk, nlmo_ijk);
         q_jo_[ijk] = Tensor<double, 2>("(Q_ijk | m j)", naux_ijk, nlmo_ijk);

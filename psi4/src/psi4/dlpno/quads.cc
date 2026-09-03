@@ -1244,16 +1244,27 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             ::memcpy(&(*q_vv)(q_ijkl, 0), &(*q_vv_tmp)(0, 0), nqno_ijkl * nqno_ijkl * sizeof(double));
         }
 
-        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmoquadruplet_to_ribfs_[ijkl], lmoquadruplet_to_ribfs_[ijkl]);
-        A_solve->power(0.5, 1.0e-14);
-
         q_iv = linalg::doublet(q_iv, X_qno_[ijkl]);
         q_jv = linalg::doublet(q_jv, X_qno_[ijkl]);
         q_kv = linalg::doublet(q_kv, X_qno_[ijkl]);
         q_lv = linalg::doublet(q_lv, X_qno_[ijkl]);
 
-        C_DGESV_shared_factorization(
-            A_solve->clone(), {q_io, q_jo, q_ko, q_lo, q_iv, q_jv, q_kv, q_lv, q_ov, q_vv});
+        // Multiply by (P|Q)^{-1/2}
+        auto metric_inverse_sqrt =
+            submatrix_rows_and_cols(*full_metric_, lmoquadruplet_to_ribfs_[ijkl], lmoquadruplet_to_ribfs_[ijkl]);
+        metric_inverse_sqrt->power(-0.5, 1.0e-14);
+
+        q_io = linalg::doublet(metric_inverse_sqrt, q_io);
+        q_jo = linalg::doublet(metric_inverse_sqrt, q_jo);
+        q_ko = linalg::doublet(metric_inverse_sqrt, q_ko);
+        q_lo = linalg::doublet(metric_inverse_sqrt, q_lo);
+        q_iv = linalg::doublet(metric_inverse_sqrt, q_iv);
+        q_jv = linalg::doublet(metric_inverse_sqrt, q_jv);
+        q_kv = linalg::doublet(metric_inverse_sqrt, q_kv);
+        q_lv = linalg::doublet(metric_inverse_sqrt, q_lv);
+        q_ov = linalg::doublet(metric_inverse_sqrt, q_ov);
+        q_vv = linalg::doublet(metric_inverse_sqrt, q_vv);
+        metric_inverse_sqrt.reset();
 
         Tensor<double, 2> q_io_ein("(Q_ijkl | m i)", naux_ijkl, nlmo_ijkl);
         Tensor<double, 2> q_jo_ein("(Q_ijkl | m j)", naux_ijkl, nlmo_ijkl);
@@ -3424,11 +3435,21 @@ void DLPNOCCSDTQ::compute_integrals() {
         q_lv = linalg::doublet(q_lv, X_qno_[ijkl]);
         
         // Multiply by (P|Q)^{-1/2}
-        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmoquadruplet_to_ribfs_[ijkl], lmoquadruplet_to_ribfs_[ijkl]);
-        A_solve->power(0.5, 1.0e-14);
+        auto metric_inverse_sqrt =
+            submatrix_rows_and_cols(*full_metric_, lmoquadruplet_to_ribfs_[ijkl], lmoquadruplet_to_ribfs_[ijkl]);
+        metric_inverse_sqrt->power(-0.5, 1.0e-14);
 
-        C_DGESV_shared_factorization(
-            A_solve->clone(), {q_io, q_jo, q_ko, q_lo, q_iv, q_jv, q_kv, q_lv, q_ov, q_vv});
+        q_io = linalg::doublet(metric_inverse_sqrt, q_io);
+        q_jo = linalg::doublet(metric_inverse_sqrt, q_jo);
+        q_ko = linalg::doublet(metric_inverse_sqrt, q_ko);
+        q_lo = linalg::doublet(metric_inverse_sqrt, q_lo);
+        q_iv = linalg::doublet(metric_inverse_sqrt, q_iv);
+        q_jv = linalg::doublet(metric_inverse_sqrt, q_jv);
+        q_kv = linalg::doublet(metric_inverse_sqrt, q_kv);
+        q_lv = linalg::doublet(metric_inverse_sqrt, q_lv);
+        q_ov = linalg::doublet(metric_inverse_sqrt, q_ov);
+        q_vv = linalg::doublet(metric_inverse_sqrt, q_vv);
+        metric_inverse_sqrt.reset();
 
         q_io_list_[ijkl][0] = Tensor<double, 2>("(Q_ijkl | m i)", naux_ijkl, nlmo_ijkl);
         q_io_list_[ijkl][1] = Tensor<double, 2>("(Q_ijkl | m j)", naux_ijkl, nlmo_ijkl);

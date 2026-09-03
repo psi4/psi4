@@ -1514,7 +1514,7 @@ void DLPNOCCSD::compute_pno_integrals() {
         SharedMatrix q_jo_clone;
         SharedMatrix q_iv_clone;
         SharedMatrix q_jv_clone;
-        
+
         // (P_{ij}|Q_{ij})^{-1} (Q_{ij}|m_{ij}i)
         q_io_clone = q_io->clone();
         C_DGESV_wrapper(A_solve->clone(), q_io_clone);
@@ -1522,7 +1522,7 @@ void DLPNOCCSD::compute_pno_integrals() {
             q_jo_clone = q_jo->clone();
             C_DGESV_wrapper(A_solve->clone(), q_jo_clone);
         }
-        
+
         // (P_{ij}|Q_{ij})^{-1} (Q_{ij}|a_{ij}i)
         q_iv_clone = q_iv->clone();
         C_DGESV_wrapper(A_solve->clone(), q_iv_clone);
@@ -1530,17 +1530,17 @@ void DLPNOCCSD::compute_pno_integrals() {
             q_jv_clone = q_jv->clone();
             C_DGESV_wrapper(A_solve->clone(), q_jv_clone);
         }
-        
-        A_solve->power(0.5, 1.0e-14);
 
         // (P_{ij}|Q_{ij})^{-1/2} (Q_{ij}|p q)
-        C_DGESV_wrapper(A_solve->clone(), q_pair);
-        C_DGESV_wrapper(A_solve->clone(), q_io);
-        C_DGESV_wrapper(A_solve->clone(), q_jo);
-        C_DGESV_wrapper(A_solve->clone(), q_iv);
-        C_DGESV_wrapper(A_solve->clone(), q_jv);
-        C_DGESV_wrapper(A_solve->clone(), q_ov);
-        C_DGESV_wrapper(A_solve->clone(), q_vv);
+        A_solve->power(-0.5, 1.0e-14);
+        q_pair = linalg::doublet(A_solve, q_pair);
+        q_io = linalg::doublet(A_solve, q_io);
+        q_jo = linalg::doublet(A_solve, q_jo);
+        q_iv = linalg::doublet(A_solve, q_iv);
+        q_jv = linalg::doublet(A_solve, q_jv);
+        q_ov = linalg::doublet(A_solve, q_ov);
+        q_vv = linalg::doublet(A_solve, q_vv);
+        A_solve.reset();
 
         if (thread == 0) timer_off("DLPNO-CCSD: Setup Integrals");
 

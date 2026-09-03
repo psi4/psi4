@@ -233,10 +233,6 @@ class DLPNO : public Wavefunction {
 
     // Helper functions
     void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B);
-    /// Factor A once and solve A X = B for several right-hand-side blocks.
-    /// The blocks are solved one at a time so the shared LU factorization does
-    /// not require a concatenated (and potentially very large) RHS buffer.
-    void C_DGESV_shared_factorization(SharedMatrix A, const std::vector<SharedMatrix>& rhs_blocks);
 
     std::pair<SharedMatrix, SharedVector> canonicalizer(SharedMatrix C, SharedMatrix F);
     std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix S, SharedMatrix F);

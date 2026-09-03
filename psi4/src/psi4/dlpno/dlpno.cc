@@ -267,55 +267,6 @@ void DLPNO::C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
     }
 }
 
-void DLPNO::C_DGESV_shared_factorization(
-    SharedMatrix A, const std::vector<SharedMatrix>& rhs_blocks) {
-    const int n = A->nrow();
-    if (n == 0) return;
-    if (A->ncol() != n) {
-        throw PSIEXCEPTION("The DLPNO density-fitting metric must be square.");
-    }
-
-    std::vector<int> ipiv(n);
-    const int factor_info = C_DGETRF(n, n, A->pointer()[0], n, ipiv.data());
-    if (factor_info != 0) {
-        throw PSIEXCEPTION("LU factorization of a DLPNO density-fitting metric failed.");
-    }
-
-    // Psi4 Matrix uses C ordering, whereas DGETRS expects each RHS column in
-    // Fortran ordering. Pack only the current block: the LU factors above are
-    // reused, while peak scratch remains n * max(ncol(B)).
-    for (const auto& B : rhs_blocks) {
-        if (!B) continue;
-        const int nrhs = B->ncol();
-        if (B->nrow() != n) {
-            throw PSIEXCEPTION("A DLPNO metric RHS has an incompatible row dimension.");
-        }
-        if (nrhs == 0) continue;
-
-        std::vector<double> B_fortran(static_cast<size_t>(n) * nrhs);
-        for (int row = 0; row < n; ++row) {
-            for (int col = 0; col < nrhs; ++col) {
-                B_fortran[static_cast<size_t>(col) * n + row] = B->get(row, col);
-            }
-        }
-
-        // Matrix stores A in row-major order, so LAPACK factorized A^T.  Solve
-        // with the transpose flag to recover A X = B without relying on the
-        // metric's mathematical symmetry.
-        const int solve_info =
-            C_DGETRS('T', n, nrhs, A->pointer()[0], n, ipiv.data(), B_fortran.data(), n);
-        if (solve_info != 0) {
-            throw PSIEXCEPTION("Solve with a factorized DLPNO density-fitting metric failed.");
-        }
-
-        for (int row = 0; row < n; ++row) {
-            for (int col = 0; col < nrhs; ++col) {
-                B->set(row, col, B_fortran[static_cast<size_t>(col) * n + row]);
-            }
-        }
-    }
-}
-
 /*
  * In order to use DIIS to accelerate convergence of the MP2 amplitudes,
  * we need to "flatten" the sparse data structure (list of Matrix objects)
