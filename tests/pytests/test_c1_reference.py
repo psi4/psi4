@@ -19,7 +19,7 @@ def test_prepare_c1_reference_preserves_scf_quantities():
         H 1 0.957 2 104.5
         """
     )
-    psi4.set_options({"basis": "sto-3g", "scf_type": "pk", "reference": "rhf"})
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "reference": "rhf"})
 
     _, sym_wfn = psi4.energy("scf", molecule=h2o, return_wfn=True)
     assert sym_wfn.nirrep() > 1
@@ -81,3 +81,5 @@ def test_prepare_c1_reference_preserves_scf_quantities():
     np.testing.assert_allclose(s, fresh_c1_s, atol=1.0e-12)
     np.testing.assert_allclose(c.T @ s @ c, np.eye(c.shape[1]), atol=1.0e-10)
     np.testing.assert_allclose(f @ c, (s @ c) * eps[np.newaxis, :], atol=1.0e-10)
+    c_occ = np.asarray(c1_wfn.Ca_subset("AO", "OCC"))
+    np.testing.assert_allclose(np.asarray(c1_wfn.Da()), c_occ @ c_occ.T, atol=1.0e-10)

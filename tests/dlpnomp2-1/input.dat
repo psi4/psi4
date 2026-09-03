@@ -23,6 +23,10 @@ set basis cc-pvdz
 set freeze_core True
 set scf_type df
 set mp2_type df
+# Match the tighter SCF reference used automatically by post-SCF energy calls;
+# the explicit C2v SCF below otherwise retains the looser standalone default.
+set e_convergence 1.0e-8
+set d_convergence 1.0e-8
 
 print('   Testing DF-MP2 ...')
 val = energy('mp2')

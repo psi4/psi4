@@ -25,7 +25,10 @@ set scf_type df
 set mp2_type df
 set cc_type  df
 set nat_orbs False
+# Match the tighter SCF reference used automatically by post-SCF energy calls;
+# the explicit C2v SCF below otherwise retains the looser standalone default.
 set e_convergence 1.0e-8
+set d_convergence 1.0e-8
 set r_convergence 1.0e-8
 set pno_convergence very_tight
 # Preserve the historical high-order regression domain while allowing an
@@ -76,6 +79,8 @@ set_num_threads(4)
 val, dlpno_wfn = energy('dlpno-ccsdtq', ref_wfn=sym_ref_wfn, return_wfn=True)
 c1_ref_wfn = dlpno_wfn.reference_wavefunction()
 compare_integers(1, c1_ref_wfn.nirrep(), 'CCSDTQ C1 reference irreps')                   #TEST
+compare_strings('c1', c1_ref_wfn.get_basisset('DF_BASIS_CC').molecule().schoenflies_symbol(),
+                'CCSDTQ C1 auxiliary basis point group')                                  #TEST
 for accessor in ('frzcpi', 'frzvpi', 'nalphapi', 'nbetapi', 'nsopi', 'nmopi'):
     source_dimension = getattr(sym_ref_wfn, accessor)()
     c1_dimension = getattr(c1_ref_wfn, accessor)()

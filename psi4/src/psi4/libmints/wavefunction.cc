@@ -402,16 +402,11 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->same_a_b_dens_ = same_a_b_dens_;
     wfn->same_a_b_orbs_ = same_a_b_orbs_;
 
-    // The target basis was rebuilt on the C1 molecule, so form its overlap
-    // directly in that basis. Back-transforming the source SO overlap can
-    // leave S inconsistent with the target basis-function ordering, which in
-    // turn corrupts AO population analyses performed on the copied reference.
-    wfn->S_ = wfn->factory_->create_shared_matrix("S");
-    auto overlap = wfn->integral_->so_overlap();
-    overlap->compute(wfn->S_);
-
     /// Need the SO2AO matrix for remove_symmetry(), have the AO2SO matrix
     SharedMatrix SO2AO = aotoso()->transpose();
+
+    wfn->S_ = wfn->factory_->create_shared_matrix("S");
+    wfn->S_->remove_symmetry(S_, SO2AO);
 
     /// Below is not set in the typical constructor
 
