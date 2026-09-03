@@ -660,7 +660,9 @@ Practical Advice
   valence truncations. If a non-frozen core computation is requested, all PNOs corresponding to core-core
   or core-virtual pairs have cutoffs scaled by ``T_CUT_PNO_CORE_SCALE`` (default ``1.0e-2``).
 
-* Note that DLPNO does not yet have molecular point group symmetry implemented and will run in C1 symmetry.
+* DLPNO does not yet use molecular point-group symmetry. The SCF reference may be computed in its detected
+  point group, after which the converged wavefunction is transformed to C1 for the DLPNO calculation. A
+  user-supplied higher-symmetry SCF reference wavefunction is transformed in the same way.
 
 * At this time, all DLPNO coupled-cluster methods are available only for closed-shell RHF energy computations.
 

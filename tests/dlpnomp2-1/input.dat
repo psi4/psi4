@@ -38,6 +38,23 @@ compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')         
 compare_values(ref_dfmp2_tot, val, 7, 'mp2 return')                                        #TEST
 clean()
 
+print('   Testing DLPNO-MP2 from a supplied higher-symmetry SCF reference ...')
+molecule h2o_c2v {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+}
+
+scf_energy, sym_ref_wfn = energy('scf', molecule=h2o_c2v, return_wfn=True)
+compare_integers(4, sym_ref_wfn.nirrep(), 'C2v SCF reference irreps')                       #TEST
+compare_values(ref_scf, scf_energy, 7, 'C2v scf ref')                                       #TEST
+
+val = energy('dlpno-mp2', ref_wfn=sym_ref_wfn)
+compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'C2v-to-C1 mp2 corl')  #TEST
+compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'C2v-to-C1 mp2 tot')          #TEST
+compare_values(ref_dlpnomp2_tot, val, 7, 'C2v-to-C1 mp2 return')                               #TEST
+clean()
+
 print('   Testing DLPNO-MP2 ...')
 val = energy('dlpno-mp2')
 
