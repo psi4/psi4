@@ -392,8 +392,6 @@ install(
     PATTERN "__pycache__" EXCLUDE
     PATTERN "*pyc" EXCLUDE
     # below place extra files the ctests-run-as-pytests need
-    PATTERN "adcc/formaldehyde-pe-adc1/fa_6w.pot"
-    PATTERN "adcc/formaldehyde-pe-adc2/fa_6w.pot"
     PATTERN "ci-property/grid.dat"
     PATTERN "scf-property/grid.dat"
     PATTERN "mp2-property/grid.dat"
