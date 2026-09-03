@@ -269,10 +269,6 @@ void CFMMBox::set_regions() {
 
     // Parent is not a nullpointer
     if (parent) {
-        constexpr auto axis_sign = [](double coordinate) constexpr noexcept {
-            return static_cast<double>((coordinate >= 1.0e-8) - (coordinate <= -1.0e-8));
-        };
-
         // Near field or local far fields are from children of parents
         // and children of parent's near field
         for (std::shared_ptr<CFMMBox> parent_nf : parent->near_field_) {
@@ -281,15 +277,14 @@ void CFMMBox::set_regions() {
                 // WS Max formulation takes the most diffuse branch into account
                 int ref_ws = (ws_max_ + child->ws_max_) / 2;
 
-                Vector3 Rab = child->center_ - center_;
-                double dx = axis_sign(Rab[0]);
-                double dy = axis_sign(Rab[1]);
-                double dz = axis_sign(Rab[2]);
+                // Per-axis gap between the boxes; overlapping or touching projections have zero gap.
+                Vector3 box_separation = child->center_ - center_;
+                for (int axis = 0; axis < 3; ++axis) {
+                    box_separation[axis] = std::max(std::abs(box_separation[axis]) - length_, 0.0);
+                }
+                double box_distance = box_separation.norm();
 
-                Rab = Rab - length_ * Vector3(dx, dy, dz);
-                double rab = std::sqrt(Rab.dot(Rab));
-
-                if (rab <= length_ * ref_ws) {
+                if (box_distance <= length_ * ref_ws) {
                     near_field_.push_back(child);
                 } else {
                     local_far_field_.push_back(child);

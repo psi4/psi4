@@ -29,8 +29,6 @@
 #ifndef PSI4_LIBFMM_MULTIPOLES_HELPER_H
 #define PSI4_LIBFMM_MULTIPOLES_HELPER_H
 
-#include "psi4/pragma.h"
-
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/matrix.h"
@@ -75,7 +73,7 @@ static inline int m_addr(int m) {
 
 inline constexpr int max_cfmm_order = 32;
 
-class PSI_API MultipoleRotationFactory {
+class MultipoleRotationFactory {
 
     protected:
       // New Z axis in rotated frame of reference
@@ -128,7 +126,7 @@ class PSI_API MultipoleRotationFactory {
 
 }; // End MultipoleRotationFactory
 
-class PSI_API HarmonicCoefficients {
+class HarmonicCoefficients {
     protected:
       // Ylm[l][m] = sum(coeff * x^a * y^b * z^c). Each map stores a flattened
       // Cartesian exponent index -> coefficient and uses Stone's normalization.
@@ -155,7 +153,7 @@ class PSI_API HarmonicCoefficients {
 
 };
 
-class PSI_API RealSolidHarmonics {
+class RealSolidHarmonics {
 
     protected:
       // Values of the Real Solid Harmonics, normalized according to Stone's convention
