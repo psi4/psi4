@@ -77,4 +77,7 @@ def test_prepare_c1_reference_preserves_scf_quantities():
     s = np.asarray(c1_wfn.S())
     f = np.asarray(c1_wfn.Fa())
     eps = np.asarray(c1_wfn.epsilon_a())
+    fresh_c1_s = np.asarray(psi4.core.MintsHelper(c1_wfn.basisset()).ao_overlap())
+    np.testing.assert_allclose(s, fresh_c1_s, atol=1.0e-12)
+    np.testing.assert_allclose(c.T @ s @ c, np.eye(c.shape[1]), atol=1.0e-10)
     np.testing.assert_allclose(f @ c, (s @ c) * eps[np.newaxis, :], atol=1.0e-10)
