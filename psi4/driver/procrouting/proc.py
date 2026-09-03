@@ -2116,20 +2116,10 @@ def scf_helper(name, post_scf=True, **kwargs):
         c1_optstash = p4util.OptionsState(['PRINT'])
         core.set_global_option("PRINT", 0)
 
-        # If we force c1 copy the active molecule
-        scf_molecule.update_geometry()
         core.print_out("""\n  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n\n""")
-        c1_molecule = scf_molecule.clone()
-        c1_molecule.reset_point_group('c1')
-        c1_molecule.fix_orientation(True)
-        c1_molecule.fix_com(True)
-        c1_molecule.update_geometry()
-        c1_basis = core.BasisSet.build(c1_molecule, "ORBITAL", core.get_global_option('BASIS'), quiet=True)
-        tmp = scf_wfn.c1_deep_copy(c1_basis)
-        if not scf_wfn.has_variable("-D ENERGY"):
-            tmp.del_variable("-D ENERGY")
-        c1_jkbasis = core.BasisSet.build(c1_molecule, "DF_BASIS_SCF",
+        tmp = proc_util.prepare_c1_reference(scf_wfn, core.get_global_option('BASIS'))
+        c1_jkbasis = core.BasisSet.build(tmp.molecule(), "DF_BASIS_SCF",
                                          core.get_global_option("DF_BASIS_SCF"),
                                          "JKFIT", core.get_global_option('BASIS'), quiet=True)
         tmp.set_basisset("DF_BASIS_SCF", c1_jkbasis)
@@ -4609,22 +4599,17 @@ def run_dlpno(name, **kwargs):
 
         # Every DLPNO implementation currently expects a C1 reference because its sparse
         # orbital, pair, triplet, and quadruplet domains do not carry irrep block structure.
+        # The SCF itself may still exploit molecular point-group symmetry; only its completed
+        # reference wavefunction is cast to C1 before entering the DLPNO code.
         ref_wfn = kwargs.get("ref_wfn")
         if ref_wfn is None:
-            molecule = kwargs.get("molecule", core.get_active_molecule())
-            if molecule.schoenflies_symbol() != "c1":
-                core.print_out(
-                    "\n  A requested method does not make use of molecular symmetry: "
-                    "further calculations in C1 point group.\n\n"
-                )
-                molecule.reset_point_group("c1")
-                molecule.update_geometry()
             ref_wfn = scf_helper(method_name, use_c1=True, **kwargs)
-        elif ref_wfn.molecule().schoenflies_symbol() != "c1":
-            raise ValidationError(
-                f"The {method['banner']} implementation does not make use of molecular symmetry: "
-                "reference wavefunction must be C1."
+        elif ref_wfn.nirrep() != 1:
+            core.print_out(
+                f"\n  The {method['banner']} implementation does not make use of molecular symmetry: "
+                "casting the supplied reference wavefunction to C1.\n\n"
             )
+            ref_wfn = proc_util.prepare_c1_reference(ref_wfn)
 
         reference = core.get_global_option("REFERENCE")
         if reference != "RHF":

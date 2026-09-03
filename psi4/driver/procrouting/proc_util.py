@@ -25,7 +25,7 @@
 #
 # @END LICENSE
 #
-from typing import Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -35,6 +35,69 @@ from .. import p4util
 from ..constants import constants
 from ..p4util.exceptions import *
 from .dft import build_superfunctional_from_dictionary, functionals
+
+
+def prepare_c1_reference(ref_wfn: core.Wavefunction, basis_name: Optional[str] = None) -> core.Wavefunction:
+    """Return an SCF reference wavefunction represented in :math:`C_1` symmetry.
+
+    A reference already represented in :math:`C_1` is returned unchanged. For a
+    higher-symmetry SCF reference, the molecule and orbital basis are rebuilt in
+    :math:`C_1` without changing the molecular orientation, then
+    :meth:`~psi4.core.Wavefunction.c1_deep_copy` transforms the symmetry-blocked
+    matrices and vectors. In particular, the resulting wavefunction contains
+    consistent :math:`C`, :math:`S`, :math:`H`, :math:`D`, :math:`F`, and
+    orbital-energy quantities in a single irrep.
+
+    Parameters
+    ----------
+    ref_wfn
+        A converged SCF wavefunction.
+    basis_name
+        Basis specification used to rebuild the orbital basis. By default, use
+        the callback name stored on ``ref_wfn.basisset()``.
+
+    Returns
+    -------
+    Wavefunction
+        ``ref_wfn`` itself when it is already in :math:`C_1`; otherwise, a new
+        deep-copied SCF wavefunction in :math:`C_1`.
+
+    """
+
+    if ref_wfn.nirrep() == 1:
+        return ref_wfn
+
+    if not isinstance(ref_wfn, core.HF):
+        raise ValidationError("Only an SCF wavefunction can be converted to a C1 reference.")
+
+    source_basis = ref_wfn.basisset()
+    if basis_name is None:
+        basis_name = source_basis.name()
+
+    c1_molecule = ref_wfn.molecule().clone()
+    c1_molecule.reset_point_group("c1")
+    c1_molecule.fix_orientation(True)
+    c1_molecule.fix_com(True)
+    c1_molecule.update_geometry()
+
+    c1_basis = core.BasisSet.build(
+        c1_molecule,
+        "ORBITAL",
+        basis_name,
+        puream=source_basis.has_puream(),
+        quiet=True,
+    )
+    if c1_basis.nbf() != source_basis.nbf():
+        raise ValidationError(
+            "Cannot convert the SCF reference to C1 because rebuilding its orbital basis "
+            f"changed the number of basis functions ({source_basis.nbf()} to {c1_basis.nbf()})."
+        )
+
+    c1_wfn = ref_wfn.c1_deep_copy(c1_basis)
+    if not ref_wfn.has_variable("-D ENERGY"):
+        c1_wfn.del_variable("-D ENERGY")
+
+    return c1_wfn
 
 
 def scf_set_reference_local(name, is_dft=False):
