@@ -1,4 +1,4 @@
-#! regression test of DLPNO-CCSDT, DLPNO-CCSDT(Q), DLPNO-CCSDTQ
+#! regression test of DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ, including C2v-to-C1 reference casting
 
 ref_scf                   =    -76.0267872755965             #TEST
 
@@ -60,9 +60,29 @@ val_q_disk = energy('dlpno-ccsdt(q)')
 compare_values(val_q_incore, val_q_disk, 8, 'ccsdt(q) Jacobi storage/thread equivalence')  #TEST
 clean()
 
-print('   Testing DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ ...')
+print('   Testing DLPNO-CCSDTQ from a supplied higher-symmetry SCF reference ...')
+molecule h2o_c2v {
+0 1
+O
+H 1 0.957
+H 1 0.957 2 104.5
+}
+
+scf_energy, sym_ref_wfn = energy('scf', molecule=h2o_c2v, return_wfn=True)
+compare_integers(4, sym_ref_wfn.nirrep(), 'C2v SCF reference irreps')                    #TEST
+compare_values(ref_scf, scf_energy, 7, 'C2v scf ref')                                    #TEST
+
 set_num_threads(4)
-val = energy('dlpno-ccsdtq')
+val, dlpno_wfn = energy('dlpno-ccsdtq', ref_wfn=sym_ref_wfn, return_wfn=True)
+c1_ref_wfn = dlpno_wfn.reference_wavefunction()
+compare_integers(1, c1_ref_wfn.nirrep(), 'CCSDTQ C1 reference irreps')                   #TEST
+for accessor in ('frzcpi', 'frzvpi', 'nalphapi', 'nbetapi', 'nsopi', 'nmopi'):
+    source_dimension = getattr(sym_ref_wfn, accessor)()
+    c1_dimension = getattr(c1_ref_wfn, accessor)()
+    compare_integers(1, c1_dimension.n(), f'CCSDTQ C1 {accessor}')                        #TEST
+    compare_integers(source_dimension.sum(), c1_dimension[0],
+                     f'CCSDTQ C1 {accessor} total')                                       #TEST
+compare_integers(4, sym_ref_wfn.nirrep(), 'supplied C2v reference remains unchanged')    #TEST
 
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                 #TEST
 compare_values(ref_dlpnoccsdt_corl, variable('CCSDT CORRELATION ENERGY'), 6, 'ccsdt corl')          #TEST
