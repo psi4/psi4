@@ -753,8 +753,13 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
                     // off-diag pops (p_uv) split between u and v prop to diag pops
                     double p_uv = P_i->get(u, v);
-                    mkn_pop[centerU] += p_uv * ((p_uu) / (p_uu + p_vv));
-                    mkn_pop[centerV] += p_uv * ((p_vv) / (p_uu + p_vv));
+                    double p_diag_sum = p_uu + p_vv;
+                    // Symmetry-exact orbitals can have C_ui = C_vi = 0. In that
+                    // case p_uv is also zero and the limiting contribution is
+                    // zero; avoid contaminating the atomic population with 0/0.
+                    if (p_diag_sum == 0.0) continue;
+                    mkn_pop[centerU] += p_uv * (p_uu / p_diag_sum);
+                    mkn_pop[centerV] += p_uv * (p_vv / p_diag_sum);
                 }
             }
 
