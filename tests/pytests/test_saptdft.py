@@ -4,8 +4,10 @@ from qcelemental import constants
 from psi4 import compare_values
 import numpy as np
 import qcelemental as qcel
+from pathlib import Path
 from pprint import pprint as pp
 from addons import uusing
+from psi4.driver.procrouting.sapt import sapt_proc
 
 hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]
@@ -1257,6 +1259,218 @@ def test_charge_field_inputs():
 
 
 @pytest.mark.saptdft
+@pytest.mark.parametrize(
+    "induction_type, delta_hf, expected_calls",
+    [
+        (None, True, 2),
+        ("CPHF", True, 1),
+        ("CPHF", False, 1),
+        ("NONE", True, 0),
+        ("NONE", False, 0),
+    ],
+)
+def test_saptdft_induction_routes(monkeypatch, induction_type, delta_hf, expected_calls):
+    mol = psi4.geometry("""
+  Ne
+  --
+  Ne 1 4.5
+  units bohr
+    """)
+    options = {
+        "basis": "sto-3g",
+        "scf_type": "df",
+        "sapt_dft_grac_shift_a": 0.203293,
+        "sapt_dft_grac_shift_b": 0.203293,
+        "sapt_dft_do_dhf": delta_hf,
+        "sapt_dft_do_hybrid": False,
+        "sapt_dft_use_einsums": False,
+        "orbital_optimizer_package": "internal",
+    }
+    if induction_type is not None:
+        options["sapt_dft_induction_type"] = induction_type
+    psi4.set_options(options)
+
+    calls = []
+    induction = sapt_proc.sapt_jk_terms.induction
+
+    def wrapped_induction(*args, **kwargs):
+        result = induction(*args, **kwargs)
+        calls.append(result)
+        return result
+
+    monkeypatch.setattr(sapt_proc.sapt_jk_terms, "induction", wrapped_induction)
+    outfile = Path("pytest_output.dat")
+    offset = len(outfile.read_bytes()) if outfile.exists() else 0
+    energy, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
+    assert len(calls) == expected_calls
+
+    mode = induction_type or "CPKS"
+    assert psi4.core.get_option("SAPT", "SAPT_DFT_INDUCTION_TYPE") == mode
+    if mode == "CPHF":
+        assert compare_values(calls[0]["Ind20,r"], psi4.variable("Ind20,r"), 12, "SAPT0 Ind20")
+        expected = calls[0]["Ind20,r"] + calls[0]["Exch-Ind20,r"]
+        if delta_hf:
+            expected += psi4.variable("SAPT(DFT) DELTA HF")
+        else:
+            assert not psi4.core.has_variable("SAPT(DFT) DELTA HF")
+            assert not wfn.has_variable("SAPT(DFT) DELTA HF")
+            assert not psi4.core.has_variable("SAPT0 TOTAL ENERGY")
+            assert not wfn.has_variable("SAPT0 TOTAL ENERGY")
+        assert compare_values(expected, psi4.variable("SAPT IND ENERGY"), 12, "SAPT0 induction")
+    elif mode == "NONE":
+        if not delta_hf:
+            assert compare_values(0.0, psi4.variable("SAPT IND ENERGY"), 12, "omitted induction")
+        assert not psi4.core.has_variable("Ind20,r")
+        assert not psi4.core.has_variable("SAPT DFT INDUCTION ENERGY")
+        assert not wfn.has_variable("SAPT DFT INDUCTION ENERGY")
+
+    expected_total = sum(
+        psi4.variable(f"SAPT {term} ENERGY")
+        for term in ["ELST", "EXCH", "IND", "DISP"]
+    )
+    assert compare_values(expected_total, energy, 12, "returned total")
+    assert compare_values(
+        expected_total,
+        wfn.variable("SAPT(DFT) TOTAL ENERGY"),
+        12,
+        "wavefunction total",
+    )
+
+    psi4.core.flush_outfile()
+    with outfile.open() as fh:
+        fh.seek(offset)
+        output = fh.read()
+    assert "Dimer for Localization" not in output
+    assert ("     HF   (Dimer)\n" in output) is (delta_hf or mode == "CPHF")
+    assert ("SAPT(DFT): delta HF Dimer" in output) is delta_hf
+    expected_elst_calls = 1 + int(delta_hf or mode == "CPHF")
+    assert output.count("==> E10 Electostatics <==") == expected_elst_calls
+    if mode == "CPHF":
+        assert "Induction (SAPT0)" in output
+        assert ("delta HF,r (2)" in output) is delta_hf
+        assert ("SAPT0 induction only (no dHF)" in output) is not delta_hf
+        assert "Total SAPT(HF)" not in output
+    elif mode == "NONE":
+        assert "No second-order induction breakdown is available." in output
+
+
+@pytest.mark.saptdft
+def test_saptdft_none_delta_hf_matches_cphf_total_induction():
+    mol = psi4.geometry("""
+  Ne
+  --
+  Ne 1 4.5
+  units bohr
+    """)
+    options = {
+        "basis": "sto-3g",
+        "scf_type": "df",
+        "sapt_dft_grac_shift_a": 0.203293,
+        "sapt_dft_grac_shift_b": 0.203293,
+        "sapt_dft_do_dhf": True,
+        "sapt_dft_do_hybrid": False,
+        "sapt_dft_use_einsums": False,
+        "orbital_optimizer_package": "internal",
+    }
+
+    results = {}
+    for mode in ["CPHF", "NONE"]:
+        psi4.core.clean()
+        psi4.core.clean_variables()
+        psi4.set_options({**options, "sapt_dft_induction_type": mode})
+        energy, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
+        results[mode] = {
+            "induction": wfn.variable("SAPT IND ENERGY"),
+            "total": energy,
+        }
+
+    assert compare_values(
+        results["CPHF"]["induction"],
+        results["NONE"]["induction"],
+        12,
+        "NONE/CPHF total induction",
+    )
+    assert compare_values(
+        results["CPHF"]["total"],
+        results["NONE"]["total"],
+        12,
+        "NONE/CPHF total energy",
+    )
+    assert not psi4.core.has_variable("Ind20,r")
+
+
+@pytest.mark.saptdft
+@pytest.mark.dftd4
+@uusing("dftd4")
+def test_saptdft_d4i_cphf_no_delta_hf_reference():
+    molecule = psi4.geometry(
+        _sapt_testing_mols["neutral_water_dimer"]
+        + """
+symmetry c1
+no_reorient
+no_com
+"""
+    )
+    psi4.core.clean()
+    psi4.core.clean_variables()
+    psi4.set_options(
+        {
+            "basis": "cc-pvdz",
+            "scf_type": "df",
+            "sapt_dft_functional": "pbe0",
+            "sapt_dft_grac_shift_a": 0.1307,
+            "sapt_dft_grac_shift_b": 0.1307,
+            "sapt_dft_do_dhf": False,
+            "sapt_dft_induction_type": "CPHF",
+            "orbital_optimizer_package": "internal",
+        }
+    )
+
+    energy, wfn = psi4.energy("sapt(dft)-d4(i)", molecule=molecule, return_wfn=True)
+    expected = {
+        "SAPT ELST ENERGY": -0.012738658499742428,
+        "SAPT EXCH ENERGY": 0.011044055646125397,
+        "SAPT IND ENERGY": -0.001598107549445543,
+        "SAPT DISP ENERGY": -0.003609757702328654,
+        "SAPT(DFT) TOTAL ENERGY": -0.006902468105391228,
+    }
+    for variable, reference in expected.items():
+        assert compare_values(reference, wfn.variable(variable), 8, variable)
+
+    assert compare_values(expected["SAPT(DFT) TOTAL ENERGY"], energy, 8, "returned total")
+    assert not wfn.has_variable("SAPT(DFT) DELTA HF")
+
+
+@pytest.mark.saptdft
+@pytest.mark.parametrize(
+    "options, message",
+    [
+        ({"sapt_dft_induction_type": "NONE", "sapt_dft_do_fsapt": "SAPTDFT"}, "F-SAPT requires induction"),
+        ({"sapt_dft_induction_type": "NONE", "sapt_dft_do_fsapt": "FISAPT"}, "F-SAPT requires induction"),
+        (
+            {"sapt_dft_induction_type": "CPHF", "sapt_dft_do_fsapt": "SAPTDFT"},
+            "F-SAPT requires SAPT\\(DFT\\) fragment induction",
+        ),
+    ],
+)
+def test_saptdft_induction_option_checks(monkeypatch, options, message):
+    mol = psi4.geometry("""
+  Ne
+  --
+  Ne 1 4.5
+  units bohr
+    """)
+    psi4.set_options(options)
+    monkeypatch.setattr(
+        sapt_proc.proc_util,
+        "prepare_sapt_molecule",
+        lambda *args, **kwargs: pytest.fail("validation occurred after molecule preparation"),
+    )
+    with pytest.raises(psi4.ValidationError, match=message):
+        psi4.energy("sapt(dft)", molecule=mol)
+
+
+@pytest.mark.saptdft
 def test_einsum_terms():
     """
     built from sapt-dft1 ctest
@@ -1372,6 +1586,47 @@ symmetry c1
         7,
         "SAPT EXCH-DISP20(S^inf) ENERGY",
     )
+
+
+@pytest.mark.saptdft
+@pytest.mark.parametrize(
+    "induction_type, message",
+    [
+        ("CPHF", "SAPT_DFT_INDUCTION_TYPE=CPHF reuses the SAPT0 induction terms"),
+        ("NONE", "SAPT_DFT_INDUCTION_TYPE=NONE with delta HF"),
+    ],
+)
+def test_saptdft_sapt_dft_api_requires_hf_segment_data(induction_type, message):
+    mol = psi4.geometry("""
+  Ne
+  --
+  Ne 1 4.5
+  units bohr
+    """)
+    psi4.set_options({"basis": "sto-3g", "sapt_dft_induction_type": induction_type})
+    wfn = psi4.core.Wavefunction.build(mol, "sto-3g")
+    with pytest.raises(psi4.ValidationError, match=message):
+        sapt_proc.sapt_dft(wfn, wfn, wfn, delta_hf=True)
+
+
+@pytest.mark.saptdft
+def test_saptdft_sapt_dft_api_requires_cphf_fsapt_data():
+    mol = psi4.geometry("""
+  Ne
+  --
+  Ne 1 4.5
+  units bohr
+    """)
+    psi4.set_options(
+        {
+            "basis": "sto-3g",
+            "sapt_dft_induction_type": "CPHF",
+            "sapt_dft_do_fsapt": "FISAPT",
+        }
+    )
+    wfn = psi4.core.Wavefunction.build(mol, "sto-3g")
+    with pytest.raises(psi4.ValidationError, match="requires HF-backed fragment induction data"):
+        sapt_proc.sapt_dft(wfn, wfn, wfn, data={"Ind20,r": 0.0})
 
 
 if __name__ == "__main__":

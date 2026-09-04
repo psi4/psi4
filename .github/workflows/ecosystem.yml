@@ -155,6 +155,10 @@ jobs:
       with:
         fetch-depth: 0
 
+    # Forks do not automatically inherit upstream tags, which versioner.py requires.
+    - name: Fetch canonical Psi4 tags
+      run: git fetch --force https://github.com/psi4/psi4.git "refs/tags/*:refs/tags/*"
+
       # see CMAKE_OSX_SYSROOT and CMAKE_Fortran_FLAGS for use
       # mac_ver line returns, e.g., "10.15" for Catalina & "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
     - name: Prepare compiler environment, SDK (M)
@@ -232,7 +236,7 @@ jobs:
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
-          sed -E -i.bak "s;- ambit;- mctc-lib=0.4.1;g" env_p4build.yaml
+          sed -E -i.bak "s;- ambit;- mctc-lib=0.5.2;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :

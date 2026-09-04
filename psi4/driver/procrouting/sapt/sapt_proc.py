@@ -47,7 +47,12 @@ from . import (
     sapt_sf_terms,
     saptdft_fisapt,
 )
-from .sapt_util import print_sapt_dft_summary, print_sapt_hf_summary, print_sapt_var
+from .sapt_util import (
+    print_sapt_dft_summary,
+    print_sapt_hf_induction_summary,
+    print_sapt_hf_summary,
+    print_sapt_var,
+)
 import qcelemental as qcel
 from ...p4util.exceptions import ConvergenceError
 
@@ -109,6 +114,19 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     core.Wavefunction
         The dimer wavefunction with SAPT(DFT) results stored as variables.
     """
+    core.prepare_options_for_module("SAPT")
+    induction_type = core.get_option("SAPT", "SAPT_DFT_INDUCTION_TYPE").upper()
+    do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
+    fsapt_type = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT").upper()
+    do_fsapt = fsapt_type != "NONE"
+    if induction_type == "NONE" and do_fsapt:
+        raise ValidationError("F-SAPT requires induction; SAPT_DFT_INDUCTION_TYPE=NONE is unavailable.")
+    if induction_type == "CPHF" and fsapt_type == "SAPTDFT":
+        raise ValidationError(
+            "SAPTDFT F-SAPT requires SAPT(DFT) fragment induction; "
+            "use SAPT_DFT_DO_FSAPT=FISAPT with SAPT_DFT_INDUCTION_TYPE=CPHF."
+        )
+
     use_einsums = core.get_option("SAPT", "SAPT_DFT_USE_EINSUMS")
 
     # Build SAPT cache
@@ -124,7 +142,6 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     # Alter default algorithm
     if not core.has_global_option_changed("SCF_TYPE"):
         core.set_global_option("SCF_TYPE", "DF")
-    core.prepare_options_for_module("SAPT")
 
     # Get the molecule of interest
     ref_wfn = kwargs.get("ref_wfn", None)
@@ -283,13 +300,11 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
         # # Re-prepare options after local option changes
         # core.prepare_options_for_module("SAPT")
 
-    do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
     do_delta_dft = core.get_option("SAPT", "SAPT_DFT_DO_DDFT")
     do_disp = core.get_option("SAPT", "SAPT_DFT_DO_DISP")
     sapt_dft_D4_IE = core.get_option("SAPT", "SAPT_DFT_D4_IE")
     sapt_dft_D3_IE = core.get_option("SAPT", "SAPT_DFT_D3_IE")
     do_dft = sapt_dft_functional != "HF"
-    do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT").upper() != "NONE"
 
     if do_fsapt and (sapt_dft_D4_IE or sapt_dft_D3_IE):
         dispersion_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
@@ -301,6 +316,10 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
                 "breakdown does not in general sum to the scalar dispersion or total "
                 "interaction energy; the reported scalar energies remain authoritative.\n\n"
             )
+
+    # CPHF needs the HF segment for the SAPT0 induction terms, even without delta HF.
+    run_hf_segment = do_delta_hf or (induction_type == "CPHF" and do_dft)
+    hf_segment_label = "delta HF" if do_delta_hf else "SAPT0 induction"
 
     # Because SAPT(DFT) FDDS Dispersion doesn't have FSAPT support currently,
     # catch this case when FISAPT is requested with SAPT_DFT_DO_DISP false
@@ -339,11 +358,12 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
     # fmt: off
     core.print_out("   Delta HF                %12s\n" % ("True" if do_delta_hf else "False"))
+    core.print_out("   Induction Type          %12s\n" % induction_type)
     core.print_out("   JK Algorithm            %12s\n" % core.get_global_option("SCF_TYPE"))
     # fmt: on
     core.print_out("\n")
     core.print_out("   Required computations:\n")
-    if do_delta_hf:
+    if run_hf_segment:
         core.print_out("     HF   (Dimer)\n")
         core.print_out("     HF   (Monomer A)\n")
         core.print_out("     HF   (Monomer B)\n")
@@ -438,6 +458,7 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
 
     # Compute dimer wavefunction
     hf_wfn_dimer = None
+    fsapt_induction_data = None
 
     # Need to collect external potentials (if exist) to properly set on each
     # SCF correctly. To use scf_helper for SAPT external potentials, we have to
@@ -450,7 +471,7 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
         ext_pot_C = [np.array(x) for x in ext_pot_C]
     ext_pot_A = external_potentials.get("A")
     ext_pot_B = external_potentials.get("B")
-    if do_delta_hf:
+    if run_hf_segment:
         core.set_global_option("DF_INTS_IO", "SAVE")
         core.timer_on("SAPT(DFT):Dimer SCF")
         hf_data = {}
@@ -463,7 +484,7 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
                 )
             )
         hf_wfn_dimer = scf_helper(
-            "SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs
+            "SCF", molecule=sapt_dimer, banner=f"SAPT(DFT): {hf_segment_label} Dimer", **kwargs
         )
         if do_ext_potential:
             kwargs.pop("external_potentials")
@@ -481,7 +502,7 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
         hf_wfn_A = scf_helper(
             "SCF",
             molecule=monomerA,
-            banner="SAPT(DFT): delta HF Monomer A",
+            banner=f"SAPT(DFT): {hf_segment_label} Monomer A",
             jk=jk_obj,
             **kwargs,
         )
@@ -501,7 +522,7 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
         hf_wfn_B = scf_helper(
             "SCF",
             molecule=monomerB,
-            banner="SAPT(DFT): delta HF Monomer B",
+            banner=f"SAPT(DFT): {hf_segment_label} Monomer B",
             jk=jk_obj,
             **kwargs,
         )
@@ -533,9 +554,8 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
             core.print_out(
                 "         ---------------------------------------------------------\n"
             )
-            core.print_out(
-                "         " + "SAPT(DFT): delta HF Segment".center(58) + "\n"
-            )
+            segment_name = f"SAPT(DFT): {hf_segment_label} Segment"
+            core.print_out("         " + segment_name.center(58) + "\n")
             core.print_out("\n")
             core.print_out(
                 "         " + "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n"
@@ -562,7 +582,7 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
                     kwargs["external_potentials"]["B"] = ext_pot_B
                     _set_external_potentials_to_wavefunction(ext_pot_B, hf_wfn_B)
 
-            # Build cache
+            # Build the SAPT0 cache needed for electrostatics and exchange.
             hf_cache_ein = jk_terms.build_sapt_jk_cache(
                 hf_wfn_dimer,
                 hf_wfn_A,
@@ -585,40 +605,64 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
             hf_data.update(exch)
             core.timer_off("SAPT(HF):exch")
 
-            # Induction
-            core.timer_on("SAPT(HF):ind")
-            ind = jk_terms.induction(
-                hf_cache_ein,
-                sapt_jk,
-                True,
-                maxiter=core.get_option("SAPT", "MAXITER"),
-                conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
-                Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"),
-            )
-            hf_data.update(ind)
-            core.timer_off("SAPT(HF):ind")
+            if induction_type != "NONE":
+                core.timer_on("SAPT(HF):ind")
+                ind = jk_terms.induction(
+                    hf_cache_ein,
+                    sapt_jk,
+                    True,
+                    maxiter=core.get_option("SAPT", "MAXITER"),
+                    conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
+                    Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"),
+                )
+                hf_data.update(ind)
+                core.timer_off("SAPT(HF):ind")
 
-            # Keep the SAPT(HF) component subtotal available for F-SAPT
-            # induction scaling. The SAPT(DFT) component values overwrite
-            # data later for the final SAPT(DFT) report, but the dHF term is
-            # defined as HF IE minus the SAPT(HF) subtotal.
             dhf_value = (
                 hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
             )
-            # set for fisapt_obj.drop for saptdft_fisapt.py::setup_fisapt_object
-            data["DHF VALUE"] = dhf_value
+            if do_delta_hf:
+                data["DHF VALUE"] = dhf_value
 
             core.print_out("\n")
-            core.print_out(
-                print_sapt_hf_summary(
-                    hf_data,
-                    "SAPT(HF)",
-                    dimer_wfn=hf_wfn_dimer,
-                    delta_hf=dhf_value,
+            if induction_type == "NONE":
+                if do_delta_hf:
+                    data["Delta HF Correction"] = (
+                        dhf_value - hf_data["Elst10,r"] - hf_data["Exch10"]
+                    )
+                core.print_out("   SAPT0 induction skipped; induction will be assigned from delta HF.\n")
+            elif do_delta_hf:
+                core.print_out(
+                    print_sapt_hf_summary(
+                        hf_data,
+                        "SAPT(HF)",
+                        dimer_wfn=hf_wfn_dimer,
+                        delta_hf=dhf_value,
+                    )
                 )
-            )
+                data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")
+            else:
+                core.print_out(print_sapt_hf_induction_summary(hf_data, "SAPT(HF)"))
+            if induction_type == "CPHF":
+                data.update(ind)
+                if do_delta_hf:
+                    hf_data["Delta HF Correction"] = data["Delta HF Correction"]
+                if fsapt_type == "FISAPT":
+                    # The einsums exchange-induction path retains JK-owned
+                    # J_P matrices. Clone them before finalizing the HF JK
+                    # object so the later FISAPT::find() cannot dereference
+                    # released storage.
+                    hf_cache_ein["J_P_A"] = hf_cache_ein["J_P_A"].clone()
+                    hf_cache_ein["J_P_B"] = hf_cache_ein["J_P_B"].clone()
 
-            data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")
+                    # Retain the SAPT0 cache and wavefunctions so FISAPT::find()
+                    # can partition the same HF induction used by CPHF.
+                    fsapt_induction_data = (
+                        hf_wfn_A,
+                        hf_wfn_B,
+                        hf_cache_ein,
+                        hf_data.copy(),
+                    )
             sapt_jk.finalize()
 
             del hf_wfn_A, hf_wfn_B, sapt_jk
@@ -863,9 +907,6 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
         sapt_dft_functional, mon_a_shift, mon_b_shift, bool(do_delta_hf), scf_alg
     )
 
-    # Compute Delta HF for SAPT(HF)?
-    delta_hf = do_delta_hf and not do_dft
-
     # Call SAPT(DFT)
     sapt_jk = wfn_B.jk()
     sapt_dft(
@@ -876,11 +917,12 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
         sapt_jk=sapt_jk,
         data=data,
         print_header=False,
-        delta_hf=delta_hf,
+        delta_hf=do_delta_hf,
         cleanup_jk=True,
         external_potentials=kwargs.get("external_potentials", None),
         do_delta_dft=do_delta_dft,
         do_disp=do_disp,
+        fsapt_induction_data=fsapt_induction_data,
     )
 
     # Copy data back into globals
@@ -1126,6 +1168,7 @@ def sapt_dft(
     external_potentials: dict | None = None,
     do_delta_dft: bool = False,
     do_disp: bool = True,
+    fsapt_induction_data: tuple | None = None,
 ) -> dict:
     """Compute the SAPT(DFT) interaction energy components.
 
@@ -1161,6 +1204,9 @@ def sapt_dft(
         Whether to compute delta-DFT correction, by default False.
     do_disp : bool, optional
         Whether to compute dispersion, by default True.
+    fsapt_induction_data : tuple or None, optional
+        Private transport of SAPT0 monomer wavefunctions, cache, and scalar data
+        used to partition CPHF induction with the FISAPT implementation.
 
     Returns
     -------
@@ -1188,6 +1234,36 @@ def sapt_dft(
     """
 
     # Handle the input options
+    if data is None:
+        data = {}
+
+    induction_type = core.get_option("SAPT", "SAPT_DFT_INDUCTION_TYPE").upper()
+    fsapt_type = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT").upper()
+    if induction_type == "CPHF" and do_dft and "Ind20,r" not in data:
+        raise ValidationError(
+            "SAPT_DFT_INDUCTION_TYPE=CPHF reuses the SAPT0 induction terms computed by the "
+            "SAPT(DFT) delta HF segment, which sapt_dft() does not run. Call "
+            "energy('sapt(dft)') instead of sapt_dft() directly, or supply the SAPT0 "
+            "induction terms in `data`."
+        )
+    if (
+        induction_type == "CPHF"
+        and do_dft
+        and fsapt_type == "FISAPT"
+        and fsapt_induction_data is None
+    ):
+        raise ValidationError(
+            "SAPT_DFT_INDUCTION_TYPE=CPHF with FISAPT requires HF-backed fragment induction "
+            "data from the SAPT0 segment. Call energy('sapt(dft)') instead of sapt_dft() directly."
+        )
+    if induction_type == "NONE" and delta_hf and "Delta HF Correction" not in data:
+        raise ValidationError(
+            "SAPT_DFT_INDUCTION_TYPE=NONE with delta HF needs the total SAPT0 induction produced "
+            "by the SAPT(DFT) delta HF segment, which sapt_dft() does not run. Call "
+            "energy('sapt(dft)') instead of sapt_dft() directly, or supply that total as "
+            "'Delta HF Correction' in `data`."
+        )
+
     core.timer_on("SAPT(DFT):Build JK")
     if print_header:
         sapt_dft_header()
@@ -1225,8 +1301,6 @@ def sapt_dft(
         sapt_jk.set_do_wK(True)
         sapt_jk.set_omega(wfn_A.functional().x_omega())
 
-    if data is None:
-        data = {}
     use_einsums = core.get_option("SAPT", "SAPT_DFT_USE_EINSUMS")
 
     # Build SAPT cache
@@ -1246,8 +1320,7 @@ def sapt_dft(
 
     # Electrostatics
     core.timer_on("SAPT(DFT):elst")
-    fsapt_type = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT")
-    do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT").upper() != "NONE"
+    do_fsapt = fsapt_type != "NONE"
     elst, extern_extern_IE = jk_terms.electrostatics(cache, True)
     data["extern_extern_IE"] = extern_extern_IE
     data.update(elst)
@@ -1261,33 +1334,39 @@ def sapt_dft(
 
     # Induction
     core.timer_on("SAPT(DFT):ind")
-    ind = jk_terms.induction(
-        cache,
-        sapt_jk,
-        True,
-        sapt_jk_B=sapt_jk_B,
-        maxiter=core.get_option("SAPT", "MAXITER"),
-        conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
-        Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"),
-    )
-    data.update(ind)
+    if induction_type == "CPKS" or (induction_type == "CPHF" and not do_dft):
+        ind = jk_terms.induction(
+            cache,
+            sapt_jk,
+            True,
+            sapt_jk_B=sapt_jk_B,
+            maxiter=core.get_option("SAPT", "MAXITER"),
+            conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
+            Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"),
+        )
+        data.update(ind)
+    else:
+        core.print_out(f"\n   SAPT(DFT) induction skipped ({induction_type}).\n")
 
-    # Delta HF is computed in the SAPT(HF) segment above. Do not recompute it
-    # from the SAPT(DFT) component subtotal here, as that changes the meaning
-    # of the dHF correction and the F-SAPT induction scaling.
-    if delta_hf and "Delta HF Correction" not in data:
+    if induction_type == "NONE":
+        if delta_hf:
+            core.set_variable("SAPT(DFT) Delta HF", data["Delta HF Correction"])
+    elif delta_hf and "Delta HF Correction" not in data:
         total_sapt = (
             data["Elst10,r"] + data["Exch10"] + data["Ind20,r"] + data["Exch-Ind20,r"]
         )
         sapt_hf_delta = data["DHF VALUE"] - total_sapt
         core.set_variable("SAPT(DFT) Delta HF", sapt_hf_delta)
-        data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")
+        data["Delta HF Correction"] = sapt_hf_delta
 
     # Set Delta DFT for SAPT(DFT) if requested
     if do_delta_dft:
-        sapt_dft_elst_exch_indu = (
-            data["Elst10,r"] + data["Exch10"] + data["Ind20,r"] + data["Exch-Ind20,r"]
+        base_ind = (
+            0.0
+            if induction_type == "NONE"
+            else data["Ind20,r"] + data["Exch-Ind20,r"]
         )
+        sapt_dft_elst_exch_indu = data["Elst10,r"] + data["Exch10"] + base_ind
         sapt_dft_delta = data["DFT IE"] - sapt_dft_elst_exch_indu
         core.set_variable("SAPT(DFT) Delta DFT", sapt_dft_delta)
         data["Delta DFT Correction"] = core.variable("SAPT(DFT) Delta DFT")
@@ -1350,6 +1429,41 @@ def sapt_dft(
             core.get_global_option("BASIS"),
         )
 
+        # Partition CPHF induction with a short-lived HF-backed FISAPT object.
+        # Destroy it before constructing the DFT-backed object so their DFHelper
+        # scratch tensors cannot alias one another.
+        induction_matrices = None
+        if fsapt_induction_data is not None:
+            hf_wfn_A, hf_wfn_B, hf_cache, hf_scalars = fsapt_induction_data
+            core.timer_on("SAPT(DFT): F-SAPT Induction")
+            hf_FISAPT_obj = saptdft_fisapt.setup_fisapt_object(
+                dimer_wfn,
+                hf_wfn_A,
+                hf_wfn_B,
+                hf_cache,
+                hf_scalars,
+                aux_basis,
+                do_flocalize=True,
+            )
+            # felst() initializes the shared DFHelper state consumed by find();
+            # fexch() mirrors the complete FISAPT setup used by an HF-functional run.
+            hf_FISAPT_obj.felst()
+            hf_FISAPT_obj.fexch()
+            hf_FISAPT_obj.find()
+            hf_matrices = hf_FISAPT_obj.matrices()
+            induction_matrices = {
+                key: hf_matrices[key].clone()
+                for key in ("IndAB_AB", "IndBA_AB", "sIndAB_AB", "sIndBA_AB")
+                if key in hf_matrices
+            }
+            del hf_FISAPT_obj
+            core.timer_off("SAPT(DFT): F-SAPT Induction")
+
+            # FISAPT setup expects these exchange-induction Coulomb
+            # intermediates even though the DFT-backed find() is skipped.
+            cache["J_P_A"] = hf_cache["J_P_A"]
+            cache["J_P_B"] = hf_cache["J_P_B"]
+
         # Create single FISAPT object with do_flocalize=True to handle IBO localization internally.
         core.timer_on("SAPT(DFT): F-SAPT Setup + Localization (IBO)")
         FISAPT_obj = saptdft_fisapt.setup_fisapt_object(
@@ -1364,7 +1478,10 @@ def sapt_dft(
         FISAPT_obj.fexch()
         core.timer_off("SAPT(DFT): F-SAPT Exchange")
         core.timer_on("SAPT(DFT): F-SAPT Induction")
-        FISAPT_obj.find()
+        if induction_matrices is None:
+            FISAPT_obj.find()
+        else:
+            FISAPT_obj.set_matrix(induction_matrices)
         core.timer_off("SAPT(DFT): F-SAPT Induction")
         matrices = FISAPT_obj.matrices()
         for k, v in matrices.items():
@@ -1545,6 +1662,7 @@ def sapt_dft(
             do_dft=do_dft,
             do_disp=do_disp,
             do_delta_dft=do_delta_dft,
+            induction_type=induction_type,
         )
     )
 
