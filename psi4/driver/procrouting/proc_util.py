@@ -93,7 +93,22 @@ def prepare_c1_reference(ref_wfn: core.Wavefunction, basis_name: Optional[str] =
             f"changed the number of basis functions ({source_basis.nbf()} to {c1_basis.nbf()})."
         )
 
-    c1_wfn = ref_wfn.c1_deep_copy(c1_basis)
+    # The HF subclass constructors used by c1_deep_copy() normally re-read any
+    # explicitly changed DOCC/SOCC options.  Those arrays describe the source
+    # point group and therefore have the wrong length for the new C1 object.
+    # The converged reference already carries the correct occupations, collapsed
+    # to one irrep by c1_deep_copy(), so temporarily keep the constructors from
+    # overriding them and restore the user's option state immediately afterward.
+    occupation_optstash = p4util.OptionsState(["SCF", "DOCC"], ["SCF", "SOCC"])
+    core.revoke_global_option_changed("DOCC")
+    core.revoke_local_option_changed("SCF", "DOCC")
+    core.revoke_global_option_changed("SOCC")
+    core.revoke_local_option_changed("SCF", "SOCC")
+    try:
+        c1_wfn = ref_wfn.c1_deep_copy(c1_basis)
+    finally:
+        occupation_optstash.restore()
+
     if not ref_wfn.has_variable("-D ENERGY"):
         c1_wfn.del_variable("-D ENERGY")
 

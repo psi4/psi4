@@ -71,6 +71,9 @@ H 1 0.957
 H 1 0.957 2 104.5
 }
 
+# Exercise the C1-copy path with an explicit source-symmetry occupation array.
+# The C2v occupations must be preserved, not re-applied to the one-irrep copy.
+set docc [3, 0, 1, 1]
 scf_energy, sym_ref_wfn = energy('scf', molecule=h2o_c2v, return_wfn=True)
 compare_integers(4, sym_ref_wfn.nirrep(), 'C2v SCF reference irreps')                    #TEST
 compare_values(ref_scf, scf_energy, 7, 'C2v scf ref')                                    #TEST
