@@ -135,19 +135,21 @@ std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<in
 
 }
 
-SparseMap invert_map(const SparseMap &x_to_y, int ny) {
-
-    int nx = x_to_y.size();
-    SparseMap y_to_x(ny);
-
-    for(int x = 0; x < nx; x++) {
-        for(auto y : x_to_y[x]) {
-            y_to_x[y].push_back(x);
+[[nodiscard]] constexpr SparseMap invert_map(const SparseMap& x_to_y, int ny) {
+    std::vector<int> count(ny, 0);
+    for (const auto& ys : x_to_y)
+        for (int y : ys) {
+            if (y < 0 && y >= ny) throw PSIEXCEPTION("Cannot invert an invalid map!");
+            ++count[y];
         }
-    }
+
+    SparseMap y_to_x(ny);
+    for (int y = 0; y < ny; ++y) y_to_x[y].reserve(count[y]);
+
+    for (int x = 0; x < std::ssize(x_to_y); ++x)  // ascending x keeps each list sorted
+        for (int y : x_to_y[x]) y_to_x[y].push_back(x);
 
     return y_to_x;
-
 }
 
 SparseMap chain_maps(const SparseMap &x_to_y, const SparseMap &y_to_z) {
