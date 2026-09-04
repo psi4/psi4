@@ -52,7 +52,7 @@ std::vector<int> PSI_API index_list(const std::vector<int> &l1, const std::vecto
 /* Args: sorted list of y, sparse map from A to another list of y (assume sorted, each possible value of y appears exactly once in entire map)
  * Returns: the union of lists in A_to_y where at least one element is in y
  */
-std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std::vector<int>> &A_to_y);
+std::vector<int> contract_lists(const std::vector<int>& y, const SparseMap& A_to_y);
 
 /* Args: x is a list of values (sorted), y is a map from values of x to values of y
  * Returns: a list of y values
