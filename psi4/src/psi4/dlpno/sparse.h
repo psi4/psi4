@@ -64,7 +64,7 @@ std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<in
 /* Args: SparseMap from x to y, maximum possible y value
  * Returns: SparseMap from y to x
  */
-SparseMap invert_map(const SparseMap &x_to_y, int ny);
+[[nodiscard]] constexpr SparseMap invert_map(const SparseMap& x_to_y, int ny);
 
 /* Args: SparseMap from x to y, SparseMap from y to z
  * Returns: SparseMap from x to z
