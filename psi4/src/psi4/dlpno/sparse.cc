@@ -34,6 +34,7 @@
 #include <algorithm>
 
 namespace psi {
+namespace dlpno {
 
 std::vector<int> merge_lists(const std::vector<int> &l1, const std::vector<int> &l2) {
 
@@ -223,5 +224,6 @@ SharedMatrix submatrix_rows_and_cols(const Matrix &mat, const std::vector<int> &
     return mat_new;
 }
 
+} // namespace dlpno
 } // namespace psi
 
