@@ -36,6 +36,9 @@ set pno_convergence very_tight
 set t_cut_pairs 1.0e-8
 set t_cut_pre 1.0e-8
 set write_quadruples_intermediates false
+# Exercise the PSIO keys for metric-transformed TNO and QNO integrals explicitly.
+set dlpno_ccsdt_disk_ints true
+set dlpno_ccsdtq_disk_ints true
 
 # Algorithm 5 is a Jacobi iteration.  Exercise the immutable old/new T4
 # generations in both storage modes and with different OpenMP schedules before

@@ -3449,6 +3449,11 @@ void DLPNOCCSDTQ::compute_integrals() {
         q_lv = linalg::doublet(metric_inverse_sqrt, q_lv);
         q_ov = linalg::doublet(metric_inverse_sqrt, q_ov);
         q_vv = linalg::doublet(metric_inverse_sqrt, q_vv);
+
+        // linalg::doublet() names its result "T". Restore the unique names used
+        // as PSIO keys before the disk-backed integral tensors are saved.
+        q_ov->set_name(q_ov_name.str());
+        q_vv->set_name(q_vv_name.str());
         metric_inverse_sqrt.reset();
 
         q_io_list_[ijkl][0] = Tensor<double, 2>("(Q_ijkl | m i)", naux_ijkl, nlmo_ijkl);
@@ -3483,9 +3488,6 @@ void DLPNOCCSDTQ::compute_integrals() {
 
 #pragma omp critical
             q_vv->save(psio_.get(), PSIF_DLPNO_QAB_QNO, Matrix::ThreeIndexLowerTriangle);
-
-            q_ov_name << "(Q_ijkl | m a) " << (ijkl);
-            q_vv_name << "(Q_ijkl | a b) " << (ijkl);
 
             q_ov_ijkl_[ijkl] = Tensor<double, 3>(q_ov->name(), 0, 0, 0);
             q_vv_ijkl_[ijkl] = Tensor<double, 3>(q_vv->name(), 0, 0, 0);
