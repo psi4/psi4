@@ -1,33 +1,26 @@
-# AGENTS.md
+# Agent Instructions for Psi4
 
-Guidance for AI coding agents (and new human contributors) working in the Psi4
-repository. This file is intentionally practical: it covers how the project is
-laid out, how to build/run/test it, and the conventions and gotchas that are not
-obvious from the code. For deep user- and developer-facing documentation, defer
-to the manual rather than duplicating it here:
+Practical guidance for AI coding agents (and new human contributors) working in
+the Psi4 repository: how the project is laid out, how to build/run/test it, and
+the conventions and gotchas that are *not* discoverable by reading the code.
 
-- User manual & programmer's guide: https://psicode.org/psi4manual/master/index.html
+When you need more depth than this file gives, read these rather than re-deriving
+it from the source tree:
+
+- Manual & programmer's guide: `doc/sphinxman/source/index.rst` in this repo
+  (the `prog_*.rst` pages are the programmer's guide); built nightly at
+  https://psicode.org/psi4manual/master/index.html
 - Contributing: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
-- Forum (support/discussion): https://forum.psicode.org
-- Developer Slack (invite): https://join.slack.com/t/psi4/shared_invite/zt-5s36s4rb-SQH6_AWyfWOqlKYN3cFs4Q
+
+*Last reviewed 2026-09-04, against v1.11.* Where the repo has drifted from what
+follows, trust the repo — and please fix this file.
 
 ## What Psi4 is
 
-Psi4 is an open-source suite of *ab initio* quantum chemistry programs for
-high-accuracy simulation of molecular properties (energies, gradients,
-Hessians, and many one- and two-electron properties). It implements methods
-across the accuracy/cost spectrum — Hartree–Fock and DFT, many-body
-perturbation theory (MP2–MP4), coupled-cluster (through CCSD(T) and beyond),
-intermolecular interaction analysis (SAPT, including DFT-SAPT / F-SAPT), and
-configuration interaction and multireference methods (CASSCF, FCI, MRCC).
-Density fitting (resolution-of-the-identity) is used heavily for speed — it is
-the default for MP2.5 and lower-cost methods — though not universally.
-Computations with >2500 basis functions on multi-core machines are routine.
-
-Reference publication (cite this):
-D. G. A. Smith *et al.*, "Psi4 1.4: Open-Source Software for High-Throughput
-Quantum Chemistry", *J. Chem. Phys.* **152**, 184108 (2020).
-https://doi.org/10.1063/5.0006002
+Methods span the full accuracy/cost spectrum: Hartree–Fock, DFT, many-body
+perturbation theory (MPn), coupled cluster, and configuration interaction and
+multireference (CASSCF, FCI, MRCC) — plus intermolecular interaction analysis
+(SAPT, including DFT-SAPT / F-SAPT).
 
 ## Architecture at a glance
 
@@ -104,11 +97,6 @@ post-processing. When you extend Psi4, you are almost always reading from or
 writing to a `Wavefunction`. It is exported to Python, so most of it is reachable
 as `wfn.Ca()`, `wfn.epsilon_a()`, `wfn.energy()`, etc.
 
-A great, less-obvious way to learn this object and the exposed C++ API is the
-**Psi4NumPy** project (https://github.com/psi4/psi4numpy), whose tutorial
-notebooks reimplement methods in Python against Psi4's building blocks — e.g.
-[the `Wavefunction` walkthrough](https://github.com/psi4/psi4numpy/blob/master/Tutorials/01_Psi4NumPy-Basics/1d_wavefunction.ipynb).
-
 ## Building
 
 Psi4 builds with **CMake + Ninja** using system tools (compilers, Python,
@@ -162,36 +150,26 @@ Set a scratch location on fast local (non-network) disk:
 ## Testing
 
 Two complementary systems — **both** matter, and new features should add tests
-in whichever fits:
-
-**CTest**, run from the build dir, drives the PSIthon test inputs:
-
-```bash
-cd <objdir>
-ctest -j$(getconf _NPROCESSORS_ONLN)      # all
-ctest -R quick                            # common fast subset
-ctest -R <regex>                          # by test name
-ctest -L <label>                          # by label (e.g. scf, cc, sapt)
-```
-
-**pytest** drives the PsiAPI tests (config in [pytest.ini](pytest.ini)):
+in whichever fits. **CTest**, run from the build dir, drives the PSIthon test
+inputs; **pytest** drives the PsiAPI tests. Both are ordinary invocations, with
+two non-obvious ones worth knowing:
 
 ```bash
-pytest -m "quick and not long"            # select by marker
-pytest tests/pytests/test_<x>.py -k <name>
-
-cd <objdir> && pytest ../tests/           # runs the FULL suite (CTest cases too)
+cd <objdir> && ctest -R <name>                    # select PSIthon by name (e.g. scf, cc, sapt)
+cd <objdir> && pytest -k <name> ../tests/pytests  # select PsiAPI by name
+cd <objdir> && pytest ../tests/                   # the FULL suite, CTest cases included
 ```
 
 Markers are defined in [pytest.ini](pytest.ini): scope markers like `quick`,
 `smoke`, `long`, `slow`, `stdsuite`, plus per-method markers (`scf`, `cc`,
-`mp2`, `sapt`, `casscf`, ...). Prefer running a relevant subset locally; the full
-suite is long.
+`mp2`, `sapt`, `casscf`, ...). `ctest -R quick` is the common fast subset. Prefer
+running a relevant subset locally unless explicitly instructed; the full suite is long.
 
 **Optional-dependency (addon) tests** are guarded by `using(<addon>)` /
 `uusing(<addon>)`. For **pytest** this adapts to the active environment at
-runtime (tests skip if the addon is absent). For **CTest** it is fixed at
-configure time — a newly installed addon is not picked up until you re-run cmake.
+runtime (tests skip if the addon is absent). `pytest -m <addon>` to test. For
+**CTest** it is fixed at configure time — a newly installed addon is not picked
+up until you re-run cmake.
 
 ## Style
 
@@ -220,6 +198,9 @@ Full conventions are in flux and will be revised soon, so keep it minimal for no
 
 ## Gotchas
 
+- **Never run Psi4 from the repository root.** The source directory
+  `psi4/` shadows the installed package, so `import psi4` there fails with
+  `ImportError: cannot import name 'core' from 'psi4'`. Run from anywhere else.
 - **`<objdir>/stage/` is a full installation.** There is no need to
   `cmake install`; most developers just work directly against the staged tree.
 - **Even Python-only edits require a rebuild.** The staged files in
@@ -231,9 +212,23 @@ Full conventions are in flux and will be revised soon, so keep it minimal for no
   correctly. A shallow clone or missing tags yields a wrong/undefined version.
 - **Symmetry**: molecules carry point-group symmetry; many quantities are stored
   per-irrep (e.g. `Dimension`, symmetry-blocked matrices). Don't assume C1.
-- **Density fitting is the default for MP2.5 and lower-cost methods** (but not
-  universally); "conventional" (pk/direct) paths are separate code paths and
-  separate keywords.
+- **AO vs SO basis**: `wfn.Ca_subset("SO", ...)` is symmetry-blocked;
+  `Ca_subset("AO", ...)` is C1 with no irrep structure. Pick deliberately, and
+  don't feed one into code expecting the other.
+- **Two orbital index orders**: *Pitzer* groups orbitals by irrep; *QT*
+  ("Quantum Trio") groups them frozen-core, doubly occupied, singly occupied,
+  virtual, frozen-virtual. `libqt/reorder_qt.cc` maps Pitzer→QT. `Wavefunction`
+  accessors return Pitzer; several correlated modules (`detci`, `cc`, `occ`)
+  work in QT. Mixing them permutes orbitals quietly, with no error.
+- **Atomic units internally**: `mol.geometry()` returns Bohr even when the input
+  specified `units angstrom` — input units only set a conversion factor.
+  Physical constants live in `include/`; don't hardcode them.
+- **Density fitting is enabled by default for SCF, MP2, MP2.5** `read_options.cc`
+  registers `SCF_TYPE` as `PK`, but the driver silently upgrades it to `DF`
+  whenever the user hasn't set it (`psi4/driver/procrouting/proc_util.py:48`), so
+  grepping the registry gives the wrong effective default. `MP2_TYPE` is
+  genuinely `DF`. DF is not universal, though: "conventional" (pk/direct) paths
+  are separate code paths with separate keywords.
 - **Scratch files**: methods read/write large binary scratch via `libpsio`.
   Point `PSI_SCRATCH` at fast local storage; stale scratch can corrupt restarts.
 - **Two test systems** (CTest PSIthon + pytest PsiAPI) — a change may need
@@ -248,8 +243,17 @@ Pipelines + GitHub Actions) and require passing tests + core-developer review.
 **Rebase onto upstream is preferred over merge commits** to keep history linear.
 See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) and the
 [PR template](.github/PULL_REQUEST_TEMPLATE.md).
-Importrant: AI agents that write PR descriptions, code reviews, GitHub comments or responses must identify themselves as such, by ending the text with "Generated by: <LLM model name>".
 
-# Local overrides
+**Important, for AI agents:**
 
-Developers may create `AGENTS.local.md` for machine-, workflow-, or preference-specific notes. This file is ignored by git and should not contain instructions required for normal project development.
+- PR descriptions, code reviews, and GitHub comments or responses must end with
+  "Generated by: <LLM model name>".
+- Never add `Co-Authored-By:`, `Signed-off-by:`, or any other trailer naming
+  yourself, a model, or a tool to a commit. Strip them if your tooling adds them
+  by default.
+
+## Local overrides
+
+Developers may create `AGENTS.local.md` for machine-, workflow-, or
+preference-specific notes. That file is ignored by git and should not contain
+instructions required for normal project development.
