@@ -47,6 +47,7 @@
 #include "psi4/libqt/qt.h"
 
 #include <algorithm>
+#include <iterator>
 
 #ifdef _OPENMP
 #include <omp.h>
