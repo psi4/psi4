@@ -30,12 +30,12 @@
 #define PSI4_SRC_DLPNO_SPARSE_H_
 
 #include "psi4/libmints/matrix.h"
-
 #include <vector>
 
-typedef std::vector<std::vector<int>> SparseMap;
+namespace psi {
+namespace dlpno {
 
-namespace psi{
+using SparseMap = std::vector<std::vector<int>>;
 
 /* Args: sorted lists l1 and l2
  * Returns: sorted union of l1 and l2
@@ -85,6 +85,7 @@ SharedMatrix submatrix_cols(const Matrix &mat, const std::vector<int> &col_inds)
 /* Args: Matrix, list of row and column indices */
 SharedMatrix submatrix_rows_and_cols(const Matrix &mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds);
 
-} // namespace psi
+}  // namespace dlpno
+}  // namespace psi
 
 #endif // PSI4_SRC_DLPNO_SPARSE_H_
