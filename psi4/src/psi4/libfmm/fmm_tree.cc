@@ -467,7 +467,40 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
 
     std::shared_ptr<TwoBodyAOInt> shellpair_int = std::shared_ptr<TwoBodyAOInt>(factory->eri());
 
-    const auto& ints_bra_shell_pairs = shellpair_int->shell_pairs_bra();
+    const bool no_screening = options_.get_str("SCREENING") == "NONE";
+    const auto make_symmetric_shell_pairs = [](const std::shared_ptr<BasisSet>& basis) {
+        const int nshell = basis->nshell();
+        std::vector<std::pair<int, int>> shell_pairs;
+        shell_pairs.reserve(nshell * (nshell + 1L) / 2L);
+        for (int P = 0; P < nshell; ++P) {
+            for (int Q = 0; Q <= P; ++Q) {
+                shell_pairs.emplace_back(P, Q);
+            }
+        }
+        return shell_pairs;
+    };
+    const auto make_dummy_shell_pairs = [](const std::shared_ptr<BasisSet>& basis) {
+        std::vector<std::pair<int, int>> shell_pairs;
+        shell_pairs.reserve(basis->nshell());
+        for (int P = 0; P < basis->nshell(); ++P) {
+            shell_pairs.emplace_back(P, 0);
+        }
+        return shell_pairs;
+    };
+
+    // A no-screening TwoBodyAOInt intentionally has no sieve-derived shell-pair
+    // lists. Enumerate every unique pair explicitly so SCREENING=NONE builds a
+    // complete CFMM tree instead of silently omitting the Coulomb contribution.
+    std::vector<std::pair<int, int>> ints_bra_shell_pairs;
+    if (no_screening) {
+        if (contraction_type_ == ContractionType::DIRECT) {
+            ints_bra_shell_pairs = make_symmetric_shell_pairs(primary_);
+        } else {
+            ints_bra_shell_pairs = make_dummy_shell_pairs(auxiliary_);
+        }
+    } else {
+        ints_bra_shell_pairs = shellpair_int->shell_pairs_bra();
+    }
     size_t bra_nshell_pairs = ints_bra_shell_pairs.size();
 
     if (contraction_type_ == ContractionType::DIRECT) primary_shell_pairs_.resize(bra_nshell_pairs);
@@ -484,7 +517,8 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
     }
 
     if (contraction_type_ == ContractionType::DF_AUX_PRI) {
-        const auto& ints_ket_shell_pairs = shellpair_int->shell_pairs_ket();
+        const auto ints_ket_shell_pairs =
+            no_screening ? make_symmetric_shell_pairs(primary_) : shellpair_int->shell_pairs_ket();
         size_t ket_nshell_pairs = ints_ket_shell_pairs.size();
         primary_shell_pairs_.resize(ket_nshell_pairs);
 

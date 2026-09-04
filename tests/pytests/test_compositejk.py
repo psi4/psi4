@@ -91,11 +91,18 @@ def test_cfmm_j_only_incfock(j_algo, screening, mols):
         "basis": "6-31g",
         "cfmm_grain": 3,
         "screening": screening,
+        "ints_tolerance": 1.0e-12,
         "bench": 1,
         "incfock": False,
     }
     psi4.set_options(options)
     energy_full = psi4.energy("bp86", molecule=molecule)
+
+    if screening == "NONE":
+        psi4.core.clean()
+        psi4.set_options({**options, "screening": "DENSITY"})
+        energy_screened = psi4.energy("bp86", molecule=molecule)
+        assert compare_values(energy_screened, energy_full, 6, f"{j_algo} no-screening energy")
 
     psi4.core.clean()
     psi4.set_options({**options, "incfock": True, "save_jk": True})
