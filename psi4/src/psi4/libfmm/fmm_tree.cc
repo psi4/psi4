@@ -207,7 +207,7 @@ void CFMMBox::make_children() {
 
     // Fill order (ws,z,y,x) (0)000 (0)001 (0)010 (0)011 (0)100 (0)101 (0)110 (0)111
     // (1)000 (1)001 (1)010 (1)011 (1)100 (1)101 (1)110 (1)111
-    for (std::shared_ptr<ShellPair> shell_pair : primary_shell_pairs_) {
+    for (const auto& shell_pair : primary_shell_pairs_) {
         Vector3 sp_center = shell_pair->get_center();
         double x = sp_center[0];
         double y = sp_center[1];
@@ -228,7 +228,7 @@ void CFMMBox::make_children() {
     }
 
     // auxiliary_shell_pairs_ is empty for a direct primary-basis contraction.
-    for (std::shared_ptr<ShellPair> shell_pair : auxiliary_shell_pairs_) {
+    for (const auto& shell_pair : auxiliary_shell_pairs_) {
         Vector3 sp_center = shell_pair->get_center();
         double x = sp_center[0];
         double y = sp_center[1];
@@ -271,8 +271,8 @@ void CFMMBox::set_regions() {
     if (parent) {
         // Near field or local far fields are from children of parents
         // and children of parent's near field
-        for (std::shared_ptr<CFMMBox> parent_nf : parent->near_field_) {
-            for (std::shared_ptr<CFMMBox> child : parent_nf->children_) {
+        for (const auto& parent_nf : parent->near_field_) {
+            for (const auto& child : parent_nf->children_) {
                 if (child->nshell_pair() == 0) continue;
                 // WS Max formulation takes the most diffuse branch into account
                 int ref_ws = (ws_max_ + child->ws_max_) / 2;
@@ -381,7 +381,7 @@ void CFMMBox::compute_mpoles_from_children() {
     // Upward pass: translate each child's regular expansion to the parent
     // center and accumulate it. This is the multipole-to-multipole step of the
     // CFMM hierarchy described by White et al. (1994, 1996).
-    for (std::shared_ptr<CFMMBox> child : children_) {
+    for (const auto& child : children_) {
         nmat = std::max(nmat, (int)child->mpoles_.size());
     }
 
@@ -396,7 +396,7 @@ void CFMMBox::compute_mpoles_from_children() {
         Vff_[N] = std::make_shared<RealSolidHarmonics>(lmax_, center_, SolidHarmonicsType::Irregular);
     }
 
-    for (std::shared_ptr<CFMMBox> child : children_) {
+    for (const auto& child : children_) {
         if (child->nshell_pair() == 0) continue;
         for (int N = 0; N < nmat; N++) {
             std::shared_ptr<RealSolidHarmonics> child_multipoles = child->mpoles_[N]->translate(center_);
