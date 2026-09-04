@@ -37,7 +37,7 @@ quantum-chemistry program — the C++ compiled alone is not.
   expansion, and the user-facing API. Most *logic about what to run* lives here;
   most *number crunching* lives in C++.
 
-There are **three user interfaces**, and tests/samples exist for them:
+There are **three user interfaces**, and tests exist for them:
 
 - **PSIthon** — a Python superset with chemistry sugar (`molecule {...}` blocks,
   `set` keyword syntax). Run with `psi4 input.in` (input/output file extensions
@@ -176,14 +176,22 @@ up until you re-run cmake.
 Full conventions are in flux and will be revised soon, so keep it minimal for now:
 
 - Line length ~120 characters.
+- In driver code, print with `core.print_out(...)` for the output file,
+  `print(...)` for stdout.
 - Every source file carries the LGPL-3.0 license header block — preserve it when
   editing and include it in new files.
+- **Never run the formatters in bulk.** The repo ships `.clang-format`,
+  `.style.yapf`, and `.pre-commit-config.yaml`, but they should not be run
+  routinely. Format only the lines you touch, matching the surrounding code.
 
 ## Making changes — where things live
 
 - **Add/modify a keyword/option**: options and their defaults are registered in
   [psi4/src/read_options.cc](psi4/src/read_options.cc). Read from C++ via the
-  options object; read from Python via `psi4.core.get_option(...)`.
+  options object; read from Python via `psi4.core.get_option(...)`. The
+  `/*- ... -*/` block above an option is not a plain comment — it is scraped into
+  the manual by `doc/sphinxman/document_options_c.pl` and takes reST (`:ref:`,
+  `$math$`). A `//` comment there documents nothing user-facing.
 - **Add/route a method**: method dispatch is in
   `psi4/driver/procrouting/` (`proc.py`, `proc_table.py`). The public entry
   points are `energy()`, `gradient()`, `optimize()`, `frequencies()`,
@@ -192,6 +200,11 @@ Full conventions are in flux and will be revised soon, so keep it minimal for no
   `psi4/src/export_*.cc` (and `psi4/src/core.cc`).
 - **Add basis sets / grids / databases**: under `psi4/share/psi4/`. DFT
   functional definitions live in `psi4/driver/procrouting/dft/`.
+- **Add a CTest case**: multiple steps, no globbing. Create `tests/<name>/`
+  holding the input plus a `CMakeLists.txt` and `test_input.py` to register for
+  CTest and Pytest. Add consistent labels. Also add <name> to the
+  hand-maintained `foreach(test_name ...)` list in
+  [tests/CMakeLists.txt](tests/CMakeLists.txt) otherwise silently never runs.
 - New features **must** include tests and documentation (per CONTRIBUTING.md).
   Deeper how-to guides: the `prog_*` pages of the manual, e.g.
   https://psicode.org/psi4manual/master/prog_newcode.html
@@ -234,7 +247,7 @@ Full conventions are in flux and will be revised soon, so keep it minimal for no
 - **Two test systems** (CTest PSIthon + pytest PsiAPI) — a change may need
   updating in both, and reference values live next to each test.
 - **Generated/staged artifacts**: never commit anything under `objdir*/`,
-  `stage/`, or `*.out` scratch outputs.
+  `stage/`, or `*.out` scratch outputs. Never edit `samples/`.
 
 ## Contributing workflow
 
