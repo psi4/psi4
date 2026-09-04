@@ -159,6 +159,7 @@ jobs:
                         pydantic ^
                         optking ^
                         scipy
+          if errorlevel 1 exit /b %errorlevel%
           which anaconda
           conda list
         displayName: "Install conda packages"
