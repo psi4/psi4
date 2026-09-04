@@ -55,6 +55,26 @@
 namespace psi {
 namespace dlpno {
 
+/* Args: SparseMap from x to y, maximum possible y value
+ * Returns: SparseMap from y to x
+ */
+[[nodiscard]] constexpr SparseMap invert_map(const SparseMap& x_to_y, int ny) {
+    std::vector<int> count(ny, 0);
+    for (const auto& ys : x_to_y)
+        for (int y : ys) {
+            if (y < 0 && y >= ny) throw PSIEXCEPTION("Cannot invert an invalid map!");
+            ++count[y];
+        }
+
+    SparseMap y_to_x(ny);
+    for (int y = 0; y < ny; ++y) y_to_x[y].reserve(count[y]);
+
+    for (int x = 0; x < std::ssize(x_to_y); ++x)  // ascending x keeps each list sorted
+        for (int y : x_to_y[x]) y_to_x[y].push_back(x);
+
+    return y_to_x;
+}
+
 DLPNO::DLPNO(SharedWavefunction ref_wfn, Options& options) : Wavefunction(options) {
     shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
@@ -1678,5 +1698,5 @@ void DLPNO::print_pao_pair_domains() {
 
 double DLPNO::compute_energy() { return 0.0; }
 
-}
-}
+}  // namespace dlpno
+}  // namespace psi
