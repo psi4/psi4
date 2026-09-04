@@ -226,9 +226,6 @@ class DLPNO : public Wavefunction {
     std::vector<std::vector<std::pair<int,int>>> riatom_to_pao_pairs_; ///< Which (u,v) pao pairs belong to an riatom
     std::vector<std::vector<std::vector<int>>> riatom_to_pao_pairs_dense_; ///< For each riatom, returns the index of the element in qab tensor
 
-    /// PSIO object (helps with reading/writing large tensors)
-    std::shared_ptr<PSIO> psio_;
-
     void common_init();
 
     // Helper functions
