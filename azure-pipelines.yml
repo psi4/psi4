@@ -1,8 +1,8 @@
 trigger:
   branches:
     include:
-      - master
-      - gh-readonly-queue/master/*
+      #- master
+      #- gh-readonly-queue/master/*
       - 1.11.x
       - 1.10.x
       - 1.9.x
@@ -19,7 +19,7 @@ trigger:
 pr:
   branches:
     include:
-      - master
+      #- master
       - 1.10.x
       - 1.11.x
 

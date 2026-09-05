@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #ifndef libmints_cubature_H
 #define libmints_cubature_H
@@ -35,6 +38,10 @@
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
+
+#ifdef USING_cuEST
+#include <cuest.h>
+#endif
 
 #include <map>
 #include <vector>
@@ -88,7 +95,10 @@ class MolecularGrid {
     double* w_;
 
     // ==> Clean Grid Specification <== //
-
+#if USING_cuEST
+    cuestMolecularGrid_t cuest_molecular_grid_ = nullptr;
+    cuestWorkspace_t *cuest_molecular_grid_ws_ptr_ = nullptr;
+#endif
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation_;
     /// Radial grids, per atom
@@ -145,7 +155,7 @@ class MolecularGrid {
     std::shared_ptr<Molecule> molecule() const { return molecule_; }
 
     /// Build the grid
-    void buildGridFromOptions(MolecularGridOptions const& opt);
+    void buildGridFromOptions(MolecularGridOptions const& opt, bool is_cuest = false);
 
     /// Print information about the grid
     void print(std::string out_fname = "outfile", int print = 2) const;
@@ -158,6 +168,9 @@ class MolecularGrid {
     /// Spherical grids, per atom and radial point
     const std::vector<std::vector<std::shared_ptr<SphericalGrid>>>& spherical_grids() const { return spherical_grids_; }
 
+#if USING_cuEST
+    cuestMolecularGrid_t cuest_grid() const { return cuest_molecular_grid_; }
+#endif
     /// Number of grid points
     int npoints() const { return npoints_; }
     /// Maximum number of grid points in a block

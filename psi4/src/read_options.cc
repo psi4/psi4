@@ -168,6 +168,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Whether to enable using the BrianQC GPU module -*/
     options.add_bool("BRIANQC_ENABLE", false);
 #endif
+    /*- Whether to enable NVIDIA cuEST GPU acceleration (requires CUDA and cuEST libraries) -*/
+    options.add_bool("USE_CUEST", false);
+    /*- Whether to allow GPU calculations to use mixed precision emulation (requires CUDA and cuEST libraries) -*/
+    options.add_bool("CUEST_MIXED_PRECISION", true);
+    /*- Tune # of Ozaki Slices in emulated DF K computations (requires CUDA and cuEST libraries) -*/
+    options.add_int("CUEST_DFK_SLICES", 5);
+    /*- Tune # of Ozaki Moduli in emulated DF K computations (requires CUDA and cuEST libraries) -*/
+    options.add_int("CUEST_DFK_MODULI", 8);
 
     // Note that case-insensitive options are only functional as
     //   globals, not as module-level, and should be defined sparingly
@@ -191,7 +199,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK CUEST");
 #ifdef USING_OpenOrbitalOptimizer
     /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
@@ -335,6 +343,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("PE", false);
     /*- DDX boolean for ddx module -*/
     options.add_bool("DDX", false);
+    /*- cuEST PCM boolean for cuEST PCM module -*/
+    options.add_bool("CUEST_PCM", false);
 
     if (name == "PCM" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable continuum model (PCM) computations. -*/
@@ -345,6 +355,20 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
         /*- PCM-CCSD algorithm type. -*/
         options.add_str("PCM_CC_TYPE", "PTE", "PTE");
+        /*- cuEST PCM dielectric constant (e.g. 1.0 for vacuum, ~78 for water) -*/
+        options.add_double("CUEST_PCM_DIELECTRIC", 0.0);
+        /*- cuEST PCM grid for heavy atoms. (A :ref:`Lebedev Points <table:lebedevorder>` number) -*/
+        options.add_int("CUEST_PCM_HEAVY_ATOM_SPHERICAL_POINTS", 194);
+        /*- cuEST PCM grid for hydrogen atoms. (A :ref:`Lebedev Points <table:lebedevorder>` number) -*/
+        options.add_int("CUEST_PCM_HYDROGEN_ATOM_SPHERICAL_POINTS", 110);
+        /*- scale factor applied to Bondi radii to define effective atomic radius in cuEST PCM calculations -*/
+        options.add_double("CUEST_PCM_BONDI_RADII_SCALE", 1.2);
+        /*- cuEST PCM x prefactor (0.0 gives CPCM, 0.5 gives COSMO-like behavior)-*/
+        options.add_double("CUEST_PCM_X_PREFACTOR", 0.0);
+        /*- cuEST PCM cutoff; iSWIG switching functions below this value will result in the point being discarded -*/
+        options.add_double("CUEST_PCM_CUTOFF", 1e-8);
+        /*- cuEST PCM convergence criterion (maximum value of the residual in the PCG iterations) -*/
+        options.add_double("CUEST_PCM_CONVERGENCE", 1e-10);
     }
 
     if (name == "DDX" || options.read_globals()) {

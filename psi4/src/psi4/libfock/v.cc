@@ -25,12 +25,16 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #include "v.h"
 #include "cubature.h"
 #include "points.h"
 #include "dft_integrators.h"
 #include "sap.h"
+#include <cassert>
 
 #include "psi4/libfunctional/LibXCfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -50,11 +54,22 @@
 #include <cstdlib>
 #include <numeric>
 #include <sstream>
+#include <cstdio>
 #include <string>
 #include <algorithm>
 
 #ifdef _OPENMP
 #include <omp.h>
+#endif
+
+#ifdef USING_cuEST
+#include <array>
+#include <cuest.h>
+#include <xc.h>
+#include <cublas_v2.h>
+#include "psi4/libfock/cuESTCommon.h"
+extern cublasHandle_t cublas_handle;
+extern cuestHandle_t cuest_handle;
 #endif
 
 #ifdef USING_BrianQC
@@ -92,11 +107,112 @@ extern bool brianBuildingNLCGrid;
 
 namespace psi {
 
+#ifdef USING_cuEST
+namespace {
+
+struct CuestXCField {
+    const double* component_values;
+    double* accumulated_values;
+    size_t components_per_point;
+};
+
+template <size_t N>
+inline void accumulate_cuest_xc_component(size_t start_point, size_t end_point, double component_weight,
+                                           const std::array<CuestXCField, N>& fields) {
+    for (size_t point = start_point; point < end_point; ++point) {
+        bool finite = true;
+        for (const auto& field : fields) {
+            for (size_t component = 0; component < field.components_per_point; ++component) {
+                if (!std::isfinite(field.component_values[field.components_per_point * point + component])) {
+                    finite = false;
+                    break;
+                }
+            }
+            if (!finite) break;
+        }
+
+        if (finite) {
+            for (const auto& field : fields) {
+                for (size_t component = 0; component < field.components_per_point; ++component) {
+                    const size_t index = field.components_per_point * point + component;
+                    field.accumulated_values[index] += component_weight * field.component_values[index];
+                }
+            }
+        }
+    }
+}
+
+inline void validate_cuest_xc_components(const std::shared_ptr<SuperFunctional>& functional) {
+    const auto validate = [](const std::vector<std::shared_ptr<Functional>>& components) {
+        for (const auto& component : components) {
+            auto* libxc_component = dynamic_cast<LibXCFunctional*>(component.get());
+            if (libxc_component == nullptr) {
+                throw PSIEXCEPTION("cuEST Vxc requires semilocal component '" + component->name() +
+                                   "' to be a LibXC functional.");
+            }
+            if (libxc_component->xc_functional()->info->flags & XC_FLAGS_NEEDS_LAPLACIAN) {
+                throw PSIEXCEPTION("cuEST Vxc does not support LibXC component '" + component->name() +
+                                   "' because it requires the density Laplacian.");
+            }
+        }
+    };
+
+    validate(functional->x_functionals());
+    validate(functional->c_functionals());
+}
+
+// Ensures that cuEST uses the appropriate LibXC component for mixed rung (GGA+metaGGA) functionals
+inline void evaluate_cuest_xc_component(
+    const std::shared_ptr<Functional>& component, size_t start_point, size_t end_point, size_t rho_components,
+    size_t gamma_components, size_t tau_components, const double* rho, const double* gamma, const double* tau,
+    double* f, double* f_rho, double* f_gamma, double* f_tau, double* full_f, double* full_f_rho,
+    double* full_f_gamma, double* full_f_tau) {
+    auto* libxc_component = static_cast<LibXCFunctional*>(component.get());
+    const size_t npoints = end_point - start_point;
+
+    if (component->is_meta()) {
+        xc_mgga_exc_vxc(libxc_component->xc_functional(), npoints, rho + rho_components * start_point,
+                        gamma + gamma_components * start_point, nullptr, tau + tau_components * start_point,
+                        f + start_point, f_rho + rho_components * start_point,
+                        f_gamma + gamma_components * start_point, nullptr, f_tau + tau_components * start_point);
+        accumulate_cuest_xc_component(
+            start_point, end_point, component->alpha(),
+            std::array{CuestXCField{f, full_f, 1}, CuestXCField{f_rho, full_f_rho, rho_components},
+                       CuestXCField{f_gamma, full_f_gamma, gamma_components},
+                       CuestXCField{f_tau, full_f_tau, tau_components}});
+    } else if (component->is_gga()) {
+        xc_gga_exc_vxc(libxc_component->xc_functional(), npoints, rho + rho_components * start_point,
+                       gamma + gamma_components * start_point, f + start_point,
+                       f_rho + rho_components * start_point, f_gamma + gamma_components * start_point);
+        accumulate_cuest_xc_component(
+            start_point, end_point, component->alpha(),
+            std::array{CuestXCField{f, full_f, 1}, CuestXCField{f_rho, full_f_rho, rho_components},
+                       CuestXCField{f_gamma, full_f_gamma, gamma_components}});
+    } else {
+        xc_lda_exc_vxc(libxc_component->xc_functional(), npoints, rho + rho_components * start_point,
+                       f + start_point, f_rho + rho_components * start_point);
+        accumulate_cuest_xc_component(
+            start_point, end_point, component->alpha(),
+            std::array{CuestXCField{f, full_f, 1}, CuestXCField{f_rho, full_f_rho, rho_components}});
+    }
+}
+
+}  // namespace
+#endif
+
 VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
     : options_(options), primary_(primary), functional_(functional) {
     common_init();
 }
-VBase::~VBase() {}
+VBase::~VBase() {
+    // finalize() is not (and per the empty RV/UV overrides below, need not be)
+    // virtually dispatched here -- it releases the cuEST GPU resources
+    // (d_Coccs_AO_, cuest_xcint_plan_/_ws_ptr_, VV10 equivalents) that
+    // otherwise leak permanently, since nothing else ever calls finalize()
+    // on a VBase/RV/UV object (it isn't even exposed to Python). Safe to
+    // call unconditionally: every branch inside is null-checked already.
+    VBase::finalize();
+}
 void VBase::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
@@ -114,6 +230,20 @@ void VBase::common_init() {
     num_threads_ = 1;
 #ifdef _OPENMP
     num_threads_ = omp_get_max_threads();
+#endif
+}
+void VBase::throw_if_cuest_unsupported(const std::string& what) const {
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        throw PSIEXCEPTION(
+            what +
+            " has no cuEST implementation.\n"
+            "  cuEST builds the DFT quadrature grid on the GPU and skips the CPU-side grid\n"
+            "  post-processing, so there are no CPU grid blocks to integrate over.  Falling\n"
+            "  back to the CPU code here would silently produce a zero exchange-correlation\n"
+            "  contribution rather than a wrong-but-visible answer.\n"
+            "  Re-run this computation with USE_CUEST false.");
+    }
 #endif
 }
 std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::shared_ptr<SuperFunctional> functional,
@@ -136,6 +266,43 @@ std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::sh
     }
 
     return v;
+}
+void VBase::set_Cocc(std::vector<SharedMatrix> Coccs) {
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
+        std::vector<uint64_t> d_Cocc_noccs_provided;
+        uint64_t d_Cocc_size_needed = 0;
+        for (SharedMatrix Cocc : Coccs) {
+            if (Cocc->nirrep() != 1) {
+                // This shouldn't be needed, as we call with the AO basis subset.  But just in case..
+                throw PSIEXCEPTION("cuEST V code doesn't support symmetric Cocc yet.");
+            }
+            d_Cocc_noccs_provided.push_back(Cocc->colspi()[0]);
+            d_Cocc_size_needed += Cocc->size();
+        }
+        if (d_Cocc_noccs_provided != d_Cocc_noccs_) {
+            cudaFree(d_Coccs_AO_);
+            cudaError_t err = cudaMalloc((void**)&d_Coccs_AO_, d_Cocc_size_needed * sizeof(double));
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMalloc failed in VBase::set_Cocc");
+            }
+            d_Cocc_noccs_ = d_Cocc_noccs_provided;
+        }
+        uint64_t d_Cocc_offset = 0;
+        std::vector<uint64_t> noccs;
+        for (SharedMatrix Cocc : Coccs) {
+            noccs.push_back(Cocc->colspi()[0]);
+            auto CoccT = Cocc->transpose();
+            cudaError_t err = cudaMemcpy(d_Coccs_AO_ + d_Cocc_offset, CoccT->get_pointer(0), Cocc->size() * sizeof(double), cudaMemcpyHostToDevice);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpy failed in VBase::set_Cocc");
+            }
+            d_Cocc_offset += Cocc->size();
+        }
+    }
+#endif
 }
 void VBase::set_D(std::vector<SharedMatrix> Dvec) {
     if (Dvec.size() > 2) {
@@ -177,12 +344,89 @@ void VBase::initialize() {
     timer_on("V: Grid");
     grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, options_);
     timer_off("V: Grid");
+    if (functional_->needs_vv10()) {
+        timer_on("V: VV10 Grid");
+        std::map<std::string, std::string> opt_map;
+        opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
 
+        std::map<std::string, int> opt_int_map;
+        opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
+        opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
+
+        vv10_grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
+        timer_off("V: VV10 Grid");
+    }
+#ifdef USING_cuEST
+    // No workers are needed for cuEST, so we can just create the XC Integral Plan here and return
+    if (options_.get_bool("USE_CUEST")) {
+        validate_cuest_xc_components(functional_);
+        cuest_common::ensure_cuest_initialized();
+
+        cuestXCIntPlanParameters_t xcint_params;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCINTPLAN_PARAMETERS, reinterpret_cast<void**>(&xcint_params)));
+
+        cuestWorkspaceDescriptor_t persistentWorkspaceDescriptor {};
+        cuestWorkspaceDescriptor_t temporaryWorkspaceDescriptor {};
+
+        // We're going to use the native Functional objects to figure out the x/c scale factors, omegas, etc.
+        // This involves using the advanced cuEST interface, wherein the rate-limiting collocation steps are done
+        // on the GPU, and the functional evaluation is done on the CPU using LibXC engines exracted from the Psi4
+        // functional objects.  Defined the plan's functional as HF here, just as an unused placeholder.
+        CHECK_CUEST(cuestXCIntPlanCreateWorkspaceQuery(
+            cuest_handle,
+            primary_->cuest_basis(),
+            grid_->cuest_grid(),
+            CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_HF,
+            xcint_params,
+            &persistentWorkspaceDescriptor,
+            &temporaryWorkspaceDescriptor,
+            nullptr));
+
+        cuest_xcint_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
+
+        CHECK_CUEST(cuestXCIntPlanCreate(
+            cuest_handle,
+            primary_->cuest_basis(),
+            grid_->cuest_grid(),
+            CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_HF,
+            xcint_params,
+            cuest_xcint_ws_ptr_,
+            temporary_workspace,
+            &cuest_xcint_plan_));
+        cuest_common::freeWorkspace(temporary_workspace);
+
+        if (functional_->needs_vv10()) {
+            CHECK_CUEST(cuestXCIntPlanCreateWorkspaceQuery(
+                cuest_handle,
+                primary_->cuest_basis(),
+                vv10_grid_->cuest_grid(),
+                CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_HF,
+                xcint_params,
+                &persistentWorkspaceDescriptor,
+                &temporaryWorkspaceDescriptor,
+                nullptr));
+            temporary_workspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
+            cuest_vv10_xcint_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
+            CHECK_CUEST(cuestXCIntPlanCreate(
+                cuest_handle,
+                primary_->cuest_basis(),
+                vv10_grid_->cuest_grid(),
+                CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_HF,
+                xcint_params,
+                cuest_vv10_xcint_ws_ptr_,
+                temporary_workspace,
+                &cuest_vv10_xcint_plan_));
+            cuest_common::freeWorkspace(temporary_workspace);
+        }
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTPLAN_PARAMETERS, xcint_params));
+        return;
+    }
+#endif
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a functional worker per thread
         functional_workers_.push_back(functional_->build_worker());
     }
-    
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT)
     {
@@ -682,6 +926,7 @@ std::vector<SharedMatrix> VBase::compute_fock_derivatives() {
     throw PSIEXCEPTION("VBase: compute_fock_derivatives not implemented for this Vx instance.");
 }
 void VBase::set_grac_shift(double grac_shift) {
+    throw_if_cuest_unsupported("The GRAC asymptotic correction (DFT_GRAC_SHIFT)");
     // Well this is a flaw in my plan
     if (!grac_initialized_) {
         double grac_alpha = options_.get_double("DFT_GRAC_ALPHA");
@@ -733,8 +978,37 @@ void VBase::print_header() const {
 }
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
-void VBase::finalize() { grid_.reset(); }
+void VBase::finalize() { grid_.reset();
+#ifdef USING_cuEST
+    if (d_Coccs_AO_ != nullptr) {
+        cudaFree(d_Coccs_AO_);
+        d_Coccs_AO_ = nullptr;
+        d_Cocc_noccs_.clear();
+    }
+    if (cuest_xcint_plan_ != nullptr) {
+        CHECK_CUEST(cuestXCIntPlanDestroy(cuest_xcint_plan_));
+        cuest_xcint_plan_ = nullptr;
+    }
+    if (cuest_xcint_ws_ptr_ != nullptr) {
+        cuest_common::freeWorkspace(cuest_xcint_ws_ptr_);
+        cuest_xcint_ws_ptr_ = nullptr;
+    }
+    if (cuest_vv10_xcint_plan_ != nullptr) {
+        CHECK_CUEST(cuestXCIntPlanDestroy(cuest_vv10_xcint_plan_));
+        cuest_vv10_xcint_plan_ = nullptr;
+    }
+    if (cuest_vv10_xcint_ws_ptr_ != nullptr) {
+        cuest_common::freeWorkspace(cuest_vv10_xcint_ws_ptr_);
+        cuest_vv10_xcint_ws_ptr_ = nullptr;
+    }
+#endif
+}
 void VBase::build_collocation_cache(size_t memory) {
+    // No cuEST guard here, deliberately: this is called on every SCF init
+    // (scf_iterator.py), and it degrades safely under cuEST.  With an empty CPU
+    // grid, collocation_size() is 0 so stride clamps to 1, and the
+    // "stride > grid_->blocks().size()" early return below fires (1 > 0) before
+    // point_workers_ is ever indexed.  The result is simply an empty cache.
     // Figure out many blocks to skip
 
     size_t collocation_size = grid_->collocation_size();
@@ -896,14 +1170,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     timer_on("Setup");
 
     // => VV10 Grid and Cache <=
-    std::map<std::string, std::string> opt_map;
-    opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
-
-    std::map<std::string, int> opt_int_map;
-    opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
-    opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
-
-    DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
+    DFTGrid& nlgrid = *vv10_grid_;
     std::vector<std::map<std::string, SharedVector>> vv10_cache;
     std::vector<std::shared_ptr<PointFunctions>> nl_point_workers;
     prepare_vv10_cache(nlgrid, D, vv10_cache, nl_point_workers);
@@ -1121,6 +1388,7 @@ void SAP::print_header() const {
     if (print_ > 2) grid_->print_details("outfile", print_);
 }
 void SAP::compute_V(std::vector<SharedMatrix> ret) {
+    throw_if_cuest_unsupported("The SAP guess");
     timer_on("SAP: Form V");
 
     if (ret.size() != 1) {
@@ -1262,10 +1530,488 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     // => Validate object <=
     timer_on("RV: Form V");
     
-    if ((D_AO_.size() != 1) || (ret.size() != 1)) {
-        throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
+    if ((ret.size() != 1)) {
+        throw PSIEXCEPTION("V: RKS should have only one V Matrix");
     }
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
+        if ((d_Cocc_noccs_.size() != 1)) {
+            throw PSIEXCEPTION("V: RKS should have only one Cocc Matrix");
+        }
+        // cuEST works exclusively in the dense AO basis, while ret[0] (Va_) may be an
+        // SO-basis, symmetry-blocked matrix.  Size every GPU buffer from nbf_ (the AO
+        // dimension set by set_D) rather than ret[0]->size(), which is Matrix::size(h=0)
+        // -- i.e. just the first irrep block -- and back-transform AO -> SO at the end.
+        const size_t nbf2 = (size_t)nbf_ * (size_t)nbf_;
+        double *d_Vxc = nullptr;
+        cudaError_t err = cudaMalloc((void**)&d_Vxc, nbf2 * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+
+        cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+        cuestWorkspaceDescriptor_t variable_buffersize_descriptor {
+            0,
+            2000000000
+        };
+
+        uint64_t npoints;
+        CHECK_CUEST(cuestQuery(
+            cuest_handle,
+            CUEST_MOLECULARGRID,
+            grid_->cuest_grid(),
+            CUEST_MOLECULARGRID_NUM_POINT,
+            &npoints,
+            sizeof(uint64_t)
+            ));
+
+        // => Split the work among the threads <= //
+        std::vector<uint64_t> work_per_thread(num_threads_+1);
+        uint64_t chunk_size = npoints / num_threads_;    
+        if (chunk_size != 0) {
+            for (uint64_t i = 0; i < num_threads_; i++) {
+                work_per_thread[i] = i * chunk_size;
+            }
+            work_per_thread[num_threads_] = npoints;
+        } else {
+            // Edge case: more workers than points, so some workers will have no work.
+            for (uint64_t i = 0; i < npoints; i++) {
+                work_per_thread[i] = i;
+            }
+            for (uint64_t i = npoints; i <= num_threads_; i++) {
+                work_per_thread[i] = npoints;
+            }
+        }
     
+        // => Compute integration weights <= //
+        double *d_weights = nullptr;
+        if (cudaMalloc((void**)&d_weights, npoints * sizeof(double)) != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        cuestXCIntegrationWeightComputeParameters_t weight_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, &weight_compute_parameters));
+        CHECK_CUEST(cuestXCIntegrationWeightComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            &temporary_workspace_descriptor,
+            d_weights
+            ));
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCIntegrationWeightCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            temporary_workspace,
+            d_weights
+            ));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, weight_compute_parameters));
+        cuest_common::freeWorkspace(temporary_workspace);
+        SharedMatrix h_weights = std::make_shared<Matrix>("weights", 1, npoints);
+        double *p_weights = h_weights->pointer()[0];
+        err = cudaMemcpy(h_weights->pointer()[0], d_weights, npoints * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        // => Compute grid density (and derivatives) <= //
+        cuestXCDensityComputeParameters_t density_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCDENSITYCOMPUTE_PARAMETERS, &density_compute_parameters));
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_types[3] = {
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA
+            };
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_type = ansatz_types[functional_->ansatz()];
+
+        uint64_t ncomponents_by_ansatz[] = {
+            1,
+            4,
+            5
+            };
+        uint64_t ncomponents = ncomponents_by_ansatz[functional_->ansatz()];
+
+        double *d_rho = nullptr;
+        err = cudaMalloc((void**)&d_rho, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        CHECK_CUEST(cuestXCDensityComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_rho
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDensityCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_rho
+            ));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCDENSITYCOMPUTE_PARAMETERS, density_compute_parameters));
+        cuest_common::freeWorkspace(temporary_workspace);
+        temporary_workspace = nullptr;
+
+        // Copy the density and its derivatives to host, then transpose it for easier access.
+        SharedMatrix h_rho_matrix = std::make_shared<Matrix>("rho", npoints, ncomponents);
+        err = cudaMemcpy(h_rho_matrix->pointer()[0], d_rho, npoints * ncomponents * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+        SharedMatrix h_rho_matrixT = h_rho_matrix->transpose();
+
+        SharedMatrix h_Vxc_grid = std::make_shared<Matrix>("Vxc_grid", npoints, ncomponents);
+        double* p_Vxc_grid = h_Vxc_grid->pointer()[0];
+        double* d_Vxc_grid;
+        SharedMatrix rho, gamma, tau;
+        double* p_rho, *p_gamma, *p_tau;
+        SharedMatrix f, f_rho, f_gamma, f_tau;
+        double* p_f, *p_f_rho, *p_f_gamma, *p_f_tau;
+        SharedMatrix full_f, full_f_rho, full_f_gamma, full_f_tau;
+        double *p_full_f, *p_full_f_rho, *p_full_f_gamma, *p_full_f_tau;
+        double *rho_0, *rho_x, *rho_y, *rho_z, *tau_0;
+        switch (ansatz_type) {
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_tau = std::make_shared<Matrix>("f_tau", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_tau = f_tau->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 0, 0, p_rho, nullptr,
+                                                    nullptr, p_f, p_f_rho, nullptr, nullptr, p_full_f,
+                                                    p_full_f_rho, nullptr, nullptr);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 0, 0, p_rho, nullptr,
+                                                    nullptr, p_f, p_f_rho, nullptr, nullptr, p_full_f,
+                                                    p_full_f_rho, nullptr, nullptr);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        p_Vxc_grid[point] = w * p_full_f_rho[point];
+                    }
+                }
+            break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", 1, npoints);
+                p_gamma = gamma->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                rho_x = h_rho_matrixT->pointer()[1];
+                rho_y = h_rho_matrixT->pointer()[2];
+                rho_z = h_rho_matrixT->pointer()[3];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                    p_gamma[point] = 4 * (rho_x[point] * rho_x[point] + rho_y[point] * rho_y[point] + rho_z[point] * rho_z[point]);
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_gamma = std::make_shared<Matrix>("f_gamma", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 1, 0, p_rho, p_gamma,
+                                                    nullptr, p_f, p_f_rho, p_f_gamma, nullptr, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, nullptr);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 1, 0, p_rho, p_gamma,
+                                                    nullptr, p_f, p_f_rho, p_f_gamma, nullptr, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, nullptr);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        p_Vxc_grid[4 * point + 0] = w * p_full_f_rho[point];
+                        p_Vxc_grid[4 * point + 1] = 4 * w * p_full_f_gamma[point] * rho_x[point];
+                        p_Vxc_grid[4 * point + 2] = 4 * w * p_full_f_gamma[point] * rho_y[point];
+                        p_Vxc_grid[4 * point + 3] = 4 * w * p_full_f_gamma[point] * rho_z[point];
+                    }
+                }
+            break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", 1, npoints);
+                p_gamma = gamma->pointer()[0];
+                tau = std::make_shared<Matrix>("tau", 1, npoints);
+                p_tau = tau->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                rho_x = h_rho_matrixT->pointer()[1];
+                rho_y = h_rho_matrixT->pointer()[2];
+                rho_z = h_rho_matrixT->pointer()[3];
+                tau_0 = h_rho_matrixT->pointer()[4];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                    p_gamma[point] = 4 * (rho_x[point] * rho_x[point] + rho_y[point] * rho_y[point] + rho_z[point] * rho_z[point]);
+                    p_tau[point] = 2 * tau_0[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", 1, npoints);
+                full_f_tau = std::make_shared<Matrix>("full_f_tau", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                full_f_tau->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                p_full_f_tau = full_f_tau->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_gamma = std::make_shared<Matrix>("f_gamma", 1, npoints);
+                f_tau = std::make_shared<Matrix>("f_tau", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+                p_f_tau = f_tau->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 1, 1, p_rho, p_gamma,
+                                                    p_tau, p_f, p_f_rho, p_f_gamma, p_f_tau, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, p_full_f_tau);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 1, 1, p_rho, p_gamma,
+                                                    p_tau, p_f, p_f_rho, p_f_gamma, p_f_tau, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, p_full_f_tau);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        p_Vxc_grid[5 * point + 0] = w * p_full_f_rho[point];
+                        p_Vxc_grid[5 * point + 1] = 4 * w * p_full_f_gamma[point] * rho_x[point];
+                        p_Vxc_grid[5 * point + 2] = 4 * w * p_full_f_gamma[point] * rho_y[point];
+                        p_Vxc_grid[5 * point + 3] = 4 * w * p_full_f_gamma[point] * rho_z[point];
+                        p_Vxc_grid[5 * point + 4] = w * p_full_f_tau[point];
+                    }
+                }
+            break;
+            default:
+                throw PSIEXCEPTION("RV::compute_V: Invalid ansatz type.");
+        }
+
+        err = cudaMalloc((void**)&d_Vxc_grid, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        err = cudaMemcpy(d_Vxc_grid, p_Vxc_grid, npoints * ncomponents * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        // => Compute the potential matrix from its grid representation <= //
+        cuestXCPotentialComputeParameters_t potential_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCPOTENTIALCOMPUTE_PARAMETERS, &potential_compute_parameters));
+        CHECK_CUEST(cuestXCPotentialComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            potential_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Vxc_grid,
+            d_Vxc
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCPotentialCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            potential_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Vxc_grid,
+            d_Vxc
+        ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCPOTENTIALCOMPUTE_PARAMETERS, potential_compute_parameters));
+        cudaFree(d_rho);
+        cudaFree(d_weights);
+
+
+        cudaFree(d_Vxc_grid);
+        auto V_AO = std::make_shared<Matrix>("V AO Temp", nbf_, nbf_);
+        err = cudaMemcpy(V_AO->get_pointer(0), d_Vxc, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            cudaFree(d_Vxc);
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        double Exc = 0.0;
+        double integrated_density = 0.0;
+        for (int point = 0; point < npoints; point++) {
+            Exc += 2 * p_weights[point] * p_full_f[point] * rho_0[point];
+            integrated_density += 2 * p_weights[point] * rho_0[point];
+        }  
+        quad_values_["FUNCTIONAL"] = Exc;
+        quad_values_["RHO_A"] = integrated_density;
+        quad_values_["RHO_B"] = integrated_density;
+        quad_values_["VV10"] = 0.0;
+
+        if (functional_->needs_vv10()) {
+        
+            cuestNonlocalXCPotentialRKSComputeParameters_t vv10_potential_compute_parameters;
+            CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, &vv10_potential_compute_parameters));
+
+            double vv10_scale = 1.0;
+            double vv10_C = functional_->vv10_c();
+            double vv10_b = functional_->vv10_b();
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_SCALE,
+                &vv10_scale,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_C,
+                &vv10_C,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_B,
+                &vv10_b,
+                sizeof(double));
+            double Evv10 = 0.0;
+            CHECK_CUEST(cuestNonlocalXCPotentialRKSComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_potential_compute_parameters,
+                &variable_buffersize_descriptor,
+                &temporary_workspace_descriptor,
+                d_Cocc_noccs_[0],
+                d_Coccs_AO_,
+                &Evv10,
+                d_Vxc));
+
+            temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+            CHECK_CUEST(cuestNonlocalXCPotentialRKSCompute(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_potential_compute_parameters,
+                &variable_buffersize_descriptor,
+                temporary_workspace,
+                d_Cocc_noccs_[0],
+                d_Coccs_AO_,
+                &Evv10,
+                d_Vxc
+            ));
+            cuest_common::freeWorkspace(temporary_workspace);
+            CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, vv10_potential_compute_parameters));
+
+            // Add the VV10 contribution to Vxc
+            auto VV10 = std::make_shared<Matrix>("VV10 AO Temp", nbf_, nbf_);
+            err = cudaMemcpy(VV10->get_pointer(0), d_Vxc, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
+            if (err != cudaSuccess) {
+                cudaFree(d_Vxc);
+                throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+            }
+            V_AO->add(VV10);
+            quad_values_["VV10"] = Evv10;
+        }
+
+        cudaFree(d_Vxc);
+
+        // Fold the dense AO-basis potential back into ret[0]'s (possibly
+        // symmetry-blocked) SO storage, exactly as the CPU path below does.
+        if (AO2USO_) {
+            ret[0]->apply_symmetry(V_AO, AO2USO_);
+        } else {
+            ret[0]->copy(V_AO);
+        }
+
+        timer_off("RV: Form V");
+        return;
+    }
+#endif
     // => Special BrianQC Logic <=
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
@@ -1390,7 +2136,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_off("V_xc", rank);
     }
 
-    // Do we need VV10?
+    // Do we need VV10?x    
     double vv10_e = 0.0;
     if (functional_->needs_vv10()) {
         vv10_e = vv10_nlc(D_AO_[0], V_AO);
@@ -1433,6 +2179,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 }
 
 std::vector<SharedMatrix> RV::compute_fock_derivatives() {
+    throw_if_cuest_unsupported("RKS Fock derivatives (compute_fock_derivatives)");
     timer_on("RV: Form Fx");
 
     int natoms = primary_->molecule()->natom();
@@ -1673,6 +2420,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
 }
 
 void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret, bool singlet) {
+    throw_if_cuest_unsupported("The RKS XC response kernel (compute_Vx; used by TDDFT and CPHF response properties)");
     timer_on("RV: Form Vx");
 
     // => Validate object / inputs <=
@@ -1968,12 +2716,517 @@ SharedMatrix RV::compute_gradient() {
     // => Validation <= //
     if ((D_AO_.size() != 1)) throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
-    if (functional_->needs_vv10()) {
-        throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
-    }
-
     // => Setup <= //
     int natom = primary_->molecule()->natom();
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
+        if ((d_Cocc_noccs_.size() != 1)) {
+            throw PSIEXCEPTION("V: RKS should have only one Cocc Matrix");
+        }
+        SharedMatrix grad = std::make_shared<Matrix>("Vxc_gradient", natom, 3);
+
+        cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+        cuestWorkspaceDescriptor_t variable_buffersize_descriptor {
+            0,
+            2000000000
+        };
+
+        uint64_t npoints;
+        CHECK_CUEST(cuestQuery(
+            cuest_handle,
+            CUEST_MOLECULARGRID,
+            grid_->cuest_grid(),
+            CUEST_MOLECULARGRID_NUM_POINT,
+            &npoints,
+            sizeof(uint64_t)
+            ));
+
+        double *d_Vxc_grad_atom = nullptr;
+        cudaError_t err = cudaMalloc((void**)&d_Vxc_grad_atom, 3 * natom * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_gradient");
+        }
+        double *d_Vxc_grad_grid = nullptr;
+        err = cudaMalloc((void**)&d_Vxc_grad_grid, 3 * npoints * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_gradient");
+        }
+        
+        // => Split the work among the threads <= //
+        std::vector<uint64_t> work_per_thread(num_threads_+1);
+        uint64_t chunk_size = npoints / num_threads_;    
+        if (chunk_size != 0) {
+            for (uint64_t i = 0; i < num_threads_; i++) {
+                work_per_thread[i] = i * chunk_size;
+            }
+            work_per_thread[num_threads_] = npoints;
+        } else {
+            // Edge case: more workers than points, so some workers will have no work.
+            for (uint64_t i = 0; i < npoints; i++) {
+                work_per_thread[i] = i;
+            }
+            for (uint64_t i = npoints; i <= num_threads_; i++) {
+                work_per_thread[i] = npoints;
+            }
+        }
+    
+        // => Compute integration weights <= //
+        double *d_weights = nullptr;
+        if (cudaMalloc((void**)&d_weights, npoints * sizeof(double)) != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        cuestXCIntegrationWeightComputeParameters_t weight_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, &weight_compute_parameters));
+        CHECK_CUEST(cuestXCIntegrationWeightComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            &temporary_workspace_descriptor,
+            d_weights
+            ));
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCIntegrationWeightCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            temporary_workspace,
+            d_weights
+            ));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, weight_compute_parameters));
+        cuest_common::freeWorkspace(temporary_workspace);
+        SharedMatrix h_weights = std::make_shared<Matrix>("weights", 1, npoints);
+        double *p_weights = h_weights->pointer()[0];
+        err = cudaMemcpy(h_weights->pointer()[0], d_weights, npoints * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        // => Compute grid density (and derivatives) <= //
+        cuestXCDensityComputeParameters_t density_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCDENSITYCOMPUTE_PARAMETERS, &density_compute_parameters));
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_types[3] = {
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA
+            };
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_type = ansatz_types[functional_->ansatz()];
+
+        uint64_t ncomponents_by_ansatz[] = {
+            1,
+            4,
+            5
+            };
+        uint64_t ncomponents = ncomponents_by_ansatz[functional_->ansatz()];
+
+        double *d_rho = nullptr;
+        err = cudaMalloc((void**)&d_rho, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_gradient");
+        }
+        CHECK_CUEST(cuestXCDensityComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_rho
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDensityCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_rho
+            ));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCDENSITYCOMPUTE_PARAMETERS, density_compute_parameters));
+        cuest_common::freeWorkspace(temporary_workspace);
+        temporary_workspace = nullptr;
+
+        // Copy the density and its derivatives to host, then transpose it for easier access.
+        SharedMatrix h_rho_matrix = std::make_shared<Matrix>("rho", npoints, ncomponents);
+        err = cudaMemcpy(h_rho_matrix->pointer()[0], d_rho, npoints * ncomponents * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+        SharedMatrix h_rho_matrixT = h_rho_matrix->transpose();
+
+        SharedMatrix h_Vxc_grid = std::make_shared<Matrix>("Vxc_grid", npoints, ncomponents);
+        double* p_Vxc_grid = h_Vxc_grid->pointer()[0];
+        double* d_Vxc_grid;
+        SharedMatrix rho, gamma, tau;
+        double* p_rho, *p_gamma, *p_tau;
+        SharedMatrix f, f_rho, f_gamma, f_tau;
+        double* p_f, *p_f_rho, *p_f_gamma, *p_f_tau;
+        SharedMatrix full_f, full_f_rho, full_f_gamma, full_f_tau;
+        double *p_full_f, *p_full_f_rho, *p_full_f_gamma, *p_full_f_tau;
+        double *rho_0, *rho_x, *rho_y, *rho_z, *tau_0;
+        switch (ansatz_type) {
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_tau = std::make_shared<Matrix>("f_tau", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_tau = f_tau->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 0, 0, p_rho, nullptr,
+                                                    nullptr, p_f, p_f_rho, nullptr, nullptr, p_full_f,
+                                                    p_full_f_rho, nullptr, nullptr);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 0, 0, p_rho, nullptr,
+                                                    nullptr, p_f, p_f_rho, nullptr, nullptr, p_full_f,
+                                                    p_full_f_rho, nullptr, nullptr);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        p_Vxc_grid[point] = w * p_full_f_rho[point];
+                    }
+                }
+            break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", 1, npoints);
+                p_gamma = gamma->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                rho_x = h_rho_matrixT->pointer()[1];
+                rho_y = h_rho_matrixT->pointer()[2];
+                rho_z = h_rho_matrixT->pointer()[3];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                    p_gamma[point] = 4 * (rho_x[point] * rho_x[point] + rho_y[point] * rho_y[point] + rho_z[point] * rho_z[point]);
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_gamma = std::make_shared<Matrix>("f_gamma", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 1, 0, p_rho, p_gamma,
+                                                    nullptr, p_f, p_f_rho, p_f_gamma, nullptr, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, nullptr);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 1, 0, p_rho, p_gamma,
+                                                    nullptr, p_f, p_f_rho, p_f_gamma, nullptr, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, nullptr);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        p_Vxc_grid[4 * point + 0] = w * p_full_f_rho[point];
+                        p_Vxc_grid[4 * point + 1] = 4 * w * p_full_f_gamma[point] * rho_x[point];
+                        p_Vxc_grid[4 * point + 2] = 4 * w * p_full_f_gamma[point] * rho_y[point];
+                        p_Vxc_grid[4 * point + 3] = 4 * w * p_full_f_gamma[point] * rho_z[point];
+                    }
+                }
+                break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", 1, npoints);
+                p_gamma = gamma->pointer()[0];
+                tau = std::make_shared<Matrix>("tau", 1, npoints);
+                p_tau = tau->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                rho_x = h_rho_matrixT->pointer()[1];
+                rho_y = h_rho_matrixT->pointer()[2];
+                rho_z = h_rho_matrixT->pointer()[3];
+                tau_0 = h_rho_matrixT->pointer()[4];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                    p_gamma[point] = 4 * (rho_x[point] * rho_x[point] + rho_y[point] * rho_y[point] + rho_z[point] * rho_z[point]);
+                    p_tau[point] = 2 * tau_0[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", 1, npoints);
+                full_f_tau = std::make_shared<Matrix>("full_f_tau", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                full_f_tau->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                p_full_f_tau = full_f_tau->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_gamma = std::make_shared<Matrix>("f_gamma", 1, npoints);
+                f_tau = std::make_shared<Matrix>("f_tau", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+                p_f_tau = f_tau->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 1, 1, p_rho, p_gamma,
+                                                    p_tau, p_f, p_f_rho, p_f_gamma, p_f_tau, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, p_full_f_tau);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 1, 1, 1, p_rho, p_gamma,
+                                                    p_tau, p_f, p_f_rho, p_f_gamma, p_f_tau, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, p_full_f_tau);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        p_Vxc_grid[5 * point + 0] = w * p_full_f_rho[point];
+                        p_Vxc_grid[5 * point + 1] = 4 * w * p_full_f_gamma[point] * rho_x[point];
+                        p_Vxc_grid[5 * point + 2] = 4 * w * p_full_f_gamma[point] * rho_y[point];
+                        p_Vxc_grid[5 * point + 3] = 4 * w * p_full_f_gamma[point] * rho_z[point];
+                        p_Vxc_grid[5 * point + 4] = w * p_full_f_tau[point];
+                    }
+                }
+                break;
+            default:
+                throw PSIEXCEPTION("RV::compute_V: Invalid ansatz type.");
+        }
+
+        err = cudaMalloc((void**)&d_Vxc_grid, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        err = cudaMemcpy(d_Vxc_grid, p_Vxc_grid, npoints * ncomponents * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        // => Compute the potential matrix from its grid representation <= //
+        cuestXCDerivativeComputeParameters_t derivative_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCDERIVATIVECOMPUTE_PARAMETERS, &derivative_compute_parameters));
+        CHECK_CUEST(cuestXCDerivativeComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            derivative_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_Vxc_grid,
+            d_Vxc_grad_atom,
+            d_Vxc_grad_grid
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDerivativeCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            derivative_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_Vxc_grid,
+            d_Vxc_grad_atom,
+            d_Vxc_grad_grid
+            ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCDERIVATIVECOMPUTE_PARAMETERS, derivative_compute_parameters));
+
+        for (int point = 0; point < npoints; point++) {
+            p_full_f[point] *= rho_0[point];
+        }
+        double *d_exc = nullptr;
+        err = cudaMalloc((void**)&d_exc, npoints * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        err = cudaMemcpy(d_exc, p_full_f, npoints * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        // Copy the atom gradient to the result matrix - we still need to work out the chain rule terms involving the grid below
+        err = cudaMemcpy(grad->get_pointer(0), d_Vxc_grad_atom, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+        cuestXCGridDerivativeComputeParameters_t grid_derivative_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCGRIDDERIVATIVECOMPUTE_PARAMETERS, &grid_derivative_compute_parameters));
+        CHECK_CUEST(cuestXCGridDerivativeComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            grid_derivative_compute_parameters,
+            &temporary_workspace_descriptor,
+            d_exc,
+            d_Vxc_grad_grid,
+            d_Vxc_grad_atom
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCGridDerivativeCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            grid_derivative_compute_parameters,
+            temporary_workspace,
+            d_exc,
+            d_Vxc_grad_grid,
+            d_Vxc_grad_atom
+            ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCGRIDDERIVATIVECOMPUTE_PARAMETERS, grid_derivative_compute_parameters));
+
+        // Combine the atom gradient and the grid gradient
+        SharedMatrix grad_atom_from_grid = grad->clone();
+        err = cudaMemcpy(grad_atom_from_grid->get_pointer(0), d_Vxc_grad_atom, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+        grad->add(grad_atom_from_grid);
+        grad->scale(2.0);
+
+        if (functional_->needs_vv10()) {
+            // ACS: this could be relaxed to a warning about noisy gradient instead
+            if (options_.get_bool("DFT_VV10_POSTSCF")) {
+                throw PSIEXCEPTION("RV::compute_gradient: analytic gradient for DFT_VV10_POSTSCF=True is not supported.");
+            }
+            cuestNonlocalXCDerivativeRKSComputeParameters_t vv10_derivative_compute_parameters;
+            CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, &vv10_derivative_compute_parameters));
+
+            double vv10_scale = 1.0;
+            double vv10_C = functional_->vv10_c();
+            double vv10_b = functional_->vv10_b();
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS_VV10_SCALE,
+                &vv10_scale,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS_VV10_C,
+                &vv10_C,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS_VV10_B,
+                &vv10_b,
+                sizeof(double));
+            CHECK_CUEST(cuestNonlocalXCDerivativeRKSComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_derivative_compute_parameters,
+                &variable_buffersize_descriptor,
+                &temporary_workspace_descriptor,
+                d_Cocc_noccs_[0],
+                d_Coccs_AO_,
+                d_Vxc_grad_atom));
+
+            temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+            CHECK_CUEST(cuestNonlocalXCDerivativeRKSCompute(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_derivative_compute_parameters,
+                &variable_buffersize_descriptor,
+                temporary_workspace,
+                d_Cocc_noccs_[0],
+                d_Coccs_AO_,
+                d_Vxc_grad_atom
+            ));
+            cuest_common::freeWorkspace(temporary_workspace);
+            CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, vv10_derivative_compute_parameters));
+
+            // Add the VV10 contribution to Vxc
+            SharedMatrix VV10grad = grad->clone();
+            err = cudaMemcpy(VV10grad->get_pointer(0), d_Vxc_grad_atom, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+            grad->add(VV10grad);
+        }
+
+        cudaFree(d_rho);
+        cudaFree(d_weights);
+        cudaFree(d_Vxc_grid);
+        cudaFree(d_exc);
+        cudaFree(d_Vxc_grad_atom);
+        cudaFree(d_Vxc_grad_grid);
+
+        return grad;
+    }
+#endif
+
+    if (functional_->needs_vv10()) {
+        throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.  Either use the cuEST module or set the dertype=0 as an argument to the gradient function.");
+    }
+
 
     // Set Hessian derivative level in properties
     int old_deriv = point_workers_[0]->deriv();
@@ -2091,6 +3344,7 @@ SharedMatrix RV::compute_gradient() {
 }
 
 SharedMatrix RV::compute_hessian() {
+    throw_if_cuest_unsupported("The RKS analytic XC Hessian");
     // => Validation <=
     if (functional_->is_gga() || functional_->is_meta())
         throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
@@ -2602,7 +3856,643 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     if (functional_->needs_grac()) {
         throw PSIEXCEPTION("V: UKS cannot compute GRAC corrections.");
     }
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
 
+        if ((d_Cocc_noccs_.size() != 2)) {
+            throw PSIEXCEPTION("V: UKS should have only two Cocc Matrices");
+        }
+        // cuEST works exclusively in the dense AO basis, while ret[0]/ret[1] (Va_/Vb_)
+        // may be SO-basis, symmetry-blocked matrices.  Size every GPU buffer from nbf_
+        // (the AO dimension set by set_D) rather than ret[i]->size(), which is
+        // Matrix::size(h=0) -- i.e. just the first irrep block -- and back-transform
+        // AO -> SO at the end.
+        const size_t nbf2 = (size_t)nbf_ * (size_t)nbf_;
+        double *d_Vxc_a = nullptr;
+        cudaError_t err = cudaMalloc((void**)&d_Vxc_a, nbf2 * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
+        }
+        double *d_Vxc_b = nullptr;
+        err = cudaMalloc((void**)&d_Vxc_b, nbf2 * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
+        }
+
+        cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+        cuestWorkspaceDescriptor_t variable_buffersize_descriptor {
+            0,
+            2000000000
+        };
+
+        uint64_t npoints;
+        CHECK_CUEST(cuestQuery(
+            cuest_handle,
+            CUEST_MOLECULARGRID,
+            grid_->cuest_grid(),
+            CUEST_MOLECULARGRID_NUM_POINT,
+            &npoints,
+            sizeof(uint64_t)
+            ));
+
+        // => Split the work among the threads <= //
+        std::vector<uint64_t> work_per_thread(num_threads_+1);
+        uint64_t chunk_size = npoints / num_threads_;    
+        if (chunk_size != 0) {
+            for (uint64_t i = 0; i < num_threads_; i++) {
+                work_per_thread[i] = i * chunk_size;
+            }
+            work_per_thread[num_threads_] = npoints;
+        } else {
+            // Edge case: more workers than points, so some workers will have no work.
+            for (uint64_t i = 0; i < npoints; i++) {
+                work_per_thread[i] = i;
+            }
+            for (uint64_t i = npoints; i <= num_threads_; i++) {
+                work_per_thread[i] = npoints;
+            }
+        }
+    
+        // => Compute integration weights <= //
+        double *d_weights = nullptr;
+        if (cudaMalloc((void**)&d_weights, npoints * sizeof(double)) != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
+        }
+        cuestXCIntegrationWeightComputeParameters_t weight_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, &weight_compute_parameters));
+        CHECK_CUEST(cuestXCIntegrationWeightComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            &temporary_workspace_descriptor,
+            d_weights
+            ));
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCIntegrationWeightCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            temporary_workspace,
+            d_weights
+            ));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, weight_compute_parameters));
+        cuest_common::freeWorkspace(temporary_workspace);
+        SharedMatrix h_weights = std::make_shared<Matrix>("weights", 1, npoints);
+        double *p_weights = h_weights->pointer()[0];
+        err = cudaMemcpy(h_weights->pointer()[0], d_weights, npoints * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+        }
+
+        // => Compute grid density (and derivatives) <= //
+        cuestXCDensityComputeParameters_t density_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCDENSITYCOMPUTE_PARAMETERS, &density_compute_parameters));
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_types[3] = {
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA
+            };
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_type = ansatz_types[functional_->ansatz()];
+
+        uint64_t ncomponents_by_ansatz[] = {
+            1,
+            4,
+            5
+            };
+        uint64_t ncomponents = ncomponents_by_ansatz[functional_->ansatz()];
+
+        double *d_rho_a = nullptr;
+        double *d_rho_b = nullptr;
+        err = cudaMalloc((void**)&d_rho_a, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
+        }
+        err = cudaMalloc((void**)&d_rho_b, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
+        }
+        
+        int nbf = primary_->nbf();
+        // NB: compare against nbf_ (the AO dimension), NOT ret[i]->colspi()[0], which is
+        // only the first irrep block for a symmetry-adapted Va_/Vb_.
+        assert (nbf == nbf_);
+
+        CHECK_CUEST(cuestXCDensityComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_rho_a
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDensityCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_rho_a
+            ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        temporary_workspace = nullptr;
+
+        CHECK_CUEST(cuestXCDensityComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[1],
+            d_Coccs_AO_ + d_Cocc_noccs_[0] * nbf,
+            d_rho_b
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDensityCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[1],
+            d_Coccs_AO_ + d_Cocc_noccs_[0] * nbf,
+            d_rho_b
+            ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        temporary_workspace = nullptr;
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCDENSITYCOMPUTE_PARAMETERS, density_compute_parameters));
+
+        // Copy the density and its derivatives to host, then transpose it for easier access.
+        SharedMatrix h_rho_a_matrix = std::make_shared<Matrix>("rho_a", npoints, ncomponents);
+        SharedMatrix h_rho_b_matrix = std::make_shared<Matrix>("rho_b", npoints, ncomponents);
+        err = cudaMemcpy(h_rho_a_matrix->pointer()[0], d_rho_a, npoints * ncomponents * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+        }
+        err = cudaMemcpy(h_rho_b_matrix->pointer()[0], d_rho_b, npoints * ncomponents * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+        }
+        SharedMatrix h_rho_a_matrixT = h_rho_a_matrix->transpose();
+        SharedMatrix h_rho_b_matrixT = h_rho_b_matrix->transpose();
+
+        SharedMatrix h_Vxc_grid_a = std::make_shared<Matrix>("Vxc_grid_a", npoints, ncomponents);
+        SharedMatrix h_Vxc_grid_b = std::make_shared<Matrix>("Vxc_grid_b", npoints, ncomponents);
+        double* p_Vxc_grid_a = h_Vxc_grid_a->pointer()[0];
+        double* p_Vxc_grid_b = h_Vxc_grid_b->pointer()[0];
+        double* d_Vxc_grid_a;
+        double* d_Vxc_grid_b;
+        SharedMatrix rho, gamma, tau;
+        double* p_rho, *p_gamma, *p_tau;
+        SharedMatrix f, f_rho, f_gamma, f_tau;
+        double* p_f, *p_f_rho, *p_f_gamma, *p_f_tau;
+        SharedMatrix full_f, full_f_rho, full_f_gamma, full_f_tau;
+        double *p_full_f, *p_full_f_rho, *p_full_f_gamma, *p_full_f_tau;
+        double *rho_0_a, *rho_x_a, *rho_y_a, *rho_z_a, *tau_0_a;
+        double *rho_0_b, *rho_x_b, *rho_y_b, *rho_z_b, *tau_0_b;
+        switch (ansatz_type) {
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA:
+                rho = std::make_shared<Matrix>("rho", npoints, 2);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", npoints, 3);
+                p_gamma = gamma->pointer()[0];
+        
+                rho_0_a = h_rho_a_matrixT->pointer()[0];
+
+                rho_0_b = h_rho_b_matrixT->pointer()[0];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[2 * point + 0] = rho_0_a[point];
+                    p_rho[2 * point + 1] = rho_0_b[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", npoints, 1);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", npoints, 2);
+                full_f->zero();
+                full_f_rho->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                f = std::make_shared<Matrix>("f", npoints, 1);
+                f_rho = std::make_shared<Matrix>("f_rho", npoints, 2);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 0, 0, p_rho, nullptr,
+                                                    nullptr, p_f, p_f_rho, nullptr, nullptr, p_full_f,
+                                                    p_full_f_rho, nullptr, nullptr);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 0, 0, p_rho, nullptr,
+                                                    nullptr, p_f, p_f_rho, nullptr, nullptr, p_full_f,
+                                                    p_full_f_rho, nullptr, nullptr);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+
+                        p_Vxc_grid_a[point] = w * p_full_f_rho[2 * point + 0];
+                        p_Vxc_grid_b[point] = w * p_full_f_rho[2 * point + 1];
+                    }
+                }
+                break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA:
+                rho = std::make_shared<Matrix>("rho", npoints, 2);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", npoints, 3);
+                p_gamma = gamma->pointer()[0];
+        
+                rho_0_a = h_rho_a_matrixT->pointer()[0];
+                rho_x_a = h_rho_a_matrixT->pointer()[1];
+                rho_y_a = h_rho_a_matrixT->pointer()[2];
+                rho_z_a = h_rho_a_matrixT->pointer()[3];
+
+                rho_0_b = h_rho_b_matrixT->pointer()[0];
+                rho_x_b = h_rho_b_matrixT->pointer()[1];
+                rho_y_b = h_rho_b_matrixT->pointer()[2];
+                rho_z_b = h_rho_b_matrixT->pointer()[3];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[2 * point + 0] = rho_0_a[point];
+                    p_rho[2 * point + 1] = rho_0_b[point];
+                    double gamma_aa = rho_x_a[point] * rho_x_a[point]
+                                    + rho_y_a[point] * rho_y_a[point]
+                                    + rho_z_a[point] * rho_z_a[point];
+                    double gamma_ab = rho_x_a[point] * rho_x_b[point]
+                                    + rho_y_a[point] * rho_y_b[point]
+                                    + rho_z_a[point] * rho_z_b[point];
+                    double gamma_bb = rho_x_b[point] * rho_x_b[point]
+                                    + rho_y_b[point] * rho_y_b[point]
+                                    + rho_z_b[point] * rho_z_b[point];
+                    p_gamma[3 * point + 0] = gamma_aa;
+                    p_gamma[3 * point + 1] = gamma_ab;
+                    p_gamma[3 * point + 2] = gamma_bb;
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", npoints, 1);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", npoints, 2);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", npoints, 3);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                f = std::make_shared<Matrix>("f", npoints, 1);
+                f_rho = std::make_shared<Matrix>("f_rho", npoints, 2);
+                f_gamma = std::make_shared<Matrix>("f_gamma", npoints, 3);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 3, 0, p_rho, p_gamma,
+                                                    nullptr, p_f, p_f_rho, p_f_gamma, nullptr, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, nullptr);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 3, 0, p_rho, p_gamma,
+                                                    nullptr, p_f, p_f_rho, p_f_gamma, nullptr, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, nullptr);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        double f_gamma_aa = p_full_f_gamma[3 * point + 0];
+                        double f_gamma_ab = p_full_f_gamma[3 * point + 1];
+                        double f_gamma_bb = p_full_f_gamma[3 * point + 2];
+
+                        p_Vxc_grid_a[4 * point + 0] = w * p_full_f_rho[2 * point + 0];
+                        p_Vxc_grid_a[4 * point + 1] = w * (2 * f_gamma_aa * rho_x_a[point] + f_gamma_ab * rho_x_b[point]);
+                        p_Vxc_grid_a[4 * point + 2] = w * (2 * f_gamma_aa * rho_y_a[point] + f_gamma_ab * rho_y_b[point]);
+                        p_Vxc_grid_a[4 * point + 3] = w * (2 * f_gamma_aa * rho_z_a[point] + f_gamma_ab * rho_z_b[point]);
+
+                        p_Vxc_grid_b[4 * point + 0] = w * p_full_f_rho[2 * point + 1];
+                        p_Vxc_grid_b[4 * point + 1] = w * (2 * f_gamma_bb * rho_x_b[point] + f_gamma_ab * rho_x_a[point]);
+                        p_Vxc_grid_b[4 * point + 2] = w * (2 * f_gamma_bb * rho_y_b[point] + f_gamma_ab * rho_y_a[point]);
+                        p_Vxc_grid_b[4 * point + 3] = w * (2 * f_gamma_bb * rho_z_b[point] + f_gamma_ab * rho_z_a[point]);
+                    }
+                }
+                break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA:
+                rho = std::make_shared<Matrix>("rho", npoints, 2);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", npoints, 3);
+                p_gamma = gamma->pointer()[0];
+                tau = std::make_shared<Matrix>("tau", npoints, 3);
+                p_tau = tau->pointer()[0];
+        
+                rho_0_a = h_rho_a_matrixT->pointer()[0];
+                rho_x_a = h_rho_a_matrixT->pointer()[1];
+                rho_y_a = h_rho_a_matrixT->pointer()[2];
+                rho_z_a = h_rho_a_matrixT->pointer()[3];
+                tau_0_a = h_rho_a_matrixT->pointer()[4];
+
+                rho_0_b = h_rho_b_matrixT->pointer()[0];
+                rho_x_b = h_rho_b_matrixT->pointer()[1];
+                rho_y_b = h_rho_b_matrixT->pointer()[2];
+                rho_z_b = h_rho_b_matrixT->pointer()[3];
+                tau_0_b = h_rho_b_matrixT->pointer()[4];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[2 * point + 0] = rho_0_a[point];
+                    p_rho[2 * point + 1] = rho_0_b[point];
+                    double gamma_aa = rho_x_a[point] * rho_x_a[point]
+                                    + rho_y_a[point] * rho_y_a[point]
+                                    + rho_z_a[point] * rho_z_a[point];
+                    double gamma_ab = rho_x_a[point] * rho_x_b[point]
+                                    + rho_y_a[point] * rho_y_b[point]
+                                    + rho_z_a[point] * rho_z_b[point];
+                    double gamma_bb = rho_x_b[point] * rho_x_b[point]
+                                    + rho_y_b[point] * rho_y_b[point]
+                                    + rho_z_b[point] * rho_z_b[point];
+                    p_gamma[3 * point + 0] = gamma_aa;
+                    p_gamma[3 * point + 1] = gamma_ab;
+                    p_gamma[3 * point + 2] = gamma_bb;
+                    p_tau[2 * point + 0] = tau_0_a[point];
+                    p_tau[2 * point + 1] = tau_0_b[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", npoints, 1);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", npoints, 2);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", npoints, 3);
+                full_f_tau = std::make_shared<Matrix>("full_f_tau", npoints, 2);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                full_f_tau->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                p_full_f_tau = full_f_tau->pointer()[0];
+                f = std::make_shared<Matrix>("f", npoints, 1);
+                f_rho = std::make_shared<Matrix>("f_rho", npoints, 2);
+                f_gamma = std::make_shared<Matrix>("f_gamma", npoints, 3);
+                f_tau = std::make_shared<Matrix>("f_tau", npoints, 2);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+                p_f_tau = f_tau->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 3, 2, p_rho, p_gamma,
+                                                    p_tau, p_f, p_f_rho, p_f_gamma, p_f_tau, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, p_full_f_tau);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 3, 2, p_rho, p_gamma,
+                                                    p_tau, p_f, p_f_rho, p_f_gamma, p_f_tau, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, p_full_f_tau);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        double f_gamma_aa = p_full_f_gamma[3 * point + 0];
+                        double f_gamma_ab = p_full_f_gamma[3 * point + 1];
+                        double f_gamma_bb = p_full_f_gamma[3 * point + 2];
+
+                        p_Vxc_grid_a[5 * point + 0] = w * p_full_f_rho[2 * point + 0];
+                        p_Vxc_grid_a[5 * point + 1] = w * (2 * f_gamma_aa * rho_x_a[point] + f_gamma_ab * rho_x_b[point]);
+                        p_Vxc_grid_a[5 * point + 2] = w * (2 * f_gamma_aa * rho_y_a[point] + f_gamma_ab * rho_y_b[point]);
+                        p_Vxc_grid_a[5 * point + 3] = w * (2 * f_gamma_aa * rho_z_a[point] + f_gamma_ab * rho_z_b[point]);
+                        p_Vxc_grid_a[5 * point + 4] = w * p_full_f_tau[2 * point + 0];
+
+                        p_Vxc_grid_b[5 * point + 0] = w * p_full_f_rho[2 * point + 1];
+                        p_Vxc_grid_b[5 * point + 1] = w * (2 * f_gamma_bb * rho_x_b[point] + f_gamma_ab * rho_x_a[point]);
+                        p_Vxc_grid_b[5 * point + 2] = w * (2 * f_gamma_bb * rho_y_b[point] + f_gamma_ab * rho_y_a[point]);
+                        p_Vxc_grid_b[5 * point + 3] = w * (2 * f_gamma_bb * rho_z_b[point] + f_gamma_ab * rho_z_a[point]);
+                        p_Vxc_grid_b[5 * point + 4] = w * p_full_f_tau[2 * point + 1];
+                    }
+                }
+                break;
+            default:
+                throw PSIEXCEPTION("UV::compute_V: Invalid ansatz type.");
+        }
+
+        err = cudaMalloc((void**)&d_Vxc_grid_a, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
+        }
+        err = cudaMemcpy(d_Vxc_grid_a, p_Vxc_grid_a, npoints * ncomponents * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+        }
+        err = cudaMalloc((void**)&d_Vxc_grid_b, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_V");
+        }
+        err = cudaMemcpy(d_Vxc_grid_b, p_Vxc_grid_b, npoints * ncomponents * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+        }
+
+        // => Compute the potential matrix from its grid representation <= //
+        cuestXCPotentialComputeParameters_t potential_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCPOTENTIALCOMPUTE_PARAMETERS, &potential_compute_parameters));
+        CHECK_CUEST(cuestXCPotentialComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            potential_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Vxc_grid_a,
+            d_Vxc_a
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCPotentialCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            potential_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Vxc_grid_a,
+            d_Vxc_a
+        ));
+        cuest_common::freeWorkspace(temporary_workspace);
+
+        CHECK_CUEST(cuestXCPotentialComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            potential_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Vxc_grid_b,
+            d_Vxc_b
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCPotentialCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            potential_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Vxc_grid_b,
+            d_Vxc_b
+        ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCPOTENTIALCOMPUTE_PARAMETERS, potential_compute_parameters));
+
+        cudaFree(d_rho_a);
+        cudaFree(d_rho_b);
+        cudaFree(d_weights);
+        cudaFree(d_Vxc_grid_a);
+        cudaFree(d_Vxc_grid_b);
+        auto Va_AO = std::make_shared<Matrix>("Va AO Temp", nbf_, nbf_);
+        auto Vb_AO = std::make_shared<Matrix>("Vb AO Temp", nbf_, nbf_);
+        err = cudaMemcpy(Va_AO->get_pointer(0), d_Vxc_a, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            cudaFree(d_Vxc_a);
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+        }
+        err = cudaMemcpy(Vb_AO->get_pointer(0), d_Vxc_b, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            cudaFree(d_Vxc_b);
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+        }
+
+        double Exc = 0.0;
+        double integrated_density_a = 0.0;
+        double integrated_density_b = 0.0;
+        for (int point = 0; point < npoints; point++) {
+            Exc += p_weights[point] * p_full_f[point] * (rho_0_a[point] + rho_0_b[point]);
+            integrated_density_a += p_weights[point] * rho_0_a[point];
+            integrated_density_b += p_weights[point] * rho_0_b[point];
+        }        
+        quad_values_["FUNCTIONAL"] = Exc;
+        quad_values_["RHO_A"] = integrated_density_a;
+        quad_values_["RHO_B"] = integrated_density_b;
+        quad_values_["VV10"] = 0.0;
+
+        if (functional_->needs_vv10()) {
+        
+            cuestNonlocalXCPotentialUKSComputeParameters_t vv10_potential_compute_parameters;
+            CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, &vv10_potential_compute_parameters));
+
+            double vv10_scale = 1.0;
+            double vv10_C = functional_->vv10_c();
+            double vv10_b = functional_->vv10_b();
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_SCALE,
+                &vv10_scale,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_C,
+                &vv10_C,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_B,
+                &vv10_b,
+                sizeof(double));
+            double Evv10 = 0.0;
+            CHECK_CUEST(cuestNonlocalXCPotentialUKSComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_potential_compute_parameters,
+                &variable_buffersize_descriptor,
+                &temporary_workspace_descriptor,
+                d_Cocc_noccs_[0],
+                d_Cocc_noccs_[1],
+                d_Coccs_AO_,
+                d_Coccs_AO_ + nbf_ * d_Cocc_noccs_[0],
+                &Evv10,
+                d_Vxc_a));
+
+            temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+            CHECK_CUEST(cuestNonlocalXCPotentialUKSCompute(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_potential_compute_parameters,
+                &variable_buffersize_descriptor,
+                temporary_workspace,
+                d_Cocc_noccs_[0],
+                d_Cocc_noccs_[1],
+                d_Coccs_AO_,
+                d_Coccs_AO_ + nbf_ * d_Cocc_noccs_[0],
+                &Evv10,
+                d_Vxc_a));
+
+            cuest_common::freeWorkspace(temporary_workspace);
+            CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, vv10_potential_compute_parameters));
+
+            // Add the VV10 contribution to Vxc
+            auto VV10 = std::make_shared<Matrix>("VV10 AO Temp", nbf_, nbf_);
+            err = cudaMemcpy(VV10->get_pointer(0), d_Vxc_a, nbf2 * sizeof(double), cudaMemcpyDeviceToHost);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+            }
+            Va_AO->add(VV10);
+            Vb_AO->add(VV10);
+            quad_values_["VV10"] = Evv10;
+        }
+
+        cudaFree(d_Vxc_a);
+        cudaFree(d_Vxc_b);
+
+        // Fold the dense AO-basis potentials back into ret[0]/ret[1]'s (possibly
+        // symmetry-blocked) SO storage, exactly as the CPU path below does.
+        if (AO2USO_) {
+            ret[0]->apply_symmetry(Va_AO, AO2USO_);
+            ret[1]->apply_symmetry(Vb_AO, AO2USO_);
+        } else {
+            ret[0]->copy(Va_AO);
+            ret[1]->copy(Vb_AO);
+        }
+
+        timer_off("UV: Form V");
+        return;
+    }
+#endif
     // => Special BrianQC Logic <=
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
@@ -2615,7 +4505,6 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
             &DFTEnergy
         );
         checkBrian();
-        
         quad_values_["VV10"] = 0.0; // NOTE: BrianQC doesn't compute the VV10 term separately, it just includes it in the DFT energy term
         quad_values_["FUNCTIONAL"] = DFTEnergy;
         quad_values_["RHO_A"] = 0.0;
@@ -2919,6 +4808,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     timer_off("UV: Form V");
 }
 std::vector<SharedMatrix> UV::compute_fock_derivatives() {
+    throw_if_cuest_unsupported("UKS Fock derivatives (compute_fock_derivatives)");
     timer_on("UV: Form Fx");
 
     int natoms = primary_->molecule()->natom();
@@ -3228,6 +5118,7 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
     return Vx;
 }
 void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+    throw_if_cuest_unsupported("The UKS XC response kernel (compute_Vx; used by TDDFT and CPHF response properties)");
     timer_on("UV: Form Vx");
 
     // => Validate object / inputs <=
@@ -3742,16 +5633,695 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 }
 SharedMatrix UV::compute_gradient() {
     // => Validation <= //
-    if ((D_AO_.size() != 2)) throw PSIEXCEPTION("V: UKS should have two D Matrices");
+    if ((D_AO_.size() != 2)) throw PSIEXCEPTION("gradient: UKS should have two D Matrices");
+    // Build the target gradient Matrix
+    auto natom = primary_->molecule()->natom();
+
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
+        if ((d_Cocc_noccs_.size() != 2)) {
+            throw PSIEXCEPTION("gradient: UKS should have only two Cocc Matrices");
+        }
+        SharedMatrix grad = std::make_shared<Matrix>("Vxc_gradient", natom, 3);
+
+        cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+        cuestWorkspaceDescriptor_t variable_buffersize_descriptor {
+            0,
+            2000000000
+        };
+
+        uint64_t npoints;
+        CHECK_CUEST(cuestQuery(
+            cuest_handle,
+            CUEST_MOLECULARGRID,
+            grid_->cuest_grid(),
+            CUEST_MOLECULARGRID_NUM_POINT,
+            &npoints,
+            sizeof(uint64_t)
+            ));
+
+        double *d_Vxc_grad_atom_a = nullptr;
+        cudaError_t err = cudaMalloc((void**)&d_Vxc_grad_atom_a, 3 * natom * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        double *d_Vxc_grad_atom_b = nullptr;
+        err = cudaMalloc((void**)&d_Vxc_grad_atom_b, 3 * natom * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        double *d_Vxc_grad_grid_a = nullptr;
+        err = cudaMalloc((void**)&d_Vxc_grad_grid_a, 3 * npoints * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        double *d_Vxc_grad_grid_b = nullptr;
+        err = cudaMalloc((void**)&d_Vxc_grad_grid_b, 3 * npoints * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+
+        // => Split the work among the threads <= //
+        std::vector<uint64_t> work_per_thread(num_threads_+1);
+        uint64_t chunk_size = npoints / num_threads_;    
+        if (chunk_size != 0) {
+            for (uint64_t i = 0; i < num_threads_; i++) {
+                work_per_thread[i] = i * chunk_size;
+            }
+            work_per_thread[num_threads_] = npoints;
+        } else {
+            // Edge case: more workers than points, so some workers will have no work.
+            for (uint64_t i = 0; i < npoints; i++) {
+                work_per_thread[i] = i;
+            }
+            for (uint64_t i = npoints; i <= num_threads_; i++) {
+                work_per_thread[i] = npoints;
+            }
+        }
+    
+        // => Compute integration weights <= //
+        double *d_weights = nullptr;
+        if (cudaMalloc((void**)&d_weights, npoints * sizeof(double)) != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        cuestXCIntegrationWeightComputeParameters_t weight_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, &weight_compute_parameters));
+        CHECK_CUEST(cuestXCIntegrationWeightComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            &temporary_workspace_descriptor,
+            d_weights
+            ));
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCIntegrationWeightCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            temporary_workspace,
+            d_weights
+            ));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, weight_compute_parameters));
+        cuest_common::freeWorkspace(temporary_workspace);
+        SharedMatrix h_weights = std::make_shared<Matrix>("weights", 1, npoints);
+        double *p_weights = h_weights->pointer()[0];
+        err = cudaMemcpy(h_weights->pointer()[0], d_weights, npoints * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+        }
+
+        // => Compute grid density (and derivatives) <= //
+        cuestXCDensityComputeParameters_t density_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCDENSITYCOMPUTE_PARAMETERS, &density_compute_parameters));
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_types[3] = {
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA
+            };
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_type = ansatz_types[functional_->ansatz()];
+
+        uint64_t ncomponents_by_ansatz[] = {
+            1,
+            4,
+            5
+            };
+        uint64_t ncomponents = ncomponents_by_ansatz[functional_->ansatz()];
+
+        double *d_rho_a = nullptr;
+        double *d_rho_b = nullptr;
+        err = cudaMalloc((void**)&d_rho_a, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        err = cudaMalloc((void**)&d_rho_b, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        
+        CHECK_CUEST(cuestXCDensityComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_rho_a
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDensityCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_rho_a
+            ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        temporary_workspace = nullptr;
+
+        int nbf = primary_->nbf();
+        CHECK_CUEST(cuestXCDensityComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[1],
+            d_Coccs_AO_ + d_Cocc_noccs_[0] * nbf,
+            d_rho_b
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDensityCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[1],
+            d_Coccs_AO_ + d_Cocc_noccs_[0] * nbf,
+            d_rho_b
+            ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        temporary_workspace = nullptr;
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCDENSITYCOMPUTE_PARAMETERS, density_compute_parameters));
+
+        // Copy the density and its derivatives to host, then transpose it for easier access.
+        SharedMatrix h_rho_a_matrix = std::make_shared<Matrix>("rho_a", npoints, ncomponents);
+        SharedMatrix h_rho_b_matrix = std::make_shared<Matrix>("rho_b", npoints, ncomponents);
+        err = cudaMemcpy(h_rho_a_matrix->pointer()[0], d_rho_a, npoints * ncomponents * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+        }
+        err = cudaMemcpy(h_rho_b_matrix->pointer()[0], d_rho_b, npoints * ncomponents * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+        }
+        SharedMatrix h_rho_a_matrixT = h_rho_a_matrix->transpose();
+        SharedMatrix h_rho_b_matrixT = h_rho_b_matrix->transpose();
+
+        SharedMatrix h_Vxc_grid_a = std::make_shared<Matrix>("Vxc_grid_a", npoints, ncomponents);
+        SharedMatrix h_Vxc_grid_b = std::make_shared<Matrix>("Vxc_grid_b", npoints, ncomponents);
+        double* p_Vxc_grid_a = h_Vxc_grid_a->pointer()[0];
+        double* p_Vxc_grid_b = h_Vxc_grid_b->pointer()[0];
+        double* d_Vxc_grid_a;
+        double* d_Vxc_grid_b;
+        SharedMatrix rho, gamma, tau;
+        double* p_rho, *p_gamma, *p_tau;
+        SharedMatrix f, f_rho, f_gamma, f_tau;
+        double* p_f, *p_f_rho, *p_f_gamma, *p_f_tau;
+        SharedMatrix full_f, full_f_rho, full_f_gamma, full_f_tau;
+        double *p_full_f, *p_full_f_rho, *p_full_f_gamma, *p_full_f_tau;
+        double *rho_0_a, *rho_x_a, *rho_y_a, *rho_z_a, *tau_0_a;
+        double *rho_0_b, *rho_x_b, *rho_y_b, *rho_z_b, *tau_0_b;
+        switch (ansatz_type) {
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA:
+                rho = std::make_shared<Matrix>("rho", npoints, 2);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", npoints, 3);
+                p_gamma = gamma->pointer()[0];
+        
+                rho_0_a = h_rho_a_matrixT->pointer()[0];
+
+                rho_0_b = h_rho_b_matrixT->pointer()[0];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[2 * point + 0] = rho_0_a[point];
+                    p_rho[2 * point + 1] = rho_0_b[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", npoints, 1);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", npoints, 2);
+                full_f->zero();
+                full_f_rho->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                f = std::make_shared<Matrix>("f", npoints, 1);
+                f_rho = std::make_shared<Matrix>("f_rho", npoints, 2);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 0, 0, p_rho, nullptr,
+                                                    nullptr, p_f, p_f_rho, nullptr, nullptr, p_full_f,
+                                                    p_full_f_rho, nullptr, nullptr);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 0, 0, p_rho, nullptr,
+                                                    nullptr, p_f, p_f_rho, nullptr, nullptr, p_full_f,
+                                                    p_full_f_rho, nullptr, nullptr);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+
+                        p_Vxc_grid_a[point] = w * p_full_f_rho[2 * point + 0];
+                        p_Vxc_grid_b[point] = w * p_full_f_rho[2 * point + 1];
+                    }
+                }
+                break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA:
+                rho = std::make_shared<Matrix>("rho", npoints, 2);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", npoints, 3);
+                p_gamma = gamma->pointer()[0];
+        
+                rho_0_a = h_rho_a_matrixT->pointer()[0];
+                rho_x_a = h_rho_a_matrixT->pointer()[1];
+                rho_y_a = h_rho_a_matrixT->pointer()[2];
+                rho_z_a = h_rho_a_matrixT->pointer()[3];
+
+                rho_0_b = h_rho_b_matrixT->pointer()[0];
+                rho_x_b = h_rho_b_matrixT->pointer()[1];
+                rho_y_b = h_rho_b_matrixT->pointer()[2];
+                rho_z_b = h_rho_b_matrixT->pointer()[3];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[2 * point + 0] = rho_0_a[point];
+                    p_rho[2 * point + 1] = rho_0_b[point];
+                    double gamma_aa = rho_x_a[point] * rho_x_a[point]
+                                    + rho_y_a[point] * rho_y_a[point]
+                                    + rho_z_a[point] * rho_z_a[point];
+                    double gamma_ab = rho_x_a[point] * rho_x_b[point]
+                                    + rho_y_a[point] * rho_y_b[point]
+                                    + rho_z_a[point] * rho_z_b[point];
+                    double gamma_bb = rho_x_b[point] * rho_x_b[point]
+                                    + rho_y_b[point] * rho_y_b[point]
+                                    + rho_z_b[point] * rho_z_b[point];
+                    p_gamma[3 * point + 0] = gamma_aa;
+                    p_gamma[3 * point + 1] = gamma_ab;
+                    p_gamma[3 * point + 2] = gamma_bb;
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", npoints, 1);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", npoints, 2);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", npoints, 3);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                f = std::make_shared<Matrix>("f", npoints, 1);
+                f_rho = std::make_shared<Matrix>("f_rho", npoints, 2);
+                f_gamma = std::make_shared<Matrix>("f_gamma", npoints, 3);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 3, 0, p_rho, p_gamma,
+                                                    nullptr, p_f, p_f_rho, p_f_gamma, nullptr, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, nullptr);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 3, 0, p_rho, p_gamma,
+                                                    nullptr, p_f, p_f_rho, p_f_gamma, nullptr, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, nullptr);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        double f_gamma_aa = p_full_f_gamma[3 * point + 0];
+                        double f_gamma_ab = p_full_f_gamma[3 * point + 1];
+                        double f_gamma_bb = p_full_f_gamma[3 * point + 2];
+
+                        p_Vxc_grid_a[4 * point + 0] = w * p_full_f_rho[2 * point + 0];
+                        p_Vxc_grid_a[4 * point + 1] = w * (2 * f_gamma_aa * rho_x_a[point] + f_gamma_ab * rho_x_b[point]);
+                        p_Vxc_grid_a[4 * point + 2] = w * (2 * f_gamma_aa * rho_y_a[point] + f_gamma_ab * rho_y_b[point]);
+                        p_Vxc_grid_a[4 * point + 3] = w * (2 * f_gamma_aa * rho_z_a[point] + f_gamma_ab * rho_z_b[point]);
+
+                        p_Vxc_grid_b[4 * point + 0] = w * p_full_f_rho[2 * point + 1];
+                        p_Vxc_grid_b[4 * point + 1] = w * (2 * f_gamma_bb * rho_x_b[point] + f_gamma_ab * rho_x_a[point]);
+                        p_Vxc_grid_b[4 * point + 2] = w * (2 * f_gamma_bb * rho_y_b[point] + f_gamma_ab * rho_y_a[point]);
+                        p_Vxc_grid_b[4 * point + 3] = w * (2 * f_gamma_bb * rho_z_b[point] + f_gamma_ab * rho_z_a[point]);
+                    }
+                }
+                break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA:
+                rho = std::make_shared<Matrix>("rho", npoints, 2);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", npoints, 3);
+                p_gamma = gamma->pointer()[0];
+                tau = std::make_shared<Matrix>("tau", npoints, 3);
+                p_tau = tau->pointer()[0];
+        
+                rho_0_a = h_rho_a_matrixT->pointer()[0];
+                rho_x_a = h_rho_a_matrixT->pointer()[1];
+                rho_y_a = h_rho_a_matrixT->pointer()[2];
+                rho_z_a = h_rho_a_matrixT->pointer()[3];
+                tau_0_a = h_rho_a_matrixT->pointer()[4];
+
+                rho_0_b = h_rho_b_matrixT->pointer()[0];
+                rho_x_b = h_rho_b_matrixT->pointer()[1];
+                rho_y_b = h_rho_b_matrixT->pointer()[2];
+                rho_z_b = h_rho_b_matrixT->pointer()[3];
+                tau_0_b = h_rho_b_matrixT->pointer()[4];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[2 * point + 0] = rho_0_a[point];
+                    p_rho[2 * point + 1] = rho_0_b[point];
+                    double gamma_aa = rho_x_a[point] * rho_x_a[point]
+                                    + rho_y_a[point] * rho_y_a[point]
+                                    + rho_z_a[point] * rho_z_a[point];
+                    double gamma_ab = rho_x_a[point] * rho_x_b[point]
+                                    + rho_y_a[point] * rho_y_b[point]
+                                    + rho_z_a[point] * rho_z_b[point];
+                    double gamma_bb = rho_x_b[point] * rho_x_b[point]
+                                    + rho_y_b[point] * rho_y_b[point]
+                                    + rho_z_b[point] * rho_z_b[point];
+                    p_gamma[3 * point + 0] = gamma_aa;
+                    p_gamma[3 * point + 1] = gamma_ab;
+                    p_gamma[3 * point + 2] = gamma_bb;
+                    p_tau[2 * point + 0] = tau_0_a[point];
+                    p_tau[2 * point + 1] = tau_0_b[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", npoints, 1);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", npoints, 2);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", npoints, 3);
+                full_f_tau = std::make_shared<Matrix>("full_f_tau", npoints, 2);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                full_f_tau->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                p_full_f_tau = full_f_tau->pointer()[0];
+                f = std::make_shared<Matrix>("f", npoints, 1);
+                f_rho = std::make_shared<Matrix>("f_rho", npoints, 2);
+                f_gamma = std::make_shared<Matrix>("f_gamma", npoints, 3);
+                f_tau = std::make_shared<Matrix>("f_tau", npoints, 2);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+                p_f_tau = f_tau->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& component : functional_->x_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 3, 2, p_rho, p_gamma,
+                                                    p_tau, p_f, p_f_rho, p_f_gamma, p_f_tau, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, p_full_f_tau);
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& component : functional_->c_functionals()) {
+                        evaluate_cuest_xc_component(component, start_point, end_point, 2, 3, 2, p_rho, p_gamma,
+                                                    p_tau, p_f, p_f_rho, p_f_gamma, p_f_tau, p_full_f,
+                                                    p_full_f_rho, p_full_f_gamma, p_full_f_tau);
+                    }
+                    for (int point = start_point; point < end_point; point++) {
+                        double w = p_weights[point];
+                        double f_gamma_aa = p_full_f_gamma[3 * point + 0];
+                        double f_gamma_ab = p_full_f_gamma[3 * point + 1];
+                        double f_gamma_bb = p_full_f_gamma[3 * point + 2];
+
+                        p_Vxc_grid_a[5 * point + 0] = w * p_full_f_rho[2 * point + 0];
+                        p_Vxc_grid_a[5 * point + 1] = w * (2 * f_gamma_aa * rho_x_a[point] + f_gamma_ab * rho_x_b[point]);
+                        p_Vxc_grid_a[5 * point + 2] = w * (2 * f_gamma_aa * rho_y_a[point] + f_gamma_ab * rho_y_b[point]);
+                        p_Vxc_grid_a[5 * point + 3] = w * (2 * f_gamma_aa * rho_z_a[point] + f_gamma_ab * rho_z_b[point]);
+                        p_Vxc_grid_a[5 * point + 4] = w * p_full_f_tau[2 * point + 0];
+
+                        p_Vxc_grid_b[5 * point + 0] = w * p_full_f_rho[2 * point + 1];
+                        p_Vxc_grid_b[5 * point + 1] = w * (2 * f_gamma_bb * rho_x_b[point] + f_gamma_ab * rho_x_a[point]);
+                        p_Vxc_grid_b[5 * point + 2] = w * (2 * f_gamma_bb * rho_y_b[point] + f_gamma_ab * rho_y_a[point]);
+                        p_Vxc_grid_b[5 * point + 3] = w * (2 * f_gamma_bb * rho_z_b[point] + f_gamma_ab * rho_z_a[point]);
+                        p_Vxc_grid_b[5 * point + 4] = w * p_full_f_tau[2 * point + 1];
+                    }
+                }
+                break;
+            default:
+                throw PSIEXCEPTION("UV::compute_gradient: Invalid ansatz type.");
+        }
+
+        err = cudaMalloc((void**)&d_Vxc_grid_a, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        err = cudaMemcpy(d_Vxc_grid_a, p_Vxc_grid_a, npoints * ncomponents * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+        }
+        err = cudaMalloc((void**)&d_Vxc_grid_b, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        err = cudaMemcpy(d_Vxc_grid_b, p_Vxc_grid_b, npoints * ncomponents * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+        }
+
+        // => Compute the potential matrix from its grid representation <= //
+        cuestXCDerivativeComputeParameters_t derivative_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCDERIVATIVECOMPUTE_PARAMETERS, &derivative_compute_parameters));
+        CHECK_CUEST(cuestXCDerivativeComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            derivative_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_Vxc_grid_a,
+            d_Vxc_grad_atom_a,
+            d_Vxc_grad_grid_a
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDerivativeCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            derivative_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_Vxc_grid_a,
+            d_Vxc_grad_atom_a,
+            d_Vxc_grad_grid_a
+        ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        
+        CHECK_CUEST(cuestXCDerivativeComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            derivative_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[1],
+            d_Coccs_AO_ + nbf * d_Cocc_noccs_[0],
+            d_Vxc_grid_b,
+            d_Vxc_grad_atom_b,
+            d_Vxc_grad_grid_b
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDerivativeCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            derivative_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[1],
+            d_Coccs_AO_ + nbf * d_Cocc_noccs_[0],
+            d_Vxc_grid_b,
+            d_Vxc_grad_atom_b,
+            d_Vxc_grad_grid_b
+        ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCDERIVATIVECOMPUTE_PARAMETERS, derivative_compute_parameters));
+
+        for (int point = 0; point < npoints; point++) {
+            p_full_f[point] *= (rho_0_a[point] + rho_0_b[point]);
+        }
+        double *d_exc = nullptr;
+        err = cudaMalloc((void**)&d_exc, npoints * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in UV::compute_gradient");
+        }
+        err = cudaMemcpy(d_exc, p_full_f, npoints * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+        }
+        err = cudaMemcpy(grad->get_pointer(0), d_Vxc_grad_atom_a, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+        }
+
+        SharedMatrix grad_tmp = grad->clone();
+        err = cudaMemcpy(grad_tmp->get_pointer(0), d_Vxc_grad_atom_b, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+        }
+        grad->add(grad_tmp);
+
+        // The call below needs the total grid gradient, so combine them here
+        double alpha = 1.0;
+        cublasDaxpy(
+            cublas_handle,
+            3 * npoints,
+            &alpha,
+            d_Vxc_grad_grid_b,
+            1,
+            d_Vxc_grad_grid_a,
+            1
+            );
+
+        cuestXCGridDerivativeComputeParameters_t grid_derivative_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCGRIDDERIVATIVECOMPUTE_PARAMETERS, &grid_derivative_compute_parameters));
+        CHECK_CUEST(cuestXCGridDerivativeComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            grid_derivative_compute_parameters,
+            &temporary_workspace_descriptor,
+            d_exc,
+            d_Vxc_grad_grid_a,
+            d_Vxc_grad_atom_a
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCGridDerivativeCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            grid_derivative_compute_parameters,
+            temporary_workspace,
+            d_exc,
+            d_Vxc_grad_grid_a,
+            d_Vxc_grad_atom_a
+            ));
+        cuest_common::freeWorkspace(temporary_workspace);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCGRIDDERIVATIVECOMPUTE_PARAMETERS, grid_derivative_compute_parameters));
+
+        cudaMemcpy(grad_tmp->get_pointer(0), d_Vxc_grad_atom_a, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+        grad->add(grad_tmp);
+
+        if (functional_->needs_vv10()) {
+            // ACS: this could be relaxed to a warning about noisy gradient instead
+            if (options_.get_bool("DFT_VV10_POSTSCF")) {
+                throw PSIEXCEPTION("UV::compute_gradient: analytic gradient for DFT_VV10_POSTSCF=True is not supported.");
+            }
+        
+            cuestNonlocalXCDerivativeUKSComputeParameters_t vv10_derivative_compute_parameters;
+            CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, &vv10_derivative_compute_parameters));
+
+            double vv10_scale = 1.0;
+            double vv10_C = functional_->vv10_c();
+            double vv10_b = functional_->vv10_b();
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS_VV10_SCALE,
+                &vv10_scale,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS_VV10_C,
+                &vv10_C,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS_VV10_B,
+                &vv10_b,
+                sizeof(double));
+            CHECK_CUEST(cuestNonlocalXCDerivativeUKSComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_derivative_compute_parameters,
+                &variable_buffersize_descriptor,
+                &temporary_workspace_descriptor,
+                d_Cocc_noccs_[0],
+                d_Cocc_noccs_[1],
+                d_Coccs_AO_,
+                d_Coccs_AO_ + nbf_ * d_Cocc_noccs_[0],
+                d_Vxc_grad_atom_a));
+
+            temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+            CHECK_CUEST(cuestNonlocalXCDerivativeUKSCompute(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_derivative_compute_parameters,
+                &variable_buffersize_descriptor,
+                temporary_workspace,
+                d_Cocc_noccs_[0],
+                d_Cocc_noccs_[1],
+                d_Coccs_AO_,
+                d_Coccs_AO_ + nbf_ * d_Cocc_noccs_[0],
+                d_Vxc_grad_atom_a));
+
+            cuest_common::freeWorkspace(temporary_workspace);
+            CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, vv10_derivative_compute_parameters));
+
+            // Add the VV10 contribution to the Vxc gradient
+            err = cudaMemcpy(grad_tmp->get_pointer(0), d_Vxc_grad_atom_a, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+            }
+            grad->add(grad_tmp);
+        }
+
+        cudaFree(d_rho_a);
+        cudaFree(d_rho_b);
+        cudaFree(d_weights);
+        cudaFree(d_Vxc_grid_a);
+        cudaFree(d_Vxc_grid_b);
+        cudaFree(d_exc);
+        cudaFree(d_Vxc_grad_atom_a);
+        cudaFree(d_Vxc_grad_atom_b);
+        cudaFree(d_Vxc_grad_grid_a);
+        cudaFree(d_Vxc_grad_grid_b);
+
+        return grad;
+    }
+#endif
 
     if (functional_->needs_vv10()) {
-        throw PSIEXCEPTION("V: UKS cannot compute VV10 gradient contribution.");
+        throw PSIEXCEPTION("V: UKS cannot compute VV10 gradient contribution.  Either use the cuEST module or set the dertype=0 as an argument to the gradient function.");
     }
 
     // => Setup <= //
 
-    // Build the target gradient Matrix
-    auto natom = primary_->molecule()->natom();
 
     int rank = 0;
     // What local XC ansatz are we in?
@@ -4100,6 +6670,7 @@ SharedMatrix UV::compute_gradient() {
     return G;
 }
 SharedMatrix UV::compute_hessian() {
+    throw_if_cuest_unsupported("The UKS analytic XC Hessian");
     // => Validation <=
     if (functional_->is_gga() || functional_->is_meta())
         throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");

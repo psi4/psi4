@@ -161,6 +161,8 @@ class DIIS:
         template_object = self.template[name][item_num]
         if isinstance(template_object, float) or self.storage_policy == StoragePolicy.InCore:
             quantity = self.stored_vectors[entry_num][name][item_num]
+            if force_new == False:
+                return quantity
             try:
                 quantity = quantity.clone()
             except AttributeError:
@@ -195,11 +197,12 @@ class DIIS:
         except KeyError:
             dot_product = 0
             for item_num in range(len(self.template["error"])):
-                Rix = self.load_quantity("error", i, item_num)
-                Rjx = self.load_quantity("error", j, item_num)
+                Rix = self.load_quantity("error", i, item_num, False)
+                Rjx = self.load_quantity("error", j, item_num, False)
                 dot_product += Rix.vector_dot(Rjx)
 
             self.cached_dot_products[key] = dot_product
+            self.cached_dot_products[frozenset([j, i])] = dot_product
             return dot_product
 
 
@@ -415,7 +418,7 @@ class DIIS:
         for j, Tj in enumerate(args):
             Tj.zero()
             for i, ci in enumerate(coeffs):
-                Tij = self.load_quantity("target", i, j)
+                Tij = self.load_quantity("target", i, j, False)
                 axpy(Tj, ci, Tij)
 
         return performed

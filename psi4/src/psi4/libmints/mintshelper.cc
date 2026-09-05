@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #include "x2cint.h"
 #include "gau2grid/gau2grid.h"
@@ -96,6 +99,13 @@ extern brianInt brianRestrictionType;
 
 #endif
 
+#ifdef USING_cuEST
+#include <cuest.h>
+#include <cuda_runtime.h>
+#include "psi4/libfock/cuESTCommon.h"
+extern cuestHandle_t cuest_handle;
+#endif
+
 namespace psi {
 
 /**
@@ -158,7 +168,13 @@ MintsHelper::MintsHelper(std::shared_ptr<Wavefunction> wavefunction)
     init_helper(wavefunction);
 }
 
-MintsHelper::~MintsHelper() {}
+MintsHelper::~MintsHelper() {
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_finalize();
+    }
+#endif
+}
 
 void MintsHelper::init_helper(std::shared_ptr<Wavefunction> wavefunction) {
     if (wavefunction->basisset().get() == 0) {
@@ -191,6 +207,13 @@ void MintsHelper::init_helper(std::shared_ptr<BasisSet> basis,
 }
 
 void MintsHelper::common_init() {
+#ifdef USING_cuEST
+    cuest_pair_list_ = nullptr;
+    cuest_pair_list_ws_ptr_ = nullptr;
+    cuest_oeint_plan_ = nullptr;
+    cuest_oeint_plan_ws_ptr_ = nullptr;
+#endif
+
     // Print the molecule.
     if (print_) molecule_->print();
 
@@ -218,6 +241,12 @@ void MintsHelper::common_init() {
 
     // Integral cutoff
     cutoff_ = Process::environment.options.get_double("INTS_TOLERANCE");
+
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_initialize();
+    }
+#endif
 }
 
 std::shared_ptr<PetiteList> MintsHelper::petite_list() const {
@@ -621,11 +650,14 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
 
 SharedMatrix MintsHelper::ao_overlap() {
     // Overlap
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++) {
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap()));
-    }
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
+
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        form_S_cuest(overlap_mat);
+        return overlap_mat;
+    }
+#endif
 
 #ifdef USING_BrianQC
     if (brianEnable) {
@@ -637,8 +669,11 @@ SharedMatrix MintsHelper::ao_overlap() {
     }
 #endif
 
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap()));
+    }
     one_body_ao_computer(ints_vec, overlap_mat, true);
-
     return overlap_mat;
 }
 
@@ -656,11 +691,14 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr<BasisSet> bs1, std::shared_
 }
 
 SharedMatrix MintsHelper::ao_kinetic() {
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++) {
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
-    }
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
+
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        form_T_cuest(kinetic_mat);
+        return kinetic_mat;
+    }
+#endif
 
 #ifdef USING_BrianQC
     if (brianEnable) {
@@ -672,6 +710,10 @@ SharedMatrix MintsHelper::ao_kinetic() {
     }
 #endif
 
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
+    }
     one_body_ao_computer(ints_vec, kinetic_mat, true);
     return kinetic_mat;
 }
@@ -688,12 +730,15 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_
 }
 
 SharedMatrix MintsHelper::ao_potential() {
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++) {
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential()));
-    }
     SharedMatrix potential_mat =
         std::make_shared<Matrix>("AO-basis Potential Ints", basisset_->nbf(), basisset_->nbf());
+
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        form_V_cuest(potential_mat);
+        return potential_mat;
+    }
+#endif
 
 #ifdef USING_BrianQC
     if (brianEnable) {
@@ -705,6 +750,10 @@ SharedMatrix MintsHelper::ao_potential() {
     }
 #endif
 
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential()));
+    }
     one_body_ao_computer(ints_vec, potential_mat, true);
     return potential_mat;
 }
@@ -4390,5 +4439,206 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, Share
         }
     return mo_grad;
 }
+
+#ifdef USING_cuEST
+void MintsHelper::cuest_initialize()
+{
+    cuest_common::ensure_cuest_initialized();
+
+    auto mol = basisset_->molecule();
+    size_t natom = mol->natom();
+
+    cuestWorkspaceDescriptor_t* persistentWorkspaceDescriptor = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+    cuestWorkspaceDescriptor_t* temporaryWorkspaceDescriptor = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+
+    // AO Pair List
+    cuestAOPairListParameters_t pair_params;
+    CHECK_CUEST(cuestParametersCreate(CUEST_AOPAIRLIST_PARAMETERS, reinterpret_cast<void**>(&pair_params)));
+
+    CHECK_CUEST(cuestAOPairListCreateWorkspaceQuery(cuest_handle, basisset_->cuest_basis(),
+        static_cast<uint64_t>(natom), mol->geometry().pointer()[0], cutoff_, pair_params, persistentWorkspaceDescriptor, temporaryWorkspaceDescriptor, nullptr));
+
+    cuest_pair_list_ws_ptr_ = cuest_common::allocateWorkspace(persistentWorkspaceDescriptor);
+    cuestWorkspace_t* temporaryPairListWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
+
+    CHECK_CUEST(cuestAOPairListCreate(cuest_handle, basisset_->cuest_basis(),
+        static_cast<uint64_t>(natom), mol->geometry().pointer()[0], cutoff_, pair_params, cuest_pair_list_ws_ptr_, temporaryPairListWorkspace, &cuest_pair_list_));
+
+    cuest_common::freeWorkspace(temporaryPairListWorkspace);
+    cuestParametersDestroy(CUEST_AOPAIRLIST_PARAMETERS, pair_params);
+
+    // OEInt Plan
+
+    cuestOEIntPlanParameters_t plan_params;
+    CHECK_CUEST(cuestParametersCreate(CUEST_OEINTPLAN_PARAMETERS, reinterpret_cast<void**>(&plan_params)));
+
+    CHECK_CUEST(cuestOEIntPlanCreateWorkspaceQuery(cuest_handle, basisset_->cuest_basis(),
+        cuest_pair_list_, plan_params, persistentWorkspaceDescriptor, temporaryWorkspaceDescriptor, nullptr));
+
+    cuest_oeint_plan_ws_ptr_ = cuest_common::allocateWorkspace(persistentWorkspaceDescriptor);
+    cuestWorkspace_t* temporaryPlanWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
+
+    CHECK_CUEST(cuestOEIntPlanCreate(cuest_handle, basisset_->cuest_basis(),
+        cuest_pair_list_, plan_params, cuest_oeint_plan_ws_ptr_, temporaryPlanWorkspace, &cuest_oeint_plan_));
+
+    cuest_common::freeWorkspace(temporaryPlanWorkspace);
+    cuestParametersDestroy(CUEST_OEINTPLAN_PARAMETERS, plan_params);
+
+    free(persistentWorkspaceDescriptor);
+    free(temporaryWorkspaceDescriptor);
+}
+
+void MintsHelper::cuest_finalize()
+{
+    if (cuest_pair_list_ != nullptr) {
+        cuestAOPairListDestroy(cuest_pair_list_);
+        cuest_pair_list_ = nullptr;
+    }
+    if (cuest_oeint_plan_ != nullptr) {
+        cuestOEIntPlanDestroy(cuest_oeint_plan_);
+        cuest_oeint_plan_ = nullptr;
+    }
+    if (cuest_pair_list_ws_ptr_ != nullptr) {
+        cuest_common::freeWorkspace(cuest_pair_list_ws_ptr_);
+        cuest_pair_list_ws_ptr_ = nullptr;
+    }
+    if (cuest_oeint_plan_ws_ptr_ != nullptr) {
+        cuest_common::freeWorkspace(cuest_oeint_plan_ws_ptr_);
+        cuest_oeint_plan_ws_ptr_ = nullptr;
+    }
+}
+
+void MintsHelper::form_S_cuest(SharedMatrix hostS) {
+    double* d_overlap_matrix = NULL;
+    cudaMalloc((void**) &d_overlap_matrix, basisset_->nbf() * basisset_->nbf() * sizeof(double));
+
+    cuestOverlapComputeParameters_t overlap_compute_parameters;
+    CHECK_CUEST(cuestParametersCreate(
+        CUEST_OVERLAPCOMPUTE_PARAMETERS, 
+        &overlap_compute_parameters));
+
+    cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+    CHECK_CUEST(cuestOverlapComputeWorkspaceQuery(
+        cuest_handle, 
+        cuest_oeint_plan_, 
+        overlap_compute_parameters,
+        &temporary_workspace_descriptor, 
+        d_overlap_matrix));
+
+    cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+
+    CHECK_CUEST(cuestOverlapCompute(
+        cuest_handle, 
+        cuest_oeint_plan_, 
+        overlap_compute_parameters,
+        temporary_workspace, 
+        d_overlap_matrix));
+
+    cuest_common::freeWorkspace(temporary_workspace);
+
+    CHECK_CUEST(cuestParametersDestroy(
+        CUEST_OVERLAPCOMPUTE_PARAMETERS, 
+        overlap_compute_parameters));
+
+    cudaMemcpy(hostS->pointer()[0], d_overlap_matrix, basisset_->nbf() * basisset_->nbf() * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaFree(d_overlap_matrix);
+}
+
+void MintsHelper::form_T_cuest(SharedMatrix hostT) {
+    double* d_kinetic_matrix = NULL;
+    cudaMalloc((void**) &d_kinetic_matrix, basisset_->nbf() * basisset_->nbf() * sizeof(double));
+
+    cuestKineticComputeParameters_t kinetic_compute_parameters;
+    CHECK_CUEST(cuestParametersCreate(
+        CUEST_KINETICCOMPUTE_PARAMETERS, 
+        &kinetic_compute_parameters));
+
+    cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+    CHECK_CUEST(cuestKineticComputeWorkspaceQuery(
+        cuest_handle, 
+        cuest_oeint_plan_, 
+        kinetic_compute_parameters,
+        &temporary_workspace_descriptor, 
+        d_kinetic_matrix));
+
+    cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+
+    CHECK_CUEST(cuestKineticCompute(
+        cuest_handle, 
+        cuest_oeint_plan_, 
+        kinetic_compute_parameters,
+        temporary_workspace, 
+        d_kinetic_matrix));
+
+    cuest_common::freeWorkspace(temporary_workspace);
+
+    CHECK_CUEST(cuestParametersDestroy(
+        CUEST_KINETICCOMPUTE_PARAMETERS, 
+        kinetic_compute_parameters));
+
+    cudaMemcpy(hostT->pointer()[0], d_kinetic_matrix, basisset_->nbf() * basisset_->nbf() * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaFree(d_kinetic_matrix);
+}
+
+void MintsHelper::form_V_cuest(SharedMatrix hostV) {
+
+    auto mol = basisset_->molecule();
+    size_t natom = mol->natom();
+    std::vector<double> Zs(natom);
+    for (size_t i=0; i<natom; i++) {
+        Zs[i] = -1.0 * mol->Z(i);
+    }
+
+    double* d_xyz_matrix = NULL;
+    double* d_q_matrix = NULL;
+    cudaMalloc((void**) &d_xyz_matrix, natom * 3 * sizeof(double));
+    cudaMalloc((void**) &d_q_matrix, natom * sizeof(double));
+
+    cudaMemcpy(d_xyz_matrix, mol->geometry().pointer()[0], natom * 3 * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_q_matrix,   Zs.data(), natom * sizeof(double), cudaMemcpyHostToDevice);
+
+    double* d_potential_matrix = NULL;
+    cudaMalloc((void**) &d_potential_matrix, basisset_->nbf() * basisset_->nbf() * sizeof(double));
+
+    cuestPotentialComputeParameters_t potential_compute_parameters;
+    CHECK_CUEST(cuestParametersCreate(
+        CUEST_POTENTIALCOMPUTE_PARAMETERS, 
+        &potential_compute_parameters));
+
+    cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+    CHECK_CUEST(cuestPotentialComputeWorkspaceQuery(
+        cuest_handle, 
+        cuest_oeint_plan_, 
+        potential_compute_parameters,
+        &temporary_workspace_descriptor, 
+        natom,
+        d_xyz_matrix,
+        d_q_matrix,
+        d_potential_matrix));
+
+    cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+
+    CHECK_CUEST(cuestPotentialCompute(
+        cuest_handle, 
+        cuest_oeint_plan_, 
+        potential_compute_parameters,
+        temporary_workspace, 
+        natom,
+        d_xyz_matrix,
+        d_q_matrix,
+        d_potential_matrix));
+
+    cuest_common::freeWorkspace(temporary_workspace);
+
+    CHECK_CUEST(cuestParametersDestroy(
+        CUEST_POTENTIALCOMPUTE_PARAMETERS, 
+        potential_compute_parameters));
+
+    cudaMemcpy(hostV->pointer()[0], d_potential_matrix, basisset_->nbf() * basisset_->nbf() * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaFree(d_potential_matrix);
+    cudaFree(d_xyz_matrix);
+    cudaFree(d_q_matrix);
+}
+#endif
 
 }  // namespace psi
