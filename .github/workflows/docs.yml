@@ -33,14 +33,14 @@ jobs:
     # fetch-depth: 0 gets git history so Psi4 version computable
     - name: Checkout
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
         path: code
 
     - name: Checkout website repo
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: psi4/psi4docs
         path: docs
@@ -70,7 +70,7 @@ jobs:
 
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: p4docs
         add-pip-as-python-dependency: true
@@ -158,10 +158,9 @@ jobs:
 
     - name: Push Changes to psi4/psi4docs
       if: github.repository == 'psi4/psi4'
-      uses: ad-m/github-push-action@master
+      uses: ad-m/github-push-action@v1.0.0
       with:
         directory: ./docs
         repository: psi4/psi4docs
         github_token: ${{ secrets.psi4docs_from_psi4 }}
         force: true
-

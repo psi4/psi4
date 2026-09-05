@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,7 +32,7 @@ chemical methods.
 from qcelemental.util import which
 
 from . import interface_cfour, proc, proc_data, sapt
-from .dft import build_superfunctional_from_dictionary, functionals
+from .dft import build_superfunctional_from_dictionary, functional_available, functionals
 
 # never import wrappers or aliases into this file
 
@@ -166,9 +166,14 @@ procedures = {
         'acpf'          : proc.run_cepa,
         'aqcc'          : proc.run_cepa,
         'dlpno-ccsd'    : proc.run_dlpnoccsd,
+        'dlpno-bccd'    : proc.run_dlpnoccsd,
         'dlpno-ccsd(t0)': proc.run_dlpnoccsd_t,
         'dlpno-ccsd(t)' : proc.run_dlpnoccsd_t,
-        'dlpno-ccsd_l'  : proc.run_dlpnoccsd_l,
+        'dlpno-ccsd(t)_l': proc.run_dlpnoccsd_t,
+        'dlpno-ccsd(at)': proc.run_dlpnoccsd_t,
+        'dlpno-bccd(t)' : proc.run_dlpnoccsd_t,
+        'dlpno-bccd(t)_l': proc.run_dlpnoccsd_t,
+        'dlpno-bccd(at)': proc.run_dlpnoccsd_t,
         'efp'           : proc.run_efp,
         'dmrg-scf'      : proc.run_dmrgscf,
         'dmrg-caspt2'   : proc.run_dmrgscf,
@@ -237,6 +242,8 @@ procedures = {
         'cvs-adc(2)'   : proc.run_adcc_property,
         'cvs-adc(2)-x' : proc.run_adcc_property,
         'cvs-adc(3)'   : proc.run_adcc_property,
+        'dlpno-ccsd'   : proc.run_dlpnoccsd_property,
+        'dlpno-bccd'   : proc.run_dlpnoccsd_property,
     }} # yapf: disable
 
 # Will only allow energy to be run for the following methods
@@ -278,6 +285,13 @@ if which("dmrcc", return_bool=True):
 
 # Integrate DFT with driver routines
 for key in functionals:
+    # Only register functionals whose LibXC dependencies are present in the
+    # linked LibXC build. A functional referencing a method missing from this
+    # LibXC (e.g. renamed or added between versions) cannot be built, so it is
+    # not an available method -- skip it rather than aborting `import psi4`.
+    if not functional_available(functionals[key]):
+        continue
+
     ssuper = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]
 
     # Energy

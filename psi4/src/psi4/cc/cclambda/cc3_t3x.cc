@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,7 +36,6 @@
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -45,8 +44,7 @@ namespace cclambda {
 void cc3_t3x() {
     if (params.ref == 0) {
         int h, nirreps;
-        int *occ_off, *occpi;
-        int *vir_off, *virtpi;
+        int *occ_off, *vir_off;
         int Gi, Gj, Gk, Gijk;
         int Ga, Gb, Gc, Gab;
         int i, j, k, I, J, K;
@@ -62,9 +60,9 @@ void cc3_t3x() {
         int **W_offset, offset;
 
         nirreps = moinfo.nirreps;
-        occpi = moinfo.occpi;
+        const auto& occpi = moinfo.occpi;
         occ_off = moinfo.occ_off;
-        virtpi = moinfo.virtpi;
+        const auto& virtpi = moinfo.virtpi;
         vir_off = moinfo.vir_off;
 
         W_offset = init_int_matrix(nirreps, nirreps);

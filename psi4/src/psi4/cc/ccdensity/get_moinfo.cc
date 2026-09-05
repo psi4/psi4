@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,11 +40,9 @@
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/matrix.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -136,8 +134,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     /* Compute spatial-orbital reordering arrays */
     moinfo.pitzer2qt = std::vector<int>(moinfo.nmo);
     moinfo.qt2pitzer = std::vector<int>(moinfo.nmo);
-    reorder_qt(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, moinfo.pitzer2qt.data(), moinfo.orbspi,
-               moinfo.nirreps);
+    reorder_qt(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, moinfo.pitzer2qt.data(), moinfo.orbspi);
     for (i = 0; i < moinfo.nmo; i++) {
         j = moinfo.pitzer2qt[i];
         moinfo.qt2pitzer[j] = i;

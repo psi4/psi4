@@ -57,17 +57,18 @@ macro(psi4_add_module binlib libname sources)
       VISIBILITY_INLINES_HIDDEN 1
     )
 
-  # This provides OpenMP flags and access to BLAS/LAPACK headers
+  # Link required and optional dependencies interface libraries
+  # This ensures all modules get:
+  #   - Required deps: tgt::lapack, Libint2::cxx, Libxc::xc, gau2grid::gg
+  #   - Optional deps: all enabled addons with USING_* compile definitions
+  # PUBLIC propagation ensures transitive dependencies work correctly and
+  # USING_* compile definitions are available to modules that include headers
+  # with ifdefs (e.g., libmints/mintshelper.h includes #ifdef USING_ecpint)
   target_link_libraries(${libname}
-    PRIVATE
-      tgt::lapack
+    PUBLIC
+      psi4_required_deps
+      psi4_optional_deps
     )
-  if(MSVC)
-    target_link_libraries(${libname}
-      PRIVATE
-        Libint2::cxx
-      )
-  endif()
 
   # library modules get their headers installed
   if(${binlib} MATCHES lib)

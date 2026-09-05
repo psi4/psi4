@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -91,14 +91,12 @@ void DLPNO::common_init() {
 
     if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
         algorithm_ = DLPNOMethod::MP2;
-    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD" || 
-                options_.get_str("DLPNO_ALGORITHM") == "CCSD_Lambda") {
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD") {
         algorithm_ = DLPNOMethod::CCSD;
     } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
         algorithm_ = DLPNOMethod::CCSD_T;
     } else {
-        algorithm_ = DLPNOMethod::CCSD;
-        // throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
+        throw PSIEXCEPTION("Requested DLPNO algorithm is not available: " + options_.get_str("DLPNO_ALGORITHM"));
     }
 
     // did the user manually change expert level options?
@@ -377,7 +375,7 @@ void DLPNO::setup_orbitals() {
         localizer.localize();
         C_lmo_ = localizer.L();
     } else if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "ER") {
-        ERLocalizer localizer = ERLocalizer(basisset_, get_basisset("DF_BASIS_THC"), reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
+        ERLocalizer localizer = ERLocalizer(basisset_, get_basisset("DF_BASIS_THC"), C_lmo_->clone());
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
         localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
         localizer.localize();
@@ -489,9 +487,14 @@ void DLPNO::brueckner_rotation(const SharedMatrix &kappa_ia) {
 
     // => Make new C_lmo (to add Brueckner contributions) <= //
 
+    // The occupied columns of exp(-K) are represented by the transposed
+    // blocks below.  kappa_oo already contains the identity contribution from
+    // the matrix exponential, so adding the old C_lmo a second time would
+    // double the occupied orbitals at every macroiteration.
+    auto C_lmo_new = linalg::doublet(C_lmo_, kappa_oo, false, true);
     auto gottem = linalg::doublet(C_pao_canon, kappa_ov, false, true);
-    gottem->add(linalg::doublet(C_lmo_, kappa_oo, false, true));
-    C_lmo_->add(gottem);
+    C_lmo_new->add(gottem);
+    C_lmo_ = C_lmo_new;
 
     /*
     // Canonicalize PAOs

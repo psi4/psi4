@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,11 +38,14 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libmints/dimension.h"
 
 namespace psi {
 class Options;
@@ -57,11 +60,11 @@ void schmidt(double** A, int rows, int cols, std::string out_fname);
 double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
 PSI_API
-void reorder_qt(const int* docc_in, const int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order, int* orbs_per_irrep,
-                int nirreps);
+void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dimension const& frozen_docc_in,
+                Dimension const& frozen_uocc_in, int* order, Dimension const& orbs_per_irrep);
 PSI_API
-void reorder_qt_uhf(const int* docc, const int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
-                    int* orbspi, int nirreps);
+void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimension const& frozen_docc,
+                    Dimension const& frozen_uocc, int* order_alpha, int* order_beta, Dimension const& orbspi);
 int ras_set3(int nirreps, int nmo, int* orbspi, int* docc, int* socc, int* frdocc, int* fruocc, int* restrdocc,
              int* restruocc, int** ras_opi, int* core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
 void newmm_rking(double** A, int transa, double** B, int transb, double** C, int num_rows, int num_links, int num_cols,
@@ -80,6 +83,20 @@ void parallel_timer_off(const std::string& key, int thread_rank);
 void start_skip_timers();
 void stop_skip_timers();
 void clean_timers();
+
+struct TimerRecord {
+    std::string timer_id;
+    std::string parent_id;
+    std::string timer_name;
+    std::vector<std::string> timer_path;
+    int level;
+    double wall_time;
+    double user_time;
+    double system_time;
+    size_t n_calls;
+};
+PSI_API
+std::vector<TimerRecord> get_timer_records();
 
 int cc_excited(const char* wfn);
 int cc_excited(std::string wfn);

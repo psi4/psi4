@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -70,7 +70,20 @@ std::string PSI_API get_writer_file_prefix(const std::string& molecule_name) {
     const std::string pid = "." + std::to_string(SYSTEM_GETPID());
     const std::string label = Process::environment.options.get_str("WRITER_FILE_LABEL");
     if (!label.empty()) {
-        return label + pid;
+        const std::string label_with_pid = label + pid;
+
+        // Keep user-specified paths as-is. For bare labels, mirror the directory
+        // used by the output file so labeled and unlabeled writer files land together.
+        if (label.find_last_of("/\\") != std::string::npos || outfile_name == "stdout") {
+            return label_with_pid;
+        }
+
+        const auto out_sep = outfile_name.find_last_of("/\\");
+        if (out_sep == std::string::npos) {
+            return label_with_pid;
+        }
+
+        return outfile_name.substr(0, out_sep + 1) + label_with_pid;
     }
 
     // If no available options WRITER_FILE_LABEL, then we build a default:

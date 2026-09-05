@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -400,43 +400,6 @@ void Matrix::copy_to_row(int h, int row, double const *const data) {
 void Matrix::copy(const Matrix &cp) { copy(&cp); }
 
 void Matrix::copy(const SharedMatrix &cp) { copy(cp.get()); }
-
-// produces an Eigen::Map object mapping to the matrix data buffer
-// of a matrix with a single irrep
-Eigen::Map<Eigen::MatrixXd> Matrix::eigen_map() {
-    // this function only works with matrices with a single irrep
-    if (nirrep() != 1) {
-        std::string message = "Matrix::eigen_map() called, but matrix only has one irrep! ";
-        message += "Use Matrix::eigen_maps() instead.";
-
-        throw PSIEXCEPTION(message);
-    }
-
-    // create Eigen matrix "map" using Psi4 matrix data array directly
-    return std::move(
-        Eigen::Map<Eigen::MatrixXd>(
-            get_pointer(), nrow(), ncol()
-        )
-    );
-}
-
-// produces Eigen::Maps object mapping to the matrix data buffer
-// of a matrix with multiple irreps
-// NOTE: this impl for mapping Psi4 matrices to Eigen maps
-// is currently experimental, as it is unused in the code
-// currently
-std::vector<Eigen::Map<Eigen::MatrixXd>> Matrix::eigen_maps() {
-    std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps;
-    eigen_maps.reserve(nirrep());
-
-    // create Eigen matrix "map"s for each irrep,
-    // using Psi4 matrix data array directly
-    for (int h = 0; h != nirrep(); ++h) {
-        eigen_maps.emplace_back(get_pointer(h), rowdim(h), coldim(h));
-    }
-
-    return eigen_maps;
-}
 
 #ifdef USING_OpenOrbitalOptimizer
 arma::mat Matrix::to_armadillo_matrix(int h) {
@@ -3617,11 +3580,11 @@ bool test_matrix_dpd_interface() {
     std::vector<int> cachefiles(PSIO_MAXUNIT);
     auto cachelist = init_int_matrix(5, 5);
 
-    std::vector<int *> spaces;
-    spaces.push_back(dimpi);
     std::vector<int> sym_vec {0, 0, 3, 0, 2, 0, 3};
-    spaces.push_back(sym_vec.data());
-    dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, 1, spaces);
+
+    std::vector<std::pair<Dimension, int *>> spaces;
+    spaces.emplace_back(dimpi, sym_vec.data());
+    dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, spaces);
     dpd_list[0]->file2_init(&io, PSIF_OEI, 2, 0, 0, "Test Matrix");
     mat.write_to_dpdfile2(&io);
     Matrix mat2(&io);

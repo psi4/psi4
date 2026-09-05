@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -47,7 +47,7 @@ dict = {
        "X_METHOD_NAME":  {       must match a LibXC method
                  "alpha": 1.0,   coefficient for (global) GGA exchange, by default 1.0
                  "omega": 0.0,   range-separation parameter
-             "use_libxc": False  whether "x_hf" parameters should be set from LibXC values for this method
+             "use_libxc": True   read this method's exact-exchange parameters from LibXC (default True; set False to ignore them)
                  "tweak": {},    tweak the underlying functional
      },
 
@@ -252,6 +252,38 @@ def check_consistency(func_dictionary):
                 )
 
 
+def libxc_functionals_in_dictionary(func_dictionary):
+    """The LibXC functional names (``XC_``-prefixed, exactly as handed to LibXC
+    by :py:func:`build_superfunctional_from_dictionary`) that a functional
+    definition depends on: the ``xc_functionals`` special case, the
+    ``x_functionals``/``c_functionals`` components, and a GGA borrowed for exact
+    exchange via ``x_hf``/``use_libxc``."""
+    names = []
+    if "xc_functionals" in func_dictionary:
+        names += [("XC_" + key).upper() for key in func_dictionary["xc_functionals"]]
+    if "x_functionals" in func_dictionary:
+        names += [("XC_" + key).upper() for key in func_dictionary["x_functionals"]]
+    if "x_hf" in func_dictionary and "use_libxc" in func_dictionary["x_hf"]:
+        names.append(("XC_" + func_dictionary["x_hf"]["use_libxc"]).upper())
+    if "c_functionals" in func_dictionary:
+        names += [("XC_" + key).upper() for key in func_dictionary["c_functionals"]]
+    return names
+
+
+def unavailable_libxc_functionals(func_dictionary):
+    """Of the LibXC functionals a definition needs, those absent from the linked
+    LibXC build (e.g. renamed or newly added between LibXC versions)."""
+    return [name for name in libxc_functionals_in_dictionary(func_dictionary)
+            if not core.LibXCFunctional.available(name)]
+
+
+def functional_available(func_dictionary):
+    """Whether every LibXC functional a definition needs is present in the
+    linked LibXC build. A functional that references a missing method cannot be
+    built, so it must not be registered as an available method."""
+    return not unavailable_libxc_functionals(func_dictionary)
+
+
 def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restricted):
     """
     This returns a (core.SuperFunctional, dispersion) tuple based on the requested name.
@@ -260,6 +292,16 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
 
     # Sanity check first, raises ValidationError if something is wrong
     check_consistency(func_dictionary)
+
+    # Every LibXC piece this functional needs must be present in the linked
+    # LibXC build; otherwise the C++ constructor aborts mid-build. Fail early
+    # with an actionable message naming the missing method(s) instead.
+    missing = unavailable_libxc_functionals(func_dictionary)
+    if missing:
+        raise ValidationError(
+            f"SCF: functional '{func_dictionary.get('name', '?')}' requires LibXC "
+            f"functional(s) {missing} not present in the linked LibXC build; the "
+            f"method is unavailable in this LibXC version.")
 
     # Either process the "xc_functionals" special case
     if "xc_functionals" in func_dictionary:
@@ -297,11 +339,32 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
                 x_func = core.LibXCFunctional(x_name, restricted)
                 x_params = x_funcs[x_key]
 
-                # If we're told to use libxc parameters for x_hf from this GGA, do so and set flag
-                if "use_libxc" in x_params and x_params["use_libxc"]:
-                    x_HF.update(x_func.query_libxc("XC_HYB_CAM_COEF"))
-                    x_HF["used"] = True
-                    x_func.set_alpha(1.0)
+                # By default read the exact-exchange parameters LibXC declares for this
+                # component; set "use_libxc": False to ignore them. Only act when they
+                # are actually nonzero, so a plain semilocal component paired with an
+                # explicit "x_hf" block is left untouched.
+                libxc_hf = x_func.query_libxc("XC_HYB_CAM_COEF")
+                is_hybrid = libxc_hf["ALPHA"] != 0.0 or libxc_hf["BETA"] != 0.0
+                if x_params.get("use_libxc", True):
+                    if is_hybrid:
+                        x_HF.update(libxc_hf)
+                        x_HF["used"] = True
+                        x_func.set_alpha(1.0)
+                elif is_hybrid:
+                    # Discarding the exact exchange LibXC declares silently changes the
+                    # functional, so shout -- distinguishing "semilocal only" from the
+                    # case where the definition supplies its own x_hf values instead.
+                    manual = any(k in func_dictionary.get("x_hf", {}) for k in ("alpha", "beta", "omega"))
+                    fate = ("the manual x_hf values in the definition are used instead"
+                            if manual else
+                            "only the semilocal part is used -- this is a DIFFERENT functional")
+                    core.print_out(
+                        "\n" + "!" * 72 + "\n"
+                        "!! WARNING: \"use_libxc\": False for %s ignores the exact exchange\n"
+                        "!! LibXC declares (alpha=%.6g, beta=%.6g, omega=%.6g);\n"
+                        "!! %s.\n"
+                        % (x_name, libxc_hf["ALPHA"], libxc_hf["BETA"], libxc_hf["OMEGA"], fate)
+                        + "!" * 72 + "\n\n")
 
                 if "tweak" in x_params:
                     x_func.set_tweak(x_params["tweak"], quiet=True)

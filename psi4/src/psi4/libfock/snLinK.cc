@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,9 +35,10 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/electrostatic.h"
 #include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/matrix_eigen.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libmints/petitelist.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -279,15 +280,13 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // create matrix for spherical-to-cartesian matrix transformations
     if (force_cartesian && primary_->has_puream()) {
-        const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
-        PetiteList petite(primary, factory, true);
-        sph_to_cart_matrix_ = petite.sotoao(); 
+        MintsHelper helper(primary_, options_, 0);
+        cartao_to_ao_matrix_ = helper.cartao_to_ao_transform();
 
         // SNLINK_FORCE_CARTESIAN only works with C1 symmetry currently
         // TODO: Fix this!
-        if (sph_to_cart_matrix_->nirrep() != 1) {
-            auto point_group = primary->molecule()->point_group();
-            
+        if (cartao_to_ao_matrix_->nirrep() != 1) {
+            auto point_group = primary_->molecule()->point_group();
             std::string message = "SNLINK_FORCE_CARTESIAN only works with C1 symmetry! ";
             message += "Current molecular point group is ";
             message += point_group->symbol();   
@@ -308,10 +307,10 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
                     ptr[irow][icol] = permutation_dense(irow, icol);
                 } 
             }
-            sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_->to_block_sharedmatrix());
+            cartao_to_ao_matrix_ = linalg::doublet(sph_to_cart_permute, cartao_to_ao_matrix_->to_block_sharedmatrix());
         }
     } else {
-        sph_to_cart_matrix_ = nullptr;
+        cartao_to_ao_matrix_ = nullptr;
     }
     timer_off("snLinK: Options Processing");
     
@@ -459,19 +458,19 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     // we need to know if we are using a spherical harmonic basis
     // much of the behavior here is influenced by this
     auto do_reorder = permutation_matrix_.has_value(); 
-    auto force_cartesian = (sph_to_cart_matrix_ != nullptr); 
+    auto force_cartesian = (cartao_to_ao_matrix_ != nullptr);
 
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
         timer_on("snLinK: Transform D");
 
-        auto Did_eigen = D[iD]->eigen_map();    
-        auto Kid_eigen = K[iD]->eigen_map();    
+        auto Did_eigen = linalg::eigen_map(*D[iD]);
+        auto Kid_eigen = linalg::eigen_map(*K[iD]);
        
         // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
         if (do_reorder) {
             auto permutation_matrix_val = permutation_matrix_.value();
-            auto D_eigen_permute = D[iD]->eigen_map();
+            auto D_eigen_permute = linalg::eigen_map(*D[iD]);
             D_eigen_permute = permutation_matrix_val * D_eigen_permute * permutation_matrix_val.transpose();
         }
             
@@ -480,11 +479,11 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         SharedMatrix D_buffer = nullptr; 
         if (force_cartesian) {
             D_buffer = std::make_shared<Matrix>();
-            D_buffer->transform(D[iD], sph_to_cart_matrix_);
+            D_buffer->transform(D[iD], cartao_to_ao_matrix_);
         } else {
             D_buffer = D[iD];
         }
-        auto D_buffer_eigen = D_buffer->eigen_map();    
+        auto D_buffer_eigen = linalg::eigen_map(*D_buffer);
         
         timer_off("snLinK: Transform D");
         
@@ -493,7 +492,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
         if (do_reorder) { 
             auto permutation_matrix_val = permutation_matrix_.value();
-            auto K_eigen_permute = K[iD]->eigen_map();
+            auto K_eigen_permute = linalg::eigen_map(*K[iD]);
             K_eigen_permute = permutation_matrix_val * K_eigen_permute * permutation_matrix_val.transpose();
         }
             
@@ -502,11 +501,11 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         SharedMatrix K_buffer = nullptr; 
         if (force_cartesian) { 
             K_buffer = std::make_shared<Matrix>();
-            K_buffer->transform(K[iD], sph_to_cart_matrix_);
+            K_buffer->transform(K[iD], cartao_to_ao_matrix_);
         } else {
             K_buffer = K[iD];
         }
-        auto K_buffer_eigen = K_buffer->eigen_map(); 
+        auto K_buffer_eigen = linalg::eigen_map(*K_buffer);
         
         timer_off("snLinK: Transform K");
         
@@ -517,7 +516,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             if (force_cartesian) {
                 K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
                 //K_buffer_eigen = K_buffer_eigen; 
-                K_buffer->back_transform(sph_to_cart_matrix_);
+                K_buffer->back_transform(cartao_to_ao_matrix_);
                 K[iD]->add(K_buffer);
             // ... otherwise the computation and addition can be bundled together 
             } else {
@@ -530,7 +529,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);        
             //K_buffer_eigen = K_buffer_eigen; 
             if (force_cartesian) {
-                K[iD]->back_transform(K_buffer, sph_to_cart_matrix_);          
+                K[iD]->back_transform(K_buffer, cartao_to_ao_matrix_);
             }
         }
         timer_off("snLinK: Execute integrator");
@@ -539,10 +538,10 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         timer_on("snLinK: Back-transform D and K");
         if (do_reorder) {
             auto permutation_matrix_val = permutation_matrix_.value();
-            auto D_eigen_permute = D[iD]->eigen_map();
+            auto D_eigen_permute = linalg::eigen_map(*D[iD]);
             D_eigen_permute = permutation_matrix_val.transpose() * D_eigen_permute * permutation_matrix_val; 
 
-            auto K_eigen_permute = K[iD]->eigen_map();
+            auto K_eigen_permute = linalg::eigen_map(*K[iD]);
             K_eigen_permute = permutation_matrix_val.transpose() * K_eigen_permute * permutation_matrix_val; 
         }
         timer_off("snLinK: Back-transform D and K");

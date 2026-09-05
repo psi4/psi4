@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -103,6 +103,7 @@ size_t DirectJK::num_computed_shells() {
 }
 
 size_t DirectJK::memory_estimate() {
+    // TODO: return an accurate value.
     return 0;  // Effectively
 }
 

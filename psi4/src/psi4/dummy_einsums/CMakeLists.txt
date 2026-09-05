@@ -4,11 +4,6 @@ list(APPEND sources
 
 if(TARGET Einsums::Einsums)
     psi4_add_module(bin dummy_einsums sources)
-    target_link_libraries(
-      dummy_einsums
-      PRIVATE
-        Einsums::Einsums
-      )
 
     if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD})
         if(APPLE)

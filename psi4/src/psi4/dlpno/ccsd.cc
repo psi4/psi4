@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,7 +56,11 @@
 namespace psi {
 namespace dlpno {
 
-DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNO(ref_wfn, options) {}
+DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNO(ref_wfn, options) {
+    lambda_requested_ = options_.get_bool("DLPNO_DO_LAMBDA");
+    onepdm_requested_ = options_.get_bool("DLPNO_DO_ONEPDM");
+    lambda_requested_ = lambda_requested_ || onepdm_requested_;
+}
 DLPNOCCSD::~DLPNOCCSD() {}
 
 SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
@@ -1247,10 +1251,14 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
 
         double delta_e_weak = 0.0;
 
+        const bool force_strong = lambda_requested_;
         int ij_strong = 0, ij_weak = 0;
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
-            if (std::fabs(e_ijs[ij]) >= 0.0 || i == j) { // Pair is strong pair, diagonal pairs are ALWAYS strong pairs
+            if (force_strong || std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_ || i == j) {
+                // Lambda contractions currently require every surviving pair in
+                // the strong-pair space. Ordinary right-hand calculations retain
+                // the requested strong/weak partition.
                 i_j_to_ij_strong_[i][j] = ij_strong;
                 ij_to_i_j_strong_.push_back(std::make_pair(i, j));
                 ++ij_strong;
@@ -1838,7 +1846,7 @@ void DLPNOCCSD::t1_fock() {
         (*Fij_bar)(i, j) += 2.0 * T_n_ij_[ij]->vector_dot(J_ijmb_[ij]);
         (*Fij_bar)(i, j) -= T_n_ij_[ij]->vector_dot(K_mibj_[ji]);
 
-        if (i > j) continue; // || i_j_to_ij_strong_[i][j] == -1) continue;
+        if (i > j || (!lambda_requested_ && i_j_to_ij_strong_[i][j] == -1)) continue;
 
         // Partially dress Fia and Fab (Jiang Eq. 99 and 101)
         // \overline{F}_{kc} = f_{kc} + [2(kc|me) - (ke|mc)] T_{m}^{e}
@@ -2684,7 +2692,7 @@ void DLPNOCCSD::lccsd_iterations() {
 
     // We only run the full set of iterations after Brueckner reaches "intermediate convergence"
     while (((brueckner_intermediate_converged_) && !(e_converged && r_converged)) || (iteration < BRUECKNER_N_MICRO_ITER && !brueckner_intermediate_converged_)) {
-        // RMS of residual per single LMO, for assesing convergence
+        // RMS of residual per single LMO, for assessing convergence
         std::vector<double> R_ia_rms(naocc, 0.0);
         // RMS of residual per LMO pair, for assessing convergence
         std::vector<double> R_iajb_rms(n_lmo_pairs, 0.0);
@@ -2850,6 +2858,10 @@ void DLPNOCCSD::lccsd_iterations() {
 double DLPNOCCSD::compute_dlpno_ccsd_energy() {
     timer_on("DLPNO-CCSD");
 
+    // Any Lambda amplitudes or density from an earlier Brueckner
+    // macroiteration no longer correspond to the current orbitals.
+    reset_lambda_state();
+
     print_header();
 
     timer_on("Setup Orbitals");
@@ -2981,6 +2993,13 @@ double DLPNOCCSD::compute_dlpno_ccsd_energy() {
     return e_ccsd_total;
 }
 
+void DLPNOCCSD::post_ccsd_correction(DLPNOCCSDPhase phase) {
+    if (!lambda_requested_ || phase == DLPNOCCSDPhase::InitialBrueckner) return;
+
+    solve_lambda(!brueckner_orbs_);
+    if (onepdm_requested_) compute_ao_opdm();
+}
+
 double DLPNOCCSD::compute_energy() {
 
     if (brueckner_orbs_) {
@@ -2998,23 +3017,53 @@ double DLPNOCCSD::compute_energy() {
         const double B_ALPHA = options_.get_double("DLPNO_BRUECKNER_ALPHA");
         const double BRUECKNER_R_CONV = options_.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
         const double BRUECKNER_GMIX_START = options_.get_double("BRUECKNER_GMIX_START");
-        const int BRUECKNER_DIIS_START = options_.get_int("BRUECKNER_DIIS_START");
-        const int BRUECKNER_DIIS_DELAY = options_.get_int("BRUECKNER_DIIS_DELAY");
-        const int BRUECKNER_DIIS_MAX_VECS = options_.get_int("BRUECKNER_DIIS_MAX_VECS");
 
-        DIISManager diis(BRUECKNER_DIIS_MAX_VECS, "BRUECKNER DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
-
-        // kappa_ia used for the rotation, kappa_ao is kappa_ia in AO
+        // kappa_ia is used for the occupied-virtual orbital rotation.
         SharedMatrix kappa_ia_old = std::make_shared<Matrix>("kappa_ia_old", naocc, nvirt);
         SharedMatrix kappa_ia = std::make_shared<Matrix>("kappa_ia", naocc, nvirt);
-        SharedMatrix diis_error = std::make_shared<Matrix>("diis_error", naocc, nvirt);
 
         double e_dlpno_ccsd = 0.0;
+        double initial_ccsd_corr = 0.0;
+        double initial_ccsd_total = 0.0;
+        bool have_initial_ccsd = false;
+
+        auto publish_bccd_energy = [&]() {
+            const double bccd_corr = scalar_variable("CCSD CORRELATION ENERGY");
+            const double bccd_total = scalar_variable("CCSD TOTAL ENERGY");
+
+            set_scalar_variable("BCCD CORRELATION ENERGY", bccd_corr);
+            set_scalar_variable("BCCD TOTAL ENERGY", bccd_total);
+            set_scalar_variable("DLPNO-BCCD CORRELATION ENERGY", bccd_corr);
+            set_scalar_variable("DLPNO-BCCD TOTAL ENERGY", bccd_total);
+            set_scalar_variable("CURRENT CORRELATION ENERGY", bccd_corr);
+            set_scalar_variable("CURRENT ENERGY", bccd_total);
+
+            // Keep the canonical-orbital CCSD result from macroiteration zero
+            // available under the conventional CCSD variables.
+            if (have_initial_ccsd) {
+                set_scalar_variable("CCSD CORRELATION ENERGY", initial_ccsd_corr);
+                set_scalar_variable("CCSD TOTAL ENERGY", initial_ccsd_total);
+            }
+        };
 
         while (!brueckner_converged_) {
             outfile->Printf("\n  ==> Brueckner Orbital Optimization Iteration %d <==\n\n", iteration);
 
+            // Macroiteration zero is also the requested non-Brueckner result,
+            // so converge its right-hand CCSD equations fully before applying
+            // an initial (T) or (T)_L correction.
+            const bool old_intermediate_convergence = brueckner_intermediate_converged_;
+            if (iteration == 0) brueckner_intermediate_converged_ = true;
             e_dlpno_ccsd = compute_dlpno_ccsd_energy();
+            if (iteration == 0) brueckner_intermediate_converged_ = old_intermediate_convergence;
+
+            if (iteration == 0) {
+                initial_ccsd_corr = scalar_variable("CCSD CORRELATION ENERGY");
+                initial_ccsd_total = scalar_variable("CCSD TOTAL ENERGY");
+                have_initial_ccsd = true;
+                set_scalar_variable("INITIAL DLPNO-CCSD CORRELATION ENERGY", initial_ccsd_corr);
+                set_scalar_variable("INITIAL DLPNO-CCSD TOTAL ENERGY", initial_ccsd_total);
+            }
 
             // Canonicalize PAOs (to create T1-error matrix)
             SharedMatrix X_pao_canon;  // canonical transformation of this domain's PAOs to
@@ -3023,7 +3072,7 @@ double DLPNOCCSD::compute_energy() {
 
             double alpha = (T1_max <= BRUECKNER_GMIX_START) ? B_ALPHA : 1.0;
 
-    #pragma omp parallel for
+#pragma omp parallel for
             for (int i = 0; i < C_lmo_->ncol(); ++i) { // occupied MOs
                 int ii = i_j_to_ij_[i][i];
                 auto S_pao_pno = submatrix_cols(*S_pao_, lmopair_to_paos_[ii]);
@@ -3036,43 +3085,48 @@ double DLPNOCCSD::compute_energy() {
 
             kappa_ia_old = kappa_ia->clone();
 
-            /*
-            if (iteration == BRUECKNER_DIIS_START) {
-                diis.set_error_vector_size(diis_error); // kappa_ia = T_ia is the "orbital gradient"... we want this to be 0
-                diis.set_vector_size(kappa_ia); // We want to extrapolate the new occupied orbital coefficents
-            }
-
-            if (iteration >= BRUECKNER_DIIS_START) {
-                diis.add_entry(diis_error.get(), kappa_ia.get());
-            }
-
-            if (iteration > BRUECKNER_DIIS_START + BRUECKNER_DIIS_DELAY) {
-                diis.extrapolate(kappa_ia.get());
-            }
-            */
-
             delta_D_ao_->subtract(linalg::doublet(C_lmo_, C_lmo_, false, true));
 
             // Compute max T1
             T1_max = 0.0;
-            for (int i = 0; i < T_ia_.size(); ++i) {
-                T1_max = std::max(T1_max, T_ia_[i]->absmax());
+            for (const auto& T_i : T_ia_) {
+                T1_max = std::max(T1_max, T_i->absmax());
             }
 
             outfile->Printf("\n    Brueckner Iteration %d: Energy = %16.12f, Max R1 = %10.3e\n", iteration, e_dlpno_ccsd, T1_max);
 
+            if (iteration == 0) post_ccsd_correction(DLPNOCCSDPhase::InitialBrueckner);
+
             if (fabs(T1_max) < BRUECKNER_R_CONV * 10.0) {
                 brueckner_intermediate_converged_ = true;
-                if (print_ > 1) outfile->Printf("    Brueckner orbital intermediate convergence satisfied in %d interations!\n", iteration);
+                if (print_ > 1) {
+                    outfile->Printf("    Brueckner orbital intermediate convergence satisfied in %d iterations!\n",
+                                    iteration);
+                }
             }
 
             if (fabs(T1_max) < BRUECKNER_R_CONV) {
                 brueckner_converged_ = true;
                 outfile->Printf("    Brueckner orbital optimization converged in %d iterations!\n", iteration);
+
+                // The initial triples correction releases large CCSD
+                // intermediates. If the starting orbitals already satisfy the
+                // Brueckner criterion, rebuild that same converged right-hand
+                // state before evaluating the separately labelled BCCD result.
+                if (iteration == 0 && algorithm_ == DLPNOMethod::CCSD_T) {
+                    const bool old_intermediate_convergence = brueckner_intermediate_converged_;
+                    brueckner_intermediate_converged_ = true;
+                    e_dlpno_ccsd = compute_dlpno_ccsd_energy();
+                    brueckner_intermediate_converged_ = old_intermediate_convergence;
+                }
+
+                publish_bccd_energy();
+                post_ccsd_correction(DLPNOCCSDPhase::FinalBrueckner);
                 break;
             } else if (iteration >= BRUECKNER_MAXITER) {
                 outfile->Printf("    WARNING: Brueckner orbital optimization did not converge in %d iterations! Max R1 = %10.3e\n", iteration, T1_max);
-                break;
+                throw PSIEXCEPTION(
+                    "Brueckner orbital optimization did not converge; no final DLPNO-BCCD result was published.");
             }
 
             // > BRUECKNER OPTIMIZATION < //
@@ -3089,10 +3143,12 @@ double DLPNOCCSD::compute_energy() {
             iteration++;
         }
 
-        return e_dlpno_ccsd;
+        return scalar_variable("CURRENT ENERGY");
 
     } else {
-        return compute_dlpno_ccsd_energy();
+        compute_dlpno_ccsd_energy();
+        post_ccsd_correction(DLPNOCCSDPhase::SinglePoint);
+        return scalar_variable("CURRENT ENERGY");
     }
 }
 

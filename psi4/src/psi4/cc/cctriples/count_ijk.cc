@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -33,7 +33,6 @@
 #include <cstdio>
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
@@ -48,34 +47,33 @@ void count_ijk() {
     int Ga, Gb, Gc;
     int a, b, c;
     int A, B, C;
-    int *occpi, *aoccpi, *boccpi;
-    int *virtpi, *avirtpi, *bvirtpi;
-    int *occ_off, *aocc_off, *bocc_off;
-    int *vir_off, *avir_off, *bvir_off;
+    const int *occ_off, *aocc_off, *bocc_off;
+    const int *vir_off, *avir_off, *bvir_off;
     int nijk;
     int nabc;
 
     nirreps = moinfo.nirreps;
 
     if (params.ref == 0) { /** RHF **/
-        occpi = moinfo.occpi;
         occ_off = moinfo.occ_off;
-
         nijk = 0;
-        for (Gi = 0; Gi < nirreps; Gi++) {
-            for (Gj = 0; Gj < nirreps; Gj++) {
-                for (Gk = 0; Gk < nirreps; Gk++) {
-                    for (i = 0; i < occpi[Gi]; i++) {
-                        I = occ_off[Gi] + i;
-                        for (j = 0; j < occpi[Gj]; j++) {
-                            J = occ_off[Gj] + j;
-                            for (k = 0; k < occpi[Gk]; k++) {
-                                K = occ_off[Gk] + k;
+        {
+            const auto& occpi = moinfo.occpi;
+            for (Gi = 0; Gi < nirreps; Gi++) {
+                for (Gj = 0; Gj < nirreps; Gj++) {
+                    for (Gk = 0; Gk < nirreps; Gk++) {
+                        for (i = 0; i < occpi[Gi]; i++) {
+                            I = occ_off[Gi] + i;
+                            for (j = 0; j < occpi[Gj]; j++) {
+                                J = occ_off[Gj] + j;
+                                for (k = 0; k < occpi[Gk]; k++) {
+                                    K = occ_off[Gk] + k;
 
-                                if (params.dertype == 1)
-                                    nijk++;
-                                else if (I >= J && J >= K)
-                                    nijk++;
+                                    if (params.dertype == 1)
+                                        nijk++;
+                                    else if (I >= J && J >= K)
+                                        nijk++;
+                                }
                             }
                         }
                     }
@@ -86,7 +84,7 @@ void count_ijk() {
         outfile->Printf("\n    Number of ijk index combinations:   %14d\n", nijk);
 
         if (params.dertype == 1) {
-            virtpi = moinfo.virtpi;
+            const auto& virtpi = moinfo.virtpi;
             vir_off = moinfo.vir_off;
             nabc = 0;
             for (Ga = 0; Ga < nirreps; ++Ga) {
@@ -106,10 +104,9 @@ void count_ijk() {
         }  // dertype==1
 
     } else if (params.ref == 2) { /** UHF **/
-
-        aoccpi = moinfo.aoccpi;
+        const auto& aoccpi = moinfo.aoccpi;
         aocc_off = moinfo.aocc_off;
-        boccpi = moinfo.boccpi;
+        const auto& boccpi = moinfo.boccpi;
         bocc_off = moinfo.bocc_off;
 
         outfile->Printf("\n    Number of ijk index combinations:\n");
@@ -215,9 +212,9 @@ void count_ijk() {
         outfile->Printf("    Spin Case ABB:                      %14d\n", nijk);
 
         if (params.dertype == 1) {
-            avirtpi = moinfo.avirtpi;
+            const auto& avirtpi = moinfo.avirtpi;
             avir_off = moinfo.avir_off;
-            bvirtpi = moinfo.bvirtpi;
+            const auto& bvirtpi = moinfo.bvirtpi;
             bvir_off = moinfo.bvir_off;
 
             outfile->Printf("\n    Number of abc index combinations:\n");

@@ -29,7 +29,7 @@ psi4.set_options({"ACTIVE": list(wfn.nmopi())})
 num_eig = 1
 ctol = 1.e-5
 etol = 1.e-7
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-NOT-KIDDING
     # otherwise CI conv and energies go haywire
     ctol = 1.e-4
     etol = 1.e-6

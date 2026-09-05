@@ -23,6 +23,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/diis.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_moinfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_params.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/globals.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/hbar_extra.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/init_X.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/lambda_residuals.cc

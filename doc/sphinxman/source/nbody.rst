@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2025 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -50,7 +50,8 @@ Basis Set Superposition Corrections
 
 The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Valiron-Mayer Function Counterpoise (VMFC) interaction energies for complexes composed of arbitrary numbers of monomers.
 
-.. caution:: August 2025, v1.10 many-body computations are no longer
+.. caution:: July 2026, v1.12 QCManyBody is no longer required but may need to be
+   separately installed. August 2025, v1.10 many-body computations are no longer
    using internal driver code but have been offloaded to QCManyBody
    software.
 

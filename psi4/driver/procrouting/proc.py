@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -1511,23 +1511,193 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     return wfn
 
 
+def validate_external_potential(external_potential) -> Dict:
+    """Validate and normalize the format of **external_potential** in preparation for class construction.
+
+    Parameters
+    ----------
+    external_potential
+        Specification for :py:class:`psi4.core.ExternalPotential`. Can be composed of point charges
+        (Q x y z), diffuse charges (Gaussian s-orbitals at a center; Q x y z width), or (Nao, Nao)
+        potential matrix. If only one of the three specified, it is assumed to be point charges for
+        backwards compatibility. Include diffuse charges as a dictionary with key "diffuse" or as the
+        second item in a list (None as first item if no point charges). Include a matrix as a dictionary
+        with key "matrix" or as the third item in a list. External potential will apply to the whole
+        molecule unless behind another dictionary key ("A", "B", or "C") to apply to portions of the
+        molecule for FI-SAPT. Most sensible list-of-lists, NumPy array, and
+        :py:class:`psi4.core.Matrix` formats are accepted. The points or diffuse array should be a
+        list-like structure where each row corresponds to a charge. Lines can be composed of
+        ``q, [x, y, z]`` or ``q, x, y, z`` (width as 3rd or 5th item for diffuse). Locations are in [a0].
+        See test_extern.py for many examples.
+
+    Returns
+    -------
+    dict
+        After some bounds, dimension, and shape checks, a normalized nested dict is returned with
+        outer keys of fragment labels, inner keys among {"points", "diffuse", "matrix"}, and inner
+        keys Python lists.
+
+    """
+    def validate_charge_list(lqxyz, diffuse: bool=False):
+        # check charge has form Q x y z, Q [x y z], Q x y z w, or Q [x y z] w
+
+        def validate_single_charge(chg):
+            try:
+                nchg = len(chg)
+            except TypeError:
+                return False
+
+            if (not diffuse) and nchg == 2:
+                return chg[0], chg[1][0], chg[1][1], chg[1][2]
+            elif diffuse and nchg == 3:
+                return chg[0], chg[1][0], chg[1][1], chg[1][2], chg[2]
+            elif (not diffuse) and nchg == 4:
+                return chg[0], chg[1], chg[2], chg[3]
+            elif diffuse and nchg == 5:
+                return chg[0], chg[1], chg[2], chg[3], chg[4]
+            else:
+                return False
+
+        flattened = [validate_single_charge(pt) for pt in lqxyz]
+
+        # reject if a charge line has wrong format or if spec is nested too deep or too shallow (can
+        #   happen due to flexible input format and backwards compatibility with points-only).
+        for itm in flattened:
+            if itm is False:
+                return False
+        try:
+            if np.array(flattened).ndim != 2:
+                return False
+        except ValueError:
+            return False
+        return flattened
+
+    def validate_potential_array(mat):
+        if isinstance(mat, core.Matrix):
+            npmat = mat.np
+        elif isinstance(mat, list):
+            npmat = np.array(mat)
+        elif isinstance(mat, np.ndarray):
+            npmat = mat
+        else:
+            return False
+
+        if npmat.ndim != 2 or npmat.shape[0] != npmat.shape[1]:
+            return False
+
+        return npmat.tolist()
+
+    frag_keys = set("ABC")
+    mode_keys_list = ["points", "diffuse", "matrix"]
+
+    if isinstance(external_potential, dict) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
+        ep = {k.upper(): v for k, v in external_potential.items()}
+    else:
+        # assign "C" to mean whole molecule in the non-SAPT case
+        ep = {"C": external_potential}
+
+    # expand input structure: may be single points list or types list or types dict or fragments dict (for SAPT)
+    ep1 = {}
+    for frag, frag_ep in ep.items():
+        if isinstance(frag_ep, dict):
+            if frag_ep.keys() <= set(mode_keys_list):
+                ep1[frag] = frag_ep
+            else:
+                raise ValidationError(f"external_potential: primary or sec keys should be among {mode_keys_list}, not {frag_ep.keys()}. Full input: {external_potential}")
+        elif isinstance(frag_ep, list):
+            if (w := validate_charge_list(frag_ep)):
+                ep1[frag] = dict(zip(mode_keys_list, [w]))
+            else:
+                ep1[frag] = dict(zip(mode_keys_list, frag_ep))
+        elif isinstance(frag_ep, np.ndarray):
+                ep1[frag] = dict(zip(mode_keys_list, [frag_ep]))
+        else:
+            raise ValidationError(f"external_potential: ought to be dict, list, or np.ndarray, not {type(frag_ep)}. Full input: {external_potential}")
+
+    # validate each type of spec in each a/b/c fragment
+    ep2 = {abc: {} for abc in ep1}
+    for abc, frag_ep in ep1.items():
+        if (points := frag_ep.get("points")) is not None:
+            if (vpoints := validate_charge_list(points)):
+                ep2[abc]["points"] = vpoints
+            else:
+                raise ValidationError(f"external_potential: bad points (should be 2D, (npts, 4), and np.ndarray or list: {points}\nFull input: {external_potential}")
+
+        if (diffuse := frag_ep.get("diffuse")) is not None:
+            if (vdiffuse := validate_charge_list(diffuse, diffuse=True)):
+                ep2[abc]["diffuse"] = vdiffuse
+            else:
+                raise ValidationError(f"external_potential: bad diffuse (should be 2D, (npts, 5), and np.ndarray or list: {diffuse}\nFull input: {external_potential}")
+
+        if (matrix := frag_ep.get("matrix")) is not None:
+            if (vmatrix := validate_potential_array(matrix)):
+                ep2[abc]["matrix"] = vmatrix
+            else:
+                raise ValidationError(f"external_potential: bad matrix (should be 2D, square, and psi4.core.Matrix, np.ndarray or list): {matrix}\nFull input: {external_potential}")
+
+    return ep2
+
 def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dict[str, List]], wfn: "core.Wavefunction"):
-    vep = p4util.validate_external_potential(external_potential)
+    vep = validate_external_potential(external_potential)
 
     total_ep = core.ExternalPotential()
 
     for frag, ep_spec in vep.items():
-        if "diffuse" in ep_spec:
-            raise ValidationError("Diffuse charges not yet supported")
-
-        if "matrix" in ep_spec:
-            raise ValidationError("Matrix potential not yet supported")
-
         frag_ep = core.ExternalPotential()
+  
+        if "matrix" in ep_spec:
+            matrix = core.Matrix.from_array(np.array(ep_spec["matrix"]))
+            frag_ep.setMatrix(matrix)
+            total_ep.setMatrix(matrix)
 
         if "points" in ep_spec:
             frag_ep.appendCharges(ep_spec["points"])
             total_ep.appendCharges(ep_spec["points"])
+
+        if "diffuse" in ep_spec:
+            qXYZw = np.array(ep_spec["diffuse"])
+            ndiff = len(qXYZw)
+            charges = core.Vector.from_array(qXYZw[:, [0]].ravel())
+            geom = qXYZw[:, [1, 2, 3]]
+            widths = qXYZw[:, [4]].ravel()
+
+            # A diffuse external potential is simply a collection of Gaussians of certain widths at certain locations.
+            # We can re-use the machinery of a molecule, here, a dummy one of heliums, and a basis set of s-functions.
+            # Normally, all basis sets go through the gbs file -> shell_map -> qcdb.BasisSet -> dict -> `construct_basisset_from_pydict` -> wfn process, but this is simple enough to assemble outright, with a few notes:
+            # * element choice (helium) & ghostiness (True) in diffmol don't affect values. mind all-caps in shell_map
+            # * elbl in molecule (He_1, He_2, etc.) and first of list in shell_map assign a particular Gaussian width to a particular fake helium, analogous to a custom per-center basis set specification
+            # * second of list in shell_map is hash used to label the BasisSet in Molecule symmetry reckoning.
+            #    Here, molecule is explicitly c1, so it's crude hash substitute. Alter in future if multi-s-functions are used
+            # * puream irrelevant since only s-functions
+
+            puream = True
+            diffmol = core.Molecule.from_arrays(
+                units="Bohr",
+                geom=geom,
+                elem = ["He"] * len(widths),
+                real = [False] * len(widths),
+                elbl = [f"@He_{iat+1}" for iat in range(len(widths))],
+                fix_symmetry="c1",
+                fix_com=True,
+                fix_orientation=True)
+            diffbas = {
+                "blend": "Diffuse Charges",
+                "key": "(none)",
+                "message": "",
+                "name": "Diffuse Charges",
+                "puream": bool(puream),
+                "shell_map": [
+                    [f"HE_{iwd+1}", f"{wd:.2f}", [0, (wd, 1.0)]]
+                    for iwd, wd in enumerate(widths)],
+            }
+
+            # charges smeared over space as a Gaussian fn are conveniently computed
+            #   with BS machinery, but need to undo ordinary BS normalization
+            corediffbasis = core.BasisSet.construct_from_pydict(diffmol, diffbas, puream)
+            corediffbasis.negative_gaussian_normalization_to_coefficients()
+
+            frag_ep.addGaussian(corediffbasis, charges)
+            total_ep.addGaussian(corediffbasis, charges)
 
         wfn.set_potential_variable(frag, frag_ep)
     wfn.set_external_potential(total_ep)
@@ -4385,8 +4555,7 @@ def run_dlpnomp2(name, **kwargs):
                               """reference wavefunction must be C1.\n""")
 
     if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-MP2 is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        raise ValidationError(f"DLPNO-MP2 is not available for {core.get_global_option('REFERENCE')} references.")
 
     core.tstart()
     core.print_out('\n')
@@ -4436,7 +4605,16 @@ def run_dlpnoccsd(name, **kwargs):
         ["DLPNO", 'DF_BASIS_CC'],
         ['SCF_TYPE'],
         ["DLPNO", "DLPNO_LOCAL_ORBITALS"],
-        ["DLPNO", "DLPNO_ALGORITHM"])
+        ["DLPNO", "DLPNO_ALGORITHM"],
+        ["DLPNO", "DLPNO_BRUECKNER_ORBS"],
+        ["DLPNO", "DLPNO_DO_LAMBDA"],
+        ["DLPNO", "DLPNO_DO_ONEPDM"])
+
+    if name not in {"dlpno-ccsd", "dlpno-bccd"}:
+        raise ValidationError(f"run_dlpnoccsd: method '{name}' is not recognized")
+
+    do_brueckner = name == "dlpno-bccd"
+    do_onepdm = kwargs.pop("_dlpno_do_onepdm", False)
 
     # Alter default algorithm (if not set by user)
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4462,12 +4640,11 @@ def run_dlpnoccsd(name, **kwargs):
                               """reference wavefunction must be C1.\n""")
     
     if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSD is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        raise ValidationError(f"DLPNO-CCSD is not available for {core.get_global_option('REFERENCE')} references.")
     
     core.tstart()
     core.print_out('\n')
-    p4util.banner('DLPNO-CCSD')
+    p4util.banner('DLPNO-BCCD' if do_brueckner else 'DLPNO-CCSD')
     core.print_out('\n')
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
@@ -4484,12 +4661,17 @@ def run_dlpnoccsd(name, **kwargs):
         ref_wfn.set_basisset("DF_BASIS_THC", aux_basis_thc)
 
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD")
+    core.set_local_option("DLPNO", "DLPNO_BRUECKNER_ORBS", do_brueckner)
+    core.set_local_option("DLPNO", "DLPNO_DO_LAMBDA", do_onepdm)
+    core.set_local_option("DLPNO", "DLPNO_DO_ONEPDM", do_onepdm)
 
     dlpnoccsd_wfn = core.dlpno(ref_wfn)
     dlpnoccsd_wfn.compute_energy()
 
-    dlpnoccsd_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_wfn.variable('CCSD TOTAL ENERGY'))
-    dlpnoccsd_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsd_wfn.variable('CCSD CORRELATION ENERGY'))
+    energy_label = 'BCCD' if do_brueckner else 'CCSD'
+    dlpnoccsd_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_wfn.variable(f'{energy_label} TOTAL ENERGY'))
+    dlpnoccsd_wfn.set_variable(
+        'CURRENT CORRELATION ENERGY', dlpnoccsd_wfn.variable(f'{energy_label} CORRELATION ENERGY'))
 
     # Shove variables into global space
     for k, v in dlpnoccsd_wfn.variables().items():
@@ -4498,6 +4680,18 @@ def run_dlpnoccsd(name, **kwargs):
     optstash.restore()
     core.tstop()
     return dlpnoccsd_wfn
+
+_DLPNO_TRIPLES_METHOD_SETTINGS = {
+    # method: (Brueckner orbitals, Lambda equations, semicanonical T0)
+    "dlpno-ccsd(t0)": (False, False, True),
+    "dlpno-ccsd(t)": (False, False, False),
+    "dlpno-ccsd(t)_l": (False, True, False),
+    "dlpno-ccsd(at)": (False, True, False),
+    "dlpno-bccd(t)": (True, False, False),
+    "dlpno-bccd(t)_l": (True, True, False),
+    "dlpno-bccd(at)": (True, True, False),
+}
+
 
 def run_dlpnoccsd_t(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -4509,7 +4703,14 @@ def run_dlpnoccsd_t(name, **kwargs):
         ['SCF_TYPE'],
         ["DLPNO", "DLPNO_LOCAL_ORBITALS"],
         ["DLPNO", "DLPNO_ALGORITHM"],
-        ["DLPNO", "T0_APPROXIMATION"])
+        ["DLPNO", "T0_APPROXIMATION"],
+        ["DLPNO", "DLPNO_BRUECKNER_ORBS"],
+        ["DLPNO", "DLPNO_DO_LAMBDA"],
+        ["DLPNO", "DLPNO_DO_ONEPDM"])
+
+    if name not in _DLPNO_TRIPLES_METHOD_SETTINGS:
+        raise ValidationError(f"run_dlpnoccsd_t: method '{name}' is not recognized")
+    do_brueckner, do_lambda, do_t0 = _DLPNO_TRIPLES_METHOD_SETTINGS[name]
 
     # Alter default algorithm (if not set by user)
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4535,12 +4736,12 @@ def run_dlpnoccsd_t(name, **kwargs):
                               """reference wavefunction must be C1.\n""")
     
     if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSD(T) is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        raise ValidationError(f"DLPNO-CCSD(T) is not available for {core.get_global_option('REFERENCE')} references.")
     
     core.tstart()
     core.print_out('\n')
-    p4util.banner('DLPNO-CCSD(T)')
+    method_banner = name.upper().replace("(AT)", "(T)_L")
+    p4util.banner(method_banner)
     core.print_out('\n')
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
@@ -4557,16 +4758,21 @@ def run_dlpnoccsd_t(name, **kwargs):
         ref_wfn.set_basisset("DF_BASIS_THC", aux_basis_thc)
 
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD(T)")
-    if name == "dlpno-ccsd(t0)":
-        core.set_local_option("DLPNO", "T0_APPROXIMATION", True)
-    else:
-        core.set_local_option("DLPNO", "T0_APPROXIMATION", False)
+    core.set_local_option("DLPNO", "T0_APPROXIMATION", do_t0)
+    core.set_local_option("DLPNO", "DLPNO_BRUECKNER_ORBS", do_brueckner)
+    core.set_local_option("DLPNO", "DLPNO_DO_LAMBDA", do_lambda)
+    core.set_local_option("DLPNO", "DLPNO_DO_ONEPDM", False)
 
     dlpnoccsd_t_wfn = core.dlpno(ref_wfn)
     dlpnoccsd_t_wfn.compute_energy()
 
-    dlpnoccsd_t_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_t_wfn.variable('CCSD(T) TOTAL ENERGY'))
-    dlpnoccsd_t_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsd_t_wfn.variable('CCSD(T) CORRELATION ENERGY'))
+    if do_lambda:
+        energy_label = 'A-BCCD(T)' if do_brueckner else 'A-CCSD(T)'
+    else:
+        energy_label = 'BCCD(T)' if do_brueckner else 'CCSD(T)'
+    dlpnoccsd_t_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_t_wfn.variable(f'{energy_label} TOTAL ENERGY'))
+    dlpnoccsd_t_wfn.set_variable(
+        'CURRENT CORRELATION ENERGY', dlpnoccsd_t_wfn.variable(f'{energy_label} CORRELATION ENERGY'))
 
     # Shove variables into global space
     for k, v in dlpnoccsd_t_wfn.variables().items():
@@ -4576,67 +4782,32 @@ def run_dlpnoccsd_t(name, **kwargs):
     core.tstop()
     return dlpnoccsd_t_wfn
 
-def run_dlpnoccsd_l(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a DLPNO-CCSD_Lambda calculation.
-    """
-    optstash = p4util.OptionsState(
-        ["DLPNO", 'DF_BASIS_CC'],
-        ['SCF_TYPE'],
-        ["DLPNO", "DLPNO_ALGORITHM"])
+def run_dlpnoccsd_property(name, **kwargs):
+    """Compute DLPNO-CCSD/BCCD one-electron properties through OEProp."""
+    properties = kwargs.pop("properties")
+    proc_util.oeprop_validator(properties)
+    properties = [prop.upper() for prop in properties]
 
-    # Alter default algorithm (if not set by user)
-    if not core.has_global_option_changed('SCF_TYPE'):
-        core.set_global_option('SCF_TYPE', 'DF')
-        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+    kwargs["_dlpno_do_onepdm"] = True
+    dlpno_wfn = run_dlpnoccsd(name, **kwargs)
 
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        molecule = kwargs.get('molecule', core.get_active_molecule())
-        # We need to force SCF to run in c1 for DLPNO methods
-        # TODO: Investigate why local DF domains are not properly assigned
-        # when the preceding SCF is NOT run in c1
-        if molecule.schoenflies_symbol() != 'c1':
-            core.print_out("""\n  A requested method does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n\n""")
-            molecule.reset_point_group("c1")
-            molecule.update_geometry()
-            
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
-    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
-        raise ValidationError("""  DLPNO-CCSD_Lambda does not make use of molecular symmetry: """
-                              """reference wavefunction must be C1.\n""")
-    
-    if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSD_Lambda is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
-    
-    core.tstart()
-    core.print_out('\n')
-    p4util.banner('DLPNO-CCSD_Lambda')
-    core.print_out('\n')
+    # The C++ solver publishes a spin-summed AO OPDM. OEProp expects one-spin
+    # density for a restricted wavefunction and supplies the identical beta block.
+    Da_ao = dlpno_wfn.array_variable("DLPNO-CCSD AO OPDM").clone()
+    Da_ao.scale(0.5)
 
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                    core.get_option("DLPNO", "DF_BASIS_CC"),
-                                    "RIFIT", core.get_global_option('BASIS'))
-    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+    oe = core.OEProp(dlpno_wfn)
+    oe.set_Da_ao(Da_ao)
+    oe.set_title(name.upper())
+    for prop in properties:
+        oe.add(prop)
+    oe.compute()
+    dlpno_wfn.oeprop = oe
 
-    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD_Lambda")
+    for key, value in dlpno_wfn.variables().items():
+        core.set_variable(key, value)
 
-    dlpnoccsd_l_wfn = core.dlpno(ref_wfn)
-    dlpnoccsd_l_wfn.compute_energy()
-
-    # dlpnoccsd_l_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_t_wfn.variable('CCSD(T) TOTAL ENERGY'))
-    # dlpnoccsd_l_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsd_t_wfn.variable('CCSD(T) CORRELATION ENERGY'))
-
-    # Shove variables into global space
-    for k, v in dlpnoccsd_l_wfn.variables().items():
-        core.set_variable(k, v)
-
-    optstash.restore()
-    core.tstop()
-    return dlpnoccsd_l_wfn
+    return dlpno_wfn
 
 def run_mp2f12(name, **kwargs):
     r"""Function encoding sequence of PSI module calls
@@ -5181,7 +5352,6 @@ def run_sapt_ct(name, **kwargs):
     core.print_out('    SAPT Charge Transfer          %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n\n' %
         tuple(CT * u for u in units))
     core.set_variable("SAPT CT ENERGY", CT)  # P::e SAPT
-
     optstash.restore()
     return dimer_wfn
 
@@ -5191,6 +5361,7 @@ def run_fisapt(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'SAVE_JK'])
+    core.timer_on("FISAPT")
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -5256,6 +5427,8 @@ def run_fisapt(name, **kwargs):
     if "-d" in name.lower():
         proc_util.sapt_empirical_dispersion(name, ref_wfn)
 
+    fisapt_wfn.save_variables_to_wfn(ref_wfn, external_potentials=kwargs.get("external_potentials", None))
+    core.timer_off("FISAPT")
     optstash.restore()
     return ref_wfn
 

@@ -43,6 +43,7 @@ if(${ENABLE_ecpint})
         set(ecpint_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/ecpint CACHE PATH "path to internally built ecpint-config.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: ecpint${ColourReset}")
     add_library(ecpint_external INTERFACE)  # dummy
 endif()
 

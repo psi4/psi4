@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -99,6 +99,15 @@ method_governing_type_keywords = {
         "ccsd(t)"      : "cc_type",
         "a-ccsd(t)"    : "cc_type",
         "bccd(t)"      : "cc_type",
+        "dlpno-ccsd"  : "cc_type",
+        "dlpno-bccd"  : "cc_type",
+        "dlpno-ccsd(t0)": "cc_type",
+        "dlpno-ccsd(t)" : "cc_type",
+        "dlpno-ccsd(t)_l": "cc_type",
+        "dlpno-ccsd(at)": "cc_type",
+        "dlpno-bccd(t)" : "cc_type",
+        "dlpno-bccd(t)_l": "cc_type",
+        "dlpno-bccd(at)": "cc_type",
         "cc3"          : "cc_type",
         "ccenergy"     : "cc_type",
 

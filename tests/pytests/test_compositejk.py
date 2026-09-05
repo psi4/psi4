@@ -1,7 +1,7 @@
 import pytest
 
 from utils import compare_values, compare
-from addons import using
+from addons import using, uusing
 
 import psi4
 
@@ -111,7 +111,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       },
-                      marks=pytest.mark.nbody,
+                      marks=using("qcmanybody"),
                       id="h2o/na+ (rhf ie)"),
     ],
 )
@@ -167,13 +167,10 @@ def test_seminum(inp, scf, mols, request):
         #SNLINK_FORCE_CARTESIAN doesnt work with symmetry currently
         molecule.reset_point_group("C1")
 
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
         tol = 6
     else:
         tol = 7e-6
-        psi4.set_options({"e_convergence": 9, "d_convergence": 7e-7})
-        if "cosx-h2o/na+" in test_id:
-            psi4.set_options({"d_convergence": 1e-5})
 
     # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
@@ -183,6 +180,27 @@ def test_seminum(inp, scf, mols, request):
     psi4.set_options({"scf_type" : "pk"})
     energy_pk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
     assert compare_values(energy_pk, energy_seminum, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
+
+
+@uusing("gauxc")
+def test_snlink_force_cartesian_guard(mols):
+    """Sentinel for snLinK cartesian transform path."""
+
+    molecule = mols["h2o"]
+    molecule.reset_point_group("C1")
+
+    psi4.set_options(
+        {
+            "scf_type": "dfdirj+snlink",
+            "basis": "cc-pvdz",
+            "reference": "rhf",
+            "snlink_force_cartesian": True,
+        }
+    )
+
+    energy = psi4.energy("hf", molecule=molecule)
+    assert compare_values(-76.026788692185, energy, 6, "snlink force-cartesian sentinel energy")
+
 
 @pytest.mark.parametrize(
     "inp",
@@ -216,7 +234,7 @@ def test_seminum(inp, scf, mols, request):
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       },
-                      marks=pytest.mark.nbody,
+                      marks=using("qcmanybody"),
                       id="h2o/na+ (rhf ie)"),
     ],
 )
@@ -237,10 +255,6 @@ def test_seminum_incfock(inp, scf, mols, request):
     molecule = mols[inp["molecule"]]
     psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz", "incfock": False})
     psi4.set_options(inp["options"])
-
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        if "cosx-h2o/na+" in test_id:
-            psi4.set_options({"e_convergence": 9, "d_convergence": 1e-5})
 
     # compute energy+wfn without IncFock 
     energy_seminum_noinc, wfn_seminum_noinc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)

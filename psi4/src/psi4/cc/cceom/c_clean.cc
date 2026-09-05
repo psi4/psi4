@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,7 +35,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -47,20 +46,21 @@ namespace cceom {
  *** and virtual orbitals.                                    ***/
 
 void c_clean(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf) {
-    int *occpi, *virtpi, *occ_off, *vir_off, *openpi, C_irr;
+    int *occ_off, *vir_off;
+    int C_irr;
     int nirreps, *occ_sym, *vir_sym;
     int mn, ef, m, n, e, f, h, M, N, E, F;
     int msym, nsym, esym, fsym;
 
     C_irr = CME->my_irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
     global_dpd_->file2_mat_rd(CME);
@@ -139,7 +139,7 @@ void c_clean(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbu
 }
 
 void c_cleanSS(dpdfile2 *CME, dpdfile2 *Cme) {
-    int *occpi, *virtpi, *occ_off, *vir_off, *openpi;
+    int *occ_off, *vir_off;
     int nirreps, *occ_sym, *vir_sym;
     int mn, ef, m, n, e, f;
     int h, M, N, E, F;
@@ -147,13 +147,13 @@ void c_cleanSS(dpdfile2 *CME, dpdfile2 *Cme) {
 
     C_irr = CME->my_irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
     global_dpd_->file2_mat_rd(CME);

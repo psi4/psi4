@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -50,16 +50,21 @@ import os
 import warnings
 from contextlib import contextmanager
 from types import ModuleType
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, TYPE_CHECKING, Union
 
 import numpy as np
-from qcelemental.models import AtomicInput
+
+from qcelemental.models.v1 import AtomicInput as AtomicInput_v1
+from qcelemental.models.v2 import AtomicInput as AtomicInput_v2
 
 from psi4 import core
 from psi4.metadata import __version__
 
 from . import p4regex
 from .exceptions import ValidationError
+
+if TYPE_CHECKING:
+    import qcelemental
 
 
 def kwargs_lower(kwargs: Dict[str, Any]) -> Dict[str, Any]:
@@ -565,15 +570,20 @@ def prepare_options_for_set_options() -> Dict[str, Any]:
 
 def state_to_atomicinput(
     *,
+    dtype: int = 1,
     driver: str,
     method: str,
     basis: Optional[str] = None,
     molecule: Optional[core.Molecule] = None,
-    function_kwargs: Optional[Dict[str, Any]] = None) -> AtomicInput:
+    function_kwargs: Optional[Dict[str, Any]] = None) -> Union["qcelemental.models.v1.AtomicInput",
+"qcelemental.models.v2.AtomicInput"]:
     """Form a QCSchema for job input from the current state of |PSIfour| settings.
 
     Parameters
     ----------
+    dtype
+        QCSchema version to target.
+        Note that the default 1 (needed for optking compat) can't succeed with Python >=3.14 .
     driver
         {'energy', 'gradient', 'hessian'}
         Target derivative level.
@@ -589,7 +599,7 @@ def state_to_atomicinput(
 
     Returns
     -------
-    ~qcelemental.models.AtomicInput
+    ~qcelemental.models.AtomicInput, ~qcelemental.models.v2.AtomicInput
         QCSchema instance including current keyword set and provenance.
 
     """
@@ -603,7 +613,8 @@ def state_to_atomicinput(
     kw_basis = keywords.pop("basis", None)
     basis = basis or kw_basis
 
-    resi = AtomicInput(
+    if dtype == 1:
+        resi = AtomicInput_v1(
          **{
             "driver": driver,
             "extras": {
@@ -617,6 +628,25 @@ def state_to_atomicinput(
             "molecule": molecule.to_schema(dtype=2),
             "provenance": provenance_stamp(__name__),
          })
+    elif dtype == 2:
+        resi = AtomicInput_v2(
+         **{
+            "specification": {
+                "driver": driver,
+                "extras": {
+                    "wfn_qcvars_only": True,
+                },
+                "model": {
+                    "method": method,
+                    "basis": basis,
+                },
+                "keywords": keywords,
+            },
+            "molecule": molecule.to_schema(dtype=3),
+            "provenance": provenance_stamp(__name__),
+         })
+    else:
+        raise ValidationError(f"QCSchema version {dtype} not recognized.")
 
     return resi
 

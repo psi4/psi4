@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -571,6 +571,7 @@ void Wavefunction::common_init() {
             } else if (perturb_with == "DX") {
                 dipole_field_type_ = dx;
             } else if (perturb_with == "SPHERE") {
+                outfile->Printf("  WARNING: Option PERTURB_WITH=SPHERE is deprecated and may be removed as soon as v1.13.\n");
                 dipole_field_type_ = sphere;
             } else {
                 outfile->Printf("Unknown PERTURB_WITH. Applying no perturbation.\n");

@@ -30,10 +30,7 @@ def test_cc_polaroptrot():
     omega = [589, 355, 'nm']
     psi4.set_options({'gauge': 'both', 'omega': omega, 'freeze_core': True, 'r_convergence': 10})
 
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-        rot_tol = 3
-    else:
-        rot_tol = 2
+    rot_tol = 3
 
     e,wfn = psi4.properties('CCSD',properties=["polarizability","rotation"],return_wfn=True)
 
@@ -105,6 +102,9 @@ def test_cc_roa():
     psi4.set_options({"basis":"cc-pVDZ"})
     omega = [589, 'nm']
     psi4.set_options({'gauge': 'both', 'omega': omega, 'freeze_core': True, 'r_convergence': 10})
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"d_convergence": 3e-10})
 
     e,wfn = psi4.properties('CCSD',properties=["roa_tensor"],return_wfn=True)
 

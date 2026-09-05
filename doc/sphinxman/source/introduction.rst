@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2025 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -613,7 +613,7 @@ Architectures
 Compilers
     |PSIfour| has been successfully compiled using Intel, GCC, and Clang
     compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
-    C++20 compliance (now GCC version 10.0 or above).
+    C++20 compliance.
     For some architectures, a :ref:`precompiled binary
     <sec:conda>` is available. See :ref:`Compiling and Installing
     <sec:installFile>` for details.
@@ -630,9 +630,10 @@ Python
     |PSIfour| 1.8 supports Python 3.8, 3.9, 3.10, and 3.11.
     |PSIfour| 1.9 supports Python 3.8, 3.9, 3.10, 3.11, and 3.12.
     |PSIfour| 1.10 supports Python 3.10, 3.11, 3.12, and 3.13.
+    |PSIfour| 1.11 supports Python 3.10, 3.11, 3.12, 3.13, and 3.14.
     The future plan is to (1) be compatible with 3.8 and above until there is a good reason to drop
     older versions but (2) only build and test for versions conda-forge supports.
-    The current master supports 3.10, 3.11, 3.12, and 3.13.
+    The current master supports 3.10, 3.11, 3.12, 3.13, and 3.14.
 
 .. index:: license
 
@@ -709,7 +710,7 @@ For more tables with capabilities details:
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
     | CCD                     | RHF               | DF/CD             | E/G        |            |            |            |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
-    | BCCD                    | RHF/UHF/ROHF      | CONV              | E          |            |            |            |            |
+    | BCCD                    | RHF/UHF/ROHF      | CONV              | E          |            |            | E          |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
     | CC2                     | RHF/UHF/ROHF      | CONV              | E/G        |            |            |            |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
@@ -717,9 +718,9 @@ For more tables with capabilities details:
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
     | CCSD(T)                 | RHF/UHF/ROHF      | CONV/DF/CD        | E/G        |            | E [#f2]_   | E          |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
-    | A-CCSD(T)               | RHF               | CONV/DF/CD        | E          |            |            |            |            |
+    | A-CCSD(T)               | RHF               | CONV/DF/CD        | E          |            |            | E          |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
-    | BCCD(T)                 | RHF/UHF/ROHF      | CONV              | E          |            |            |            |            |
+    | BCCD(T)                 | RHF/UHF/ROHF      | CONV              | E          |            |            | E          |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
     | CC3                     | RHF/UHF/ROHF      | CONV              | E          |            |            |            |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+

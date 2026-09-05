@@ -1,9 +1,12 @@
-cmake_minimum_required(VERSION 3.19...4.0)
+cmake_minimum_required(VERSION 3.19...4.2)
 cmake_policy(SET CMP0094 NEW)
 if (POLICY CMP0167)
     # L2 not prepared for BoostConfig instead of FindBoost
     cmake_policy(SET CMP0167 OLD)
 endif ()
+if (POLICY CMP0190)
+    cmake_policy(SET CMP0190 OLD)
+endif()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -137,11 +140,11 @@ if(${ENABLE_libefp})
     #list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using pylibefp${ColourReset}: ${_loc} (version ${pylibefp_VERSION})")
 else()
-    message(STATUS "Disabled libefp ${libefp_DIR} ${pylibefp_DIR}")
+    message(STATUS "Disabled libefp ${libefp_DIR} ${pylibefp_DIR} (deferrable to runtime)")
 endif()
 
 if(${ENABLE_Einsums})
-    find_package(Einsums 1.0.6 CONFIG REQUIRED)  # edit in codedeps
+    find_package(Einsums 1.1.3 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
@@ -180,7 +183,7 @@ if(${ENABLE_gdma})
     get_property(_loc TARGET gdma::pygdma PROPERTY LOCATION)
     message(STATUS "${Cyan}Found gdma${ColourReset}: ${_loc} (version ${gdma_VERSION})")
 else()
-    message(STATUS "Disabled gdma ${gdma_DIR}")
+    message(STATUS "Disabled gdma ${gdma_DIR} (deferrable to runtime)")
 endif()
 
 find_package(Libint2 2.8.1 CONFIG REQUIRED  # edit in codedeps
@@ -206,11 +209,11 @@ if(${ENABLE_mdi})
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using mdi${ColourReset}: ${_loc} (version ${mdi_VERSION})")
 else()
-    message(STATUS "Disabled MDI ${mdi_DIR}")
+    message(STATUS "Disabled MDI ${mdi_DIR} (deferrable to runtime)")
 endif ()
 
 if(${ENABLE_OpenOrbitalOptimizer})
-    find_package(OpenOrbitalOptimizer 0.2 CONFIG REQUIRED)
+    find_package(OpenOrbitalOptimizer 0.3 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using OpenOrbitalOptimizer${ColourReset}: ${_loc} (version ${OpenOrbitalOptimizer_VERSION})")
@@ -261,9 +264,13 @@ elseif(UNIX)
 endif()
 
 # add -pedantic-errors flag here, if FORCE_PEDANTIC is enabled 
-if(${FORCE_PEDANTIC}) 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+if(${FORCE_PEDANTIC})
+  if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
+  else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+  endif()
 endif()
 
 # <<<  Build  >>>
@@ -337,11 +344,15 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
               ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
-
 install(
   FILES ../pytest.ini
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
   )
+
+    # throttle the thousands of lines of bases, quadratures, and tests upon first install
+set(_save_CMAKE_INSTALL_MESSAGE "${CMAKE_INSTALL_MESSAGE}")
+set(CMAKE_INSTALL_MESSAGE NEVER)
+
 install(
   DIRECTORY
     ../tests/pytests/
@@ -404,7 +415,9 @@ install(DIRECTORY share/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
         MESSAGE_NEVER
         PATTERN "*.bin" EXCLUDE
-        PATTERN "*.pyc" EXCLUDE)
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "fsapt.py" EXCLUDE
+    )
 
 install(FILES share/psi4/quadratures/1_x/R_avail${_endian_ext}.bin
         RENAME quadratures/1_x/R_avail.bin
@@ -414,8 +427,15 @@ install(FILES share/psi4/quadratures/1_x/error${_endian_ext}.bin
         RENAME quadratures/1_x/error.bin
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4)
 
+set(CMAKE_INSTALL_MESSAGE "${_save_CMAKE_INSTALL_MESSAGE}")
+
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
+
+# install(FILES ${CMAKE_SOURCE_DIR}/driver/procrouting/sapt/fsapt.py 
+install(FILES driver/procrouting/sapt/fsapt.py 
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/fsapt
+)
 
     # <<<  install external's share/ to psi4 share/  >>>
 
@@ -460,3 +480,4 @@ configure_package_config_file(
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4ConfigVersion.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKECONFIG_INSTALL_DIR})
+

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2025 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -100,10 +100,44 @@ An example input file for a DLPNO-CCSD(T) computation is::
    
    energy('dlpno-ccsd(t)') # dlpno-ccsd(t0) for the semicanonical (T0) computation
 
+Lambda, Brueckner, and Property Calculations
+--------------------------------------------
+
+The Lambda equations and asymmetric triples correction described by Toth, Jiang,
+and Schaefer [Toth:2026:7667]_ are available through
+``energy('dlpno-ccsd(t)_l')``. The equivalent Psi4-style asymmetric-triples
+spelling is ``energy('dlpno-ccsd(at)')``. Either call computes and publishes both
+the ordinary DLPNO-CCSD(T) energy and the Lambda-based DLPNO-CCSD(T)\ :sub:`L`
+energy. In contrast, ``energy('dlpno-ccsd(t)')`` performs only the ordinary
+right-hand calculation and does not solve the Lambda equations.
+At finite local cutoffs, the ordinary energy produced alongside an asymmetric
+calculation shares the Lambda-compatible pair space and the union of ordinary
+and asymmetric triplet screens, so it need not be bit-for-bit identical to a
+standalone ordinary calculation.
+
+Brueckner-orbital variants are selected with ``energy('dlpno-bccd')``,
+``energy('dlpno-bccd(t)')``, and ``energy('dlpno-bccd(t)_l')``. The latter also
+accepts the alias ``energy('dlpno-bccd(at)')``. A triples-level Brueckner job
+first evaluates the corresponding non-Brueckner DLPNO-CCSD(T) or
+DLPNO-CCSD(T)\ :sub:`L` result at macroiteration zero, then reevaluates the
+requested correction after the Brueckner orbitals converge. The initial results
+are retained in PSI variables whose names begin with ``INITIAL DLPNO-``.
+
+One-electron properties are requested through the standard properties driver,
+for example::
+
+   properties('dlpno-ccsd', properties=['dipole'])
+
+The correlated AO one-particle density is assembled only for such a property
+request and is then passed to :ref:`OEProp <sec:oeprop>`. Dipole and quadrupole
+properties are available for both ``dlpno-ccsd`` and ``dlpno-bccd``. Thus, plain
+energy calculations do not pay the time or memory cost of the Lambda equations
+or correlated density.
+
 PNO Convergence Settings
 ------------------------
 
-Here we present a table of the PNO convergence settings, paramaters, and recommended use cases. Most of these parameters and
+Here we present a table of the PNO convergence settings, parameters, and recommended use cases. Most of these parameters and
 settings are similar to what is found in ORCA, with two added parameters (|dlpno__t_cut_trace| and |dlpno__t_cut_energy|) to
 increase the robustness of the PNO space. These added parameters truncate by percent recovery of the total occupation number,
 as well as the percentage energy recovery of the PNOs compared to the non-truncated basis.

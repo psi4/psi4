@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,7 +44,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -67,14 +66,12 @@ void build_Z_UHF() {
     int num_ai, a, i, ai, bj;
     int h, nirreps, count, dim_A, dim_B;
     int *ipiv, info;
-    int *avirtpi, *aoccpi;
-    int *bvirtpi, *boccpi;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
 
     /* compute the number of ai pairs */
     num_ai = 0;

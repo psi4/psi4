@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,11 +44,9 @@ SharedWavefunction dlpno(SharedWavefunction ref_wfn, Options& options) {
             dlpno = std::make_shared<DLPNOCCSD>(ref_wfn, options);
         } else if (options.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
             dlpno = std::make_shared<DLPNOCCSD_T>(ref_wfn, options);
-        } else if (options.get_str("DLPNO_ALGORITHM") == "CCSD_Lambda") {
-            dlpno = std::make_shared<DLPNOCCSD_Lambda>(ref_wfn, options);
         } else {
-            dlpno = std::make_shared<DLPNOCCSD_Lambda>(ref_wfn, options);
-            // throw PSIEXCEPTION("Requested DLPNO method is not yet available!");
+            throw PSIEXCEPTION("Requested DLPNO method is not available: " +
+                               options.get_str("DLPNO_ALGORITHM"));
         }
     } else {
         throw PSIEXCEPTION("DLPNO requires closed-shell reference"); 

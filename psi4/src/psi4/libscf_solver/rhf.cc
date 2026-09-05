@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -264,13 +264,10 @@ void RHF::form_C(double shift) {
     if (shift == 0.0) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
     } else {
-        auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
         auto Cvir = Ca_subset("SO", "VIR");
-
-        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
-        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
-        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
-        shifted_F->add(Fa_);
+        auto SCvir = linalg::doublet(S_, Cvir, false, false);
+        auto shifted_F = Fa_->clone();
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
     }
     find_occupation();
@@ -641,9 +638,9 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
-        auto Cocc_ao = Ca_subset("AO", "ALL");
-        auto F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
-        auto IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
+        const auto Cocc_ao = Ca_subset("AO", "ALL");
+        const auto F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        const auto IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
         Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
 
         auto denomp = Precon_ao->pointer()[0];
@@ -658,9 +655,9 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_so) {
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
-        auto virpi = nmopi_ - nalphapi_;
-        auto IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
-        Precon_so = std::make_shared<Matrix>("Precon", nirrep_, nalphapi_, virpi);
+        const auto virpi = nmopi_ - nalphapi_;
+        const auto IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+        Precon_so = std::make_shared<Matrix>("Precon", nalphapi_, virpi);
 
         for (size_t h = 0; h < nirrep_; h++) {
             if (!nalphapi_[h] || !virpi[h]) continue;
@@ -857,7 +854,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     return ret_vec;
 }
 
-int RHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int RHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) {
     int fock_builds;
     std::time_t start, stop;
     start = std::time(nullptr);
@@ -1053,6 +1050,9 @@ void RHF::openorbital_scf() {
 #ifndef USING_OpenOrbitalOptimizer
   throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenOrbitalOptimizer=ON`.\n");
 #else
+  // Store AO-basis DIIS error to use for convergence instead of orthogonal-basis error
+  double ao_basis_diis_error = 1.0;
+
   std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
     // Grab the orbitals and occupations
     std::vector<arma::mat> orbitals = dm.first;
@@ -1110,15 +1110,9 @@ void RHF::openorbital_scf() {
 
     std::vector<arma::mat> Vxc(nirrep_);
     if (functional_->needs_xc()) {
-      auto Pdummy = std::make_shared<Matrix>("Dummy density", nsopi_, nsopi_);
-      for(int h=0;h<nirrep_;h++) {
-        if(nmopi[h]==0)
-          // Skip case of nothing to do
-          continue;
-        arma::mat Cblock = Cdummy->to_armadillo_matrix(h);
-        // Psi4 expects density matrices without the factor 2
-        Pdummy->from_armadillo_matrix(0.5*Cblock*Cblock.t(),h);
-      }
+      // Psi4 expects density matrices without the factor 2
+      auto Pdummy = linalg::doublet(Cdummy, Cdummy, false, true);
+      Pdummy->scale(0.5);
 
       potential_->set_D({Pdummy});
       potential_->compute_V({Va_});
@@ -1180,6 +1174,30 @@ void RHF::openorbital_scf() {
     }
     double Etot = Ecore+Ecoul+Eexch+nuclearrep_+XC_E+VV10_E;
 
+    // Compute AO-basis DIIS error for convergence checking
+    // Formula: RMS of FDS - SDF commutator in AO basis
+    // Build density matrix P = C * C^T in AO basis
+    auto P_AO = linalg::doublet(Cdummy, Cdummy, false, true);
+
+    // Build Fock matrix in AO basis: F = H + J + K + Vxc
+    auto F_AO = H_->clone();
+    F_AO->add(Jvec[0]);
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+      F_AO->axpy(-alpha*0.5, Kvec[0]);
+    }
+    if (functional_->is_x_lrc()) {
+      double scale = jk_->get_wcombine() ? -0.5 : -beta*0.5;
+      F_AO->axpy(scale, wKvec[0]);
+    }
+    if (functional_->needs_xc()) {
+      F_AO->add(Va_);
+    }
+
+    // Compute commutator RMS with the same projection used by INTERNAL
+    // (important when linear dependencies are removed through S_TOLERANCE).
+    auto FDSmSDF = form_FDSmSDF(F_AO, P_AO);
+    ao_basis_diis_error = FDSmSDF->rms();
+
     return std::make_pair(Etot,fock);
   };
 
@@ -1228,7 +1246,8 @@ void RHF::openorbital_scf() {
         double e_conv = options_.get_double("E_CONVERGENCE");
         double d_conv = options_.get_double("D_CONVERGENCE");
         double e_delta = std::any_cast<double>(data.at("dE"));
-        double d_rms = 0.5 * std::any_cast<double>(data.at("diis_error"));
+        // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
+        double d_rms = 0.5 * ao_basis_diis_error;
         // scale density norm to match internal algorithm
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
@@ -1245,7 +1264,10 @@ void RHF::openorbital_scf() {
     iteration_++;
     double E = std::any_cast<double>(data.at("E"));
     double dE = std::any_cast<double>(data.at("dE"));
-    double Dnorm = 0.5 * std::any_cast<double>(data.at("diis_error"));
+    // orthogonal-basis error from OOO
+    // double Dnorm_orth = 0.5 * std::any_cast<double>(data.at("diis_error"));
+    // show AO-basis error
+    double Dnorm = 0.5 * ao_basis_diis_error;
     // scale density norm to match internal algorithm
     std::string step = std::any_cast<std::string>(data.at("step"));
 
@@ -1256,6 +1278,7 @@ void RHF::openorbital_scf() {
   scfsolver.maximum_iterations(maxiter);
   scfsolver.verbosity(options_.get_int("OOO_PRINT"));
   scfsolver.maximum_history_length(maxvecs);
+  scfsolver.oda_restart_steps(options_.get_int("OOO_ODA_RESTART_STEPS"));
   scfsolver.callback_function(callback_function);
   scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
   scfsolver.diis_epsilon(start_diis);

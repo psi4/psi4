@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -51,6 +51,8 @@ from .mdi_engine import mdi_run
 from .p4util.exceptions import *
 from .procrouting import *
 from .task_base import AtomicComputer
+import qcelemental
+from .procrouting.sapt import fsapt
 
 # never import wrappers or aliases into this file
 
@@ -250,6 +252,8 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | dlpno-ccsd              | local CCSD with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                                    |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | dlpno-bccd              | local Brueckner CCD with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                           |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | qcisd(t)                | QCISD with perturbative triples :ref:`[manual] <sec:fnocc>` :ref:`[details] <dd_qcisd_prt_pr>`                                        |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | fno-qcisd(t)            | QCISD(T) with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                                                     |
@@ -263,6 +267,16 @@ def energy(name, **kwargs):
     | fno-ccsd(t)             | CCSD(T) with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                                                      |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | dlpno-ccsd(t)           | local CCSD(T) with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                                 |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | dlpno-ccsd(t)_l         | local CCSD with asymmetric perturbative triples (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                                 |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | dlpno-ccsd(at)          | alias for DLPNO-CCSD(T)_L :ref:`[manual] <sec:dlpnocc>`                                                                              |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | dlpno-bccd(t)           | local Brueckner CCD(T) with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                        |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | dlpno-bccd(t)_l         | local Brueckner CCD with asymmetric perturbative triples (DLPNO) :ref:`[manual] <sec:dlpnocc>`                                        |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | dlpno-bccd(at)          | alias for DLPNO-BCCD(T)_L :ref:`[manual] <sec:dlpnocc>`                                                                               |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | cc3                     | approximate CC singles, doubles, and triples (CC3) :ref:`[manual] <sec:cc>` :ref:`[details] <dd_cc3>`                                 |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
@@ -458,7 +472,7 @@ def energy(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("energy", lowername, molecule, **kwargs)
     logger.debug('ENERGY PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -527,7 +541,7 @@ def energy(name, **kwargs):
             shutil.copy(item, targetfile)
 
     logger.info(f"Compute energy(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
-    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", False))))
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", True))))
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return energy(): {core.variable('CURRENT ENERGY')}")
 
@@ -542,10 +556,10 @@ def energy(name, **kwargs):
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
         if lowername in ['efp', 'mrcc', 'dmrg']:
-            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction. " % name)
             core.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
         elif 'sapt' in lowername:
-            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction. " % name)
             core.print_out("The returned wavefunction is the dimer SCF wavefunction.\n\n")
 
         return (core.variable('CURRENT ENERGY'), wfn)
@@ -607,7 +621,7 @@ def gradient(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("gradient", lowername, molecule, **kwargs)
     logger.debug('GRADIENT PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -640,7 +654,7 @@ def gradient(name, **kwargs):
 
     # Perform the gradient calculation
     logger.info(f"Compute gradient(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
-    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", True))))
     wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return gradient(): {core.variable('CURRENT ENERGY')}")
     logger.info(nppp(wfn.gradient().np))
@@ -680,6 +694,11 @@ def properties(*args, **kwargs):
     | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa_tensor      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa_tensor      |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | dlpno-ccsd          | Local CCSD with pair natural orbitals (DLPNO) | RHF            | dipole, quadrupole                                             |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | dlpno-bccd          | Local Brueckner CCD with pair natural        | RHF            | dipole, quadrupole                                             |
+    |                    | orbital domains (DLPNO)                      |                |                                                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | dct                | density cumulant (functional) theory          | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
     |                    | :ref:`[manual] <sec:dct>`                     |                |                                                               |
@@ -766,7 +785,7 @@ def properties(*args, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("properties", lowername, molecule, **kwargs)
     logger.debug('PROPERTIES PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -792,7 +811,7 @@ def properties(*args, **kwargs):
     optstash = driver_util.negotiate_convergence_criterion(("prop", "prop"), lowername, return_optstash=True)
 
     logger.info(f"Compute properties(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
-    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", True))))
     wfn = procedures["properties"][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return properties(): {core.variable('CURRENT ENERGY')}")
 
@@ -803,6 +822,7 @@ def properties(*args, **kwargs):
         return (core.variable('CURRENT ENERGY'), wfn)
     else:
         return core.variable('CURRENT ENERGY')
+
 
 
 def optimize_geometric(name, **kwargs):
@@ -1209,7 +1229,7 @@ def optimize(name, **kwargs):
     if core.get_option('OPTKING', 'OPT_RESTART'):
         # Recreate all of optking's internal classes to restart an optimization
         # This has not been well tested - Experimental
-        opt_object = optking.opt_helper.CustomHelper(molecule)
+        opt_object = optking.opt_helper.CustomHelper(molecule, dtype=2)
         with open(f"{core.get_writer_file_prefix(molecule.name())}.1.dat", 'r') as f:
             stashed_opt = json.load(f)
         opt_object.from_dict(stashed_opt)
@@ -1219,7 +1239,7 @@ def optimize(name, **kwargs):
         params = p4util.prepare_options_for_modules()
         optimizer_params = {k: v.get('value') for k, v in params.pop("OPTKING").items() if v.get('has_changed')}
         optimizer_params.update(kwargs.get("optimizer_keywords", {}))
-        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
+        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params, dtype=2)
 
     initial_sym = molecule.schoenflies_symbol()
     # Use optking's value so that validation can change value (e.g. IRC_POINTS sets max_iter based on number of points)
@@ -1432,7 +1452,7 @@ def hessian(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("hessian", lowername, molecule, **kwargs)
     logger.debug('HESSIAN PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -1480,7 +1500,7 @@ def hessian(name, **kwargs):
 
     # We have the desired method. Do it.
     logger.info(f"Compute hessian(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
-    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict(quiet=kwargs.get("quiet", True))))
     core.print_out("""hessian() will perform analytic frequency computation.\n""")
     wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return hessian(): {wfn.energy()}")
@@ -1679,7 +1699,7 @@ def vibanal_wfn(
     geom = np.asarray(mol.geometry())
     symbols = [mol.symbol(at) for at in range(mol.natom())]
 
-    vibrec = {'molecule': mol.to_dict(np_out=False), 'hessian': nmwhess.tolist()}
+    vibrec = {'molecule': mol.to_dict(np_out=False, quiet=True), 'hessian': nmwhess.tolist()}
 
     if molecule is not None:
         molecule.update_geometry()
@@ -2080,8 +2100,105 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
         wfn_.write_molden(filename, dovirtual, True)
 
 
+
 def tdscf(wfn, **kwargs):
-    return proc.run_tdscf_excitations(wfn,**kwargs)
+    return proc.run_tdscf_excitations(wfn, **kwargs)
+
+
+def fsapt_analysis(
+    source: Union[str, core.Wavefunction, qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult],
+    fragments_a: Dict,
+    fragments_b: Dict,
+    pdb_dir: str = None,
+    analysis_type: str = "reduced",
+    links5050: bool = True,
+    link_siao: Dict = None,
+    print_output: bool = True,
+):
+    r"""Run F-SAPT post-processing from in-memory results or an ``fsapt/`` directory.
+
+    Parameters
+    ----------
+    source
+        Source of data for the analysis. Accepted types are:
+
+        - ``str``: path to a directory containing F-SAPT output files (for example,
+          the directory written by ``FISAPT_FSAPT_FILEPATH`` or the default
+          ``./fsapt``). In this mode, ``fA.dat`` and ``fB.dat`` are written to that
+          directory from ``fragments_a`` and ``fragments_b`` and analysis is run from
+          files (equivalent to ``fsapt.py`` style processing).
+        - :class:`~psi4.core.Wavefunction`: use QCVariables already stored on a
+          wavefunction from a recent ``energy('fisapt0', return_wfn=True)`` call.
+          No output-file parsing is required.
+        - :class:`qcelemental.models.AtomicResult`: use QCVariables extracted from a
+          QCSchema AtomicResult (for example, from ``return_plan=True`` workflows).
+
+        For ``Wavefunction`` and ``AtomicResult`` sources, analysis is performed
+        directly in Python from QCVariables. For ``str`` sources, analysis is
+        performed from the saved F-SAPT files on disk.
+    fragments_a
+        Mapping of fragment names to 1-indexed atom lists for subsystem A
+        (same semantics as ``fA.dat``).
+    fragments_b
+        Mapping of fragment names to 1-indexed atom lists for subsystem B
+        (same semantics as ``fB.dat``).
+    pdb_dir
+        Optional directory for order-1 visualization files.
+    analysis_type
+        Analysis verbosity/type passed through to the F-SAPT analyzer.
+    links5050
+        Whether to use 50-50 link assignment in link handling.
+    link_siao
+        Optional mapping for explicit SIAO link assignments.
+    print_output
+        Whether to print status/output text during analysis.
+    """
+
+    logger.debug('FSAPT ANALYSIS')
+    if isinstance(source, str):
+        if print_output:
+            print(f"Running fsapt_analysis through output files with {source = }")
+        if not pathlib.Path(f"{source}/Elst.dat").is_file():
+            raise ValidationError(f"fsapt_analysis {source=} is not a suitable fsapt/ directory.")
+        with open(f"{source}/fA.dat", "w") as f:
+            for k, v in fragments_a.items():
+                f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        with open(f"{source}/fB.dat", "w") as f:
+            for k, v in fragments_b.items():
+                f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        if link_siao is not None:
+            with open(f"{source}/link_siao.dat", "w") as f:
+                for k, v in link_siao.items():
+                    f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        return fsapt.run_from_output(dirname=source)
+
+    elif isinstance(source, (qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult)):
+        if print_output:
+            print("Running fsapt_analysis through QCVariables extracted from schema")
+        atomic_results = source
+        wfn = None
+
+    elif isinstance(source, core.Wavefunction):
+        if print_output:
+            print("Running fsapt_analysis through QCVariables extracted from wavefunction")
+        atomic_results = None
+        wfn = source
+    else:
+        raise ValidationError(f"fsapt_analysis requires a string, AtomicResult, or Wavefunction as input, not {type(source)=}")
+
+
+    return fsapt.run_fsapt_analysis(
+        fragments_a=fragments_a,
+        fragments_b=fragments_b,
+        wfn=wfn,
+        atomic_results=atomic_results,
+        pdb_dir=pdb_dir,
+        analysis_type=analysis_type,
+        links5050=links5050,
+        link_siao=link_siao,
+        dirname=None,
+        print_output=print_output
+    )
 
 
 # Aliases

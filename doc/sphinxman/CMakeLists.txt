@@ -38,9 +38,6 @@ endif()
 
 if(SPHINXMAN_STRICT)
     set(SPHINX_EXTRAS "-n;-W;--keep-going")
-    #set(SPHINX_EXTRAS "-W;--keep-going")
-    # return to above after qcel 0.25
-    #set(SPHINX_EXTRAS "")
 else()
     set(SPHINX_EXTRAS "")
 endif()
@@ -77,7 +74,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     prog_debug_profile.rst manage_release.rst plugin_psi4fockci.rst
     brianqc.rst tdscf.rst prog_integrals.rst prog_tour.rst mcscf.rst
     code_style.rst nitpick-exceptions external_apis.rst ecpint.rst
-    capabilities.rst variables.rst ooo.rst
+    capabilities.rst variables.rst ooo.rst qcschema.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman

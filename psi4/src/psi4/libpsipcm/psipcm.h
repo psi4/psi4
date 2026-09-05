@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -85,10 +85,6 @@ class PCM final {
 
     /// Current basis set (for puream and nao/nso info)
     std::shared_ptr<BasisSet> basisset_;
-
-    /// The AO->SO transformation matrix, which is used for transforming
-    /// matrices between pure and Cartesian representations.
-    SharedMatrix my_aotoso_;
 
     /// Factory for the electrostatic integrals
     PCMPotentialInt *potential_int_;

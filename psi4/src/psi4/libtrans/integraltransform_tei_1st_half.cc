@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -58,10 +58,10 @@ void IntegralTransform::transform_tei_first_half(const std::shared_ptr<MOSpace> 
     SharedMatrix c2a = aMOCoefficients_[s2->label()];
     SharedMatrix c2b = bMOCoefficients_[s2->label()];
     // And the number of orbitals per irrep
-    int *aOrbsPI1 = aOrbsPI_[s1->label()];
-    int *bOrbsPI1 = bOrbsPI_[s1->label()];
-    int *aOrbsPI2 = aOrbsPI_[s2->label()];
-    int *bOrbsPI2 = bOrbsPI_[s2->label()];
+    const auto& aOrbsPI1 = aOrbsPI_[s1->label()];
+    const auto& bOrbsPI1 = bOrbsPI_[s1->label()];
+    const auto& aOrbsPI2 = aOrbsPI_[s2->label()];
+    const auto& bOrbsPI2 = bOrbsPI_[s2->label()];
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;

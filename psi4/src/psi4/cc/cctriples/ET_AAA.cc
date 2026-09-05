@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,7 +38,6 @@
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -54,7 +53,7 @@ double ET_AAA() {
     int ij, ji, ik, jk, bc, ac, ba;
     int im, jm, km, ma, mb, mc;
     int ae, be, ce, ke, ie, je;
-    int *occpi, *virtpi, *occ_off, *vir_off;
+    int *occ_off, *vir_off;
     double value_c, value_d, denom, ET_AAA;
     double t_ijae, t_ijbe, t_ijce, t_jkae, t_jkbe, t_jkce, t_ikae, t_ikbe, t_ikce;
     double F_kebc, F_keac, F_keba, F_iebc, F_ieac, F_ieba, F_jebc, F_jeac, F_jeba;
@@ -66,8 +65,8 @@ double ET_AAA() {
     dpdfile2 fIJ, fAB, T1;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 

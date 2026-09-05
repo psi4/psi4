@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1262,7 +1262,7 @@ bool psi::fpeq(const double a, const double b, const double THR/* = 1.0E-14*/) {
     }
 }
 
-void BasisSet::convert_sap_contraction() {
+void BasisSet::negative_gaussian_normalization_to_coefficients() {
   if(max_am_ != 0) {
     throw PSIEXCEPTION("SAP potentials should be composed of a single S function per atom, and not contain higher angular momentum!");
   }

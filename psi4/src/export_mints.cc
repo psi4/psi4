@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1257,7 +1257,8 @@ void export_mints(py::module& m) {
             auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
             basis.compute_phi(phi_ao->data(), x, y, z);
             return py::array(phi_ao->size(), phi_ao->data(), capsule);
-        }, "Calculate the value of all basis functions at a given point x, y, and z");
+        }, "Calculate the value of all basis functions at a given point x, y, and z")
+        .def("negative_gaussian_normalization_to_coefficients", &BasisSet::negative_gaussian_normalization_to_coefficients, "Remove normalization from an s-function basis set and negate. Not idempotent");
 
     typedef void (OneBodyAOInt::*vecmatrix_version)(std::vector<SharedMatrix>&);
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
@@ -1461,6 +1462,8 @@ void export_mints(py::module& m) {
              "Returns petite list which transforms AO basis functions to SO's, \
               setting argument to true is for Cartesian basis, false is for Spherical Harmonic basis",
              "include_pure_transform"_a)
+        .def("cartao_to_ao_transform", &MintsHelper::cartao_to_ao_transform,
+             "Returns CartAO->AO (cartesian->basis-function) transform matrix of shape (nbf, nao). Use with petite_list1(False) to reproduce deprecated petite_list1(include_pure_transform=True).")
 
         // Integral builders
         .def("integral", &MintsHelper::integral, "Integral factory being used")
@@ -1646,16 +1649,24 @@ void export_mints(py::module& m) {
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")
         .def(py::init<>())
         .def("setName", &ExternalPotential::setName, "Sets the name")
-        .def("addCharge", &ExternalPotential::addCharge, "Add a charge Z at (x,y,z)", "Z"_a, "x"_a, "y"_a, "z"_a)
+        .def("addCharge", &ExternalPotential::addCharge, "Add a charge Q at (x,y,z)", "Q"_a, "x"_a, "y"_a, "z"_a)
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
+        .def("getGaussians", &ExternalPotential::getGaussians,
+             "Get the vector of tuples for diffuse charges, each being a paired basis set of S Gaussian functions and a vector of charge coefficients")
+        .def("getMatrix", &ExternalPotential::getMatrix, "Get the vector one-electron potential matrix")
         .def("appendCharges", &ExternalPotential::appendCharges,
              "Append a vector of charge tuples to a current ExternalPotential")
-        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions with DF coefficients",
+        .def("addGaussian", &ExternalPotential::addGaussian, "Add a basis of S Gaussian functions with charge coefficients",
              "basis"_a, "coefs"_a)
+        .def("setMatrix", &ExternalPotential::setMatrix, "Add a one-electron potential matrix", "V"_a)
         .def("gradient_on_charges", &ExternalPotential::gradient_on_charges, "Get the gradient on the embedded charges")
+        .def("gradients_on_gaussians", &ExternalPotential::gradients_on_gaussians,
+             "Get the gradients on the embedded diffuse charge densities")
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
              "Compute the external potential matrix in the given basis set", "basis"_a)
+        .def("computePotentialGradients", &ExternalPotential::computePotentialGradients,
+             "Compute the gradients due to the external potential in the given basis set for the given density matrix", "basis"_a, "D"_a)
         .def("computeNuclearEnergy", &ExternalPotential::computeNuclearEnergy,
              "Compute the contribution to the nuclear repulsion energy for the given molecule")
         .def("computeExternExternInteraction", &ExternalPotential::computeExternExternInteraction,

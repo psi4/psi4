@@ -1,0 +1,90 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev62 
+
+                         Git: Rev {HEAD} c6ce4dd 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Friday, 19 June 2026 01:04PM
+
+    Process ID: 24027
+    Host:       sjc22-bm212-893c74a7-15c4-4bdb-ab11-9de3141bd4d4-4EA9747036E0.local
+    PSIDATADIR: /Users/runner/work/psi4/psi4/install/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     adcc, ambit, bse, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, cppe, ddx, dftd3, dftd4, dkh, ecpint,
+                einsums, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, gcp, gdma, geometric, g̶p̶u̶_̶d̶f̶c̶c̶,
+                integratorxx, ipi, libefp, mdi, m̶p̶2̶d̶, m̶r̶c̶c̶, ooo,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, pcmsolver, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶, p̶s̶i̶x̶a̶s̶,
+                pyeinsums, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶, v2rdm_casscf
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! MBIS regression test catching ECPs
+
+molecule mol {
+  0 1
+  C 0.000000 0.000000 0.000000
+  I 0.000000 0.000000 2.105000
+  H 0.000000 0.937000 -0.297000
+  H 0.811000 -0.469000 -0.297000
+  H -0.811000 -0.469000 -0.297000
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 4
+}
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-CONV
+    psi4.set_options({"d_convergence": 3e-8})
+set scf_properties ['MBIS_CHARGES', 'MBIS_VOLUME_RATIOS']
+
+try:
+    energy("mp2/def2-svp", molecule=hi)
+    compare_values(0, 1, "MBIS should have raised an error for ECP-containing basis sets.")
+except Exception:
+    compare_values(1, 1, "Expected error caught: MBIS correctly rejects ECP systems.")
+--------------------------------------------------------------------------
+    Expected error caught: MBIS correctly rejects ECP systems.............................PASSED
+    Expected error caught: MBIS correctly rejects ECP systems.............................PASSED
+
+    Psi4 stopped on: Friday, 19 June 2026 01:04PM
+    Psi4 wall time for execution: 0:00:00.00
+
+*** Psi4 exiting successfully. Buy a developer a beer!

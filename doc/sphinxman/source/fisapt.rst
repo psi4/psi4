@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2025 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -225,6 +225,109 @@ triple, or aromatic bonding motifs when partitioning the molecule into fragments
    salvage them, so please contact the developers with the circumstances
    for guidance.
 
+Python F-SAPT Analysis
+^^^^^^^^^^^^^^^^^^^^^^
+
+Now F-SAPT post-processing can be performed within python without the need to
+use output files and ``fsapt.py``. The following code snippet performs the same
+analysis as above, but directly within python::
+
+    import psi4
+
+
+    mol = psi4.geometry(
+        """0 1
+    0 1
+    O    -1.3885044    1.9298523   -0.4431206
+    H    -0.5238121    1.9646519   -0.0064609
+    C    -2.0071056    0.7638459   -0.1083509
+    C    -1.4630807   -0.1519120    0.7949930
+    C    -2.1475789   -1.3295094    1.0883677
+    C    -3.3743208   -1.6031427    0.4895864
+    C    -3.9143727   -0.6838545   -0.4091028
+    C    -3.2370496    0.4929609   -0.7096126
+    H    -0.5106510    0.0566569    1.2642563
+    H    -1.7151135   -2.0321452    1.7878417
+    H    -3.9024664   -2.5173865    0.7197947
+    H    -4.8670730   -0.8822939   -0.8811319
+    H    -3.6431662    1.2134345   -1.4057590
+    --
+    0 1
+    O     1.3531168    1.9382724    0.4723133
+    H     1.7842846    2.3487495    1.2297110
+    C     2.0369747    0.7865043    0.1495491
+    C     1.5904026    0.0696860   -0.9574153
+    C     2.2417367   -1.1069765   -1.3128110
+    C     3.3315674   -1.5665603   -0.5748636
+    C     3.7696838   -0.8396901    0.5286439
+    C     3.1224836    0.3383498    0.8960491
+    H     0.7445512    0.4367983   -1.5218583
+    H     1.8921463   -1.6649726   -2.1701843
+    H     3.8330227   -2.4811537   -0.8566666
+    H     4.6137632   -1.1850101    1.1092635
+    H     3.4598854    0.9030376    1.7569489
+    symmetry c1
+    no_reorient
+    no_com
+    """
+    )
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "FISAPT_FSAPT_FILEPATH": "none",
+        }
+    )
+    plan = psi4.energy("fisapt0", return_plan=True, molecule=mol)
+    atomic_result = psi4.schema_wrapper.run_qcschema(
+        plan.plan(),
+        clean=True,
+        postclean=True,
+    )
+    fEnergies = psi4.fsapt_analysis(
+        source=atomic_result, # AtomicResult from QCSchema
+        # NOTE: 1-indexed for fragments_a and fragments_b
+        fragments_a={
+            "MethylA": [1, 2, 3, 4, 5],
+        },
+        fragments_b={
+            "MethylB": [6, 7, 8, 9, 10],
+        },
+    )
+    # Or you can use energy calls without QCSchema with this example below
+    # using the same molecule and options as above.
+    e, wfn = psi4.energy("fisapt0", return_wfn=True)
+    data = psi4.fsapt_analysis(
+        source=wfn, # through wavefunction object
+        # NOTE: 1-indexed for fragments_a and fragments_b
+        fragments_a={
+            "MethylA": [1, 2, 3, 4, 5],
+        },
+        fragments_b={
+            "MethylB": [6, 7, 8, 9, 10],
+        },
+    )
+
+Additionally, if you have F-SAPT data from saving results to
+``FISAPT_FSAPT_FILEPATH``, you can use psi4.fsapt_analysis to read in the data
+and perform the analysis without needing to run ``fsapt.py`` by specifying the
+filepath as in::
+
+    import psi4
+
+
+    psi4.fsapt_analysis(
+        fragments_a={
+            "MethylA": [1, 2, 3, 4, 5],
+        },
+        fragments_b={
+            "MethylB": [6, 7, 8, 9, 10],
+        },
+        source="./fsapt",
+    )
+
 
 Order-1 Visualization with PyMol
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -272,12 +375,13 @@ from system 1.
 I-SAPT: A Representative Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. caution:: As of April 2018, you can't specify molecule fragments
-   with an unphysical multiplicity like the singlet OH fragments in
-   the molecule below, especially as (again in the example below) the
-   overall molecule needs to be a singlet, which |PSIfour| doesn't at
-   present let be set independently. For situations like this, use the
-   temporary input pattern in :srcsample:`isapt1` .
+.. note:: Molecule fragments must each have physically plausible multiplicity
+   (unlike the singlet OH fragments in the ``bad_mol`` example below), and the
+   overall molecule needs to be a singlet. For situations like this, you'll need
+   to specify the overall charge and multiplicity and set physical multiplicities
+   for each fragment, either through the usual string syntax (``good_mol`` below)
+   or through :py:func:`psi4.core.Molecule.from_arrays`. Examples are in
+   :srcsample:`isapt1` and :srcsample:`isapt-charged`.
 
 Below, we show an example of using I-SAPT0/jun-cc-pVDZ to analyze the
 interaction between the two phenol groups in a 2,4-pentanediol molecule.
@@ -290,7 +394,8 @@ the I-SAPT embedding procedure is available `I-SAPT#2 <https://www.youtube.com/w
 
     memory 1 GB
     
-    molecule mol {
+    # won't work with all singlets
+    molecule bad_mol {
     0 1
     O          0.39987        2.94222       -0.26535
     H          0.05893        2.05436       -0.50962
@@ -319,9 +424,42 @@ the I-SAPT embedding procedure is available `I-SAPT#2 <https://www.youtube.com/w
     no_reorient
     no_com
     }
-    
+
+    # will work with total and per-fragment charge and multiplicity
+    molecule good_mol {
+    0 1
+    --
+    0 2
+    O          0.39987        2.94222       -0.26535
+    H          0.05893        2.05436       -0.50962
+    --
+    0 2
+    O          0.48122        0.30277       -0.77763
+    H          0.26106       -0.50005       -1.28451
+    --
+    0 1
+    C          2.33048       -1.00269        0.03771
+    C          1.89725        0.31533       -0.59009
+    C          2.28232        1.50669        0.29709
+    C          1.82204        2.84608       -0.29432
+    C          2.37905        4.02099        0.49639
+    H          3.41246       -1.03030        0.19825
+    H          2.05362       -1.84372       -0.60709
+    H          1.82714       -1.16382        0.99734
+    H          2.36243        0.42333       -1.57636
+    H          3.36962        1.51414        0.43813
+    H          1.81251        1.38060        1.28140
+    H          2.14344        2.92967       -1.33843
+    H          3.47320        4.02400        0.48819
+    H          2.03535        3.99216        1.53635
+    H          2.02481        4.96785        0.07455
+    symmetry c1
+    no_reorient
+    no_com
+    }
+
     # => Standard Options <= #
-    
+
     set {
     basis jun-cc-pvdz
     scf_type df
@@ -329,7 +467,7 @@ the I-SAPT embedding procedure is available `I-SAPT#2 <https://www.youtube.com/w
     freeze_core true
     fisapt_do_plot true  # For extra analysis
     }
-    
+
     energy('fisapt0')
 
 This is essentially the same input as for F-SAPT, except that the molecular

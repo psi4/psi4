@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -33,8 +33,6 @@
 #include "basisset.h"
 #include "gshell.h"
 #include "dimension.h"
-
-#include "matrix.h"
 #include "psi4/psi4-dec.h"
 #include <cstdio>
 #include "psi4/libpsi4util/PsiOutStream.h"

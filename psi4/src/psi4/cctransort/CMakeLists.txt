@@ -19,10 +19,3 @@ list(APPEND sources
   )
 
 psi4_add_module(bin cctransort sources)
-
-if(TARGET PCMSolver::pcm)
-    target_link_libraries(cctransort
-      PUBLIC
-        PCMSolver::pcm
-      )
-endif()

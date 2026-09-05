@@ -56,14 +56,11 @@
 namespace psi {
 namespace dlpno {
 
-DLPNOCCSD_Lambda::DLPNOCCSD_Lambda(SharedWavefunction ref_wfn, Options& options) : DLPNOCCSD(ref_wfn, options) {}
-DLPNOCCSD_Lambda::~DLPNOCCSD_Lambda() {}
-
-void DLPNOCCSD_Lambda::estimate_memory() {
+void DLPNOCCSD::estimate_lambda_memory() {
 
     int n_lmo_pairs = ij_to_i_j_.size();
 
-    outfile->Printf(" ==> CCSD_Lambda Memory Estimate <== \n\n");
+    outfile->Printf(" ==> Lambda DLPNO-CCSD Memory Estimate <== \n\n");
 
     size_t delta_imae_size = 0;
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : delta_imae_size)
@@ -159,7 +156,7 @@ void DLPNOCCSD_Lambda::estimate_memory() {
 
 } // end function
 
-void DLPNOCCSD_Lambda::form_goo() {
+void DLPNOCCSD::form_goo() {
     // Number of active occupied orbitals
     int naocc = nalpha_ - nfrzc();
     // Number of surviving pairs after DLPNO screening
@@ -196,7 +193,7 @@ void DLPNOCCSD_Lambda::form_goo() {
     } // end
 }
 
-void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
+void DLPNOCCSD::compute_lambda_intermediates() {
 
     outfile->Printf("   ==> Computing Lambda Intermediates <== \n\n");
 
@@ -1007,7 +1004,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
     outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
 }
 
-void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>> &L_ia_buffer) {
+void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>> &L_ia_buffer) {
 
     timer_on("DLPNO-CCSD Lambda : Compute L1");
 
@@ -1262,7 +1259,7 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
     timer_off("DLPNO-CCSD Lambda : Compute L1");
 }
 
-std::vector<SharedMatrix> DLPNOCCSD_Lambda::compute_alpha_ijkl() {
+std::vector<SharedMatrix> DLPNOCCSD::compute_alpha_ijkl() {
     timer_on("DLPNO-CCSD Lambda : alpha ijkl");
 
     int n_lmo_pairs = ij_to_i_j_.size();
@@ -1298,7 +1295,7 @@ std::vector<SharedMatrix> DLPNOCCSD_Lambda::compute_alpha_ijkl() {
     return alpha_ijkl;
 }
 
-void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<SharedMatrix>& Ln_iajb) {
+void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<SharedMatrix>& Ln_iajb) {
 
     timer_on("DLPNO-CCSD Lambda : Compute L2");
 
@@ -1506,7 +1503,47 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
     timer_off("DLPNO-CCSD Lambda : Compute L2");
 }
 
-void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
+void DLPNOCCSD::reset_lambda_state() {
+    lambda_solved_ = false;
+
+    lambda_ia_.clear();
+    lambda_iajb_.clear();
+    lambda_iajb_bar_.clear();
+    delta_imae_tilde_.clear();
+    F_im_double_tilde_.reset();
+    F_vv_double_tilde_.clear();
+    beta_.clear();
+    gamma_.clear();
+    delta_.clear();
+    gamma_double_tilde_.clear();
+    delta_double_tilde_.clear();
+    rho_oo_.reset();
+    rho_vv_.clear();
+    F_fcia_hat_.clear();
+    F_knia_hat_.clear();
+    K_maef_dt_.clear();
+    K_eimn_dt_.clear();
+    M_kace_bar_.clear();
+    M_mkic_bar_.clear();
+    J_kmic_bar_.clear();
+    J_kaec_bar_.clear();
+    L_ieab_bar_.clear();
+    K_ijmb_bar_.clear();
+    Doo_.reset();
+    Dov_.clear();
+    Dvv_singles_.clear();
+    Dvv_pair_.clear();
+
+    if (has_array_variable("DLPNO-CCSD AO OPDM")) {
+        del_array_variable("DLPNO-CCSD AO OPDM");
+    }
+}
+
+void DLPNOCCSD::solve_lambda(bool include_singles) {
+
+    reset_lambda_state();
+    estimate_lambda_memory();
+    compute_lambda_intermediates();
 
     int n_lmo_pairs = ij_to_i_j_.size();
     int naocc = nalpha_ - nfrzc();
@@ -1567,13 +1604,13 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
 
     int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
     double damping = options_.get_double("DLPNO_LAMBDA_DAMPING");
-    double e_curr = 0.0, e_prev = 0.0, l1_curr = 0.0, l2_curr = 0.0;
+    double e_curr = 0.0, e_prev = 0.0;
     bool e_converged = false, l_converged = false;
 
     DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "LCCSD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
     while (!(e_converged && l_converged)) {
-        // RMS of residual per single LMO, for assesing convergence
+        // RMS of residual per single LMO, for assessing convergence
         std::vector<double> L_ia_rms(naocc, 0.0);
         // RMS of residual per LMO pair, for assessing convergence
         std::vector<double> L_iajb_rms(n_lmo_pairs, 0.0);
@@ -1614,7 +1651,7 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
             // L_iajb[ij]->scale(alpha);
         }
 
-        if (!brueckner_orbs_) {
+        if (include_singles) {
             // Form Goo a second time (using updated lambda)
             form_goo();
 
@@ -1663,12 +1700,12 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
         auto L_vecs_flat = flatten_mats(L_vecs);
 
         if (iteration == 1) {
-            diis.set_error_vector_size(lambda_vecs_flat);
-            diis.set_vector_size(L_vecs_flat);
+            diis.set_error_vector_size(L_vecs_flat);
+            diis.set_vector_size(lambda_vecs_flat);
         }
         
-        diis.add_entry(lambda_vecs_flat.get(), lambda_vecs_flat.get());
-        diis.extrapolate(L_vecs_flat.get());
+        diis.add_entry(L_vecs_flat.get(), lambda_vecs_flat.get());
+        diis.extrapolate(lambda_vecs_flat.get());
 
         copy_flat_mats(lambda_vecs_flat, lambda_vecs);
         
@@ -1676,8 +1713,6 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
         e_curr = 0.0;
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_curr)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-            auto &[i, j] = ij_to_i_j_[ij];
-            
             lambda_iajb_bar_[ij] = lambda_iajb_[ij]->clone();
             lambda_iajb_bar_[ij]->scale(0.5);
             lambda_iajb_bar_[ij]->add(lambda_iajb_[ij]->transpose());
@@ -1705,9 +1740,11 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
         // For next iteration
         e_prev = e_curr;
     } // end iter
+
+    lambda_solved_ = true;
 }
 
-void DLPNOCCSD_Lambda::compute_opdm() {
+void DLPNOCCSD::compute_opdm() {
 
     int naocc = i_j_to_ij_.size();
     int n_lmo_pairs = ij_to_i_j_.size();
@@ -1747,8 +1784,6 @@ void DLPNOCCSD_Lambda::compute_opdm() {
     Dov_.resize(naocc);
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
-        int ii = i_j_to_ij_[i][i];
-
         Dov_[i] = T_ia_[i]->clone();
         Dov_[i]->scale(2.0);
     }
@@ -1775,8 +1810,6 @@ void DLPNOCCSD_Lambda::compute_opdm() {
 
 #pragma omp parallel for schedule(dynamic, 1)
     for (int mn = 0; mn < n_lmo_pairs; ++mn) {
-        auto &[m, n] = ij_to_i_j_[mn];
-
         int nlmo_mn = lmopair_to_lmos_[mn].size();
 
         int thread = 0;
@@ -1823,108 +1856,59 @@ void DLPNOCCSD_Lambda::compute_opdm() {
     
 } // end function
 
-Vector3 DLPNOCCSD_Lambda::compute_dipole_moment() {
-
-    int naocc = i_j_to_ij_.size();
-    int n_lmo_pairs = ij_to_i_j_.size();
-
-    // Nuclear contribution to the dipole moment
-    Vector3 nuclear_contribution(0.0, 0.0, 0.0);
-
-    for (int A = 0; A < molecule_->natom(); ++A) {
-        Vector3 R_A = molecule_->xyz(A);
-        nuclear_contribution[0] += molecule_->Z(A) * R_A[0];
-        nuclear_contribution[1] += molecule_->Z(A) * R_A[1];
-        nuclear_contribution[2] += molecule_->Z(A) * R_A[2];
-    } // end A
-
-    const auto ao_dipole = MintsHelper(basisset_, options_).ao_dipole();
-
-    // Compute AO density matrix (for Hartree-Fock electronic contribution)
-    auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
-    auto D_ao = linalg::doublet(C_occ, C_occ, false, true);
-
-    Vector3 hf_elec_contribution(0.0, 0.0, 0.0);
-    for (int xyz_i = 0; xyz_i < 3; ++xyz_i) {
-        hf_elec_contribution[xyz_i] += 2.0 * ao_dipole[xyz_i]->vector_dot(D_ao);
+SharedMatrix DLPNOCCSD::compute_ao_opdm() {
+    if (!lambda_solved_) {
+        throw PSIEXCEPTION("The DLPNO-CCSD Lambda equations must be solved before forming the OPDM.");
     }
 
-    // Correlated contribution
-    Vector3 ccsd_contribution(0.0, 0.0, 0.0);
-
-    for (int xyz_i = 0; xyz_i < 3; ++xyz_i) {
-        auto mu_oo = linalg::triplet(C_lmo_, ao_dipole[xyz_i], C_lmo_, true, false, false);
-        auto mu_ov = linalg::triplet(C_lmo_, ao_dipole[xyz_i], C_pao_, true, false, false);
-        auto mu_vv = linalg::triplet(C_pao_, ao_dipole[xyz_i], C_pao_, true, false, false);
-
-        double dipole_cont = 0.0;
-#pragma omp parallel for schedule(dynamic, 1) reduction(+ : dipole_cont)
-        for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-            auto &[i, j] = ij_to_i_j_[ij];
-
-            // Doo contributions (Toth Eq. 64a)
-            dipole_cont += Doo_->get(i, j) * mu_oo->get(i, j);
-
-            // Dvv (doubles) contributions (Toth Eq. 64c)
-            auto mu_vv_ij = submatrix_rows_and_cols(*mu_vv, lmopair_to_paos_[ij], lmopair_to_paos_[ij]);
-            mu_vv_ij = linalg::triplet(X_pno_[ij], mu_vv_ij, X_pno_[ij], true, false, false);
-            dipole_cont += Dvv_pair_[ij]->vector_dot(mu_vv_ij);
-        }
-        
-#pragma omp parallel for schedule(dynamic, 1) reduction(+ : dipole_cont)
-        for (int i = 0; i < naocc; ++i) {
-            int ii = i_j_to_ij_[i][i];
-
-            // Dov contributions (Toth Eq. 64b)
-            auto mu_ov_slice = submatrix_rows_and_cols(*mu_ov, std::vector<int>(1, i), lmopair_to_paos_[ii]);
-            auto mu_ov_ii = linalg::doublet(mu_ov_slice, X_pno_[ii], false, false); // <i|x|a_{ii}>
-            auto Dov_total = Dov_[i]->clone(); // D_{i}^{a_{ii}}
-            Dov_total->add(lambda_ia_[i]);
-
-            dipole_cont += Dov_total->vector_dot(mu_ov_ii->transpose());
-
-            // Dvv (singles) contributions (Toth Eq. 64d)
-            auto mu_vv_ii = submatrix_rows_and_cols(*mu_vv, lmopair_to_paos_[ii], lmopair_to_paos_[ii]);
-            mu_vv_ii = linalg::triplet(X_pno_[ii], mu_vv_ii, X_pno_[ii], true, false, false);
-            dipole_cont += Dvv_singles_[i]->vector_dot(mu_vv_ii);
-        }
-
-        ccsd_contribution[xyz_i] += dipole_cont;
-    } // end xyz_i
-
-    outfile->Printf("    Nuclear Contribution: \n");
-    outfile->Printf("    X: %.6f, Y: %.6f, Z: %.6f\n\n", nuclear_contribution[0], nuclear_contribution[1], nuclear_contribution[2]);
-    outfile->Printf("    SCF Electronic Contribution: \n");
-    outfile->Printf("    X: %.6f, Y: %.6f, Z: %.6f\n\n", hf_elec_contribution[0], hf_elec_contribution[1], hf_elec_contribution[2]);
-    outfile->Printf("    CCSD Correlated Contribution: \n");
-    outfile->Printf("    X: %.6f, Y: %.6f, Z: %.6f\n\n", ccsd_contribution[0], ccsd_contribution[1], ccsd_contribution[2]);
-
-    Vector3 total_dipole = nuclear_contribution;
-    total_dipole += hf_elec_contribution;
-    total_dipole += ccsd_contribution;
-
-    outfile->Printf("    ==> Total Dipole Moment <== \n");
-    outfile->Printf("    X: %.6f, Y: %.6f, Z: %.6f\n\n", total_dipole[0], total_dipole[1], total_dipole[2]);
-
-    return total_dipole;
-}
-
-void DLPNOCCSD_Lambda::print_header() {}
-void DLPNOCCSD_Lambda::print_results() {}
-
-double DLPNOCCSD_Lambda::compute_energy() {
-    // Run DLPNO-CCSD
-    double e_dlpno_ccsd = DLPNOCCSD::compute_energy();
-
-    estimate_memory();
-    compute_lambda_intermediates();
-
-    lambda_ccsd_iterations();
-
     compute_opdm();
-    compute_dipole_moment();
 
-    return e_dlpno_ccsd;
+    const int naocc = nalpha_ - nfrzc();
+    const int n_lmo_pairs = ij_to_i_j_.size();
+
+    // Begin with the spin-summed density of the *current* occupied orbitals.
+    // For Brueckner calculations C_lmo_ has been rotated away from the SCF
+    // reference, so rebuilding this block from reference C_occ would give an
+    // inconsistent OEProp density.
+    auto D_ao = linalg::doublet(C_lmo_, C_lmo_, false, true);
+    D_ao->scale(2.0);
+    auto C_core = reference_wavefunction_->Ca_subset("AO", "FROZEN_OCC");
+    if (C_core->ncol() > 0) {
+        auto D_core = linalg::doublet(C_core, C_core, false, true);
+        D_core->scale(2.0);
+        D_ao->add(D_core);
+    }
+
+    // Correlated occupied-occupied block (Toth Eq. 64a).
+    D_ao->add(linalg::triplet(C_lmo_, Doo_, C_lmo_, false, false, true));
+
+    // Correlated pair virtual-virtual blocks (Toth Eq. 64c).
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto C_pno = submatrix_cols(*C_pao_, lmopair_to_paos_[ij]);
+        C_pno = linalg::doublet(C_pno, X_pno_[ij]);
+        D_ao->add(linalg::triplet(C_pno, Dvv_pair_[ij], C_pno, false, false, true));
+    }
+
+    for (int i = 0; i < naocc; ++i) {
+        const int ii = i_j_to_ij_[i][i];
+        auto C_i = submatrix_cols(*C_lmo_, std::vector<int>{i});
+        auto C_pno = submatrix_cols(*C_pao_, lmopair_to_paos_[ii]);
+        C_pno = linalg::doublet(C_pno, X_pno_[ii]);
+
+        // Correlated occupied-virtual block (Toth Eq. 64b). Hermitization below
+        // supplies the transpose without changing contractions with Hermitian operators.
+        auto Dov_total = Dov_[i]->clone();
+        Dov_total->add(lambda_ia_[i]);
+        D_ao->add(linalg::triplet(C_i, Dov_total, C_pno, false, true, true));
+
+        // Correlated singles virtual-virtual block (Toth Eq. 64d).
+        D_ao->add(linalg::triplet(C_pno, Dvv_singles_[i], C_pno, false, false, true));
+    }
+
+    D_ao->hermitivitize();
+    D_ao->set_name("DLPNO-CCSD spin-summed AO OPDM");
+    set_array_variable("DLPNO-CCSD AO OPDM", D_ao);
+    return D_ao;
 }
 
 } // end dlpno
