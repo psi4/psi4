@@ -200,6 +200,156 @@ def cg_solver(
     return x_vec, r_vec
 
 
+def cg_solver_ein(
+    rhs_vec: List[np.ndarray],
+    hx_function: Callable,
+    preconditioner: Callable,
+    guess: Optional[List[np.ndarray]] = None,
+    printer: Optional[Callable] = None,
+    printlvl: int = 1,
+    maxiter: int = 20,
+    rcond: float = 1.e-6) -> List[np.ndarray]:
+    """
+    Solves the :math:`Ax = b` linear equations via Conjugate Gradient. The `A` matrix must be a hermitian, positive definite matrix.
+
+    Parameters
+    ----------
+    rhs_vec
+        The RHS vector in the Ax=b equation.
+    hx_function
+        Takes in a list of :py:class:`~einsums.core.RuntimeTensor` objects and a mask of active indices. Returns the Hessian-vector product.
+    preconditioner
+        Takes in a list of :py:class:`~einsums.core.RuntimeTensor` objects and a mask of active indices. Returns the preconditioned value.
+    guess
+        Starting vectors. If None, use a preconditioner (rhs) guess
+    printer
+        Takes in a list of current x and residual vectors and provides a print function. This function can also
+        return a value that represents the current residual.
+    printlvl
+        The level of printing provided by this function.
+    maxiter
+        The maximum number of iterations this function will take.
+    rcond
+        The residual norm for convergence.
+
+    Returns
+    -------
+    ret : List[Matrix]
+        Solved `x` vectors and `r` vectors.
+
+    Notes
+    -----
+    This is a generalized cg solver that can also take advantage of solving multiple RHS's simultaneously when
+    it is advantageous to do so.
+
+    """
+    import einsums as ein
+
+    tstart = time.time()
+    if printlvl:
+        core.print_out("\n   -----------------------------------------------------\n")
+        core.print_out("   " + "Generalized CG Solver".center(52) + "\n")
+        core.print_out("   " + "by Daniel. G. A. Smith and Austin M. Wallace".center(52) + "\n")
+        core.print_out("   -----------------------------------------------------\n")
+        core.print_out("    Maxiter             = %11d\n" % maxiter)
+        core.print_out("    Convergence         = %11.3E\n" % rcond)
+        core.print_out("    Number of equations = %11ld\n\n" % len(rhs_vec))
+        core.print_out("     %4s %14s %12s  %6s  %6s\n" % ("Iter", "Residual RMS", "Max RMS", "Remain", "Time [s]"))
+        core.print_out("   -----------------------------------------------------\n")
+
+    nrhs = len(rhs_vec)
+    active_mask = [True for x in range(nrhs)]
+
+    # Start function
+    if guess is None:
+        x_vec = preconditioner(rhs_vec, active_mask)
+    else:
+        if len(guess) != len(rhs_vec):
+            raise ValidationError("CG Solver: Guess vector length does not match RHS vector length.")
+        x_vec = [x.clone() for x in guess]
+
+    Ax_vec = hx_function(x_vec, active_mask)
+
+    # Set it up
+    r_vec = []  # Residual vectors
+    for x in range(nrhs):
+        tmp_r = rhs_vec[x].copy()
+        ein.core.axpy(-1.0, Ax_vec[x], tmp_r)
+        r_vec.append(tmp_r)
+
+    z_vec = preconditioner(r_vec, active_mask)
+    p_vec = [x.copy() for x in z_vec]
+
+    # First RMS
+    grad_dot = [ein.core.dot(x, x) for x in rhs_vec]
+
+    resid = [(ein.core.dot(r_vec[x], r_vec[x]) / grad_dot[x])**0.5 for x in range(nrhs)]
+
+    if printer:
+        resid = printer(0, x_vec, r_vec)
+    elif printlvl:
+        # core.print_out('         CG Iteration Guess:    Rel. RMS = %1.5e\n' %  np.mean(resid))
+        core.print_out("    %5s %14.3e %12.3e %7d %9d\n" %
+                       ("Guess", np.mean(resid), np.max(resid), len(z_vec), time.time() - tstart))
+
+    rz_old = [0.0 for x in range(nrhs)]
+    alpha = [0.0 for x in range(nrhs)]
+    active = np.where(active_mask)[0]
+
+    # CG iterations
+    for rot_iter in range(maxiter):
+
+        # Build old RZ so we can discard vectors
+        for x in active:
+            rz_old[x] = ein.core.dot(r_vec[x], z_vec[x])
+
+        # Build Hx product
+        Ap_vec = hx_function(p_vec, active_mask)
+
+        # Update x and r
+        for x in active:
+            alpha[x] = rz_old[x] / ein.core.dot(Ap_vec[x], p_vec[x])
+            if np.isnan(alpha)[0]:
+                core.print_out("CG: Alpha is NaN for vector %d. Stopping vector." % x)
+                active_mask[x] = False
+                continue
+
+            ein.core.axpy(alpha[x], p_vec[x], x_vec[x])
+            ein.core.axpy(-alpha[x], Ap_vec[x], r_vec[x])
+            resid[x] = (ein.core.dot(r_vec[x], r_vec[x]) / grad_dot[x])**0.5
+
+        # Print out or compute the resid function
+        if printer:
+            resid = printer(rot_iter + 1, x_vec, r_vec)
+
+        # Figure out active updated active mask
+        for x in active:
+            if (resid[x] < rcond):
+                active_mask[x] = False
+
+        # Print out if requested
+        if printlvl:
+            core.print_out("    %5d %14.3e %12.3e %7d %9d\n" %
+                           (rot_iter + 1, np.mean(resid), np.max(resid), sum(active_mask), time.time() - tstart))
+
+        active = np.where(active_mask)[0]
+
+        if sum(active_mask) == 0:
+            break
+
+        # Update p
+        z_vec = preconditioner(r_vec, active_mask)
+        for x in active:
+            beta = ein.core.dot(r_vec[x], z_vec[x]) / rz_old[x]
+            p_vec[x] = p_vec[x] * beta
+            ein.core.axpy(1.0, z_vec[x], p_vec[x])
+
+    if printlvl:
+        core.print_out("   -----------------------------------------------------\n")
+
+    return x_vec, r_vec
+
+
 class DIIS:
     """
     An object to assist in the DIIS extrpolation procedure.

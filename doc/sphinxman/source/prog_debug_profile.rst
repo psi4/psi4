@@ -68,5 +68,31 @@ Profiling
 Instructions on using Psi4 with a profiler, or/and discuss how timers work
 in Psi4... they are hierarchical.... I think we have special timers for
 parallel blocks.
+Psi4 exposes internal timers through Python, which is often enough for
+lightweight profiling and regression checks.
 
+- ``psi4.core.clean_timers()`` resets accumulated timer state.
+- ``psi4.core.get_timer_dict()`` returns a dictionary keyed by timer name.
+- ``psi4.driver.p4util.write_timer_csv(filename)`` writes all current timer
+  values to CSV (default file name: ``timer.csv``).
+
+The CSV format and returned string contain these columns:
+``timer_name``, ``wall_time``, ``user_time``, ``system_time``, and ``n_calls``.
+
+Example:
+
+.. code-block:: python
+
+   import psi4
+
+   psi4.core.clean_timers()
+   e, wfn = psi4.energy("sapt(dft)", return_wfn=True)
+
+   timers = psi4.core.get_timer_dict()
+   print(f"SAPT(DFT) wall time: {timers['SAPT(DFT) Energy']['wall_time']:.2f} s")
+
+   psi4.driver.p4util.write_timer_csv("saptdft_timers.csv")
+
+This workflow is used in test coverage for SAPT(DFT) timer output to ensure
+the timing table is machine-readable and stable.
 
