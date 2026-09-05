@@ -38,10 +38,14 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
 
+#include <cstddef>
+#include <limits>
 #include <map>
-#include <tuple>
 #include <string>
+#include <tuple>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #ifdef USING_Einsums
 #include "Einsums/Tensor.hpp"
@@ -62,6 +66,13 @@ enum class DLPNOMethod { MP2, CCSD, CCSD_T, CCSDT, CCSDT_Q, CCSDTQ };
 inline size_t triplet_key(int i, int j, int k, size_t nocc) {
     return (static_cast<size_t>(i) * nocc + j) * nocc + k;
 }
+
+/// Maximum number of doubles in one Psi4 Vector used as a DLPNO DIIS item.
+/// Keeping chunks at 1 GiB avoids the signed-int Vector dimension limit and
+/// prevents PyDIIS from loading multi-gigabyte logical vectors contiguously.
+constexpr size_t DLPNO_DIIS_CHUNK_WORDS = size_t{1} << 27;
+static_assert(DLPNO_DIIS_CHUNK_WORDS <= static_cast<size_t>(std::numeric_limits<int>::max()),
+              "A DLPNO DIIS chunk must fit in one Psi4 Vector.");
 
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
@@ -237,6 +248,21 @@ class DLPNO : public Wavefunction {
     SharedVector flatten_mats(const std::vector<SharedMatrix>& mat_list);
 
     void copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_list);
+
+    /// Pack/scatter arbitrary contiguous blocks through bounded DIIS vectors.
+    std::vector<SharedVector> flatten_diis_blocks(
+        const std::vector<std::pair<const double*, size_t>>& blocks,
+        const std::string& label) const;
+    void copy_diis_blocks(const std::vector<SharedVector>& chunks,
+                          const std::vector<std::pair<double*, size_t>>& blocks) const;
+
+    /// Flatten a matrix list into bounded Vector chunks for high-rank DIIS data.
+    std::vector<SharedVector> flatten_mats_chunked(const std::vector<SharedMatrix>& mat_list,
+                                                  const std::string& label) const;
+
+    /// Scatter bounded DIIS chunks back into their original matrix list.
+    void copy_flat_mats_chunked(const std::vector<SharedVector>& chunks,
+                                std::vector<SharedMatrix>& mat_list) const;
 
     /// Form LMOs, PAOs, etc.
     void setup_orbitals();
@@ -758,13 +784,13 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     /// components of the nonorthogonal spin-adapted quadruples representation.
     einsums::Tensor<double, 4> quadruples_spin_desummation(const einsums::Tensor<double, 4> &X);
 
-    /// Flatten Psi4 matrices and, optionally, native Einsums T4/R4 tensors into one DIIS vector.
-    SharedVector flatten_ccsdtq_diis(const std::vector<SharedMatrix>& matrices,
-                                     const std::vector<einsums::Tensor<double, 4>>& rank4_tensors,
-                                     bool include_t4) const;
-    /// Scatter an extrapolated DIIS vector back into the Psi4 matrices and native T4/R4 tensors.
-    void copy_ccsdtq_diis(const SharedVector& flat, std::vector<SharedMatrix>& matrices,
-                          std::vector<einsums::Tensor<double, 4>>& rank4_tensors, bool include_t4) const;
+    /// Flatten native Einsums T4/R4 tensors into bounded Vector chunks for DIIS.
+    std::vector<SharedVector> flatten_rank4_diis_chunks(
+        const std::vector<einsums::Tensor<double, 4>>& rank4_tensors,
+        const std::string& label) const;
+    /// Scatter bounded DIIS chunks back into native T4/R4 tensors.
+    void copy_rank4_diis_chunks(const std::vector<SharedVector>& chunks,
+                                std::vector<einsums::Tensor<double, 4>>& rank4_tensors) const;
 
     /// Create extended pair natural orbitals (XPNOs) for the T_mnkl contractions.
     void xpno_transform(double xpno_tolerance);

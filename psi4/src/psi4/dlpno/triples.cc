@@ -1886,11 +1886,19 @@ void DLPNOCCSDT::estimate_memory() {
         2 * singles_words + 2 * doubles_words + projected_pair_singles_memory +
         nthreads * (singles_words + doubles_words);
 
-    // The in-core DIIS manager retains a solution and error vector for every slot. Include
-    // one additional solution/error pair for the flattened vectors used during extrapolation.
-    const size_t iteration_vector_words = singles_words + doubles_words + triples_amplitude_memory;
+    // The in-core DIIS manager retains a solution and error vector for every slot. T1/T2
+    // form one item and T3 is split into bounded chunks. Include one caller-owned
+    // solution/error pair and the two largest cloned items used by a dot product.
+    const size_t lower_rank_diis_words = singles_words + doubles_words;
+    if (lower_rank_diis_words > static_cast<size_t>(std::numeric_limits<int>::max())) {
+        throw PSIEXCEPTION("The combined DLPNO-CCSDT T1/T2 DIIS item exceeds the Psi4 Vector dimension limit.");
+    }
+    const size_t iteration_vector_words = lower_rank_diis_words + triples_amplitude_memory;
+    const size_t largest_diis_item_words =
+        std::max(lower_rank_diis_words, std::min(triples_amplitude_memory, DLPNO_DIIS_CHUNK_WORDS));
     const size_t diis_memory =
-        2 * (static_cast<size_t>(options_.get_int("DIIS_MAX_VECS")) + 1) * iteration_vector_words;
+        2 * (static_cast<size_t>(options_.get_int("DIIS_MAX_VECS")) + 1) * iteration_vector_words +
+        2 * largest_diis_item_words;
 
     // rho_dbck_contribution() returns one diagonal-PNO cube per occupied orbital.
     // It packs B_Q^{me} once and streams one npno^2 integral slice, rather than
@@ -1950,7 +1958,8 @@ void DLPNOCCSDT::estimate_memory() {
         print_memory_line("In-core disk-eligible CCSDT integrals", in_core_disk_eligible_df_memory);
         print_memory_line("CCSDT amplitudes/intermediates", triples_iteration_memory);
         print_memory_line("Lower-rank amplitudes/residual buffers", lower_rank_iteration_memory);
-        print_memory_line("In-core DIIS upper bound", diis_memory);
+        print_memory_line("Largest T1/T2-or-chunk DIIS item", largest_diis_item_words);
+        print_memory_line("Chunked in-core DIIS upper bound", diis_memory);
         print_memory_line("rho_dbck cross-domain intermediates", rho_intermediate_memory);
         print_memory_line("Integral workspace per thread (" + std::to_string(nthreads) + ")",
                           integral_workspace_per_thread);
@@ -3733,30 +3742,48 @@ void DLPNOCCSDT::lccsdt_iterations() {
         } // end miter
 
         // DIIS Extrapolation
-        std::vector<SharedMatrix> T_vecs;
-        T_vecs.reserve(T_ia_.size() + T_iajb_.size() + T_iajbkc_.size());
-        T_vecs.insert(T_vecs.end(), T_ia_.begin(), T_ia_.end());
-        T_vecs.insert(T_vecs.end(), T_iajb_.begin(), T_iajb_.end());
-        T_vecs.insert(T_vecs.end(), T_iajbkc_.begin(), T_iajbkc_.end());
+        // Singles and doubles remain one compact item, while the much larger T3/R3
+        // banks are split into bounded vectors. PyDIIS treats the items as one
+        // logical vector by summing their dot products with common coefficients.
+        std::vector<SharedMatrix> T_lower;
+        T_lower.reserve(T_ia_.size() + T_iajb_.size());
+        T_lower.insert(T_lower.end(), T_ia_.begin(), T_ia_.end());
+        T_lower.insert(T_lower.end(), T_iajb_.begin(), T_iajb_.end());
 
-        std::vector<SharedMatrix> R_vecs;
-        R_vecs.reserve(R_ia.size() + R_iajb.size() + R_iajbkc.size());
-        R_vecs.insert(R_vecs.end(), R_ia.begin(), R_ia.end());
-        R_vecs.insert(R_vecs.end(), R_iajb.begin(), R_iajb.end());
-        R_vecs.insert(R_vecs.end(), R_iajbkc.begin(), R_iajbkc.end());
+        std::vector<SharedMatrix> R_lower;
+        R_lower.reserve(R_ia.size() + R_iajb.size());
+        R_lower.insert(R_lower.end(), R_ia.begin(), R_ia.end());
+        R_lower.insert(R_lower.end(), R_iajb.begin(), R_iajb.end());
 
-        auto T_vecs_flat = flatten_mats(T_vecs);
-        auto R_vecs_flat = flatten_mats(R_vecs);
+        auto T_lower_flat = flatten_mats(T_lower);
+        auto R_lower_flat = flatten_mats(R_lower);
+        auto T3_chunks = flatten_mats_chunked(T_iajbkc_, "LCCSDT T3 DIIS");
+        auto R3_chunks = flatten_mats_chunked(R_iajbkc, "LCCSDT R3 DIIS");
+
+        std::vector<SharedVector> T_diis_items;
+        T_diis_items.reserve(1 + T3_chunks.size());
+        T_diis_items.push_back(T_lower_flat);
+        T_diis_items.insert(T_diis_items.end(), T3_chunks.begin(), T3_chunks.end());
+        std::vector<SharedVector> R_diis_items;
+        R_diis_items.reserve(1 + R3_chunks.size());
+        R_diis_items.push_back(R_lower_flat);
+        R_diis_items.insert(R_diis_items.end(), R3_chunks.begin(), R3_chunks.end());
 
         if (iteration == 1) {
-            diis.set_error_vector_size(R_vecs_flat);
-            diis.set_vector_size(T_vecs_flat);
+            diis.set_error_vector_size_from_list(R_diis_items);
+            diis.set_vector_size_from_list(T_diis_items);
         }
 
-        diis.add_entry(R_vecs_flat.get(), T_vecs_flat.get());
-        diis.extrapolate(T_vecs_flat.get());
+        diis.add_entry_from_lists(R_diis_items, T_diis_items);
+        // The DIIS manager owns its copy now; do not retain a full flattened R1--R3
+        // vector while it constructs dot products and extrapolates the amplitudes.
+        R_diis_items.clear();
+        R3_chunks.clear();
+        R_lower_flat.reset();
+        diis.extrapolate_from_list(T_diis_items);
 
-        copy_flat_mats(T_vecs_flat, T_vecs);
+        copy_flat_mats(T_lower_flat, T_lower);
+        copy_flat_mats_chunked(T3_chunks, T_iajbkc_);
 
         // Evaluate the canonical CCSDT energy of Eq. (51) in the local representation;
         // the final DLPNO energy assembly is given by manuscript Eqs. (111)-(113).

@@ -2840,7 +2840,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Write expensive DLPNO-CCSDTQ QNO integrals to disk? May be enabled automatically
             by ``DLPNO_TOGGLE_MEMORY`` when the estimated peak is too large. !expert -*/
         options.add_bool("DLPNO_CCSDTQ_DISK_INTS", true);
-        /*- Include T4 amplitudes in DIIS extrapolation for DLPNO-CCSDTQ? May be disabled
+        /*- Include T4 amplitudes in DIIS extrapolation for DLPNO-CCSDTQ? T3 and T4 data are
+            stored as bounded chunks to avoid the Psi4 Vector dimension limit. May be disabled
             automatically by ``DLPNO_TOGGLE_MEMORY`` after disk-backed integrals are selected. !expert -*/
         options.add_bool("EXTRAPOLATE_T4", true);
 

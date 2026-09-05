@@ -47,6 +47,7 @@
 #include "psi4/libqt/qt.h"
 
 #include <algorithm>
+#include <limits>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -270,15 +271,23 @@ void DLPNO::C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
 /*
  * In order to use DIIS to accelerate convergence of the MP2 amplitudes,
  * we need to "flatten" the sparse data structure (list of Matrix objects)
- * into a single Matrix
+ * into a single Vector
  */
 SharedVector DLPNO::flatten_mats(const std::vector<SharedMatrix>& mat_list) {
     size_t total_size = 0;
-    for (SharedMatrix mat : mat_list) {
+    for (const auto& mat : mat_list) {
+        if (mat->size() > std::numeric_limits<size_t>::max() - total_size) {
+            throw PSIEXCEPTION("DLPNO flattened matrix-list size overflow.");
+        }
         total_size += mat->size();
     }
 
-    auto flat = std::make_shared<Vector>("flattened matrix list", total_size);
+    if (total_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+        throw PSIEXCEPTION("DLPNO matrix list exceeds the Psi4 Vector dimension limit; "
+                           "use chunked DIIS storage for this data.");
+    }
+
+    auto flat = std::make_shared<Vector>("flattened matrix list", static_cast<int>(total_size));
     double* flatp = flat->pointer();
 
     size_t flat_ind = 0;
@@ -291,10 +300,16 @@ SharedVector DLPNO::flatten_mats(const std::vector<SharedMatrix>& mat_list) {
     return flat;
 }
 
-/* This function is a complement to flatten_mats(). A flattened Matrix is
+/* This function is a complement to flatten_mats(). A flattened Vector is
  * copied into a list of Matrix objects.
  */
 void DLPNO::copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_list) {
+    size_t total_size = 0;
+    for (const auto& mat : mat_list) total_size += mat->size();
+    if (total_size != static_cast<size_t>(flat->dim())) {
+        throw PSIEXCEPTION("DLPNO flattened matrix layout does not match the amplitude layout.");
+    }
+
     double* flatp = flat->pointer();
     size_t flat_ind = 0;
     for (SharedMatrix mat : mat_list) {
@@ -302,6 +317,113 @@ void DLPNO::copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_lis
         ::memcpy(mat->pointer()[0], &flatp[flat_ind], sizeof(double) * mat->size());
         flat_ind += mat->size();
     }
+}
+
+std::vector<SharedVector> DLPNO::flatten_diis_blocks(
+    const std::vector<std::pair<const double*, size_t>>& blocks,
+    const std::string& label) const {
+    size_t total_size = 0;
+    for (const auto& block : blocks) {
+        const size_t size = block.second;
+        if (size != 0 && block.first == nullptr) {
+            throw PSIEXCEPTION("DLPNO chunked DIIS source block is null.");
+        }
+        if (size > std::numeric_limits<size_t>::max() - total_size) {
+            throw PSIEXCEPTION("DLPNO chunked DIIS size overflow.");
+        }
+        total_size += size;
+    }
+
+    std::vector<SharedVector> chunks;
+    if (total_size == 0) return chunks;
+
+    const size_t n_chunks = 1 + (total_size - 1) / DLPNO_DIIS_CHUNK_WORDS;
+    chunks.reserve(n_chunks);
+    for (size_t chunk = 0, offset = 0; offset < total_size; ++chunk) {
+        const size_t chunk_size = std::min(DLPNO_DIIS_CHUNK_WORDS, total_size - offset);
+        chunks.push_back(std::make_shared<Vector>(label + " chunk " + std::to_string(chunk),
+                                                  static_cast<int>(chunk_size)));
+        offset += chunk_size;
+    }
+
+    size_t chunk = 0;
+    size_t chunk_offset = 0;
+    for (const auto& [source, block_size] : blocks) {
+        size_t source_offset = 0;
+        while (source_offset < block_size) {
+            const size_t available = static_cast<size_t>(chunks[chunk]->dim()) - chunk_offset;
+            const size_t count = std::min(available, block_size - source_offset);
+            ::memcpy(chunks[chunk]->pointer() + chunk_offset, source + source_offset,
+                     count * sizeof(double));
+            source_offset += count;
+            chunk_offset += count;
+            if (chunk_offset == static_cast<size_t>(chunks[chunk]->dim())) {
+                ++chunk;
+                chunk_offset = 0;
+            }
+        }
+    }
+
+    return chunks;
+}
+
+void DLPNO::copy_diis_blocks(const std::vector<SharedVector>& chunks,
+                             const std::vector<std::pair<double*, size_t>>& blocks) const {
+    size_t block_words = 0;
+    for (const auto& block : blocks) {
+        const size_t size = block.second;
+        if (size != 0 && block.first == nullptr) {
+            throw PSIEXCEPTION("DLPNO chunked DIIS destination block is null.");
+        }
+        if (size > std::numeric_limits<size_t>::max() - block_words) {
+            throw PSIEXCEPTION("DLPNO chunked DIIS size overflow.");
+        }
+        block_words += size;
+    }
+    size_t chunk_words = 0;
+    for (const auto& chunk : chunks) chunk_words += static_cast<size_t>(chunk->dim());
+    if (block_words != chunk_words) {
+        throw PSIEXCEPTION("DLPNO chunked DIIS layout does not match the amplitude layout.");
+    }
+    if (block_words == 0) return;
+
+    size_t chunk = 0;
+    size_t chunk_offset = 0;
+    for (const auto& [destination, block_size] : blocks) {
+        size_t destination_offset = 0;
+        while (destination_offset < block_size) {
+            const size_t available = static_cast<size_t>(chunks[chunk]->dim()) - chunk_offset;
+            const size_t count = std::min(available, block_size - destination_offset);
+            ::memcpy(destination + destination_offset, chunks[chunk]->pointer() + chunk_offset,
+                     count * sizeof(double));
+            destination_offset += count;
+            chunk_offset += count;
+            if (chunk_offset == static_cast<size_t>(chunks[chunk]->dim())) {
+                ++chunk;
+                chunk_offset = 0;
+            }
+        }
+    }
+}
+
+std::vector<SharedVector> DLPNO::flatten_mats_chunked(
+    const std::vector<SharedMatrix>& mat_list, const std::string& label) const {
+    std::vector<std::pair<const double*, size_t>> blocks;
+    blocks.reserve(mat_list.size());
+    for (const auto& mat : mat_list) {
+        blocks.emplace_back(mat->size() == 0 ? nullptr : mat->pointer()[0], mat->size());
+    }
+    return flatten_diis_blocks(blocks, label);
+}
+
+void DLPNO::copy_flat_mats_chunked(const std::vector<SharedVector>& chunks,
+                                   std::vector<SharedMatrix>& mat_list) const {
+    std::vector<std::pair<double*, size_t>> blocks;
+    blocks.reserve(mat_list.size());
+    for (auto& mat : mat_list) {
+        blocks.emplace_back(mat->size() == 0 ? nullptr : mat->pointer()[0], mat->size());
+    }
+    copy_diis_blocks(chunks, blocks);
 }
 
 /* Args: orthonormal orbitals C (ao x mo) and fock matrix F (ao x ao)

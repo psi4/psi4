@@ -2923,9 +2923,22 @@ void DLPNOCCSDTQ::estimate_memory() {
     // T1 amplitudes, or the pair-domain T1 projections retained by CCSDTQ.
     const size_t inherited_supplemental_memory =
         pno_basis_memory + singles_words + projected_pair_singles_memory;
+    const size_t lower_rank_diis_words = singles_words + doubles_words;
+    if (lower_rank_diis_words > static_cast<size_t>(std::numeric_limits<int>::max())) {
+        throw PSIEXCEPTION("The combined DLPNO-CCSDTQ T1/T2 DIIS item exceeds the Psi4 Vector dimension limit.");
+    }
     auto iteration_vector_words = [&]() {
-        return singles_words + doubles_words + triples_words +
+        return lower_rank_diis_words + triples_words +
                (extrapolate_t4_ ? quadruples_amplitude_memory : 0);
+    };
+    auto largest_diis_item_words = [&]() {
+        size_t largest = std::max(lower_rank_diis_words,
+                                  std::min(triples_words, DLPNO_DIIS_CHUNK_WORDS));
+        if (extrapolate_t4_) {
+            largest = std::max(largest,
+                               std::min(quadruples_amplitude_memory, DLPNO_DIIS_CHUNK_WORDS));
+        }
+        return largest;
     };
     size_t in_core_disk_eligible_df_memory = disk_qno_integrals_ ? 0 : disk_eligible_df_memory;
 
@@ -2978,9 +2991,10 @@ void DLPNOCCSDTQ::estimate_memory() {
         const size_t r2_peak =
             iteration_resident +
             std::max(ccsd_iteration_workspace_doubles_, nthreads * doubles_t4_workspace_per_thread);
-        // Besides the caller's solution/error vectors, the on-disk DIIS dot
-        // products can load two stored error vectors simultaneously.
-        const size_t diis_peak = iteration_resident + 4 * iteration_vector_words();
+        // The caller owns one complete chunked solution/error pair. On-disk
+        // PyDIIS loads only two individual stored chunks for each dot product.
+        const size_t diis_peak = iteration_resident + 2 * iteration_vector_words() +
+                                 2 * largest_diis_item_words();
         const size_t iteration_peak =
             std::max({spin_peak, r4_peak, r3_peak, r2_peak, diis_peak});
         return MemoryPeaks{common_resident, xpno_peak, integral_peak,
@@ -3033,8 +3047,10 @@ void DLPNOCCSDTQ::estimate_memory() {
                           doubles_t4_workspace_per_thread);
         print_memory_line("Spin transform workspace per thread (" + std::to_string(nthreads) + ")",
                           spin_workspace_per_thread);
-        print_memory_line("Peak flattened/on-disk DIIS working vectors",
-                          4 * iteration_vector_words());
+        print_memory_line("Caller-owned chunked DIIS vectors", 2 * iteration_vector_words());
+        print_memory_line("Largest T1/T2-or-chunk DIIS item", largest_diis_item_words());
+        print_memory_line("Peak chunked/on-disk DIIS working data",
+                          2 * iteration_vector_words() + 2 * largest_diis_item_words());
         print_memory_line("Estimated common resident memory", peaks.common_resident);
         print_memory_line("Estimated XPNO-construction peak", peaks.xpno);
         print_memory_line("Estimated integral-build peak", peaks.integral);
@@ -3080,7 +3096,7 @@ void DLPNOCCSDTQ::estimate_memory() {
     if (toggle_memory_ && extrapolate_t4_ &&
         required_memory * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total required memory remains more than 90%% of available memory.\n");
-        outfile->Printf("    Removing T4/R4 blocks from the flattened DIIS vectors...\n");
+        outfile->Printf("    Removing T4/R4 blocks from the chunked DIIS entry...\n");
         extrapolate_t4_ = false;
         peaks = memory_peaks();
         required_memory = std::max({peaks.xpno, peaks.integral, peaks.iteration});
@@ -3624,55 +3640,28 @@ Tensor<double, 4> DLPNOCCSDTQ::quadruples_spin_desummation(const Tensor<double, 
     return desummed;
 }
 
-SharedVector DLPNOCCSDTQ::flatten_ccsdtq_diis(
-    const std::vector<SharedMatrix>& matrices, const std::vector<Tensor<double, 4>>& rank4_tensors,
-    bool include_t4) const {
-    size_t total_size = 0;
-    for (const auto& matrix : matrices) total_size += matrix->size();
-    if (include_t4) {
-        for (const auto& tensor : rank4_tensors) {
-            total_size += static_cast<size_t>(tensor.dim(0)) * tensor.dim(1) * tensor.dim(2) * tensor.dim(3);
-        }
+std::vector<SharedVector> DLPNOCCSDTQ::flatten_rank4_diis_chunks(
+    const std::vector<Tensor<double, 4>>& rank4_tensors, const std::string& label) const {
+    std::vector<std::pair<const double*, size_t>> blocks;
+    blocks.reserve(rank4_tensors.size());
+    for (const auto& tensor : rank4_tensors) {
+        const size_t size = static_cast<size_t>(tensor.dim(0)) * tensor.dim(1) *
+                            tensor.dim(2) * tensor.dim(3);
+        blocks.emplace_back(size == 0 ? nullptr : tensor.data(), size);
     }
-
-    auto flat = std::make_shared<Vector>("flattened LCCSDTQ DIIS vector", total_size);
-    double* flat_data = flat->pointer();
-    size_t offset = 0;
-    for (const auto& matrix : matrices) {
-        const size_t size = matrix->size();
-        if (size == 0) continue;
-        ::memcpy(flat_data + offset, matrix->pointer()[0], size * sizeof(double));
-        offset += size;
-    }
-    if (include_t4) {
-        for (const auto& tensor : rank4_tensors) {
-            const size_t size = static_cast<size_t>(tensor.dim(0)) * tensor.dim(1) * tensor.dim(2) * tensor.dim(3);
-            if (size == 0) continue;
-            ::memcpy(flat_data + offset, tensor.data(), size * sizeof(double));
-            offset += size;
-        }
-    }
-    return flat;
+    return flatten_diis_blocks(blocks, label);
 }
 
-void DLPNOCCSDTQ::copy_ccsdtq_diis(const SharedVector& flat, std::vector<SharedMatrix>& matrices,
-                                    std::vector<Tensor<double, 4>>& rank4_tensors, bool include_t4) const {
-    const double* flat_data = flat->pointer();
-    size_t offset = 0;
-    for (auto& matrix : matrices) {
-        const size_t size = matrix->size();
-        if (size == 0) continue;
-        ::memcpy(matrix->pointer()[0], flat_data + offset, size * sizeof(double));
-        offset += size;
+void DLPNOCCSDTQ::copy_rank4_diis_chunks(
+    const std::vector<SharedVector>& chunks, std::vector<Tensor<double, 4>>& rank4_tensors) const {
+    std::vector<std::pair<double*, size_t>> blocks;
+    blocks.reserve(rank4_tensors.size());
+    for (auto& tensor : rank4_tensors) {
+        const size_t size = static_cast<size_t>(tensor.dim(0)) * tensor.dim(1) *
+                            tensor.dim(2) * tensor.dim(3);
+        blocks.emplace_back(size == 0 ? nullptr : tensor.data(), size);
     }
-    if (include_t4) {
-        for (auto& tensor : rank4_tensors) {
-            const size_t size = static_cast<size_t>(tensor.dim(0)) * tensor.dim(1) * tensor.dim(2) * tensor.dim(3);
-            if (size == 0) continue;
-            ::memcpy(tensor.data(), flat_data + offset, size * sizeof(double));
-            offset += size;
-        }
-    }
+    copy_diis_blocks(chunks, blocks);
 }
 
 void DLPNOCCSDTQ::add_t4_to_doubles_residual(std::vector<SharedMatrix>& R_iajb, std::vector<SharedMatrix>& Rn_iajb,
@@ -5857,34 +5846,59 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
         } // end miter
 
         // DIIS Extrapolation
-        const size_t nelements = T_ia_.size() + T_iajb_.size() + T_iajbkc_.size();
+        // Keep the modest T1/T2 data in one item and split the T3 and optional T4
+        // banks into bounded vectors. The complete list is still one mathematical
+        // DIIS vector: PyDIIS sums every item dot product and applies one coefficient
+        // set to all items.
+        std::vector<SharedMatrix> T_lower;
+        T_lower.reserve(T_ia_.size() + T_iajb_.size());
+        T_lower.insert(T_lower.end(), T_ia_.begin(), T_ia_.end());
+        T_lower.insert(T_lower.end(), T_iajb_.begin(), T_iajb_.end());
 
-        std::vector<SharedMatrix> T_vecs;
-        T_vecs.reserve(nelements);
-        T_vecs.insert(T_vecs.end(), T_ia_.begin(), T_ia_.end());
-        T_vecs.insert(T_vecs.end(), T_iajb_.begin(), T_iajb_.end());
-        T_vecs.insert(T_vecs.end(), T_iajbkc_.begin(), T_iajbkc_.end());
+        std::vector<SharedMatrix> R_lower;
+        R_lower.reserve(R_ia.size() + R_iajb.size());
+        R_lower.insert(R_lower.end(), R_ia.begin(), R_ia.end());
+        R_lower.insert(R_lower.end(), R_iajb.begin(), R_iajb.end());
 
-        std::vector<SharedMatrix> R_vecs;
-        R_vecs.reserve(nelements);
-        R_vecs.insert(R_vecs.end(), R_ia.begin(), R_ia.end());
-        R_vecs.insert(R_vecs.end(), R_iajb.begin(), R_iajb.end());
-        R_vecs.insert(R_vecs.end(), R_iajbkc.begin(), R_iajbkc.end());
-
-        // Flatten the native Einsums T4/R4 tensors directly into the two vectors
-        // required by DIIS. This avoids persistent duplicate Psi4 Matrix copies.
-        auto T_vecs_flat = flatten_ccsdtq_diis(T_vecs, T_iajbkcld_, extrapolate_t4_);
-        auto R_vecs_flat = flatten_ccsdtq_diis(R_vecs, R_iajbkcld, extrapolate_t4_);
-
-        if (iteration == 1) {
-            diis.set_error_vector_size(R_vecs_flat);
-            diis.set_vector_size(T_vecs_flat);
+        auto T_lower_flat = flatten_mats(T_lower);
+        auto R_lower_flat = flatten_mats(R_lower);
+        auto T3_chunks = flatten_mats_chunked(T_iajbkc_, "LCCSDTQ T3 DIIS");
+        auto R3_chunks = flatten_mats_chunked(R_iajbkc, "LCCSDTQ R3 DIIS");
+        std::vector<SharedVector> T4_chunks;
+        std::vector<SharedVector> R4_chunks;
+        if (extrapolate_t4_) {
+            T4_chunks = flatten_rank4_diis_chunks(T_iajbkcld_, "LCCSDTQ T4 DIIS");
+            R4_chunks = flatten_rank4_diis_chunks(R_iajbkcld, "LCCSDTQ R4 DIIS");
         }
 
-        diis.add_entry(R_vecs_flat.get(), T_vecs_flat.get());
-        diis.extrapolate(T_vecs_flat.get());
+        std::vector<SharedVector> T_diis_items;
+        T_diis_items.reserve(1 + T3_chunks.size() + T4_chunks.size());
+        T_diis_items.push_back(T_lower_flat);
+        T_diis_items.insert(T_diis_items.end(), T3_chunks.begin(), T3_chunks.end());
+        T_diis_items.insert(T_diis_items.end(), T4_chunks.begin(), T4_chunks.end());
+        std::vector<SharedVector> R_diis_items;
+        R_diis_items.reserve(1 + R3_chunks.size() + R4_chunks.size());
+        R_diis_items.push_back(R_lower_flat);
+        R_diis_items.insert(R_diis_items.end(), R3_chunks.begin(), R3_chunks.end());
+        R_diis_items.insert(R_diis_items.end(), R4_chunks.begin(), R4_chunks.end());
 
-        copy_ccsdtq_diis(T_vecs_flat, T_vecs, T_iajbkcld_, extrapolate_t4_);
+        if (iteration == 1) {
+            diis.set_error_vector_size_from_list(R_diis_items);
+            diis.set_vector_size_from_list(T_diis_items);
+        }
+
+        diis.add_entry_from_lists(R_diis_items, T_diis_items);
+        // PyDIIS has copied this iteration's residual chunks to disk. Release
+        // them before it loads stored residual pairs for the B-matrix products.
+        R_diis_items.clear();
+        R4_chunks.clear();
+        R3_chunks.clear();
+        R_lower_flat.reset();
+        diis.extrapolate_from_list(T_diis_items);
+
+        copy_flat_mats(T_lower_flat, T_lower);
+        copy_flat_mats_chunked(T3_chunks, T_iajbkc_);
+        if (extrapolate_t4_) copy_rank4_diis_chunks(T4_chunks, T_iajbkcld_);
 
         // evaluate energy and convergence
         e_prev = e_curr;

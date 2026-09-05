@@ -392,6 +392,12 @@ pair domains for the computationally dominant contractions. Their occupation cut
 controlled by |dlpno__t_cut_xpno|, which defaults to three times
 |dlpno__t_cut_qno_full| (approximately ``1.0e-5``).
 
+The iterative DLPNO-CCSDT and DLPNO-CCSDTQ solvers store their high-rank
+:math:`T_3/R_3` and :math:`T_4/R_4` DIIS data in bounded chunks. The chunks
+collectively form one DIIS error or amplitude vector, without introducing an
+additional approximation, while avoiding the signed-integer dimension limit
+of an individual Psi4 ``Vector``.
+
 An example input file for a DLPNO-CCSDTQ computation is::
 
    memory 2 GB
@@ -574,8 +580,8 @@ The dimer timing is conservative for this archived input: it explicitly set
 from DIIS, whereas both monomer calculations used the default ``TRUE`` setting.
 Consequently, the dimer required 69 full-quadruples iterations and spent about
 98 hours in the DLPNO-CCSDTQ stage alone. Including :math:`T_4` in DIIS
-normally improves convergence at the cost of larger DIIS vectors. The monomer
-comparison also shows the cost of the ghost basis: the CP monomer required about
+normally improves convergence at the cost of more total chunked DIIS data. The
+monomer comparison also shows the cost of the ghost basis: the CP monomer required about
 10% more wall time and a 13% larger estimated DLPNO-CCSDTQ peak than the noCP
 monomer.
 
