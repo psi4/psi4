@@ -131,7 +131,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     |globals__freeze_core| is set to ``POLICY``. -*/
     options.add("FREEZE_CORE_POLICY", new ArrayType());
 
-    options.add_int("NUM_GPUS", 1);
     /*- Do use pure angular momentum basis functions?
     If not explicitly set, the default comes from the basis set.
     **Cfour Interface:** Keyword translates into |cfour__cfour_spherical|. -*/
@@ -343,8 +342,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
         /*- Name of the PCMSolver input file (case sensitive) as parsed by pcmsolver.py !expert -*/
         options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
-        /*- PCM-CCSD algorithm type. -*/
-        options.add_str("PCM_CC_TYPE", "PTE", "PTE");
     }
 
     if (name == "DDX" || options.read_globals()) {
@@ -532,10 +529,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Number of important determinants to print -*/
         options.add_int("NUM_DETS_PRINT", 20);
-
-        /*- Do freeze core orbitals? -*/
-        // CDS-TODO: Need to make DETCI compatible with normal FREEZE_CORE
-        options.add_bool("DETCI_FREEZE_CORE", true);
 
         /*- Do calculate the value of $\langle S^2\rangle$ for each root?
         Only supported for |detci__icore| = 1. -*/
@@ -933,18 +926,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         do this).  Not doing this is experimental.  !expert -*/
         options.add_bool("CC_UPDATE_EPS", true);
 
-        /*- CC_MACRO = [ [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
-                         [ex_lvl, max_holes_I, max_parts_IV, max_I+IV], ... ]
-        Optional additional restrictions on allowed excitations in
-        coupled-cluster computations, based on macroconfiguration selection.
-        For each sub-array, [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
-        eliminate cluster amplitudes in which: [the excitation level
-        (holes in I + II) is equal to ex_lvl] AND [there are more than
-        max_holes_I holes in RAS I, there are more than max_parts_IV
-        particles in RAS IV, OR there are more than max_I+IV quasiparticles
-        in RAS I + RAS IV].  !expert -*/
-        options.add("CC_MACRO", new ArrayType());
-
         /*- SUBSECTION Alternative Algorithms -*/
 
         /*- Do store strings specifically for FCI? (Defaults to TRUE for FCI.)
@@ -1013,11 +994,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- DIIS error vector type either, the AO orbital gradient or the orbital rotation update matrix -*/
         options.add_str("MCSCF_DIIS_ERROR_TYPE", "GRAD", "GRAD UPDATE");
-
-        /*- Auxiliary basis set for MCSCF density fitted ERI computations.
-        This only effects the "Q" matrix in Helgaker's language.
-        :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
-        options.add_str("DF_BASIS_MCSCF", "");
 
         /*- Cleanup the CI info at the end of a run? -*/
         options.add_bool("MCSCF_CI_CLEANUP", true);
@@ -1202,10 +1178,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SAPT_DFT_EXCH_DISP_FIXED_SCALE", 0.770);
         /*- Underlying funcitonal to use for SAPT(DFT) !expert -*/
         options.add_str("SAPT_DFT_FUNCTIONAL", "PBE0", "");
-        /*- Number of points in the Legendre FDDS Dispersion time integration !expert -*/
-        options.add_int("SAPT_FDDS_DISP_NUM_POINTS", 10);
-        /*- Lambda shift in the space morphing for the FDDS Dispersion time integration !expert -*/
-        options.add_double("SAPT_FDDS_DISP_LEG_LAMBDA", 0.3);
         /*- Minimum rho cutoff for the in the LDA response for FDDS !expert -*/
         options.add_double("SAPT_FDDS_V2_RHO_CUTOFF", 1.e-6);
         /*- Which MP2 Exch-Disp module to use? !expert -*/
@@ -1701,17 +1673,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("THETA_POINTS", 360);
         /*- Number of azimuthal grid points for spherical potential integration -*/
         options.add_int("PHI_POINTS", 360);
-        /*- Read an external potential from the .dx file? -*/
-        options.add_bool("ONEPOT_GRID_READ", false);
-
         /*- SUBSECTION Parallel Runtime -*/
 
-        /*- The dimension sizes of the processor grid !expert -*/
-        options.add("PROCESS_GRID", new ArrayType());
-        /*- The tile size for the distributed matrices !expert -*/
-        options.add_int("TILE_SZ", 512);
-        /*- The dimension sizes of the distributed matrix !expert -*/
-        options.add("DISTRIBUTED_MATRIX", new ArrayType());
         /*- Do run in parallel? !expert -*/
         options.add_bool("PARALLEL", false);
 
@@ -1732,17 +1695,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
         /*- Fitting Condition, i.e. eigenvalue threshold for RI basis. Analogous to S_TOLERANCE !expert -*/
         options.add_double("DF_FITTING_CONDITION", 1.0E-10);
-        /*- FastDF Fitting Metric -*/
-        options.add_str("DF_METRIC", "COULOMB", "COULOMB EWALD OVERLAP");
-        /*- FastDF SR Ewald metric range separation parameter -*/
-        options.add_double("DF_THETA", 1.0);
-        /*- FastDF geometric fitting domain selection algorithm -*/
-        options.add_str("DF_DOMAINS", "DIATOMIC", "DIATOMIC SPHERES");
-        /*- Bump function min radius -*/
-        options.add_double("DF_BUMP_R0", 0.0);
-        /*- Bump function max radius -*/
-        options.add_double("DF_BUMP_R1", 0.0);
-
         /*- SUBSECTION COSX Algorithm -*/
 
         /*- Number of spherical points in initial COSX grid. -*/
@@ -1785,8 +1737,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SNLINK_GPU_MEM", 90);
         /*- Screening criteria for integrals and intermediates in snLinK -*/
         options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
-        /*- Screening criteria for shell-pair densities in snLinK !expert -*/
-        options.add_double("SNLINK_DENSITY_TOLERANCE", 1.0E-10);
         /*- Screening criteria for basis function values on snLinK grids !expert -*/
         options.add_double("SNLINK_BASIS_TOLERANCE", 1.0E-10);
         /*- Force snLinK to use cartesian coordinates !expert -*/
@@ -1868,8 +1818,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DFT_SPHERICAL_POINTS", 302);
         /*- Number of radial points. -*/
         options.add_int("DFT_RADIAL_POINTS", 75);
-        /*- Spherical Scheme. -*/
-        options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
         /*- Radial Scheme. -*/
         options.add_str("DFT_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
         /*- Nuclear Scheme. -*/
@@ -1926,8 +1874,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LOCAL_CONVERGENCE", 1E-12);
         /*- The maxiter on the orbital localization procedure -*/
         options.add_int("LOCAL_MAXITER", 200);
-        /*- The number of NOONs to print in a UHF calc -*/
-        options.add_str("UHF_NOONS", "3");
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
 
@@ -2109,8 +2055,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Number of important CC amplitudes per excitation level to print.
         CC analog to |detci__num_dets_print|. -*/
         options.add_int("NUM_AMPS_PRINT", 10);
-        /*- Type of job being performed !expert -*/
-        options.add_str("JOBTYPE", "");
         /*- Do simulate the effects of local correlation techniques? -*/
         options.add_bool("LOCAL", false);
         /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option)
@@ -2491,8 +2435,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         updates, the CC codes will, by default, re-use old vectors, unless
         the user sets RESTART = false. -*/
         options.add_bool("RESTART", 1);
-        /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? !expert -*/
-        options.add_bool("FORCE_RESTART", 0);
         //#warning CCEnergy ao_basis keyword type was changed.
         /*- The algorithm to use for the $\left\langle VV||VV\right\rangle$ terms
         If AO_BASIS is ``NONE``, the MO-basis integrals will be used;
@@ -2587,8 +2529,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     if (name == "DFMP2" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs density-fitted MP2 computations for RHF/UHF/ROHF reference wavefunctions. -*/
 
-        /*- A helpful option, used only in debugging the MADNESS version !expert-*/
-        options.add_int("MADMP2_SLEEP", 0);
         /*- Primary basis set -*/
         options.add_str("BASIS", "NONE");
         /*- Auxiliary basis set for MP2 density fitting computations.
@@ -2779,8 +2719,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The multiplicity, $M@@S(M@@S+1)$, of the target state.  Must be specified if different from the reference
            $M@@s$. -*/
         options.add_int("CORR_MULTP", 1);
-        /*- The molecular charge of the target state -*/
-        options.add_int("CORR_CHARGE", 0);
         /*- The amount (percentage) of damping to apply to the amplitude updates.
             0 will result in a full update, 100 will completely stall the update. A
             value around 20 (which corresponds to 20\% of the amplitudes from the
@@ -2808,12 +2746,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The cycle after which Tikhonow regularization is stopped.
         Set to zero to allow regularization in all iterations -*/
         options.add_int("TIKHONOW_MAX", 5);
-        /*- Do use DIIS extrapolation to accelerate convergence for iterative triples excitations? -*/
-        options.add_bool("TRIPLES_DIIS", false);
         /*- Do lock onto a singlet root? -*/
         options.add_bool("LOCK_SINGLET", false);
-        /*- Do start from a MP2 guess? -*/
-        options.add_bool("MP2_GUESS", true);
         /*- Do use the averaged Fock matrix over all references in (T) computations? -*/
         options.add_bool("FAVG_CCSD_T", false);
         /*- Do include the fourth-order contributions to the effective Hamiltonian? -*/
@@ -2824,8 +2758,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("DIAGONAL_CCSD_T", true);
         /*- Do diagonalize the effective Hamiltonian? -*/
         options.add_bool("DIAGONALIZE_HEFF", false);
-        /*- Do use symmetry to map equivalent determinants onto each other, for efficiency? -*/
-        options.add_bool("USE_SPIN_SYM", true);
         /*- Do zero the internal amplitudes, i.e., those that map reference determinants onto each other? -*/
         options.add_bool("ZERO_INTERNAL_AMPS", true);
         /*- Do include the terms that couple the reference determinants? -*/
@@ -3204,8 +3136,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         algorithm. The DIRECT option (default) means it will not be computed and stored, instead its contribution will
         be directly added to Generalized-Fock Matrix. -*/
         options.add_str("TPDM_ABCD_TYPE", "DIRECT", "DIRECT COMPUTE");
-        /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
-        options.add_str("CEPA_TYPE", "CEPA0", "CEPA0");
         /*- Controls the spin scaling set to current energy. This is set by Psi internally. !expert -*/
         options.add_str("SPIN_SCALE_TYPE", "NONE", "NONE CUSTOM SCS SCSN SCSVDW SOS SOSPI");
 
@@ -3482,8 +3412,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         met only when |fnocc__e_convergence| and |fnocc__r_convergence|
         are satisfied. -*/
         options.add_double("E_CONVERGENCE", 1.0e-6);
-        /*- Maximum number of iterations for Brueckner orbitals optimization -*/
-        options.add_int("BRUECKNER_MAXITER", 20);
         /*- Convergence for the CC amplitudes.  Note that convergence is
             met only when |fnocc__e_convergence| and |fnocc__r_convergence|
             are satisfied. -*/
@@ -3529,14 +3457,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do SCS-CEPA? Note that the scaling factors will be identical
         to those for SCS-CCSD. -*/
         options.add_bool("SCS_CEPA", false);
-        /*- Opposite-spin scaling factor for SCS-MP2 -*/
-        options.add_double("MP2_SCALE_OS", 1.20);
-        /*- Same-spin scaling factor for SCS-MP2 -*/
-        options.add_double("MP2_SCALE_SS", 1.0 / 3.0);
-        /*- Oppposite-spin scaling factor for SCS-CCSD -*/
-        options.add_double("CC_SCALE_OS", 1.27);
-        /*- Same-spin scaling factor for SCS-CCSD -*/
-        options.add_double("CC_SCALE_SS", 1.13);
         /*- do only evaluate mp2 energy? !expert -*/
         options.add_bool("RUN_MP2", false);
         /*- do only evaluate mp3 energy? !expert -*/
