@@ -142,13 +142,13 @@ void DirectJK::incfock_setup() {
 
     if (fixed_reference_) {
         // A valid, correctly-sized reference is required to build incrementally
-        if (D_reference_.size() != njk) do_incfock_iter_ = false;
+        if (D_fixed_ref_.size() != njk) do_incfock_iter_ = false;
 
         if (do_incfock_iter_) {
             // Incremental formation: build from the difference against the fixed reference
             for (size_t jki = 0; jki < njk; jki++) {
                 D_ref_[jki] = D_ao_[jki]->clone();
-                D_ref_[jki]->subtract(D_reference_[jki]);
+                D_ref_[jki]->subtract(D_fixed_ref_[jki]);
             }
         } else {
             // Full formation
@@ -183,20 +183,20 @@ void DirectJK::incfock_postiter() {
         if (do_incfock_iter_) {
             // Incremental build: add back the J, K, and wK from the fixed reference
             for (size_t jki = 0; jki < njk; jki++) {
-                if (do_J_) J_ao_[jki]->add(J_reference_[jki]);
-                if (do_K_) K_ao_[jki]->add(K_reference_[jki]);
-                if (do_wK_) wK_ao_[jki]->add(wK_reference_[jki]);
+                if (do_J_) J_ao_[jki]->add(J_fixed_ref_[jki]);
+                if (do_K_) K_ao_[jki]->add(K_fixed_ref_[jki]);
+                if (do_wK_) wK_ao_[jki]->add(wK_fixed_ref_[jki]);
             }
         } else {
             // Full build: capture the fixed reference density and its J, K, and wK
-            D_reference_.clear();
-            for (auto const& Di : D_ao_) D_reference_.push_back(Di->clone());
-            J_reference_.clear();
-            if (do_J_) for (auto const& Ji : J_ao_) J_reference_.push_back(Ji->clone());
-            K_reference_.clear();
-            if (do_K_) for (auto const& Ki : K_ao_) K_reference_.push_back(Ki->clone());
-            wK_reference_.clear();
-            if (do_wK_) for (auto const& wKi : wK_ao_) wK_reference_.push_back(wKi->clone());
+            D_fixed_ref_.clear();
+            for (auto const& Di : D_ao_) D_fixed_ref_.push_back(Di->clone());
+            J_fixed_ref_.clear();
+            if (do_J_) for (auto const& Ji : J_ao_) J_fixed_ref_.push_back(Ji->clone());
+            K_fixed_ref_.clear();
+            if (do_K_) for (auto const& Ki : K_ao_) K_fixed_ref_.push_back(Ki->clone());
+            wK_fixed_ref_.clear();
+            if (do_wK_) for (auto const& wKi : wK_ao_) wK_fixed_ref_.push_back(wKi->clone());
         }
         return;
     }

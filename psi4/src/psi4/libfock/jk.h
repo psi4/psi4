@@ -750,10 +750,10 @@ class PSI_API DirectJK : public JK {
     std::vector<SharedMatrix> D_prev_;
 
     /// Fixed reference density and the J, K, and wK matrices built from it (used by the fixed-reference incremental build)
-    std::vector<SharedMatrix> D_reference_;
-    std::vector<SharedMatrix> J_reference_;
-    std::vector<SharedMatrix> K_reference_;
-    std::vector<SharedMatrix> wK_reference_;
+    std::vector<SharedMatrix> D_fixed_ref_;
+    std::vector<SharedMatrix> J_fixed_ref_;
+    std::vector<SharedMatrix> K_fixed_ref_;
+    std::vector<SharedMatrix> wK_fixed_ref_;
 
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
