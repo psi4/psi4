@@ -42,11 +42,7 @@
 namespace psi {
 
 std::string PSIO::get_unit_filename(size_t unit) const {
-    char *name;
-    get_filename(unit, &name);
-    std::string full_path = PSIOManager::shared_object()->get_file_path(unit) + name + "." + std::to_string(unit);
-    free(name);
-    return full_path;
+    return PSIOManager::shared_object()->get_file_path(unit) + get_filename(unit) + "." + std::to_string(unit);
 }
 
 void PSIO::open(size_t unit, int status) {
