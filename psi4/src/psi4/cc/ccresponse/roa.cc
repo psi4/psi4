@@ -37,6 +37,7 @@
 
   -TDC, August 2009
 */
+#include <array>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -64,7 +65,7 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     double ***tensor_rl, ***tensor_pl, **tensor0, ***tensor_rr;
     double ****tensor_rQ, ***tensor_rQ0, ***tensor_rQ1;
     double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;
-    char **cartcomp, pert[32], pert_x[32], pert_y[32];
+    char pert[32], pert_x[32], pert_y[32];
     int alpha, beta, gamma, i, j, k, l, irrep;
     double omega_nm, omega_ev, omega_cm;
     char lbl1[32], lbl2[32], lbl3[32], lbl4[32];
@@ -76,10 +77,7 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     if (params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl = 1;
     if (params.gauge == "VELOCITY" || params.gauge == "BOTH") compute_pl = 1;
 
-    cartcomp = (char **)malloc(3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
+    const std::array<std::string, 3> cartcomp{"X", "Y", "Z"};
 
     tensor_rQ = (double ****)malloc(params.nomega * sizeof(double ***));
     for (i = 0; i < params.nomega; i++) {
@@ -111,11 +109,11 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
         sprintf(lbl1, "<<P;L>>_(%5.3f)", 0.0);
         if (!params.restart || !psio_tocscan(PSIF_CC_INFO, lbl1)) {
             for (alpha = 0; alpha < 3; alpha++) {
-                sprintf(pert, "P_%1s", cartcomp[alpha]);
+                sprintf(pert, "P_%1s", cartcomp[alpha].c_str());
                 pertbar(pert, moinfo.mu_irreps[alpha], 1);
                 compute_X(pert, moinfo.mu_irreps[alpha], 0);
 
-                sprintf(pert, "L_%1s", cartcomp[alpha]);
+                sprintf(pert, "L_%1s", cartcomp[alpha].c_str());
                 pertbar(pert, moinfo.l_irreps[alpha], 1);
                 compute_X(pert, moinfo.l_irreps[alpha], 0);
             }
@@ -123,8 +121,8 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("\n\tComputing %s tensor.\n", lbl1);
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
-                    sprintf(pert_x, "P_%1s", cartcomp[alpha]);
-                    sprintf(pert_y, "L_%1s", cartcomp[beta]);
+                    sprintf(pert_x, "P_%1s", cartcomp[alpha].c_str());
+                    sprintf(pert_y, "L_%1s", cartcomp[beta].c_str());
                     linresp(&tensor0[alpha][beta], -1.0, 0.0, pert_x, moinfo.mu_irreps[alpha], 0.0, pert_y,
                             moinfo.l_irreps[beta], 0.0);
                 }
@@ -183,27 +181,27 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
              !psio_tocscan(PSIF_CC_INFO, lbl3) || !psio_tocscan(PSIF_CC_INFO, lbl4))) {
             /* prepare the dipole-length and/or dipole-velocity integrals */
             for (alpha = 0; alpha < 3; alpha++) {
-                sprintf(pert, "Mu_%1s", cartcomp[alpha]);
+                sprintf(pert, "Mu_%1s", cartcomp[alpha].c_str());
                 pertbar(pert, moinfo.mu_irreps[alpha], 0);
             }
 
             if (compute_pl) {
                 for (alpha = 0; alpha < 3; alpha++) {
-                    sprintf(pert, "P_%1s", cartcomp[alpha]);
+                    sprintf(pert, "P_%1s", cartcomp[alpha].c_str());
                     pertbar(pert, moinfo.mu_irreps[alpha], 1);
                 }
             }
 
             /* prepare the magnetic-dipole integrals */
             for (alpha = 0; alpha < 3; alpha++) {
-                sprintf(pert, "L_%1s", cartcomp[alpha]);
+                sprintf(pert, "L_%1s", cartcomp[alpha].c_str());
                 pertbar(pert, moinfo.l_irreps[alpha], 1);
             }
 
             /* electric quadrupole integrals */
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
-                    sprintf(pert, "Q_%1s%1s", cartcomp[alpha], cartcomp[beta]);
+                    sprintf(pert, "Q_%1s%1s", cartcomp[alpha].c_str(), cartcomp[beta].c_str());
                     irrep = moinfo.mu_irreps[alpha] ^ moinfo.mu_irreps[beta];
                     pertbar(pert, irrep, 0);
                 }
@@ -211,28 +209,28 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
 
             for (alpha = 0; alpha < 3; alpha++) {
                 /* -omega electric-dipole CC wave functions */
-                sprintf(pert, "Mu_%1s", cartcomp[alpha]);
+                sprintf(pert, "Mu_%1s", cartcomp[alpha].c_str());
                 compute_X(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
 
                 /* +omega electric-dipole CC wave functions */
-                sprintf(pert, "Mu_%1s", cartcomp[alpha]);
+                sprintf(pert, "Mu_%1s", cartcomp[alpha].c_str());
                 compute_X(pert, moinfo.mu_irreps[alpha], +params.omega[i]);
 
                 if (compute_pl) {
                     /* -omega velocity electric-dipole CC wave functions */
-                    sprintf(pert, "P_%1s", cartcomp[alpha]);
+                    sprintf(pert, "P_%1s", cartcomp[alpha].c_str());
                     compute_X(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
                 }
 
                 /* +omega magnetic-dipole CC wave functions */
-                sprintf(pert, "L_%1s", cartcomp[alpha]);
+                sprintf(pert, "L_%1s", cartcomp[alpha].c_str());
                 compute_X(pert, moinfo.l_irreps[alpha], +params.omega[i]);
             }
 
             /* +omega electric-quadrupole CC wave functions */
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
-                    sprintf(pert, "Q_%1s%1s", cartcomp[alpha], cartcomp[beta]);
+                    sprintf(pert, "Q_%1s%1s", cartcomp[alpha].c_str(), cartcomp[beta].c_str());
                     irrep = moinfo.mu_irreps[alpha] ^ moinfo.mu_irreps[beta];
                     compute_X(pert, irrep, params.omega[i]);
                 }
@@ -242,8 +240,8 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("\tComputing %s tensor.\n", lbl3);
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
-                    sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
-                    sprintf(pert_y, "Mu_%1s", cartcomp[beta]);
+                    sprintf(pert_x, "Mu_%1s", cartcomp[alpha].c_str());
+                    sprintf(pert_y, "Mu_%1s", cartcomp[beta].c_str());
                     linresp(&tensor_rr[i][alpha][beta], -1.0, 0.0, pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                             pert_y, moinfo.mu_irreps[beta], +params.omega[i]);
                 }
@@ -254,8 +252,8 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
                 outfile->Printf("\tComputing %s tensor.\n", lbl1);
                 for (alpha = 0; alpha < 3; alpha++) {
                     for (beta = 0; beta < 3; beta++) {
-                        sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
-                        sprintf(pert_y, "L_%1s", cartcomp[beta]);
+                        sprintf(pert_x, "Mu_%1s", cartcomp[alpha].c_str());
+                        sprintf(pert_y, "L_%1s", cartcomp[beta].c_str());
                         linresp(&tensor_rl0[alpha][beta], +0.5, 0.0, pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                                 pert_y, moinfo.l_irreps[beta], params.omega[i]);
                     }
@@ -266,8 +264,8 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
                 outfile->Printf("\tComputing %s tensor.\n", lbl2);
                 for (alpha = 0; alpha < 3; alpha++) {
                     for (beta = 0; beta < 3; beta++) {
-                        sprintf(pert_x, "P_%1s", cartcomp[alpha]);
-                        sprintf(pert_y, "L_%1s", cartcomp[beta]);
+                        sprintf(pert_x, "P_%1s", cartcomp[alpha].c_str());
+                        sprintf(pert_y, "L_%1s", cartcomp[beta].c_str());
                         linresp(&tensor_pl0[alpha][beta], -0.5, 0.0, pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                                 pert_y, moinfo.l_irreps[beta], params.omega[i]);
                     }
@@ -279,8 +277,8 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
                     for (gamma = 0; gamma < 3; gamma++) {
-                        sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
-                        sprintf(pert_y, "Q_%1s%1s", cartcomp[beta], cartcomp[gamma]);
+                        sprintf(pert_x, "Mu_%1s", cartcomp[alpha].c_str());
+                        sprintf(pert_y, "Q_%1s%1s", cartcomp[beta].c_str(), cartcomp[gamma].c_str());
                         linresp(&tensor_rQ0[alpha][beta][gamma], -0.5, 0.0, pert_x, moinfo.mu_irreps[alpha],
                                 -params.omega[i], pert_y, moinfo.mu_irreps[beta] ^ moinfo.mu_irreps[gamma],
                                 params.omega[i]);
@@ -324,32 +322,32 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
              !psio_tocscan(PSIF_CC_INFO, lbl3))) {
             if (compute_pl) {
                 for (alpha = 0; alpha < 3; alpha++) {
-                    sprintf(pert, "P*_%1s", cartcomp[alpha]);
+                    sprintf(pert, "P*_%1s", cartcomp[alpha].c_str());
                     pertbar(pert, moinfo.mu_irreps[alpha], 1);
                 }
             }
 
             /* prepare the complex-conjugate of the magnetic-dipole integrals */
             for (alpha = 0; alpha < 3; alpha++) {
-                sprintf(pert, "L*_%1s", cartcomp[alpha]);
+                sprintf(pert, "L*_%1s", cartcomp[alpha].c_str());
                 pertbar(pert, moinfo.l_irreps[alpha], 1);
             }
 
             /* +omega velocity electric-dipole CC wave functions */
             for (alpha = 0; alpha < 3; alpha++) {
                 if (compute_pl) {
-                    sprintf(pert, "P*_%1s", cartcomp[alpha]);
+                    sprintf(pert, "P*_%1s", cartcomp[alpha].c_str());
                     compute_X(pert, moinfo.mu_irreps[alpha], params.omega[i]);
                 }
 
                 /* -omega magnetic-dipole CC wave functions */
-                sprintf(pert, "L*_%1s", cartcomp[alpha]);
+                sprintf(pert, "L*_%1s", cartcomp[alpha].c_str());
                 compute_X(pert, moinfo.l_irreps[alpha], -params.omega[i]);
             }
 
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
-                    sprintf(pert, "Q_%1s%1s", cartcomp[alpha], cartcomp[beta]);
+                    sprintf(pert, "Q_%1s%1s", cartcomp[alpha].c_str(), cartcomp[beta].c_str());
                     compute_X(pert, moinfo.mu_irreps[alpha] ^ moinfo.mu_irreps[beta], -params.omega[i]);
                 }
             }
@@ -359,8 +357,8 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
                 outfile->Printf("\tComputing %s tensor.\n", lbl1);
                 for (alpha = 0; alpha < 3; alpha++) {
                     for (beta = 0; beta < 3; beta++) {
-                        sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
-                        sprintf(pert_y, "L*_%1s", cartcomp[beta]);
+                        sprintf(pert_x, "Mu_%1s", cartcomp[alpha].c_str());
+                        sprintf(pert_y, "L*_%1s", cartcomp[beta].c_str());
                         linresp(&tensor_rl1[alpha][beta], +0.5, 0.0, pert_x, moinfo.mu_irreps[alpha], params.omega[i],
                                 pert_y, moinfo.l_irreps[beta], -params.omega[i]);
                     }
@@ -371,8 +369,8 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
                 outfile->Printf("\tComputing %s tensor.\n", lbl2);
                 for (alpha = 0; alpha < 3; alpha++) {
                     for (beta = 0; beta < 3; beta++) {
-                        sprintf(pert_x, "P*_%1s", cartcomp[alpha]);
-                        sprintf(pert_y, "L*_%1s", cartcomp[beta]);
+                        sprintf(pert_x, "P*_%1s", cartcomp[alpha].c_str());
+                        sprintf(pert_y, "L*_%1s", cartcomp[beta].c_str());
                         linresp(&tensor_pl1[alpha][beta], -0.5, 0.0, pert_x, moinfo.mu_irreps[alpha], params.omega[i],
                                 pert_y, moinfo.l_irreps[beta], -params.omega[i]);
                     }
@@ -384,8 +382,8 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
                     for (gamma = 0; gamma < 3; gamma++) {
-                        sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
-                        sprintf(pert_y, "Q_%1s%1s", cartcomp[beta], cartcomp[gamma]);
+                        sprintf(pert_x, "Mu_%1s", cartcomp[alpha].c_str());
+                        sprintf(pert_y, "Q_%1s%1s", cartcomp[beta].c_str(), cartcomp[gamma].c_str());
                         linresp(&tensor_rQ1[alpha][beta][gamma], -0.5, 0.0, pert_x, moinfo.mu_irreps[alpha],
                                 +params.omega[i], pert_y, moinfo.mu_irreps[beta] ^ moinfo.mu_irreps[gamma],
                                 -params.omega[i]);
@@ -584,11 +582,6 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     free_block(tensor_rl1);
     free_block(tensor_pl0);
     free_block(tensor_pl1);
-
-    free(cartcomp[0]);
-    free(cartcomp[1]);
-    free(cartcomp[2]);
-    free(cartcomp);
 }
 
 }  // namespace ccresponse
