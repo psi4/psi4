@@ -15,9 +15,6 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
         target_precompile_headers(scf_solver REUSE_FROM psio)
     endif()
 endif()
-if(ENABLE_GTFOCK)
-    add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
-endif()
 
 target_link_libraries(scf_solver PUBLIC diis)
 
