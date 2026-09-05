@@ -51,13 +51,6 @@ class UHF : public HF {
     // Guess mix performed?
     bool mix_performed_;
 
-    // Scaling factor for orbital rotation
-    double step_scale_;
-    // Increment to explore different scaling factors
-    double step_increment_;
-    // Stability eigenvalue, for doing smart eigenvector following
-    double stab_val;
-
     // Compute UHF NOs
     void compute_nos();
 
