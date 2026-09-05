@@ -340,8 +340,6 @@ class PSI_API IntegralTransform {
     std::string abIntName_;
     // The name of the beta-beta DPD integral buffer
     std::string bbIntName_;
-    // A string describing the spaces in which the integrals are to be transformed
-    char *spaces_;
     // An array containing labels for each irrep
     std::vector<std::string> labels_;
     // The definition of zero
