@@ -19,17 +19,31 @@ set {
     scf_type df
     cc_type df
     df_basis_scf cc-pvdz-jkfit
-    df_basis_cc cc-pV5Z-RI
+    # Use the auxiliary basis paired with the orbital basis. An oversized
+    # cc-pV5Z-RI metric is unnecessarily ill-conditioned for cc-pVDZ and is
+    # not the same numerical limit exercised by the existing DLPNO tests.
+    df_basis_cc cc-pvdz-ri
     e_convergence 1.0e-9
     r_convergence 1.0e-8
 
-    # Retain the complete local pair and PNO spaces for comparison against
-    # the density-fitted canonical CCSD density.
+    # Retain the complete local pair and PNO spaces and disable the remaining
+    # coefficient, DOI, Fock-coupling, and AO-integral screens. Setting only
+    # the headline pair/PNO thresholds to zero does not by itself define the
+    # canonical DF limit.
     t_cut_pno 0.0
     t_cut_pno_mp2 0.0
     t_cut_do 0.0
+    t_cut_do_pre 0.0
+    t_cut_do_ij 0.0
+    t_cut_do_uv 0.0
     t_cut_mkn 0.0
     t_cut_pairs 0.0
+    t_cut_pairs_mp2 0.0
+    t_cut_pre 0.0
+    t_cut_clmo 0.0
+    t_cut_cpao 0.0
+    f_cut 0.0
+    dlpno_ao_ints_tol 1.0e-14
     dlpno_toggle_memory false
 }
 

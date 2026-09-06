@@ -20,23 +20,41 @@ set {
     r_convergence 1.0e-8
     brueckner_orbs_r_convergence 1.0e-7
 
-    # Remove the local-domain, pair, PNO, and TNO truncations. The oversized
-    # cc-pV5Z-RI auxiliary basis further suppresses DF error relative to BCCD(T).
+    # Remove the local-domain, pair, PNO, TNO, coefficient, integral, and
+    # iterative-coupling screens. The oversized cc-pV5Z-RI auxiliary basis is
+    # used only for the comparison against conventional BCCD(T), where it
+    # suppresses the remaining DF error.
     df_basis_cc cc-pV5Z-RI
     t_cut_pno 0.0
     t_cut_pno_mp2 0.0
     t_cut_do 0.0
+    t_cut_do_pre 0.0
+    t_cut_do_ij 0.0
+    t_cut_do_uv 0.0
     t_cut_mkn 0.0
     t_cut_pairs 0.0
+    t_cut_pairs_mp2 0.0
+    t_cut_pre 0.0
+    t_cut_clmo 0.0
+    t_cut_cpao 0.0
+    f_cut 0.0
+    dlpno_ao_ints_tol 1.0e-14
     t_cut_tno 0.0
+    t_cut_tno_pre 0.0
     t_cut_do_triples 0.0
+    t_cut_do_triples_pre 0.0
     t_cut_mkn_triples 0.0
+    t_cut_mkn_triples_pre 0.0
+    t_cut_triples_weak 0.0
+    f_cut_t 0.0
+    t_cut_iter 0.0
     dlpno_toggle_memory false
 }
 
 # The canonical calculation uses four-index MO integrals. The DLPNO
-# calculation uses the same PK reference but DF three-index CC integrals.
-set scf_type pk
+# calculation uses the same direct-SCF reference but DF three-index CC
+# integrals. PK is not supported by the Brueckner orbital-update path.
+set scf_type direct
 set cc_type conv
 
 print("   Testing conventional BCCD(T) ...")
@@ -59,6 +77,7 @@ clean()
 set scf_type df
 set cc_type df
 set df_basis_scf cc-pvdz-jkfit
+set df_basis_cc cc-pvdz-ri
 
 print("   Testing DF-CCSD(AT) ...")
 e_df_ccsd_at = energy("ccsd(at)")

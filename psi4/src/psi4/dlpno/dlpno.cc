@@ -348,8 +348,21 @@ void DLPNO::setup_orbitals() {
         throw PSIEXCEPTION("DLPNO Methods do not yet support custom frozen core policies!");
     }
 
-    // Initialize Brueckner Orbitals for JK iterations
-    if (brueckner_orbs_) jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_);
+    // The JK object is first used after macroiteration zero to rebuild the
+    // Fock matrix in the rotated Brueckner orbitals. JK::build_JK only
+    // constructs the object; compute() is not valid until initialize() has
+    // allocated the algorithm-specific integral storage. Keep one initialized
+    // object for the whole orbital optimization and only replace its C vectors
+    // at each rotation.
+    if (brueckner_orbs_ && !jk_) {
+        const size_t jk_memory =
+            static_cast<size_t>(options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / sizeof(double));
+        jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, jk_memory);
+        jk_->set_memory(jk_memory);
+        jk_->set_do_J(true);
+        jk_->set_do_K(true);
+        jk_->initialize();
+    }
 
     timer_on("Local MOs");
     // Initialize C_lmo to active occupied space if not using Brueckner orbitals
