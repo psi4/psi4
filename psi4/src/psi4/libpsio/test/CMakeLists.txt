@@ -8,3 +8,14 @@
 # ExternalProject that never calls enable_testing()).
 add_executable(psio_roundtrip_test.x psio_roundtrip_test.cc stubs.cc)
 target_link_libraries(psio_roundtrip_test.x PRIVATE psio psi4util options ciomr)
+
+# Conformance harness for the libspill-backed libpsio: takes the address of every
+# free function and PSIO class method Psi4 declares (materialised, since &C::f is
+# never null and the compiler would otherwise fold the test away), so a declared-
+# but-undefined entry point surfaces as a link error here rather than in the full
+# core link. Built against Psi4's own psio.h via PSIO_USE_PSI4_HEADERS, then driven
+# through a real round trip that also asserts two PSIO instances don't share state.
+add_executable(psio_conformance_test.x psio_conformance_test.cc stubs.cc)
+target_link_libraries(psio_conformance_test.x PRIVATE psio psi4util options ciomr)
+set_source_files_properties(psio_conformance_test.cc PROPERTIES
+  COMPILE_DEFINITIONS PSIO_USE_PSI4_HEADERS)
