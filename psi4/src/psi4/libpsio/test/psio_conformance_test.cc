@@ -8,10 +8,10 @@
  * therefore fails -- with an undefined reference -- if any definition's
  * signature does not match Psi4's declaration exactly.
  *
- *   g++ -DPSIO_USE_PSI4_HEADERS -I<psi4>/psi4/src -I<psi4>/psi4/include ...
- *
  * Not checked here, because the shim does not replace them: decode_errno,
- * psio_compose_err_msg, psio_getpid and psio_volseek stay Psi4's.
+ * psio_compose_err_msg and psio_getpid stay Psi4's. (psio_volseek is declared
+ * in psio.h but its definition went with the I/O core and it has no callers --
+ * see PORTING.md.)
  *
  * ---------------------------------------------------------------------------
  * The free functions are NOT the interface Psi4 uses.
@@ -38,7 +38,6 @@
 /* psio.hpp declares the PSIO class. The original version of this file included
  * only psio.h, which is why an entire half of the API went unchecked. */
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsio/psio_libspill.h"   /* for psio_set_scratch_dir, the shim's own */
 
 namespace {
 
@@ -158,7 +157,8 @@ int main()
      * round trip, which is what consumers do. */
     {
         const char *td = std::getenv("TMPDIR");
-        psi::psio_set_scratch_dir(td && *td ? td : "/tmp");
+        psi::psio_init();   /* builds both singletons, as Psi4 does at startup */
+        psi::PSIOManager::shared_object()->set_default_path(td && *td ? td : "/tmp");
 
         auto psio = std::make_shared<psi::PSIO>();
         const std::string dir = psi::PSIOManager::shared_object()->get_file_path(99);

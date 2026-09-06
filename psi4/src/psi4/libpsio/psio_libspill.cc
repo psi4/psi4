@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#include "psio_libspill.h"
-
+// The I/O core of Psi4's libpsio, reimplemented on libspill.
+//
+// psio.h and psio.hpp are unchanged, so every consumer sees the same API and no
+// call site moved; what this file replaces is the ~2000 lines of hand-rolled
+// I/O that used to sit behind those headers. The three tree-wide properties
+// that make the swap mechanical -- psio_address is linear, psio_tocscan is only
+// an existence test, and the on-disk table of contents has no consumers outside
+// libpsio -- are recorded, with the greps that check them, in PORTING.md.
 #include <cstdio>
 #include <cstring>
 #include <map>
@@ -13,25 +19,17 @@ extern "C" {
 #include "libspill.h"
 }
 
-#ifdef PSIO_USE_PSI4_HEADERS
+#include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 // psi_file_prefix is psi::psi_file_prefix with C++ linkage (core.cc defines it,
 // the test's stubs.cc stands in for it); init.cc reached it through this header.
 #include "psi4/psi4-dec.h"
-#endif
 
 namespace psi {
 
-#ifndef PSIO_USE_PSI4_HEADERS
-psio_address PSIO_ZERO = {0, 0};
-#endif
-
 namespace {
 
-#ifndef PSIO_USE_PSI4_HEADERS
-std::string g_dir;                       // in Psi4 this is PSIOManager's job
-#endif
-std::mutex  g_lk;
+std::mutex g_lk;
 
 // One libspill store per (PSIO instance, unit).
 struct Unit {
@@ -119,7 +117,6 @@ ls_opts opts_for(const StorePath &p) {
     return o;
 }
 
-#ifdef PSIO_USE_PSI4_HEADERS
 // Split PSIO::get_unit_filename()'s "<path><name>.<unit>" into the directory
 // and basename libspill wants. Psi4 composes it (get_filename.cc, and the
 // helper #3515 factored out of open.cc); the shim only takes it apart.
@@ -135,15 +132,6 @@ StorePath split_path(const std::string &full) {
     p.exact = true;
     return p;
 }
-#else
-// Standalone: no PSIOManager to defer to, so let libspill name the file.
-StorePath standalone_path(size_t unit) {
-    StorePath p;
-    p.dir = g_dir;
-    p.name = "psi." + std::to_string(unit);
-    return p;
-}
-#endif
 
 // ---------------------------------------------------------------------------
 // The logic, independent of who is calling it. The PSIO class methods and the
@@ -261,18 +249,6 @@ size_t impl_toclen(Units &u, size_t unit) {
 
 }  // namespace
 
-// Not part of Psi4's API. In Psi4 the scratch directory is PSIOManager's, so
-// this sets it there rather than keeping a second, divergent copy; g_dir is
-// only the standalone build's fallback.
-void psio_set_scratch_dir(const char *dir) {
-#ifdef PSIO_USE_PSI4_HEADERS
-    psio_init();
-    PSIOManager::shared_object()->set_default_path(dir ? dir : "");
-#else
-    g_dir = dir ? dir : "";
-#endif
-}
-
 // ---------------------------------------------------------------- addresses
 
 psio_address psio_get_address(psio_address start, size_t shift) {
@@ -283,25 +259,13 @@ psio_address psio_get_global_address(psio_address entry_start, psio_address rel_
     return to_address(to_bytes(entry_start) + to_bytes(rel_address));
 }
 
-#ifndef PSIO_USE_PSI4_HEADERS
-// Psi4 keeps its own error.cc, whose messages are far better than this; the
-// standalone build has no such thing, so it gets a minimal stand-in.
-void psio_error(size_t unit, size_t errval, std::string prev_msg) {
-    std::fprintf(stderr, "PSIO_ERROR: unit %zu, errval %zu %s\n", unit, errval,
-                 prev_msg.c_str());
-    throw std::runtime_error("PSIO error " + std::to_string(errval) + " on unit " +
-                             std::to_string(unit) + " " + prev_msg);
-}
-#endif
-
 // ------------------------------------------------------------- the PSIO class
 //
 // This is the interface Psi4 uses: roughly 2400 call sites go through a
 // shared_ptr<PSIO>, against a few hundred through the free functions below.
 // Issue #1 was that an earlier version of this shim implemented only the free
-// layer, so the port did not link.
-
-#ifdef PSIO_USE_PSI4_HEADERS
+// layer, so the port did not link; test/psio_conformance_test.cc now takes the
+// address of every method Psi4 declares so that cannot recur silently.
 
 // All of these live in init.cc, which this port deletes. _default_psio_manager_
 // is not optional decoration: psio.hpp declares it extern, filemanager.cc is
@@ -521,11 +485,6 @@ int psio_init() {
     return 1;
 }
 
-int psio_done() {
-    _default_psio_lib_.reset();
-    return 1;
-}
-
 int psio_open(size_t unit, int status) {
     psio_init();
     _default_psio_lib_->open(unit, status);
@@ -558,88 +517,8 @@ psio_tocentry *psio_tocscan(size_t unit, const char *key) {
 bool psio_tocentry_exists(size_t unit, const char *key) {
     return _default_psio_lib_ ? _default_psio_lib_->tocentry_exists(unit, key) : false;
 }
-bool psio_tocdel(size_t unit, const char *key) {
-    return _default_psio_lib_ ? _default_psio_lib_->tocdel(unit, key) : false;
-}
 void psio_tocprint(size_t unit) { if (_default_psio_lib_) _default_psio_lib_->tocprint(unit); }
 int  psio_tocwrite(size_t) { return 1; }
 size_t psio_rd_toclen(size_t unit) { return _default_psio_lib_ ? _default_psio_lib_->rd_toclen(unit) : 0; }
-void psio_zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
-    _default_psio_lib_->zero_disk(unit, key, rows, cols);
-}
-
-#else   // standalone: no PSIO class to delegate to, so drive the impl layer
-        // directly through one process-wide table.
-
-namespace { Units &default_units() { return units_of(nullptr); } }
-
-int psio_init() { return 1; }
-int psio_done() {
-    std::lock_guard<std::mutex> g(g_lk);
-    for (auto &kv : default_units()) if (kv.second.store) ls_close(kv.second.store, 0);
-    g_state.erase(static_cast<const void *>(nullptr));
-    return 1;
-}
-int psio_open(size_t unit, int status) {
-    std::lock_guard<std::mutex> g(g_lk);
-    impl_open(default_units(), unit, status, standalone_path(unit));
-    return 1;
-}
-int psio_close(size_t unit, int keep) {
-    std::lock_guard<std::mutex> g(g_lk);
-    impl_close(default_units(), unit, keep);
-    return 1;
-}
-int psio_open_check(size_t unit) {
-    std::lock_guard<std::mutex> g(g_lk);
-    return find_unit(default_units(), unit) != nullptr ? 1 : 0;
-}
-int psio_write(size_t unit, const char *key, char *buffer, size_t size, psio_address sadd,
-               psio_address *eadd) {
-    std::lock_guard<std::mutex> g(g_lk);
-    impl_rw(default_units(), unit, key, buffer, size, sadd, eadd, true);
-    return 1;
-}
-int psio_read(size_t unit, const char *key, char *buffer, size_t size, psio_address sadd,
-              psio_address *eadd) {
-    std::lock_guard<std::mutex> g(g_lk);
-    impl_rw(default_units(), unit, key, buffer, size, sadd, eadd, false);
-    return 1;
-}
-int psio_write_entry(size_t unit, const char *key, char *buffer, size_t size) {
-    psio_address end;
-    return psio_write(unit, key, buffer, size, PSIO_ZERO, &end);
-}
-int psio_read_entry(size_t unit, const char *key, char *buffer, size_t size) {
-    psio_address end;
-    return psio_read(unit, key, buffer, size, PSIO_ZERO, &end);
-}
-psio_tocentry *psio_tocscan(size_t unit, const char *key) {
-    std::lock_guard<std::mutex> g(g_lk);
-    return impl_tocscan(default_units(), unit, key);
-}
-bool psio_tocentry_exists(size_t unit, const char *key) {
-    std::lock_guard<std::mutex> g(g_lk);
-    return impl_tocentry_exists(default_units(), unit, key);
-}
-bool psio_tocdel(size_t unit, const char *key) {
-    std::lock_guard<std::mutex> g(g_lk);
-    return impl_tocdel(default_units(), unit, key);
-}
-void psio_tocprint(size_t unit) {
-    std::lock_guard<std::mutex> g(g_lk);
-    impl_tocprint(default_units(), unit);
-}
-int psio_tocwrite(size_t) { return 1; }
-size_t psio_rd_toclen(size_t unit) {
-    std::lock_guard<std::mutex> g(g_lk);
-    return impl_toclen(default_units(), unit);
-}
-void psio_zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
-    std::lock_guard<std::mutex> g(g_lk);
-    impl_zero_disk(default_units(), unit, key, rows, cols);
-}
-
-#endif  // PSIO_USE_PSI4_HEADERS
 
 }  // namespace psi

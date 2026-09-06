@@ -9,8 +9,18 @@ functions; **none of them changed.**
 
 This file records why the port is safe, what it deliberately left alone, and the
 decisions still open. libspill itself arrives as a build-from-source add-on
-(`external/upstream/libspill`); the shim is compiled with
-`-DPSIO_USE_PSI4_HEADERS` so it binds against Psi4's own `psio.h`.
+(`external/upstream/libspill`).
+
+The shim is one translation unit, `psio_libspill.cc`, with no header of its own
+and no configuration. It carried both for a while: libspill hosted the port
+before Psi4 did, and a `PSIO_USE_PSI4_HEADERS` macro chose between Psi4's real
+`psio.h` and a standalone copy of the types, so the port could be built without a
+Psi4 tree. In Psi4 that second branch is unbuildable — the copy of the types
+never came across — and it was a duplicate implementation of the free functions
+sitting next to the real one, which is exactly the shape that produced issue #1.
+It is gone, along with the three free functions (`psio_done`, `psio_tocdel`,
+`psio_zero_disk`) that existed only to serve it: none is declared in `psio.h`,
+and none has ever had a caller in Psi4.
 
 ## What the shim provides
 
@@ -118,6 +128,14 @@ ledger `PSIOManager` mirrors to `psi.<pid>.clean`, requires the unit to appear
 there, requires the recorded path to be under `PSIOManager`'s directory, and
 stats it. A shim that stores the data somewhere of its own choosing passes
 every other check in the file and fails these.
+
+## One loose end in psio.h
+
+`psio_volseek` is still declared in `psio.h`, but its definition (`volseek.cc`)
+went with the I/O core and it has no callers anywhere in the tree — it is a
+declaration for a function that cannot be linked. Removing it is the obvious
+tidy-up, but it is a change to the public header this port otherwise leaves
+untouched, so it is left as a separate decision rather than folded in here.
 
 ## Stage 2, deliberately separate
 
