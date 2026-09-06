@@ -81,7 +81,7 @@ CoupledCluster::~CoupledCluster() {}
   * initialize.  set variables and options_.
   */
 void CoupledCluster::common_init() {
-    module_ = "fnocc";
+    set_module("fnocc");
 
     mp2_only = options_.get_bool("RUN_MP2");
     mp4_only = options_.get_bool("RUN_MP4");

@@ -189,7 +189,7 @@ void DLPNO::common_init() {
     if (!options_["T_CUT_PAIRS_MP2"].has_changed()) T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
 
     name_ = "DLPNO";
-    module_ = "dlpno";
+    set_module("dlpno");
 
     variables_["SCF TOTAL ENERGY"] = reference_wavefunction_->energy();
 

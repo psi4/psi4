@@ -99,7 +99,7 @@ void HF::common_init() {
     attempt_number_ = 1;
     reset_occ_ = false;
     sad_ = false;
-    module_ = "scf";
+    set_module("scf");
     frac_performed_ = false;
 
     // This quantity is needed fairly soon
