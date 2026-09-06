@@ -300,12 +300,12 @@ void PSIO::close(size_t unit, int keep) {
     impl_close(units_of(this), unit, keep);
 }
 
-int PSIO::open_check(size_t unit) {
+int PSIO::open_check(size_t unit) const {
     std::lock_guard<std::mutex> g(g_lk);
     return find_unit(units_of(this), unit) != nullptr ? 1 : 0;
 }
 
-bool PSIO::exists(size_t unit) {
+bool PSIO::exists(size_t unit) const {
     {
         std::lock_guard<std::mutex> g(g_lk);
         if (find_unit(units_of(this), unit)) return true;
@@ -419,7 +419,12 @@ psio_tocentry *PSIO::toclast(size_t unit) {
     return it == cu->toc.end() ? nullptr : &it->second;
 }
 
-size_t PSIO::toclen(size_t unit) { return rd_toclen(unit); }
+// #3515 made toclen() const; it cannot delegate to the non-const rd_toclen, so
+// it calls the shared impl directly (the same read-only key count).
+size_t PSIO::toclen(size_t unit) const {
+    std::lock_guard<std::mutex> g(g_lk);
+    return impl_toclen(units_of(this), unit);
+}
 void PSIO::wt_toclen(size_t, size_t) {}
 void PSIO::tocread(size_t) {}
 
