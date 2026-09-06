@@ -56,6 +56,12 @@
 namespace psi {
 namespace dlpno {
 
+// The right-hand W/V/T construction follows Jiang et al., J. Chem. Phys. 161,
+// 082502 (2024), DOI: 10.1063/5.0219963. The left moment and asymmetric energy
+// contraction follow Toth, Jiang, and Schaefer, J. Chem. Theory Comput. 22,
+// 7667--7681 (2026), DOI: 10.1021/acs.jctc.6c00758. Triples tensors are stored
+// as matrices with row a and flattened column (b * ntno + c).
+
 DLPNOCCSD_T::DLPNOCCSD_T(SharedWavefunction ref_wfn, Options &options) : DLPNOCCSD(ref_wfn, options) {}
 DLPNOCCSD_T::~DLPNOCCSD_T() {}
 
@@ -184,6 +190,9 @@ void DLPNOCCSD_T::triples_sparsity(bool prescreening) {
 
             const bool right_significant = std::fabs(e_ijk_right_[ijk]) >= t_cut_triples_weak;
             const bool target_significant = std::fabs(e_ijk_[ijk]) >= t_cut_triples_weak;
+            // For an asymmetric calculation retain the union of triplets
+            // significant to ordinary (T) and (T)_L. This lets one run publish
+            // both corrections without biasing either screened contribution.
             if (right_significant || target_significant) {
                 ijk_to_i_j_k_new.push_back(std::make_tuple(i, j, k));
                 i_j_k_to_ijk_new[i * naocc * naocc + j * naocc + k] = ijk_new;
@@ -610,6 +619,10 @@ void DLPNOCCSD_T::estimate_triples_memory() {
 }
 
 std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
+    // Form the semicanonical right triples numerator W, the ordinary energy
+    // moment V, and, when requested, the left triples moment L. The Toth et al.
+    // asymmetric correction contracts L with the same right-hand T3 amplitudes
+    // used by the ordinary Jiang et al. correction.
     timer_on("LCCSD(T0)");
 
     int n_lmo_triplets = ijk_to_i_j_k_.size();
@@ -804,6 +817,8 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
 
         SharedMatrix L_ijk;
         if (lambda_requested_) {
+            // L_ijk mirrors the W/V construction with converged Lambda1/2 in
+            // place of the corresponding right-hand CCSD amplitudes.
             std::stringstream l_name;
             l_name << "L " << (ijk);
             L_ijk = std::make_shared<Matrix>(l_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
@@ -847,6 +862,8 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
 
             SharedMatrix lambda_kj;
             if (lambda_requested_) {
+                // Project Lambda2 from its pair PNO space into the common TNO
+                // space before forming this permutation of the left moment.
                 lambda_kj = linalg::triplet(S_kj_ijk, lambda_iajb_[kj], S_kj_ijk, true, false, false);
             }
 
@@ -860,6 +877,7 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
             Wperms[idx]->add(K_ovvv);
 
             if (lambda_requested_) {
+                // Left analogue of Jiang Eq. 109a: (ia|bd) lambda_kj^{cd}.
                 auto K_ovvv_lambda = K_ovvv_list[idx]->clone(); // (i a | b d) stored as: (a, b * d)
                 K_ovvv_lambda->reshape(ntno_ijk * ntno_ijk, ntno_ijk);  // (a, b * d) -> (a * b, d)
                 K_ovvv_lambda = linalg::doublet(K_ovvv_lambda, lambda_kj, false,
@@ -880,6 +898,8 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
                 
                 SharedMatrix lambda_il;
                 if (lambda_requested_) {
+                    // Left analogue of Jiang Eq. 109b uses the projected
+                    // Lambda2 pair in place of T2.
                     lambda_il = linalg::triplet(S_il_ijk, lambda_iajb_[il], S_il_ijk, true, false, false);
                 }
 
@@ -902,7 +922,8 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
             }      // end l_ijk
         }
 
-        // Encapsulates the P_{ijk}^{abc} permutation
+        // Apply P_{ijk}^{abc} to both the right numerator W and, when present,
+        // the left moment L.
         // Reminder: P_{ijk}^{abc}X_{ijk}^{abc} =>
         // X_{ijk}^{abc} + X_{ikj}^{acb} + X_{jik}^{bac} + X_{jki}^{bca} + X_{kij}^{cab} + X_{kji}^{cba}
         for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
@@ -955,6 +976,8 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
 
         SharedMatrix lambda_i, lambda_j, lambda_k;
         if (lambda_requested_) {
+            // Lambda1 projections supply the left counterparts of the T1
+            // terms in the V moment.
             lambda_i = linalg::doublet(S_ii_ijk, lambda_ia_[i], true, false); // (i, a_{ii}) -> (i, a_{ijk})
             lambda_j = linalg::doublet(S_jj_ijk, lambda_ia_[j], true, false); // (j, b_{ii}) -> (j, b_{ijk})
             lambda_k = linalg::doublet(S_kk_ijk, lambda_ia_[k], true, false); // (k, c_{ii}) -> (k, c_{ijk})
@@ -983,6 +1006,8 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
 
         SharedMatrix lambda_ij, lambda_jk, lambda_ik;
         if (lambda_requested_) {
+            // The occupied-virtual Fock couplings multiply Lambda2 in the left
+            // moment, just as they multiply T2 in the ordinary V moment.
             lambda_ij = linalg::triplet(S_ij_ijk, lambda_iajb_[ij], S_ij_ijk, true, false, false);
             lambda_jk = linalg::triplet(S_jk_ijk, lambda_iajb_[jk], S_jk_ijk, true, false, false);
             lambda_ik = linalg::triplet(S_ik_ijk, lambda_iajb_[ik], S_ik_ijk, true, false, false);
@@ -997,6 +1022,8 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
                         (*Fia)(a_ijk, 0) * (*T_jk)(b_ijk, c_ijk) + (*Fjb)(b_ijk, 0) * (*T_ik)(a_ijk, c_ijk) + (*Fkc)(c_ijk, 0) * (*T_ij)(a_ijk, b_ijk);
 
                     if (lambda_requested_) {
+                        // Complete the asymmetric left triples moment with its
+                        // Lambda1-integral and F_ov-Lambda2 contributions.
                         (*L_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) += (*lambda_i)(a_ijk, 0) * (*K_jk)(b_ijk, c_ijk) +
                             (*lambda_j)(b_ijk, 0) * (*K_ik)(a_ijk, c_ijk) + (*lambda_k)(c_ijk, 0) * (*K_ij)(a_ijk, b_ijk) +
                             (*Fia)(a_ijk, 0) * (*lambda_jk)(b_ijk, c_ijk) + (*Fjb)(b_ijk, 0) * (*lambda_ik)(a_ijk, c_ijk)
@@ -1048,6 +1075,9 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
         e_ijk_right_[ijk] = e_t0_ijk;
 
         if (lambda_requested_) {
+            // Asymmetric triples contraction of Toth et al.:
+            // E_(T)_L(ijk) = p_ijk <T_ijk, 8 L_ijk - 4 L_kji - 4 L_ikj
+            //                                  - 4 L_jik + 2 L_jki + 2 L_kij>.
             e_ijk_[ijk] += 8.0 * prefactor * L_ijk->vector_dot(T_ijk);
             e_ijk_[ijk] -= 4.0 * prefactor * triples_permuter(L_ijk, k, j, i)->vector_dot(T_ijk);
             e_ijk_[ijk] -= 4.0 * prefactor * triples_permuter(L_ijk, i, k, j)->vector_dot(T_ijk);
@@ -1171,9 +1201,12 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
 }
 
 double DLPNOCCSD_T::compute_t_l_iteration_energy() {
-    /* Jiang Eq. 53 */
-    /* E_{(T)} = prefactor * T_{ijk}^{abc} *(8 V_{ijk}^{abc} - 4 V_{ijk}^{bac} - 4 V_{ijk}^{acb}
-                    - 4 V_{ijk}^{cab} + 2 V_{ijk}^{bca} + 2 V_{ijk}^{cab}) */
+    // Iterative asymmetric-triples energy of Toth et al. The spin-adapted
+    // permutation functional is identical to the ordinary Jiang Eq. 53
+    // contraction, but the right energy moment V is replaced by the left
+    // Lambda-dependent moment L:
+    // E_(T)_L = sum_ijk p_ijk <T_ijk, 8 L_ijk - 4 L_kji - 4 L_ikj
+    //                                      - 4 L_jik + 2 L_jki + 2 L_kij>.
 
     timer_on("Compute (T)_L Energy");
 
@@ -1603,9 +1636,12 @@ void DLPNOCCSD_T::compute_triples_correction(DLPNOCCSDPhase phase) {
     const int naocc = nalpha_ - nfrzc();
     const int n_lmo_pairs = ij_to_i_j_.size();
 
-    // Convert the converged Lambda amplitudes to the convention used by the
-    // asymmetric triples contractions. No Lambda objects exist for ordinary
-    // (T), so this work and its memory cost are completely avoided there.
+    // Convert the solver's spin-adapted Lambda convention to the amplitudes
+    // used in the Toth et al. asymmetric triples moment:
+    //     Lambda1 <- Lambda1 / 2
+    //     Lambda2_ij <- Lambda2_ij / 3 + (Lambda2_ij)^T / 6.
+    // No Lambda objects exist for ordinary (T), so this work and its memory
+    // cost are completely avoided there.
     if (lambda_requested_) {
 #pragma omp parallel for
         for (int i = 0; i < naocc; ++i) {
@@ -1820,7 +1856,8 @@ void DLPNOCCSD_T::compute_triples_correction(DLPNOCCSDPhase phase) {
 void DLPNOCCSD_T::post_ccsd_correction(DLPNOCCSDPhase phase) {
     if (lambda_requested_ && phase == DLPNOCCSDPhase::InitialBrueckner) {
         // The first Brueckner macroiteration is intentionally the ordinary
-        // canonical-orbital CCSD(T)_L result, including Lambda singles.
+        // reference-orbital CCSD(T)_L result, including Lambda singles. At the
+        // final Brueckner point, the base hook omits Lambda1 by stationarity.
         solve_lambda(true);
     } else {
         DLPNOCCSD::post_ccsd_correction(phase);

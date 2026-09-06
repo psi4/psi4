@@ -4791,8 +4791,10 @@ def run_dlpnoccsd_property(name, **kwargs):
     kwargs["_dlpno_do_onepdm"] = True
     dlpno_wfn = run_dlpnoccsd(name, **kwargs)
 
-    # The C++ solver publishes a spin-summed AO OPDM. OEProp expects one-spin
-    # density for a restricted wavefunction and supplies the identical beta block.
+    # Contracting the C++ solver's AO OPDM with the requested OEProp operators
+    # realizes the one-electron expectation value in Toth et al. Eq. A1. The
+    # solver publishes a spin-summed restricted density, whereas OEProp expects
+    # one spin block and supplies the identical beta block.
     Da_ao = dlpno_wfn.array_variable("DLPNO-CCSD AO OPDM").clone()
     Da_ao.scale(0.5)
 

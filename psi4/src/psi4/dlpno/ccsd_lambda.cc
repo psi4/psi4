@@ -56,6 +56,22 @@
 namespace psi {
 namespace dlpno {
 
+/*
+ * Equation references and index conventions
+ * -----------------------------------------
+ * "Toth Eq." refers to E. C. Toth, A. Jiang, and H. F. Schaefer III,
+ * J. Chem. Theory Comput. 22, 7667-7681 (2026), DOI: 10.1021/acs.jctc.6c00758.
+ * "Jiang Eq." refers to A. Jiang et al., J. Chem. Phys. 161, 082502 (2024),
+ * DOI: 10.1063/5.0219963. The latter supplies the right-hand DLPNO-CCSD
+ * intermediates reused by the Lambda equations.
+ *
+ * Occupied indices i, j, ... label LMOs. A compound integer such as ij is the
+ * ordered-pair table index i_j_to_ij_[i][j], while a virtual label a_{ij}
+ * belongs to that pair's PNO space. S_PNO(target, source) projects a tensor
+ * from the source PNO space into the target PNO space. Triples tensors use
+ * row a and flattened column (b * nvirtual + c).
+ */
+
 void DLPNOCCSD::estimate_lambda_memory() {
 
     int n_lmo_pairs = ij_to_i_j_.size();
@@ -157,6 +173,9 @@ void DLPNOCCSD::estimate_lambda_memory() {
 } // end function
 
 void DLPNOCCSD::form_goo() {
+    // Lambda-density contractions rho^OO and rho^VV (Toth Eqs. 53 and 54).
+    // They are rebuilt from the current Lambda amplitudes every iteration and
+    // are reused by both Lambda residuals and the unrelaxed CCSD OPDM.
     // Number of active occupied orbitals
     int naocc = nalpha_ - nfrzc();
     // Number of surviving pairs after DLPNO screening
@@ -194,6 +213,13 @@ void DLPNOCCSD::form_goo() {
 }
 
 void DLPNOCCSD::compute_lambda_intermediates() {
+
+    // Build the reusable tensors entering the stationary Lambda equations.
+    // Published equation map: Toth Eqs. 33--34, 57, 59--64, 73--74,
+    // 103, and 105. beta/gamma/delta and the doubly transformed Fock
+    // matrices are shared with the right-hand implementation (Jiang
+    // Eqs. 82--86). Keeping this map here makes the residual routines below
+    // readable without relying on the order in which storage is allocated.
 
     outfile->Printf("   ==> Computing Lambda Intermediates <== \n\n");
 
@@ -253,7 +279,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
 
     time_start = std::time(nullptr);
     
-    // Toth Eq. 47 (\widetilde{\widetilde{K}}_{m a_{ii}}^{e_{mi} f_{mi}})
+    // Toth Eq. 59 (\widetilde{\widetilde{K}}_{m a_{ii}}^{e_{mi} f_{mi}})
     K_maef_dt_.resize(n_lmo_pairs);
     
 #pragma omp parallel for
@@ -274,7 +300,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
         K_maef_dt_[mi] = std::make_shared<Matrix>(npno_mi, npno_mi * npno_mi); // (a_{mi}, e_{mi} f_{mi}) -> (a_{ii}, e_{mi} f_{mi}) later
         K_maef_dt_[mi]->zero();
 
-        // (Toth Eq. 47a) +1.0 \widetilde{B}^{Q_{mi}}_{e_{mi} m} \widetilde{B}^{Q_{mi}}_{f_{mi} a_{mi}} S^{a_{mi}}_{a_{ii}}
+        // Toth Eq. 59a: +\widetilde{B}^{Q_mi}_{e_mi m}\widetilde{B}^{Q_mi}_{f_mi a_mi}S^{a_mi}_{a_ii}
 
         for (int q_mi = 0; q_mi < naux_mi; ++q_mi) {
             auto q_vv_t1 = q_vv[q_mi]->clone();
@@ -298,7 +324,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
             int k_ii = lmopair_to_lmos_dense_[ii][k];
             int mk = i_j_to_ij_[m][k];
 
-            // (Toth Eq. 47c) -1.0 (S^{e_{mi}}_{e_{mk}} T_{mk}^{e_{mk} f_{mk}} S^{f_{mi}}_{f_{mk}}) \overline{F}_{k_{ii} a_{ii}}
+            // Toth Eq. 59c: -(S T_mk S)^{e_mi f_mi} \overline{F}_{k_ii a_ii}
 
             auto T_mk_to_mi = linalg::triplet(S_PNO(mi, mk), T_iajb_[mk], S_PNO(mk, mi));
 
@@ -317,7 +343,8 @@ void DLPNOCCSD::compute_lambda_intermediates() {
                 int kl = i_j_to_ij_[k][l];
                 if (kl == -1) continue; // checks to make sure kl is a pair
 
-                // (Toth Eq. 47b) +1.0 (S^{e_{mi}}_{e_{kl}} T_{kl}^{e_{kl} f_{kl}} S^{f_{mi}}_{f_{kl}}) \widetilde{B}^{Q_{mi}}_{k_{mi} m} B^{Q_{mi}}_{l_{mi} a_{mi}} S^{a_{mi}}_{a_{ii}}
+                // Toth Eq. 59b: +(S T_kl S)^{e_mi f_mi}\widetilde{B}^{Q_mi}_{k_mi m}
+                // B^{Q_mi}_{l_mi a_mi}S^{a_mi}_{a_ii}
                 auto T_kl_to_mi = linalg::triplet(S_PNO(mi, kl), T_iajb_[kl], S_PNO(kl, mi));
 
                 // \widetilde{B}^{Q_{mi}}_{k_{mi} m} B^{Q_{mi}}_{l_{mi} a_{mi}}
@@ -354,7 +381,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
 
     time_start = std::time(nullptr);
 
-    // Toth Eq. 48 \widetilde{\widetilde{K}}_{e_{mn} i}^{m n}
+    // Toth Eq. 60: \widetilde{\widetilde{K}}_{e_mn i}^{mn}
 
     K_eimn_dt_.resize(n_lmo_pairs);
 #pragma omp parallel for schedule(dynamic, 1)
@@ -371,18 +398,18 @@ void DLPNOCCSD::compute_lambda_intermediates() {
         auto q_vo_t1 = i_Qa_t1_[mn];
         auto q_oo_t1 = i_Qk_t1_[nm];
 
-        // (Toth Eq. 48a) +1.0 \widetilde{B}^{Q_{mn}}_{e_{mn} m} \widetilde{B}^{Q_{mn}}_{i_{mn} n}
+        // Toth Eq. 60a: +\widetilde{B}^{Q_mn}_{e_mn m}\widetilde{B}^{Q_mn}_{i_mn n}
         K_eimn_dt_[mn] = linalg::doublet(q_vo_t1, q_oo_t1, true, false); // (Q, e) (Q, i) -> (e, i)
 
         for (int q_mn = 0; q_mn < naux_mn; ++q_mn) {
             auto q_vv_t1 = q_vv[q_mn]->clone();
             q_vv_t1->subtract(linalg::doublet(T_n_ij_[mn], q_ov[q_mn], true, false)); // (k_{mi}, f_{mi}) (k_{mi}, a_{mi})
 
-            // (Toth Eq. 48b) +1.0 \widetilde{B}^{Q_{mn}}_{e_{mn} c_{mn}} T_{mn}^{c_{mn} d_{mn}} B^{Q_{mn}}_{i_{mn} d_{mn}}
+            // Toth Eq. 60b: +\widetilde{B}^{Q_mn}_{e_mn c_mn}T_mn^{c_mn d_mn}B^{Q_mn}_{i_mn d_mn}
             K_eimn_dt_[mn]->add(linalg::triplet(q_vv_t1, T_iajb_[mn], q_ov[q_mn], false, false, true)); // (e, c) (c, d) (i, d) -> (e, i)
         } // end q_mn
 
-        // (Toth Eq. 48c) +1.0 T_{mn}^{e_{mn} c_{mn}} \overline{F}_{i_{mn} c_{mn}}
+        // Toth Eq. 60c: +T_mn^{e_mn c_mn}\overline{F}_{i_mn c_mn}
         int mn_idx = (m < n) ? mn : nm;
         K_eimn_dt_[mn]->add(linalg::doublet(T_iajb_[mn], Fkc_bar_[mn_idx], false, true)); // (e, c) (i, c) -> (e, i)
     } // end mn
@@ -394,7 +421,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
 
     time_start = std::time(nullptr);
 
-    // Toth Eq. 29
+    // Toth Eq. 61: \overline{M}_{k a_ii}^{c_ki e_ki}
     M_kace_bar_.resize(n_lmo_pairs);
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -447,7 +474,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
 
     time_start = std::time(nullptr);
 
-    // Toth Eq. 30
+    // Toth Eq. 62: \overline{M}_{mk}^{i c_mk}
     M_mkic_bar_.resize(n_lmo_pairs);
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -485,7 +512,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
 
     time_start = std::time(nullptr);
 
-    // Toth Eq. 31
+    // Toth Eq. 63: \overline{J}_{km}^{i c_km}
     // \overline{J}_{km}^{ic} = (km | i c_{km}) + \widetilde{T}_{m}^{f_{ki}} (k f_{ki} | i c_{ki})
     //  S_{c_{ki}}^{c_{km}}
     J_kmic_bar_.resize(n_lmo_pairs);
@@ -518,7 +545,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
     outfile->Printf("   Forming J_kaec_bar...");
     time_start = std::time(nullptr);
 
-    // Toth Eq. 32
+    // Toth Eq. 64: \overline{J}_{k a_ii}^{e_ki c_ki}
     // \overline{J}_{ka_{ii}}^{e_{ki}c_{ki}} = S^{a_{ii}}_{a_{ki}} (ka_{ki}|e_{ki}c_{ki}) -
     // S_{a_{ii}}^{a_{kl}} (k a_{kl} | l c_{kl}) S_{c_{kl}}^{c_{ki}} \widetilde{T}_{l}^{e_{ki}}
     J_kaec_bar_.resize(n_lmo_pairs);
@@ -553,7 +580,9 @@ void DLPNOCCSD::compute_lambda_intermediates() {
     time_stop = std::time(nullptr);
     outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
 
-    // Toth Eq. 33
+    // Toth Eq. 33. This explicit three-virtual intermediate and its matching
+    // residual contraction are retained below as documentation but disabled;
+    // the active factorized Eq. 68a contraction avoids storing it.
     /*
     F_fcia_hat_.resize(n_lmo_pairs);
 
@@ -698,7 +727,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
         int nlmo_ij = lmopair_to_lmos_[ij].size();
         int npno_ij = n_pno_[ij];
 
-        // Toth Eq. 41 (S_{e_{ij}}^{e_{jj}} L_{ie_{ij}}^{a_{ij}b_{ij}}) 
+        // Toth Eq. 73: S_{e_ij}^{e_jj} \overline{L}_{i e_ij}^{a_ij b_ij}
         // - \widetilde{T}_{l}^{e_{jj}} [S_{a_{il}}^{a_{ij}}L_{il}^{a_{il}b_{il}}]S_{b_{il}}^{b_{ij}}
         L_ieab_bar_[ij] = std::make_shared<Matrix>("L_ieab_bar", npno_ij, npno_ij * npno_ij); // (e_ij, a_ij * b_ij)
 
@@ -731,7 +760,8 @@ void DLPNOCCSD::compute_lambda_intermediates() {
             } // end e_jj
         } // end l_ij
 
-        // Toth Eq. 42 K_{ij}^{mb_{ij}} + \widetilde{T}_m^{e_{ij}} K_{ij}^{e_{ij}b_{ij}}
+        // Toth Eq. 74: \overline{K}_{ij}^{m b_ij} = K_{ij}^{m b_ij}
+        // + \widetilde{T}_m^{e_ij} K_{ij}^{e_ij b_ij}
         K_ijmb_bar_[ij] = K_mibj_[ij]->clone();
         K_ijmb_bar_[ij]->add(linalg::doublet(T_n_ij_[ij], K_iajb_[ij])); // (m, e) (e, b) -> (m, b)
     } // end ij
@@ -742,7 +772,8 @@ void DLPNOCCSD::compute_lambda_intermediates() {
     outfile->Printf("   Forming delta_imae_tilde ...");
     time_start = std::time(nullptr);
 
-    // Toth Eq. 44 and 45
+    // Toth Eq. 57: \widetilde{\delta}_{im}^{a_ii e_mm}. The following
+    // contractions form its integral, singles-dressed, and doubles-dressed terms.
     delta_imae_tilde_.resize(n_lmo_pairs);
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -759,7 +790,8 @@ void DLPNOCCSD::compute_lambda_intermediates() {
         auto Qme = i_Qa_ij_[mm]; // \tilde(Q_{mm} | m e_{mm})
         auto Qmi = i_Qk_ij_[mm]; // \tilde(Q_{mm} | m i_{mm})
 
-        // => Toth Eq. 44a S(a_{ii}, a_{mm}) M_{im}^{a_{mm}e_{mm}} <= //
+        // Toth Eq. 57, bare-integral contribution:
+        // S(a_ii, a_mm) M_im^{a_mm e_mm}.
         
         auto M_imae_tilde = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm]);
         M_imae_tilde->zero();
@@ -777,7 +809,8 @@ void DLPNOCCSD::compute_lambda_intermediates() {
 
         M_imae_tilde = linalg::doublet(S_PNO(ii, mm), M_imae_tilde);
 
-        // => Toth Eq. 44c S(a_{ii}, a_{mm}) M_{if_{mm}}^{a_{mm}e_{mm}} T_{m}^{f_{mm}} <= //
+        // Toth Eq. 57, first singles-dressed contribution:
+        // S(a_ii, a_mm) M_{i f_mm}^{a_mm e_mm} T_m^{f_mm}.
 
         // M_{if_{mm}}^{a_{mm}e_{mm}} = 2 (ia_{mm} | f_{mm} e_{mm}) - (if_{mm} | a_{mm} e_{mm}) (24c)
         auto M_ifae = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm] * n_pno_[mm]);
@@ -797,7 +830,8 @@ void DLPNOCCSD::compute_lambda_intermediates() {
         M_ifae->reshape(n_pno_[mm], n_pno_[mm]); // (1, a_mm * e_mm) -> (a_mm, e_mm)
         M_imae_tilde->add(linalg::doublet(S_PNO(ii, mm), M_ifae)); // (a_ii, a_mm) x (a_mm, e_mm) -> (a_ii, e_mm)
 
-        // Toth Eq. 44d -\widetilde{T}^{e_{mm}}_k L^{a_{mm}f_{mm}}_{ik} S^{a_{mm}}_{a_{ii}} T^{f_{mm}}_m
+        // Toth Eq. 57, bilinear-singles contribution:
+        // -\widetilde{T}_k^{e_mm} L_{ik}^{a_mm f_mm} S^{a_mm}_{a_ii} T_m^{f_mm}.
 
         // L_{ik}^{a_{mm}f_{mm}} = 2(ia_{mm} | kf_{mm})  - (if_{mm} | ka_{mm})
         for (int k_im = 0; k_im < nlmo_im; ++k_im) {
@@ -834,7 +868,9 @@ void DLPNOCCSD::compute_lambda_intermediates() {
             } // end a_ii
         } // end k_im
 
-        // => Toth Eq. 45b S^{a_{ii}}_{a_{ik}} L_{ik}^{a_{ik}c_{ik}} S^{c_{ik}}_{c_{km}} U_{km}^{c_{km}e_{km}} S^{e_{km}}_{e_{mm}}
+        // Toth Eq. 57, doubles-dressed contribution:
+        // S^{a_ii}_{a_ik} L_{ik}^{a_ik c_ik} S^{c_ik}_{c_km}
+        // U_{km}^{c_km e_km} S^{e_km}_{e_mm}.
 
         // Compute delta_imae_tilde
         delta_imae_tilde_[im] = M_imae_tilde->clone();
@@ -855,7 +891,8 @@ void DLPNOCCSD::compute_lambda_intermediates() {
         int mm = i_j_to_ij_[m][m], kk = i_j_to_ij_[k][k];
         int nlmo_mk = lmopair_to_lmos_[mk].size();
 
-        // => Toth Eq. 44b -\widetilde{T}_{k}^{e_{mm}} N_{mk}^{i a_{mk}} S(a_{mk}, a_{ii}) <= //
+        // Toth Eq. 57, second singles-dressed contribution:
+        // -\widetilde{T}_k^{e_mm} N_{mk}^{i a_mk} S(a_mk, a_ii).
 
         // T_k_m = \widetilde{T}_{k}^{e_{mm}}
         auto T_k_m = linalg::doublet(S_PNO(mm, kk), T_ia_[k]); // (e_{mm}, 1)
@@ -887,6 +924,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
     outfile->Printf("   Forming F_vv_double_tilde...");
     time_start = std::time(nullptr);
 
+    // Reuse the right-hand doubly transformed virtual Fock matrix (Jiang Eq. 85).
     F_vv_double_tilde_.resize(n_lmo_pairs);
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -921,6 +959,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
     outfile->Printf("   Forming F_im_double_tilde...");
     time_start = std::time(nullptr);
     
+    // Reuse the right-hand doubly transformed occupied Fock matrix (Jiang Eq. 86).
     F_im_double_tilde_ = Fkj_->clone();
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -945,6 +984,7 @@ void DLPNOCCSD::compute_lambda_intermediates() {
     outfile->Printf("   Forming gamma_double_tilde and delta_double_tilde...");
     time_start = std::time(nullptr);
 
+    // Higher-order doubles-residual intermediates (Toth Eqs. 103 and 105).
     gamma_double_tilde_.resize(n_lmo_pairs);
     delta_double_tilde_.resize(n_lmo_pairs);
 
@@ -1006,6 +1046,10 @@ void DLPNOCCSD::compute_lambda_intermediates() {
 
 void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>> &L_ia_buffer) {
 
+    // Assemble l_i^{a_ii} = dL_CCSD/dt_i^{a_ii}, the Lambda-singles
+    // stationarity residual. The leading transformed-Fock/delta terms are
+    // Toth Eq. 58; the remaining contractions are Toth Eqs. 67--72.
+
     timer_on("DLPNO-CCSD Lambda : Compute L1");
 
     int naocc = nalpha_ - nfrzc();
@@ -1024,7 +1068,7 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
         }
     }
 
-    // \lambda_{i}^{e_{ii}} \widetilde{\widetilde{F}}_(e_{ii}, a_{ii}) (Toth Eq. 46c)
+    // \lambda_i^{e_ii}\widetilde{\widetilde{F}}_{e_ii a_ii} (Toth Eq. 58c)
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
         int ii = i_j_to_ij_[i][i];
@@ -1060,15 +1104,16 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
         thread = omp_get_thread_num();
 #endif
 
-        // \widetilde{\delta}_{im}^{a_{ii} e_{mm}} \lambda_{m}^{e_{mm}} (Toth Eq. 46a)
+        // \widetilde{\delta}_{im}^{a_ii e_mm}\lambda_m^{e_mm} (Toth Eq. 58a)
         L_ia_buffer[thread][i]->add(linalg::doublet(delta_imae_tilde_[im], lambda_ia_[m]));
 
-        // - \widetilde{widetilde{F}}_{im} \lambda_{m}^{a_{mm}} S_{a_{mm}}^{a_{ii}} (Toth Eq. 46b)
+        // -\widetilde{\widetilde{F}}_{im}\lambda_m^{a_mm}S_{a_mm}^{a_ii} (Toth Eq. 58b)
         auto lambda_m_to_i = linalg::doublet(S_PNO(ii, mm), lambda_ia_[m]);
         lambda_m_to_i->scale(F_im_double_tilde_->get(i, m));
         L_ia_buffer[thread][i]->subtract(lambda_m_to_i);
         
-        /* l_{i}^{a_{ii}} += \widetilde{\widetilde{K}}_{ma_{ii}}^{e_{mi}f_{mi}} \widetilde{\lambda}_{mi}^{e_{mi}f_{mi}} (Toth Eq. 55a) */
+        // l_i^{a_ii} += \widetilde{\widetilde{K}}_{m a_ii}^{e_mi f_mi}
+        //                  \widetilde{\lambda}_{mi}^{e_mi f_mi} (Toth Eq. 67a)
         auto lambda_mi_slice = lambda_iajb_[mi]->clone();
         lambda_mi_slice->reshape(n_pno_[mi] * n_pno_[mi], 1);
         L_ia_buffer[thread][i]->add(linalg::doublet(K_maef_dt_[mi], lambda_mi_slice)); // (a_{ii}, e_{mi} * f_{mi}) (e_{mi} * f_{mi}, 1)
@@ -1089,7 +1134,8 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
         auto qia_mn = QIA_PNO(mn); // naux_mn * (nlmo_mn, npno_mn)
         auto qab_mn = QAB_PNO(mn); // naux_mn * (npno_mn, npno_mn)
 
-        /* l_{i}^{a_{ii}} -= \widetilde{\widetilde{K}}_{e_{mn}i}^{mn} \widetilde{\lambda}_{mn}^{e_{mn}a_{mn}}S_{a_{mn}}^{a_{ii}} (Toth Eq. 55b) */
+        // l_i^{a_ii} -= \widetilde{\widetilde{K}}_{e_mn i}^{mn}
+        //                  \widetilde{\lambda}_{mn}^{e_mn a_mn}S_{a_mn}^{a_ii} (Toth Eq. 67b)
         auto L1_temp = linalg::doublet(K_eimn_dt_[mn], lambda_iajb_[mn], true, false); // (e_{mn}, i_{mn}) x (e_{mn}, a_{mn}) -> (i_{mn}, a_{mn})
 
         for (int i_mn = 0; i_mn < lmopair_to_lmos_[mn].size(); ++i_mn) {
@@ -1099,7 +1145,7 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
             L_ia_buffer[thread][i]->subtract(linalg::doublet(S_PNO(ii, mn), L1_temp_slice, false, true)); // (a_{ii}, a_{mn}) x (1, a_{mn}) -> (a_{ii}, 1)
         }
 
-        // l_{i}^{a_{ii}} \mathrel{+}= \rho^{\mathrm{VV}}_{f_{mn}c_{mn}}\hat{F}^{ia_{ii}}_{f_{mn}c_{mn}} - \rho^{\mathrm{OO}}_{nm} \hat{F}_{mn}^{ia_{ii}} (Toth Eq. 56a)
+        // rho^VV contribution to l_i^{a_ii} (Toth Eq. 68a).
         for (int q_mn = 0; q_mn < naux_mn; ++q_mn) {
             auto q_vv = qab_mn[q_mn]->clone(); // (npno_mn, npno_mn)
             auto q_ov = qia_mn[q_mn]->clone(); // (nlmo_mn, npno_mn)
@@ -1121,7 +1167,7 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
             } // end i_mn
         } // end q_mn
 
-        // l_{i}^{a_{ii}} \mathrel{-}= \rho^{OO}_{nm} \hat{F}_{mn}^{ia_{ii}} (Toth Eq. 56b)
+        // -rho^OO_nm \hat{F}_{mn}^{i a_ii} contribution (Toth Eq. 68b).
         for (int i_mn = 0; i_mn < lmopair_to_lmos_[mn].size(); ++i_mn) {
             int i = lmopair_to_lmos_[mn][i_mn];
 
@@ -1137,7 +1183,7 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
     } // end mn
 
     /* \textcolor{blue}{\begin{equation}
-        l^{a_{ii}}_{i} \mathrel{+}= [S^{a_{ii}}_{a_{km}}S^{a_{km}}_{a_{mn}}\overline{\lambda}^{a_{mn}f_{mn}}_{mn}S^{f_{kn}}_{f_{mn}}]T^{f_{kn}c_{kn}}_{kn}S^{c_{km}}_{c_{kn}}\overline{J}^{ic_{km}}_{km} (Toth Eq. 57)
+        l^{a_{ii}}_{i} \mathrel{+}= [S^{a_{ii}}_{a_{km}}S^{a_{km}}_{a_{mn}}\overline{\lambda}^{a_{mn}f_{mn}}_{mn}S^{f_{kn}}_{f_{mn}}]T^{f_{kn}c_{kn}}_{kn}S^{c_{km}}_{c_{kn}}\overline{J}^{ic_{km}}_{km} (Toth Eq. 69)
         \end{equation}}
     */
 #pragma omp parallel for schedule(dynamic, 1)
@@ -1155,7 +1201,7 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
             auto gus = linalg::doublet(lambda_iajb_bar_[mn], S_PNO(mn, kn));
             auto L1_temp = linalg::triplet(gus, T_iajb_[kn], S_PNO(kn, km));
 
-            // Done! (From Toth Eq. 31)
+            // Contract with the \overline{J} intermediate from Toth Eq. 63.
             L1_temp = linalg::doublet(L1_temp, J_kmic_bar_[km], false, true); // (a, c) * (i, c)
             
             for (int i_km = 0; i_km < lmopair_to_lmos_[km].size(); ++i_km) {
@@ -1168,7 +1214,8 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
         } // end for
     } // end for
 
-    // l_{i}^{a_{ii}} -= (S^{e_{ki}}_{e_{in}}\overline{\lambda}^{e_{in}f_{in}}_{in}S^{f_{kn}}_{f_{in}})T^{f_{kn}c_{kn}}_{kn}S^{c_{ki}}_{c_{kn}}\overline{J}^{e_{ki}c_{ki}}_{ka_{ii}} (Toth Eq. 38)
+    // l_i^{a_ii} -= (S \overline{\lambda}_{in} S) T_kn S \overline{J}_{k a_ii}
+    // (Toth Eq. 70; \overline{J} is defined in Toth Eq. 64).
 #pragma omp parallel for schedule(dynamic, 1) 
     for (int in = 0; in < n_lmo_pairs; ++in) {
         auto &[i, n] = ij_to_i_j_[in];
@@ -1192,7 +1239,7 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
         
     /*
     \textcolor{blue}{\begin{equation}
-        l^{a_{ii}}_i \mathrel{+}= \frac{1}{2} \widetilde{\lambda}_{in}^{e_{in}f_{in}} [S^{e_{in}}_{e_{ik}}(S^{c_{nk}}_{c_{ik}}u^{f_{nk}c_{nk}}_{nk}S^{f_{in}}_{f_{nk}})]\overline{M}^{c_{ki}e_{ki}}_{ka_{ii}} (Toth Eq. 59)
+        l^{a_{ii}}_i \mathrel{+}= \frac{1}{2} \widetilde{\lambda}_{in}^{e_{in}f_{in}} [S^{e_{in}}_{e_{ik}}(S^{c_{nk}}_{c_{ik}}u^{f_{nk}c_{nk}}_{nk}S^{f_{in}}_{f_{nk}})]\overline{M}^{c_{ki}e_{ki}}_{ka_{ii}} (Toth Eq. 71)
     \end{equation}}
     */
 #pragma omp parallel for schedule(dynamic, 1)
@@ -1220,7 +1267,7 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
 
     /*
         \textcolor{blue}{\begin{equation}
-            l^{a_{ii}}_i \mathrel{-}= \frac{1}{2}[S^{a_{ii}}_{a_{mk}}(S^{a_{mk}}_{a_{mn}}\widetilde{\lambda}^{a_{mn}f_{mn}}_{mn}S^{f_{mn}}_{f_{nk}})]u^{f_{nk}c_{nk}}_{nk}S^{c_{nk}}_{c_{mk}}\overline{M}^{ic_{mk}}_{mk} (Toth Eq. 40)
+            l^{a_{ii}}_i \mathrel{-}= \frac{1}{2}[S^{a_{ii}}_{a_{mk}}(S^{a_{mk}}_{a_{mn}}\widetilde{\lambda}^{a_{mn}f_{mn}}_{mn}S^{f_{mn}}_{f_{nk}})]u^{f_{nk}c_{nk}}_{nk}S^{c_{nk}}_{c_{mk}}\overline{M}^{ic_{mk}}_{mk} (Toth Eq. 72)
         \end{equation}}
     */
 #pragma omp parallel for schedule(dynamic, 1)
@@ -1276,7 +1323,8 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_alpha_ijkl() {
         int nlmo_ij = lmopair_to_lmos_[ij].size();
         alpha_ijkl[ij] = std::make_shared<Matrix>("alpha_ijkl", nlmo_ij, nlmo_ij);
 
-        // alpha_{ij}^{kl} = \lambda_{ij}^{e_{ij} f_{ij}} (S_{e_{kl}}^{e_{ij}} T_{kl}^{e_{kl}f_{kl}} S_{f_{kl}}^{f_{ij}}) (Toth Eq. 64)
+        // alpha_{ij}^{kl} = \lambda_{ij}^{e_ij f_ij}
+        // (S_{e_kl}^{e_ij} T_{kl}^{e_kl f_kl} S_{f_kl}^{f_ij}) (Toth Eq. 81)
         for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
             int k = lmopair_to_lmos_[ij][k_ij];
             for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
@@ -1296,6 +1344,11 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_alpha_ijkl() {
 }
 
 void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<SharedMatrix>& Ln_iajb) {
+
+    // Assemble the ordered-pair Lambda-doubles stationarity residual. Ln_ij
+    // holds the nonsymmetric contribution in Toth Eq. 75; the final loop adds
+    // Ln_ij + (Ln_ji)^T. The expensive pair-symmetric contractions below are
+    // the grouped contributions in Toth Eqs. 86--91.
 
     timer_on("DLPNO-CCSD Lambda : Compute L2");
 
@@ -1329,31 +1382,35 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
 
         Ln_iajb[ij] = L_iajb_[ij]->clone();
 
-        // These are the slow delinquent terms we apply to make our code faster
+        // Pair-symmetric terms need be formed only for one orientation; their
+        // transpose is accumulated into the reverse ordered pair at each step.
         if (i <= j) {
             // Necessary three-center integrals
             auto qma_ij = QIA_PNO(ij); // naux_ij * (nlmo_ij, npno_ij)
             auto qab_ij = QAB_PNO(ij); // naux_ij * (npno_ij, npno_ij)
 
-            // Toth Eq. 70
+            // Four-index/DF contractions collected in Toth Eq. 86.
             for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                // This performs the T1-dressing of Qab on the fly, as this intermeidate is only used once
+                // Form the T1-dressed Qab intermediate on the fly; it is used once.
                 // \widetilde{B}^{Q}_{ab} = B^{Q}_{ab} - t_{k}^{a} B^{Q}_{kb} (Jiang Eq. 93)
                 auto Qab_t1 = qab_ij[q_ij]->clone(); // (a, b)
                 Qab_t1->subtract(linalg::doublet(T_n_ij_[ij], qma_ij[q_ij], true, false)); // (k, a) (k, b) -> (a, b)
 
                 auto L_temp = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
                 L_temp->zero();
-                // l^{a_{ij}b_{ij}}_{ij} += 0.5 * \widetilde{\lambda}^{e_{ij}f_{ij}}_{ij}[\widetilde{B}^{Q_{ij}}_{e_{ij}a_{ij}}\widetilde{B}^{Q_{ij}}_{f_{ij}b_{ij}} (Toth Eq. 50a)
+                // l_ij^{a_ij b_ij} += \widetilde{\lambda}_ij^{e_ij f_ij}
+                //     \widetilde{B}^{Q_ij}_{e_ij a_ij}\widetilde{B}^{Q_ij}_{f_ij b_ij} (Toth Eq. 86a).
                 L_temp->add(linalg::triplet(Qab_t1, lambda_iajb_[ij], Qab_t1, true, false, false)); // (e, a) (e, f) (f, b)
-                // l^{a_{ij}b_{ij}}_{ij} += 0.5 * B^{Q_{ij}}_{k_{ij}a_{ij}} B^{Q_{ij}}_{l_{ij}b_{ij}} \alpha_{ij}^{k_{ij}l_{ij}} (Toth Eq. 50b)
+                // l_ij^{a_ij b_ij} += B^{Q_ij}_{k_ij a_ij}B^{Q_ij}_{l_ij b_ij}
+                //     alpha_ij^{k_ij l_ij} (Toth Eq. 86b; alpha is Eq. 81).
                 L_temp->add(linalg::triplet(qma_ij[q_ij], alpha_ijkl[ij], qma_ij[q_ij], true, false, false)); // (k, a) (k, l) (l, b)
 
                 L_iajb[ij]->add(L_temp);
                 if (i != j) L_iajb[ji]->add(L_temp->transpose());
             } // end q_ij
 
-            // l_{ij}^{a_{ij}b_{ij}} \mathrel{+}= \frac{1}{2} (S_{a_{mn}}^{a_{ij}} \widetilde{\lambda}_{mn}^{a_{mn}b_{mn}}S_{b_{mn}}^{b_{ij}})\beta_{mn}^{ij} (Toth Eq. 51)
+            // Projected Lambda-doubles/beta contraction (Toth Eq. 87;
+            // beta is the right-hand intermediate of Jiang Eq. 82).
             for (int m_ij = 0; m_ij < nlmo_ij; ++m_ij) {
                 int m = lmopair_to_lmos_[ij][m_ij];
                 for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
@@ -1369,8 +1426,8 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
                 } // end n_ij
             } // end m_ij
 
-            // l^{a_{ij}b_{ij}}_{ij} += \widetilde{\lambda}^{a_{ij}f_{ij}}_{ij}\widetilde{\widetilde{F}}_{f_{ij}b_{ij}} - (2 - P_{ab}) \rho^{\mathrm{VV}}_{a_{mn}c_{mn}}
-            // S^{a_{mn}}_{a_{ij}} K^{c_{ij}b_{ij}}_{ij}S^{c_{mn}}_{c_{ij}} (Toth Eq. 54)
+            // Virtual-Fock and rho^VV contributions (Toth Eq. 90; rho^VV is
+            // defined in Eq. 54 and projected from every overlapping pair).
             auto E_temp = linalg::doublet(lambda_iajb_[ij], F_vv_double_tilde_[ij], false, false); // (a, f) (f, b) -> (a, b)
             E_temp->add(linalg::doublet(F_vv_double_tilde_[ij], lambda_iajb_[ij], true, false)); // (f, a) (f, b) -> (a, b)
 
@@ -1394,12 +1451,14 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
             if (i != j) L_iajb[ji]->add(E_temp->transpose());
         } // end i <= j
 
-        // l^{a_{ij}b_{ij}}_{ij} += \lambda^{e_{jj}}_j\overline{L}^{a_{ij}b_{ij}}_{ie_{jj}} (Toth Eq. 43a)
+        // Lambda-singles contribution to the nonsymmetric residual in Toth
+        // Eq. 75, using \overline{L} from Eq. 73.
         auto L_temp = linalg::doublet(lambda_ia_[j], L_ieab_bar_[ij], true, false); // (e, 1) (e, a * b) -> (1, a * b)
         L_temp->reshape(n_pno_[ij], n_pno_[ij]);
         Ln_iajb[ij]->add(L_temp);
 
-        // l^{a_{ij}b_{ij}}_{ij} -= (2 - P_{ab})[S^{a_{ij}}_{a_{mm}} \lambda^{a_{mm}}_{m} \overline{K}^{mb_{ij}}_{ij}] (Toth Eq. 43b)
+        // Lambda-singles/\overline{K} contribution to Toth Eq. 75;
+        // \overline{K}_ij^{m b_ij} is defined in Eq. 74.
         for (int m_ij = 0; m_ij < nlmo_ij; ++m_ij) {
             int m = lmopair_to_lmos_[ij][m_ij];
             int mm = i_j_to_ij_[m][m];
@@ -1414,7 +1473,8 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
             } // end a_ij
         } // end m_ij
 
-        // l^{a_{ij}b_{ij}}_{ij} += (2 - P_{ab}) \lambda^{a_{ii}}_{i} S^{a_{ij}}_{a_{ii}} \widetilde{F}_{jb_{ij}} (Toth Eq. 43c)
+        // Lambda-singles/Fock contribution to the nonsymmetric residual in
+        // Toth Eq. 75; the explicit 2-P_ab action is applied elementwise.
         auto lambda_i = linalg::doublet(S_PNO(ij, ii), lambda_ia_[i]);
         for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
             for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
@@ -1429,14 +1489,17 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
             int in = i_j_to_ij_[i][n], jn = i_j_to_ij_[j][n], nj = i_j_to_ij_[n][j];
             int i_nj = lmopair_to_lmos_dense_[nj][i];
 
-            // l_{ij}^{a_{ij}b_{ij}} -= \overline{\lambda}_{jn}^{a_{jn}f_{jn}}[S_{a_{nj}}^{a_{ij}}\widetilde{\gamma}_{in}^{f_{nj}b_{ij}} (Toth Eq. 52a)
+            // Barred-Lambda/gamma contraction (Toth Eq. 88a).
             auto lambda_bar_temp = linalg::doublet(S_PNO(ij, jn), lambda_iajb_bar_[jn]);
             auto gamma_temp = linalg::triplet(S_PNO(nj, in), gamma_[in], S_PNO(in, ij));
-            gamma_temp->add(J_ikac_non_proj_[nj][i_nj]); // Uncle Andy stays delinquent
+            // Add the non-projected integral contribution before contracting
+            // with the barred Lambda doubles.
+            gamma_temp->add(J_ikac_non_proj_[nj][i_nj]);
             gamma_temp = linalg::doublet(lambda_bar_temp, gamma_temp);
             Ln_iajb[ij]->subtract(gamma_temp);
 
-            // l_{ij}^{a_{ij}b_{ij}} -= 0.5 * S_{a_{kj}}^{a_{jn}}(S_{a_{ij}}^{a_{kj}}S_{b_{ki}}^{b_{ij}} K_{ki}^{b_{ki}c_{ki}}S_{c_{ki}}^{c_{kj}})S_{c_{kj}}^{c_{kn}}T_{kn}^{f_{kn}c_{kn}}S_{f_{kn}}^{f_{jn}}] (Toth Eq. 52b)
+            // Higher-order correction to the same contraction (Toth Eq. 88b),
+            // preassembled in gamma_double_tilde_ (Eq. 103).
             gamma_temp = gamma_double_tilde_[ij][n_ij]->clone();
             gamma_temp->scale(0.5);
             Ln_iajb[ij]->add(linalg::triplet(S_PNO(ij, jn), lambda_iajb_bar_[jn], gamma_temp));
@@ -1447,7 +1510,8 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
             int nj = i_j_to_ij_[n][j], in = i_j_to_ij_[i][n], ni = i_j_to_ij_[n][i];
             int j_ni = lmopair_to_lmos_dense_[ni][j];
 
-            // l^{a_{ij}b_{ij}}_{ij} += (2 - P_{ab}) [\frac{1}{2}\widetilde{\lambda}^{f_{ni}a_{ni}}_{ni}[\widetilde{\delta}^{f_{ni}b_{ij}}_{nj}S^{a_{ni}}_{a_{ij}} (Toth Eq. 53a) 
+            // Lambda-doubles/delta contribution (Toth Eq. 89a); the following
+            // additions explicitly apply its 2-P_ab spin adaptation.
             auto delta_temp = linalg::doublet(S_PNO(ij, in), lambda_iajb_[in]);
             /// [ij][k_ij] => (i a_{ij} | k c_{kj}) 
             /// [ij][k_ij] => (i k | a_{ij} c_{kj})
@@ -1455,7 +1519,9 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
             /// [ni][j_ni] => (n a_{ni} | j c_{ji})
 
             /// (n f_{ni} | j b_{ij})
-            auto M_iakc_temp = K_iakc_non_proj_[ni][j_ni]->clone(); // I forgor a clone :)
+            // Clone because the following spin adaptation must not mutate the
+            // stored non-projected integral block.
+            auto M_iakc_temp = K_iakc_non_proj_[ni][j_ni]->clone();
             M_iakc_temp->scale(2.0);
             /// (n j | f_{ni} b_{ij})
             M_iakc_temp->subtract(J_ikac_non_proj_[ni][j_ni]);
@@ -1466,6 +1532,8 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
             delta_temp->scale(-0.5);
             Ln_iajb[ij]->add(delta_temp->transpose());
 
+            // Higher-order partner, Toth Eq. 89b, using the Eq. 105
+            // delta_double_tilde_ intermediate.
             delta_temp = delta_double_tilde_[ij][n_ij]->clone();
             delta_temp->scale(0.5);
             
@@ -1475,8 +1543,8 @@ void DLPNOCCSD::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<Sh
             Ln_iajb[ij]->add(delta_temp->transpose());
         }
 
-        // l^{a_{ij}b_{ij}}_{ij} -= (S^{a_{ij}}_{a_{in}}\widetilde{\lambda}^{a_{in}b_{in}}_{in}S^{b_{ij}}_{b_{in}})\widetilde{\widetilde{F}}_{jn} + 
-        // \rho^{\mathrm{OO}}_{jk}(S^{a_{ik}}_{a_{ij}}L^{a_{ik}b_{ik}}_{ik}S^{b_{ik}}_{b_{ij}}) (Toth Eq. 55)
+        // Occupied-Fock and rho^OO contributions (Toth Eq. 91; rho^OO is
+        // defined in Eq. 53). Both source-pair tensors are projected to ij.
         for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
             int n = lmopair_to_lmos_[ij][n_ij];
             int in = i_j_to_ij_[i][n];
@@ -1540,6 +1608,11 @@ void DLPNOCCSD::reset_lambda_state() {
 }
 
 void DLPNOCCSD::solve_lambda(bool include_singles) {
+
+    // Solve dL_CCSD/dT = 0 for the left amplitudes after the right-hand CCSD
+    // amplitudes have converged. For converged Brueckner orbitals, Lambda1 is
+    // omitted because the orbital stationarity condition replaces the singles
+    // equation; canonical/reference-orbital and property calculations include it.
 
     reset_lambda_state();
     estimate_lambda_memory();
@@ -1617,19 +1690,20 @@ void DLPNOCCSD::solve_lambda(bool include_singles) {
 
         std::time_t time_start = std::time(nullptr);
 
-        // Form intermediates
+        // Density intermediates entering both residuals (Toth Eqs. 53--54).
         form_goo();
 
-        // Step 4: Compute R2 residual
+        // Lambda-doubles residual (Toth Eqs. 75 and 86--91).
         compute_L_iajb(L_iajb, Ln_iajb);
 
-        // Get rms of R_iajb
+        // Track the largest pair RMS as the Lambda2 convergence metric.
 #pragma omp parallel for schedule(dynamic, 1)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             L_iajb_rms[ij] = L_iajb[ij]->rms();
         }
 
-        // Update Doubles Amplitude (Jiang Eq. 104)
+        // Jacobi update of Lambda2 with the diagonal semicanonical PNO
+        // denominator; damping is applied before DIIS extrapolation.
 #pragma omp parallel for schedule(dynamic, 1)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
@@ -1652,19 +1726,19 @@ void DLPNOCCSD::solve_lambda(bool include_singles) {
         }
 
         if (include_singles) {
-            // Form Goo a second time (using updated lambda)
+            // Lambda2 has changed, so rebuild Eqs. 53--54 before Lambda1.
             form_goo();
 
-            // Step 1: Compute R1 residual
+            // Lambda-singles residual (Toth Eqs. 58 and 67--72).
             compute_L_ia(L_ia, L_ia_buffer);
 
-            // Get rms of L_ia
+            // Track the largest occupied-domain RMS as the Lambda1 metric.
 #pragma omp parallel for schedule(dynamic, 1)
             for (int i = 0; i < naocc; ++i) {
                 L_ia_rms[i] = L_ia[i]->rms();
             }
 
-            // Update Singles Amplitude (Jiang Eq. 103)
+            // Jacobi update of Lambda1 with its diagonal PNO denominator.
 #pragma omp parallel for schedule(dynamic, 1)
             for (int i = 0; i < naocc; ++i) {
                 int ii = i_j_to_ij_[i][i];
@@ -1685,7 +1759,8 @@ void DLPNOCCSD::solve_lambda(bool include_singles) {
             }
         }
 
-        // DIIS Extrapolation
+        // Pulay DIIS: the Lambda residuals are error vectors and the Lambda
+        // amplitudes are the vectors extrapolated toward the stationary point.
         std::vector<SharedMatrix> lambda_vecs;
         lambda_vecs.reserve(lambda_ia_.size() + lambda_iajb_.size());
         lambda_vecs.insert(lambda_vecs.end(), lambda_ia_.begin(), lambda_ia_.end());
@@ -1709,7 +1784,9 @@ void DLPNOCCSD::solve_lambda(bool include_singles) {
 
         copy_flat_mats(lambda_vecs_flat, lambda_vecs);
         
-        // Compute lambda CCSD pseudoenergy (and remake lambda_ijab_bar)
+        // Rebuild the spin-adapted Lambda2 combination (Toth Eq. 55) and use
+        // its conventional pseudoenergy as an inexpensive iteration diagnostic;
+        // this value is not reported as a physical correlation energy.
         e_curr = 0.0;
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_curr)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
@@ -1746,12 +1823,16 @@ void DLPNOCCSD::solve_lambda(bool include_singles) {
 
 void DLPNOCCSD::compute_opdm() {
 
+    // Form the local blocks of the unrelaxed, spin-summed CCSD one-particle
+    // density from the converged right and left amplitudes (Toth Appendix A,
+    // Eqs. A2--A5). compute_ao_opdm() transforms and accumulates these blocks.
+
     int naocc = i_j_to_ij_.size();
     int n_lmo_pairs = ij_to_i_j_.size();
 
     form_goo();
 
-    // Toth Eq. A2
+    // Occupied-occupied correlation block (Toth Eq. A2).
     Doo_ = rho_oo_->clone();
     Doo_->scale(-1.0);
 #pragma omp parallel for schedule(dynamic, 1)
@@ -1780,7 +1861,7 @@ void DLPNOCCSD::compute_opdm() {
         }
     }
 
-    // (Toth Eq. A3, first term)
+    // Occupied-virtual block, starting with the first term of Toth Eq. A3.
     Dov_.resize(naocc);
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
@@ -1835,12 +1916,14 @@ void DLPNOCCSD::compute_opdm() {
     } // end int i
 
     Dvv_pair_.resize(n_lmo_pairs);
+    // Pair-resolved virtual-virtual block rho^VV_ij (Toth Eq. A4).
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         Dvv_pair_[ij] = rho_vv_[ij]->clone();
     }
 
     Dvv_singles_.resize(naocc);
+    // Singles contribution to the virtual-virtual block (Toth Eq. A5).
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
         int ii = i_j_to_ij_[i][i];
@@ -1866,7 +1949,8 @@ SharedMatrix DLPNOCCSD::compute_ao_opdm() {
     const int naocc = nalpha_ - nfrzc();
     const int n_lmo_pairs = ij_to_i_j_.size();
 
-    // Begin with the spin-summed density of the *current* occupied orbitals.
+    // Assemble the AO density whose one-electron contraction gives Toth
+    // Eq. A1. Begin with the spin-summed density of the *current* occupied orbitals.
     // For Brueckner calculations C_lmo_ has been rotated away from the SCF
     // reference, so rebuilding this block from reference C_occ would give an
     // inconsistent OEProp density.
@@ -1879,10 +1963,10 @@ SharedMatrix DLPNOCCSD::compute_ao_opdm() {
         D_ao->add(D_core);
     }
 
-    // Correlated occupied-occupied block (Toth Eq. 64a).
+    // Correlated occupied-occupied block (Toth Eq. A2).
     D_ao->add(linalg::triplet(C_lmo_, Doo_, C_lmo_, false, false, true));
 
-    // Correlated pair virtual-virtual blocks (Toth Eq. 64c).
+    // Correlated pair virtual-virtual blocks (Toth Eq. A4).
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         auto C_pno = submatrix_cols(*C_pao_, lmopair_to_paos_[ij]);
         C_pno = linalg::doublet(C_pno, X_pno_[ij]);
@@ -1895,13 +1979,14 @@ SharedMatrix DLPNOCCSD::compute_ao_opdm() {
         auto C_pno = submatrix_cols(*C_pao_, lmopair_to_paos_[ii]);
         C_pno = linalg::doublet(C_pno, X_pno_[ii]);
 
-        // Correlated occupied-virtual block (Toth Eq. 64b). Hermitization below
-        // supplies the transpose without changing contractions with Hermitian operators.
+        // Correlated occupied-virtual block (Toth Eq. A3), plus Lambda1 as
+        // the opposite-direction block. Hermitization supplies the transpose
+        // without changing contractions with Hermitian one-electron operators.
         auto Dov_total = Dov_[i]->clone();
         Dov_total->add(lambda_ia_[i]);
         D_ao->add(linalg::triplet(C_i, Dov_total, C_pno, false, true, true));
 
-        // Correlated singles virtual-virtual block (Toth Eq. 64d).
+        // Correlated singles virtual-virtual block (Toth Eq. A5).
         D_ao->add(linalg::triplet(C_pno, Dvv_singles_[i], C_pno, false, false, true));
     }
 

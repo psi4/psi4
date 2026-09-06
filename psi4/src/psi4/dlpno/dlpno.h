@@ -332,7 +332,10 @@ class DLPNOMP2 : public DLPNO {
     double compute_energy() override;
 };
 
-// Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
+// Right-hand DLPNO-CCSD equations refer to Jiang et al.
+// (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963).
+// Lambda and OPDM equations refer to Toth et al.
+// (JCTC 22, 7667-7681, 2026; DOI: 10.1021/acs.jctc.6c00758).
 class PSI_API DLPNOCCSD : public DLPNO {
    protected:
     /// Solve the left-hand CCSD equations for an explicitly requested Lambda-dependent result.
@@ -401,45 +404,47 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<SharedMatrix> Fkc_; // Jiang Eq. 95
     std::vector<SharedMatrix> Fai_; // Jiang Eq. 96
     std::vector<SharedMatrix> Fab_; // Jiang Eq. 97
-    std::vector<SharedMatrix> Fkc_bar_; // Extra Fock Matrix term needed for lambda!
+    std::vector<SharedMatrix> Fkc_bar_; // Additional occupied-virtual Fock term used by Lambda.
 
     double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
 
     // => Optional Lambda-CCSD state <= //
 
-    /// Lambda amplitudes. These remain unallocated unless a Lambda-dependent result is requested.
+    /// Lambda singles [i](a_ii, 1). Unallocated unless a Lambda-dependent result is requested.
     std::vector<SharedMatrix> lambda_ia_;
+    /// Lambda doubles [ij](a_ij, b_ij), stored for ordered retained pairs.
     std::vector<SharedMatrix> lambda_iajb_;
+    /// Spin-adapted doubles: 1/2 lambda_ij^ab + lambda_ij^ba (Toth Eq. 55).
     std::vector<SharedMatrix> lambda_iajb_bar_;
 
     // Lambda-CCSD integrals and intermediates
-    std::vector<SharedMatrix> delta_imae_tilde_;
-    SharedMatrix F_im_double_tilde_;
-    std::vector<SharedMatrix> F_vv_double_tilde_;
-    std::vector<SharedMatrix> beta_;
-    std::vector<SharedMatrix> gamma_;
-    std::vector<SharedMatrix> delta_;
-    std::vector<std::vector<SharedMatrix>> gamma_double_tilde_;
-    std::vector<std::vector<SharedMatrix>> delta_double_tilde_;
-    SharedMatrix rho_oo_;
-    std::vector<SharedMatrix> rho_vv_;
-    std::vector<std::vector<SharedMatrix>> F_fcia_hat_;
-    std::vector<std::vector<SharedMatrix>> F_knia_hat_;
-    std::vector<SharedMatrix> K_maef_dt_;
-    std::vector<SharedMatrix> K_eimn_dt_;
-    std::vector<SharedMatrix> M_kace_bar_;
-    std::vector<SharedMatrix> M_mkic_bar_;
-    std::vector<SharedMatrix> J_kmic_bar_;
-    std::vector<SharedMatrix> J_kaec_bar_;
-    std::vector<SharedMatrix> L_ieab_bar_;
-    std::vector<SharedMatrix> K_ijmb_bar_;
+    std::vector<SharedMatrix> delta_imae_tilde_;  ///< Toth Eq. 57
+    SharedMatrix F_im_double_tilde_;              ///< Jiang Eq. 86
+    std::vector<SharedMatrix> F_vv_double_tilde_; ///< Jiang Eq. 85
+    std::vector<SharedMatrix> beta_;              ///< Jiang Eq. 82
+    std::vector<SharedMatrix> gamma_;             ///< Jiang Eq. 83
+    std::vector<SharedMatrix> delta_;             ///< Jiang Eq. 84
+    std::vector<std::vector<SharedMatrix>> gamma_double_tilde_; ///< Toth Eq. 103
+    std::vector<std::vector<SharedMatrix>> delta_double_tilde_; ///< Toth Eq. 105
+    SharedMatrix rho_oo_;                         ///< Toth Eq. 53
+    std::vector<SharedMatrix> rho_vv_;             ///< Toth Eq. 54
+    std::vector<std::vector<SharedMatrix>> F_fcia_hat_; ///< Toth Eq. 33 (currently not formed)
+    std::vector<std::vector<SharedMatrix>> F_knia_hat_; ///< Toth Eq. 34
+    std::vector<SharedMatrix> K_maef_dt_;          ///< Toth Eq. 59
+    std::vector<SharedMatrix> K_eimn_dt_;          ///< Toth Eq. 60
+    std::vector<SharedMatrix> M_kace_bar_;         ///< Toth Eq. 61
+    std::vector<SharedMatrix> M_mkic_bar_;         ///< Toth Eq. 62
+    std::vector<SharedMatrix> J_kmic_bar_;         ///< Toth Eq. 63
+    std::vector<SharedMatrix> J_kaec_bar_;         ///< Toth Eq. 64
+    std::vector<SharedMatrix> L_ieab_bar_;         ///< Toth Eq. 73
+    std::vector<SharedMatrix> K_ijmb_bar_;         ///< Toth Eq. 74
 
     // Local blocks of the correlated one-particle density matrix
-    SharedMatrix Doo_;
-    std::vector<SharedMatrix> Dov_;
-    std::vector<SharedMatrix> Dvv_singles_;
-    std::vector<SharedMatrix> Dvv_pair_;
+    SharedMatrix Doo_;                     ///< Occupied-occupied block, Toth Eq. A2
+    std::vector<SharedMatrix> Dov_;         ///< Occupied-virtual blocks, Toth Eq. A3
+    std::vector<SharedMatrix> Dvv_singles_; ///< Singles virtual-virtual blocks, Toth Eq. A5
+    std::vector<SharedMatrix> Dvv_pair_;    ///< Pair virtual-virtual blocks, Toth Eq. A4
 
     /// Returns the appropriate overlap matrix given two LMO pairs
     SharedMatrix S_PNO(const int ij, const int mn);
@@ -502,7 +507,7 @@ class PSI_API DLPNOCCSD : public DLPNO {
     void reset_lambda_state();
     /// Estimate the incremental memory required by the Lambda equations.
     void estimate_lambda_memory();
-    /// Compute occupied-occupied and virtual-virtual Lambda density intermediates.
+    /// Compute occupied-occupied and virtual-virtual Lambda density intermediates (Toth Eqs. 53--54).
     void form_goo();
     /// Compute intermediates required by the Lambda equations.
     void compute_lambda_intermediates();
@@ -514,7 +519,7 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<SharedMatrix> compute_alpha_ijkl();
     /// Solve the Lambda equations for the current converged right-hand CCSD state.
     void solve_lambda(bool include_singles);
-    /// Form local blocks of the correlated one-particle density matrix.
+    /// Form local blocks of the unrelaxed correlated one-particle density matrix (Toth Eqs. A2--A5).
     void compute_opdm();
     /// Assemble and publish the spin-summed AO one-particle density for OEProp.
     SharedMatrix compute_ao_opdm();
@@ -533,7 +538,9 @@ class PSI_API DLPNOCCSD : public DLPNO {
     double compute_energy() override;
 };
 
-// Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
+// Right-hand triples equations refer to Jiang et al. (JCP 161, 082502, 2024;
+// DOI: 10.1063/5.0219963); asymmetric triples refer to Toth et al. (JCTC 22,
+// 7667-7681, 2026; DOI: 10.1021/acs.jctc.6c00758).
 
 class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
    protected:
@@ -546,8 +553,9 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
 
     /// triplet natural orbitals (TNOs)
     std::vector<SharedMatrix> W_iajbkc_; ///< W3 intermediate for each lmo triplet (Jiang Eq. 109)
-    std::vector<SharedMatrix> V_iajbkc_; ///< V3 intermeidate for each lmo triplet (Jiang Eq. 110)
-    std::vector<SharedMatrix> L_iajbkc_; ///< L3 intermediate for CCSD(T)_Lambda
+    std::vector<SharedMatrix> V_iajbkc_; ///< V3 intermediate for each lmo triplet (Jiang Eq. 110)
+    /// Left triples moment used by the asymmetric correction of Toth et al.; [ijk](a, b * ntno + c).
+    std::vector<SharedMatrix> L_iajbkc_;
     std::vector<SharedMatrix> T_iajbkc_; ///< Triples amplitude for each lmo triplet
     std::vector<SharedMatrix> X_tno_; ///< global PAO -> canonical TNO transforms
     std::vector<SharedVector> e_tno_; ///< TNO orbital energies
@@ -584,10 +592,10 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     SharedMatrix triples_permuter(const SharedMatrix& X, int i, int j, int k, bool reverse=false);
     /// compute (T) iteration energy (Jiang Eq. 53)
     double compute_t_iteration_energy();
-    /// compute (T)_L iteration energy
+    /// Contract the converged right triples amplitudes with the left triples moment for (T)_L.
     double compute_t_l_iteration_energy();
 
-    /// L_CCSD(T0) energy (Jiang Eq. 53, 109-110)
+    /// Form right and left triples moments and their semicanonical (T0)/(T0)_L energies.
     std::pair<double, double> compute_lccsd_t0(bool save_memory=false);
     /// A function to estimate (T) memory costs
     void estimate_triples_memory();

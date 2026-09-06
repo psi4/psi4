@@ -57,6 +57,8 @@ namespace psi {
 namespace dlpno {
 
 DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNO(ref_wfn, options) {
+    // Lambda is opt-in for energies. A one-particle property request also
+    // requires the stationary left amplitudes used in Toth Eqs. A1--A5.
     lambda_requested_ = options_.get_bool("DLPNO_DO_LAMBDA");
     onepdm_requested_ = options_.get_bool("DLPNO_DO_ONEPDM");
     lambda_requested_ = lambda_requested_ || onepdm_requested_;
@@ -1251,14 +1253,17 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
 
         double delta_e_weak = 0.0;
 
+        // The present Lambda residuals (Toth Eqs. 58, 67--75, and 86--91)
+        // require the integral/amplitude tensors allocated for strong pairs.
+        // Until weak-pair Lambda approximations are implemented, promote every
+        // pair surviving the initial screening whenever Lambda is requested.
         const bool force_strong = lambda_requested_;
         int ij_strong = 0, ij_weak = 0;
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
             if (force_strong || std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_ || i == j) {
-                // Lambda contractions currently require every surviving pair in
-                // the strong-pair space. Ordinary right-hand calculations retain
-                // the requested strong/weak partition.
+                // Ordinary right-hand calculations retain the requested
+                // strong/weak partition.
                 i_j_to_ij_strong_[i][j] = ij_strong;
                 ij_to_i_j_strong_.push_back(std::make_pair(i, j));
                 ++ij_strong;
@@ -2461,7 +2466,7 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
             auto qma_ij = QIA_PNO(ij); // naux_ij * (nlmo_ij, npno_ij)
             auto qab_ij = QAB_PNO(ij); // naux_ij * (npno_ij, npno_ij)
             for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                // This performs the T1-dressing of Qab on the fly, as this intermeidate is only used once
+                // Form the T1-dressed Qab intermediate on the fly; it is used once.
                 // \widetilde{B}^{Q}_{ab} = B^{Q}_{ab} - t_{k}^{a} B^{Q}_{kb} (Jiang Eq. 93)
                 auto Qab_t1 = qab_ij[q_ij]->clone(); // (a, b)
                 Qab_t1->subtract(linalg::doublet(T_n_ij_[ij], qma_ij[q_ij], true, false)); // (k, a) (k, b) -> (a, b)
@@ -2994,8 +2999,13 @@ double DLPNOCCSD::compute_dlpno_ccsd_energy() {
 }
 
 void DLPNOCCSD::post_ccsd_correction(DLPNOCCSDPhase phase) {
+    // Keep ordinary CCSD/BCCD free of all left-hand work. The initial
+    // canonical-orbital point of a Brueckner calculation is handled by the
+    // triples override; here Lambda is solved only for a requested final result.
     if (!lambda_requested_ || phase == DLPNOCCSDPhase::InitialBrueckner) return;
 
+    // At a converged Brueckner point the orbital stationarity condition removes
+    // Lambda1; reference-orbital CCSD and OPDM calculations retain it.
     solve_lambda(!brueckner_orbs_);
     if (onepdm_requested_) compute_ao_opdm();
 }
