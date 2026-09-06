@@ -30,12 +30,12 @@
 #define PSI4_SRC_DLPNO_SPARSE_H_
 
 #include "psi4/libmints/matrix.h"
-
 #include <vector>
 
-typedef std::vector<std::vector<int>> SparseMap;
+namespace psi {
+namespace dlpno {
 
-namespace psi{
+using SparseMap = std::vector<std::vector<int>>;
 
 /* Args: sorted lists l1 and l2
  * Returns: sorted union of l1 and l2
@@ -52,7 +52,7 @@ std::vector<int> PSI_API index_list(const std::vector<int> &l1, const std::vecto
 /* Args: sorted list of y, sparse map from A to another list of y (assume sorted, each possible value of y appears exactly once in entire map)
  * Returns: the union of lists in A_to_y where at least one element is in y
  */
-std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std::vector<int>> &A_to_y);
+std::vector<int> contract_lists(const std::vector<int>& y, const SparseMap& A_to_y);
 
 /* Args: x is a list of values (sorted), y is a map from values of x to values of y
  * Returns: a list of y values
@@ -60,11 +60,6 @@ std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std
  * Multiple values in x may map to the same value in y (i.e. x is a list of bf, y is atoms)
  */
 std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<int> &x_to_y_map);
-
-/* Args: SparseMap from x to y, maximum possible y value
- * Returns: SparseMap from y to x
- */
-SparseMap invert_map(const SparseMap &x_to_y, int ny);
 
 /* Args: SparseMap from x to y, SparseMap from y to z
  * Returns: SparseMap from x to z
@@ -85,6 +80,7 @@ SharedMatrix submatrix_cols(const Matrix &mat, const std::vector<int> &col_inds)
 /* Args: Matrix, list of row and column indices */
 SharedMatrix submatrix_rows_and_cols(const Matrix &mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds);
 
-} // namespace psi
+}  // namespace dlpno
+}  // namespace psi
 
 #endif // PSI4_SRC_DLPNO_SPARSE_H_
