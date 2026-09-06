@@ -1245,6 +1245,9 @@ void RHF::openorbital_scf() {
         double e_delta = std::any_cast<double>(data.at("dE"));
         // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
         double d_rms = 0.5 * ao_basis_diis_error;
+        // When second-order iterations are to take over, OpenOrbitalOptimizer's job is only
+        // to reach SOSCF_START_CONVERGENCE; stop there and let the driver hand off.
+        if (options_.get_bool("SOSCF") && d_rms < options_.get_double("SOSCF_START_CONVERGENCE")) return true;
         // scale density norm to match internal algorithm
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);

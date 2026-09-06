@@ -4,9 +4,14 @@
 #!   update ref_dft_2e/xc due to new BraggSlater radii
 
 
-oopkg = "ooo" if os.environ.get("_PSI4_USE_OOOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
-psi4.set_options({"orbital_optimizer_package": oopkg})
+oopkg  = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "internal"
+soopkg = "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+soscf  = bool(os.environ.get("_PSI4_USE_SOSCF") or os.environ.get("_PSI4_USE_OTRPKG"))
+psi4.set_options({"orbital_optimizer_package": oopkg,
+                  "second_order_orbital_optimizer_package": soopkg,
+                  "soscf": soscf})
 compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+compare(soopkg.upper(), psi4.core.get_global_option("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE"), f"{soopkg=}")  #TEST
 dhtol = 6 if oopkg == "internal" else 2.e-6
 
 molecule meth {
@@ -46,7 +51,14 @@ ref_b2plyp_d = -0.0005958836111929    #TEST
 ref_b2plyp_dh = -0.046404359527       #TEST
 
 
-energy('scf')
+_, wfn = energy('scf', return_wfn=True)
+
+_eff = {"internal": "internal", "ooo": "openorbitaloptimizer", "otr": "opentrustregion"}      #TEST
+# The keyword compares above prove the request landed; these prove it survived the           #TEST
+# compatibility guards, so a silent fallback to the internal optimizer fails the test.       #TEST
+compare(_eff[oopkg], wfn.module_role("orbital_optimizer"), "effective 1st-order module")     #TEST
+compare(_eff[soopkg] if soscf else "", wfn.module_role("second_order_orbital_optimizer"),
+        "effective 2nd-order module")                                                        #TEST
 compare_values(ref_nn, variable("Nuclear Repulsion Energy"), 6, "HF: NN")  #TEST
 compare_values(ref_hf_1e, variable("One-Electron Energy"),   6, "HF: 1e")  #TEST
 compare_values(ref_hf_2e, variable("Two-Electron Energy"),   6, "HF: 2e")  #TEST

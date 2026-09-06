@@ -16,6 +16,8 @@ __all__ = [
     "uusing",
     "ctest_labeler",
     "ctest_runner",
+    "orbital_optimizer_combinations",
+    "orbital_optimizer_setenv",
 ]
 
 
@@ -184,6 +186,31 @@ def ctest_labeler(labels: str):
 hardware_nvidia_gpu = pytest.mark.skipif(
     True,  #is_nvidia_gpu_present() is False,
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
+
+
+#: The six meaningful combinations of orbital optimizer packages. ORBITAL_OPTIMIZER_PACKAGE
+#: drives the first-order iterations; SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE takes over once
+#: SOSCF turns second-order iterations on, so it is only meaningful when SOSCF is true.
+orbital_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
+    pytest.param(None,  None,     id="internal"),
+    pytest.param("ooo", None,     id="ooo", marks=using("ooo")),
+    pytest.param(None,  "soscf",  id="soscf-internal"),
+    pytest.param(None,  "otr",    id="soscf-otr", marks=using("otr")),
+    pytest.param("ooo", "soscf",  id="ooo-soscf-internal", marks=using("ooo")),
+    pytest.param("ooo", "otr",    id="ooo-soscf-otr", marks=[*using("ooo"), *using("otr")]),
+])
+
+
+def orbital_optimizer_setenv(oopkg, soopkg):
+    """Environment flags for one entry of :data:`orbital_optimizer_combinations`."""
+    setenv = []
+    if oopkg == "ooo":
+        setenv.append("_PSI4_USE_OOPKG")
+    if soopkg == "soscf":
+        setenv.append("_PSI4_USE_SOSCF")
+    elif soopkg == "otr":
+        setenv.append("_PSI4_USE_OTRPKG")
+    return setenv or None
 
 
 def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = None, setenv: List = None):

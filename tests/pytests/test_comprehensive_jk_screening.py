@@ -98,9 +98,7 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
             E_ref = Eref["Singlet"]["DF"]
         elif scf_type in Eref["Singlet"]["Composite"].keys(): 
             # OOO runs COSX on the final grid throughout and lands a few times 1e-5 away
-            # from the internal solver's early-screened answer. OTR does not take COSX at
-            # all (semi-numerical K makes its trust region thrash), so it falls back and
-            # gets the internal number.
+            # from the internal solver's early-screened answer.
             if psi4.core.get_global_option("orbital_optimizer_package") in ["OOO", "OPENORBITALOPTIMIZER"] and scf_type == "DFDIRJ+COSX":  # KP-DIFF-ANS
                 E_ref = Eref["Singlet"]["Composite"][f"{scf_type}_OOO"]
             else:

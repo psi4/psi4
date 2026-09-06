@@ -1,8 +1,13 @@
 #! Ne-Xe dimer MP2 energies with ECP, with electrons correlated then frozen.
 
-oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
-psi4.set_options({"orbital_optimizer_package": oopkg})
+oopkg  = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "internal"
+soopkg = "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+soscf  = bool(os.environ.get("_PSI4_USE_SOSCF") or os.environ.get("_PSI4_USE_OTRPKG"))
+psi4.set_options({"orbital_optimizer_package": oopkg,
+                  "second_order_orbital_optimizer_package": soopkg,
+                  "soscf": soscf})
 compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+compare(soopkg.upper(), psi4.core.get_global_option("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE"), f"{soopkg=}")  #TEST
 
 refnuc =   45.862024925                                                                  #TEST
 refall = -457.47320868249                                                                #TEST
@@ -43,9 +48,12 @@ set guess read
 # [He] electrons on Ne frozen,  only ECP electrons on Xe frozen
 EfHe = energy('mp2')
 compare_values(reffHe, EfHe, 8, "MP2 energy with frozen [He] and ECP")                   #TEST
-# A second-order optimizer handed converged orbitals needs no macro-iteration at all.
+# Converged orbitals are read in, so one macro-iteration is all it takes to confirm them.
+# OpenOrbitalOptimizer costs one more: it reaches the second-order handoff point and the
+# psi4 loop then takes its own iteration to see that nothing is left to do.
 niter = int(variable('SCF ITERATIONS'))                                                  #TEST
-compare(True, 0 <= niter <= 3 if oopkg == "otr" else niter == 1, f'niter {niter}')        #TEST
+nexp = 2 if (oopkg == "ooo" and soscf) else 1                                            #TEST
+compare(nexp, niter, f'niter {niter}')                                                   #TEST
 
 molecule ghne {
     0 1
@@ -81,6 +89,13 @@ molecule sbh3 {
 
 set freeze_core 0
 E, wfn = energy("mp2/def2-svp", return_wfn=True, molecule=sbh3)
+
+_eff = {"internal": "internal", "ooo": "openorbitaloptimizer", "otr": "opentrustregion"}      #TEST
+# The keyword compares above prove the request landed; these prove it survived the           #TEST
+# compatibility guards, so a silent fallback to the internal optimizer fails the test.       #TEST
+compare(_eff[oopkg], wfn.module_role("orbital_optimizer"), "effective 1st-order module")     #TEST
+compare(_eff[soopkg] if soscf else "", wfn.module_role("second_order_orbital_optimizer"),
+        "effective 2nd-order module")                                                        #TEST
 
 compare_values(wfn.nfrzc(), 0, 1, "Number of frozen e- with freeze_core = 0")
 compare_values(sum(wfn.doccpi()), 13, 1, "Number of occupied orbitals with freeze_core = 0")

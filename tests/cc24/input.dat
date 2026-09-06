@@ -1,8 +1,13 @@
 #! Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
 
-oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
-psi4.set_options({"orbital_optimizer_package": oopkg})
+oopkg  = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "internal"
+soopkg = "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+soscf  = bool(os.environ.get("_PSI4_USE_SOSCF") or os.environ.get("_PSI4_USE_OTRPKG"))
+psi4.set_options({"orbital_optimizer_package": oopkg,
+                  "second_order_orbital_optimizer_package": soopkg,
+                  "soscf": soscf})
 compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+compare(soopkg.upper(), psi4.core.get_global_option("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE"), f"{soopkg=}")  #TEST
 
 molecule h2o {
   1 2
@@ -18,7 +23,14 @@ set {
   roots_per_irrep [0, 0, 1, 0]
 }
 
-analytic_grad = gradient('eom-ccsd')
+analytic_grad, wfn = gradient('eom-ccsd', return_wfn=True)
+
+_eff = {"internal": "internal", "ooo": "openorbitaloptimizer", "otr": "opentrustregion"}      #TEST
+# The keyword compares above prove the request landed; these prove it survived the           #TEST
+# compatibility guards, so a silent fallback to the internal optimizer fails the test.       #TEST
+compare(_eff[oopkg], wfn.module_role("orbital_optimizer"), "effective 1st-order module")     #TEST
+compare(_eff[soopkg] if soscf else "", wfn.module_role("second_order_orbital_optimizer"),
+        "effective 2nd-order module")                                                        #TEST
 findif_grad = gradient('eom-ccsd', dertype=0)
 
 compare_matrices(analytic_grad, findif_grad, 5, "UHF-EOM-CCSD finite-diff. (3-pt.) vs. analytic gradient to 10^-5") #TEST

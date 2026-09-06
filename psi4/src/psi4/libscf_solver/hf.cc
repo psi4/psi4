@@ -27,6 +27,7 @@
  */
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <fstream>
@@ -98,7 +99,7 @@ void HF::common_init() {
     attempt_number_ = 1;
     reset_occ_ = false;
     sad_ = false;
-    module_ = "scf";
+    set_module("scf");
     frac_performed_ = false;
 
     // This quantity is needed fairly soon
@@ -1548,16 +1549,41 @@ int HF::opentrustregion_scf() {
     // per-macro-iteration stability check off rather than doing the work twice and
     // landing on a different solution than the internal solver would.
     settings.stability = false;
-    settings.conv_tol = options_.get_double("D_CONVERGENCE");
-    if (options_["SOSCF_CONV"].has_changed()) {
-        settings.conv_tol = std::min(settings.conv_tol, options_.get_double("SOSCF_CONV"));
-    }
+    // OpenTrustRegion stops as soon as its own gradient threshold is met -- its convergence
+    // gate ORs that against our conv_check callback -- so handing it D_CONVERGENCE alone
+    // would let it finish while a tighter E_CONVERGENCE went unsatisfied. Users commonly set
+    // only E_CONVERGENCE, and set it tighter than D, so take the stricter of the two and let
+    // the callback (which tests both) decide.
+    // The extra two digits are deliberate: DIIS tends to sail well past the requested
+    // threshold, and code downstream of the SCF (response, analytic Hessians) has come to
+    // rely on that incidental margin. Asking for them costs nothing measurable -- it pays
+    // for itself by avoiding macro iterations that stop short and have to be resumed.
+    settings.conv_tol =
+        0.01 * std::min(options_.get_double("D_CONVERGENCE"), options_.get_double("E_CONVERGENCE"));
     settings.n_macro = options_.get_int("MAXITER");
-    if (options_["SOSCF_MAX_ITER"].has_changed()) {
-        settings.n_micro = options_.get_int("SOSCF_MAX_ITER");
+    // n_micro is deliberately left at OpenTrustRegion's default. SOSCF_MAX_ITER means the
+    // same thing but defaults to 5 against OTR's 50, so mapping it would quietly hobble the
+    // subproblem solve for anyone who had tuned it for the internal second-order code.
+    settings.n_random_trial_vectors = options_.get_int("OTR_N_RANDOM_TRIAL_VECTORS");
+    settings.jacobi_davidson_start = options_.get_int("OTR_JACOBI_DAVIDSON_START");
+    settings.line_search = options_.get_bool("OTR_LINE_SEARCH");
+    settings.start_trust_radius = options_.get_double("OTR_START_TRUST_RADIUS");
+    settings.global_red_factor = options_.get_double("OTR_GLOBAL_RED_FACTOR");
+    settings.local_red_factor = options_.get_double("OTR_LOCAL_RED_FACTOR");
+    settings.seed = options_.get_int("OTR_SEED");
+    {
+        // OTR matches its keywords lowercase
+        std::string solver = options_.get_str("OTR_SUBSYSTEM_SOLVER");
+        std::transform(solver.begin(), solver.end(), solver.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        std::snprintf(settings.subsystem_solver, sizeof(settings.subsystem_solver), "%s", solver.c_str());
     }
-    auto print = options_.get_int("PRINT");
-    settings.verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
+    // SOSCF_PRINT is the existing "show me the microiterations" switch, so honour it here
+    // too: off keeps OpenTrustRegion to its macro-iteration table, on adds the microiteration
+    // detail. OTR_PRINT reaches the levels a bool cannot and wins wherever the user set it.
+    auto print = options_.get_bool("SOSCF_PRINT") ? 2 : 1;
+    if (options_["OTR_PRINT"].has_changed()) print = options_.get_int("OTR_PRINT");
+    settings.verbose = (print <= 0) ? 2 : (print == 1) ? 3 : 4;
     settings.logger = otr_logger;
     settings.conv_check = otr_conv_check_wrapper;
 
