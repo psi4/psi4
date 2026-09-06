@@ -20,12 +20,9 @@ list(APPEND sources
   )
 psi4_add_module(lib psio sources)
 
-# psio_libspill.cc must see Psi4's own psio.h (not the shim's standalone copy of
-# the types), so build it with -DPSIO_USE_PSI4_HEADERS. Keep it out of unity
-# batches: it carries file-local helpers in an anonymous namespace that must not
-# be merged with neighbouring translation units.
+# Keep psio_libspill.cc out of unity batches: it carries file-local helpers in an
+# anonymous namespace that must not be merged with neighbouring translation units.
 set_source_files_properties(psio_libspill.cc PROPERTIES
-  COMPILE_DEFINITIONS PSIO_USE_PSI4_HEADERS
   SKIP_UNITY_BUILD_INCLUSION ON)
 target_link_libraries(psio PUBLIC libspill::spill)
 
