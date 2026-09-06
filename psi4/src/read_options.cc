@@ -2636,7 +2636,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("EP2_MAXITER", 20);
     }
     if (name == "DLPNO" || options.read_globals()) {
-        /*- MODULEDESCRIPTION Performs DLPNO-MP2/CCSD/CCSD(T) computations for RHF reference wavefunctions. -*/
+        /*- MODULEDESCRIPTION Performs DLPNO-MP2, DLPNO-CCSD, DLPNO-CCSD(T), DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ computations for RHF reference wavefunctions. -*/
 
         /*- SUBSECTION General Options -*/
 
@@ -2658,25 +2658,27 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
         /*- Maximum iterations in Foster-Boys localization -*/
         options.add_int("LOCAL_MAXITER", 1000);
-        /*- Energy convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
+        /*- Energy convergence criterion for iterative DLPNO amplitude equations -*/
         options.add_double("E_CONVERGENCE", 1e-6);
-        /*- Residual convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
+        /*- Residual convergence criterion for iterative DLPNO amplitude equations -*/
         options.add_double("R_CONVERGENCE", 1e-6);
         /*- Orbital localizer -*/
         options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
-        /*- Maximum number of iterations to determine the MP2/CCSD/CCSD(T) amplitudes. -*/
+        /*- Maximum number of iterations for solving DLPNO amplitude equations -*/
         options.add_int("DLPNO_MAXITER", 50);
-        /*- Perform automatic memory checks to toggle between core and disk? 
-            (NOT recommended to change this for average user). -*/
+        /*- Automatically select in-core or disk-backed intermediates from the available memory -*/
         options.add_bool("DLPNO_TOGGLE_MEMORY", true);
 
         /*- SUBSECTION Expert Options -*/
 
-        /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
-        options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T)");
+        /*- DLPNO algorithm selected by the driver (not set directly by the user) !expert -*/
+        options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T) CCSDT CCSDT(Q) CCSDTQ");
         /*- Use T0 approximation for DLPNO-CCSD(T)? (not set explicitly), 
         triggered by indicating 'dlpno-ccsd(t0)' rather than 'dlpno-ccsd(t)' !expert -*/
         options.add_bool("T0_APPROXIMATION", false);
+        /*- Use Q0 approximation for DLPNO-CCSDT(Q)? (not set explicitly), 
+        triggered by indicating 'dlpno-ccsdt(q0)' rather than 'dlpno-ccsdt(q)' !expert -*/
+        options.add_bool("Q0_APPROXIMATION", false);
         /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
         options.add_double("T_CUT_DO_IJ", 1e-5);
         /*- DOI threshold for treating PAOs (u,v) as interacting !expert -*/
@@ -2691,7 +2693,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_CPAO", 1e-4);
         /*- Overlap matrix threshold for removing linear dependencies !expert -*/
         options.add_double("S_CUT", 1e-8);
-        /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
+        /*- Fock matrix threshold for treating amplitudes as coupled during local MP2 iterations !expert -*/
         options.add_double("F_CUT", 1e-5);
         /*- AO ERI Schwarz Screening tolerance for building DF ints in DLPNO !expert -*/
         options.add_double("DLPNO_AO_INTS_TOL", 1.0e-10);
@@ -2710,13 +2712,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_TRACE", 0.999);
         /*- MP2 pair energy tolerance for removing PNOs !expert -*/
         options.add_double("T_CUT_ENERGY", 0.997);
-        /*- The tolerance to decide between "Weak Pairs" and "SC-MP2 Pairs" after dipole screening !expert -*/
+        /*- The tolerance to decide between "Weak Pairs" and "SC-MP2 Pairs" after dipole screening.
+            For DLPNO-CCSDT and higher methods, this value is overridden by T_CUT_PAIRS so that
+            no separate weak-pair interval remains. !expert -*/
         options.add_double("T_CUT_PAIRS_MP2", 1e-6);
-        /*- Occupation number threshold for removing PNOs (for preceeding DLPNO-MP2 computation) !expert -*/
+        /*- Occupation number threshold for removing PNOs (for preceding DLPNO-MP2 computation) !expert -*/
         options.add_double("T_CUT_PNO_MP2", 1e-10);
-        /*- Occupation trace sum threshold for removing PNOs (for preceeding DLPNO-MP2 computation) !expert -*/
+        /*- Occupation trace sum threshold for removing PNOs (for preceding DLPNO-MP2 computation) !expert -*/
         options.add_double("T_CUT_TRACE_MP2", 0.9999);
-        /*- Pair energy tolerance for removing PNOs (for preceeding DLPNO-MP2 computation) !expert -*/
+        /*- Pair energy tolerance for removing PNOs (for preceding DLPNO-MP2 computation) !expert -*/
         options.add_double("T_CUT_ENERGY_MP2", 0.999);
 
 
@@ -2726,10 +2730,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_TNO", 1e-9);
         /*- Maximum number of weak pairs in (ij, jk, ik) to consider when forming triplet ijk !expert -*/
         options.add_int("TRIPLES_MAX_WEAK_PAIRS", 1);
-        /*- T_CUT_TNO scaling for strong triplets in the iterative (T) algorithm !expert -*/
+        /*- Legacy multiplier that sets the strong-triplet iterative-(T) cutoff relative to
+            T_CUT_TNO when T_CUT_TNO_STRONG is not explicitly set. Prefer the absolute option
+            for new inputs. !expert -*/
         options.add_double("T_CUT_TNO_STRONG_SCALE", 10.0);
-        /*- T_CUT_TNO scaling for weak triplets in the iterative (T) algorithm !expert -*/
+        /*- Legacy multiplier that sets the weak-triplet iterative-(T) cutoff relative to
+            T_CUT_TNO when T_CUT_TNO_WEAK is not explicitly set. Prefer the absolute option
+            for new inputs. !expert -*/
         options.add_double("T_CUT_TNO_WEAK_SCALE", 100.0);
+        /*- Absolute TNO occupation cutoff for strong triplets in an iterative DLPNO-CCSD(T)
+            calculation. Takes precedence over T_CUT_TNO_STRONG_SCALE when explicitly set and
+            is ignored when full triples are requested. !expert -*/
+        options.add_double("T_CUT_TNO_STRONG", 1.0e-8);
+        /*- Absolute TNO occupation cutoff for weak triplets in an iterative DLPNO-CCSD(T)
+            calculation. Takes precedence over T_CUT_TNO_WEAK_SCALE when explicitly set and
+            is ignored when full triples are requested. !expert -*/
+        options.add_double("T_CUT_TNO_WEAK", 1.0e-7);
         /*- Occupation number threshold used in the prescreening step !expert -*/
         options.add_double("T_CUT_TNO_PRE", 1e-7);
         /*- Local density fitting tolerance for the prescreening portion of the (T) algorithm !expert -*/
@@ -2742,12 +2758,69 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_MKN_TRIPLES", 1e-2);
         /*- LMO/PAO threshold for the (T) algorithm !expert -*/
         options.add_double("T_CUT_DO_TRIPLES", 1e-2);
-        /*- Fock matrix threshold for treating ampltudes as coupled during local (T) iterations !expert -*/
+        /*- Fock matrix threshold for treating amplitudes as coupled during local (T) iterations !expert -*/
         options.add_double("F_CUT_T", 1e-3);
-        /*- Energy difference in which to stop considering triples in iterative (T) !expert -*/
+        /*- Energy-change threshold for removing converged triplets from iterative (T) updates !expert -*/
         options.add_double("T_CUT_ITER", 1e-5);
         /*- Minimum number of TNOs required in each triplet !expert -*/
         options.add_int("MIN_TNOS", 9);
+
+        /*- SUBSECTION DLPNO Full-Triples (CCSDT) Options -*/
+
+        /*- Occupation number threshold for removing TNOs with full triples !expert -*/
+        options.add_double("T_CUT_TNO_FULL", 1.0e-7);
+        /*- Number of T1/T2 microiteration updates per full-triples iteration
+            (increase this value for systems with strong multireference character) !expert -*/
+        options.add_int("DLPNO_TRIPLES_MICROITERATIONS", 3);
+        /*- Damping factor on triples amplitude updates in CCSDT iterations !expert -*/
+        options.add_double("TRIPLES_DAMPING_RATIO", 0.0);
+
+        /*- SUBSECTION DLPNO-CCSDT(Q) Specific Options -*/
+
+        /*- Occupation number threshold for removing QNOs !expert -*/
+        options.add_double("T_CUT_QNO", 3.33e-7);
+        /*- How much to scale T_CUT_QNO by for quadruplets containing two of the same orbitals (iijk) !expert -*/
+        options.add_double("T_CUT_QNO_DIAG_SCALE", 1.0);
+        /*- Absolute QNO occupation cutoff for strong quadruplets in an iterative
+            DLPNO-CCSDT(Q) calculation. Ignored when full quadruples are requested. !expert -*/
+        options.add_double("T_CUT_QNO_STRONG", 3.33e-6);
+        /*- Absolute QNO occupation cutoff for weak quadruplets in an iterative
+            DLPNO-CCSDT(Q) calculation. Ignored when full quadruples are requested. !expert -*/
+        options.add_double("T_CUT_QNO_WEAK", 3.33e-6);
+        /*- Occupation number threshold used in the quadruples prescreening step !expert -*/
+        options.add_double("T_CUT_QNO_PRE", 3.33e-6);
+        /*- Local density fitting tolerance for the prescreening portion of the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_MKN_QUADS_PRE", 1.0e-1);
+        /*- LMO/PAO threshold for the prescreening portion of the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_DO_QUADS_PRE", 2.0e-2);
+        /*- Quadruples energy threshold for a quadruplet (ijkl) to not be further considered !expert -*/
+        options.add_double("T_CUT_QUADS_WEAK", 1.0e-8);
+        /*- Local density fitting tolerance for the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_MKN_QUADS", 1.0e-2);
+        /*- LMO/PAO threshold for the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_DO_QUADS", 1.0e-2);
+        /*- Fock matrix threshold for treating amplitudes as coupled during local (Q) iterations !expert -*/
+        options.add_double("F_CUT_Q", 1.0e-3);
+        /*- Energy-change threshold for removing converged quadruplets from iterative (Q) updates !expert -*/
+        options.add_double("T_CUT_ITER_Q", 1.0e-4);
+        /*- Minimum number of QNOs required in each quadruplet !expert -*/
+        options.add_int("MIN_QNOS", 4);
+
+        /*- SUBSECTION DLPNO Full-Quadruples (CCSDTQ) Options -*/
+
+        /*- Occupation number threshold for removing QNOs with full quadruples !expert -*/
+        options.add_double("T_CUT_QNO_FULL", 3.33e-6);
+        /*- Occupation number threshold for extended pair natural orbitals (XPNOs) !expert -*/
+        options.add_double("T_CUT_XPNO", 1.0e-5);
+        /*- Occupation number threshold scaling to apply to XPNOs for diagonal pairs ii !expert -*/
+        options.add_double("T_CUT_XPNO_DIAG_SCALE", 1.0);
+        /*- Occupation trace sum threshold for removing XPNOs !expert -*/
+        options.add_double("T_CUT_TRACE_XPNO", 0.0);
+        /*- Number of T1/T2 microiteration updates per full-quadruples iteration
+            (increase this value for systems with strong multireference character) !expert -*/
+        options.add_int("DLPNO_QUADS_MICROITERATIONS", 3);
+        /*- Damping factor applied to quadruples-amplitude updates in CCSDTQ iterations !expert -*/
+        options.add_double("QUADRUPLES_DAMPING_RATIO", 0.0);
 
         /*- SUBSECTION Memory Control Options -*/
 
@@ -2761,6 +2834,18 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("WRITE_TRIPLES_INTERMEDIATES", false);
         /*- Write triples amplitudes to disk? !expert -*/
         options.add_bool("WRITE_TRIPLES_AMPLITUDES", false);
+        /*- Write iterative DLPNO-(Q) amplitudes, source terms, and reusable energy
+            intermediates to disk? !expert -*/
+        options.add_bool("WRITE_QUADRUPLES_INTERMEDIATES", false);
+        /*- Write expensive DLPNO-CCSDT TNO integrals to disk? !expert -*/
+        options.add_bool("DLPNO_CCSDT_DISK_INTS", true);
+        /*- Write expensive DLPNO-CCSDTQ QNO integrals to disk? May be enabled automatically
+            by ``DLPNO_TOGGLE_MEMORY`` when the estimated peak is too large. !expert -*/
+        options.add_bool("DLPNO_CCSDTQ_DISK_INTS", true);
+        /*- Include T4 amplitudes in DIIS extrapolation for DLPNO-CCSDTQ? T3 and T4 data are
+            stored as bounded chunks to avoid the Psi4 Vector dimension limit. May be disabled
+            automatically by ``DLPNO_TOGGLE_MEMORY`` after disk-backed integrals are selected. !expert -*/
+        options.add_bool("EXTRAPOLATE_T4", true);
 
         /*- SUBSECTION DOI Grid Options -*/
 

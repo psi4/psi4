@@ -466,12 +466,40 @@ def return_energy_components():
                              'hf': 'HF TOTAL ENERGY',
                       'dlpno-mp2': 'MP2 TOTAL ENERGY',
                      'dlpno-ccsd': 'CCSD TOTAL ENERGY',
-                 'dlpno-ccsd(t0)': 'CCSD(T) TOTAL ENERGY'}
+                 'dlpno-ccsd(t0)': 'CCSD(T0) TOTAL ENERGY'}
     VARH['dlpno-ccsd(t)'] = {
                              'hf': 'HF TOTAL ENERGY',
                       'dlpno-mp2': 'MP2 TOTAL ENERGY',
                      'dlpno-ccsd': 'CCSD TOTAL ENERGY',
                   'dlpno-ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
+    VARH['dlpno-ccsdt'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                      'dlpno-mp2': 'MP2 TOTAL ENERGY',
+                     'dlpno-ccsd': 'CCSD TOTAL ENERGY',
+                  'dlpno-ccsd(t)': 'CCSD(T) TOTAL ENERGY',
+                    'dlpno-ccsdt': 'CCSDT TOTAL ENERGY'}
+    VARH['dlpno-ccsdt(q0)'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                      'dlpno-mp2': 'MP2 TOTAL ENERGY',
+                     'dlpno-ccsd': 'CCSD TOTAL ENERGY',
+                  'dlpno-ccsd(t)': 'CCSD(T) TOTAL ENERGY',
+                    'dlpno-ccsdt': 'CCSDT TOTAL ENERGY',
+                'dlpno-ccsdt(q0)': 'CCSDT(Q0) TOTAL ENERGY'}
+    VARH['dlpno-ccsdt(q)'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                      'dlpno-mp2': 'MP2 TOTAL ENERGY',
+                     'dlpno-ccsd': 'CCSD TOTAL ENERGY',
+                  'dlpno-ccsd(t)': 'CCSD(T) TOTAL ENERGY',
+                    'dlpno-ccsdt': 'CCSDT TOTAL ENERGY',
+                 'dlpno-ccsdt(q)': 'CCSDT(Q) TOTAL ENERGY'}
+    VARH['dlpno-ccsdtq'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                      'dlpno-mp2': 'MP2 TOTAL ENERGY',
+                     'dlpno-ccsd': 'CCSD TOTAL ENERGY',
+                  'dlpno-ccsd(t)': 'CCSD(T) TOTAL ENERGY',
+                    'dlpno-ccsdt': 'CCSDT TOTAL ENERGY',
+                 'dlpno-ccsdt(q)': 'CCSDT(Q) TOTAL ENERGY',
+                   'dlpno-ccsdtq': 'CCSDTQ TOTAL ENERGY'}
     VARH['qcisd(t)'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
