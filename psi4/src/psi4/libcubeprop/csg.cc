@@ -36,7 +36,7 @@
 #include "psi4/psi4-dec.h"
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libfilesystem/path.h"
+#include <filesystem>
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
 #include "psi4/libmints/basisset.h"
@@ -259,7 +259,7 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name, const 
     ss << filepath_ << "/" << name << ".cube";
 
     // Is filepath a valid directory?
-    if (filesystem::path(filepath_).make_absolute().is_directory() == false) {
+    if (std::filesystem::is_directory(std::filesystem::path(filepath_)) == false) {
         throw std::runtime_error("Filepath \"" + filepath_ + "\" is not valid.  Please create this directory.\n");
     }
 
