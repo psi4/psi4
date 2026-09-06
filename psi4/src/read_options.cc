@@ -298,8 +298,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Use DF approximation when computing LS-THC factorization? -*/
     options.add_bool("LS_THC_DF", true);
+    /*- Auxiliary basis set for THC density fitting computations.
+        :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
+    options.add_str("DF_BASIS_THC", "");
     /*- Number of spherical points in LS-THC grid -*/
-    options.add_int("LS_THC_SPHERICAL_POINTS", 50);
+    options.add_int("LS_THC_SPHERICAL_POINTS", 26);
     /*- Number of radial points in LS-THC grid -*/
     options.add_int("LS_THC_RADIAL_POINTS", 10);
     /*- Screening criteria for basis function values on LS-THC grids !expert -*/
@@ -2651,7 +2654,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_CC", "");
         /*- General convergence criteria for DLPNO methods -*/
-        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT VERY_TIGHT");
+        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT VERY_TIGHT GLACIER");
         /*- Convergence criteria for the Foster-Boys orbital localization -*/
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
         /*- Maximum iterations in Foster-Boys localization -*/
@@ -2661,17 +2664,43 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Residual convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
         options.add_double("R_CONVERGENCE", 1e-6);
         /*- Orbital localizer -*/
-        options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
+        options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY ER");
         /*- Maximum number of iterations to determine the MP2/CCSD/CCSD(T) amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
         /*- Perform automatic memory checks to toggle between core and disk? 
             (NOT recommended to change this for average user). -*/
         options.add_bool("DLPNO_TOGGLE_MEMORY", true);
+        /*- How much to damp T1 updates in DLPNO-CCSD -*/
+        options.add_double("DLPNO_T1_DAMPING", 0.0);
+        /*- How much to damp T2 updates in DLPNO-CCSD -*/
+        options.add_double("DLPNO_T2_DAMPING", 0.0);
+        /*- How much to damp the lambda updates, recommend 0.3 for hard to converge cases !expert -*/
+        options.add_double("DLPNO_LAMBDA_DAMPING", 0.0);
+        /*- Use Brueckner orbitals? -*/
+        options.add_bool("DLPNO_BRUECKNER_ORBS", false);
+        /*- Scaling factor for orbital rotation for DLPNO Brueckner orbitals
+            Make it smaller for systems with a large T1 (like 0.6-0.9) -*/
+        options.add_double("DLPNO_BRUECKNER_ALPHA", 1.0);
+        /*- How many iterations to run DLPNO-CCSD before performing a Brueckner rotation !expert -*/
+        options.add_int("DLPNO_BRUECKNER_N_MICRO_ITER", 10);
+        /*- When to start gradient mixing for Brueckner orbital optimizations -*/
+        options.add_double("BRUECKNER_GMIX_START", 1.0e-4);
+        /*- When to end start applying DIIS for Brueckner optimizatons 
+            (turning on DIIS after a point (not initially) is helpful for stability) -*/
+        options.add_int("BRUECKNER_DIIS_START", 5);
+        /*- How long to delay the start of extrapolation after error vectors are set -*/
+        options.add_int("BRUECKNER_DIIS_DELAY", 2);
+        /*- How many DIIS vectors to use for Brueckner rotations -*/
+        options.add_int("BRUECKNER_DIIS_MAX_VECS", 3);
 
         /*- SUBSECTION Expert Options -*/
 
         /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
         options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T)");
+        /*- Solve the DLPNO-CCSD Lambda equations for an asymmetric-triples result. !expert -*/
+        options.add_bool("DLPNO_DO_LAMBDA", false);
+        /*- Form the correlated DLPNO-CCSD AO OPDM for the properties driver. !expert -*/
+        options.add_bool("DLPNO_DO_ONEPDM", false);
         /*- Use T0 approximation for DLPNO-CCSD(T)? (not set explicitly), 
         triggered by indicating 'dlpno-ccsd(t0)' rather than 'dlpno-ccsd(t)' !expert -*/
         options.add_bool("T0_APPROXIMATION", false);

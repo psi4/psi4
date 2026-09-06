@@ -537,6 +537,8 @@ PSI Variables by Alpha
 
 .. psivar:: CCSD TOTAL ENERGY
    CCSD CORRELATION ENERGY
+   BCCD TOTAL ENERGY
+   BCCD CORRELATION ENERGY
    CCSDT TOTAL ENERGY
    CCSDT CORRELATION ENERGY
    CCSDTQ TOTAL ENERGY
@@ -545,7 +547,7 @@ PSI Variables by Alpha
    CCn CORRELATION ENERGY
 
    The total electronic energy [E_h] and correlation energy component [E_h]
-   for the requested full coupled-cluster (CCSD, CCSDT, up to CC\ *n*)
+   for the requested full coupled-cluster (CCSD, BCCD, CCSDT, up to CC\ *n*)
    level of theory.
 
 .. psivar:: CCSD(T) TOTAL ENERGY
@@ -554,13 +556,20 @@ PSI Variables by Alpha
    CCSD(AT) CORRELATION ENERGY
    A-CCSD(T) TOTAL ENERGY
    A-CCSD(T) CORRELATION ENERGY
+   BCCD(T) TOTAL ENERGY
+   BCCD(T) CORRELATION ENERGY
+   BCCD(AT) TOTAL ENERGY
+   BCCD(AT) CORRELATION ENERGY
+   A-BCCD(T) TOTAL ENERGY
+   A-BCCD(T) CORRELATION ENERGY
    CCSDT(Q) TOTAL ENERGY
    CCSDT(Q) CORRELATION ENERGY
    CC(n-1)(n) TOTAL ENERGY
    CC(n-1)(n) CORRELATION ENERGY
 
    The total electronic energy [E_h] and correlation energy component [E_h]
-   for the perturbatively corrected coupled-cluster (CCSD(T), A-CCSD(T) = CCSD(AT), CCSDT(Q),
+   for the perturbatively corrected coupled-cluster (CCSD(T), A-CCSD(T) = CCSD(AT),
+   BCCD(T), A-BCCD(T), CCSDT(Q),
    up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
 
 .. psivar:: CCSDT-1a TOTAL ENERGY
@@ -909,8 +918,11 @@ PSI Variables by Alpha
 
 .. psivar:: DLPNO SEMICANONICAL (T0) ENERGY
    DLPNO SCREENED TRIPLETS ENERGY
+   DLPNO ASYMMETRIC SCREENED TRIPLETS ENERGY
+   (T) CORRECTION ENERGY
+   A-(T) CORRECTION ENERGY
 
-   Various components to the overall DLPNO-(T) correlation energy
+   Various components of the ordinary or asymmetric DLPNO-(T) correlation energy.
 
 .. psivar:: DOUBLE-HYBRID CORRECTION ENERGY
 
@@ -2094,4 +2106,3 @@ PSI Variables by Alpha
 
    The interatomic contributions to the dispersion correction [E_h].
    Sums to the dispersion energy.
-

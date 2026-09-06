@@ -31,11 +31,14 @@
 #include <algorithm>
 
 #include "psi4/libqt/qt.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/thc_eri.h"
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
@@ -547,6 +550,201 @@ void PMLocalizer::localize() {
     }
 
     U_->transpose_this();
+}
+
+ERLocalizer::ERLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<Matrix> C) : Localizer(primary, C) {
+    auxiliary_ = auxiliary;
+    common_init();
+}
+ERLocalizer::~ERLocalizer() {}
+void ERLocalizer::common_init() {}
+void ERLocalizer::print_header() const {
+    outfile->Printf("  ==> Edmiston-Ruedenberg (ER) Localizer <==\n");
+    outfile->Printf("    By: Andy Jiang and Nate Kitzmiller    \n\n");
+    outfile->Printf("    Convergence = %11.3E\n", convergence_);
+    outfile->Printf("    Maxiter     = %11d\n", maxiter_);
+    outfile->Printf("\n");
+}
+void ERLocalizer::localize() {
+    print_header();
+
+    // => Sizing <= //
+
+    int nso = C_->rowspi()[0];
+    int nmo = C_->colspi()[0];
+
+    // => Compute Tensor Hypercontraction form of Two-Electron Integrals (ERIs) <= //
+
+    auto thc_computer = std::make_shared<LS_THC_Computer>(primary_->molecule(), primary_, auxiliary_, Process::environment.options);
+    thc_computer->compute_thc_factorization();
+
+    auto Z_IJ = thc_computer->get_Z(); // Z^{IJ}
+    auto xI = thc_computer->get_x1();  // x^{I}_{\mu}
+    auto x_mo = linalg::doublet(xI, C_, false, false); // x^{I}_{p} = x^{I}_{\mu} C_{\mu p}
+
+    size_t nthc = x_mo->rowspi()[0];
+
+    // Compute two electron integrals of the form (pp|pq) from THC factors
+
+    // (pp|pq) = \sum_{I,J} x^{I}_{p} x^{I}_{p} Z^{IJ} x^{J}_{p} x^{J}_{q}
+    auto pppq = std::make_shared<Matrix>("(pp|pq)", nmo, nmo);
+
+    // Intermediates for computing (pp|pq)
+
+    // S^{I}_{p} = x^{I}_{p} x^{I}_{p} => O(N^{2})
+    auto SI_p = std::make_shared<Matrix>("SI_p", nthc, nmo);
+
+#pragma omp parallel for collapse(2)
+    for (size_t I = 0; I < nthc; ++I) {
+        for (size_t p = 0; p < nmo; ++p) {
+            double val = x_mo->get(I, p);
+            SI_p->set(I, p, val * val);
+        } // end p
+    } // end I
+
+    // A^{J}_{p} = Z^{JI} S^{I}_{p} => O(N^{3})
+    auto AJ_p = linalg::doublet(Z_IJ, SI_p, false, false);
+
+    // (pp|pq) = \sum_{J} A^{J}_{p} x^{J}_{p} x^{J}_{q} => O(N^{3})
+#pragma omp parallel for collapse(2)
+    for (size_t p = 0; p < nmo; ++p) {
+        for (size_t q = 0; q < nmo; ++q) {
+            double val = 0.0;
+            for (size_t J = 0; J < nthc; ++J) {
+                val += AJ_p->get(J, p) * x_mo->get(J, p) * x_mo->get(J, q);
+            } // end J
+            pppq->set(p, q, val);
+        } // end q
+    } // end p
+
+    // => Targets <= //
+
+    L_ = std::make_shared<Matrix>("L", nso, nmo);
+    U_ = std::make_shared<Matrix>("U", nmo, nmo);
+    L_->copy(C_);
+    U_->identity();
+    converged_ = false;
+
+    if (nmo < 1) return;
+
+    // => (Initialize) Metric and Error Vector <= //
+
+    double metric = 0.0;
+    SharedMatrix delta_pppp = std::make_shared<Matrix>("delta_pppp", nmo, 1);
+    for (size_t p = 0; p < nmo; p++) {
+        delta_pppp->set(p, 0, pppq->get(p, p));
+        metric += pppq->get(p, p);
+    }
+    double old_metric = metric;
+
+    // => Iteration Print <= //
+
+    outfile->Printf("    Iteration %24s %14s\n", "Metric", "Residual");
+    outfile->Printf("    @ER   %4d %24.16E %14s\n", 0, metric, "-");
+
+    // => DIIS Setup <= //
+    
+    size_t max_vecs = Process::environment.options.get_int("DIIS_MAX_VECS");
+    DIISManager diis(max_vecs, "ER DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+
+    // Total rotation angle
+    auto Kappa = std::make_shared<Matrix>("Kappa", nmo, nmo);
+    Kappa->zero();
+
+    // ==> Master Loop <== //
+    
+    for (int iter = 1; iter <= maxiter_; iter++) {
+        // > Compute gradient for rotations (gradient ascent) < //
+
+        // Source: https://gqcg-res.github.io/knowdes/edmiston-ruedenberg-localization.html
+        auto dKappa = pppq->transpose();
+        dKappa->subtract(pppq);
+        dKappa->scale(-4.0);
+
+        auto Kappa_old = Kappa->clone();
+        Kappa->add(dKappa);
+
+        // DIIS extrapolation (of dKappa, past iteration 100)
+        if (iter > 100) {
+            diis.set_error_vector_size(dKappa.get());
+            diis.set_vector_size(Kappa.get());
+
+            diis.add_entry(dKappa.get(), Kappa.get());
+            diis.extrapolate(Kappa.get());
+
+            // Compute dKappa from Kappa - Kappa_old
+            dKappa = Kappa->clone();
+            dKappa->subtract(Kappa_old);
+        }
+
+        // Directly compute unitary transformation matrix
+        auto dU = dKappa->clone();
+        dU->scale(-0.25); // negative for gradient "ascent"
+        dU->expm();
+
+        // Form new U and L matrices
+        U_ = linalg::doublet(U_, dU, false, false);
+        L_ = linalg::doublet(L_, dU, false, false);
+
+        // Recompute two electron integrals from rotated orbitals
+
+        // Recomputation of x_mo
+        x_mo = linalg::doublet(x_mo, dU, false, false);
+
+        // Recomputation of S^{I}_{p}
+#pragma omp parallel for collapse(2)
+        for (size_t I = 0; I < nthc; ++I) {
+            for (size_t p = 0; p < nmo; ++p) {
+                double val = x_mo->get(I, p);
+                SI_p->set(I, p, val * val);
+            } // end p
+        } // end I
+
+        // Recomputation of A^{J}_{p}
+        AJ_p = linalg::doublet(Z_IJ, SI_p, false, false);
+
+        // Recomputation of (pp|pq)
+#pragma omp parallel for collapse(2)
+        for (size_t p = 0; p < nmo; ++p) {
+            for (size_t q = 0; q < nmo; ++q) {
+                double val = 0.0;
+                for (size_t J = 0; J < nthc; ++J) {
+                    val += AJ_p->get(J, p) * x_mo->get(J, p) * x_mo->get(J, q);
+                } // end J
+                pppq->set(p, q, val);
+            } // end q
+        } // end p
+
+        // => Metric and Convergence Checks <= //
+        
+        metric = 0.0;
+        for (size_t p = 0; p < nmo; p++) {
+            delta_pppp->set(p, 0, pppq->get(p, p) - delta_pppp->get(p, 0));
+            metric += pppq->get(p, p);
+        }
+
+        // Check for convergence
+        double conv = std::fabs(metric - old_metric) / std::fabs(old_metric);
+        old_metric = metric;
+
+        // => Iteration Print <= //
+        
+        outfile->Printf("    @ER   %4d %24.16E %14.6E\n", iter, metric, conv);
+
+        // => Convergence Check <= //
+
+        if (conv < convergence_) {
+            converged_ = true;
+            break;
+        }
+    } // end iter
+
+    outfile->Printf("\n");
+    if (converged_) {
+        outfile->Printf("    ER   Localizer converged.\n\n");
+    } else {
+        outfile->Printf("    ER   Localizer failed.\n\n");
+    }
 }
 
 }  // Namespace psi

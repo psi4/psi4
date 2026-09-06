@@ -1,0 +1,69 @@
+#! Compare DF-CCSD and zero-truncation DLPNO-CCSD dipole and quadrupole
+#! moments for H2O/cc-pVDZ using the same auxiliary bases.
+
+memory 2 GB
+
+molecule h2o {
+0 1
+O
+H 1 0.958
+H 1 0.958 2 104.4776
+symmetry c1
+}
+
+set {
+    basis cc-pvdz
+    reference rhf
+    freeze_core true
+    guess sad
+    scf_type df
+    cc_type df
+    df_basis_scf cc-pvdz-jkfit
+    # Use the auxiliary basis paired with the orbital basis. An oversized
+    # cc-pV5Z-RI metric is unnecessarily ill-conditioned for cc-pVDZ and is
+    # not the same numerical limit exercised by the existing DLPNO tests.
+    df_basis_cc cc-pvdz-ri
+    e_convergence 1.0e-9
+    r_convergence 1.0e-8
+
+    # Retain the complete local pair and PNO spaces and disable the remaining
+    # coefficient, DOI, Fock-coupling, and AO-integral screens. Setting only
+    # the headline pair/PNO thresholds to zero does not by itself define the
+    # canonical DF limit.
+    t_cut_pno 0.0
+    t_cut_pno_mp2 0.0
+    t_cut_do 0.0
+    t_cut_do_pre 0.0
+    t_cut_do_ij 0.0
+    t_cut_do_uv 0.0
+    t_cut_mkn 0.0
+    t_cut_pairs 0.0
+    t_cut_pairs_mp2 0.0
+    t_cut_pre 0.0
+    t_cut_clmo 0.0
+    t_cut_cpao 0.0
+    f_cut 0.0
+    dlpno_ao_ints_tol 1.0e-14
+    dlpno_toggle_memory false
+}
+
+print("   Testing DF-CCSD dipole and quadrupole moments ...")
+e_df_ccsd, wfn_df_ccsd = properties(
+    "ccsd", properties=["dipole", "quadrupole"], return_wfn=True)
+df_ccsd_dipole = wfn_df_ccsd.array_variable("CC DIPOLE").to_array()
+df_ccsd_quadrupole = wfn_df_ccsd.array_variable("CC QUADRUPOLE").to_array()
+clean()
+
+print("   Testing DLPNO-CCSD dipole and quadrupole moments ...")
+e_dlpno_ccsd, wfn_dlpno_ccsd = properties(
+    "dlpno-ccsd", properties=["dipole", "quadrupole"], return_wfn=True)
+dlpno_ccsd_dipole = wfn_dlpno_ccsd.array_variable("DLPNO-CCSD DIPOLE").to_array()
+dlpno_ccsd_quadrupole = wfn_dlpno_ccsd.array_variable("DLPNO-CCSD QUADRUPOLE").to_array()
+
+compare_values(e_df_ccsd, e_dlpno_ccsd, 1.0e-6, "DF-CCSD vs. DLPNO-CCSD energy")                 #TEST
+compare_arrays(df_ccsd_dipole, dlpno_ccsd_dipole, 1.0e-5,
+               "DF-CCSD vs. DLPNO-CCSD dipole")                                               #TEST
+compare_arrays(df_ccsd_quadrupole, dlpno_ccsd_quadrupole, 1.0e-4,
+               "DF-CCSD vs. DLPNO-CCSD quadrupole")                                           #TEST
+
+clean()

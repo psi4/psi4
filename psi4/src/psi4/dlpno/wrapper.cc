@@ -45,7 +45,8 @@ SharedWavefunction dlpno(SharedWavefunction ref_wfn, Options& options) {
         } else if (options.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
             dlpno = std::make_shared<DLPNOCCSD_T>(ref_wfn, options);
         } else {
-            throw PSIEXCEPTION("Requested DLPNO method is not yet available!");
+            throw PSIEXCEPTION("Requested DLPNO method is not available: " +
+                               options.get_str("DLPNO_ALGORITHM"));
         }
     } else {
         throw PSIEXCEPTION("DLPNO requires closed-shell reference"); 

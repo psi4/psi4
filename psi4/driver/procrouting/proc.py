@@ -4523,6 +4523,7 @@ def run_dlpnomp2(name, **kwargs):
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
         ['SCF_TYPE'],
+        ["DLPNO", "DLPNO_LOCAL_ORBITALS"],
         ["DLPNO", "DLPNO_ALGORITHM"])
 
     # Alter default algorithm (if not set by user)
@@ -4554,8 +4555,7 @@ def run_dlpnomp2(name, **kwargs):
                               """reference wavefunction must be C1.\n""")
 
     if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-MP2 is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        raise ValidationError(f"DLPNO-MP2 is not available for {core.get_global_option('REFERENCE')} references.")
 
     core.tstart()
     core.print_out('\n')
@@ -4566,6 +4566,14 @@ def run_dlpnomp2(name, **kwargs):
                                     core.get_option("DLPNO", "DF_BASIS_MP2"),
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
+
+    # If Edmiston-Ruedenberg (ER) Orbitals are selected for LMOs, form
+    # DF orbitals for THC-fitting of ERIs
+    if core.get_option("DLPNO", "DLPNO_LOCAL_ORBITALS") == "ER":
+        aux_basis_thc = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_THC",
+                                        core.get_global_option("DF_BASIS_THC"),
+                                        "JKFIT", core.get_global_option('BASIS'))
+        ref_wfn.set_basisset("DF_BASIS_THC", aux_basis_thc)
 
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "MP2")
 
@@ -4596,7 +4604,17 @@ def run_dlpnoccsd(name, **kwargs):
     optstash = p4util.OptionsState(
         ["DLPNO", 'DF_BASIS_CC'],
         ['SCF_TYPE'],
-        ["DLPNO", "DLPNO_ALGORITHM"])
+        ["DLPNO", "DLPNO_LOCAL_ORBITALS"],
+        ["DLPNO", "DLPNO_ALGORITHM"],
+        ["DLPNO", "DLPNO_BRUECKNER_ORBS"],
+        ["DLPNO", "DLPNO_DO_LAMBDA"],
+        ["DLPNO", "DLPNO_DO_ONEPDM"])
+
+    if name not in {"dlpno-ccsd", "dlpno-bccd"}:
+        raise ValidationError(f"run_dlpnoccsd: method '{name}' is not recognized")
+
+    do_brueckner = name == "dlpno-bccd"
+    do_onepdm = kwargs.pop("_dlpno_do_onepdm", False)
 
     # Alter default algorithm (if not set by user)
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4622,12 +4640,11 @@ def run_dlpnoccsd(name, **kwargs):
                               """reference wavefunction must be C1.\n""")
     
     if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSD is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        raise ValidationError(f"DLPNO-CCSD is not available for {core.get_global_option('REFERENCE')} references.")
     
     core.tstart()
     core.print_out('\n')
-    p4util.banner('DLPNO-CCSD')
+    p4util.banner('DLPNO-BCCD' if do_brueckner else 'DLPNO-CCSD')
     core.print_out('\n')
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
@@ -4635,13 +4652,26 @@ def run_dlpnoccsd(name, **kwargs):
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
+    # If Edmiston-Ruedenberg (ER) Orbitals are selected for LMOs, form
+    # DF orbitals for THC-fitting of ERIs
+    if core.get_option("DLPNO", "DLPNO_LOCAL_ORBITALS") == "ER":
+        aux_basis_thc = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_THC",
+                                        core.get_global_option("DF_BASIS_THC"),
+                                        "JKFIT", core.get_global_option('BASIS'))
+        ref_wfn.set_basisset("DF_BASIS_THC", aux_basis_thc)
+
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD")
+    core.set_local_option("DLPNO", "DLPNO_BRUECKNER_ORBS", do_brueckner)
+    core.set_local_option("DLPNO", "DLPNO_DO_LAMBDA", do_onepdm)
+    core.set_local_option("DLPNO", "DLPNO_DO_ONEPDM", do_onepdm)
 
     dlpnoccsd_wfn = core.dlpno(ref_wfn)
     dlpnoccsd_wfn.compute_energy()
 
-    dlpnoccsd_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_wfn.variable('CCSD TOTAL ENERGY'))
-    dlpnoccsd_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsd_wfn.variable('CCSD CORRELATION ENERGY'))
+    energy_label = 'BCCD' if do_brueckner else 'CCSD'
+    dlpnoccsd_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_wfn.variable(f'{energy_label} TOTAL ENERGY'))
+    dlpnoccsd_wfn.set_variable(
+        'CURRENT CORRELATION ENERGY', dlpnoccsd_wfn.variable(f'{energy_label} CORRELATION ENERGY'))
 
     # Shove variables into global space
     for k, v in dlpnoccsd_wfn.variables().items():
@@ -4651,6 +4681,18 @@ def run_dlpnoccsd(name, **kwargs):
     core.tstop()
     return dlpnoccsd_wfn
 
+_DLPNO_TRIPLES_METHOD_SETTINGS = {
+    # method: (Brueckner orbitals, Lambda equations, semicanonical T0)
+    "dlpno-ccsd(t0)": (False, False, True),
+    "dlpno-ccsd(t)": (False, False, False),
+    "dlpno-ccsd(t)_l": (False, True, False),
+    "dlpno-ccsd(at)": (False, True, False),
+    "dlpno-bccd(t)": (True, False, False),
+    "dlpno-bccd(t)_l": (True, True, False),
+    "dlpno-bccd(at)": (True, True, False),
+}
+
+
 def run_dlpnoccsd_t(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a DLPNO-CCSD(T0)/(T) calculation.
@@ -4659,8 +4701,16 @@ def run_dlpnoccsd_t(name, **kwargs):
     optstash = p4util.OptionsState(
         ["DLPNO", 'DF_BASIS_CC'],
         ['SCF_TYPE'],
+        ["DLPNO", "DLPNO_LOCAL_ORBITALS"],
         ["DLPNO", "DLPNO_ALGORITHM"],
-        ["DLPNO", "T0_APPROXIMATION"])
+        ["DLPNO", "T0_APPROXIMATION"],
+        ["DLPNO", "DLPNO_BRUECKNER_ORBS"],
+        ["DLPNO", "DLPNO_DO_LAMBDA"],
+        ["DLPNO", "DLPNO_DO_ONEPDM"])
+
+    if name not in _DLPNO_TRIPLES_METHOD_SETTINGS:
+        raise ValidationError(f"run_dlpnoccsd_t: method '{name}' is not recognized")
+    do_brueckner, do_lambda, do_t0 = _DLPNO_TRIPLES_METHOD_SETTINGS[name]
 
     # Alter default algorithm (if not set by user)
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4686,12 +4736,12 @@ def run_dlpnoccsd_t(name, **kwargs):
                               """reference wavefunction must be C1.\n""")
     
     if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("DLPNO-CCSD(T) is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        raise ValidationError(f"DLPNO-CCSD(T) is not available for {core.get_global_option('REFERENCE')} references.")
     
     core.tstart()
     core.print_out('\n')
-    p4util.banner('DLPNO-CCSD(T)')
+    method_banner = name.upper().replace("(AT)", "(T)_L")
+    p4util.banner(method_banner)
     core.print_out('\n')
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
@@ -4699,17 +4749,30 @@ def run_dlpnoccsd_t(name, **kwargs):
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
+    # If Edmiston-Ruedenberg (ER) Orbitals are selected for LMOs, form
+    # DF orbitals for THC-fitting of ERIs
+    if core.get_option("DLPNO", "DLPNO_LOCAL_ORBITALS") == "ER":
+        aux_basis_thc = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_THC",
+                                        core.get_global_option("DF_BASIS_THC"),
+                                        "JKFIT", core.get_global_option('BASIS'))
+        ref_wfn.set_basisset("DF_BASIS_THC", aux_basis_thc)
+
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD(T)")
-    if name == "dlpno-ccsd(t0)":
-        core.set_local_option("DLPNO", "T0_APPROXIMATION", True)
-    else:
-        core.set_local_option("DLPNO", "T0_APPROXIMATION", False)
+    core.set_local_option("DLPNO", "T0_APPROXIMATION", do_t0)
+    core.set_local_option("DLPNO", "DLPNO_BRUECKNER_ORBS", do_brueckner)
+    core.set_local_option("DLPNO", "DLPNO_DO_LAMBDA", do_lambda)
+    core.set_local_option("DLPNO", "DLPNO_DO_ONEPDM", False)
 
     dlpnoccsd_t_wfn = core.dlpno(ref_wfn)
     dlpnoccsd_t_wfn.compute_energy()
 
-    dlpnoccsd_t_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_t_wfn.variable('CCSD(T) TOTAL ENERGY'))
-    dlpnoccsd_t_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsd_t_wfn.variable('CCSD(T) CORRELATION ENERGY'))
+    if do_lambda:
+        energy_label = 'A-BCCD(T)' if do_brueckner else 'A-CCSD(T)'
+    else:
+        energy_label = 'BCCD(T)' if do_brueckner else 'CCSD(T)'
+    dlpnoccsd_t_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_t_wfn.variable(f'{energy_label} TOTAL ENERGY'))
+    dlpnoccsd_t_wfn.set_variable(
+        'CURRENT CORRELATION ENERGY', dlpnoccsd_t_wfn.variable(f'{energy_label} CORRELATION ENERGY'))
 
     # Shove variables into global space
     for k, v in dlpnoccsd_t_wfn.variables().items():
@@ -4718,6 +4781,35 @@ def run_dlpnoccsd_t(name, **kwargs):
     optstash.restore()
     core.tstop()
     return dlpnoccsd_t_wfn
+
+def run_dlpnoccsd_property(name, **kwargs):
+    """Compute DLPNO-CCSD/BCCD one-electron properties through OEProp."""
+    properties = kwargs.pop("properties")
+    proc_util.oeprop_validator(properties)
+    properties = [prop.upper() for prop in properties]
+
+    kwargs["_dlpno_do_onepdm"] = True
+    dlpno_wfn = run_dlpnoccsd(name, **kwargs)
+
+    # Contracting the C++ solver's AO OPDM with the requested OEProp operators
+    # realizes the one-electron expectation value in Toth et al. Eq. A1. The
+    # solver publishes a spin-summed restricted density, whereas OEProp expects
+    # one spin block and supplies the identical beta block.
+    Da_ao = dlpno_wfn.array_variable("DLPNO-CCSD AO OPDM").clone()
+    Da_ao.scale(0.5)
+
+    oe = core.OEProp(dlpno_wfn)
+    oe.set_Da_ao(Da_ao)
+    oe.set_title(name.upper())
+    for prop in properties:
+        oe.add(prop)
+    oe.compute()
+    dlpno_wfn.oeprop = oe
+
+    for key, value in dlpno_wfn.variables().items():
+        core.set_variable(key, value)
+
+    return dlpno_wfn
 
 def run_mp2f12(name, **kwargs):
     r"""Function encoding sequence of PSI module calls

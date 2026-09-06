@@ -1,0 +1,94 @@
+#! Compare the RHF DLPNO-BCCD(T) and DLPNO-CCSD(AT) limits against
+#! their corresponding canonical implementations for H2O/cc-pVDZ.
+
+memory 2 GB
+
+molecule h2o {
+0 1
+O
+H 1 0.958
+H 1 0.958 2 104.4776
+symmetry c1
+}
+
+set {
+    basis cc-pvdz
+    reference rhf
+    freeze_core true
+    guess sad
+    e_convergence 1.0e-9
+    r_convergence 1.0e-8
+    brueckner_orbs_r_convergence 1.0e-7
+
+    # Remove the local-domain, pair, PNO, TNO, coefficient, integral, and
+    # iterative-coupling screens. The oversized cc-pV5Z-RI auxiliary basis is
+    # used only for the comparison against conventional BCCD(T), where it
+    # suppresses the remaining DF error.
+    df_basis_cc cc-pV5Z-RI
+    t_cut_pno 0.0
+    t_cut_pno_mp2 0.0
+    t_cut_do 0.0
+    t_cut_do_pre 0.0
+    t_cut_do_ij 0.0
+    t_cut_do_uv 0.0
+    t_cut_mkn 0.0
+    t_cut_pairs 0.0
+    t_cut_pairs_mp2 0.0
+    t_cut_pre 0.0
+    t_cut_clmo 0.0
+    t_cut_cpao 0.0
+    f_cut 0.0
+    dlpno_ao_ints_tol 1.0e-14
+    t_cut_tno 0.0
+    t_cut_tno_pre 0.0
+    t_cut_do_triples 0.0
+    t_cut_do_triples_pre 0.0
+    t_cut_mkn_triples 0.0
+    t_cut_mkn_triples_pre 0.0
+    t_cut_triples_weak 0.0
+    f_cut_t 0.0
+    t_cut_iter 0.0
+    dlpno_toggle_memory false
+}
+
+# The canonical calculation uses four-index MO integrals. The DLPNO
+# calculation uses the same direct-SCF reference but DF three-index CC
+# integrals. PK is not supported by the Brueckner orbital-update path.
+set scf_type direct
+set cc_type conv
+
+print("   Testing conventional BCCD(T) ...")
+e_bccd_t = energy("bccd(t)")
+clean()
+
+print("   Testing DLPNO-BCCD(T) ...")
+e_dlpno_bccd_t = energy("dlpno-bccd(t)")
+
+# Allow a looser absolute tolerance for the RI approximation in DLPNO-BCCD(T).
+compare_values(e_bccd_t, e_dlpno_bccd_t, 1.0e-5, "BCCD(T) vs. DLPNO-BCCD(T)")                    #TEST
+compare_values(e_dlpno_bccd_t, variable("BCCD(T) TOTAL ENERGY"), 8, "DLPNO-BCCD(T) variable")   #TEST
+compare_values(e_dlpno_bccd_t, variable("CURRENT ENERGY"), 8, "DLPNO-BCCD(T) current energy")   #TEST
+compare_values(variable("CCSD(T) TOTAL ENERGY"), variable("INITIAL DLPNO-CCSD(T) TOTAL ENERGY"),
+               8, "initial non-Brueckner DLPNO-CCSD(T)")                                      #TEST
+clean()
+
+# Both CCSD(AT) calculations use the same density-fitted SCF and CC auxiliary
+# bases, so the zero-truncation DLPNO result should approach DF-CCSD(AT) tightly.
+set scf_type df
+set cc_type df
+set df_basis_scf cc-pvdz-jkfit
+set df_basis_cc cc-pvdz-ri
+
+print("   Testing DF-CCSD(AT) ...")
+e_df_ccsd_at = energy("ccsd(at)")
+clean()
+
+print("   Testing DLPNO-CCSD(AT) ...")
+e_dlpno_ccsd_at = energy("dlpno-ccsd(at)")
+
+compare_values(e_df_ccsd_at, e_dlpno_ccsd_at, 1.0e-6, "DF-CCSD(AT) vs. DLPNO-CCSD(AT)")          #TEST
+compare_values(e_dlpno_ccsd_at, variable("CCSD(AT) TOTAL ENERGY"), 8, "DLPNO-CCSD(AT) variable") #TEST
+compare_values(e_dlpno_ccsd_at, variable("A-CCSD(T) TOTAL ENERGY"), 8, "DLPNO A-CCSD(T) alias")  #TEST
+compare_values(e_dlpno_ccsd_at, variable("CURRENT ENERGY"), 8, "DLPNO-CCSD(AT) current energy")  #TEST
+
+clean()

@@ -66,6 +66,9 @@ void DLPNO::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
+    // Using Brueckner orbitals?
+    brueckner_orbs_ = options_.get_bool("DLPNO_BRUECKNER_ORBS");
+
     // PNO Truncation Parameters
     T_CUT_PNO_ = options_.get_double("T_CUT_PNO");
     T_CUT_TRACE_ = options_.get_double("T_CUT_TRACE");
@@ -93,7 +96,7 @@ void DLPNO::common_init() {
     } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
         algorithm_ = DLPNOMethod::CCSD_T;
     } else {
-        throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
+        throw PSIEXCEPTION("Requested DLPNO algorithm is not available: " + options_.get_str("DLPNO_ALGORITHM"));
     }
 
     // did the user manually change expert level options?
@@ -127,6 +130,10 @@ void DLPNO::common_init() {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-10;
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "GLACIER") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-12;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-4;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-5;
         }
     } else { // Coupled-cluster defaults
         if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
@@ -180,8 +187,24 @@ void DLPNO::common_init() {
             
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "GLACIER") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-10;
+            if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.9999;
+            if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.999;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-8;
+
+            if (!T_CUT_PNO_MP2_changed) T_CUT_PNO_MP2_ = 1e-12;
+            if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
+            if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.9995;
+            
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-4;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-5;
         }
         if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
+
+        // Set T_CUT_PNO_MP2 to 1.0e-11 and T_CUT_PNO to 1.0e-9 if Brueckner is requested, for orbital stability
+        if (brueckner_orbs_ && options_.get_str("PNO_CONVERGENCE") != "GLACIER" && !options_["T_CUT_PNO_MP2"].has_changed()) T_CUT_PNO_MP2_ = 1.0e-11;
+        if (brueckner_orbs_ && options_.get_str("PNO_CONVERGENCE") != "GLACIER" && !options_["T_CUT_PNO"].has_changed()) T_CUT_PNO_ = 1.0e-9;
     }
 
     // TODO: Is this reasonable?
@@ -316,8 +339,6 @@ void DLPNO::setup_orbitals() {
     int nshellri = ribasis_->nshell();
     int naocc = nalpha_ - nfrzc();
 
-    auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
-
     // Compute number of core orbitals
     if (options_.get_str("FREEZE_CORE") == "TRUE" || options_.get_str("FREEZE_CORE") == "1") {
         ncore_ = 0;
@@ -327,16 +348,47 @@ void DLPNO::setup_orbitals() {
         throw PSIEXCEPTION("DLPNO Methods do not yet support custom frozen core policies!");
     }
 
+    // The JK object is first used after macroiteration zero to rebuild the
+    // Fock matrix in the rotated Brueckner orbitals. JK::build_JK only
+    // constructs the object; compute() is not valid until initialize() has
+    // allocated the algorithm-specific integral storage. Keep one initialized
+    // object for the whole orbital optimization and only replace its C vectors
+    // at each rotation.
+    if (brueckner_orbs_ && !jk_) {
+        const size_t jk_memory =
+            static_cast<size_t>(options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / sizeof(double));
+        jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, jk_memory);
+        jk_->set_memory(jk_memory);
+        jk_->set_do_J(true);
+        jk_->set_do_K(true);
+        jk_->initialize();
+    }
+
     timer_on("Local MOs");
+    // Initialize C_lmo to active occupied space if not using Brueckner orbitals
+    if (!brueckner_iter_) {
+        C_lmo_ = reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC");
+        F_ao_ = reference_wavefunction_->Fa();
+    } // end if
+
     // Localize active occupied orbitals
+    
+
+    // Choose algorithm based on user settings
     if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "BOYS") {
-        BoysLocalizer localizer = BoysLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
+        BoysLocalizer localizer = BoysLocalizer(basisset_, C_lmo_->clone());
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
         localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
         localizer.localize();
         C_lmo_ = localizer.L();
     } else if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "PIPEK_MEZEY") {
-        PMLocalizer localizer = PMLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
+        PMLocalizer localizer = PMLocalizer(basisset_, C_lmo_->clone());
+        localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
+        localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
+        localizer.localize();
+        C_lmo_ = localizer.L();
+    } else if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "ER") {
+        ERLocalizer localizer = ERLocalizer(basisset_, get_basisset("DF_BASIS_THC"), C_lmo_->clone());
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
         localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
         localizer.localize();
@@ -344,16 +396,21 @@ void DLPNO::setup_orbitals() {
     } else {
         throw PSIEXCEPTION("Invalid option for DLPNO_LOCAL_ORBITALS");
     }
+
     timer_off("Local MOs");
 
-    F_lmo_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false);
+    F_lmo_ = linalg::triplet(C_lmo_, F_ao_, C_lmo_, true, false, false);
 
     timer_on("Projected AOs");
 
     // Form projected atomic orbitals by removing occupied space from the basis
     C_pao_ = std::make_shared<Matrix>("Projected Atomic Orbitals", nbf, nbf);
     C_pao_->identity();
-    C_pao_->subtract(linalg::triplet(C_occ, C_occ, reference_wavefunction_->S(), false, true, false));
+    C_pao_->subtract(linalg::triplet(C_lmo_, C_lmo_, reference_wavefunction_->S(), false, true, false));
+    if (ncore_ == 0) {
+        auto C_core = reference_wavefunction_->Ca_subset("AO", "FROZEN_OCC");
+        C_pao_->subtract(linalg::triplet(C_core, C_core, reference_wavefunction_->S(), false, true, false));
+    }
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
 
     // normalize PAOs
@@ -361,11 +418,18 @@ void DLPNO::setup_orbitals() {
         C_pao_->scale_column(0, i, pow(S_pao_->get(i, i), -0.5));
     }
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
-    F_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
+    F_pao_ = linalg::triplet(C_pao_, F_ao_, C_pao_, true, false, false);
+    F_lmo_pao_ = linalg::triplet(C_lmo_, F_ao_, C_pao_, true, false, false);
 
     timer_off("Projected AOs");
 
+    if (brueckner_orbs_) delta_D_ao_ = linalg::doublet(C_lmo_, C_lmo_, false, true);
+
     // map from atomic center to orbital/aux basis function/shell index
+    atom_to_bf_.clear();
+    atom_to_ribf_.clear();
+    atom_to_shell_.clear();
+    atom_to_rishell_.clear();
 
     atom_to_bf_.resize(natom);
     atom_to_ribf_.resize(natom);
@@ -387,6 +451,221 @@ void DLPNO::setup_orbitals() {
     for (size_t s = 0; s < nshellri; s++) {
         atom_to_rishell_[ribasis_->shell_to_center(s)].push_back(s);
     }
+}
+
+void DLPNO::brueckner_rotation(const SharedMatrix &kappa_ia) {
+
+    const double alpha = options_.get_double("DLPNO_BRUECKNER_ALPHA");
+
+    // Canonicalize PAOs
+    SharedMatrix X_pao_canon;  // canonical transformation of this domain's PAOs to
+    SharedVector e_pao_canon;  // energies of the canonical PAOs
+    std::tie(X_pao_canon, e_pao_canon) = orthocanonicalizer(S_pao_, F_pao_);
+    auto C_pao_canon = linalg::doublet(C_pao_, X_pao_canon);
+
+    int nbf = basisset_->nbf();
+    int naocc = nalpha_ - nfrzc();
+    int nvirt = C_pao_canon->colspi(0);
+
+    auto kappa = std::make_shared<Matrix>("kappa", naocc + nvirt, naocc + nvirt);
+
+#pragma omp parallel for
+    for (int i = 0; i < naocc; ++i) {
+        for (int a = 0; a < nvirt; ++a) {
+            (*kappa)(naocc + a, i) = -(*kappa_ia)(i, a);
+            (*kappa)(i, naocc + a) = (*kappa_ia)(i, a);
+        } // end a
+    } // end i
+    kappa->scale(alpha);
+
+    // e^{\kappa} for the rotation
+    kappa->expm();
+
+    auto kappa_oo = std::make_shared<Matrix>("kappa_oo", naocc, naocc);
+    auto kappa_ov = std::make_shared<Matrix>("kappa_ov", naocc, nvirt);
+
+#pragma omp parallel for
+    for (int i = 0; i < naocc; ++i) {
+        for (int j = 0; j < naocc; ++j) {
+            (*kappa_oo)(i, j) = (*kappa)(i, j);
+        } // end j
+    } // end i
+
+#pragma omp parallel for
+    for (int i = 0; i < naocc; ++i) {
+        for (int a = 0; a < nvirt; ++a) {
+            (*kappa_ov)(i, a) = (*kappa)(i, naocc + a);
+        } // end a
+    } // end i
+
+    // => Make new C_lmo (to add Brueckner contributions) <= //
+
+    // The occupied columns of exp(-K) are represented by the transposed
+    // blocks below.  kappa_oo already contains the identity contribution from
+    // the matrix exponential, so adding the old C_lmo a second time would
+    // double the occupied orbitals at every macroiteration.
+    auto C_lmo_new = linalg::doublet(C_lmo_, kappa_oo, false, true);
+    auto gottem = linalg::doublet(C_pao_canon, kappa_ov, false, true);
+    C_lmo_new->add(gottem);
+    C_lmo_ = C_lmo_new;
+
+    /*
+    // Canonicalize PAOs
+    SharedMatrix X_pao_canon;  // canonical transformation of this domain's PAOs to
+    SharedVector e_pao_canon;  // energies of the canonical PAOs
+    std::tie(X_pao_canon, e_pao_canon) = orthocanonicalizer(S_pao_, F_pao_);
+
+    auto C_lmo_new = C_lmo_->clone();
+    auto C_pao_canon = linalg::doublet(C_pao_, X_pao_canon);
+    auto T1_oo = linalg::doublet(kappa_ia, kappa_ia, false, true);
+
+    // First order contribution: +1.0 * alpha * C_{ua}T_{i}^{a}
+    auto gottem = linalg::doublet(C_pao_canon, kappa_ia, false, true);
+    gottem->scale(1.0 * alpha);
+    C_lmo_new->add(gottem);
+
+    // Second order contribution: +0.5 * alpha^{2} C_{uj}(T_{j}^{a}T_{i}^{a})
+    auto gotham = linalg::doublet(C_lmo_, T1_oo, false, false);
+    gotham->scale(-0.5 * alpha * alpha);
+    C_lmo_new->add(gotham);
+
+    // Third order contribution: +1.0 / 6.0 * alpha^{3} C_{ua}T_{j}^{a}(T_{j}^{b}T_{i}^{b}) T^{T}(TT^{T})
+    auto goalty = linalg::triplet(C_pao_canon, kappa_ia, T1_oo, false, true, false);
+    goalty->scale(-1.0 / 6 * alpha * alpha * alpha);
+    C_lmo_new->add(goalty);
+
+    // Fourth order contribution: +1.0 / 24.0 * alpha^{4} C_{uj}(T_{j}^{a}T_{k}^{a})(T_{k}^{b}T_{i}^{b})
+    auto golem = linalg::triplet(C_lmo_, T1_oo, T1_oo, false, false, false);
+    golem->scale(1.0 / 24 * alpha * alpha * alpha * alpha);
+    C_lmo_new->add(golem);
+
+    C_lmo_ = C_lmo_new->clone();
+    */
+    
+    /*
+    auto C_lmo_new = C_lmo_->clone();
+    
+#pragma omp parallel for
+    for (int i = 0; i < C_lmo_->ncol(); ++i) { // occupied MOs
+        int ii = i_j_to_ij_[i][i];
+
+        // => Step 1: Form canonical PAO basis <= //
+
+        auto S_pao_ii = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ii], lmopair_to_paos_[ii]);
+        auto F_pao_ii = submatrix_rows_and_cols(*F_pao_, lmopair_to_paos_[ii], lmopair_to_paos_[ii]);
+
+        SharedMatrix X_pao_ii;  // canonical transformation of this domain's PAOs to
+        SharedVector e_pao_ii;  // energies of the canonical PAOs
+        std::tie(X_pao_ii, e_pao_ii) = orthocanonicalizer(S_pao_ii, F_pao_ii);
+
+        // => Step 2: Project T1 amplitudes back to canonical PAO basis and perform Brueckner rotation <= //
+
+        auto C_pao_slice = submatrix_cols(*C_pao_, lmopair_to_paos_[ii]); // C_pao{\mu \mu_{ii}}
+        C_pao_slice = linalg::doublet(C_pao_slice, X_pao_ii, false, false); // canonicalizes and removes linear-dependencies
+        auto S_pao_pno_ii = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ii], lmopair_to_paos_[ii]);
+        S_pao_pno_ii = linalg::triplet(X_pao_ii, S_pao_pno_ii, X_pno_[ii], true, false, false);
+
+        // C_{\mu i} (new) += C_pao{\mu \mu_{ii}} S(\mu_{ii} a_{ii}) T_{i}^{a_{ii}}
+        auto gottem = linalg::triplet(C_pao_slice, S_pao_pno_ii, T_ia_[i]); // (\mu, 1)
+        gottem->scale(alpha);
+
+        // First order contribution: +1.0 * alpha * C_{ua}T_{i}^{a}
+        for (int mu = 0; mu < C_lmo_->nrow(); ++mu) { // atomic orbitals
+            C_lmo_new->add(mu, i, gottem->get(mu, 0));
+        } // end mu
+
+        for (int j = 0; j < C_lmo_->ncol(); ++j) {
+            int ij = i_j_to_ij_[i][j], jj = i_j_to_ij_[j][j];
+            if (ij == -1) continue;
+
+            auto S_ii_jj = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ii], lmopair_to_paos_[jj]);
+            S_ii_jj = linalg::triplet(X_pno_[ii], S_ii_jj, X_pno_[jj], true, false, false);
+
+            auto Ti_Tj = linalg::triplet(T_ia_[i], S_ii_jj, T_ia_[j], true, false, false);
+
+            // Second order contribution: 0.5 * alpha^{2} C_{uj}(T_{j}^{a}T_{i}^{a})
+            for (int mu = 0; mu < C_lmo_->nrow(); ++mu) { // atomic orbitals
+                C_lmo_new->add(mu, i, 0.5 * alpha * alpha * C_lmo_->get(mu, j) * Ti_Tj->get(0, 0));
+            } // end mu
+        } // end j
+    } // end i
+
+    C_lmo_ = C_lmo_new->clone();
+    */
+
+    // Normalize new LMOs after rotation
+    auto S_lmo = linalg::triplet(C_lmo_, reference_wavefunction_->S(), C_lmo_, true, false, false);
+    for (size_t i = 0; i < C_lmo_->ncol(); ++i) {
+        C_lmo_->scale_column(0, i, pow(S_lmo->get(i, i), -0.5));
+    }
+
+    // Rebuild AO Fock Matrix with new LMOs
+    timer_on("Rebuilding Fock matrix");
+
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+
+    Cl.clear();
+    Cr.clear();
+
+    // Get MO Coefficient slice from frozen core orbitals
+    SharedMatrix C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
+    SharedMatrix C_core = reference_wavefunction_->Ca_subset("AO", "FROZEN_OCC");
+    SharedMatrix C_active = reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC");
+    SharedMatrix C_occ_new = std::make_shared<Matrix>("C_occ_new", C_occ->rowspi(0), C_occ->colspi(0));
+
+    int nfrozen = C_core->colspi(0);
+
+#pragma omp parallel for
+    for (int u = 0; u < C_occ->rowspi(0); ++u) {
+        for (int i = 0; i < nfrozen; ++i) {
+            C_occ_new->set(u, i, C_core->get(u, i));
+        } // end for
+        for (int i = 0; i < naocc; ++i) {
+            C_occ_new->set(u, i + nfrozen, C_lmo_->get(u, i));
+        } // end for
+    } // end for
+
+    Cl.push_back(C_occ_new);
+    Cr.push_back(C_occ_new);
+
+    jk_->set_do_J(true);
+    jk_->set_do_K(true);
+
+    jk_->compute();
+
+    // JK contributions to F_ao_
+    F_ao_ = (jk_->J()[0])->clone();
+    F_ao_->scale(2.0);
+    F_ao_->subtract(jk_->K()[0]);
+
+    // Add core hamiltonian
+    F_ao_->add(H_);
+
+    // Recomputing SCF energy (including nuclear repulsion)
+
+    auto H_plus_F = F_ao_->clone();
+    H_plus_F->add(H_);
+    auto D_ao = linalg::doublet(C_occ_new, C_occ_new, false, true);
+
+    variables_["SCF TOTAL ENERGY"] = H_plus_F->vector_dot(D_ao) 
+                + molecule_->nuclear_repulsion_energy(reference_wavefunction_->get_dipole_field_strength());
+
+    outfile->Printf("\n  *** (Updated) SCF Energy with Rotated Orbitals: %16.12f \n", variables_["SCF TOTAL ENERGY"]);
+        
+    timer_off("Rebuilding Fock matrix");
+} // end function
+
+void DLPNO::lmo_canonicalize() {
+    // Canonicalize the new LMOs and update F_lmo
+    auto F_lmo = linalg::triplet(C_lmo_, F_ao_, C_lmo_, true, false, false);
+    auto S_lmo = linalg::triplet(C_lmo_, reference_wavefunction_->S(), C_lmo_, true, false, false);
+    
+    SharedMatrix X_lmo;  // canonical transformation of this domain's PAOs to
+    SharedVector e_lmo;  // energies of the canonical PAOs
+    std::tie(X_lmo, e_lmo) = orthocanonicalizer(S_lmo, F_lmo);
+
+    C_lmo_ = linalg::doublet(C_lmo_, X_lmo, false, false);
 }
 
 void DLPNO::compute_overlap_ints() {
@@ -690,6 +969,9 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
     // map from LMO to local virtual domain (PAOs)
     // locality determined via differential overlap integrals
 
+    lmo_to_paos_.clear();
+    lmo_to_paoatoms_.clear();
+
     lmo_to_paos_.resize(naocc);
     lmo_to_paoatoms_.resize(naocc);
     for (size_t i = 0; i < naocc; ++i) {
@@ -713,6 +995,10 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
     //   and also approximated pair energies from dipole integrals
     // This is only performed in the initial step to eliminate dipole pairs
     if (initial) {
+        i_j_to_ij_.clear();
+        ij_to_i_j_.clear();
+        ij_to_ji_.clear();
+
         i_j_to_ij_.resize(naocc);
         de_dipole_ = 0.0;
 
@@ -752,6 +1038,11 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
     int n_lmo_pairs = ij_to_i_j_.size();
 
+    lmopair_to_paos_.clear();
+    lmopair_to_paoatoms_.clear();
+    lmopair_to_ribfs_.clear();
+    lmopair_to_riatoms_.clear();
+
     lmopair_to_paos_.resize(n_lmo_pairs);
     lmopair_to_paoatoms_.resize(n_lmo_pairs);
     lmopair_to_ribfs_.resize(n_lmo_pairs);
@@ -772,6 +1063,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
     // Create a list of lmos that "interact" with a lmo_pair
     // This is defined by all LMOs m such that im and jm form valid pairs
     lmopair_to_lmos_.clear();
+    lmopair_to_lmos_dense_.clear();
+
     lmopair_to_lmos_.resize(n_lmo_pairs);
     lmopair_to_lmos_dense_.resize(n_lmo_pairs);
 
@@ -800,6 +1093,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
     if (initial) {
         // => Coefficient Sparsity <= //
+        lmo_to_bfs_.clear();
+        lmo_to_atoms_.clear();
 
         // which basis functions (on which atoms) contribute to each local MO?
         lmo_to_bfs_.resize(naocc);
@@ -815,6 +1110,9 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
         }
 
         // which basis functions (on which atoms) contribute to each projected AO?
+        pao_to_bfs_.clear();
+        pao_to_atoms_.clear();
+
         pao_to_bfs_.resize(nbf);
         pao_to_atoms_.resize(nbf);
 
@@ -850,6 +1148,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
         // Need dense versions of previous maps for quick lookup
 
+        riatom_to_lmos_ext_dense_.clear();
+        riatom_to_paos_ext_dense_.clear();
         // riatom_to_lmos_ext_dense_[riatom][lmo] is the index of lmo in riatom_to_lmos_ext_[riatom]
         //   (if present), else -1
         riatom_to_lmos_ext_dense_.resize(natom);
@@ -857,6 +1157,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
         //   (if present), else -1
         riatom_to_paos_ext_dense_.resize(natom);
 
+        riatom_to_atoms1_dense_.clear();
+        riatom_to_atoms2_dense_.clear();
         // riatom_to_atoms1_dense_(1,2)[riatom][a] is true if the orbitals basis functions of atom A
         //   are needed for the (LMO,PAO) transform
         riatom_to_atoms1_dense_.resize(natom);
@@ -911,6 +1213,7 @@ void DLPNO::compute_qij() {
 
     auto SC_lmo = linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);
 
+    qij_.clear();
     qij_.resize(naux);
 
     // LMO-LMO DF ints
@@ -1027,6 +1330,7 @@ void DLPNO::compute_qia() {
     auto SC_lmo =
         linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);  // intermediate for coefficient fitting
 
+    qia_.clear();
     qia_.resize(naux);
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -1145,6 +1449,9 @@ void DLPNO::compute_qab() {
     double T_CUT_DO_UV = options_.get_double("T_CUT_DO_UV");
 
     // Prepare Sparsity info for QAB intergrals
+    riatom_to_pao_pairs_.clear();
+    riatom_to_pao_pairs_dense_.clear();
+
     riatom_to_pao_pairs_.resize(natom);
     riatom_to_pao_pairs_dense_.resize(natom);
 
@@ -1192,6 +1499,7 @@ void DLPNO::compute_qab() {
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n\n");
 
+    qab_.clear();
     qab_.resize(naux);
 
     size_t qab_doubles = 0L;
@@ -1324,6 +1632,16 @@ void DLPNO::pno_transform() {
     size_t MIN_PNO = options_.get_int("MIN_PNOS");
 
     outfile->Printf("\n  ==> Forming Pair Natural Orbitals <==\n");
+
+    K_iajb_.clear();     // exchange operators (i.e. (ia|jb) integrals)
+    T_iajb_.clear();     // amplitudes
+    Tt_iajb_.clear();    // antisymmetrized amplitudes
+    X_pno_.clear();      // global PAOs -> canonical PNOs
+    e_pno_.clear();      // PNO orbital energies
+    n_pno_.clear();      // number of pnos
+    de_pno_.clear();     // PNO truncation error
+    de_pno_os_.clear();  // opposite-spin contributions to de_pno_
+    de_pno_ss_.clear();  // same-spin contributions to de_pno_
 
     K_iajb_.resize(n_lmo_pairs);   // exchange operators (i.e. (ia|jb) integrals)
     T_iajb_.resize(n_lmo_pairs);   // amplitudes

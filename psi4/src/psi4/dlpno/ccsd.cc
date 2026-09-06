@@ -56,10 +56,16 @@
 namespace psi {
 namespace dlpno {
 
-DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNO(ref_wfn, options) {}
+DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNO(ref_wfn, options) {
+    // Lambda is opt-in for energies. A one-particle property request also
+    // requires the stationary left amplitudes used in Toth Eqs. A1--A5.
+    lambda_requested_ = options_.get_bool("DLPNO_DO_LAMBDA");
+    onepdm_requested_ = options_.get_bool("DLPNO_DO_ONEPDM");
+    lambda_requested_ = lambda_requested_ || onepdm_requested_;
+}
 DLPNOCCSD::~DLPNOCCSD() {}
 
-inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
+SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     int i, j, m, n;
     std::tie(i, j) = ij_to_i_j_[ij];
     std::tie(m, n) = ij_to_i_j_[mn];
@@ -107,7 +113,7 @@ inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     }
 }
 
-inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
+std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
     auto &[i, j] = ij_to_i_j_[ij];
     int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
 
@@ -134,7 +140,7 @@ inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
     }
 }
 
-inline std::vector<SharedMatrix> DLPNOCCSD::QAB_PNO(const int ij) {
+std::vector<SharedMatrix> DLPNOCCSD::QAB_PNO(const int ij) {
     auto &[i, j] = ij_to_i_j_[ij];
     int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
 
@@ -164,6 +170,10 @@ void DLPNOCCSD::compute_pno_overlaps() {
 
     const int naocc = i_j_to_ij_.size();
     const int n_lmo_pairs = ij_to_i_j_.size();
+
+    S_pno_ij_kj_.clear();
+    S_pno_ij_nn_.clear();
+    if (!low_memory_overlap_) S_pno_ij_mn_.clear();
     
     S_pno_ij_kj_.resize(n_lmo_pairs);
     S_pno_ij_nn_.resize(n_lmo_pairs);
@@ -1228,6 +1238,11 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
         return delta_e_crude;
 
     } else {
+        i_j_to_ij_strong_.clear();
+        i_j_to_ij_weak_.clear();
+        ij_to_i_j_strong_.clear();
+        ij_to_i_j_weak_.clear();
+
         i_j_to_ij_strong_.resize(naocc);
         i_j_to_ij_weak_.resize(naocc);
 
@@ -1238,10 +1253,17 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
 
         double delta_e_weak = 0.0;
 
+        // The present Lambda residuals (Toth Eqs. 58, 67--75, and 86--91)
+        // require the integral/amplitude tensors allocated for strong pairs.
+        // Until weak-pair Lambda approximations are implemented, promote every
+        // pair surviving the initial screening whenever Lambda is requested.
+        const bool force_strong = lambda_requested_;
         int ij_strong = 0, ij_weak = 0;
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
-            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_ || i == j) { // Pair is strong pair, diagonal pairs are ALWAYS strong pairs
+            if (force_strong || std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_ || i == j) {
+                // Ordinary right-hand calculations retain the requested
+                // strong/weak partition.
                 i_j_to_ij_strong_[i][j] = ij_strong;
                 ij_to_i_j_strong_.push_back(std::make_pair(i, j));
                 ++ij_strong;
@@ -1319,28 +1341,39 @@ void DLPNOCCSD::compute_pno_integrals() {
     int n_lmo_pairs = ij_to_i_j_.size();
     
     // 1 virtual
+    K_mibj_.clear();
+    J_ijmb_.clear();
+    L_mibj_.clear();
     K_mibj_.resize(n_lmo_pairs);
     J_ijmb_.resize(n_lmo_pairs);
     L_mibj_.resize(n_lmo_pairs);
 
     // 2 virtual
+    L_iajb_.clear();
     L_iajb_.resize(n_lmo_pairs);
 
     // 2-virtual non-projected
+    J_ikac_non_proj_.clear();
+    K_iakc_non_proj_.clear();
     J_ikac_non_proj_.resize(n_lmo_pairs);
     K_iakc_non_proj_.resize(n_lmo_pairs);
 
     // 3 virtual
+    K_ivvv_.clear();
     K_ivvv_.resize(n_lmo_pairs);
 
     // DF integrals (only allocate if writing to RAM)
     if (!write_qia_pno_) {
+        Qma_ij_.clear();
         Qma_ij_.resize(n_lmo_pairs);
     }
     if (!write_qab_pno_) {
+        Qab_ij_.clear();
         Qab_ij_.resize(n_lmo_pairs);
     }
 
+    i_Qa_ij_.clear();
+    i_Qk_ij_.clear();
     i_Qa_ij_.resize(n_lmo_pairs);
     i_Qk_ij_.resize(n_lmo_pairs);
 
@@ -1798,7 +1831,7 @@ void DLPNOCCSD::t1_fock() {
     // => Step 1: Dressing over the contracted indices <= //
 
     SharedMatrix Fij_bar = F_lmo_->clone(); // (i, j)
-    std::vector<SharedMatrix> Fkc_bar(n_lmo_pairs); // (k_{ij}, c_{ij})
+    Fkc_bar_.resize(n_lmo_pairs); // (k_{ij}, c_{ij})
     std::vector<SharedMatrix> Fai_bar(naocc); // (a_{ii})
     std::vector<SharedMatrix> Fab_bar(n_lmo_pairs); // (a_{ij}, b_{ij})
 
@@ -1818,12 +1851,13 @@ void DLPNOCCSD::t1_fock() {
         (*Fij_bar)(i, j) += 2.0 * T_n_ij_[ij]->vector_dot(J_ijmb_[ij]);
         (*Fij_bar)(i, j) -= T_n_ij_[ij]->vector_dot(K_mibj_[ji]);
 
-        if (i > j || i_j_to_ij_strong_[i][j] == -1) continue;
+        if (i > j || (!lambda_requested_ && i_j_to_ij_strong_[i][j] == -1)) continue;
 
         // Partially dress Fia and Fab (Jiang Eq. 99 and 101)
         // \overline{F}_{kc} = f_{kc} + [2(kc|me) - (ke|mc)] T_{m}^{e}
         // In closed-shell RHF reference, f_{kc} is zero
-        Fkc_bar[ij] = std::make_shared<Matrix>(nlmo_ij, npno_ij);
+        Fkc_bar_[ij] = submatrix_rows_and_cols(*F_lmo_pao_, lmopair_to_lmos_[ij], lmopair_to_paos_[ij]);
+        Fkc_bar_[ij] = linalg::doublet(Fkc_bar_[ij], X_pno_[ij], false, false); // (k, c)
 
         // \overline{F}_{ab} = f_{ab} + [2(ab|me) - (ae|mb)] T_{m}^{e}
         // In canonical PNO representation, f_{ab} is diagonal
@@ -1843,7 +1877,7 @@ void DLPNOCCSD::t1_fock() {
             // \overline{F}_{kc} += 2 B^{Q}_{kc} \Gamma_{Q}
             auto Jcont = Qma->clone();
             Jcont->scale(2.0 * gamma);
-            Fkc_bar[ij]->add(Jcont);
+            Fkc_bar_[ij]->add(Jcont);
 
             // \overline{F}_{ab} += 2 B^{Q}_{ab} \Gamma_{Q}
             Jcont = Qab->clone();
@@ -1853,7 +1887,7 @@ void DLPNOCCSD::t1_fock() {
             // K like contributions
             // \overline{F}_{ab} -= B^{Q}_{ke} T_{m}^{e} B^{Q}_{mc}
             auto Kcont = linalg::triplet(Qma, T_n_ij_[ij], Qma, false, true, false); // (k, e) (m, e) (m, c) -> (k, c)
-            Fkc_bar[ij]->subtract(Kcont);
+            Fkc_bar_[ij]->subtract(Kcont);
 
             // \overline{F}_{ab} -= B^{Q}_{ae} T_{m}^{e} B^{Q}_{mb}
             Kcont = linalg::triplet(Qab, T_n_ij_[ij], Qma, false, true, false); // (a, e) (m, e) (m, b) -> (a, b)
@@ -1864,7 +1898,8 @@ void DLPNOCCSD::t1_fock() {
         if (i == j) {
             // \overline{F}_{ai} = f_{ai} + [2(ai|me) - (ae|mi)] T_{m}^{e}
             // In closed-shell RHF reference, f_{kc} is zero
-            Fai_bar[i] = std::make_shared<Matrix>(npno_ij, 1);
+            Fai_bar[i] = submatrix_rows_and_cols(*F_lmo_pao_, std::vector<int>(1, i), lmopair_to_paos_[ij]);
+            Fai_bar[i] = linalg::doublet(Fai_bar[i], X_pno_[ij], false, false)->transpose(); // (a, i)
 
             auto Qia = i_Qa_ij_[ij];
             auto Qik = i_Qk_ij_[ij];
@@ -1892,6 +1927,11 @@ void DLPNOCCSD::t1_fock() {
     // => Step 2: Dressing over the free/non-contracted indices <= //
 
     Fkj_ = Fij_bar->clone();
+
+    Fkc_.clear();
+    Fai_.clear();
+    Fab_.clear();
+
     Fkc_.resize(n_lmo_pairs);
     Fai_.resize(naocc);
     Fab_.resize(n_lmo_pairs);
@@ -1911,14 +1951,15 @@ void DLPNOCCSD::t1_fock() {
         // \widetilde{F}_{ij} = \overline{F}_{ij} (initialized earlier) + \overline{F}_{ic} T_{j}^{c}
         int i_jj = lmopair_to_lmos_dense_[jj][i];
         for (int a_jj = 0; a_jj < n_pno_[jj]; ++a_jj) {
-            (*Fkj_)(i, j) += (*Fkc_bar[jj])(i_jj, a_jj) * (*T_ia_[j])(a_jj, 0);
+            (*Fkj_)(i, j) += (*Fkc_bar_[jj])(i_jj, a_jj) * (*T_ia_[j])(a_jj, 0);
         }
 
         // Fkc matrices (Jiang Eq. 95)
         // (built separately since \overline{F}_{kc} intermediate is NOT built over weak pairs)
         // \widetilde{F}_{ia} = \overline{F}_{ia} = f_{ia} + [2(ia|kc) - (ic|ka)] T_{k}^{c}
         // => L_{ik}^{ac} T_{k}^{c}
-        Fkc_[ij] = std::make_shared<Matrix>(npno_ij, 1);
+        Fkc_[ij] = submatrix_rows_and_cols(*F_lmo_pao_, std::vector<int>(1, i), lmopair_to_paos_[ij]);
+        Fkc_[ij] = linalg::doublet(Fkc_[ij], X_pno_[ij], false, false)->transpose();
 
         for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
             int k = lmopair_to_lmos_[ij][k_ij];
@@ -1936,7 +1977,7 @@ void DLPNOCCSD::t1_fock() {
         // Fully dress Fab matrices (Jiang Eq. 97)
         // \widetilde{F}_{ab} = \overline{F}_{ab} - T_{k}^{a} \overline{F}_{kb} 
         Fab_[ij] = Fab_bar[ij]->clone(); // (a, b)
-        Fab_[ij]->subtract(linalg::doublet(T_n_ij_[ij], Fkc_bar[ij], true, false)); // (k, a) (k, b) -> (a, b)
+        Fab_[ij]->subtract(linalg::doublet(T_n_ij_[ij], Fkc_bar_[ij], true, false)); // (k, a) (k, b) -> (a, b)
 
         // Fully dress Fai matrices (Jiang Eq. 96)
         // \widetilde{F}_{ai} = \overline{F}_{ai} - T_{k}^{a} \overline{F}_{ki}
@@ -1944,7 +1985,7 @@ void DLPNOCCSD::t1_fock() {
         if (i == j) {
             Fai_[i] = Fai_bar[i]->clone(); // (a, 1)
             Fai_[i]->add(linalg::doublet(Fab_bar[ij], T_ia_[i], false, false)); // (a, b) (i, b)
-            Fai_[i]->subtract(linalg::triplet(T_n_ij_[ij], Fkc_bar[ij], T_ia_[i], true, false, false)); // (k, a) (k, b) (i, b)
+            Fai_[i]->subtract(linalg::triplet(T_n_ij_[ij], Fkc_bar_[ij], T_ia_[i], true, false, false)); // (k, a) (k, b) (i, b)
 
             for (int a_i = 0; a_i < npno_ij; ++a_i) {
                 for (int k_i = 0; k_i < nlmo_ij; ++k_i) {
@@ -2425,7 +2466,7 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
             auto qma_ij = QIA_PNO(ij); // naux_ij * (nlmo_ij, npno_ij)
             auto qab_ij = QAB_PNO(ij); // naux_ij * (npno_ij, npno_ij)
             for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                // This performs the T1-dressing of Qab on the fly, as this intermeidate is only used once
+                // Form the T1-dressed Qab intermediate on the fly; it is used once.
                 // \widetilde{B}^{Q}_{ab} = B^{Q}_{ab} - t_{k}^{a} B^{Q}_{kb} (Jiang Eq. 93)
                 auto Qab_t1 = qab_ij[q_ij]->clone(); // (a, b)
                 Qab_t1->subtract(linalg::doublet(T_n_ij_[ij], qma_ij[q_ij], true, false)); // (k, a) (k, b) -> (a, b)
@@ -2603,7 +2644,7 @@ void DLPNOCCSD::lccsd_iterations() {
     std::vector<SharedMatrix> R_iajb(n_lmo_pairs);
 
     // => Initialize Singles Residuals and Amplitudes <= //
-
+    T_ia_.clear();
     T_ia_.resize(naocc);
 
 #pragma omp parallel for
@@ -2632,6 +2673,10 @@ void DLPNOCCSD::lccsd_iterations() {
         }
     }
 
+    double t1_damping = options_.get_double("DLPNO_T1_DAMPING");
+    double t2_damping = options_.get_double("DLPNO_T2_DAMPING");
+    int BRUECKNER_N_MICRO_ITER = options_.get_int("DLPNO_BRUECKNER_N_MICRO_ITER");
+
     int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, e_weak = 0.0, r1_curr = 0.0, r2_curr = 0.0;
     bool e_converged = false, r_converged = false;
@@ -2640,13 +2685,19 @@ void DLPNOCCSD::lccsd_iterations() {
 
     double F_CUT = options_.get_double("F_CUT");
 
+    i_Qk_t1_.clear();
+    i_Qa_t1_.clear();
+
+    T_n_ij_.clear();
+
     i_Qk_t1_.resize(n_lmo_pairs);
     i_Qa_t1_.resize(n_lmo_pairs);
 
     T_n_ij_.resize(n_lmo_pairs);
 
-    while (!(e_converged && r_converged)) {
-        // RMS of residual per single LMO, for assesing convergence
+    // We only run the full set of iterations after Brueckner reaches "intermediate convergence"
+    while (((brueckner_intermediate_converged_) && !(e_converged && r_converged)) || (iteration < BRUECKNER_N_MICRO_ITER && !brueckner_intermediate_converged_)) {
+        // RMS of residual per single LMO, for assessing convergence
         std::vector<double> R_ia_rms(naocc, 0.0);
         // RMS of residual per LMO pair, for assessing convergence
         std::vector<double> R_iajb_rms(n_lmo_pairs, 0.0);
@@ -2705,9 +2756,9 @@ void DLPNOCCSD::lccsd_iterations() {
         for (int i = 0; i < naocc; ++i) {
             int ii = i_j_to_ij_[i][i];
             for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                (*T_ia_[i])(a_ii, 0) -= (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
-            }
-        }
+                (*T_ia_[i])(a_ii, 0) -= (1.0 - t1_damping) * (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+            } // end a_ii
+        } // end i
 
         // Update Doubles Amplitude (Jiang Eq. 104)
 #pragma omp parallel for schedule(dynamic, 1)
@@ -2716,7 +2767,7 @@ void DLPNOCCSD::lccsd_iterations() {
 
             for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                 for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
-                    (*T_iajb_[ij])(a_ij, b_ij) -= (*R_iajb[ij])(a_ij, b_ij) / 
+                    (*T_iajb_[ij])(a_ij, b_ij) -= (1.0 - t2_damping) * (*R_iajb[ij])(a_ij, b_ij) / 
                                     (e_pno_[ij]->get(a_ij) + e_pno_[ij]->get(b_ij) - F_lmo_->get(i,i) - F_lmo_->get(j,j));
                 }
             }
@@ -2788,9 +2839,10 @@ void DLPNOCCSD::lccsd_iterations() {
         }
         double r_curr1 = *max_element(R_ia_rms.begin(), R_ia_rms.end());
         double r_curr2 = *max_element(R_iajb_rms.begin(), R_iajb_rms.end());
-
+        
         r_converged = (fabs(r_curr1) < options_.get_double("R_CONVERGENCE"));
         r_converged &= (fabs(r_curr2) < options_.get_double("R_CONVERGENCE"));
+
         e_converged = (fabs(e_curr - e_prev) < options_.get_double("E_CONVERGENCE"));
 
         std::time_t time_stop = std::time(nullptr);
@@ -2799,7 +2851,7 @@ void DLPNOCCSD::lccsd_iterations() {
 
         iteration++;
 
-        if (iteration > max_iteration + 1) {
+        if (brueckner_intermediate_converged_ && iteration > max_iteration + 1) {
             throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
         }
     }
@@ -2808,9 +2860,12 @@ void DLPNOCCSD::lccsd_iterations() {
     de_weak_ = e_weak;
 }
 
-double DLPNOCCSD::compute_energy() {
-
+double DLPNOCCSD::compute_dlpno_ccsd_energy() {
     timer_on("DLPNO-CCSD");
+
+    // Any Lambda amplitudes or density from an earlier Brueckner
+    // macroiteration no longer correspond to the current orbitals.
+    reset_lambda_state();
 
     print_header();
 
@@ -2872,7 +2927,7 @@ double DLPNOCCSD::compute_energy() {
     timer_off("Refined Pair Prescreening");
 
     // Set variables from LMP2
-    double e_scf = reference_wavefunction_->energy();
+    double e_scf = variables_["SCF TOTAL ENERGY"];
     double e_lmp2_corr = e_lmp2_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_lmp2_total = e_scf + e_lmp2_corr;
 
@@ -2941,6 +2996,170 @@ double DLPNOCCSD::compute_energy() {
     set_scalar_variable("DLPNO PNO TRUNCATION ERROR", de_pno_total_);
 
     return e_ccsd_total;
+}
+
+void DLPNOCCSD::post_ccsd_correction(DLPNOCCSDPhase phase) {
+    // Keep ordinary CCSD/BCCD free of all left-hand work. The initial
+    // canonical-orbital point of a Brueckner calculation is handled by the
+    // triples override; here Lambda is solved only for a requested final result.
+    if (!lambda_requested_ || phase == DLPNOCCSDPhase::InitialBrueckner) return;
+
+    // At a converged Brueckner point the orbital stationarity condition removes
+    // Lambda1; reference-orbital CCSD and OPDM calculations retain it.
+    solve_lambda(!brueckner_orbs_);
+    if (onepdm_requested_) compute_ao_opdm();
+}
+
+double DLPNOCCSD::compute_energy() {
+
+    if (brueckner_orbs_) {
+        // Rank information
+        int nbf = basisset_->nbf();
+        int naocc = nalpha_ - nfrzc();
+        int nvirt = nbf - nalpha_;
+
+        // After the initial set of T1s are computed, rotate the orbitals and recompute everything until convergence
+        brueckner_converged_ = false;
+        brueckner_intermediate_converged_ = false;
+        int iteration = 0;
+        double T1_max = 1.0;
+        const int BRUECKNER_MAXITER = options_.get_int("BRUECKNER_MAXITER");
+        const double B_ALPHA = options_.get_double("DLPNO_BRUECKNER_ALPHA");
+        const double BRUECKNER_R_CONV = options_.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
+        const double BRUECKNER_GMIX_START = options_.get_double("BRUECKNER_GMIX_START");
+
+        // kappa_ia is used for the occupied-virtual orbital rotation.
+        SharedMatrix kappa_ia_old = std::make_shared<Matrix>("kappa_ia_old", naocc, nvirt);
+        SharedMatrix kappa_ia = std::make_shared<Matrix>("kappa_ia", naocc, nvirt);
+
+        double e_dlpno_ccsd = 0.0;
+        double initial_ccsd_corr = 0.0;
+        double initial_ccsd_total = 0.0;
+        bool have_initial_ccsd = false;
+
+        auto publish_bccd_energy = [&]() {
+            const double bccd_corr = scalar_variable("CCSD CORRELATION ENERGY");
+            const double bccd_total = scalar_variable("CCSD TOTAL ENERGY");
+
+            set_scalar_variable("BCCD CORRELATION ENERGY", bccd_corr);
+            set_scalar_variable("BCCD TOTAL ENERGY", bccd_total);
+            set_scalar_variable("DLPNO-BCCD CORRELATION ENERGY", bccd_corr);
+            set_scalar_variable("DLPNO-BCCD TOTAL ENERGY", bccd_total);
+            set_scalar_variable("CURRENT CORRELATION ENERGY", bccd_corr);
+            set_scalar_variable("CURRENT ENERGY", bccd_total);
+
+            // Keep the canonical-orbital CCSD result from macroiteration zero
+            // available under the conventional CCSD variables.
+            if (have_initial_ccsd) {
+                set_scalar_variable("CCSD CORRELATION ENERGY", initial_ccsd_corr);
+                set_scalar_variable("CCSD TOTAL ENERGY", initial_ccsd_total);
+            }
+        };
+
+        while (!brueckner_converged_) {
+            outfile->Printf("\n  ==> Brueckner Orbital Optimization Iteration %d <==\n\n", iteration);
+
+            // Macroiteration zero is also the requested non-Brueckner result,
+            // so converge its right-hand CCSD equations fully before applying
+            // an initial (T) or (T)_L correction.
+            const bool old_intermediate_convergence = brueckner_intermediate_converged_;
+            if (iteration == 0) brueckner_intermediate_converged_ = true;
+            e_dlpno_ccsd = compute_dlpno_ccsd_energy();
+            if (iteration == 0) brueckner_intermediate_converged_ = old_intermediate_convergence;
+
+            if (iteration == 0) {
+                initial_ccsd_corr = scalar_variable("CCSD CORRELATION ENERGY");
+                initial_ccsd_total = scalar_variable("CCSD TOTAL ENERGY");
+                have_initial_ccsd = true;
+                set_scalar_variable("INITIAL DLPNO-CCSD CORRELATION ENERGY", initial_ccsd_corr);
+                set_scalar_variable("INITIAL DLPNO-CCSD TOTAL ENERGY", initial_ccsd_total);
+            }
+
+            // Canonicalize PAOs (to create T1-error matrix)
+            SharedMatrix X_pao_canon;  // canonical transformation of this domain's PAOs to
+            SharedVector e_pao_canon;  // energies of the canonical PAOs
+            std::tie(X_pao_canon, e_pao_canon) = orthocanonicalizer(S_pao_, F_pao_);
+
+            double alpha = (T1_max <= BRUECKNER_GMIX_START) ? B_ALPHA : 1.0;
+
+#pragma omp parallel for
+            for (int i = 0; i < C_lmo_->ncol(); ++i) { // occupied MOs
+                int ii = i_j_to_ij_[i][i];
+                auto S_pao_pno = submatrix_cols(*S_pao_, lmopair_to_paos_[ii]);
+                S_pao_pno = linalg::triplet(X_pao_canon, S_pao_pno, X_pno_[ii], true, false, false);
+                auto T1_chud = linalg::doublet(S_pao_pno, T_ia_[i]);
+                for (int a = 0; a < X_pao_canon->ncol(); ++a) {
+                    (*kappa_ia)(i, a) = alpha * (*T1_chud)(a, 0) + (1 - alpha) * (*kappa_ia_old)(i, a);
+                } // end a
+            } // end i
+
+            kappa_ia_old = kappa_ia->clone();
+
+            delta_D_ao_->subtract(linalg::doublet(C_lmo_, C_lmo_, false, true));
+
+            // Compute max T1
+            T1_max = 0.0;
+            for (const auto& T_i : T_ia_) {
+                T1_max = std::max(T1_max, T_i->absmax());
+            }
+
+            outfile->Printf("\n    Brueckner Iteration %d: Energy = %16.12f, Max R1 = %10.3e\n", iteration, e_dlpno_ccsd, T1_max);
+
+            if (iteration == 0) post_ccsd_correction(DLPNOCCSDPhase::InitialBrueckner);
+
+            if (fabs(T1_max) < BRUECKNER_R_CONV * 10.0) {
+                brueckner_intermediate_converged_ = true;
+                if (print_ > 1) {
+                    outfile->Printf("    Brueckner orbital intermediate convergence satisfied in %d iterations!\n",
+                                    iteration);
+                }
+            }
+
+            if (fabs(T1_max) < BRUECKNER_R_CONV) {
+                brueckner_converged_ = true;
+                outfile->Printf("    Brueckner orbital optimization converged in %d iterations!\n", iteration);
+
+                // The initial triples correction releases large CCSD
+                // intermediates. If the starting orbitals already satisfy the
+                // Brueckner criterion, rebuild that same converged right-hand
+                // state before evaluating the separately labelled BCCD result.
+                if (iteration == 0 && algorithm_ == DLPNOMethod::CCSD_T) {
+                    const bool old_intermediate_convergence = brueckner_intermediate_converged_;
+                    brueckner_intermediate_converged_ = true;
+                    e_dlpno_ccsd = compute_dlpno_ccsd_energy();
+                    brueckner_intermediate_converged_ = old_intermediate_convergence;
+                }
+
+                publish_bccd_energy();
+                post_ccsd_correction(DLPNOCCSDPhase::FinalBrueckner);
+                break;
+            } else if (iteration >= BRUECKNER_MAXITER) {
+                outfile->Printf("    WARNING: Brueckner orbital optimization did not converge in %d iterations! Max R1 = %10.3e\n", iteration, T1_max);
+                throw PSIEXCEPTION(
+                    "Brueckner orbital optimization did not converge; no final DLPNO-BCCD result was published.");
+            }
+
+            // > BRUECKNER OPTIMIZATION < //
+
+            // Set brueckner orbitals iteration control to true
+            brueckner_iter_ = true;
+
+            // Get new set of Brueckner orbitals through T1-rotations
+            brueckner_rotation(kappa_ia);
+
+            // Recanonicalize LMOs after rotation
+            lmo_canonicalize();
+
+            iteration++;
+        }
+
+        return scalar_variable("CURRENT ENERGY");
+
+    } else {
+        compute_dlpno_ccsd_energy();
+        post_ccsd_correction(DLPNOCCSDPhase::SinglePoint);
+        return scalar_variable("CURRENT ENERGY");
+    }
 }
 
 void DLPNOCCSD::print_integral_sparsity() {

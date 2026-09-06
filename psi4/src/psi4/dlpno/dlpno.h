@@ -34,6 +34,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libfock/jk.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
@@ -48,12 +49,23 @@ namespace dlpno {
 
 enum class DLPNOMethod { MP2, CCSD, CCSD_T };
 
+/// Identifies the point at which an optional post-CCSD correction is evaluated.
+enum class DLPNOCCSDPhase { SinglePoint, InitialBrueckner, FinalBrueckner };
+
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
 class DLPNO : public Wavefunction {
    protected:
     /// what quantum chemistry module are we running
     DLPNOMethod algorithm_;
+    /// Using Brueckner orbitals?
+    bool brueckner_orbs_;
+    /// Performing a Brueckner iteration?
+    bool brueckner_iter_ = false;
+    /// Has brueckner converged reached intermediate convergence yet?
+    bool brueckner_intermediate_converged_ = false;
+    /// Had brueckner converged yet?
+    bool brueckner_converged_ = false;
     
     /// threshold for PAO domain size
     double T_CUT_DO_;
@@ -94,6 +106,14 @@ class DLPNO : public Wavefunction {
     SharedMatrix full_metric_;
     std::vector<double> J_metric_shell_diag_; ///< used in AO ERI screening
 
+    /// JK object (used to form the Fock matrix if Brueckner orbitals are requested)
+    std::shared_ptr<JK> jk_;
+
+    /// AO Fock matrix (this changes with Brueckner orbitals)
+    SharedMatrix F_ao_;
+    /// Change in AO Density Matrix resulting from rotation
+    SharedMatrix delta_D_ao_;
+
     /// localized molecular orbitals (LMOs)
     SharedMatrix C_lmo_;
     SharedMatrix F_lmo_;
@@ -101,6 +121,7 @@ class DLPNO : public Wavefunction {
     /// projected atomic orbitals (PAOs)
     SharedMatrix C_pao_;
     SharedMatrix F_pao_;
+    SharedMatrix F_lmo_pao_; //< needed for non-canonical Brueckner orbitals
     SharedMatrix S_pao_;
 
     /// differential overlap integrals (EQ 4)
@@ -138,6 +159,10 @@ class DLPNO : public Wavefunction {
     std::vector<double> de_pno_;   ///< PNO truncation energy error
     std::vector<double> de_pno_os_;   ///< opposite-spin contributions to de_pno_
     std::vector<double> de_pno_ss_;   ///< same-spin contributions to de_pno_
+
+    /// singles amplitudes
+    std::vector<SharedMatrix> T_ia_; ///< singles amplitudes [naocc x (npno_ii, 1)]
+    std::vector<SharedMatrix> T_n_ij_; ///< projected singles amplitudes [n_lmo_pairs x (nlmo_ij, npno_ij)] (Jiang Eq. 70)
 
     /// pre-screening energies
     double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs
@@ -226,6 +251,12 @@ class DLPNO : public Wavefunction {
 
     void copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_list);
 
+    /// Performs a Brueckner rotation
+    void brueckner_rotation(const SharedMatrix &kappa_ia);
+
+    /// recanonicalize LMOs after Brueckner rotation
+    void lmo_canonicalize();
+
     /// Form LMOs, PAOs, etc.
     void setup_orbitals();
     
@@ -301,9 +332,19 @@ class DLPNOMP2 : public DLPNO {
     double compute_energy() override;
 };
 
-// Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
+// Right-hand DLPNO-CCSD equations refer to Jiang et al.
+// (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963).
+// Lambda and OPDM equations refer to Toth et al.
+// (JCTC 22, 7667-7681, 2026; DOI: 10.1021/acs.jctc.6c00758).
 class PSI_API DLPNOCCSD : public DLPNO {
    protected:
+    /// Solve the left-hand CCSD equations for an explicitly requested Lambda-dependent result.
+    bool lambda_requested_ = false;
+    /// Build the correlated one-particle density needed by the properties driver.
+    bool onepdm_requested_ = false;
+    /// Whether the Lambda amplitudes correspond to the current CCSD amplitudes/orbitals.
+    bool lambda_solved_ = false;
+
     /// Use low memory algorithm to store PNO overlaps?
     bool low_memory_overlap_;
     /// Write (Q_ij | m_ij a_ij) integrals to disk?
@@ -315,10 +356,6 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_nn_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_mn_; ///< pno overlaps
-
-    /// Coupled-cluster amplitudes
-    std::vector<SharedMatrix> T_ia_; ///< singles amplitudes [naocc x (npno_ii, 1)]
-    std::vector<SharedMatrix> T_n_ij_; ///< projected singles amplitudes [n_lmo_pairs x (nlmo_ij, npno_ij)] (Jiang Eq. 70)
 
     // => Strong and Weak Pair Info <=//
 
@@ -367,16 +404,54 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<SharedMatrix> Fkc_; // Jiang Eq. 95
     std::vector<SharedMatrix> Fai_; // Jiang Eq. 96
     std::vector<SharedMatrix> Fab_; // Jiang Eq. 97
+    std::vector<SharedMatrix> Fkc_bar_; // Additional occupied-virtual Fock term used by Lambda.
 
     double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
 
+    // => Optional Lambda-CCSD state <= //
+
+    /// Lambda singles [i](a_ii, 1). Unallocated unless a Lambda-dependent result is requested.
+    std::vector<SharedMatrix> lambda_ia_;
+    /// Lambda doubles [ij](a_ij, b_ij), stored for ordered retained pairs.
+    std::vector<SharedMatrix> lambda_iajb_;
+    /// Spin-adapted doubles: 1/2 lambda_ij^ab + lambda_ij^ba (Toth Eq. 55).
+    std::vector<SharedMatrix> lambda_iajb_bar_;
+
+    // Lambda-CCSD integrals and intermediates
+    std::vector<SharedMatrix> delta_imae_tilde_;  ///< Toth Eq. 57
+    SharedMatrix F_im_double_tilde_;              ///< Jiang Eq. 86
+    std::vector<SharedMatrix> F_vv_double_tilde_; ///< Jiang Eq. 85
+    std::vector<SharedMatrix> beta_;              ///< Jiang Eq. 82
+    std::vector<SharedMatrix> gamma_;             ///< Jiang Eq. 83
+    std::vector<SharedMatrix> delta_;             ///< Jiang Eq. 84
+    std::vector<std::vector<SharedMatrix>> gamma_double_tilde_; ///< Toth Eq. 103
+    std::vector<std::vector<SharedMatrix>> delta_double_tilde_; ///< Toth Eq. 105
+    SharedMatrix rho_oo_;                         ///< Toth Eq. 53
+    std::vector<SharedMatrix> rho_vv_;             ///< Toth Eq. 54
+    std::vector<std::vector<SharedMatrix>> F_fcia_hat_; ///< Toth Eq. 33 (currently not formed)
+    std::vector<std::vector<SharedMatrix>> F_knia_hat_; ///< Toth Eq. 34
+    std::vector<SharedMatrix> K_maef_dt_;          ///< Toth Eq. 59
+    std::vector<SharedMatrix> K_eimn_dt_;          ///< Toth Eq. 60
+    std::vector<SharedMatrix> M_kace_bar_;         ///< Toth Eq. 61
+    std::vector<SharedMatrix> M_mkic_bar_;         ///< Toth Eq. 62
+    std::vector<SharedMatrix> J_kmic_bar_;         ///< Toth Eq. 63
+    std::vector<SharedMatrix> J_kaec_bar_;         ///< Toth Eq. 64
+    std::vector<SharedMatrix> L_ieab_bar_;         ///< Toth Eq. 73
+    std::vector<SharedMatrix> K_ijmb_bar_;         ///< Toth Eq. 74
+
+    // Local blocks of the correlated one-particle density matrix
+    SharedMatrix Doo_;                     ///< Occupied-occupied block, Toth Eq. A2
+    std::vector<SharedMatrix> Dov_;         ///< Occupied-virtual blocks, Toth Eq. A3
+    std::vector<SharedMatrix> Dvv_singles_; ///< Singles virtual-virtual blocks, Toth Eq. A5
+    std::vector<SharedMatrix> Dvv_pair_;    ///< Pair virtual-virtual blocks, Toth Eq. A4
+
     /// Returns the appropriate overlap matrix given two LMO pairs
-    inline SharedMatrix S_PNO(const int ij, const int mn);
+    SharedMatrix S_PNO(const int ij, const int mn);
     /// Encapsulates the reading in of (Q_{ij}|m_{ij} a_{ij}) integrals (regardless of core or disk)
-    inline std::vector<SharedMatrix> QIA_PNO(const int ij);
+    std::vector<SharedMatrix> QIA_PNO(const int ij);
     /// Encapsulates the reading in of (Q_{ij}|a_{ij} b_{ij}) integrals (regardless of core or disk)
-    inline std::vector<SharedMatrix> QAB_PNO(const int ij);
+    std::vector<SharedMatrix> QAB_PNO(const int ij);
 
     /// These functions split up pairs that survive the initial dipole screening
     // The "crude" pre-screening step splits up semi-canonical MP2 pairs from the rest,
@@ -423,11 +498,39 @@ class PSI_API DLPNOCCSD : public DLPNO {
 
     /// iteratively solve local CCSD equations
     void lccsd_iterations();
+    /// computes DLPNO-CCSD energy (this function is kept separate from compute_energy function in case Brueckner orbitals are requested)
+    double compute_dlpno_ccsd_energy();
+
+    // => Optional Lambda-CCSD calculation <= //
+
+    /// Clear Lambda quantities that became stale after an orbital update.
+    void reset_lambda_state();
+    /// Estimate the incremental memory required by the Lambda equations.
+    void estimate_lambda_memory();
+    /// Compute occupied-occupied and virtual-virtual Lambda density intermediates (Toth Eqs. 53--54).
+    void form_goo();
+    /// Compute intermediates required by the Lambda equations.
+    void compute_lambda_intermediates();
+    /// Compute the Lambda singles residual (Toth Eq. 58, 67--72).
+    void compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>>& L_ia_buffer);
+    /// Compute the Lambda doubles residual (Toth Eq. 75, 86--91).
+    void compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::vector<SharedMatrix>& Ln_iajb);
+    /// Compute the occupied-space Lambda contraction (Toth Eq. 81).
+    std::vector<SharedMatrix> compute_alpha_ijkl();
+    /// Solve the Lambda equations for the current converged right-hand CCSD state.
+    void solve_lambda(bool include_singles);
+    /// Form local blocks of the unrelaxed correlated one-particle density matrix (Toth Eqs. A2--A5).
+    void compute_opdm();
+    /// Assemble and publish the spin-summed AO one-particle density for OEProp.
+    SharedMatrix compute_ao_opdm();
+
+    /// Optional work performed after a converged CCSD solve. Derived triples methods override this hook.
+    virtual void post_ccsd_correction(DLPNOCCSDPhase phase);
 
     void print_header();
     void print_results();
     void print_integral_sparsity();
-    
+
    public:
     DLPNOCCSD(SharedWavefunction ref_wfn, Options& options);
     ~DLPNOCCSD() override;
@@ -435,7 +538,9 @@ class PSI_API DLPNOCCSD : public DLPNO {
     double compute_energy() override;
 };
 
-// Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
+// Right-hand triples equations refer to Jiang et al. (JCP 161, 082502, 2024;
+// DOI: 10.1063/5.0219963); asymmetric triples refer to Toth et al. (JCTC 22,
+// 7667-7681, 2026; DOI: 10.1021/acs.jctc.6c00758).
 
 class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
    protected:
@@ -448,12 +553,15 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
 
     /// triplet natural orbitals (TNOs)
     std::vector<SharedMatrix> W_iajbkc_; ///< W3 intermediate for each lmo triplet (Jiang Eq. 109)
-    std::vector<SharedMatrix> V_iajbkc_; ///< V3 intermeidate for each lmo triplet (Jiang Eq. 110)
+    std::vector<SharedMatrix> V_iajbkc_; ///< V3 intermediate for each lmo triplet (Jiang Eq. 110)
+    /// Left triples moment used by the asymmetric correction of Toth et al.; [ijk](a, b * ntno + c).
+    std::vector<SharedMatrix> L_iajbkc_;
     std::vector<SharedMatrix> T_iajbkc_; ///< Triples amplitude for each lmo triplet
     std::vector<SharedMatrix> X_tno_; ///< global PAO -> canonical TNO transforms
     std::vector<SharedVector> e_tno_; ///< TNO orbital energies
     std::vector<int> n_tno_; ///< number of tnos per triplet domain
-    std::vector<double> e_ijk_; ///< energy of triplet ijk (used for pre-screening and convergence purposes)
+    std::vector<double> e_ijk_; ///< target-method triplet energies used for screening and convergence
+    std::vector<double> e_ijk_right_; ///< ordinary (T) triplet energies retained during asymmetric screening
     std::vector<double> tno_scale_; ///< scaling factor to apply to each triplet for strong/weak triplets in iterative (T)
     std::vector<bool> is_strong_triplet_; ///< whether or not triplet is strong
 
@@ -463,9 +571,13 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     bool write_amplitudes_ = false;
 
     /// final energies
-    double de_lccsd_t_screened_; ///< energy contribution from screened triplets
-    double e_lccsd_t_; ///< local (T) correlation energy
-    double E_T_; ///< raw iterative (T) energy at weaker triples cutoffs
+    double de_lccsd_t_screened_ = 0.0; ///< ordinary (T) energy contribution from screened triplets
+    double de_lccsd_t_l_screened_ = 0.0; ///< asymmetric (T)_L energy contribution from screened triplets
+    double e_lccsd_t_ = 0.0; ///< local (T) correlation energy
+    double E_T_ = 0.0; ///< raw iterative (T) energy at weaker triples cutoffs
+
+    double e_lccsd_t_l_ = 0.0; ///< local (T)_Lambda correlation energy
+    double E_T_L_ = 0.0; ///< raw iterative (T)_Lambda energy at weaker triples cutoffs
 
     /// Create sparsity maps for triples
     void triples_sparsity(bool prescreening);
@@ -480,17 +592,24 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     SharedMatrix triples_permuter(const SharedMatrix& X, int i, int j, int k, bool reverse=false);
     /// compute (T) iteration energy (Jiang Eq. 53)
     double compute_t_iteration_energy();
+    /// Contract the converged right triples amplitudes with the left triples moment for (T)_L.
+    double compute_t_l_iteration_energy();
 
-    /// L_CCSD(T0) energy (Jiang Eq. 53, 109-110)
-    double compute_lccsd_t0(bool save_memory=false);
+    /// Form right and left triples moments and their semicanonical (T0)/(T0)_L energies.
+    std::pair<double, double> compute_lccsd_t0(bool save_memory=false);
     /// A function to estimate (T) memory costs
-    void estimate_memory();
+    void estimate_triples_memory();
     /// L_CCSD(T) iterations (Jiang Eq. 111-112)
-    double lccsd_t_iterations();
+    std::pair<double, double> lccsd_t_iterations();
 
-    void print_header();
+    void print_header(DLPNOCCSDPhase phase);
 
-    void print_results();
+    void print_results(DLPNOCCSDPhase phase);
+
+    /// Evaluate triples after a single-point CCSD solve or selected Brueckner macroiterations.
+    void post_ccsd_correction(DLPNOCCSDPhase phase) override;
+    /// Compute the requested symmetric and, optionally, asymmetric triples corrections.
+    void compute_triples_correction(DLPNOCCSDPhase phase);
 
    public:
     DLPNOCCSD_T(SharedWavefunction ref_wfn, Options& options);
