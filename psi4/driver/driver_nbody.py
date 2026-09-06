@@ -103,8 +103,11 @@ __all__ = [
 
 import copy
 import logging
+import numbers
 import pprint
-from typing import TYPE_CHECKING, Any, Dict, Tuple, Union, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union, Optional
+
+import numpy as np
 
 from psi4 import core
 
@@ -153,6 +156,108 @@ logger = logging.getLogger(__name__)
 FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
 MBETaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
+
+# whole-molecule dict spellings of external_potentials understood by p4util.validate_external_potential
+_EP_MODE_KEYS = {"points", "diffuse", "matrix"}
+_EP_SAPT_FRAGMENT_KEYS = {"A", "B", "C"}
+
+_EP_UNSCOPED_WARNING = (
+    "external_potentials was not given as a 1-indexed fragment mapping, so it applies in full to every "
+    "many-body component calculation. Are you sure this is what you want? Use a 1-indexed fragment "
+    "dictionary to scope potentials to particular fragments."
+)
+
+
+def _is_fragment_keyed_external_potential(external_potentials: Any) -> bool:
+    """Whether *external_potentials* should be read as a mapping from 1-indexed fragment to potentials.
+
+    A dict whose keys are one of the whole-molecule spellings accepted by
+    :py:func:`~psi4.driver.p4util.validate_external_potential` is not a fragment mapping.
+
+    """
+    if not isinstance(external_potentials, dict):
+        return False
+
+    keys = set(external_potentials)
+    if keys and all(isinstance(key, str) for key in keys):
+        if keys <= _EP_MODE_KEYS or {key.upper() for key in keys} <= _EP_SAPT_FRAGMENT_KEYS:
+            return False
+
+    return True
+
+
+def _validate_fragment_potential(ifr: Any, external_potential: Any) -> List:
+    """Check that one fragment's *external_potential* is the documented flat point-charge list.
+
+    Fragment scoping applies to point charges only, so the positional ``[points, diffuse, matrix]``
+    list, the ``{mode: spec}`` dict, and a bare potential matrix are rejected here rather than being
+    silently garbled by the concatenation of several fragments' potentials.
+
+    """
+    expected = (
+        f"external_potentials[{ifr}] must be a flat point-charge list in the [[charge, [x, y, z]], ..] "
+        "form; diffuse charges and potential matrices can only be given for the whole molecule"
+    )
+
+    if isinstance(external_potential, dict):
+        raise ValidationError(f"{expected}, not per fragment. Found keys {sorted(external_potential)}.")
+
+    if not isinstance(external_potential, (list, np.ndarray)):
+        raise ValidationError(f"{expected}. Found {type(external_potential).__name__}.")
+
+    if len(external_potential) == 0:
+        return []
+
+    if not p4util.validate_charge_list(external_potential):
+        raise ValidationError(f"{expected}. Found {external_potential}.")
+
+    return list(external_potential)
+
+
+def _flatten_embedding_charges(charges: List) -> List:
+    """Rewrite embedding *charges* into the flat ``[q, x, y, z]`` rows used by a normalized points channel."""
+
+    return [[chg[0], *chg[1]] if len(chg) == 2 else list(chg) for chg in charges]
+
+
+def _add_embedding_points(external_potential: Any, charges: List) -> Dict:
+    """Add embedding *charges* to the point charges of a single whole-molecule external potential partition.
+
+    Any ``diffuse`` and ``matrix`` content of *external_potential* is preserved. Returns the partition in
+    the ``{mode: spec}`` form, so a partition absent from the user input becomes points-only.
+
+    """
+    if external_potential is None:
+        return {"points": _flatten_embedding_charges(charges)}
+
+    normalized = p4util.validate_external_potential({"C": external_potential})["C"]
+    normalized["points"] = _flatten_embedding_charges(charges) + list(normalized.get("points", []))
+    return normalized
+
+
+def _combine_external_potentials(charges: List, external_potentials: Any) -> Any:
+    """Add embedding *charges* to any user-supplied *external_potentials* for a single component calculation.
+
+    Fragment-partitioned (A/B/C) potentials keep their partitions; the whole-environment embedding charges
+    join the special ``C`` partition, so they enter the total potential exactly once. The charges only ever
+    join a points channel, leaving any ``diffuse`` and ``matrix`` content of *external_potentials* intact.
+    Every other accepted spelling is normalized to the canonical ``{mode: spec}`` form before merging.
+
+    """
+    charges = list(charges)
+    if external_potentials is None or (isinstance(external_potentials, dict) and not external_potentials):
+        return charges
+
+    if not charges:
+        return external_potentials
+
+    if isinstance(external_potentials, dict) and not set(external_potentials) <= _EP_MODE_KEYS:
+        merged = copy.deepcopy(external_potentials)
+        ckey = next((key for key in merged if isinstance(key, str) and key.upper() == "C"), "C")
+        merged[ckey] = _add_embedding_points(merged.get(ckey), charges)
+        return merged
+
+    return _add_embedding_points(external_potentials, charges)
 
 
 # nbody function is here for the docstring
@@ -228,6 +333,17 @@ def nbody():
         Dictionary of atom-centered point charges. keys: 1-based index of fragment, values: list of charges for each fragment.
         Add atom-centered point charges for fragments whose basis sets are not included in the computation.
         Starting in v1.10, set :envvar:`QCMANYBODY_EMBEDDING_CHARGES` =1 to access this functionality.
+
+    :type external_potentials: list or dict
+    :param external_potentials: ``{2: [[-0.834, [x, y, z]], ..]}``
+
+        External potentials for many-body computations activated by ``bsse_type``. A dict with 1-based
+        fragment indices as keys and flat ``[[charge, [x, y, z]], ..]`` point-charge lists as values scopes each
+        potential to the component calculations in which that fragment has real atoms. Any other accepted
+        spelling (flat list, or a whole-molecule dict keyed by ``points``/``diffuse``/``matrix`` or by
+        ``A``/``B``/``C``) applies in full to every component. See
+        :ref:`External potentials in many-body computations <sec:mbeextern>` for the fragment-scoping rules per
+        ``bsse_type``, the accepted per-fragment forms, and the interaction with ``embedding_charges``.
 
     Potential QCVariables set are:
 
@@ -462,6 +578,33 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             **input_model.specification.keywords.model_dump(exclude_unset=True),
             input_data=input_model,  # storage, to reconstitute ManyBodyResult
         )
+
+        external_potentials = keywords["function_kwargs"].get("external_potentials")
+        if _is_fragment_keyed_external_potential(external_potentials):
+            invalid_keys = [
+                key for key in external_potentials
+                if isinstance(key, bool)
+                or not isinstance(key, numbers.Integral)
+                or not 1 <= key <= computer_model.nfragments
+            ]
+            if invalid_keys:
+                message = (
+                    f"external_potentials keys must be 1-indexed fragment integers between 1 and "
+                    f"{computer_model.nfragments}; found {invalid_keys}."
+                )
+                if all(isinstance(key, str) for key in invalid_keys):
+                    message += (
+                        " For a whole-molecule external potential, use lowercase mode keys among "
+                        f"{sorted(_EP_MODE_KEYS)} or SAPT partition keys among "
+                        f"{sorted(_EP_SAPT_FRAGMENT_KEYS)}."
+                    )
+                raise ValidationError(message)
+            for ifr, potential in external_potentials.items():
+                _validate_fragment_potential(ifr, potential)
+        elif external_potentials is not None:
+            logger.warning(_EP_UNSCOPED_WARNING)
+            core.print_out("\n  Warning: " + _EP_UNSCOPED_WARNING + "\n")
+
         nb_per_mc = computer_model.nbodies_per_mc_level
 
         # print("\n<<<  (ZZZ 1) Psi4 harness ManyBodyComputer.from_psi4_task_planner  >>>")
@@ -558,9 +701,32 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
             data = copy.deepcopy(template)
             data["molecule"] = core.Molecule.from_schema(imol.model_dump()) #nonphysical=True
+
+            external_potentials = data["keywords"]["function_kwargs"].get("external_potentials")
+            if _is_fragment_keyed_external_potential(external_potentials):
+                selected_potentials = []
+                for ifr in frag:
+                    if ifr in external_potentials:
+                        selected_potentials.extend(
+                            _validate_fragment_potential(ifr, external_potentials[ifr])
+                        )
+                info = (
+                    "\nExternal potential for computation "
+                        f"on real fragments {list(frag)}:\n{pp.pformat(selected_potentials)}\n"
+                )
+                logger.info(info)
+                core.print_out(info)
+                if selected_potentials:
+                    data["keywords"]["function_kwargs"]["external_potentials"] = selected_potentials
+                else:
+                    data["keywords"]["function_kwargs"].pop("external_potentials")
+
             if self.embedding_charges:
                 charges = imol.extras.pop("embedding_charges")
-                data['keywords']['function_kwargs'].update({'external_potentials': charges})
+                combined = _combine_external_potentials(
+                    charges, data["keywords"]["function_kwargs"].get("external_potentials")
+                )
+                data['keywords']['function_kwargs'].update({'external_potentials': combined})
 
             self.task_list[label] = mb_computer(**data)
             count += 1
@@ -619,7 +785,15 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         # print("\n<<<  (RRR 2) Psi4 ManyBodyComputer.get_results component_properties  >>>")
         # pprint.pprint(component_properties, width=200)
 
-        analyze_back = self.qcmb_core.analyze(component_properties)
+        fragment_scoped_external_potentials = any(
+            _is_fragment_keyed_external_potential(
+                specification.keywords.get("function_kwargs", {}).get("external_potentials")
+            )
+            for specification in self.input_data.specification.specification.values()
+        )
+        analyze_back = self.qcmb_core.analyze(
+            component_properties, external_potential=fragment_scoped_external_potentials
+        )
         analyze_back["nbody_number"] = len(component_properties)
 
         nbody_model = super().get_results(external_results=analyze_back, component_results=component_results, client=client)
