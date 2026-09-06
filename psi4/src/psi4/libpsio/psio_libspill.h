@@ -37,7 +37,7 @@
  * every entry point below is then checked against Psi4's real declaration
  * rather than against our copy of it, and a signature that has drifted shows up
  * as a link error rather than at integration time. See
- * port/psi4/conformance_psi4.cc. */
+ * test/psio_conformance_test.cc. */
 #ifdef PSIO_USE_PSI4_HEADERS
 #include "psi4/libpsio/psio.h"
 #else
