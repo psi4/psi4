@@ -85,8 +85,8 @@ void touch(T mp) {
 
 void   (P::*m_open)(size_t, int)                                     = &P::open;
 void   (P::*m_close)(size_t, int)                                    = &P::close;
-int    (P::*m_open_check)(size_t)                                    = &P::open_check;
-bool   (P::*m_exists)(size_t)                                        = &P::exists;
+int    (P::*m_open_check)(size_t) const                              = &P::open_check;
+bool   (P::*m_exists)(size_t) const                                  = &P::exists;
 void   (P::*m_rehash)(size_t)                                        = &P::rehash;
 
 void   (P::*m_read)(size_t, const char *, char *, size_t, psi::psio_address, psi::psio_address *)
