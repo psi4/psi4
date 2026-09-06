@@ -100,5 +100,25 @@ touch psio have no async path today.
 ## Verification that still matters
 
 The signature/semantics level is covered (conformance harness, in-tree compile).
-What turns "the API fits" into evidence: a full build, the `ctest` suite, and a
-byte-exact DF-CCSD(T) / disk-based MP2 spot-check against the old layer.
+What turns "the API fits" into evidence is a full build, the `ctest` suite, and a
+numerical comparison against the old layer — done properly:
+
+**Do not use a bit-identical / "machine precision" criterion.** Psi4 is threaded,
+and OpenMP reduction order alone moves the last digits between runs of the *same
+unmodified binary*. Establish that envelope first: run the unmodified code on the
+chosen input several times and record the spread. The defensible claim is then
+that the libspill runs fall **inside the code's own run-to-run spread**, not that
+they reproduce a single reference bit for bit — a bit-identical test would "fail"
+against the baseline itself and tell you nothing. (Measured elsewhere for
+comparison: a water/cc-pVDZ SCF spread of 2e-13 across runs of untouched code.)
+
+Two traps that would otherwise produce a false green:
+
+1. **Pick a deterministic method.** Anything stochastic (stochastic-PT2-style)
+   is useless as a comparison case.
+2. **Make sure the case actually spills.** This is the important one for a
+   *libpsio* port: `DiskDFJK` and the out-of-core CC paths only engage above a
+   memory threshold, so a small test case silently exercises the in-core path and
+   verifies nothing about the I/O layer that was replaced. Choose an input that
+   genuinely goes to disk, or force it by setting the memory limit low enough —
+   and confirm from the output that the disk path really ran.
