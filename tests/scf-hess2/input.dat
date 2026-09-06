@@ -1,9 +1,14 @@
 #! UHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
 #! This test should match RHF values exactly
 
-oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
-psi4.set_options({"orbital_optimizer_package": oopkg})
+oopkg  = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "internal"
+soopkg = "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+soscf  = bool(os.environ.get("_PSI4_USE_SOSCF") or os.environ.get("_PSI4_USE_OTRPKG"))
+psi4.set_options({"orbital_optimizer_package": oopkg,
+                  "second_order_orbital_optimizer_package": soopkg,
+                  "soscf": soscf})
 compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+compare(soopkg.upper(), psi4.core.get_global_option("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE"), f"{soopkg=}")  #TEST
 
 psi3_hess = np.array([                                                                                    #TEST
     [ 0.6349786,-0.0002790,-0.0000000,-0.3185355, 0.2164913, 0.0000000,-0.3164431,-0.2162124, 0.0000000], #TEST
@@ -38,6 +43,13 @@ set {
 }
 
 psi4_hess, wfn = hessian('hf', return_wfn=True)
+
+_eff = {"internal": "internal", "ooo": "openorbitaloptimizer", "otr": "opentrustregion"}      #TEST
+# The keyword compares above prove the request landed; these prove it survived the           #TEST
+# compatibility guards, so a silent fallback to the internal optimizer fails the test.       #TEST
+compare(_eff[oopkg], wfn.module_role("orbital_optimizer"), "effective 1st-order module")     #TEST
+compare(_eff[soopkg] if soscf else "", wfn.module_role("second_order_orbital_optimizer"),
+        "effective 2nd-order module")                                                        #TEST
 
 compare_arrays(psi3_hess, psi4_hess, 1E-7, "STO-3G Hessian") #TEST
 compare_values(ref_ene, variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST

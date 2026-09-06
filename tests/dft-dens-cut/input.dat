@@ -3,9 +3,14 @@
 #! SCF will fail or crash (nans) without screening!
 
 
-oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
-psi4.set_options({"orbital_optimizer_package": oopkg})
+oopkg  = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "internal"
+soopkg = "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+soscf  = bool(os.environ.get("_PSI4_USE_SOSCF") or os.environ.get("_PSI4_USE_OTRPKG"))
+psi4.set_options({"orbital_optimizer_package": oopkg,
+                  "second_order_orbital_optimizer_package": soopkg,
+                  "soscf": soscf})
 compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+compare(soopkg.upper(), psi4.core.get_global_option("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE"), f"{soopkg=}")  #TEST
 molecule h2o {
 0 2
 H
@@ -89,6 +94,15 @@ ref_vals = { #TEST
 
 # libxc-defined functional
 func_call, wfn1 = energy('WB97X-V',return_wfn=True)
+
+_eff = {"internal": "internal", "ooo": "openorbitaloptimizer", "otr": "opentrustregion"}      #TEST
+# The keyword compares above prove the request landed; these prove it survived the           #TEST
+# compatibility guards, so a silent fallback to the internal optimizer fails the test.       #TEST
+compare(_eff[oopkg], wfn1.module_role("orbital_optimizer"), "effective 1st-order module")     #TEST
+# WB97X-V needs VV10, whose kernel the orbital Hessian does not cover, so the                 #TEST
+# second-order package falls back to the internal code no matter what was asked for.          #TEST
+compare("internal" if soscf else "", wfn1.module_role("second_order_orbital_optimizer"),
+        "effective 2nd-order module")                                                        #TEST
 func = wfn1.V_potential().functional()
 cut = func.density_tolerance()
 compare_values(ref_vals["WB97X-V"], func_call, 6, "is_libxc SuperFunctional")  #TEST

@@ -10,8 +10,14 @@ molecule arwater {
     H   0.000000000000     0.758215806856     0.564545805801
 }
 
-oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
-psi4.set_options({"orbital_optimizer_package": oopkg})
+oopkg  = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "internal"
+soopkg = "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+soscf  = bool(os.environ.get("_PSI4_USE_SOSCF") or os.environ.get("_PSI4_USE_OTRPKG"))
+psi4.set_options({"orbital_optimizer_package": oopkg,
+                  "second_order_orbital_optimizer_package": soopkg,
+                  "soscf": soscf})
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+compare(soopkg.upper(), psi4.core.get_global_option("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE"), f"{soopkg=}")  #TEST
 
 set = {
     scf_type       pk
@@ -22,7 +28,14 @@ set = {
 
 findif5_tol = 2.e-8
 
-e = energy('scf')
+e, wfn = energy('scf', return_wfn=True)
+
+_eff = {"internal": "internal", "ooo": "openorbitaloptimizer", "otr": "opentrustregion"}      #TEST
+# The keyword compares above prove the request landed; these prove it survived the           #TEST
+# compatibility guards, so a silent fallback to the internal optimizer fails the test.       #TEST
+compare(_eff[oopkg], wfn.module_role("orbital_optimizer"), "effective 1st-order module")     #TEST
+compare(_eff[soopkg] if soscf else "", wfn.module_role("second_order_orbital_optimizer"),
+        "effective 2nd-order module")                                                        #TEST
 compare_values(nucenergy, arwater.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
 compare_values(refenergy, e, 9, "SCF energy with ECP")                                        #TEST
 compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
