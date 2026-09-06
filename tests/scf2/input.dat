@@ -37,7 +37,10 @@ compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion 
 compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
 
 n_iter = int(variable("scf iterations"))
-ok_iter = (n_iter > 7) and (n_iter < 12)
+if psi4.core.get_option("scf", "orbital_optimizer_package") in ["OTR", "OPENTRUSTREGION"]:  # KP-LOGIC
+    ok_iter = (n_iter > 1) and (n_iter < 8)  # second-order solver, so far fewer macro-iterations
+else:
+    ok_iter = (n_iter > 7) and (n_iter < 12)
 compare(True, ok_iter, f"Iteration Count {n_iter}")
 
 scf_enes = variable("scf total energies")

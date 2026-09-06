@@ -2,6 +2,10 @@
 #! 'super_mix' showcases how to use different screening values for X and C parts.
 #! SCF will fail or crash (nans) without screening!
 
+
+oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+psi4.set_options({"orbital_optimizer_package": oopkg})
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
 molecule h2o {
 0 2
 H

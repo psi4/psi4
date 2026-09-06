@@ -54,6 +54,8 @@ class RHF : public HF {
     void common_init();
     void setup_potential() override;
 
+    SharedMatrix unpack(const double* matrix, const std::string name, const Dimension doccpi, const Dimension virpi);
+
    public:
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
@@ -78,6 +80,14 @@ class RHF : public HF {
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) override;
     bool stability_analysis() override;
+
+#ifdef USING_OpenTrustRegion
+    OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+                               OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) override;
+    OTR::c_int otr_hess_x(const OTR::c_real* x, OTR::c_real* out) override;
+    OTR::c_int otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) override;
+    int otr_n_param() override;
+#endif
 
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
 

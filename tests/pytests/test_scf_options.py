@@ -23,6 +23,15 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
 )
 def test_guess_mix_for_broken_symmetry(inp):
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-FOR-NOW
+        # This test pins first-order-solver behaviour: that a plain UHF SCF stops at the
+        # symmetric stationary point and needs guess_mix to reach the broken-symmetry
+        # solution. OpenTrustRegion minimizes, so it walks off that saddle on its own and
+        # returns -0.99872 for both halves; from the more symmetric guesses (gwh, huckel,
+        # modhuckel, sadno, sap) its micro-iteration solver instead aborts with "Trial
+        # subspace too small". Reported upstream; run the internal optimizer here meanwhile.
+        psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO fix
+
     refENuc = 0.17639240356
     refSCF = -0.82648407827446
     refBSSCF = -0.99872135103903

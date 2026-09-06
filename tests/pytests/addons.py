@@ -97,6 +97,7 @@ _programs = {
     "gauxc": psi4.addons("gauxc"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
+    "otr": psi4.addons("otr"),
 }
 
 
@@ -237,7 +238,24 @@ def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = No
         command = [psi4.executable, inputdat]
     else:
         command = [sys.executable, psi4.executable, inputdat]
+    # Retrieve the Psi4 output file too. When the subprocess dies on a signal -- a segfault
+    # in a linked add-on, say -- stdout and stderr come back empty and the assertion below
+    # has nothing to report, which is a miserable thing to debug from a CI log.
+    psi4out = "output.dat" if inputdat == "input.dat" else str(Path(inputdat).with_suffix(".out"))
+    outfiles = list(outfiles) if outfiles else []
+    if psi4out not in outfiles:
+        outfiles.append(psi4out)
+
     _, output = execute(command, infiles_with_contents, outfiles, environment=env, scratch_messy=False)
 
-    success = output["proc"].poll() == 0
-    assert success, output["stdout"] + output["stderr"]
+    retcode = output["proc"].poll()
+    success = retcode == 0
+    if not success:
+        report = f"psi4 exited {retcode}"
+        if retcode is not None and retcode < 0:
+            report += f" (killed by signal {-retcode})"
+        report += "\n\n=== stdout ===\n" + output["stdout"] + "\n=== stderr ===\n" + output["stderr"]
+        tail = (output.get("outfiles") or {}).get(psi4out)
+        if tail:
+            report += f"\n=== tail of {psi4out} ===\n" + "\n".join(tail.splitlines()[-60:])
+    assert success, report

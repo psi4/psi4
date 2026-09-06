@@ -29,7 +29,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -1449,5 +1448,124 @@ bool HF::stability_analysis() {
     throw PSIEXCEPTION("Stability analysis hasn't been implemented yet for this wfn type.");
     return false;
 }
+
+#ifdef USING_OpenTrustRegion
+extern "C" OTR::c_int otr_obj_func_wrapper(const OTR::c_real* kappa, OTR::c_real* func) {
+    if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
+    return HF::instance->otr_obj_func(kappa, func);
+}
+
+extern "C" OTR::c_int otr_hess_x_wrapper(const OTR::c_real* x, OTR::c_real* hess_x) {
+    if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
+    return HF::instance->otr_hess_x(x, hess_x);
+}
+
+extern "C" OTR::c_int otr_update_orbs_wrapper(const OTR::c_real* kappa, OTR::c_real* func, 
+                                              OTR::c_real* grad, OTR::c_real* h_diag, 
+                                              OTR::hess_x_fp* hess_x_fp) {
+    if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
+    auto error = HF::instance->otr_update_orbs(kappa, func, grad, h_diag, hess_x_fp);
+    if (error) return error;
+
+    HF::instance->otr_record_iteration(*func, grad);
+
+    return 0;
+}
+
+extern "C" OTR::c_int otr_conv_check_wrapper(OTR::c_bool* converged) {
+    if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
+
+    if (!(HF::instance->otr_has_prev_func_ && HF::instance->otr_has_curr_func_)) {
+        *converged = false;
+        return 0;
+    }
+
+    *converged = HF::instance->otr_converged();
+    return 0;
+}
+
+extern "C" void otr_logger(const char* message) {
+    outfile->Printf(" %s\n", message);
+}
+
+void HF::otr_record_iteration(OTR::c_real func, const OTR::c_real* grad) {
+    otr_iteration_energies_.push_back(func);
+    otr_prev_func_ = otr_curr_func_;
+    otr_has_prev_func_ = otr_has_curr_func_;
+    otr_curr_func_ = func;
+    otr_has_curr_func_ = true;
+
+    double grad_sq = 0.0;
+    for (int i = 0; i < otr_n_param_; ++i) grad_sq += grad[i] * grad[i];
+    otr_grad_rms_ = std::sqrt(grad_sq / static_cast<double>(otr_n_param_));
+}
+
+bool HF::otr_converged() const {
+    if (!(otr_has_prev_func_ && otr_has_curr_func_)) return false;
+
+    const double e_conv = options_.get_double("E_CONVERGENCE");
+    const double d_conv = options_.get_double("D_CONVERGENCE");
+    const double e_delta = std::fabs(otr_curr_func_ - otr_prev_func_);
+    return (e_delta < e_conv) && (otr_grad_rms_ < d_conv);
+}
+#endif
+
+int HF::opentrustregion_scf() {
+#ifndef USING_OpenTrustRegion
+    throw PSIEXCEPTION("OpenTrustRegion support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenTrustRegion=ON`.\n");
+#else
+    // initialize instance
+    instance = this;
+
+    // number of parameters
+    otr_n_param_ = otr_n_param();
+    otr_iteration_energies_.clear();
+    otr_has_prev_func_ = false;
+    otr_has_curr_func_ = false;
+    otr_prev_func_ = 0.0;
+    otr_curr_func_ = 0.0;
+    otr_grad_rms_ = 0.0;
+
+    // Nothing to optimize (e.g. a closed-shell system with no virtual orbitals). The guess
+    // orbitals are already the solution and OpenTrustRegion rejects n_param == 0.
+    if (otr_n_param_ == 0) {
+        otr_iteration_energies_.push_back(compute_E());
+        return 0;
+    }
+
+    // initialize settings
+    OTR::solver_settings_type settings = OTR::solver_settings_init();
+
+    // override default settings
+    // Psi4 runs its own stability analysis in scf_finalize_energy, which is what fills
+    // SCF STABILITY EIGENVALUES and drives the follow-and-reconverge loop. Leave OTR's
+    // per-macro-iteration stability check off rather than doing the work twice and
+    // landing on a different solution than the internal solver would.
+    settings.stability = false;
+    settings.conv_tol = options_.get_double("D_CONVERGENCE");
+    if (options_["SOSCF_CONV"].has_changed()) {
+        settings.conv_tol = std::min(settings.conv_tol, options_.get_double("SOSCF_CONV"));
+    }
+    settings.n_macro = options_.get_int("MAXITER");
+    if (options_["SOSCF_MAX_ITER"].has_changed()) {
+        settings.n_micro = options_.get_int("SOSCF_MAX_ITER");
+    }
+    auto print = options_.get_int("PRINT");
+    settings.verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
+    settings.logger = otr_logger;
+    settings.conv_check = otr_conv_check_wrapper;
+
+    // call the Fortran solver
+    auto error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, 
+                             otr_n_param_, settings);
+
+    // Every OpenTrustRegion failure mode -- running out of macro-iterations, or a line
+    // search that could not lower the objective along an unstable mode -- means the
+    // orbitals are not converged. Hand the code back instead of throwing so the driver can
+    // turn it into an SCFConvergenceError and honour FAIL_ON_MAXITER.
+    return static_cast<int>(error);
+#endif
+}
+
 }  // namespace scf
 }  // namespace psi

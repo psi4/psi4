@@ -14,6 +14,7 @@ Eref = {
           "DFDirJ+COSX"    : {
             "INTERNAL":      -149.58722317236171, #TEST
             "OOO":           -149.58726907,       #TEST  # -0.00004645
+            "OTR":           -149.58722317236171, #TEST  # no OTR for semi-numerical K, falls back
             },
           "DFDirJ+LinK"    : -149.58726772171027  #TEST
         } 
@@ -25,6 +26,7 @@ Eref = {
           "DFDirJ+COSX"    : {
             "INTERNAL":      -149.67132922581225, #TEST
             "OOO":           -149.67136954,       #TEST  # -0.00004031
+            "OTR":           -149.67132922581225, #TEST  # no OTR for semi-numerical K, falls back
             },
           "DFDirJ+LinK"    : -149.67137328005577  #TEST
         }
@@ -33,7 +35,11 @@ Eref = {
         "Canonical" : -149.65170765757173, #TEST
         "DF"        : -149.65160796208073, #TEST
         "Composite": {
-          "DFDirJ+COSX"    : -149.65168894156605, #TEST
+          "DFDirJ+COSX"    : {
+            "INTERNAL":      -149.65168894156605, #TEST
+            "OOO":           -149.65168894156605, #TEST  # no OOO for ROHF, falls back
+            "OTR":           -149.65168894156605, #TEST  # no OTR for semi-numerical K, falls back
+            },
           "DFDirJ+LinK"    : -149.65172557470324  #TEST
         }
     }
@@ -259,7 +265,10 @@ for method in Eref["Triplet ROHF"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
-    compare_values(Eref["Triplet ROHF"]["Composite"][method], E, 6, f'Triplet {method} ROHF energy') #TEST
+    ans = Eref["Triplet ROHF"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans[get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE")]  # KP-LOGIC
+    compare_values(ans, E, 6, f'Triplet {method} ROHF energy') #TEST
 
 clean()
 
@@ -298,4 +307,7 @@ for method in Eref["Triplet ROHF"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
-    compare_values(Eref["Triplet ROHF"]["Composite"][method], E, 6, f'Triplet {method} CUHF energy') #TEST
+    ans = Eref["Triplet ROHF"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans["INTERNAL"]  # no OOO or OTR for CUHF  # KP-LOGIC
+    compare_values(ans, E, 6, f'Triplet {method} CUHF energy') #TEST

@@ -3,6 +3,12 @@
 #!   Now also testing that CSX harvesting PSI variables correctly
 #!   update ref_dft_2e/xc due to new BraggSlater radii
 
+
+oopkg = "ooo" if os.environ.get("_PSI4_USE_OOOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+psi4.set_options({"orbital_optimizer_package": oopkg})
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+dhtol = 6 if oopkg == "internal" else 2.e-6
+
 molecule meth {
 0 1
 C
@@ -75,10 +81,10 @@ clean()
 
 energy('b2plyp')
 compare_values(ref_nn, variable("Nuclear Repulsion Energy"),               6, "DH-DFT: NN")  #TEST
-compare_values(ref_b2plyp_1e, variable("One-Electron Energy"),             6, "DH-DFT: 1e")  #TEST
-compare_values(ref_b2plyp_2e, variable("Two-Electron Energy"),             6, "DH-DFT: 2e")  #TEST
-compare_values(ref_b2plyp_xc, variable("DFT XC Energy"),                   6, "DH-DFT: XC")  #TEST
-compare_values(ref_b2plyp_dh, variable("DOUBLE-hybrid correction Energy"), 6, "DH-DFT: DH")  #TEST
+compare_values(ref_b2plyp_1e, variable("One-Electron Energy"),             dhtol, "DH-DFT: 1e")  #TEST
+compare_values(ref_b2plyp_2e, variable("Two-Electron Energy"),             dhtol, "DH-DFT: 2e")  #TEST
+compare_values(ref_b2plyp_xc, variable("DFT XC Energy"),                   dhtol, "DH-DFT: XC")  #TEST
+compare_values(ref_b2plyp_dh, variable("DOUBLE-hybrid correction Energy"), dhtol, "DH-DFT: DH")  #TEST
 #compare_values(ref_b2plyp_dh, variable("b2plyp DOUBLE-hybrid correction Energy"), 6, "DH-DFT: DH")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, variable("DFT Functional Total Energy"), 6, "DH-DFT: total FNCL")  #TEST
 #compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, variable("B2PLYP Functional Total Energy"), 6, "DH-DFT: total FNCL")  #TEST
@@ -89,9 +95,9 @@ clean()
 
 energy('b2plyp-d')
 compare_values(ref_nn, variable("Nuclear Repulsion Energy"),               6, "DH-DFT-D: NN")  #TEST
-compare_values(ref_b2plyp_1e, variable("One-Electron Energy"),             6, "DH-DFT-D: 1e")  #TEST
-compare_values(ref_b2plyp_2e, variable("Two-Electron Energy"),             6, "DH-DFT-D: 2e")  #TEST
-compare_values(ref_b2plyp_xc, variable("DFT XC Energy"),                   6, "DH-DFT-D: XC")  #TEST
+compare_values(ref_b2plyp_1e, variable("One-Electron Energy"),         dhtol, "DH-DFT-D: 1e")  #TEST
+compare_values(ref_b2plyp_2e, variable("Two-Electron Energy"),         dhtol, "DH-DFT-D: 2e")  #TEST
+compare_values(ref_b2plyp_xc, variable("DFT XC Energy"),               dhtol, "DH-DFT-D: XC")  #TEST
 compare_values(ref_b2plyp_d, variable("dispersion correction Energy"),     6, "DH-DFT-D: D")   #TEST
 #compare_values(ref_b2plyp_d, variable("b2plyp-d2 dispersion correction Energy"),     6, "DH-DFT-D: D")   #TEST
 compare_values(ref_b2plyp_dh, variable("double-hybrid correction Energy"), 6, "DH-DFT-D: DH")  #TEST

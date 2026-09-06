@@ -253,17 +253,28 @@ def scf_initialize(self):
         self.functional().set_do_vv10(False)
         self.functional().set_lock(True)
 
-    # Print iteration header
-    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
-    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
+    # Print iteration header. The column header comes later, from scf_iterate, once the
+    # orbital optimizer that will actually run is known.
     core.print_out("  ==> Iterations <==\n\n")
-    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
-                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+
+
+#: How many times to restart OpenTrustRegion when canonicalizing its solution changes the
+#: orbital occupation. An occupation that keeps moving without lowering the energy is a
+#: relabeling of degenerate orbitals rather than a better solution, so this is only a
+#: backstop; the loop normally exits as soon as a restart fails to improve the energy.
+_OTR_MAX_OCCUPATION_RESTARTS = 5
+
+
+def _occupation(wfn):
+    """Snapshot the alpha and beta occupations per irrep as plain tuples."""
+    na, nb = wfn.nalphapi(), wfn.nbetapi()
+    return (tuple(na[h] for h in range(na.n())), tuple(nb[h] for h in range(nb.n())))
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
+    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
     verbose = core.get_option('SCF', "PRINT")
     reference = core.get_option('SCF', "REFERENCE")
 
@@ -291,51 +302,179 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             core.print_out(f"          {reference=}, soscf={soscf_enabled}, mom={self.MOM_excited_}, frac={frac_enabled}, efp={efp_enabled},\n")
             core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, autograc={autograc_enabled}, level_shift={level_shift_enabled},\n")
             core.print_out(f"          guess_mix={guessmix_enabled}\n")
-        else:
-            # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
-            if self.sad_ and self.iteration_ <= 0:
-                self.iteration_ += 1
-                self.form_G()
-                self.form_initial_F()
-                self.form_initial_C()
-                self.reset_occupation()
-                self.find_occupation()
-                ene_sad = self.compute_E()
-                core.print_out(
-                    "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
-                    ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
-            if core.get_option("SCF", "GUESS") == "READ" and self.iteration_ <= 0:
-                self.form_G()
-                self.form_initial_F()
-                self.form_initial_C()
-                self.reset_occupation()
-                self.find_occupation()
-                ene_sad = self.compute_E()
+            ooo_scf = False
 
-            try:
-                self.openorbital_scf()
-            except RuntimeError as ex:
-                if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
-                    core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
-                else:
-                    raise ex
+    otr_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OTR", "OPENTRUSTREGION"]
+    if otr_scf:
+        # OpenTrustRegion replaces this iteration loop wholesale, so anything applied
+        # per-iteration from Python (EFP/PCM/DDX/PE) or through form_C (MOM, FRAC) would be
+        # silently dropped. It also needs an orbital Hessian, which rules out CUHF (no
+        # cphf_Hx), the LinK K-build (no non-symmetric K), and meta/VV10 functionals.
+        metavv10_enabled = self.functional().needs_xc() and (self.functional().is_meta()
+                                                             or self.functional().needs_vv10())
+        pcm_enabled = core.get_option('SCF', 'PCM')
+        ddx_enabled = core.get_option('SCF', 'DDX')
+        pe_enabled = core.get_option('SCF', 'PE')
+        # OTR's Krylov micro-iterations need a Hessian-vector product that is consistent
+        # from one application to the next. LinK refuses non-symmetric K outright; COSX and
+        # snLinK evaluate K on a quadrature grid, which is consistent enough for a Fock
+        # iteration but not for a trust region -- steps get rejected over and over and a
+        # 12-second SCF turns into ten minutes. ("SNLINK" matches on "LINK".)
+        seminumerical_k = any(alg in core.get_option('SCF', 'SCF_TYPE')
+                              for alg in ("LINK", "COSX"))
+        # The GRAC shift splices the asymptotically-corrected potential into V_xc outside
+        # the kernel that cphf_Hx differentiates, so the Hessian doesn't see it.
+        grac_enabled = (core.get_option("SCF", "DFT_GRAC_SHIFT") != 0.0
+                        or core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE")
+        if (reference == "CUHF" or metavv10_enabled or seminumerical_k or self.MOM_excited_
+                or frac_enabled or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled
+                or grac_enabled):
+            core.print_out("    Note: OpenTrustRegion not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
+            core.print_out(f"          {reference=}, meta/vv10={metavv10_enabled}, seminum_k={seminumerical_k}, mom={self.MOM_excited_},\n")
+            core.print_out(f"          frac={frac_enabled}, efp={efp_enabled}, pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled},\n")
+            core.print_out(f"          grac={grac_enabled}\n")
+            otr_scf = False
+
+    # Name the optimizer that will actually drive the SCF. Both fallback guards have run
+    # by now, so a package demoted above is reported as Internal rather than as requested.
+    pkg_label = "OpenOrbitalOptimizer" if ooo_scf else "OpenTrustRegion" if otr_scf else "Internal"
+    core.print_out(f"  The orbital optimizer module is {pkg_label}\n\n")
+    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
+                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+
+    if ooo_scf:
+        # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
+        if self.sad_ and self.iteration_ <= 0:
+            self.iteration_ += 1
+            self.form_G()
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+            ene_sad = self.compute_E()
+            core.print_out(
+                "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+                ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
+        if core.get_option("SCF", "GUESS") == "READ" and self.iteration_ <= 0:
+            self.form_G()
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+            ene_sad = self.compute_E()
+
+        try:
+            self.openorbital_scf()
+        except RuntimeError as ex:
+            if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
+                core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
             else:
-                SCFE = self.compute_E()
-                self.set_energies("Total Energy", SCFE)
-                self.set_variable("SCF ITERATION ENERGY", SCFE)
-                self.iteration_energies.append(SCFE)  # note 1-len array, not niter-len array like INTERNAL
+                raise ex
+        else:
+            SCFE = self.compute_E()
+            self.set_energies("Total Energy", SCFE)
+            self.set_variable("SCF ITERATION ENERGY", SCFE)
+            self.iteration_energies.append(SCFE)  # note 1-len array, not niter-len array like INTERNAL
 
-                self.form_G()
-                self.form_F()
-                self.form_C()
-                self.form_D()
-                return
+            self.form_G()
+            self.form_F()
+            self.form_C()
+            self.form_D()
+            return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = False
     if cosx_enabled:
         early_screening = True
         self.jk().set_COSX_grid("Initial")
+
+    if otr_scf:
+        # OpenTrustRegion rotates a fixed set of orbitals at a fixed occupation, so run one
+        # pass of what the internal solver's first iteration does before handing over. That
+        # covers two things the guess alone doesn't give us:
+        #   * a complete orthonormal C. HF::guess sets iteration_ = -1 in exactly the two
+        #     cases where the guess doesn't supply one: SAD makes no orbitals at all, and
+        #     READ/cast-up fills in only the occupied columns and leaves the virtuals zero.
+        #     In the latter case C trivially "diagonalizes" F over the occ-virt block, so OTR
+        #     reads a zero gradient and declares convergence on the guess.
+        #   * an occupation relaxed against the guess Fock rather than against the guess
+        #     itself. Core-guess occupations can be badly wrong -- triplet O2/cc-pVTZ lands
+        #     on a stationary point 0.34 Eh above the ground state -- and OTR, unlike the
+        #     internal solver, never revisits the occupation once it starts.
+        self.form_G()
+        if self.iteration_ < 0:
+            # SAD supplies no orbitals and READ/cast-up only the occupied ones, so build a
+            # starting set the way the internal solver's iteration 0 does...
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+            self.form_D()
+            self.form_G()
+        # ...and then take a normal step. The second pass matters for ROHF, where
+        # form_initial_C does not use the effective Fock matrix: on triplet Ne2 it leaves the
+        # open shells in B1u/B2u instead of Ag/B2u, and OTR would optimize that state to a
+        # stationary point 0.12 Eh above the ground state.
+        self.form_F()
+        self.form_C()
+        self.form_D()
+        # OpenTrustRegion optimizes orbitals at fixed occupation, while the internal solver
+        # re-runs find_occupation at every iteration. From a poor guess -- a bare core guess
+        # for triplet O2, say -- OTR will happily converge onto the stationary point of the
+        # guess occupation rather than the aufbau one. Canonicalizing reveals that, so
+        # reconverge whenever the occupation moves.
+        self.iteration_ = 0
+        SCFE_prev_attempt = None
+        otr_e_conv = e_conv if e_conv is not None else core.get_option("SCF", "E_CONVERGENCE")
+        for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
+            occupation = _occupation(self)
+            otr_error = self.opentrustregion_scf()
+
+            # OpenTrustRegion's last call back into Psi4 is often a Hessian-vector product,
+            # and cphf_Hx reuses the JK object that form_G has aliased J_/K_ onto. Rebuild
+            # the two-electron quantities from the converged orbitals before taking the
+            # energy, or J_/K_ still hold CPHF intermediates and compute_E returns garbage.
+            self.form_D()
+            self.form_G()
+            self.form_F()
+
+            SCFE = self.compute_E()
+            self.set_energies("Total Energy", SCFE)
+            self.set_variable("SCF ITERATION ENERGY", SCFE)
+
+            # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL
+            # ENERGIES mean the same thing they do for the internal solver. The first entry
+            # is the energy of the guess (macro-iteration 0), so the iteration count is one
+            # less than the number of recorded energies.
+            otr_energies = list(self.otr_iteration_energies())
+            otr_energies[-1:] = [SCFE]
+            self.iteration_energies.extend(otr_energies)
+            self.iteration_ += max(len(otr_energies) - 1, 0)
+
+            # Ensure canonical orbitals/eigenvalues are ready for post-SCF methods. form_C
+            # also re-runs find_occupation, which is what surfaces an occupation change.
+            self.form_C()
+            self.form_D()
+
+            if otr_error or _occupation(self) == occupation:
+                break
+            if SCFE_prev_attempt is not None and SCFE >= SCFE_prev_attempt - otr_e_conv:
+                # Reconverging didn't lower the energy. Degenerate orbitals in different
+                # irreps -- singlet O2's pi*, say -- let the aufbau assignment flip back and
+                # forth without changing the solution, so stop rather than oscillate.
+                break
+            SCFE_prev_attempt = SCFE
+            core.print_out("    Note: aufbau occupation differs from the one OpenTrustRegion "
+                           "optimized. Reconverging.\n")
+        else:
+            core.print_out(f"    Note: occupation still moving after "
+                           f"{_OTR_MAX_OCCUPATION_RESTARTS} OpenTrustRegion restarts; "
+                           f"accepting the last solution.\n")
+
+        if otr_error:
+            core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
+            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
+        return
 
     # maximum number of scf iterations to run after early screening is disabled
     scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')

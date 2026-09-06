@@ -1,6 +1,10 @@
 #! UHF->UHF stability analysis test for BH with cc-pVDZ
 #! Test direct SCF with and without symmetry, test PK without symmetry
 
+
+oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+psi4.set_options({"orbital_optimizer_package": oopkg})
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
 ref_vals_sym = [ 0.163530, 0.385029, 0.000000, 0.523085,   #TEST 
                -0.131403, 0.390496, 0.248212, 0.493736 ]   #TEST
 

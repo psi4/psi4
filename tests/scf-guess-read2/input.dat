@@ -20,7 +20,11 @@ compare_values(-149.54395801861, variable('SCF TOTAL ENERGY'), 6, 'RHF SCF energ
 set guess read
 energy('scf')
 compare_values(-149.54395801861, variable('SCF TOTAL ENERGY'), 6, 'RHF SCF energy, read-in guess')  #TEST
-compare_values(1, variable('SCF ITERATIONS'), 1, 'RHF Iterations, read-in guess')  #TEST
+# A second-order optimizer that is handed converged orbitals needs no macro-iteration
+# at all, and ROHF costs it one extra, so accept a small count rather than exactly 1.
+otr = psi4.core.get_option("scf", "orbital_optimizer_package") in ["OTR", "OPENTRUSTREGION"]  # KP-LOGIC
+niter = int(variable('SCF ITERATIONS'))
+compare(True, 0 <= niter <= 3 if otr else niter == 1, 'RHF Iterations, read-in guess')  #TEST
 
 ### Open-shell section
 oxygen.set_multiplicity(3)
@@ -34,7 +38,8 @@ compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF e
 set guess read
 energy('scf')
 compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy, read-in guess')  #TEST
-compare_values(1, variable('SCF ITERATIONS'), 1, 'ROHF Iterations, read-in guess')  #TEST
+niter = int(variable('SCF ITERATIONS'))
+compare(True, 0 <= niter <= 3 if otr else niter == 1, 'ROHF Iterations, read-in guess')  #TEST
 
 # CUHF
 set reference cuhf
@@ -45,7 +50,8 @@ compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'CUHF SCF e
 set guess read
 energy('scf')
 compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'CUHF SCF energy, read-in guess')  #TEST
-compare_values(1, variable('SCF ITERATIONS'), 1, 'CUHF Iterations, read-in guess')  #TEST
+niter = int(variable('SCF ITERATIONS'))
+compare(True, 0 <= niter <= 3 if otr else niter == 1, 'CUHF Iterations, read-in guess')  #TEST
 
 # UHF
 set reference uhf
@@ -56,4 +62,5 @@ compare_values(-149.6286212486728004, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF 
 set guess read
 energy('scf')
 compare_values(-149.6286212486728004, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy, read-in guess')  #TEST
-compare_values(1, variable('SCF ITERATIONS'), 1, 'UHF Iterations, read-in guess')  #TEST
+niter = int(variable('SCF ITERATIONS'))
+compare(True, 0 <= niter <= 3 if otr else niter == 1, 'UHF Iterations, read-in guess')  #TEST
