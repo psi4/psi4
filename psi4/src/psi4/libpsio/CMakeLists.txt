@@ -1,36 +1,33 @@
+# The I/O core of libpsio (open/close/read/write, the on-disk table of contents,
+# addressing and zero-fill) is now a thin shim over libspill: psio_libspill.cc.
+# psio.h/psio.hpp/config.h are unchanged -- consumers see the identical API. What
+# remains here is Psi4 policy that libspill has no opinion about: scratch-path and
+# namespace management (filemanager/filescfg/get_filename/rename_file/
+# change_namespace), error text (error/decode_errno/compose_err_msg), the PID
+# helper (getpid) and the async layer (aio_handler, kept for a later stage).
 list(APPEND sources
   aio_handler.cc
   change_namespace.cc
-  close.cc
   compose_err_msg.cc
-  done.cc
   decode_errno.cc
   error.cc
   filemanager.cc
   filescfg.cc
-  get_address.cc
   get_filename.cc
-  get_global_address.cc
   getpid.cc
-  init.cc
-  open.cc
-  open_check.cc
-  read.cc
-  read_entry.cc
+  psio_libspill.cc
   rename_file.cc
-  rw.cc
-  tocclean.cc
-  toclast.cc
-  toclen.cc
-  tocprint.cc
-  tocread.cc
-  tocscan.cc
-  tocwrite.cc
-  volseek.cc
-  write.cc
-  write_entry.cc
   )
 psi4_add_module(lib psio sources)
+
+# psio_libspill.cc must see Psi4's own psio.h (not the shim's standalone copy of
+# the types), so build it with -DPSIO_USE_PSI4_HEADERS. Keep it out of unity
+# batches: it carries file-local helpers in an anonymous namespace that must not
+# be merged with neighbouring translation units.
+set_source_files_properties(psio_libspill.cc PROPERTIES
+  COMPILE_DEFINITIONS PSIO_USE_PSI4_HEADERS
+  SKIP_UNITY_BUILD_INCLUSION ON)
+target_link_libraries(psio PUBLIC libspill::spill)
 
 # The standalone round-trip test links a curated subset of static archives plus a
 # small stubs TU. That resolves with GNU/Clang on Linux/macOS but not with
