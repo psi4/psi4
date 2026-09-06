@@ -17,7 +17,7 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable libspill could not be located, ${Magenta}Building libspill${ColourReset} instead.")
     ExternalProject_Add(libspill_external
-        URL https://github.com/ReLibQC/libspill/archive/29eb3ba.tar.gz  # v0.1.0+  # edit in codedeps
+        URL https://github.com/ReLibQC/libspill/archive/b6edf39.tar.gz  # v0.1.0+  # edit in codedeps
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

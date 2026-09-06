@@ -34,6 +34,11 @@ namespaces, retention, error text — not I/O, and libspill has no opinion about
 them. They touch only `pid_` and `files_keywords_`, never `psio_unit`/`state_`,
 so the shim owning the handles introduces no dual ownership.
 
+`PSIO::get_unit_filename()` — the helper #3515 factored out of `open.cc` — moved
+into `get_filename.cc` when `open.cc` went, because it is filename composition
+rather than I/O. The shim, `rename_file.cc` and `change_namespace.cc` all build
+their paths from it, so there is one composition rule and not three.
+
 `aio_handler.cc` (Psi4's async layer, 27 call sites in nine files) also stays —
 see *Stage 2*.
 
@@ -51,6 +56,40 @@ Each was checked against the tree (true at `a0e6ba5c4`; re-verify with the greps
    correctly filled, not a node in a live list.
 3. **The on-disk table of contents is nobody's business.** `rd_toclen`/`tocread`/
    `toclen` have no consumers outside `libpsio`; `tocwrite` has one.
+
+## The PSIOManager contract
+
+The part of this port that is easiest to get wrong and hardest to notice.
+
+`PSIOManager` is Psi4's ledger of scratch files. It decides where a unit lives
+(`get_file_path`, which is how `PSI_SCRATCH` and per-file overrides reach the
+I/O layer), it records every file that is opened, and `psiclean()` unlinks
+**exactly** the paths in that ledger — nothing else. Retention
+(`mark_file_for_retention`, `set_specific_retention`) is keyed on the same
+strings.
+
+So a shim that reads and writes perfectly can still be wrong in three ways at
+once, and the first version of this one was:
+
+- it opened `<TMPDIR>/psi.<unit>.libspill`, so `PSI_SCRATCH` was ignored;
+- it never called `open_file`/`close_file`, so the ledger stayed empty and
+  `psiclean()` cleaned nothing;
+- retention, reading that same empty ledger, was inert.
+
+The fix is `ls_opts.exact_name`, which libspill added for this: it suppresses
+libspill's own `<dir>/<name>.libspill` layout and takes the path verbatim, so
+the store sits exactly where `PSIOManager` says it does. `PSIO::open` then
+registers the file and `PSIO::close` reports it back, as `open.cc`/`close.cc`
+did. `PSIO::exists` asks `ls_store_exists` rather than `stat`ing a path the shim
+reconstructed itself.
+
+The cost of `exact_name` is the protection it removes: the `.libspill` suffix is
+how `ls_open` tells one of its stores from an unrelated file. With an exact name
+the namespace is the caller's to manage — which is fine here, because Psi4's
+names already carry pid, namespace and unit. One consequence worth stating:
+a scratch directory left over from a **pre-port** Psi4 now holds files with the
+right names and the wrong format, and `PSIO_OPEN_OLD` on one of those will fail
+rather than silently misread it.
 
 ## The clearest win
 
@@ -73,6 +112,13 @@ trap if you extend it: comparing a member pointer to `nullptr` is **not** enough
 emitted. The addresses must be materialised (the harness memcpys them into a
 volatile sink). **If you extend the shim, extend the harness in the same commit.**
 
+It also checks the *PSIOManager contract* above, because none of that is
+visible in a read/write round trip: after opening a unit it reads back the
+ledger `PSIOManager` mirrors to `psi.<pid>.clean`, requires the unit to appear
+there, requires the recorded path to be under `PSIOManager`'s directory, and
+stats it. A shim that stores the data somewhere of its own choosing passes
+every other check in the file and fails these.
+
 ## Stage 2, deliberately separate
 
 `aio_handler.cc` (~630 lines) could be replaced by libspill's `ls_aread`/
@@ -82,15 +128,14 @@ touch psio have no async path today.
 
 ## Open decisions
 
+(Scratch-path policy was one of these; it is settled above, under *The
+PSIOManager contract*.)
+
 - **Per-instance state.** The shim keeps each `PSIO` instance's units in a side
   table keyed on `this`, because `psio.hpp` is unchanged and there is nowhere to
   put a member. Correct (Psi4 creates several instances — dfmp2, mcscf, DiskJK,
   sortintegrals) but it costs a map lookup per call. Adding one opaque member to
   `psio.hpp` would be cheaper at runtime and change no call site.
-- **Scratch-path policy.** libspill's `ls_opts.dir` takes a directory;
-  `PSIOManager` already computes one per unit. The shim currently uses a single
-  directory set via `psio_set_scratch_dir`. Wiring it to `PSIOManager`'s per-unit
-  paths is the natural next step.
 - **Memory budget.** Not yet passed to libspill. Feeding it a fraction of Psi4's
   limit unlocks the in-memory tier — the single largest measured win.
 - **Error mapping.** libspill's codes are richer than `PSIO_ERROR_*`; the shim

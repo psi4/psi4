@@ -7,7 +7,6 @@
 #include <mutex>
 #include <stdexcept>
 #include <string>
-#include <sys/stat.h>
 #include <vector>
 
 extern "C" {
@@ -16,9 +15,9 @@ extern "C" {
 
 #ifdef PSIO_USE_PSI4_HEADERS
 #include "psi4/libpsio/psio.hpp"
-extern "C" {
-extern PSI_API char *psi_file_prefix;
-}
+// psi_file_prefix is psi::psi_file_prefix with C++ linkage (core.cc defines it,
+// the test's stubs.cc stands in for it); init.cc reached it through this header.
+#include "psi4/psi4-dec.h"
 #endif
 
 namespace psi {
@@ -29,12 +28,17 @@ psio_address PSIO_ZERO = {0, 0};
 
 namespace {
 
-std::string g_dir;                       // PSIOManager's job in Psi4
+#ifndef PSIO_USE_PSI4_HEADERS
+std::string g_dir;                       // in Psi4 this is PSIOManager's job
+#endif
 std::mutex  g_lk;
 
 // One libspill store per (PSIO instance, unit).
 struct Unit {
     ls_store *store = nullptr;
+    // The path PSIOManager was told about, kept so close() can report the same
+    // string back to it. The old open.cc kept it in psio_ud::vol.path.
+    std::string path;
     // Entries handed back by tocscan. Psi4 never dereferences these, but a
     // function returning a pointer should return a valid one; per-unit storage
     // gives them the lifetime the old linked-list TOC gave.
@@ -88,19 +92,56 @@ void log_cb(int err, const char *key, uint64_t off, size_t nbytes, const char *m
                  ls_strerror(err, buf, sizeof buf));
 }
 
-std::string name_of(size_t unit) { return "psi." + std::to_string(unit); }
+// Where a unit's store goes.
+//
+// In Psi4 this is not libspill's decision and not the shim's: PSIOManager owns
+// it. It computes one path per unit -- PSI_SCRATCH or a per-file override, plus
+// the pid/namespace decoration -- hands that path to whoever opens the file,
+// and psiclean() later unlinks exactly the paths it was told about. So the shim
+// must open the path PSIOManager names, byte for byte, which is what
+// ls_opts.exact_name is for: it suppresses libspill's own
+// <dir>/<name>.libspill layout. Without it the scratch files land in TMPDIR
+// under names PSIOManager never sees -- PSI_SCRATCH ignored, psiclean()
+// cleaning nothing, retention inert.
+struct StorePath {
+    std::string dir;   // no trailing separator
+    std::string name;  // basename; taken verbatim when exact is set
+    bool exact = false;
+    std::string full() const { return dir.empty() ? name : dir + "/" + name; }
+};
+
+ls_opts opts_for(const StorePath &p) {
+    ls_opts o;
+    ls_opts_default(&o);
+    if (!p.dir.empty()) o.dir = p.dir.c_str();   // borrows p; p outlives o
+    o.exact_name = p.exact ? 1 : 0;
+    o.log = log_cb;
+    return o;
+}
 
 #ifdef PSIO_USE_PSI4_HEADERS
-// libspill owns the file layout, but PSIO::exists has to answer "is there
-// something on disk for this unit" without opening it -- opening would create
-// it. Reproducing the one path rule libspill applies is the least-bad way.
-std::string path_of(size_t unit) {
-    std::string dir = g_dir;
-    if (dir.empty()) {
-        const char *t = std::getenv("TMPDIR");
-        dir = (t && *t) ? t : "/tmp";
+// Split PSIO::get_unit_filename()'s "<path><name>.<unit>" into the directory
+// and basename libspill wants. Psi4 composes it (get_filename.cc, and the
+// helper #3515 factored out of open.cc); the shim only takes it apart.
+StorePath split_path(const std::string &full) {
+    StorePath p;
+    const std::string::size_type slash = full.find_last_of('/');
+    if (slash == std::string::npos) {
+        p.name = full;
+    } else {
+        p.dir = full.substr(0, slash);
+        p.name = full.substr(slash + 1);
     }
-    return dir + "/" + name_of(unit) + ".libspill";
+    p.exact = true;
+    return p;
+}
+#else
+// Standalone: no PSIOManager to defer to, so let libspill name the file.
+StorePath standalone_path(size_t unit) {
+    StorePath p;
+    p.dir = g_dir;
+    p.name = "psi." + std::to_string(unit);
+    return p;
 }
 #endif
 
@@ -110,26 +151,25 @@ std::string path_of(size_t unit) {
 // drift apart -- which is how issue #1 happened in the first place.
 // Every impl_* expects g_lk to be held, except impl_exists which takes it.
 
-void impl_open(Units &u, size_t unit, int status) {
+void impl_open(Units &u, size_t unit, int status, const StorePath &p) {
     if (unit >= static_cast<size_t>(PSIO_MAXUNIT)) psio_error(unit, PSIO_ERROR_MAXUNIT);
     if (find_unit(u, unit)) return;                      // already open
 
-    ls_opts o;
-    ls_opts_default(&o);
-    if (!g_dir.empty()) o.dir = g_dir.c_str();
-    o.log = log_cb;
+    ls_opts o = opts_for(p);
 
     // PSIO_OPEN_NEW must not inherit a previous run's contents; libspill
     // reopens a kept store when one is there, so remove it first.
     if (status == PSIO_OPEN_NEW) {
         int err = 0;
-        ls_store *old = ls_open(name_of(unit).c_str(), &o, &err);
+        ls_store *old = ls_open(p.name.c_str(), &o, &err);
         if (old) ls_close(old, 0);                       // keep=0 unlinks
     }
     int err = 0;
-    ls_store *s = ls_open(name_of(unit).c_str(), &o, &err);
+    ls_store *s = ls_open(p.name.c_str(), &o, &err);
     if (!s) psio_error(unit, PSIO_ERROR_OPEN);
-    u[unit].store = s;
+    Unit &nu = u[unit];
+    nu.store = s;
+    nu.path = p.full();
 }
 
 void impl_close(Units &u, size_t unit, int keep) {
@@ -221,7 +261,17 @@ size_t impl_toclen(Units &u, size_t unit) {
 
 }  // namespace
 
-void psio_set_scratch_dir(const char *dir) { g_dir = dir ? dir : ""; }
+// Not part of Psi4's API. In Psi4 the scratch directory is PSIOManager's, so
+// this sets it there rather than keeping a second, divergent copy; g_dir is
+// only the standalone build's fallback.
+void psio_set_scratch_dir(const char *dir) {
+#ifdef PSIO_USE_PSI4_HEADERS
+    psio_init();
+    PSIOManager::shared_object()->set_default_path(dir ? dir : "");
+#else
+    g_dir = dir ? dir : "";
+#endif
+}
 
 // ---------------------------------------------------------------- addresses
 
@@ -233,12 +283,16 @@ psio_address psio_get_global_address(psio_address entry_start, psio_address rel_
     return to_address(to_bytes(entry_start) + to_bytes(rel_address));
 }
 
+#ifndef PSIO_USE_PSI4_HEADERS
+// Psi4 keeps its own error.cc, whose messages are far better than this; the
+// standalone build has no such thing, so it gets a minimal stand-in.
 void psio_error(size_t unit, size_t errval, std::string prev_msg) {
     std::fprintf(stderr, "PSIO_ERROR: unit %zu, errval %zu %s\n", unit, errval,
                  prev_msg.c_str());
     throw std::runtime_error("PSIO error " + std::to_string(errval) + " on unit " +
                              std::to_string(unit) + " " + prev_msg);
 }
+#endif
 
 // ------------------------------------------------------------- the PSIO class
 //
@@ -249,10 +303,14 @@ void psio_error(size_t unit, size_t errval, std::string prev_msg) {
 
 #ifdef PSIO_USE_PSI4_HEADERS
 
-// All three live in init.cc, which this port deletes.
+// All of these live in init.cc, which this port deletes. _default_psio_manager_
+// is not optional decoration: psio.hpp declares it extern, filemanager.cc is
+// the only other file that names it, and every scratch path in the shim now
+// comes from it.
 psio_address PSIO_ZERO = {0, 0};
 std::string PSIO::default_namespace_;
 std::shared_ptr<PSIO> _default_psio_lib_;
+std::shared_ptr<PSIOManager> _default_psio_manager_;
 
 std::shared_ptr<PSIO> PSIO::shared_object() { return _default_psio_lib_; }
 
@@ -288,16 +346,33 @@ PSIO::~PSIO() {
     if (psio_unit) free(psio_unit);
     psio_unit = nullptr;
     state_ = 0;
+    files_keywords_.clear();          // done.cc did this
 }
 
 void PSIO::open(size_t unit, int status) {
-    std::lock_guard<std::mutex> g(g_lk);
-    impl_open(units_of(this), unit, status);
+    // get_unit_filename() is Psi4's composition of PSIOManager's directory and
+    // the pid/namespace-decorated name; it touches no shim state, so it is
+    // computed outside the lock.
+    const StorePath p = split_path(get_unit_filename(unit));
+    {
+        std::lock_guard<std::mutex> g(g_lk);
+        impl_open(units_of(this), unit, status, p);
+    }
+    // Registering the file is what makes psiclean() and per-file retention
+    // work at all -- PSIOManager only ever unlinks paths in this ledger. The
+    // old open.cc registered here too.
+    PSIOManager::shared_object()->open_file(p.full(), unit);
 }
 
 void PSIO::close(size_t unit, int keep) {
-    std::lock_guard<std::mutex> g(g_lk);
-    impl_close(units_of(this), unit, keep);
+    std::string path;
+    {
+        std::lock_guard<std::mutex> g(g_lk);
+        Units &u = units_of(this);
+        if (Unit *cu = find_unit(u, unit)) path = cu->path;
+        impl_close(u, unit, keep);       // ls_close(keep=0) unlinks the file
+    }
+    if (!path.empty()) PSIOManager::shared_object()->close_file(path, unit, keep != 0);
 }
 
 int PSIO::open_check(size_t unit) const {
@@ -310,8 +385,14 @@ bool PSIO::exists(size_t unit) const {
         std::lock_guard<std::mutex> g(g_lk);
         if (find_unit(units_of(this), unit)) return true;
     }
-    struct stat st;
-    return stat(path_of(unit).c_str(), &st) == 0 && st.st_size > 0;
+    // The old exists() opened the path O_RDWR and closed it again. Asking
+    // libspill is the same question without the shim having to reconstruct a
+    // layout it no longer owns -- and without creating the store, which is why
+    // this is ls_store_exists rather than ls_open.
+    const StorePath p = split_path(get_unit_filename(unit));
+    ls_opts o = opts_for(p);
+    int found = 0;
+    return ls_store_exists(p.name.c_str(), &o, &found) == LS_OK && found;
 }
 
 // libspill's table of contents is live and in memory; there is nothing to
@@ -436,6 +517,7 @@ void PSIO::tocread(size_t) {}
 
 int psio_init() {
     if (_default_psio_lib_.get() == 0) _default_psio_lib_ = std::make_shared<PSIO>();
+    if (_default_psio_manager_.get() == 0) _default_psio_manager_ = std::make_shared<PSIOManager>();
     return 1;
 }
 
@@ -500,7 +582,7 @@ int psio_done() {
 }
 int psio_open(size_t unit, int status) {
     std::lock_guard<std::mutex> g(g_lk);
-    impl_open(default_units(), unit, status);
+    impl_open(default_units(), unit, status, standalone_path(unit));
     return 1;
 }
 int psio_close(size_t unit, int keep) {

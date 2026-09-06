@@ -29,7 +29,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <memory>
+#include <string>
+#include <sys/stat.h>
 
 #include "psi4/libpsio/psio.h"
 /* psio.hpp declares the PSIO class. The original version of this file included
@@ -158,11 +161,50 @@ int main()
         psi::psio_set_scratch_dir(td && *td ? td : "/tmp");
 
         auto psio = std::make_shared<psi::PSIO>();
+        const std::string dir = psi::PSIOManager::shared_object()->get_file_path(99);
         double out[256], back[256];
         for (int k = 0; k < 256; k++) out[k] = 1.0 + 0.5 * k;
 
         psio->open(99, psi::PSIO_OPEN_NEW);
         if (!psio->open_check(99)) { std::printf("  [FAIL] open_check\n"); return 1; }
+
+        /* Correct reads and writes are not enough. The second way this port can
+         * be wrong -- and was -- is a shim that stores the data somewhere of its
+         * own choosing. Psi4 requires the store to sit exactly where PSIOManager
+         * says: psiclean() unlinks the paths in PSIOManager's ledger and nothing
+         * else, PSI_SCRATCH reaches the I/O layer only through it, and file
+         * retention is keyed on those same strings. A shim that ignores it reads
+         * and writes perfectly while leaking every scratch file and silently
+         * dropping PSI_SCRATCH.
+         *
+         * PSIOManager mirrors its ledger to psi.<pid>.clean on every change, so
+         * read it back and stat what it names. */
+        {
+            const std::string mirror = "psi." + psi::psio_getpid() + ".clean";
+            std::ifstream in(mirror.c_str());
+            std::string line, registered;
+            while (std::getline(in, line))
+                if (line.size() > 3 && line.compare(line.size() - 3, 3, ".99") == 0) registered = line;
+
+            if (registered.empty()) {
+                std::printf("  [FAIL] unit 99 never reached PSIOManager (%s): "
+                            "psiclean() would not clean it and retention is inert\n",
+                            mirror.c_str());
+                return 1;
+            }
+            if (registered.compare(0, dir.size(), dir) != 0) {
+                std::printf("  [FAIL] scratch path %s is not under PSIOManager's directory %s: "
+                            "PSI_SCRATCH is being ignored\n", registered.c_str(), dir.c_str());
+                return 1;
+            }
+            struct stat st;
+            if (stat(registered.c_str(), &st) != 0) {
+                std::printf("  [FAIL] nothing on disk at the path PSIOManager recorded: %s\n",
+                            registered.c_str());
+                return 1;
+            }
+            if (!psio->exists(99)) { std::printf("  [FAIL] exists() on an open unit\n"); return 1; }
+        }
         psio->write_entry(99, "Amplitudes", (char *)out, sizeof out);
         std::memset(back, 0, sizeof back);
         psio->read_entry(99, "Amplitudes", (char *)back, sizeof back);
@@ -178,6 +220,11 @@ int main()
         psio->zero_disk(99, "Zeroed", 8, 32);
         psio->read_entry(99, "Zeroed", (char *)back, 8 * 32 * sizeof(double) / 8);
         psio->close(99, 0);
+        if (psio->exists(99)) {
+            std::printf("  [FAIL] close(keep=0) left the store on disk\n");
+            return 1;
+        }
+        std::printf("  [PASS] the store lives at PSIOManager's path and is registered for psiclean\n");
 
         /* Two instances must not share scratch: Psi4 makes several. */
         auto a = std::make_shared<psi::PSIO>();
