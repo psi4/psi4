@@ -1,0 +1,48 @@
+#! UHF-to-QRO DLPNO-CCSD regression for triplet O2
+#! Tests the prepared QRO reference invariants and energy bookkeeping.
+
+molecule o2 {
+0 3
+O
+O 1 1.16
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core false
+set scf_type direct
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+set t_cut_pno 0.0
+set t_cut_pno_mp2 0.0
+set t_cut_pairs 0.0
+set t_cut_do 0.0
+set t_cut_mkn 0.0
+set dlpno_toggle_memory false
+set reference uhf
+
+print('   Testing UHF-to-QRO DLPNO-CCSD on triplet O2 ...')
+input_uhf, uhf_wfn = energy('scf', return_wfn=True)
+ca_before = uhf_wfn.Ca().clone()
+cb_before = uhf_wfn.Cb().clone()
+fa_before = uhf_wfn.Fa().clone()
+fb_before = uhf_wfn.Fb().clone()
+val = energy('dlpno-ccsd', ref_wfn=uhf_wfn)
+
+qro_ref = variable('QRO REFERENCE ENERGY')
+corr = variable('CCSD CORRELATION ENERGY')
+total = variable('CCSD TOTAL ENERGY')
+
+compare_values(input_uhf, variable('SCF TOTAL ENERGY'), 10, 'input UHF provenance')           #TEST
+compare_values(qro_ref, variable('CURRENT REFERENCE ENERGY'), 10, 'current QRO reference')   #TEST
+compare_values(qro_ref + corr, total, 10, 'QRO reference plus correlation')                  #TEST
+compare_values(total, variable('CURRENT ENERGY'), 10, 'current total')                       #TEST
+compare_values(total, val, 10, 'dlpno-ccsd return')                                         #TEST
+compare_values(9.0, variable('QRO ALPHA ELECTRONS'), 8, 'QRO alpha electron count')          #TEST
+compare_values(7.0, variable('QRO BETA ELECTRONS'), 8, 'QRO beta electron count')            #TEST
+compare_values(0.0, variable('QRO ORTHONORMALITY ERROR'), 7, 'QRO orthonormality')           #TEST
+compare_matrices(ca_before, uhf_wfn.Ca(), 12, 'input UHF alpha orbitals unchanged')           #TEST
+compare_matrices(cb_before, uhf_wfn.Cb(), 12, 'input UHF beta orbitals unchanged')            #TEST
+compare_matrices(fa_before, uhf_wfn.Fa(), 12, 'input UHF alpha Fock unchanged')               #TEST
+compare_matrices(fb_before, uhf_wfn.Fb(), 12, 'input UHF beta Fock unchanged')                #TEST
+clean()

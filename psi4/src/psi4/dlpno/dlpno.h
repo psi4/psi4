@@ -39,6 +39,7 @@
 #include "psi4/psifiles.h"
 
 #include <map>
+#include <array>
 #include <tuple>
 #include <string>
 #include <unordered_map>
@@ -47,6 +48,72 @@ namespace psi {
 namespace dlpno {
 
 enum class DLPNOMethod { MP2, CCSD, CCSD_T };
+
+/**
+ * @enum SpinCase
+ *
+ * @brief An enum class to represent alpha and beta spin cases
+ *
+ */
+enum class SpinCase { Alpha = 0, Beta = 1 };
+
+/**
+  *
+  * @enum DoubleSpinCase
+  *
+  * @brief Denotes a doubles spin case alpha, beta, alpha/beta
+  */
+enum class DoubleSpinCase { AA = 0, AB = 1, BB = 2 };
+
+/**
+ * @enum TripleSpinCase
+ *
+ * @brief Denotes the four unique triples spin cases.
+ */
+enum class TripleSpinCase { AAA = 0, AAB = 1, BBA = 2, BBB = 3 };
+
+/**
+ * @brief Converts a pair of SpinCases to a DoubleSpinCase
+ */
+constexpr DoubleSpinCase to_double_spin(SpinCase spin1, SpinCase spin2) {
+   if (static_cast<int>(spin1) == 0 && static_cast<int>(spin2) == 0) {
+      return DoubleSpinCase::AA;
+   } else if (static_cast<int>(spin1) == 0 && static_cast<int>(spin2) == 1) {
+      return DoubleSpinCase::AB;
+   } else if (static_cast<int>(spin1) == 1 && static_cast<int>(spin2) == 0) { // TODO: Handle this smarter in the future
+      return DoubleSpinCase::AB;
+   } else {
+      return DoubleSpinCase::BB;
+   }
+}
+
+/**
+ * @brief Converts a DoubleSpinCase to a pair of SpinCase
+ */
+constexpr std::pair<SpinCase,SpinCase> get_spin_pair(DoubleSpinCase double_spin_case) {
+   if (static_cast<int>(double_spin_case) == 0) {
+      return std::make_pair(SpinCase::Alpha, SpinCase::Alpha);
+   } else if (static_cast<int>(double_spin_case) == 1) {
+      return std::make_pair(SpinCase::Alpha, SpinCase::Beta);
+   } else {
+      return std::make_pair(SpinCase::Beta, SpinCase::Beta);
+   }
+}
+
+/**
+ * @brief Converts a TripleSpinCase to three SpinCases
+ */
+constexpr std::array<SpinCase, 3> get_spin_triple(TripleSpinCase triple_spin_case) {
+    if (triple_spin_case == TripleSpinCase::AAA) {
+        return {SpinCase::Alpha, SpinCase::Alpha, SpinCase::Alpha};
+    } else if (triple_spin_case == TripleSpinCase::AAB) {
+        return {SpinCase::Alpha, SpinCase::Alpha, SpinCase::Beta};
+    } else if (triple_spin_case == TripleSpinCase::BBA) {
+        return {SpinCase::Beta, SpinCase::Beta, SpinCase::Alpha};
+    } else {
+        return {SpinCase::Beta, SpinCase::Beta, SpinCase::Beta};
+    }
+}
 
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
@@ -94,13 +161,38 @@ class DLPNO : public Wavefunction {
     SharedMatrix full_metric_;
     std::vector<double> J_metric_shell_diag_; ///< used in AO ERI screening
 
+    // => Prepared restricted reference <= //
+
+    /// True when an unrestricted input has been converted to a common-spatial-orbital QRO determinant.
+    bool qro_reference_ = false;
+    /// True once the input reference quantities (and, for UHF, QRO quantities) are ready for use.
+    bool reference_prepared_ = false;
+    /// Input SCF energy.  This remains the value of the SCF TOTAL ENERGY variable for provenance.
+    double input_scf_energy_ = 0.0;
+    /// Determinant energy used to normal order the correlation problem (SCF for RHF/ROHF, QRO for UHF).
+    double reference_energy_ = 0.0;
+    /// Common alpha-occupied, active-alpha, and active-beta orbital spaces used by the local machinery.
+    SharedMatrix C_reference_occ_;
+    SharedMatrix C_reference_active_a_;
+    SharedMatrix C_reference_active_b_;
+    /// Spin-resolved Fock matrices belonging to the determinant used by the correlation problem.
+    SharedMatrix F_reference_a_;
+    SharedMatrix F_reference_b_;
+    /// UHF natural occupations used to diagnose the UHF -> QRO projection.
+    SharedVector qro_noons_;
+
     /// localized molecular orbitals (LMOs)
     SharedMatrix C_lmo_;
     SharedMatrix F_lmo_;
+    SharedMatrix F_lmo_a_;
+    SharedMatrix F_lmo_b_;
 
     /// projected atomic orbitals (PAOs)
     SharedMatrix C_pao_;
     SharedMatrix F_pao_;
+    SharedMatrix F_pao_a_;
+    SharedMatrix F_pao_b_;
+    SharedMatrix F_lmo_pao_; //< needed for non-canonical Brueckner orbitals
     SharedMatrix S_pao_;
 
     /// differential overlap integrals (EQ 4)
@@ -132,6 +224,9 @@ class DLPNO : public Wavefunction {
     std::vector<SharedMatrix> X_pno_;   ///< global PAO -> canonical PNO transforms
     std::vector<SharedVector> e_pno_;   ///< PNO orbital energies
     std::vector<int> n_pno_;       ///< number of pnos
+    /// true once the PNO space has been augmented by the SOMOs (open-shell only).  Quantities
+    /// cached by recompute_pnos() are stale in that case and must be rebuilt in the new basis.
+    bool somo_augmented_ = false;
     std::vector<double> occ_pno_;       ///< lowest PNO occupation number per PNO
     std::vector<double> trace_pno_;     ///< total trace(Dij) recovered per PNO
     std::vector<double> e_ratio_pno_;   ///< percentage of correlation energy recovered by PNOs
@@ -215,6 +310,11 @@ class DLPNO : public Wavefunction {
     std::shared_ptr<PSIO> psio_;
 
     void common_init();
+
+    /// Prepare common restricted orbitals and spin Focks; constructs QROs when the input reference is UHF.
+    void prepare_reference();
+    /// Build a high-spin QRO determinant from an unrestricted input without modifying the input wavefunction.
+    void build_qro_reference();
 
     // Helper functions
     void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B);
@@ -435,6 +535,121 @@ class PSI_API DLPNOCCSD : public DLPNO {
     double compute_energy() override;
 };
 
+class PSI_API RO_DLPNOCCSD : public DLPNOCCSD {
+   protected:
+    using SpinPairMatrixBlocks = std::array<std::array<std::vector<SharedMatrix>, 2>, 2>;
+    using SpinPairEnergies = std::array<std::vector<double>, 3>;
+
+    // T1 amplitudes over A, B
+    std::array<std::vector<SharedMatrix>, 2> T_ia_spin_;
+    // T1 amplitudes projected into every pair domain, over A, B
+    std::array<std::vector<SharedMatrix>, 2> T_n_ij_spin_;
+    // T2 amplitudes over AA, AB, BB
+    std::array<std::vector<SharedMatrix>, 3> T_iajb_spin_;
+    // Fixed spin-adapted SROLMP2 amplitudes.  These initialize every RCCSD
+    // pair and remain fixed for weak pairs, so that weak pairs can couple to
+    // strong-pair RCCSD amplitudes (and are available to a future ROHF (T)).
+    std::array<std::vector<SharedMatrix>, 3> T_iajb_srolmp2_spin_;
+
+    // Physical AA, AB, and BB pair-energy components obtained from the one
+    // spin-free SROMP2 amplitude set used to select the common spatial PNOs.
+    SpinPairEnergies sromp2_pair_energies_;
+
+    // Spin-resolved T1-transformed DF integrals
+    std::array<std::vector<SharedMatrix>, 2> i_Qk_t1_spin_;
+    std::array<std::vector<SharedMatrix>, 2> i_Qa_t1_spin_;
+
+    // Bare and T1-transformed spin Fock blocks
+    std::array<std::vector<SharedMatrix>, 2> F_pno_spin_;
+    std::array<SharedMatrix, 2> Fki_tilde_spin_;
+    std::array<std::vector<SharedMatrix>, 2> Fkc_tilde_spin_;
+    std::array<std::vector<SharedMatrix>, 2> Fai_tilde_spin_;
+    std::array<std::vector<SharedMatrix>, 2> Fab_tilde_spin_;
+
+    /// ROHF/SROMP2 versions of the pair-prescreening pipeline.  These hide
+    /// the closed-shell implementations intentionally (the base functions
+    /// are non-virtual, and templated functions cannot be virtual).
+    template<bool crude> void pair_prescreening();
+    template<bool crude> std::vector<double> compute_pair_energies();
+    template<bool crude> double filter_pairs(const std::vector<double>& e_ijs);
+    std::vector<double> pno_lmp2_iterations();
+    void recompute_pnos();
+
+    /// Evaluate semicanonical spin-adapted pair energies in the current PAO
+    /// domains without changing the common (closed-shell-form) PNO selector.
+    std::vector<double> compute_semicanonical_sromp2_pair_energies(bool print_header);
+    /// Recompute physical spin-channel energies from the current common
+    /// SROMP2 amplitudes in the PNO basis.
+    std::vector<double> update_sromp2_pair_energies();
+    /// Cache the spin-adapted amplitudes in the pre-SOMO-augmentation PNO
+    /// space for use as fixed weak-pair amplitudes in RCCSD.
+    void cache_srolmp2_spin_amplitudes();
+    /// Restore fixed weak amplitudes after DIIS, which otherwise has no
+    /// knowledge of the strong/weak distinction.
+    void restore_srolmp2_weak_amplitudes();
+
+    /// extend PAO and PNO rank for each pair by nsomo (for open-shell case)... that is, by nalpha - nbeta
+    /// see: https://doi.org/10.1063/1.4981521
+    void extend_virtual_by_somo();
+    /// Get the correct spin-case for doubles amplitudes
+    SharedMatrix T_iajb_spin_helper(const int ij, const SpinCase& sigma1, const SpinCase& sigma2);
+    /// A helper funcion to zero matrix elements by spin case for X_ia-like elements
+    void spin_enforcer(std::vector<SharedMatrix>& X_ia, const SpinCase &sigma);
+    /// A helper function to zero matrix elements by spin case for X_iajb-like elements
+    void double_spin_enforcer(std::vector<SharedMatrix>& X_iajb, const DoubleSpinCase &double_sigma, bool reverse_ab=false);
+    /// A helper function to enforce spin in matrix elements in matrix elements that look like qo
+    void matrix_spin_enforcer_qo(SharedMatrix &X, const int &ij, const SpinCase &sigma);
+    /// A helper function to enforce spin in matrix elements in matrix elements that look like qv
+    void matrix_spin_enforcer_qv(SharedMatrix &X, const SpinCase &sigma);
+    /// A helper function to enforce spin in matrix elements in the occupied-occupied block of a matrix, given pair ij
+    void matrix_spin_enforcer_oo(SharedMatrix &X, const int &ij, const SpinCase &sigma);
+    /// Enforce potentially different spin cases on the row and column occupied indices
+    void matrix_spin_enforcer_oo(SharedMatrix &X, const int &ij, const SpinCase &row_sigma,
+                                 const SpinCase &col_sigma);
+    /// A helper function to enforce spin in matrix elements in the virtual-virtual block of a matrix
+    void matrix_spin_enforcer_vv(SharedMatrix &X, const SpinCase &sigma);
+    /// Project alpha and beta singles amplitudes into every pair domain
+    void form_projected_singles();
+    /// Form spin-resolved T1-transformed DF integrals
+    void t1_ints_spin();
+    /// Form spin-resolved T1-transformed Fock intermediates
+    void t1_fock_spin();
+    /// computes singles residuals in RO LCCSD equations
+    void compute_R_ia(std::array<std::vector<SharedMatrix>, 2>& R_ia, std::array<std::vector<std::vector<SharedMatrix>>, 2>& R_ia_buffer);
+    /// computes doubles residuals in RO LCCSD equations
+    void compute_R_iajb(std::array<std::vector<SharedMatrix>, 3>& R_iajb, std::array<std::vector<SharedMatrix>, 3>& Rn_iajb);
+
+    /// TODO: Uncomment functions as they are defined
+    /// Jiang and Toth Eq. 13
+    std::array<std::vector<SharedMatrix>, 3> compute_beta();
+    /// Jiang and Toth Eq. 14
+    std::array<std::array<std::vector<SharedMatrix>, 2>, 2> compute_gamma();
+    /// Jiang and Toth Eqs. 15 and 16 (unbarred and barred delta, respectively)
+    std::array<SpinPairMatrixBlocks, 2> compute_delta();
+    /// Jiang and Toth Eq. 18
+    std::array<SharedMatrix, 2> compute_Fki_double_tilde();
+
+    /// ROHF-specific memory estimate.  The base implementation is
+    /// intentionally non-virtual, so this is dispatched from the ROHF
+    /// compute-energy path by name hiding.
+    void estimate_memory();
+    /// Print the ROHF/SROMP2 method header and orbital-space dimensions.
+    void print_header();
+    /// Print spin-resolved diagnostics and final ROHF-DLPNO-CCSD energies.
+    void print_results();
+
+    /// iteratively solves local CCSD equations for restricted open-shell case
+    void lccsd_iterations();
+    /// computes DLPNO-CCSD energy for restricted open-shell case (decoupled from compute_energy in case Brueckner orbitals are requested)
+    double compute_dlpno_ccsd_energy();
+
+    public:
+     RO_DLPNOCCSD(SharedWavefunction ref_wfn, Options& options);
+     ~RO_DLPNOCCSD() override;
+
+     double compute_energy() override;
+};
+
 // Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
 
 class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
@@ -495,6 +710,71 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
    public:
     DLPNOCCSD_T(SharedWavefunction ref_wfn, Options& options);
     ~DLPNOCCSD_T() override;
+
+    double compute_energy() override;
+};
+
+class PSI_API RO_DLPNOCCSD_T : public RO_DLPNOCCSD {
+   protected:
+    // Common sparsity information for all four triples spin cases.  Unlike the
+    // closed-shell implementation, the occupied triples retain their oriented
+    // ordering because mixed-spin amplitudes are not fully permutation symmetric.
+    SparseMap lmotriplet_to_ribfs_ro_;
+    SparseMap lmotriplet_to_lmos_ro_;
+    SparseMap lmotriplet_to_paos_ro_;
+    std::vector<std::tuple<int, int, int>> ijk_to_i_j_k_ro_;
+    std::array<std::unordered_map<int, int>, 4> i_j_k_to_ijk_spin_;
+    std::array<std::vector<bool>, 4> active_ijk_spin_;
+
+    // Triples intermediates and amplitudes over AAA, AAB, BBA, and BBB.
+    std::array<std::vector<SharedMatrix>, 4> W_iajbkc_spin_;
+    std::array<std::vector<SharedMatrix>, 4> V_iajbkc_spin_;
+    std::array<std::vector<SharedMatrix>, 4> T_iajbkc_spin_;
+
+    // A common spatial TNO basis is used for all spin cases; only its Fock
+    // representation and orbital energies are spin resolved.
+    std::vector<SharedMatrix> X_tno_ro_;
+    std::array<std::vector<SharedMatrix>, 2> F_tno_spin_;
+    std::vector<int> n_tno_ro_;
+
+    // Per-spin and spin-summed triplet energies used in screening/iterations.
+    std::array<std::vector<double>, 4> e_ijk_spin_;
+    std::vector<double> e_ijk_ro_;
+    std::vector<double> tno_scale_ro_;
+    std::vector<bool> is_strong_triplet_ro_;
+
+    bool write_intermediates_ro_ = false;
+    // Keep the immutable current Jacobi generation independent from the
+    // storage selected for the generation under construction.  This allows
+    // current T amplitudes to remain in memory while next T is streamed to
+    // disk, avoiding repeated disk reads of Fock-coupled neighbors.
+    bool write_amplitudes_ro_ = false;
+    bool write_next_amplitudes_ro_ = false;
+
+    std::array<double, 4> de_lccsd_t_screened_spin_ro_{};
+    double de_lccsd_t_screened_ro_ = 0.0;
+    double e_lccsd_t_ro_ = 0.0;
+    double E_T_ro_ = 0.0;
+
+    void ro_triples_sparsity(bool prescreening);
+    void ro_sort_triplets(double e_total);
+    void ro_tno_transform(double tno_tolerance);
+    void ro_estimate_memory();
+
+    double compute_ro_lccsd_t0(bool save_memory = false);
+    double compute_ro_t_iteration_energy();
+    double ro_lccsd_t_iterations();
+
+    SharedMatrix ro_matmul_3d(SharedMatrix A, SharedMatrix X, int dim_old, int dim_new);
+    SharedMatrix ro_triples_permuter(const SharedMatrix& X, TripleSpinCase spin, int i, int j, int k);
+    void triples_spin_enforcer(SharedMatrix& X, TripleSpinCase spin, int i, int j, int k);
+
+    void ro_print_header();
+    void ro_print_results();
+
+   public:
+    RO_DLPNOCCSD_T(SharedWavefunction ref_wfn, Options& options);
+    ~RO_DLPNOCCSD_T() override;
 
     double compute_energy() override;
 };

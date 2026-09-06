@@ -810,10 +810,30 @@ Bibliography
    *J. Chem. Phys.* **148**, 011101 (2018).
    https://doi.org/10.1063/1.5011798
 
+.. [Guo:2020:024116]
+   Y. Guo, C. Riplinger, D. G. Liakos, U. Becker, M. Saitow, and F. Neese,
+   *J. Chem. Phys.* **152**, 024116 (2020).
+   https://doi.org/10.1063/1.5127550
+
 .. [Jiang:2024:082502]
    A. Jiang, Z. Glick, D. Poole, J. M. Turney, C. D. Sherrill, and H. F. Schaefer III,
    *J. Chem. Phys.* **161**, 082502 (2024).
    https://doi.org/10.1063/5.0219963
+
+.. [Neese:2006:10213]
+   F. Neese,
+   *J. Am. Chem. Soc.* **128**, 10213-10222 (2006).
+   https://doi.org/10.1021/ja061798a
+
+.. [Hansen:2011:214102]
+   A. Hansen, D. G. Liakos, and F. Neese,
+   *J. Chem. Phys.* **135**, 214102 (2011).
+   https://doi.org/10.1063/1.3663855
+
+.. [Szabo:2021:2886]
+   P. B. Szabó, J. Csóka, M. Kállay, and P. R. Nagy,
+   *J. Chem. Theory Comput.* **17**, 2886-2905 (2021).
+   https://doi.org/10.1021/acs.jctc.1c00093
 
 .. [Pak:2025:094110]
    "Fast simulation of soft x-ray near-edge spectra using a relativistic state-interaction approach"
@@ -832,4 +852,3 @@ Bibliography
    E. Aprà, E. J. Bylaska, W. A. de Jong, et. al.,
    *J. Chem. Phys.* **152**, 184102 (2020)
    https://doi.org/10.1063/5.0004997
-

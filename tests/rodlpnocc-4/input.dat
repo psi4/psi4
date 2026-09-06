@@ -1,0 +1,82 @@
+#! Full-space iterative ROHF DLPNO-CCSD(T) regression for the CN radical
+#! Canonical reference components are from cc8a. Opening every local cutoff
+#! makes this a compact oracle for the AAA, AAB, ABB, and BBB triples blocks.
+
+ref_scf   = -92.195556565280143  #TEST
+ref_ccsd  =  -0.281342908789723  #TEST
+ref_aaa   =  -0.000197427882648  #TEST
+ref_aab   =  -0.007154863588219  #TEST
+ref_abb   =  -0.006445976029399  #TEST
+ref_bbb   =  -0.000175823746097  #TEST
+ref_t     =  -0.013974091246363  #TEST
+ref_total = -92.490873565316235  #TEST
+
+molecule cn {
+0 2
+C  0.000000000000  0.000000000000   1.195736583480
+N  0.000000000000  0.000000000000  -1.024692078304
+units bohr
+symmetry c1
+}
+
+set {
+  reference rohf
+  basis cc-pVDZ
+  docc [6]
+  socc [1]
+  freeze_core true
+  scf_type direct
+
+  e_convergence 1.0e-10
+  r_convergence 1.0e-9
+  d_convergence 1.0e-9
+  dlpno_maxiter 100
+  dlpno_toggle_memory false
+
+  t_cut_pno 0.0
+  t_cut_pno_mp2 0.0
+  t_cut_pairs 0.0
+  t_cut_pairs_mp2 0.0
+  t_cut_do 0.0
+  t_cut_mkn 0.0
+  t_cut_pre 0.0
+  t_cut_do_pre 0.0
+  t_cut_do_ij 0.0
+  t_cut_clmo 0.0
+  t_cut_cpao 0.0
+  f_cut 0.0
+
+  t0_approximation false
+  t_cut_tno 0.0
+  t_cut_tno_pre 0.0
+  t_cut_do_triples 0.0
+  t_cut_do_triples_pre 0.0
+  t_cut_mkn_triples 0.0
+  t_cut_mkn_triples_pre 0.0
+  t_cut_triples_weak 0.0
+  triples_max_weak_pairs 3
+  f_cut_t 0.0
+  t_cut_iter 0.0
+}
+
+print('   Testing full-space iterative ROHF DLPNO-CCSD(T) on CN ...')
+val = energy('dlpno-ccsd(t)')
+
+e_aaa = variable('AAA (T) CORRECTION ENERGY')
+e_aab = variable('AAB (T) CORRECTION ENERGY')
+e_abb = variable('ABB (T) CORRECTION ENERGY')
+e_bbb = variable('BBB (T) CORRECTION ENERGY')
+e_t = variable('(T) CORRECTION ENERGY')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 8, 'scf ref')                   #TEST
+compare_values(ref_ccsd, variable('CCSD CORRELATION ENERGY'), 6, 'ccsd correlation') #TEST
+compare_values(ref_aaa, e_aaa, 6, 'AAA triples contribution')                        #TEST
+compare_values(ref_aab, e_aab, 6, 'AAB triples contribution')                        #TEST
+compare_values(ref_abb, e_abb, 6, 'ABB triples contribution')                        #TEST
+compare_values(ref_bbb, e_bbb, 6, 'BBB triples contribution')                        #TEST
+compare_values(ref_t, e_t, 6, 'iterative triples correction')                        #TEST
+compare_values(e_t, e_aaa + e_aab + e_abb + e_bbb, 10, 'spin-component sum')         #TEST
+compare_values(ref_total, variable('CCSD(T) TOTAL ENERGY'), 6, 'ccsd(t) total')       #TEST
+compare_values(ref_total, variable('CURRENT ENERGY'), 6, 'current total')             #TEST
+compare_values(ref_total, val, 6, 'dlpno-ccsd(t) return')                             #TEST
+clean()
