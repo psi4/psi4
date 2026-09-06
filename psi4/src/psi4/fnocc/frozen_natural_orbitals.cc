@@ -66,7 +66,7 @@ FrozenNO::FrozenNO(SharedWavefunction wfn, Options& options) : Wavefunction(opti
 FrozenNO::~FrozenNO() {}
 
 void FrozenNO::common_init() {
-    module_ = "fnocc";
+    set_module("fnocc");
 
     nfzc = frzcpi_.sum();
     nfzv = frzvpi_.sum();
