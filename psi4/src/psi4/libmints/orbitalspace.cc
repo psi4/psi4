@@ -165,34 +165,25 @@ void OrbitalSpace::print() const {
 
 namespace {  // anonymous
 OrbitalSpace orthogonalize(const std::string &id, const std::string &name, const std::shared_ptr<BasisSet> &bs,
-                           double lindep_tol) {
+                           double lindep_tol, double cholesky_tol) {
     outfile->Printf("    Orthogonalizing basis for space %s.\n", name.c_str());
 
     SharedMatrix overlap = OrbitalSpace::overlap(bs, bs);
-    Dimension SODIM = overlap->rowspi();
-    auto evecs = std::make_shared<Matrix>("evecs", SODIM, SODIM);
-    auto sqrtm = std::make_shared<Matrix>("evecs", SODIM, SODIM);
-    auto evals = std::make_shared<Vector>("evals", SODIM);
 
-    int nlindep = 0;
-    overlap->diagonalize(evecs, evals);
-    for (int h = 0; h < SODIM.n(); h++) {
-        for (int i = 0; i < SODIM[h]; i++) {
-            if (std::fabs(evals->get(h, i)) > lindep_tol) {
-                sqrtm->set(h, i, i, 1.0 / sqrt(evals->get(h, i)));
-            } else {
-                sqrtm->set(h, i, i, 0.0);
-                nlindep++;
-            }
-        }
-    }
+    // Symmetric orthogonalization while the basis is well conditioned, canonical once
+    // vectors have to be dropped, partial Cholesky when the overlap is too ill conditioned
+    // for that. The dependent directions are really removed from X rather than zeroed, so
+    // the space that comes back has the reduced dimension instead of trailing null vectors.
+    BasisSetOrthogonalization orthog(BasisSetOrthogonalization::Automatic, overlap, lindep_tol, cholesky_tol, 1);
+    auto X = orthog.basis_to_orthog_basis();
 
-    sqrtm->back_transform(evecs);
+    // Counted from X itself: nlindep() reports the number of functions kept rather than the
+    // number removed, and dim()/orthog_dim() return an int through Dimension(size_t), which
+    // silently yields a Dimension of that many zeros.
+    outfile->Printf("    %d linear dependencies will be \'removed\'.\n",
+                    overlap->rowspi().sum() - X->colspi().sum());
 
-    outfile->Printf("    %d linear dependencies will be \'removed\'.\n", nlindep);
-
-    auto localfactory = std::make_shared<IntegralFactory>(bs);
-    return OrbitalSpace(id, name, sqrtm, bs, localfactory);
+    return OrbitalSpace(id, name, X, bs, std::make_shared<IntegralFactory>(bs));
 }
 
 OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpace &space2, const std::string &id,
@@ -209,9 +200,11 @@ OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpac
     // Overlap Matrix
     SharedMatrix O12 = OrbitalSpace::overlap(space1, space2);
 
-    // Half-transform to RIBS
-    auto C12 = std::make_shared<Matrix>("C12", space1.C()->colspi(), space2.C()->colspi());
-    C12->gemm(false, false, 1.0, O12, space2.C(), 0.0);
+    // Transform the overlap into the orbital basis of both spaces, C1^T S12 C2.
+    // The row dimension of space1 is its number of orbitals, which is smaller than its
+    // number of basis functions whenever linear dependencies were removed from it.
+    auto C12 = linalg::triplet(space1.C(), O12, space2.C(), true, false, false);
+    C12->set_name("C12");
 
     // SVD of MO overlap matrix
     auto [U, S, Vt] = C12->svd_a_temps();
@@ -250,9 +243,10 @@ OrbitalSpace OrbitalSpace::build_cabs_space(const OrbitalSpace &orb_space, const
     return orthogonal_complement(orb_space, ri_space, "p''", "CABS", lindep_tol);
 }
 
-OrbitalSpace OrbitalSpace::build_ri_space(const std::shared_ptr<BasisSet> &combined, double lindep_tol) {
+OrbitalSpace OrbitalSpace::build_ri_space(const std::shared_ptr<BasisSet> &combined, double lindep_tol,
+                                          double cholesky_tol) {
     // orthogonalize the basis set projecting out linear dependencies.
-    return orthogonalize("p'", "RIBS", combined, lindep_tol);
+    return orthogonalize("p'", "RIBS", combined, lindep_tol, cholesky_tol);
 }
 
 }  // namespace psi
