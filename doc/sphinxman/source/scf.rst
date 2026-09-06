@@ -731,6 +731,18 @@ DFDIRJ
     strong performance with large system size through a combination of 
     effective parallelization and utilization of density-fitting to minimize 
     ERI computational cost. See the :ref:`sec:scfddfj` section for more information.
+CFMM
+    A continuous fast multipole method (CFMM) Coulomb build based on
+    [White:1994:8]_ and [White:1996:268]_. Exact four-center ERIs are used for
+    near-field interactions, while well-separated interactions are evaluated
+    through real solid harmonic multipole expansions. No auxiliary basis is
+    required. See :ref:`sec:scfcfmm` for more information.
+DFCFMM
+    A density-fitted CFMM Coulomb build inspired by linear-scaling density-fitting
+    and DF-CFMM approaches [Sodt:2006:194109]_ [Lazarski:2015:3029]_. CFMM is
+    applied to the three-center contractions, and a JKFIT auxiliary basis is
+    selected automatically unless |scf__df_basis_scf| is specified. See
+    :ref:`sec:scfcfmm` for more information.
 
 Specialized algorithms available to construct the Exchange term within a composite framework
 are as follows:
@@ -847,6 +859,76 @@ or ``DFDIRJ`` for DFT with non-hybrid functionals).
 DFDIRJ supports multiple capabilities to improve performance. Specifically, DFDIRJ allows for a combination of density-matrix based ERI 
 screening (set |globals__screening| to ``DENSITY``) and incremental Fock matrix construction (set |scf__incfock| to ``TRUE``). These two, when combined,
 enable more aggressive screening of ERI contributions to the Coulomb matrix and thus greatly improve performance.
+
+.. _`sec:scfcfmm`:
+
+Continuous Fast Multipole Coulomb Construction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The continuous fast multipole method (CFMM) exploits the spatial locality of
+Gaussian shell-pair charge distributions to reduce the cost of constructing the
+Coulomb matrix [White:1994:8]_ [White:1996:268]_. Shell pairs are organized in
+a hierarchical tree of boxes. Interactions between nearby boxes are evaluated
+with exact electron-repulsion integrals, whereas interactions between
+well-separated boxes are represented by real solid harmonic multipole
+expansions.
+
+Two CFMM-based Coulomb builders are available. ``CFMM`` applies this
+near-field/far-field partition directly to the four-center Coulomb contraction
+and does not require an auxiliary basis. ``DFCFMM`` applies the CFMM machinery
+to both three-center contractions in a density-fitted Coulomb build
+[Sodt:2006:194109]_ [Lazarski:2015:3029]_. The auxiliary Coulomb metric is
+solved explicitly. ``DFCFMM`` therefore requires a JKFIT auxiliary basis; an
+appropriate basis is selected automatically, or it can be supplied with
+|scf__df_basis_scf|.
+
+For a non-hybrid density functional, either Coulomb builder can be selected
+alone by setting |globals__scf_type| to ``CFMM`` or ``DFCFMM``. Hartree--Fock
+and hybrid-DFT calculations must pair the Coulomb builder with an exchange
+algorithm. The supported choices are ``CFMM+COSX``, ``CFMM+LINK``,
+``CFMM+SNLINK``, ``DFCFMM+COSX``, ``DFCFMM+LINK``, and
+``DFCFMM+SNLINK``. The SNLINK combinations require |PSIfour| to be compiled
+with GauXC support.
+
+An example Hartree--Fock input using direct CFMM with LinK exchange is::
+
+    set {
+        scf_type cfmm+link
+        cfmm_order 10
+        cfmm_grain 4
+        cfmm_extent_tolerance 1.0e-10
+    }
+
+    energy('hf')
+
+Changing ``scf_type`` to ``dfcfmm+link`` selects the density-fitted CFMM
+Coulomb builder. The CFMM hierarchy and accuracy are controlled by three
+options:
+
+  |scf__cfmm_order|
+      Maximum order of the multipole expansion. The default is 10. Increasing
+      the order generally improves the accuracy of far-field interactions at
+      additional computational cost.
+
+  |scf__cfmm_grain|
+      Number of levels in the CFMM tree. The default is 4, and the current
+      implementation accepts values from 3 through 5. Deeper trees provide a
+      finer spatial partition but increase setup and memory costs.
+
+  |scf__cfmm_extent_tolerance|
+      Tolerance used to define the spatial extent of a Gaussian shell pair. The
+      default is 1.0E-10. Values must lie between zero and one. Decreasing this
+      tolerance increases shell-pair extents, moves more interactions into the
+      exact near field, and generally increases both accuracy and cost.
+
+Both CFMM Coulomb builders support density-matrix screening
+(|globals__screening| set to ``DENSITY``) and incremental Fock construction
+(|scf__incfock| set to ``TRUE``). For ``DFCFMM``, any enabled screening mode
+uses density-weighted three-center bounds in both density-fitting contractions;
+setting |globals__screening| to ``NONE`` disables these bounds. As for other
+screened Fock builds, results for diffuse basis sets or unusually tight
+accuracy targets should be checked by tightening the CFMM controls or by
+comparison with a less approximate Coulomb builder.
 
 .. _`sec:scfcosx`:
 

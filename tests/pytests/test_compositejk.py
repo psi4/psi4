@@ -38,7 +38,9 @@ units au
 
 @pytest.mark.smoke
 @pytest.mark.parametrize("j_algo", [ 
-        pytest.param("DFDIRJ") 
+        pytest.param("DFDIRJ"),
+        pytest.param("CFMM"),
+        pytest.param("DFCFMM"),
     ]
 ) #to be extended in the future
 @pytest.mark.parametrize("k_algo", [ 
@@ -76,6 +78,74 @@ def test_composite_call(j_algo, k_algo, mols, request):
     # check that correct K algo has been called
     clean_k_name = clean_k_name.replace("-", "") # replace sn-LinK with snLinK
     assert clean_k_name.lower() == k_algo.lower(), f'{test_id} has correct K build method'
+
+
+@pytest.mark.parametrize("j_algo", ["CFMM", "DFCFMM"])
+@pytest.mark.parametrize("screening", ["DENSITY", "NONE"])
+def test_cfmm_j_only_incfock(j_algo, screening, mols):
+    """Exercise J-only CFMM builds, including incremental Fock and no-screening paths."""
+
+    molecule = mols["h2o"]
+    options = {
+        "scf_type": j_algo,
+        "basis": "6-31g",
+        "cfmm_grain": 3,
+        "screening": screening,
+        "ints_tolerance": 1.0e-12,
+        "bench": 1,
+        "incfock": False,
+    }
+    psi4.set_options(options)
+    energy_full = psi4.energy("bp86", molecule=molecule)
+
+    if screening == "NONE":
+        psi4.core.clean()
+        psi4.set_options({**options, "screening": "DENSITY"})
+        energy_screened = psi4.energy("bp86", molecule=molecule)
+        assert compare_values(energy_screened, energy_full, 6, f"{j_algo} no-screening energy")
+
+    psi4.core.clean()
+    psi4.set_options({**options, "incfock": True, "save_jk": True})
+    energy_incfock, wfn = psi4.energy("bp86", molecule=molecule, return_wfn=True)
+
+    assert compare_values(energy_full, energy_incfock, 6, f"{j_algo} {screening} incremental-Fock energy")
+
+    assert wfn.jk().name() == j_algo
+
+    shell_counts = wfn.jk().computed_shells_per_iter()
+    count_kind = "Quartets" if j_algo == "CFMM" else "Triplets"
+    assert shell_counts[count_kind]
+    assert any(count > 0 for count in shell_counts[count_kind])
+
+
+@pytest.mark.parametrize(
+    "invalid_option",
+    [
+        pytest.param({"cfmm_order": -1}, id="negative-order"),
+        pytest.param({"cfmm_grain": 2}, id="shallow-tree"),
+        pytest.param({"cfmm_grain": 6}, id="deep-tree"),
+        pytest.param({"cfmm_extent_tolerance": 0.0}, id="zero-extent-tolerance"),
+        pytest.param({"cfmm_extent_tolerance": 1.0}, id="unit-extent-tolerance"),
+    ],
+)
+def test_cfmm_option_validation(invalid_option, mols):
+    """Reject CFMM controls that would produce invalid tree or harmonic data."""
+
+    defaults = {
+        "scf_type": "CFMM",
+        "basis": "sto-3g",
+        "cfmm_order": 10,
+        "cfmm_grain": 4,
+        "cfmm_extent_tolerance": 1.0e-10,
+    }
+    psi4.set_options({**defaults, **invalid_option})
+    try:
+        with pytest.raises(RuntimeError):
+            psi4.energy("bp86", molecule=mols["h2o"])
+    finally:
+        psi4.core.clean()
+        psi4.set_options(defaults)
+
 
 @pytest.mark.parametrize(
     "inp",

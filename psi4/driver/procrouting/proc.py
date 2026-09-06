@@ -1451,6 +1451,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     # Set the DF basis sets
     df_needed = core.get_global_option("SCF_TYPE") in ["DF", "MEM_DF", "DISK_DF" ]
     df_needed |= "DFDIRJ" in core.get_global_option("SCF_TYPE")
+    df_needed |= "DFCFMM" in core.get_global_option("SCF_TYPE")
     df_needed |= (core.get_global_option("SCF_TYPE") == "DIRECT" and core.get_option("SCF", "DF_SCF_GUESS"))
     if df_needed:
         if (dfbs := kwargs.get("_force_df_basis_scf", False)):
