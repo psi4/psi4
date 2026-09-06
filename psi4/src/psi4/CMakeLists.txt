@@ -118,8 +118,11 @@ foreach(dir_name
   psimrcc
   sapt
   scfgrad
-  f12
-  dummy_einsums
+  # Temporarily skipped: f12 and dummy_einsums consume Einsums and target the
+  # pre-2.0 API. We're building against Einsums 2.x (for TiledRuntimeTensor in
+  # the libmints bridge); re-enable these once they're ported to 2.x.
+  # f12
+  # dummy_einsums
   dummy_integratorxx
   )
   add_subdirectory(${dir_name})
