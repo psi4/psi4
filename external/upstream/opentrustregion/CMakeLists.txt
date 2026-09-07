@@ -45,5 +45,6 @@ if(${ENABLE_OpenTrustRegion})
         set(OpenTrustRegion_DIR ${STAGED_INSTALL_PREFIX}/${_otr_dir} CACHE PATH "path to internally built OpenTrustRegionConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: OpenTrustRegion${ColourReset}")
     add_library(opentrustregion_external INTERFACE)  # dummy
 endif()
