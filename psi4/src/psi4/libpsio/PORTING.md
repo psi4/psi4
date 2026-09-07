@@ -144,6 +144,28 @@ untouched, so it is left as a separate decision rather than folded in here.
 timings, so it is untouched. `AIOHandler` covers nine files; the other 443 that
 touch psio have no async path today.
 
+## Durability on close, and why the shim does not ask for it
+
+libspill's `ls_opts.durable_close` (opts version 3) fsyncs a kept store when it
+is closed. The shim leaves it off, which is both the library's default and the
+faithful choice: the `close.cc` this port deleted called `close(2)` and nothing
+else — `fsync` appears nowhere in libpsio's history — so Psi4 has never had that
+guarantee and nothing in it depends on one.
+
+Worth stating explicitly because the earlier pinned libspill fsynced
+unconditionally, which would have made this port **slower than the code it
+replaces** on close-heavy workloads rather than faster: upstream measured an eT
+coupled-cluster case go from 41.7 s to a 1200 s timeout, ~24 of 28 minutes
+blocked in `fsync` (libspill issue #6), and 8.7x on a 200-keep-close loop.
+Psi4 cycles scratch files constantly, so it would have paid that too.
+
+What a caller actually needs from a close — that the bytes are readable later in
+the same run — the page cache already provides either way. A file kept for a
+*later* run (`PSIOManager::mark_file_for_retention`) is the one case where
+durability could matter, and it did not hold before this port either; if Psi4
+ever wants it, `durable_close` is the switch, and it should be a deliberate
+decision with its cost measured rather than a default inherited by accident.
+
 ## Open decisions
 
 (Scratch-path policy was one of these; it is settled above, under *The
