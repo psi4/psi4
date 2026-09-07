@@ -46,7 +46,7 @@ def test_rks_energy(inp, symmetry, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_integrate": False,
+        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -56,7 +56,7 @@ def test_rks_energy(inp, symmetry, basis, gauxc_exec):
     enPsi = psi4.energy(inp["name"])
 
     psi4.set_options({
-        "gauxc_integrate": True,
+        "gauxc_dft_enable": True,
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
@@ -95,7 +95,7 @@ def test_rks_grad(inp, symmetry, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_integrate": False,
+        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -103,7 +103,7 @@ def test_rks_grad(inp, symmetry, basis, gauxc_exec):
     })
 
     psi4.set_options({
-        "gauxc_integrate": True,
+        "gauxc_dft_enable": True,
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
@@ -144,7 +144,7 @@ def test_uks_energy(inp, symmetry, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_integrate": False,
+        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -155,7 +155,7 @@ def test_uks_energy(inp, symmetry, basis, gauxc_exec):
     enPsi = psi4.energy(inp["name"])
 
     psi4.set_options({
-        "gauxc_integrate": True,
+        "gauxc_dft_enable": True,
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
@@ -195,7 +195,7 @@ def test_uks_gradient(inp, symmetry, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_integrate": False,
+        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -204,7 +204,7 @@ def test_uks_gradient(inp, symmetry, basis, gauxc_exec):
     })
 
     psi4.set_options({
-        "gauxc_integrate": True,
+        "gauxc_dft_enable": True,
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
