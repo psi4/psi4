@@ -1933,9 +1933,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
 
-        /*- SUBSECTION GAUXCINT -*/
+        /*- SUBSECTION GAUXCDFT -*/
+#ifdef USING_gauxc
         /*- Outsource all Kohn-Sham numerical integration to the GauXC library? -*/
-        options.add_bool("GAUXC_INTEGRATE", false);
+        options.add_bool("GAUXC_DFT_ENABLE", true);
         /*- Load Balancer kernel for KS !expert -*/
         options.add_str("GAUXC_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
         /*- Pruning scheme for KS grids !expert -*/
@@ -1953,6 +1954,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("GAUXC_USE_GPU", false);
         /*- Proportion (in %) of available GPU memory to allocate to GauXC. !expert-*/
         options.add_int("GAUXC_GPU_MEM", 90);
+#endif
+
+        /*- SUBSECTION BRIANINT -*/
+#ifdef USING_BrianQC
+    /*- Whether to enable using the BrianQC GPU module -*/
+    options.add_bool("BRIANQC_INTEGRATE", true);
+#endif
 
         /*- SUBSECTION TDSCF -*/
         /*- Number of roots (excited states) we should seek to converge. This

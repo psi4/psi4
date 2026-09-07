@@ -1245,7 +1245,7 @@ void UHF::setup_potential() {
         }
 #endif
 #ifdef USING_gauxc
-        if (options_.get_bool("GAUXC_INTEGRATE")) {
+        if (options_.get_bool("GAUXC_DFT_ENABLE")) {
             managers.push_back(std::make_shared<GauUV>(functional_, basisset_, options_));
         }
 #endif
