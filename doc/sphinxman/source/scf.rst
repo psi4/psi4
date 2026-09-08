@@ -996,8 +996,8 @@ the microiterations typically results in the overall cost being greater for
 SOSCF than for gradient-based methods. Therefore, SOSCF should only be used if
 it is difficult to locate a stable minimum.
 
-SOSCF is available for all HF and DFT references with the exception of meta-
-GGA functionals. To enable, set the option |scf__soscf| to ``true``.
+SOSCF is available for all HF and DFT references except those listed below, meta-GGA
+functionals among them. To enable, set the option |scf__soscf| to ``true``.
 Additional options to modify the number of microiterations taken are as
 follows:
 
@@ -1045,21 +1045,30 @@ expects. |scf__soscf_print| turns on microiteration detail for both codes;
 wherever it has been set. The settings with no |PSIfour| counterpart are exposed
 as ``OTR_*`` keywords, documented at :ref:`options:otr`.
 
-Some computations cannot be handed to OpenTrustRegion, because they need
-something applied per-iteration by the driver or something it cannot express: a
-``CUHF`` reference, for which no orbital Hessian is implemented; meta-GGA and
-VV10 functionals; a GRAC-shifted potential, which is spliced into the exchange-
-correlation potential outside the kernel the Hessian differentiates; MOM
-(|scf__mom_start|) and fractional occupation (|scf__frac_start|), which change
-the occupation mid-SCF; and EFP, PCM, DDX and PE embedding, whose contributions
-the Python driver adds to the Fock matrix each iteration. These fall back on the
-internal second-order code, and a note in the output file names the condition
-that applied. Separately, and not specific to any one package, |PSIfour| declines
-second-order convergence altogether for the semi-numerical exchange builds
-(``DFDIRJ+COSX``, ``DFDIRJ+LINK``, ``DFDIRJ+SNLINK``), which cannot supply the
-non-symmetric exchange matrices the orbital Hessian needs.
+Some computations cannot use second-order convergence at all, whichever package is
+selected, because the orbital Hessian cannot be formed or cannot be applied to the
+trial densities it needs. |PSIfour| raises for these rather than returning a
+converged but wrong answer:
 
-Because of those fallbacks, what was requested and what ran are not always the
+* a ``CUHF`` reference, for which no orbital Hessian is implemented,
+* meta-GGA and VV10 functionals, whose exchange-correlation kernel cannot supply the
+  rotated potential the Hessian needs,
+* fractional occupation (|scf__frac_start|), which varies the occupation during the
+  SCF where a second-order step is taken at fixed occupation,
+* incremental Fock builds (|scf__incfock|), which accumulate against the SCF's own
+  sequence of densities rather than the trial densities the Hessian is applied to,
+* the semi-numerical exchange builds (|globals__scf_type| ``DFDIRJ+COSX``,
+  ``DFDIRJ+LINK`` and ``DFDIRJ+SNLINK``), which cannot supply non-symmetric exchange
+  matrices.
+
+A smaller set OpenTrustRegion in particular cannot carry, because the python driver
+applies them per-iteration and would stop doing so once OpenTrustRegion owns the loop:
+MOM (|scf__mom_start|), a GRAC-shifted potential, which is spliced into the
+exchange-correlation potential outside the kernel the Hessian differentiates, and EFP,
+PCM, DDX and PE embedding. These fall back on the internal second-order code rather
+than raising, and a note in the output file names the condition that applied.
+
+Because of that fallback, what was requested and what ran are not always the
 same. A line above the iteration table names the packages actually in force::
 
   The orbital optimizer module is Internal, second-order OpenTrustRegion
