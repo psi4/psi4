@@ -99,8 +99,9 @@ _eff = {"internal": "internal", "ooo": "openorbitaloptimizer", "otr": "opentrust
 # The keyword compares above prove the request landed; these prove it survived the           #TEST
 # compatibility guards, so a silent fallback to the internal optimizer fails the test.       #TEST
 compare(_eff[oopkg], wfn1.module_role("orbital_optimizer"), "effective 1st-order module")     #TEST
-# WB97X-V needs VV10, whose kernel the orbital Hessian does not cover, so the                 #TEST
-# second-order package falls back to the internal code no matter what was asked for.          #TEST
+# Every functional here carries VV10, whose kernel the orbital Hessian does not cover, so     #TEST
+# psi4 refuses second-order convergence outright and this test only varies the first-order    #TEST
+# package. The role below is therefore always unset.                                          #TEST
 compare("internal" if soscf else "", wfn1.module_role("second_order_orbital_optimizer"),
         "effective 2nd-order module")                                                        #TEST
 func = wfn1.V_potential().functional()

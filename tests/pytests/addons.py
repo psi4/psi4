@@ -17,6 +17,7 @@ __all__ = [
     "ctest_labeler",
     "ctest_runner",
     "orbital_optimizer_combinations",
+    "first_order_optimizer_combinations",
     "orbital_optimizer_setenv",
 ]
 
@@ -198,6 +199,14 @@ orbital_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
     pytest.param(None,  "otr",    id="soscf-otr", marks=using("otr")),
     pytest.param("ooo", "soscf",  id="ooo-soscf-internal", marks=using("ooo")),
     pytest.param("ooo", "otr",    id="ooo-soscf-otr", marks=[*using("ooo"), *using("otr")]),
+])
+
+
+#: For tests whose method rules out second-order convergence altogether -- a VV10 or
+#: meta-GGA functional, say -- so that only the first-order package is worth varying.
+first_order_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
+    pytest.param(None,  None, id="internal"),
+    pytest.param("ooo", None, id="ooo", marks=using("ooo")),
 ])
 
 

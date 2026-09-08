@@ -366,8 +366,35 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     self.MOM_excited_ = _validate_MOM()
     self.diis_start_ = core.get_option('SCF', 'DIIS_START')
     damping_enabled = _validate_damping()
-    soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
+    soscf_enabled = _validate_soscf()
+    if soscf_enabled:
+        # Refuse here what would otherwise die deep in C++: there is no orbital Hessian for
+        # CUHF (hf.cc's soscf_update), and the XC kernel cannot build a rotated V for
+        # meta-GGA or VV10 functionals (v.cc's Vx). Both are limitations of second-order
+        # convergence itself, not of any one optimizer package, so the check sits here rather
+        # than with the package selection below.
+        if reference == "CUHF":
+            raise ValidationError(
+                "Second-order SCF: no orbital Hessian is implemented for a CUHF reference.\n"
+                "     Please set SOSCF to false")
+        if self.functional().needs_xc() and (self.functional().is_meta()
+                                             or self.functional().needs_vv10()):
+            kind = "meta-GGA" if self.functional().is_meta() else "VV10"
+            raise ValidationError(
+                f"Second-order SCF: the {kind} exchange-correlation kernel cannot supply the\n"
+                "     rotated potential the orbital Hessian needs.\n"
+                "     Please set SOSCF to false")
+        if frac_enabled:
+            # A second-order step optimizes at fixed occupation while FRAC_START keeps
+            # changing the occupation through form_C. The internal code does not notice the
+            # conflict and returns a converged but wrong energy, so refuse. MOM is fine: it
+            # reassigns which orbitals are occupied, not how much, and the internal
+            # second-order code handles it.
+            raise ValidationError(
+                "Second-order SCF: fractional occupation varies the occupation during the\n"
+                "     SCF, which a second-order step, taken at fixed occupation, cannot follow.\n"
+                "     Please set SOSCF to false")
     efp_enabled = hasattr(self.molecule(), 'EFP')
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
     ooo_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OOO", "OPENORBITALOPTIMIZER"]
@@ -395,12 +422,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                  in ["OTR", "OPENTRUSTREGION"])
     if otr_soscf:
         # OpenTrustRegion takes over the iteration loop at the handoff, so anything applied
-        # per-iteration from Python (EFP/PCM/DDX/PE) or through form_C (MOM, FRAC) would stop
-        # being applied from that point on. It also needs an orbital Hessian, which rules out
-        # CUHF and meta/VV10 functionals. Semi-numerical K builds need no guard here: psi4
-        # refuses SOSCF for them outright, in proc.py's check_non_symmetric_jk_density.
-        metavv10_enabled = self.functional().needs_xc() and (self.functional().is_meta()
-                                                             or self.functional().needs_vv10())
+        # per-iteration from Python (EFP/PCM/DDX/PE) or through form_C (MOM) would stop being
+        # applied from that point on. CUHF, meta/VV10, FRAC, semi-numerical K and incremental
+        # Fock builds need no guard here: those are limitations of second-order convergence
+        # generally, and psi4 has already refused SOSCF for them above and in proc.py.
         pcm_enabled = core.get_option('SCF', 'PCM')
         ddx_enabled = core.get_option('SCF', 'DDX')
         pe_enabled = core.get_option('SCF', 'PE')
@@ -408,13 +433,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         # differentiates, so the Hessian never sees it.
         grac_enabled = (core.get_option("SCF", "DFT_GRAC_SHIFT") != 0.0
                         or core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE")
-        if (reference == "CUHF" or metavv10_enabled or self.MOM_excited_
-                or frac_enabled or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled
+        if (self.MOM_excited_ or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled
                 or grac_enabled):
             core.print_out("    Note: OpenTrustRegion not compatible with at least one of the following. Falling back to second_order_orbital_optimizer_package=internal\n")
-            core.print_out(f"          {reference=}, meta/vv10={metavv10_enabled}, mom={self.MOM_excited_},\n")
-            core.print_out(f"          frac={frac_enabled}, efp={efp_enabled}, pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled},\n")
-            core.print_out(f"          grac={grac_enabled}\n")
+            core.print_out(f"          mom={self.MOM_excited_}, efp={efp_enabled},\n")
+            core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, grac={grac_enabled}\n")
             otr_soscf = False
 
     # Record what actually drove the orbitals, so callers can tell a demoted package from

@@ -123,6 +123,18 @@ def check_non_symmetric_jk_density(name):
                               "     Please set SCF_TYPE to %s" % (name, supp_string))
 
 
+def check_incremental_fock(name):
+    """
+    Ensure incremental Fock builds are off for the selected method.
+    """
+    if core.get_option('SCF', 'INCFOCK'):
+        raise ValidationError("Method %s: Requires full Fock builds.\n"
+                              "     The orbital Hessian is applied to trial densities that are not\n"
+                              "     steps along the SCF's own density sequence, which is what an\n"
+                              "     incremental build accumulates against.\n"
+                              "     Please set INCFOCK to false" % (name))
+
+
 def check_disk_df(name, optstash):
 
     optstash.add_option(['SCF_TYPE'])
