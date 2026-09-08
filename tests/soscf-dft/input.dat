@@ -1,8 +1,11 @@
 #! Triple and Singlet Oxygen energy SOSCF, also tests non-symmetric density matrices
 
-# OpenTrustRegion needs a couple more macro-iterations than the internal second-order code
-# on singlet PBE here, for the same energy, so give it a little more room.            #TEST
-niter_max = 10 if psi4.core.get_option("SCF", "SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE") in ["OTR", "OPENTRUSTREGION"] else 8   #TEST
+# Singlet PBE is the sensitive one: 6 macro-iterations with the internal packages, 8 with     #TEST
+# OpenTrustRegion, 10 with OpenOrbitalOptimizer driving the first-order half. Same energy in   #TEST
+# every case, so widen the bound whenever either package is in play.                           #TEST
+_internal_only = (psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL"       #TEST
+                  and psi4.core.get_option("scf", "second_order_orbital_optimizer_package") == "INTERNAL")  #TEST
+niter_max = 8 if _internal_only else 12                                                        #TEST
 
 #### UHF Triplet Oxygen energy, triplet
 molecule mol {
