@@ -17,6 +17,12 @@ set {
 }
 
 
+# This block wants the SCF to run out of iterations at maxiter 6 so the convergence error
+# can be inspected. Second-order convergence gets there first and no error is raised, so
+# pin the first-order path here whatever the ambient setting.                       #TEST
+_ambient_soscf = psi4.core.get_option("SCF", "SOSCF")  # KP-LOGIC
+psi4.set_options({"soscf": False})                     # KP-LOGIC
+
 try:
     if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-LOGIC
         energy('hf')
@@ -29,6 +35,8 @@ except psi4.SCFConvergenceError as ex:
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-LOGIC
     compare_values(-76.050986, SCF_iter_6, 5, "Energy at iter {}".format(SCF_error_iter))
 
+psi4.set_options({"soscf": _ambient_soscf})  # KP-LOGIC
+
 set maxiter 24
 
 thisenergy = energy('scf')
@@ -37,7 +45,10 @@ compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion 
 compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
 
 n_iter = int(variable("scf iterations"))
-ok_iter = (n_iter > 7) and (n_iter < 12)
+if psi4.core.get_option("SCF", "SOSCF"):  # KP-LOGIC
+    ok_iter = (n_iter > 2) and (n_iter < 8)   # second-order needs far fewer macro-iterations
+else:
+    ok_iter = (n_iter > 7) and (n_iter < 12)
 compare(True, ok_iter, f"Iteration Count {n_iter}")
 
 scf_enes = variable("scf total energies")

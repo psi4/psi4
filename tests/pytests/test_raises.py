@@ -54,3 +54,33 @@ def test_cc_uhf_raise2():
 
     assert "Non-RHF CC response properties are not implemented." in str(e.value)
 
+
+
+@pytest.mark.parametrize("opts,method,snippet", [
+    pytest.param({"incfock": True}, "scf", "Requires full Fock builds", id="incfock"),
+    pytest.param({"scf_type": "dfdirj+cosx"}, "scf", "non-symmetric density matrices", id="seminumerical_k"),
+    pytest.param({"reference": "cuhf", "charge": 1, "multiplicity": 2}, "scf",
+                 "no orbital Hessian is implemented for a CUHF reference", id="cuhf"),
+    pytest.param({}, "tpss", "meta-GGA exchange-correlation kernel", id="meta_gga"),
+    pytest.param({}, "wb97x-v", "VV10 exchange-correlation kernel", id="vv10"),
+])
+def test_soscf_raise(opts, method, snippet):
+    """Second-order SCF needs an orbital Hessian and J/K for trial densities off the SCF's own
+    density sequence. Where it cannot have them, refuse up front rather than die mid-run."""
+    charge = opts.pop("charge", 0)
+    multiplicity = opts.pop("multiplicity", 1)
+    psi4.geometry(f"""
+      {charge} {multiplicity}
+      O
+      H 1 0.96
+      H 1 0.96 2 104.5
+    """)
+    psi4.set_options({"basis": "cc-pvdz", "soscf": True, **opts})
+
+    with pytest.raises(psi4.ValidationError) as e:
+        psi4.energy(method)
+    assert snippet in str(e.value)
+
+    # without the second-order request the same computation is fine
+    psi4.set_options({"soscf": False})
+    psi4.energy(method)
