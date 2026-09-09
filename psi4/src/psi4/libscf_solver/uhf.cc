@@ -1597,8 +1597,8 @@ void UHF::openorbital_scf() {
 }
 
 #ifdef USING_OpenTrustRegion
-std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const OTR::c_real* matrix, const std::string name, 
-                                                  const Dimension occpi_a, const Dimension virpi_a, 
+std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const OTR::c_real* matrix, const std::string name,
+                                                  const Dimension occpi_a, const Dimension virpi_a,
                                                   const Dimension occpi_b, const Dimension virpi_b) {
     // create shared matrix
     auto shared_matrix_a = std::make_shared<Matrix>(name + "_a", occpi_a, virpi_a);
@@ -1664,7 +1664,7 @@ OTR::c_int UHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
     // apply orbital rotation
     rotate_orbitals(Ca_, kappa_shared_a);
     rotate_orbitals(Cb_, kappa_shared_b);
-    
+
     // form density matrix
     form_D();
 
@@ -1728,7 +1728,7 @@ OTR::c_int UHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
             // get the pointer to the memory block for this irrep in shared matrix
             auto hess_x_irrep = hess_x_shared[1]->pointer(h);
 
-            // copy shared matrix to Hessian linear transformation, factor 2 to account 
+            // copy shared matrix to Hessian linear transformation, factor 2 to account
             // for redundant parameters
             for (size_t i = 0; i < occpi_b[h]; i++) {
                 for (size_t a = 0; a < virpi_b[h]; a++) {
@@ -1741,7 +1741,7 @@ OTR::c_int UHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
     return 0;
 }
 
-OTR::c_int UHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+OTR::c_int UHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad,
                                 OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
     // get occupied and virtual dimensions per spin type and irrep
     auto occpi_a = nalphapi_;
@@ -1779,7 +1779,7 @@ OTR::c_int UHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR
             // get the pointer to the memory block for this irrep in shared matrix
             auto fp = fock_a->pointer(h);
 
-            // construct gradient and Hessian diagonal, factor 2 to account for 
+            // construct gradient and Hessian diagonal, factor 2 to account for
             // redundant parameters
             for (size_t i = 0; i < occpi_a[h]; i++) {
                 for (size_t a = occpi_a[h]; a < nmopi_[h]; a++) {
@@ -1794,7 +1794,7 @@ OTR::c_int UHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR
             // get the pointer to the memory block for this irrep in shared matrix
             auto fp = fock_b->pointer(h);
 
-            // construct gradient and Hessian diagonal, factor 2 to account for 
+            // construct gradient and Hessian diagonal, factor 2 to account for
             // redundant parameters
             for (size_t i = 0; i < occpi_b[h]; i++) {
                 for (size_t a = occpi_b[h]; a < nmopi_[h]; a++) {
