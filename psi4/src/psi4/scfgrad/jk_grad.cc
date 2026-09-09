@@ -3089,6 +3089,55 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute2(
     return val;
 }
 #ifdef USING_cuEST
+namespace {
+/// Size the temporary workspace for cuestDFSymmetricDerivativeCompute.
+///
+/// Works around a bug in cuEST 0.2's cuestDFSymmetricDerivativeComputeWorkspaceQuery: when the
+/// Coulomb and exchange contributions are computed in one call, the query returns exactly the
+/// exchange-only requirement and makes no allowance for the Coulomb work. Whether the shortfall
+/// is fatal is luck. The query rounds generously for some systems and the slack absorbs it; for
+/// others cuestDFSymmetricDerivativeCompute throws "Out of memory" a few hundred bytes short,
+/// with the whole device otherwise free. Measured on an L40S with cuEST 0.2:
+///
+///     system            query says   actually needs   outcome
+///     H2O/cc-pVDZ        1388800     ~1.0-1.3 MB      works (query over-reports)
+///     H2O/DZVP            697088     697601-698112    "Out of memory", short by <1 kB
+///     He2/STO-3G           90112      90305-90368     "Out of memory", short by <256 B
+///
+/// which is why the failure looks capriciously basis-set dependent (water works in cc-pVDZ and
+/// def2-SVP, fails in DZVP, STO-3G, 6-31G and 6-31G*) and is invisible to every knob cuEST
+/// exposes -- memory policy, ffloat/JIT mode and variableBufferSize all make no difference.
+///
+/// Ask for the Coulomb-only and exchange-only requirements separately and allocate their sum.
+/// That covers the shortfall by a wide margin (the Coulomb term alone is ~8% of the total, versus
+/// shortfalls under a kilobyte) without inventing a magic padding constant, and is floored by the
+/// combined query so it can never ask for less than cuEST reported.
+///
+/// TODO: drop this once the cuEST query is fixed upstream.
+cuestWorkspaceDescriptor_t query_df_derivative_workspace(
+    cuestDFIntPlan_t plan, const cuestDFSymmetricDerivativeComputeParameters_t parameters,
+    const cuestWorkspaceDescriptor_t* variableBufferSize, double densityScale,
+    const double* densityMatrix, double coefficientScale, uint64_t numCoefficientMatrices,
+    const uint64_t* numOccupied, const double* coefficientMatrices, double* outGradient) {
+    cuestWorkspaceDescriptor_t combined{}, coulomb{}, exchange{};
+
+    CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
+        cuest_handle, plan, parameters, variableBufferSize, &combined, densityScale, densityMatrix,
+        coefficientScale, numCoefficientMatrices, numOccupied, coefficientMatrices, outGradient));
+    CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
+        cuest_handle, plan, parameters, variableBufferSize, &coulomb, densityScale, densityMatrix,
+        0.0, numCoefficientMatrices, numOccupied, coefficientMatrices, outGradient));
+    CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
+        cuest_handle, plan, parameters, variableBufferSize, &exchange, 0.0, densityMatrix,
+        coefficientScale, numCoefficientMatrices, numOccupied, coefficientMatrices, outGradient));
+
+    combined.hostBufferSizeInBytes =
+        std::max(combined.hostBufferSizeInBytes, coulomb.hostBufferSizeInBytes + exchange.hostBufferSizeInBytes);
+    combined.deviceBufferSizeInBytes =
+        std::max(combined.deviceBufferSizeInBytes, coulomb.deviceBufferSizeInBytes + exchange.deviceBufferSizeInBytes);
+    return combined;
+}
+}  // namespace
 cuESTJKGrad::cuESTJKGrad(int deriv, std::shared_ptr<JK> jk) : jk_(jk), x_alpha_(0.0), x_beta_(0.0), JKGrad(deriv, jk->basisset()) { common_init(); }
 cuESTJKGrad::~cuESTJKGrad() {}
 void cuESTJKGrad::common_init() {
@@ -3171,19 +3220,17 @@ void cuESTJKGrad::compute_gradient() {
         std::shared_ptr<cuESTJK> cuest_jk = std::dynamic_pointer_cast<cuESTJK>(jk_);
         cuestDFIntPlan_t cuest_df_plan = cuest_jk->cuest_df_plan();
         
-        CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
-            cuest_handle,
+        *temporaryWorkspaceDescriptor = query_df_derivative_workspace(
             cuest_df_plan,
             df_grad_compute_parameters,
-            variableBufferSize, 
-            temporaryWorkspaceDescriptor, 
+            variableBufferSize,
             0.5,
             d_D,
             1.0 * x_alpha_,
             1,
             nocc.data(),
             d_C,
-            d_grad));
+            d_grad);
 
         cuestWorkspace_t* temporaryWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
 
@@ -3229,19 +3276,17 @@ void cuESTJKGrad::compute_gradient() {
         std::shared_ptr<cuESTJK> cuest_jk = std::dynamic_pointer_cast<cuESTJK>(jk_);
         cuestDFIntPlan_t cuest_df_plan = cuest_jk->cuest_df_plan();
         
-        CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
-            cuest_handle,
+        *temporaryWorkspaceDescriptor = query_df_derivative_workspace(
             cuest_df_plan,
             df_grad_compute_parameters,
-            variableBufferSize, 
-            temporaryWorkspaceDescriptor, 
+            variableBufferSize,
             0.5,
             d_D,
             0.5 * x_alpha_,
             2,
             nocc.data(),
             d_C,
-            d_grad));
+            d_grad);
 
         cuestWorkspace_t* temporaryWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
 
