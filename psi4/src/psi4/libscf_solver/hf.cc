@@ -1563,8 +1563,10 @@ int HF::opentrustregion_scf() {
     // MAXITER caps the whole SCF, so hand OpenTrustRegion only what the first-order
     // iterations have not already spent. Without this it would receive a fresh budget at the
     // handoff, and another on every occupation restart, so a run could report far more
-    // iterations than the user allowed.
-    settings.n_macro = std::max(1, options_.get_int("MAXITER") - iteration_);
+    // iterations than the user allowed. The +1 is for OpenTrustRegion's macro-iteration 1,
+    // which evaluates the handoff state psi4 has already counted; the driver drops that first
+    // energy, so without it the solver would get one fewer new iteration than was asked for.
+    settings.n_macro = std::max(1, options_.get_int("MAXITER") - iteration_ + 1);
     // n_micro is deliberately left at OpenTrustRegion's default. SOSCF_MAX_ITER means the
     // same thing but defaults to 5 against OTR's 50, so mapping it would quietly hobble the
     // subproblem solve for anyone who had tuned it for the internal second-order code.

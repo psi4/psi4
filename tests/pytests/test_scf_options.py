@@ -3,6 +3,7 @@ import pytest
 
 import psi4
 
+from addons import using, uusing
 from utils import compare_values
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
@@ -288,3 +289,118 @@ def test_sad_frac_occ_atomic_natural_occupations(atom, geom, expected_spin_elect
 # 0  O:   4.00000000   4.00000000   8.00000000
 # 1  H:   0.50000000   0.50000000   1.00000000
 # 2  H:   0.50000000   0.50000000   1.00000000
+
+
+@pytest.mark.parametrize("soopkg", [
+    pytest.param("internal", id="internal"),
+    pytest.param("otr", id="otr", marks=using("otr")),
+])
+def test_soscf_maxiter_budget(soopkg):
+    """MAXITER caps the whole SCF, not each stage of it.
+
+    The second-order package takes over partway through, so its own iteration budget has to
+    account for what the first-order iterations already spent -- and, for OpenTrustRegion, for
+    the macro-iteration that re-evaluates the handoff state psi4 has already counted. Both
+    packages should therefore need the same MAXITER to converge the same computation, and
+    should report the same iteration count.
+    """
+    psi4.geometry("""
+      O
+      H 1 0.96
+      H 1 0.96 2 104.5
+      symmetry c1
+    """)
+    common = {"basis": "cc-pvdz", "scf_type": "pk", "soscf": True,
+              "second_order_orbital_optimizer_package": soopkg, "fail_on_maxiter": True}
+
+    # find the smallest budget that converges
+    for maxiter in range(2, 20):
+        psi4.set_options({**common, "maxiter": maxiter})
+        try:
+            psi4.energy("scf")
+        except psi4.SCFConvergenceError:
+            continue
+        break
+    else:
+        pytest.fail("never converged")
+
+    niter = int(psi4.variable("SCF ITERATIONS"))
+    # the budget actually spent is what was reported, not one more or one less
+    assert niter == maxiter, f"converged at MAXITER={maxiter} but reported {niter} iterations"
+
+    # and one fewer must fail rather than quietly returning a shorter run
+    psi4.set_options({**common, "maxiter": maxiter - 1})
+    with pytest.raises(psi4.SCFConvergenceError):
+        psi4.energy("scf")
+
+
+@uusing("otr")
+def test_otr_occupation_flip_returns_converged_state(monkeypatch):
+    """Drive the occupation-restart branch directly, since it is hard to reach physically.
+
+    _run_opentrustregion canonicalizes without reassigning, asks what the aufbau rule would
+    give, and restarts when that disagrees with the occupation OpenTrustRegion optimized.
+    Under the handoff model DIIS settles the occupation before OpenTrustRegion ever runs, so
+    the disagreement is rare -- searching two dozen near-degenerate cases did not produce one.
+    Inject the disagreement instead, and check that what comes back describes a single
+    occupation throughout rather than a mix of the optimized and reassigned ones.
+    """
+    from psi4.driver.procrouting.scf_proc import scf_iterator
+
+    def run_scf():
+        psi4.geometry("""
+          O
+          H 1 0.96
+          H 1 0.96 2 104.5
+          symmetry c1
+        """)
+        psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "soscf": True,
+                          "second_order_orbital_optimizer_package": "otr"})
+        return psi4.energy("scf", return_wfn=True)
+
+    e_ref, wfn_ref = run_scf()
+    occ_ref = (tuple(wfn_ref.nalphapi()), tuple(wfn_ref.nbetapi()))
+    psi4.core.clean()
+
+    # Claim the aufbau assignment moved, so the loop takes the restart path and then the
+    # no-improvement exit. find_occupation still assigns the true occupation, so this
+    # perturbs the control flow without inventing unphysical orbitals.
+    real = scf_iterator._aufbau_occupation
+    seen = []
+
+    def disagree(wfn):
+        seen.append(real(wfn))
+        alpha, beta = seen[-1]
+        return ((alpha[0] + 1,) + alpha[1:], beta)
+
+    # Count find_occupation calls made from inside the loop. The fix is that the exits do not
+    # reassign, so it should be called once per restart and not on the attempt that returns.
+    reassignments = []
+    real_find = psi4.core.RHF.find_occupation
+    baseline = []
+
+    def counting_find(wfn):
+        reassignments.append(1)
+        return real_find(wfn)
+
+    monkeypatch.setattr(psi4.core.RHF, "find_occupation", counting_find)
+    monkeypatch.setattr(scf_iterator, "_aufbau_occupation",
+                        lambda wfn: (baseline.append(len(reassignments)) if not baseline else None)
+                                    or disagree(wfn))
+    e, wfn = run_scf()
+
+    assert len(seen) > 1, "the restart branch never ran, so this test proves nothing"
+    in_loop = len(reassignments) - baseline[0]
+    assert in_loop == len(seen) - 1, (
+        f"find_occupation ran {in_loop} times across {len(seen)} attempts; it should run once "
+        "per restart and never on the attempt whose state is returned")
+
+    # the occupation returned is the one OpenTrustRegion optimized, not the injected claim
+    assert (tuple(wfn.nalphapi()), tuple(wfn.nbetapi())) == occ_ref
+
+    # density, orbitals and energy all describe that same occupation
+    C = np.asarray(wfn.Ca())
+    nocc = wfn.nalphapi()[0]
+    assert np.allclose(C[:, :nocc] @ C[:, :nocc].T, np.asarray(wfn.Da()), atol=1.e-12)
+    assert e == pytest.approx(e_ref, abs=1.e-9)
+    assert wfn.energy() == pytest.approx(e_ref, abs=1.e-9)
