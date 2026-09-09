@@ -19,6 +19,7 @@ __all__ = [
     "orbital_optimizer_combinations",
     "first_order_optimizer_combinations",
     "second_order_optimizer_combinations",
+    "representative_optimizer_combinations",
     "orbital_optimizer_setenv",
 ]
 
@@ -217,6 +218,15 @@ second_order_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
     pytest.param(None,  None,  id="internal"),
     pytest.param("ooo", None,  id="ooo", marks=using("ooo")),
     pytest.param(None,  "otr", id="otr", marks=using("otr")),
+    pytest.param("ooo", "otr", id="ooo-otr", marks=[*using("ooo"), *using("otr")]),
+])
+
+
+#: For expensive downstream tests -- gradients, hessians, finite differences -- where the
+#: optimizer only sets up the SCF reference and the full cross-product is not worth the
+#: runtime. A baseline and one configuration exercising both add-ons at once.
+representative_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
+    pytest.param(None,  None,  id="internal"),
     pytest.param("ooo", "otr", id="ooo-otr", marks=[*using("ooo"), *using("otr")]),
 ])
 

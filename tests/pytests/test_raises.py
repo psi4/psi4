@@ -63,6 +63,8 @@ def test_cc_uhf_raise2():
                  "no orbital Hessian is implemented for a CUHF reference", id="cuhf"),
     pytest.param({}, "tpss", "meta-GGA exchange-correlation kernel", id="meta_gga"),
     pytest.param({}, "wb97x-v", "VV10 exchange-correlation kernel", id="vv10"),
+    pytest.param({"reference": "uhf", "frac_start": 3, "frac_occ": [5], "frac_val": [0.5]},
+                 "scf", "fractional occupation varies the occupation", id="frac"),
 ])
 def test_soscf_raise(opts, method, snippet):
     """Second-order SCF needs an orbital Hessian and J/K for trial densities off the SCF's own

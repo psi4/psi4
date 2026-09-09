@@ -278,6 +278,26 @@ def _occupation(wfn):
     return (tuple(na[h] for h in range(na.n())), tuple(nb[h] for h in range(nb.n())))
 
 
+def _aufbau_occupation(wfn):
+    """What find_occupation would assign from the current orbital energies, without assigning it.
+
+    Mirrors the aufbau branch of HF::find_occupation: pool every (energy, irrep) pair, sort, and
+    hand the lowest nalpha/nbeta to their irreps. That branch is skipped entirely when DOCC or
+    SOCC is given, so report no change there rather than predicting one that cannot happen.
+    """
+    if core.has_option_changed("SCF", "DOCC") or core.has_option_changed("SCF", "SOCC"):
+        return _occupation(wfn)
+
+    def assign(epsilon, nelec):
+        counts = [0] * len(epsilon)
+        for _, h in sorted((e, h) for h, block in enumerate(epsilon) for e in block)[:nelec]:
+            counts[h] += 1
+        return tuple(counts)
+
+    return (assign(wfn.epsilon_a().nph, wfn.nalpha()),
+            assign(wfn.epsilon_b().nph, wfn.nbeta()))
+
+
 def _run_opentrustregion(self, e_conv, d_conv):
     """Hand the orbitals to OpenTrustRegion and finish the SCF with them.
 
@@ -319,25 +339,38 @@ def _run_opentrustregion(self, e_conv, d_conv):
         self.iteration_energies.extend(otr_energies)
         self.iteration_ += len(otr_energies)
 
-        # Ensure canonical orbitals/eigenvalues are ready for post-SCF methods. form_C
-        # also re-runs find_occupation, which is what surfaces an occupation change.
-        self.form_C()
+        # Canonicalize for post-SCF methods, but leave the occupation alone: this solution was
+        # optimized at a particular occupation and is returned at it. Ask what the aufbau rule
+        # would do, and commit to that answer only when another attempt is going to use it.
+        self.canonicalize_orbitals()
+        # Canonicalization is only block diagonal to within convergence, so rebuild the density
+        # from the orbitals actually being returned rather than leaving the two disagreeing at
+        # that order. The occupied subspace, and so the density itself, is unchanged.
         self.form_D()
 
-        if otr_error or _occupation(self) == occupation:
+        if otr_error:
+            # The solver gave up. Reported below; nothing here can improve on it.
+            break
+        if _aufbau_occupation(self) == occupation:
+            # The occupation OpenTrustRegion optimized is the aufbau one. Done.
             break
         if SCFE_prev_attempt is not None and SCFE >= SCFE_prev_attempt - otr_e_conv:
-            # Reconverging didn't lower the energy. Degenerate orbitals in different
-            # irreps -- singlet O2's pi*, say -- let the aufbau assignment flip back and
-            # forth without changing the solution, so stop rather than oscillate.
+            # Reconverging didn't lower the energy. Degenerate orbitals in different irreps --
+            # singlet O2's pi*, say -- let the aufbau assignment flip back and forth without
+            # changing the solution, so stop rather than oscillate and keep what was converged.
             break
+        if attempt == _OTR_MAX_OCCUPATION_RESTARTS:
+            core.print_out(f"    Note: occupation still moving after "
+                           f"{_OTR_MAX_OCCUPATION_RESTARTS} OpenTrustRegion restarts; "
+                           f"accepting the last solution.\n")
+            break
+        # Committing to the aufbau assignment, so rebuild the density at it before handing
+        # the orbitals back to OpenTrustRegion for another attempt.
+        self.find_occupation()
+        self.form_D()
         SCFE_prev_attempt = SCFE
         core.print_out("    Note: aufbau occupation differs from the one OpenTrustRegion "
                        "optimized. Reconverging.\n")
-    else:
-        core.print_out(f"    Note: occupation still moving after "
-                       f"{_OTR_MAX_OCCUPATION_RESTARTS} OpenTrustRegion restarts; "
-                       f"accepting the last solution.\n")
 
     if otr_error:
         core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")

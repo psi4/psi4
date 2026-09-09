@@ -129,9 +129,8 @@ def check_incremental_fock(name):
     """
     if core.get_option('SCF', 'INCFOCK'):
         raise ValidationError("Method %s: Requires full Fock builds.\n"
-                              "     The orbital Hessian is applied to trial densities that are not\n"
-                              "     steps along the SCF's own density sequence, which is what an\n"
-                              "     incremental build accumulates against.\n"
+                              "     The orbital Hessian is applied to trial densities that are not steps along\n"
+                              "     the SCF's own density sequence, which is what an incremental build accumulates against.\n"
                               "     Please set INCFOCK to false" % (name))
 
 
