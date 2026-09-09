@@ -267,7 +267,7 @@ void UHF::form_F() {
     }
 }
 
-void UHF::form_C(double shift) {
+void UHF::canonicalize_orbitals(double shift) {
     if (shift == 0.0) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
         diagonalize_F(Fb_, Cb_, epsilon_b_);
@@ -311,7 +311,6 @@ void UHF::form_C(double shift) {
             }
         }
     }
-    find_occupation();
     if (debug_) {
         Ca_->print("outfile");
         Cb_->print("outfile");

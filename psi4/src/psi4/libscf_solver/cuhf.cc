@@ -303,7 +303,7 @@ void CUHF::form_F() {
     }
 }
 
-void CUHF::form_C(double shift) {
+void CUHF::canonicalize_orbitals(double shift) {
     if (shift == 0.0) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
         diagonalize_F(Fb_, Cb_, epsilon_b_);
@@ -320,7 +320,6 @@ void CUHF::form_C(double shift) {
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Cb_, epsilon_b_);
     }
-    find_occupation();
     if (debug_) {
         Ca_->print("outfile");
         Cb_->print("outfile");

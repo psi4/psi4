@@ -65,7 +65,7 @@ class RHF : public HF {
 
     void save_density_and_energy() override;
 
-    void form_C(double shift = 0.0) override;
+    void canonicalize_orbitals(double shift = 0.0) override;
     void form_D() override;
     void form_F() override;
     void form_G() override;

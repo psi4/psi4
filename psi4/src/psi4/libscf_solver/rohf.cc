@@ -373,7 +373,7 @@ void ROHF::form_F() {
     }
 }
 
-void ROHF::form_C(double shift) {
+void ROHF::canonicalize_orbitals(double shift) {
     if (shift == 0.0) {
         soFeff_->diagonalize(Ct_, epsilon_a_);
     } else {
@@ -408,7 +408,6 @@ void ROHF::form_C(double shift) {
     // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
-    find_occupation();
 
     if (debug_) {
         Ca_->print("outfile");

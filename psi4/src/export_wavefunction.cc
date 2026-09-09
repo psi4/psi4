@@ -322,6 +322,10 @@ void export_wavefunction(py::module& m) {
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
+        .def("canonicalize_orbitals", &scf::HF::canonicalize_orbitals,
+             "Forms the Orbital Matrices from the current Fock Matrices, as :py:meth:`form_C` does, "
+             "but leaves the occupation to the caller rather than reassigning it by the aufbau rule.",
+             "shift"_a = 0.0)
         .def("form_initial_C", &scf::HF::form_initial_C,
              "Forms the initial Orbital Matrices from the current Fock Matrices.")
         .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
