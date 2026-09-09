@@ -101,6 +101,11 @@ __geoms = {
     pytest.param({"geom": "water_cation", "methodname": "wpbe",      "reference": "uhf"}, id='water_cation_uwpbe'),
     pytest.param({"geom": "water",        "methodname": "wpbe0",     "reference": "rhf"}, id='water_rwpbe0'),          # 0.25  / 0.75
     pytest.param({"geom": "water",        "methodname": "cam-b3lyp", "reference": "rhf"}, id='water_rcam-b3lyp'),      # 0.19  / 0.46
+    # wb97m-v is the only case that puts VV10 nonlocal correlation and wK
+    # exchange in the same gradient; b97m-v above is the same VV10 kernel without
+    # range separation, so the pair localizes a failure to one side or the other.
+    pytest.param({"geom": "water",        "methodname": "wb97m-v",   "reference": "rhf"}, id='water_rwb97m-v'),
+    pytest.param({"geom": "water_cation", "methodname": "wb97m-v",   "reference": "uhf"}, id='water_cation_uwb97m-v'),
 
     # Larger system. 7 atoms is 84 displaced energies per case.
     pytest.param({"geom": "methylamine",        "methodname": "b3lyp",  "reference": "rhf"}, id='methylamine_rb3lyp', marks=pytest.mark.long),
