@@ -45,7 +45,7 @@ Interface to OpenTrustRegion by J. Greiner
 
    <br>
 
-OpenTrustRegion is a black-box second-order orbital optimizer developed by
+OpenTrustRegion is a collection of second-order orbital optimization algorithms developed by
 J. Greiner in the Eriksen lab and interfaced to |PSIfour|. Rather than iterating
 the Fock matrix to self-consistency, it minimizes the SCF energy directly with
 respect to the orbital rotation parameters, using a trust-region method with the
@@ -65,7 +65,8 @@ Installation
   ``conda install opentrustregion -c conda-forge``, then enable it as a feature
   with :makevar:`ENABLE_OpenTrustRegion`, hint its location with
   :makevar:`CMAKE_PREFIX_PATH`, and rebuild |PSIfour| to detect OpenTrustRegion
-  and activate dependent code.
+  and activate dependent code. When v1.12 is released, OpenTrustRegion
+  will be built into the |PSIfour| conda package.
 
 **Source**
 
@@ -86,7 +87,7 @@ OpenTrustRegion Options
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 OpenTrustRegion is ready to use for RHF, UHF, ROHF and the corresponding KS
-references. It is |PSIfour|'s second-order optimizer, so it engages only once
+references. It is an external second-order optimizer, so it engages only once
 |scf__soscf| turns second-order iterations on, taking over from the first-order
 package at |scf__soscf_start_convergence|. See :ref:`sec:soscf` for how it
 contrasts with the internal second-order code, which computations fall back on
@@ -126,7 +127,7 @@ How to configure OpenTrustRegion for building Psi4
 
 * Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) OpenTrustRegion
 
-* Upstream Dependencies |w---w| OpenTrustRegion |dr| LAPACK
+* Upstream Dependencies |w---w| OpenTrustRegion |dr| LAPACK, Fortran
 
 **CMake Variables**
 
