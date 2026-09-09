@@ -1467,8 +1467,8 @@ extern "C" OTR::c_int otr_hess_x_wrapper(const OTR::c_real* x, OTR::c_real* hess
     return HF::instance->otr_hess_x(x, hess_x);
 }
 
-extern "C" OTR::c_int otr_update_orbs_wrapper(const OTR::c_real* kappa, OTR::c_real* func, 
-                                              OTR::c_real* grad, OTR::c_real* h_diag, 
+extern "C" OTR::c_int otr_update_orbs_wrapper(const OTR::c_real* kappa, OTR::c_real* func,
+                                              OTR::c_real* grad, OTR::c_real* h_diag,
                                               OTR::hess_x_fp* hess_x_fp) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
     auto error = HF::instance->otr_update_orbs(kappa, func, grad, h_diag, hess_x_fp);
@@ -1592,7 +1592,7 @@ int HF::opentrustregion_scf() {
     settings.conv_check = otr_conv_check_wrapper;
 
     // call the Fortran solver
-    auto error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, 
+    auto error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper,
                              otr_n_param_, settings);
 
     // Every OpenTrustRegion failure mode -- running out of macro-iterations, or a line

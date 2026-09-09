@@ -1332,7 +1332,7 @@ void ROHF::setup_potential() {
 }
 
 #ifdef USING_OpenTrustRegion
-SharedMatrix ROHF::unpack(const OTR::c_real* matrix, const std::string name, const Dimension doccpi, 
+SharedMatrix ROHF::unpack(const OTR::c_real* matrix, const std::string name, const Dimension doccpi,
                           const Dimension soccpi, const Dimension virpi) {
     // create shared matrix
     auto shared_matrix = std::make_shared<Matrix>(name, doccpi + soccpi, soccpi + virpi);
@@ -1454,7 +1454,7 @@ OTR::c_int ROHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
     return 0;
 }
 
-OTR::c_int ROHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+OTR::c_int ROHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad,
                                  OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
     // get doubly and singly occupied and virtual dimensions per irrep
     auto doccpi = nbetapi_;
@@ -1486,7 +1486,7 @@ OTR::c_int ROHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OT
         // get the pointer to the memory block for this irrep in shared matrix
         auto fp = moFeff_->pointer(h);
 
-        // construct gradient and Hessian diagonal, factor 2 to account for redundant 
+        // construct gradient and Hessian diagonal, factor 2 to account for redundant
         // parameters
         for (size_t i = 0; i < doccpi[h]; i++) {
             for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {

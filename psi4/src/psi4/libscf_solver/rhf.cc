@@ -1323,7 +1323,7 @@ void RHF::openorbital_scf() {
 }
 
 #ifdef USING_OpenTrustRegion
-SharedMatrix RHF::unpack(const OTR::c_real* matrix, const std::string name, const Dimension doccpi, 
+SharedMatrix RHF::unpack(const OTR::c_real* matrix, const std::string name, const Dimension doccpi,
                          const Dimension virpi) {
     // create shared matrix
     auto shared_matrix = std::make_shared<Matrix>(name, doccpi, virpi);
@@ -1366,7 +1366,7 @@ OTR::c_int RHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
 
     // apply orbital rotation
     rotate_orbitals(Ca_, kappa_shared);
-    
+
     // form density matrix
     form_D();
 
@@ -1410,7 +1410,7 @@ OTR::c_int RHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
         // get the pointer to the memory block for this irrep in shared matrix
         auto hess_x_irrep = hess_x_shared->pointer(h);
 
-        // copy shared matrix to Hessian linear transformation, factor 2 for doubly 
+        // copy shared matrix to Hessian linear transformation, factor 2 for doubly
         // occupied orbitals and another factor 2 to account for redundant parameters
         for (size_t i = 0; i < doccpi[h]; i++) {
             for (size_t a = 0; a < virpi[h]; a++) {
@@ -1422,7 +1422,7 @@ OTR::c_int RHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
     return 0;
 }
 
-OTR::c_int RHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+OTR::c_int RHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad,
                                 double* h_diag, OTR::hess_x_fp* hess_x_fp) {
 
     // get doubly occupied and virtual dimensions per irrep
@@ -1458,7 +1458,7 @@ OTR::c_int RHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR
         // get the pointer to the memory block for this irrep in shared matrix
         auto fp = fock->pointer(h);
 
-        // construct gradient and Hessian diagonal, factor 2 for doubly occupied 
+        // construct gradient and Hessian diagonal, factor 2 for doubly occupied
         // orbitals and another factor 2 to account for redundant parameters
         for (size_t i = 0; i < doccpi[h]; i++) {
             for (size_t a = doccpi[h]; a < nmopi_[h]; a++) {
@@ -1474,7 +1474,7 @@ OTR::c_int RHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR
     return 0;
 }
 
-int RHF::otr_n_param() { 
+int RHF::otr_n_param() {
     Dimension nparampi = nalphapi_;
     for (size_t i = 0, maxi = nparampi.n(); i < maxi; ++i) nparampi[i] *= (nmopi_ - nalphapi_)[i];
     return nparampi.sum();

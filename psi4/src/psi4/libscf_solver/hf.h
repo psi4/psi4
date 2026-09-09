@@ -269,20 +269,20 @@ class HF : public Wavefunction {
 #ifdef USING_OpenTrustRegion
     void otr_record_iteration(OTR::c_real func, const OTR::c_real* grad);
     bool otr_converged() const;
-    virtual OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+    virtual OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad,
                                        OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
-        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };
     virtual OTR::c_int otr_hess_x(const OTR::c_real* x, OTR::c_real* out) {
-        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };
     virtual OTR::c_int otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
-        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };
 
     /// The number non-redundant parameters
-    virtual int otr_n_param()  { 
-        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    virtual int otr_n_param()  {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };
     int otr_n_param_;
 
