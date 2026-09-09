@@ -598,6 +598,56 @@ def test_cuest_mbis():
 
 
 # ===========================================================================
+# DF gradient workspace sizing (cuEST query under-reports for J+K)
+# ===========================================================================
+#
+# cuestDFSymmetricDerivativeComputeWorkspaceQuery returns the exchange-only
+# workspace requirement and never adds the Coulomb one, so for some systems
+# cuestDFSymmetricDerivativeCompute throws "Out of memory" a few hundred bytes
+# short with the whole GPU free. Which systems is luck -- the query over-reports
+# for others and the slack hides it -- so this reads as a capricious basis-set
+# dependence: water is fine in cc-pVDZ and def2-SVP and dies in DZVP and STO-3G.
+# jk_grad.cc sizes the workspace from the two sub-queries instead; see the
+# comment on query_df_derivative_workspace().
+#
+# DZVP and STO-3G below are the cases that used to throw; cc-pVDZ is a control
+# that always worked. HF, not DFT, so the reference is Psi4's own analytic
+# gradient rather than a finite difference (psi4's analytic *DFT* gradient omits
+# grid-weight derivatives, which puts a ~1e-5 floor on any cross-engine
+# comparison and would swamp what this test is looking at).
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize("basis", ["dzvp", "sto-3g", "cc-pvdz"])
+def test_cuest_df_gradient_workspace(basis):
+    """DF gradients must not die in the cuEST workspace query, whatever the basis."""
+    psi4.core.set_num_threads(4)
+    options = {
+        'scf_type': 'df',
+        'basis': basis,
+        'puream': True,
+        'reference': 'rhf',
+        'e_convergence': 10,
+        'd_convergence': 9,
+        'cuest_mixed_precision': False,
+    }
+    geom = """
+    0 1
+    O
+    H 1 0.9584
+    H 1 0.9584 2 104.45
+    """
+
+    psi4.set_options({**options, 'use_cuest': True})
+    G_cuest = np.array(psi4.gradient('hf', molecule=psi4.geometry(geom)))
+
+    psi4.set_options({**options, 'use_cuest': False})
+    G_ref = np.array(psi4.gradient('hf', molecule=psi4.geometry(geom)))
+
+    assert compare_values(G_ref, G_cuest, 1e-7, f'{basis} cuEST DF gradient')
+
+
+# ===========================================================================
 # DFT code paths that cuEST does not implement must fail loudly
 # ===========================================================================
 #
