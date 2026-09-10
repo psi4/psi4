@@ -1048,7 +1048,17 @@ bool RHF::stability_analysis() {
                     if (isym < 0 || isym >= nirrep_ || asym < 0 || asym >= nirrep_) {
                         throw PSIEXCEPTION("RHF stability FOLLOW: eigenvector irrep index out of bounds.");
                     }
-                    if (irel < 0 || irel >= nalphapi_[isym] || arel < 0 || arel >= virpi_eig[asym]) {
+                    // The scatter below picks the buffer by isym and strides it by virpi_eig[isym],
+                    // so it only addresses the intended slot when both halves of the pair share an
+                    // irrep. That is guaranteed here (h == 0, and G_gs == 0 for a closed-shell RHF,
+                    // hence isym ^ asym == 0), but check it rather than assume it: an isym != asym
+                    // regression is exactly the case a bound taken from virpi_eig[asym] would wave
+                    // through, whenever virpi_eig[asym] > virpi_eig[isym].
+                    if (isym != asym) {
+                        throw PSIEXCEPTION("RHF stability FOLLOW: eigenvector pair is not totally symmetric.");
+                    }
+                    // Bound against the same irrep the scatter indexes with, not against asym.
+                    if (irel < 0 || irel >= nalphapi_[isym] || arel < 0 || arel >= virpi_eig[isym]) {
                         throw PSIEXCEPTION("RHF stability FOLLOW: eigenvector occ/vir index out of bounds.");
                     }
                     eigvec_buf[isym][irel * virpi_eig[isym] + arel] = evecs[ia][0];
