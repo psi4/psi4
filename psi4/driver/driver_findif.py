@@ -305,15 +305,14 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
             raise ModuleNotFoundError("Python module molsym not found. Solve by installing it: `conda install -c conda-forge molsym` or `pip install molsym`")
         displacement_space = "molsym"
         molsym_mol = molsym.Molecule.from_psi4_molecule(mol)
-        symtext = molsym.Symtext.from_molecule(molsym_mol)
-        molsym_mol = molsym_mol.transform(symtext.rotate_to_std)
+        symtext = molsym.Symtext.nonstandard_symtext(molsym.Symtext.from_molecule(molsym_mol))
 
         cart_coords = molsym.salcs.CartesianCoordinates(symtext)
 
         if t_project and r_project:
-            project_eckart = True
+            project_eckart = "both"
         elif not t_project and not r_project:
-            project_eckart = False
+            project_eckart = None
         elif t_project:
             project_eckart = "translational"
         else:
@@ -321,9 +320,6 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         salcs = molsym.salcs.ProjectionOp(symtext, cart_coords, project_Eckart=project_eckart)
 
         salcs.sort_to('blocks')
-        ref_geom = symtext.mol.coords
-
-        mol.set_geometry(core.Matrix.from_array(ref_geom))
 
         n_atom = len(molsym_mol.atoms)
 

@@ -1,7 +1,7 @@
 if(${ENABLE_molsym})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_molsym}))
         include(FindPythonModule)
-        find_python_module(molsym ATLEAST 1.1.0 QUIET)
+        find_python_module(molsym ATLEAST 1.2.0 QUIET)
     endif()
 
     if(${molsym_FOUND})
@@ -28,8 +28,11 @@ if(${ENABLE_molsym})
             UPDATE_COMMAND ""
             BUILD_COMMAND ""
             BUILD_IN_SOURCE 1
-            INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install molsym==1.1.0 --target=${_install_lib} --no-deps --upgrade
-        )
+            # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/NASymmetry/MolSym.git#egg=proj
+            INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/NASymmetry/MolSym.git@v1.2.0#egg=proj  # edit in codedeps
+                                                          --target=${_install_lib}
+                                                          --no-deps
+            )
     endif()
 else()
     message(STATUS "Optional addon ${Blue}unsought: molsym${ColourReset} (molsym; deferrable to runtime)")
