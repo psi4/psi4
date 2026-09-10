@@ -1613,7 +1613,7 @@ data:
       host: github
       account: eriksen-lab
       name: opentrustregion
-      commit: v2.0.1
+      commit: 7bde8c6
     cmake:
       name: OpenTrustRegion
       constraint: "2.0.0"
