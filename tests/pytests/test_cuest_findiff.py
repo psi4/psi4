@@ -117,7 +117,7 @@ __geoms = {
     pytest.param({"geom": "methylamine",        "methodname": "wb97x",  "reference": "rhf"}, id='methylamine_rwb97x', marks=pytest.mark.long),
     pytest.param({"geom": "methylamine_cation", "methodname": "wb97x",  "reference": "uhf"}, id='methylamine_cation_uwb97x', marks=pytest.mark.long),
 ])
-def test_cuest_dft_findiff(inp, request):
+def test_cuest_dft_findiff(inp, request, tmp_path):
     """cuEST analytic DFT gradient == 5-point finite difference of the cuEST energy."""
     psi4.core.set_num_threads(4)
 
@@ -149,9 +149,37 @@ def test_cuest_dft_findiff(inp, request):
         'reference': inp['reference'],
     })
 
+    tid = request.node.callspec.id
+
+    # Route the analytic run's output somewhere readable, so the next assertion
+    # can confirm which JKGrad actually ran rather than trusting that it did.
+    analytic_out = tmp_path / f"{tid}_analytic.out"
+    psi4.core.set_output_file(str(analytic_out), False)
+
     G_analytic = psi4.gradient(inp['methodname'], molecule=molecule, dertype=1)
-    psi4.core.clean()
+
+    psi4.core.close_outfile()
+    log = analytic_out.read_text()
+
+    # Without this, a silent fall back to the CPU JKGrad would leave the whole
+    # test vacuous: the finite difference would still be cuEST (energies always
+    # route through cuESTJK), and CPU-vs-cuEST XC differences on this grid can sit
+    # inside the tolerance below, so the comparison could pass while testing
+    # nothing. That fallback is not hypothetical -- it is what scf_grad.cc did for
+    # every is_x_lrc() functional until the cuEST wK gradient route was opened.
+    # USE_CUEST also gates the cuEST branches in v.cc, so this pins the XC half too.
+    assert 'cuESTJKGrad: GPU-Accelerated DF-SCF Gradients' in log, (
+        f"{tid}: analytic gradient did not go through cuESTJKGrad, so this case is "
+        f"not testing cuEST. See {analytic_out}")
+    assert 'DFJKGrad: Density-Fitted SCF Gradients' not in log, (
+        f"{tid}: CPU DFJKGrad ran during the analytic gradient. See {analytic_out}")
+
+    # No psi4.core.clean() between the two runs: SAVE_JK is forced on for the
+    # cuEST DF gradient route (proc.py), so wiping scratch here can pull files out
+    # from under still-open handles -- seen as PSIO_ERROR unit 64 (PSIF_LIBDIIS),
+    # errval 10 (lseek failed). The driver manages its own scratch between calls.
+    psi4.core.set_output_file(str(tmp_path / f"{tid}_findif.out"), False)
     G_findif = psi4.gradient(inp['methodname'], molecule=molecule, dertype=0)
 
     assert psi4.compare_values(np.array(G_findif), np.array(G_analytic), 5e-5,
-                               f'{request.node.callspec.id} analytic vs 5-point findif gradient')
+                               f'{tid} analytic vs 5-point findif gradient')
