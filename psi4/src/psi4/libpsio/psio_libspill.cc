@@ -282,15 +282,7 @@ std::shared_ptr<PSIO> PSIO::shared_object() { return _default_psio_lib_; }
 // depend on what it sets: get_filename.cc and filemanager.cc read pid_, and
 // filescfg.cc reads files_keywords_, which filecfg_kwd populates.
 PSIO::PSIO() {
-    psio_unit = (psio_ud *)malloc(sizeof(psio_ud) * PSIO_MAXUNIT);
-    if (psio_unit == nullptr) throw std::runtime_error("Error in PSIO_INIT()!\n");
     state_ = 1;
-    for (int i = 0; i < PSIO_MAXUNIT; i++) {
-        psio_unit[i].vol.path = nullptr;
-        psio_unit[i].vol.stream = -1;
-        psio_unit[i].toclen = 0;
-        psio_unit[i].toc = nullptr;
-    }
     filecfg_kwd("DEFAULT", "NAME", -1, psi_file_prefix);
     pid_ = getpid();
     std::lock_guard<std::mutex> g(g_lk);
@@ -307,8 +299,6 @@ PSIO::~PSIO() {
             g_state.erase(it);
         }
     }
-    if (psio_unit) free(psio_unit);
-    psio_unit = nullptr;
     state_ = 0;
     files_keywords_.clear();          // done.cc did this
 }

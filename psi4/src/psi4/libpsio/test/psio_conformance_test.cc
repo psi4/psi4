@@ -9,9 +9,7 @@
  * signature does not match Psi4's declaration exactly.
  *
  * Not checked here, because the shim does not replace them: decode_errno,
- * psio_compose_err_msg and psio_getpid stay Psi4's. (psio_volseek is declared
- * in psio.h but its definition went with the I/O core and it has no callers --
- * see PORTING.md.)
+ * psio_compose_err_msg and psio_getpid stay Psi4's.
  *
  * ---------------------------------------------------------------------------
  * The free functions are NOT the interface Psi4 uses.

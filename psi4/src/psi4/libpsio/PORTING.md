@@ -129,13 +129,34 @@ there, requires the recorded path to be under `PSIOManager`'s directory, and
 stats it. A shim that stores the data somewhere of its own choosing passes
 every other check in the file and fails these.
 
-## One loose end in psio.h
+## What went from the public headers
 
-`psio_volseek` is still declared in `psio.h`, but its definition (`volseek.cc`)
-went with the I/O core and it has no callers anywhere in the tree — it is a
-declaration for a function that cannot be linked. Removing it is the obvious
-tidy-up, but it is a change to the public header this port otherwise leaves
-untouched, so it is left as a separate decision rather than folded in here.
+`psio.h`, `psio.hpp` and `config.h` keep every declaration a consumer uses, so
+no call site changes — but three things in them described the old I/O core and
+had nothing left to describe:
+
+- **`psio_vol` and `psio_ud`** (`config.h`), the per-unit path, file descriptor
+  and table-of-contents head. libspill owns the handle and the layout now.
+  Neither type is named anywhere outside `libpsio` — checked — and after the
+  port the only code touching them was `PSIO`'s own constructor, which
+  `malloc`'d a `PSIO_MAXUNIT`-long array per instance, initialised it, and never
+  read it again.
+- **`PSIO::psio_unit`** (`psio.hpp`), that array's owner. Private, so no
+  consumer could have used it.
+- **`psio_volseek`** (`psio.h`), whose definition went with `volseek.cc` and
+  which has no callers anywhere — a declaration for a function that could not be
+  linked.
+
+`psio_tocentry` stays: `psio_tocscan` still returns one.
+
+This is also why two open modernization PRs are superseded rather than merged
+first: psi4/psi4#3516 reshapes `psio_vol` into `psio_ud`, and the first two
+thirds of psi4/psi4#3517 turn `psio_unit` into a `std::vector` and
+`psio_ud::path` into a `std::string`. Both improve a structure this port
+deletes outright. (#3517's remaining third — `get_filename()` returning
+`std::string` instead of `strdup`ing into a `char **` out-param — is
+independent of the port and still worth doing; `get_filename.cc` is a file this
+port keeps.)
 
 ## Stage 2, deliberately separate
 
