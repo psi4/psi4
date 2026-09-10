@@ -1127,7 +1127,22 @@ bool RHF::stability_analysis() {
         last_hess_eigval_ = lowest_singlet_eval;
 
         outfile->Printf("    Rotating orbitals by %f * pi / 2 radians along unstable eigenvector.\n", step_scale_);
-        stability_eigvec->scale(step_scale_ * M_PI);
+        // rotate_orbitals builds U = exp(x - x^T), so the rotation angle is |x|: to honor
+        // FOLLOW_STEP_SCALE's documented meaning (read_options.cc, "a full step of pi/2
+        // corresponds to a value of 1.0") the scaled eigenvector must have norm
+        // step_scale_ * pi / 2.
+        //
+        // The half is where this differs from the UHF path it otherwise mirrors, and the
+        // difference is in the eigenvector, not the intent. UHF takes its vector from
+        // davidson_solver, which normalizes to 1/2 over both spin blocks summed
+        // (solvers.py "The solution vector is normalized to 1/2";
+        // PairedMatPerVector::vector_dot adds the alpha and beta dots), so a spin-symmetric
+        // instability arrives with |x_alpha| = 1/2 and scaling by step_scale_ * pi already
+        // lands on step_scale_ * pi / 2. Here the vector is a column of DSYEV_ascending,
+        // i.e. a LAPACK dsyev eigenvector, which is orthonormal: |x| = 1. Scaling by the
+        // UHF factor would therefore rotate twice as far as both the option docstring and
+        // the message printed just above promise.
+        stability_eigvec->scale(step_scale_ * M_PI / 2.0);
         rotate_orbitals(Ca_, stability_eigvec);
         return true;
     }
