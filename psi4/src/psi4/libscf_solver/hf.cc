@@ -1549,15 +1549,19 @@ int HF::opentrustregion_scf() {
     // per-macro-iteration stability check off rather than doing the work twice and
     // landing on a different solution than the internal solver would.
     settings.stability = false;
-    // OpenTrustRegion stops as soon as its own gradient threshold is met -- its convergence
-    // gate ORs that against our conv_check callback -- so handing it D_CONVERGENCE alone
-    // would let it finish while a tighter E_CONVERGENCE went unsatisfied. Users commonly set
-    // only E_CONVERGENCE, and set it tighter than D, so take the stricter of the two and let
-    // the callback (which tests both) decide.
-    // The extra two digits are deliberate: DIIS tends to sail well past the requested
-    // threshold, and code downstream of the SCF (response, analytic Hessians) has come to
-    // rely on that incidental margin. Asking for them costs nothing measurable -- it pays
-    // for itself by avoiding macro iterations that stop short and have to be resumed.
+    // What actually decides convergence is the conv_check callback, otr_converged(), which
+    // applies psi4's usual macro-iteration test: energy change under E_CONVERGENCE and
+    // gradient RMS under D_CONVERGENCE, both required. conv_tol is a second, independent
+    // criterion of OpenTrustRegion's own, on the gradient alone, and its convergence gate ORs
+    // the two together:
+    //
+    //     grad_rms < conv_tol .or. max_precision_reached .or. conv_check_passed
+    //
+    // So a conv_tol comparable to D_CONVERGENCE can stop the solver on the gradient while the
+    // energy is still moving, before the callback's combined test is ever satisfied. Scaling
+    // it down demotes that path and leaves psi4's criterion in charge. The asymmetry is the
+    // point: a loose conv_tol ends the SCF early, a tight one cannot, because conv_check still
+    // has to pass. This is not a demand for two digits more accuracy than the user asked for.
     settings.conv_tol =
         0.01 * std::min(options_.get_double("D_CONVERGENCE"), options_.get_double("E_CONVERGENCE"));
     // MAXITER caps the whole SCF, so hand OpenTrustRegion only what the first-order
