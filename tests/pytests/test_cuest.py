@@ -601,14 +601,15 @@ def test_cuest_mbis():
 # DF gradient workspace sizing (cuEST query under-reports for J+K)
 # ===========================================================================
 #
-# cuestDFSymmetricDerivativeComputeWorkspaceQuery returns the exchange-only
-# workspace requirement and never adds the Coulomb one, so for some systems
-# cuestDFSymmetricDerivativeCompute throws "Out of memory" a few hundred bytes
-# short with the whole GPU free. Which systems is luck -- the query over-reports
-# for others and the slack hides it -- so this reads as a capricious basis-set
-# dependence: water is fine in cc-pVDZ and def2-SVP and dies in DZVP and STO-3G.
-# jk_grad.cc sizes the workspace from the two sub-queries instead; see the
-# comment on query_df_derivative_workspace().
+# The size cuestDFSymmetricDerivativeComputeWorkspaceQuery returns is not the
+# size cuestDFSymmetricDerivativeCompute requires: they disagree by an exact
+# integer multiple of 256 bytes, in both directions. Where the query is short,
+# Compute throws "Out of memory" with the whole GPU free. It is short by 3 units
+# (768 B) for water in DZVP and STO-3G and by 1 unit for He2/STO-3G, and is
+# over-generous by ~25% above ~1 MB of workspace, which is why this reads as a
+# capricious basis-set dependence. It tracks nocc, not basis size. jk_grad.cc
+# pads the workspace; see the comment on query_df_derivative_workspace() and
+# NVIDIA_CUEST_WORKSPACE_REPORT.md.
 #
 # DZVP and STO-3G below are the cases that used to throw; cc-pVDZ is a control
 # that always worked. HF, not DFT, so the reference is Psi4's own analytic
