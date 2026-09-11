@@ -3092,28 +3092,41 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute2(
 namespace {
 /// Size the temporary workspace for cuestDFSymmetricDerivativeCompute.
 ///
-/// Works around a bug in cuEST 0.2's cuestDFSymmetricDerivativeComputeWorkspaceQuery: when the
-/// Coulomb and exchange contributions are computed in one call, the query returns exactly the
-/// exchange-only requirement and makes no allowance for the Coulomb work. Whether the shortfall
-/// is fatal is luck. The query rounds generously for some systems and the slack absorbs it; for
-/// others cuestDFSymmetricDerivativeCompute throws "Out of memory" a few hundred bytes short,
-/// with the whole device otherwise free. Measured on an L40S with cuEST 0.2:
+/// Works around a bug in cuEST 0.2: the size returned by
+/// cuestDFSymmetricDerivativeComputeWorkspaceQuery is not the size
+/// cuestDFSymmetricDerivativeCompute requires. The two disagree by an exact integer multiple
+/// of 256 bytes, in both directions. When the query is short, Compute throws "Out of memory"
+/// with the whole device free -- it is an internal size check rejecting our workspace, not an
+/// allocation failure (under gdb no cudaMalloc is attempted before the throw).
 ///
-///     system            query says   actually needs   outcome
-///     H2O/cc-pVDZ        1388800     ~1.0-1.3 MB      works (query over-reports)
-///     H2O/DZVP            697088     697601-698112    "Out of memory", short by <1 kB
-///     He2/STO-3G           90112      90305-90368     "Out of memory", short by <256 B
+/// Measured on an RTX PRO 6000 Blackwell, cuEST 0.2, and reproduced identically on an L40S,
+/// so the sizing is a deterministic function of the problem and not of the GPU:
 ///
-/// which is why the failure looks capriciously basis-set dependent (water works in cc-pVDZ and
-/// def2-SVP, fails in DZVP, STO-3G, 6-31G and 6-31G*) and is invisible to every knob cuEST
-/// exposes -- memory policy, ffloat/JIT mode and variableBufferSize all make no difference.
+///     system           nocc   query says   actually needs   error / 256 B
+///     H2/STO-3G           1       55808          55808            0
+///     He2(2+)/STO-3G      1       89344          89344            0
+///     He2/STO-3G          2       90112          90368           +1   <- throws
+///     H2O/STO-3G          5      556032         556800           +3   <- throws
+///     H2O/DZVP            5      697088         697856           +3   <- throws
+///     H2O/cc-pVDZ         5     1388800        1005312        -1498
+///     benzene/STO-3G     21    23426048       18141952       -20641
 ///
-/// Ask for the Coulomb-only and exchange-only requirements separately and allocate their sum.
-/// That covers the shortfall by a wide margin (the Coulomb term alone is ~8% of the total, versus
-/// shortfalls under a kilobyte) without inventing a magic padding constant, and is floored by the
-/// combined query so it can never ask for less than cuEST reported.
+/// The shortfall tracks nocc, not basis size: He2 and He2(2+) differ only in nocc, and
+/// H2O/STO-3G and H2O/DZVP have different nao but the same error. Above ~1 MB the query flips
+/// sign and over-allocates by 23-31% instead.
 ///
-/// TODO: drop this once the cuEST query is fixed upstream.
+/// Ask for the requirement with the exchange term switched off as well, and allocate the sum.
+/// Be clear about what this is: it is the combined query plus a pad of size query(cScale=0),
+/// not a derived requirement. densityScale turns out not to affect the returned size at all
+/// (exchange == combined and neither == coulomb on every system tested), which is consistent
+/// with the Coulomb phase reusing the exchange scratch -- cuEST's own SCF path in cuESTJK.cc
+/// combines its J and K queries with std::max for the same reason. The pad is 6912-75264 B
+/// across the systems above, against a worst measured shortfall of 768 B, and it grows with
+/// system size, so the margin is comfortable. But it is empirical, and on large jobs it adds
+/// to the over-allocation noted above.
+///
+/// TODO: drop this once the cuEST query is fixed upstream. See
+/// NVIDIA_CUEST_WORKSPACE_REPORT.md and CUEST_WORKSPACE_RESULTS.md.
 cuestWorkspaceDescriptor_t query_df_derivative_workspace(
     cuestDFIntPlan_t plan, const cuestDFSymmetricDerivativeComputeParameters_t parameters,
     const cuestWorkspaceDescriptor_t* variableBufferSize, double densityScale,
