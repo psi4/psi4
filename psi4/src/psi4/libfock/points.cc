@@ -43,6 +43,16 @@
 
 namespace psi {
 
+void PointFunctions::prepare_basis_only(std::shared_ptr<BlockOPoints> block, bool force_compute) {
+    block_index_ = block->index();
+    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
+        current_basis_map_ = &(*cache_map_)[block->index()];
+    } else {
+        current_basis_map_ = &basis_values_;
+        BasisFunctions::compute_functions(block);
+    }
+}
+
 SAPFunctions::SAPFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
     : PointFunctions(primary, max_points, max_functions) {
     current_basis_map_ = &basis_values_;
@@ -60,14 +70,7 @@ void SAPFunctions::allocate() {
     build_temps();
 }
 void SAPFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
+    prepare_basis_only(block, force_compute);
 }
 void SAPFunctions::print(std::string out, int print) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
@@ -153,14 +156,7 @@ void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/) 
 void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     if (!D_AO_) throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
 
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
+    prepare_basis_only(block, force_compute);
 
     // => Global information <= //
     int npoints = block->npoints();
@@ -298,14 +294,7 @@ void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
 void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute) {
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
+    prepare_basis_only(block, force_compute);
     // timer_off("Functions: Points");
 
     // => Global information <= //
@@ -422,14 +411,7 @@ void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO) {
 void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     if (!Da_AO_) throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
 
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
+    prepare_basis_only(block, force_compute);
 
     // => Global information <= //
     int npoints = block->npoints();
