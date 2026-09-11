@@ -59,6 +59,7 @@ SAPFunctions::SAPFunctions(std::shared_ptr<BasisSet> primary, int max_points, in
 }
 SAPFunctions::~SAPFunctions() {}
 std::vector<SharedMatrix> SAPFunctions::scratch() {
+    if (!temp_) build_temps();
     std::vector<SharedMatrix> vec;
     vec.push_back(temp_);
     return vec;
@@ -67,7 +68,7 @@ void SAPFunctions::build_temps() { temp_ = std::make_shared<Matrix>("Temp", max_
 void SAPFunctions::allocate() {
     BasisFunctions::allocate();
     point_values_.clear();
-    build_temps();
+    temp_.reset();
 }
 void SAPFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     prepare_basis_only(block, force_compute);
@@ -112,11 +113,13 @@ RKSFunctions::RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, in
 }
 RKSFunctions::~RKSFunctions() {}
 std::vector<SharedMatrix> RKSFunctions::scratch() {
+    if (!temp_) build_temps();
     std::vector<SharedMatrix> vec;
     vec.push_back(temp_);
     return vec;
 }
 std::vector<SharedMatrix> RKSFunctions::D_scratch() {
+    if (!D_local_) build_temps();
     std::vector<SharedMatrix> vec;
     vec.push_back(D_local_);
     return vec;
@@ -147,7 +150,8 @@ void RKSFunctions::allocate() {
         point_values_["RHO_ZZ"] = std::make_shared<Vector>("RHO_ZZ", max_points_);
         point_values_["TAU_A"] = std::make_shared<Vector>("TAU_A", max_points_);
     }
-    build_temps();
+    temp_.reset();
+    D_local_.reset();
 }
 void RKSFunctions::set_pointers(SharedMatrix D_AO) { D_AO_ = D_AO; }
 void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/) {
@@ -155,6 +159,7 @@ void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/) 
 }
 void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     if (!D_AO_) throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
+    if (!temp_) build_temps();
 
     prepare_basis_only(block, force_compute);
 
@@ -356,12 +361,14 @@ UKSFunctions::UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, in
 }
 UKSFunctions::~UKSFunctions() {}
 std::vector<SharedMatrix> UKSFunctions::scratch() {
+    if (!tempa_) build_temps();
     std::vector<SharedMatrix> vec;
     vec.push_back(tempa_);
     vec.push_back(tempb_);
     return vec;
 }
 std::vector<SharedMatrix> UKSFunctions::D_scratch() {
+    if (!Da_local_) build_temps();
     std::vector<SharedMatrix> vec;
     vec.push_back(Da_local_);
     vec.push_back(Db_local_);
@@ -399,7 +406,10 @@ void UKSFunctions::allocate() {
         point_values_["TAU_A"] = std::make_shared<Vector>("TAU_A", max_points_);
         point_values_["TAU_B"] = std::make_shared<Vector>("TAU_B", max_points_);
     }
-    build_temps();
+    tempa_.reset();
+    tempb_.reset();
+    Da_local_.reset();
+    Db_local_.reset();
 }
 void UKSFunctions::set_pointers(SharedMatrix /*Da_AO*/) {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
@@ -410,6 +420,7 @@ void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO) {
 }
 void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     if (!Da_AO_) throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
+    if (!tempa_) build_temps();
 
     prepare_basis_only(block, force_compute);
 

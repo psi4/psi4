@@ -186,7 +186,7 @@ class SAPFunctions : public PointFunctions {
 
     /// Buffer for half-transform
     SharedMatrix temp_;
-    /// Build temporary work arrays
+    /// Build the temporary work arrays, on first use
     void build_temps();
     /// Allocate registers
     void allocate() override;
@@ -221,7 +221,7 @@ class RKSFunctions : public PointFunctions {
     /// Local D matrix
     SharedMatrix D_local_;
 
-    /// Build temporary work arrays
+    /// Build the temporary work arrays, on first use
     void build_temps();
     /// Allocate registers
     void allocate() override;
@@ -278,7 +278,7 @@ class UKSFunctions : public PointFunctions {
     /// Local D matrix
     SharedMatrix Db_local_;
 
-    /// Build temporary work arrays
+    /// Build the temporary work arrays, on first use
     void build_temps();
     /// Allocate registers
     void allocate() override;
