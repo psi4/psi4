@@ -30,6 +30,14 @@
 #include <omp.h>
 #endif
 
+#include <Eigen/Core>
+
+#include <limits>
+
+#ifdef USING_LAPACK_MKL
+#include <mkl.h>
+#endif
+
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
@@ -1254,7 +1262,7 @@ SharedMatrix ESPPropCalc::compute_field_over_grid_in_memory(SharedMatrix input_g
 
 void OEProp::compute_esp_at_nuclei() {
     std::shared_ptr<std::vector<double>> nesps = epc_.compute_esp_at_nuclei(true, print_ > 2);
-    for (int atom1 = 0; atom1 < nesps->size(); ++atom1) {
+    for (size_t atom1 = 0; atom1 < nesps->size(); ++atom1) {
         std::stringstream s;
         s << "ESP AT CENTER " << atom1 + 1;
         /*- Process::environment.globals["ESP AT CENTER n"] -*/
@@ -1771,53 +1779,173 @@ const std::vector<std::tuple<double, double>>& get_mbis_params(int atomic_num) {
     return it->second;
 }
 
-// A Helper Method That Calculates Radial Moments using Atomic Electron Densities derived from Charge Partitioning
-std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>& grid,
-                                                 const std::vector<double>& rho_a_points,
-                                                 const std::vector<double>& distances, int num_atoms) {
-    Options& options = Process::environment.options;
-    const int max_power = std::max(4, options.get_int("MAX_RADIAL_MOMENT"));
 
-    std::vector<SharedMatrix> rmoms;
-
-    for (int n = 2; n <= max_power; n++) {
-        std::stringstream sstream;
-        sstream << "ATOMIC RADIAL MOMENTS <R^" << n << ">";
-        auto mat_name = sstream.str();
-
-        rmoms.push_back(std::make_shared<Matrix>(mat_name, num_atoms, 1));
-    }
-
-    auto blocks = grid->blocks();
-    size_t total_points = grid->npoints();
-
-#pragma omp parallel for
-    for (int a = 0; a < num_atoms; a++) {
-        for (int n = 2; n <= max_power; n++) {
-            size_t running_points = 0;
-            double val = 0;
-            for (int b = 0; b < blocks.size(); b++) {
-                auto block = blocks[b];
-                SharedVector rho_block;
-                size_t num_points = block->npoints();
-
-                double* x = block->x();
-                double* y = block->y();
-                double* z = block->z();
-                double* w = block->w();
-
-                for (size_t p = running_points; p < running_points + num_points; p++) {
-                    auto ap = a * total_points + p;
-                    val += w[p - running_points] * rho_a_points[ap] * pow(distances[ap], n);
-                }
-                running_points += num_points;
-            }
-            rmoms[n - 2]->set(a, 0, val);
-        }
-    }
-
-    return rmoms;
+/* Batched exp() for the MBIS stockholder sweep.
+ *
+ * The sweep spends nearly all of its time in exp(-r/sigma). A plain loop over std::exp runs one
+ * element at a time however wide the machine is, because glibc only vectorises exp through libmvec
+ * under -ffast-math, which Psi4 does not build with. Eigen ships its own vectorised exp, so this
+ * gets SIMD throughput from a dependency Psi4 already requires rather than from a hand-rolled
+ * range reduction that would have to restate the IEEE-754 contract itself.
+ *
+ * Measured on 96-element batches: 526 Mexp/s against libm's 126 with -march=native, and 138
+ * against 130 without it. That second column is the reason this is a library call -- a hand-rolled
+ * polynomial kernel is about 2x *slower* than libm on a build that lost its -march flag, and
+ * nothing warns you when that happens.
+ */
+static inline void mbis_exp_batch(const double* __restrict arg, double* __restrict out, int n) {
+    Eigen::Map<Eigen::ArrayXd>(out, n) = Eigen::Map<const Eigen::ArrayXd>(arg, n).exp();
 }
+
+/* Anderson acceleration for the MBIS stockholder fixed point.
+ *
+ * The stockholder update is a plain Picard iteration x_{k+1} = g(x_k) on the shell populations and
+ * widths, and it converges linearly: 60-80 iterations to 1e-8 on the systems profiled, essentially
+ * independent of how fast a single iteration is made. Anderson mixing reuses the last few residuals
+ * to extrapolate, which typically removes most of those iterations for a few hundred flops.
+ *
+ * Anderson is not unconditionally convergent, though, and on an ionic system (NaCl was the case
+ * that caught this) an unsafeguarded version oscillates indefinitely and eventually drives a shell
+ * population to zero, which turns the whole result into NaN. Four guards, in order of how often
+ * they matter:
+ *
+ *  - N and sigma are strictly positive, and a negative sigma would make exp(-r/sigma) diverge. The
+ *    mixing is therefore done on log(N), log(sigma), so every combination is positive by
+ *    construction, whatever coefficients the least-squares returns.
+ *  - The residual least-squares problem is Tikhonov-regularised. Nearly-parallel residual histories
+ *    are the usual source of the huge coefficients that produce a wild extrapolation.
+ *  - The extrapolation is rejected outright if the mixing coefficients grow past `kMaxCoefSum`,
+ *    if the least-squares is singular, or if the result is not finite. Acceleration is never
+ *    allowed to be worse than doing nothing.
+ *  - The caller watches the residual it already computes and calls `reset()` when an accelerated
+ *    step made it worse, which falls back to plain Picard until the history rebuilds.
+ */
+class MBISAnderson {
+    static constexpr double kRidge = 1.0e-12;    // relative Tikhonov penalty on the mixing coefficients
+    static constexpr double kMaxCoefSum = 20.0;  // reject extrapolations that reach this far out
+
+    size_t n_;      // length of the parameter vector
+    size_t depth_;  // history length
+    // Iterates and residuals, one column each. A ring buffer over fixed columns rather than a
+    // deque of vectors: dropping the oldest entry is an index update instead of a memmove of the
+    // whole history, and the least-squares matrix below can be filled with block writes instead of
+    // hand-rolled column-major arithmetic.
+    Eigen::MatrixXd xs_, fs_;
+    size_t count_ = 0;  // how many columns are live, capped at depth_
+    size_t head_ = 0;   // column holding the oldest live entry
+
+   public:
+    MBISAnderson(size_t n, size_t depth)
+        : n_(n),
+          depth_(depth),
+          xs_(Eigen::MatrixXd::Zero(static_cast<Eigen::Index>(n), static_cast<Eigen::Index>(depth))),
+          fs_(Eigen::MatrixXd::Zero(static_cast<Eigen::Index>(n), static_cast<Eigen::Index>(depth))) {}
+
+    /// Column of the history holding entry i, counting 0 as the oldest live entry.
+    Eigen::Index slot(size_t i) const { return static_cast<Eigen::Index>((head_ + i) % depth_); }
+
+    /// Given the current iterate x and the Picard image g(x), return the next iterate.
+    std::vector<double> next(const std::vector<double>& x, const std::vector<double>& g) {
+        const Eigen::Map<const Eigen::VectorXd> xv(x.data(), static_cast<Eigen::Index>(n_));
+        const Eigen::Map<const Eigen::VectorXd> gv(g.data(), static_cast<Eigen::Index>(n_));
+
+        // Store the images; the mix is over g's, Anderson type-II.
+        const Eigen::Index write = (count_ < depth_) ? slot(count_) : head_;
+        xs_.col(write) = gv;
+        fs_.col(write) = gv - xv;
+        if (count_ < depth_) {
+            count_++;
+        } else {
+            head_ = (head_ + 1) % depth_;  // overwrote the oldest; it is now the newest
+        }
+
+        const size_t m = count_;
+        if (m < 2) return g;  // nothing to extrapolate from yet
+
+        // Minimise ||sum_i c_i f_i|| subject to sum_i c_i = 1. Eliminate the last coefficient,
+        // c_last = 1 - sum_i alpha_i, and solve the resulting least-squares problem directly. This
+        // avoids squaring the condition number in normal equations and delegates rank decisions to
+        // LAPACK's pivoted QR implementation.
+        const int ncols = static_cast<int>(m - 1);
+        const int nrows = static_cast<int>(n_) + static_cast<int>(m);
+        const int ldb = std::max(nrows, ncols);
+        double maxdiag = 0.0;
+        for (size_t i = 0; i < m; i++) maxdiag = std::max(maxdiag, fs_.col(slot(i)).squaredNorm());
+        if (!(maxdiag > 0.0) || !std::isfinite(maxdiag)) return g;
+
+        // Eigen is column-major, which is what DGELSY wants, so A can be handed over directly.
+        // Rows [0, n_) hold f_i - f_last. The next ncols rows penalise each alpha_i, and the final
+        // row penalises c_last = 1 - sum_i alpha_i, so the ridge acts on the whole coefficient
+        // vector rather than only the part that survived the elimination.
+        const Eigen::Index nrows_e = nrows, ncols_e = ncols, n_e = static_cast<Eigen::Index>(n_);
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(nrows_e, ncols_e);
+        Eigen::VectorXd rhs = Eigen::VectorXd::Zero(ldb);
+
+        const auto f_last = fs_.col(slot(m - 1));
+        rhs.head(n_e) = -f_last;
+        for (Eigen::Index i = 0; i < ncols_e; i++) {
+            A.col(i).head(n_e) = fs_.col(slot(static_cast<size_t>(i))) - f_last;
+        }
+        const double sqrt_ridge = std::sqrt(kRidge * maxdiag);
+        A.block(n_e, 0, ncols_e, ncols_e).diagonal().setConstant(sqrt_ridge);
+        A.row(n_e + ncols_e).setConstant(sqrt_ridge);
+        rhs(n_e + ncols_e) = sqrt_ridge;
+
+        // The problem is tall and extremely thin -- about 550 x 5 -- so threading it buys nothing
+        // and costs reproducibility: a threaded QR picks its reduction order at run time, which
+        // perturbs the mixing coefficients between otherwise identical runs. Because the iteration
+        // stops on a threshold, that perturbation lands in the converged answer (measured: 5.8e-13
+        // on the charges of a 109-atom case, against 2.7e-15 with acceleration switched off).
+        // Pinning the solve to one thread makes it deterministic and is not slower at this size.
+#ifdef USING_LAPACK_MKL
+        const int mkl_threads_on_entry = mkl_get_max_threads();
+        mkl_set_num_threads(1);
+#endif
+        // The ridge block is itself full column rank, so the stacked matrix always is too. That
+        // makes rank deficiency unreachable and DGELSY's rcond inert; conditioning is handled by
+        // kRidge, and a wild extrapolation by the coefficient-sum test below.
+        std::vector<int> jpvt(ncols, 0);
+        int rank = 0;
+        double work_query = 0.0;
+        int info = C_DGELSY(nrows, ncols, 1, A.data(), nrows, rhs.data(), ldb, jpvt.data(), 0.0, &rank,
+                            &work_query, -1);
+        const int lwork = std::max(1, static_cast<int>(work_query));
+        std::vector<double> work(lwork);
+        if (info == 0 && std::isfinite(work_query)) {
+            std::fill(jpvt.begin(), jpvt.end(), 0);
+            info = C_DGELSY(nrows, ncols, 1, A.data(), nrows, rhs.data(), ldb, jpvt.data(), 0.0, &rank, work.data(),
+                            lwork);
+        }
+#ifdef USING_LAPACK_MKL
+        mkl_set_num_threads(mkl_threads_on_entry);
+#endif
+        if (info != 0) return g;
+
+        std::vector<double> c(m);
+        const double alpha_sum = rhs.head(ncols_e).sum();
+        for (int i = 0; i < ncols; i++) c[i] = rhs(i);
+        c.back() = 1.0 - alpha_sum;
+
+        // sum_i c_i == 1 by construction, so sum_i |c_i| measures how far outside the history the
+        // extrapolation reaches. Large values are the signature of a step about to go wild.
+        double coefsum = 0.0;
+        for (size_t i = 0; i < m; i++) coefsum += std::fabs(c[i]);
+        if (!std::isfinite(coefsum) || coefsum > kMaxCoefSum) return g;
+
+        std::vector<double> out(n_);
+        Eigen::Map<Eigen::VectorXd> outv(out.data(), n_e);
+        outv.setZero();
+        for (size_t i = 0; i < m; i++) outv += c[i] * xs_.col(slot(i));
+
+        if (!outv.allFinite()) return g;  // reject a bad extrapolation wholesale
+        return out;
+    }
+
+    void reset() {
+        count_ = 0;
+        head_ = 0;
+    }
+};
 
 // Minimal Basis Iterative Stockholder (JCTC, 2016, p. 3894-3912, Verstraelen et al.)
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_mbis_multipoles(
@@ -1841,7 +1969,9 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     mbis_grid_options_int["DFT_SPHERICAL_POINTS"] = options.get_int("MBIS_SPHERICAL_POINTS");
     mbis_grid_options_str["DFT_PRUNING_SCHEME"] = options.get_str("MBIS_PRUNING_SCHEME");
 
+    timer_on("MBIS: grid build");
     auto grid = std::make_shared<DFTGrid>(mol, basisset_, mbis_grid_options_int, mbis_grid_options_str, options);
+    timer_off("MBIS: grid build");
 
     if (print_output && debug >= 1) grid->print();
 
@@ -1849,14 +1979,34 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     int num_atoms = mol->natom();
     size_t total_points = grid->npoints();
 
+    // The pro-atom density array below is one double per (grid point, atom), and it is the one
+    // allocation here large enough to fail. Both factors grow with the molecule -- the grid has
+    // more points and each point carries more atoms -- so it is quadratic in system size, and the
+    // failure would otherwise arrive as a bare std::bad_alloc from deep inside a property
+    // calculation that has already paid for an SCF. Check it against the memory the user actually
+    // gave Psi4, before the grid density evaluation rather than after, and say what to do about it.
+    const size_t mbis_doubles = (static_cast<size_t>(num_atoms) + 7) * total_points;
+    const double mbis_gib = static_cast<double>(mbis_doubles) * sizeof(double) / (1024.0 * 1024.0 * 1024.0);
+    const double avail_gib = static_cast<double>(Process::environment.get_memory()) / (1024.0 * 1024.0 * 1024.0);
+    if (print_output) outfile->Printf("  MBIS Memory: needs %.3f GiB; user supplied %.3f GiB.\n\n", mbis_gib, avail_gib);
+    if (mbis_gib > avail_gib) {
+        throw PSIEXCEPTION(
+            "MBIS needs " + std::to_string(mbis_gib) + " GiB for its grid arrays but only " +
+            std::to_string(avail_gib) +
+            " GiB is available. The cost is (natom + 7) doubles per grid point, so either raise the "
+            "memory given to Psi4, or shrink the grid with the mbis_radial_points and "
+            "mbis_spherical_points options.");
+    }
+
     size_t max_points = 0;
     size_t max_nbf = 0;
 
     std::vector<std::shared_ptr<BlockOPoints>> blocks = grid->blocks();
-    for (int b = 0; b < blocks.size(); b++) {
+    for (size_t b = 0; b < blocks.size(); b++) {
         max_points = std::max(max_points, blocks[b]->npoints());
         max_nbf = std::max(max_nbf, blocks[b]->local_nbf());
     }
+    timer_on("MBIS: density subset");
     SharedMatrix Da = wfn_->Da_subset("AO");
     SharedMatrix Db;
     auto point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<RKSFunctions>(basisset_, max_points, max_nbf));
@@ -1869,8 +2019,14 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<UKSFunctions>(basisset_, max_points, max_nbf));
         point_func->set_pointers(Da, Db);
     }
+    timer_off("MBIS: density subset");
 
     size_t running_points = 0;
+
+    // Block extents, used for the distance screening in the stockholder sweep below.
+    const size_t n_blocks = blocks.size();
+    std::vector<size_t> block_offset(n_blocks, 0), block_size(n_blocks, 0);
+    std::vector<double> block_cx(n_blocks), block_cy(n_blocks), block_cz(n_blocks), block_R(n_blocks);
 
     // Coordinates, weights, and rho (molecular electron density) at each grid point
     std::vector<double> x_points(total_points, 0.0);
@@ -1879,7 +2035,8 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     std::vector<double> weights(total_points, 0.0);
     std::vector<double> rho(total_points, 0.0);
 
-    for (int b = 0; b < blocks.size(); b++) {
+    timer_on("MBIS: grid density");
+    for (size_t b = 0; b < blocks.size(); b++) {
         std::shared_ptr<BlockOPoints> block = blocks[b];
         SharedVector rho_block;
         size_t num_points = block->npoints();
@@ -1906,12 +2063,20 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
             rho[running_points + p] = rho_block->get(p);
         }
 
+        block_offset[b] = running_points;
+        block_size[b] = num_points;
+        const Vector3 block_center = block->center();
+        block_cx[b] = block_center[0];
+        block_cy[b] = block_center[1];
+        block_cz[b] = block_center[2];
+        block_R[b] = block->radius();
         running_points += num_points;
     }
+    timer_off("MBIS: grid density");
 
     // Electron count via numerical interagration
     double grid_electrons = 0.0;
-    for (int p = 0; p < total_points; p++) {
+    for (size_t p = 0; p < total_points; p++) {
         grid_electrons += weights[p] * rho[p];
     }
 
@@ -1943,19 +2108,13 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
             grid_electrons);
     }
 
-    // Distances and displacements between grid points and nuclei
-    std::vector<double> distances(num_atoms * total_points, 0.0);
-    std::vector<std::vector<double>> disps(3, std::vector<double>(num_atoms * total_points, 0.0));
-
-#pragma omp parallel for
+    // Nuclear coordinates, kept flat so the hot loop below does not touch Molecule.
+    std::vector<double> atom_x(num_atoms), atom_y(num_atoms), atom_z(num_atoms);
     for (int atom = 0; atom < num_atoms; atom++) {
-        for (size_t point = 0; point < total_points; point++) {
-            Vector3 dr = Vector3(x_points[point], y_points[point], z_points[point]) - mol->xyz(atom);
-            distances[atom * total_points + point] = dr.norm();
-            disps[0][atom * total_points + point] = dr[0];
-            disps[1][atom * total_points + point] = dr[1];
-            disps[2][atom * total_points + point] = dr[2];
-        }
+        Vector3 R = mol->xyz(atom);
+        atom_x[atom] = R[0];
+        atom_y[atom] = R[1];
+        atom_z[atom] = R[2];
     }
 
     // => Setup Proatom Basis Functions <= //
@@ -1964,11 +2123,21 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     std::vector<int> mA(num_atoms);
     for (int atom = 0; atom < num_atoms; atom++) {
 
-        // MBIS is incompatible with ECPs: requires all-electron density
+        // MBIS needs an all-electron density, so an atom whose nuclear charge does not match its
+        // element is out of scope. Two quite different things land here, and they need different
+        // messages: an ECP replaces some of the electrons (0 < Z < true Z), whereas a ghost atom
+        // has no nucleus and no electrons at all (Z == 0), and telling someone doing a
+        // counterpoise correction that their ghost is an ECP sends them somewhere useless.
         int n_valence_electrons = static_cast<int>(mol->Z(atom));
         int true_atomic_num = static_cast<int>(mol->true_atomic_number(atom));
+        if (n_valence_electrons == 0) {
+            throw PSIEXCEPTION("MBIS does not support ghost atoms. Atom " + std::to_string(atom + 1) + " (" +
+                               mol->symbol(atom) +
+                               ") carries basis functions but no electrons, so it has no pro-atom to fit. Run MBIS on "
+                               "the molecule without ghosts.");
+        }
         if (n_valence_electrons != true_atomic_num) {
-            throw PSIEXCEPTION("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" + 
+            throw PSIEXCEPTION("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" +
                                mol->symbol(atom) + "). Use all-electron basis or reconstruct density with denspart.");
         }
 
@@ -1976,203 +2145,489 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         mA[atom] = static_cast<int>(get_mbis_params(atomic_num).size());
     }
 
+    // Shells are flattened to a single running index so the inner loop is a flat sweep.
+    // shell_off[a] is where atom a's shells begin; total_shells = sum_a mA[a].
+    std::vector<int> shell_off(num_atoms + 1, 0);
+    for (int atom = 0; atom < num_atoms; atom++) shell_off[atom + 1] = shell_off[atom] + mA[atom];
+    const int total_shells = shell_off[num_atoms];
+
     // Atomic shell populations (N) and widths (S), from equations 18 and 19 in Verstraelen et al.
-    // Fixed inner size of 7 (maximum across all Z=1-118); unused slots are zero and never accessed,
-    // consistent with how lighter atoms have always been handled (e.g. H uses only index 0).
-    constexpr int max_shells = 7;
-    std::vector<std::vector<double>> Nai(num_atoms, std::vector<double>(max_shells, 0.0));
-    std::vector<std::vector<double>> Sai(num_atoms, std::vector<double>(max_shells, 0.0));
+    std::vector<double> Nf(total_shells, 0.0), Sf(total_shells, 0.0);
+    std::vector<double> Nf_next(total_shells, 0.0), Sf_next(total_shells, 0.0);
 
-    // Next iteration populations and widths
-    std::vector<std::vector<double>> Nai_next(num_atoms, std::vector<double>(max_shells, 0.0));
-    std::vector<std::vector<double>> Sai_next(num_atoms, std::vector<double>(max_shells, 0.0));
-
-    // Population and width guesses, from get_mbis_params function
     for (int atom = 0; atom < num_atoms; atom++) {
-        int atomic_num = static_cast<int>(mol->Z(atom));
-        auto shells = get_mbis_params(atomic_num);
-
+        auto shells = get_mbis_params(static_cast<int>(mol->Z(atom)));
         for (int m = 0; m < mA[atom]; m++) {
-            Nai[atom][m] = std::get<0>(shells[m]);
-            Sai[atom][m] = 1.0 / std::get<1>(shells[m]);
-
+            Nf[shell_off[atom] + m] = std::get<0>(shells[m]);
+            Sf[shell_off[atom] + m] = 1.0 / std::get<1>(shells[m]);
             if (print_output && debug >= 1) {
-                outfile->Printf("  INITIAL ATOM %d, SHELL %d, POP %8.5f, WIDTH %8.5f\n", atom + 1, m + 1, Nai[atom][m],
-                                Sai[atom][m]);
+                outfile->Printf("  INITIAL ATOM %d, SHELL %d, POP %8.5f, WIDTH %8.5f\n", atom + 1, m + 1,
+                                Nf[shell_off[atom] + m], Sf[shell_off[atom] + m]);
             }
-
-            Nai_next[atom][m] = Nai[atom][m];
-            Sai_next[atom][m] = Sai[atom][m];
         }
     }
 
-    // Promolecular and proatomic densities
+    // Pro-atom densities, point-major (point * num_atoms + atom): the fused sweep below writes all
+    // atoms of one point together, so this layout keeps those writes contiguous. Only the previous
+    // iteration's values are needed (for the convergence test), so this is the single large array
+    // MBIS now holds -- distances, displacements and the per-atom density are all recomputed.
+    // (Its size was checked against the available memory above, before the grid density pass.)
+    timer_on("MBIS: alloc");
+    std::vector<double> rho_a_0_points(static_cast<size_t>(num_atoms) * total_points, 0.0);
+    timer_off("MBIS: alloc");
     std::vector<double> rho_0_points(total_points, 0.0);
-    std::vector<double> rho_a_0_points(num_atoms * total_points, 0.0);
 
-    // Next iteration densities
-    std::vector<double> rho_0_points_next(total_points, 0.0);
-    std::vector<double> rho_a_0_points_next(num_atoms * total_points, 0.0);
-
-// Calculate initial proatom and promolecule density at all points
-#pragma omp parallel for
-    for (size_t point = 0; point < total_points; point++) {
-        rho_0_points[point] = 0.0;
-        for (int atom = 0; atom < num_atoms; atom++) {
-            rho_a_0_points[atom * total_points + point] = 0.0;
-            for (int m = 0; m < mA[atom]; m++) {
-                rho_a_0_points[atom * total_points + point] +=
-                    rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom * total_points + point]);
-            }
-            rho_0_points[point] += rho_a_0_points[atom * total_points + point];
+    // rho_ai_0 = N * exp(-r/S) / (8 pi S^3). Hoisting N/(8 pi S^3) and -1/S out of the point loop
+    // removes a pow() and a division from every one of the natom * mA * npoints evaluations.
+    std::vector<double> shell_coef(total_shells), shell_rate(total_shells);
+    auto refresh_shell_constants = [&](const std::vector<double>& N, const std::vector<double>& S) {
+        for (int s = 0; s < total_shells; s++) {
+            shell_coef[s] = N[s] / (8.0 * M_PI * S[s] * S[s] * S[s]);
+            shell_rate[s] = -1.0 / S[s];
         }
-    }
+    };
+
+    // Distance screening. The pro-atom density falls off as exp(-r/sigma) with sigma ~ 0.3-1 bohr,
+    // so beyond a few tens of bohr an atom's contribution to a grid point is far below any
+    // meaningful threshold -- yet the unscreened loop still visits every (atom, point) pair, which
+    // is what makes MBIS quadratic in system size. For each block we keep only the atoms whose
+    // largest possible contribution anywhere in that block exceeds MBIS_SCREENING_THRESHOLD.
+    //
+    // This is bounded, not heuristic: a discarded atom contributes less than the threshold to
+    // rho_0, and its own population/width sums pick up an error below (w * rho * threshold / rho_0)
+    // at that point. Where rho_0 is itself near the threshold the molecular density rho is
+    // negligible too, so the absolute error stays bounded by the threshold either way.
+    const double screen_eps = options.get_double("MBIS_SCREENING_THRESHOLD");
+    const bool do_screen = screen_eps > 0.0;
+    std::vector<int> block_atoms;  // flat concatenation of per-block atom lists, ascending within a block
+    std::vector<size_t> block_atoms_off(n_blocks + 1, 0);
+    std::vector<double> atom_cut(num_atoms, 0.0);
+
+    // rho_a_0_points is kept valid for *every* (point, atom), with a hard zero wherever the atom is
+    // screened out, so the post-processing below needs no knowledge of the screening. Maintaining
+    // that by memset-ing the array each sweep would cost more traffic than the screened sweep
+    // itself, so instead the zeros are written only when an atom actually drops out of a block's
+    // list -- which happens in the first iteration or two and then essentially never. block_drop
+    // carries those (block, atom) pairs from rebuild_screening to the next sweep.
+    std::vector<int> block_drop;
+    std::vector<size_t> block_drop_off(n_blocks + 1, 0);
+    std::vector<int> prev_atoms;
+    std::vector<size_t> prev_atoms_off(n_blocks + 1, 0);
+    bool first_screening = true;
+
+    auto rebuild_screening = [&]() {
+        for (int atom = 0; atom < num_atoms; atom++) {
+            double cut = std::numeric_limits<double>::infinity();
+            if (do_screen) {
+                cut = 0.0;
+                const double shell_eps = screen_eps / (shell_off[atom + 1] - shell_off[atom]);
+                for (int s = shell_off[atom]; s < shell_off[atom + 1]; s++) {
+                    // Requiring every shell to be below eps / nshell guarantees that their sum,
+                    // the pro-atom density documented by MBIS_SCREENING_THRESHOLD, is below eps.
+                    if (shell_coef[s] > shell_eps) {
+                        const double S = -1.0 / shell_rate[s];
+                        cut = std::max(cut, S * std::log(shell_coef[s] / shell_eps));
+                    }
+                }
+            }
+            atom_cut[atom] = cut;
+        }
+
+        prev_atoms.swap(block_atoms);
+        prev_atoms_off.swap(block_atoms_off);
+        block_atoms.clear();
+        block_drop.clear();
+        for (size_t b = 0; b < n_blocks; b++) {
+            block_atoms_off[b] = block_atoms.size();
+            block_drop_off[b] = block_drop.size();
+            for (int atom = 0; atom < num_atoms; atom++) {
+                const double dx = block_cx[b] - atom_x[atom], dy = block_cy[b] - atom_y[atom],
+                             dz = block_cz[b] - atom_z[atom];
+                const double d = std::sqrt(dx * dx + dy * dy + dz * dz) - block_R[b];
+                if (d < atom_cut[atom]) block_atoms.push_back(atom);
+            }
+            // Atoms present last time but not now: their stale densities must be zeroed. Both lists
+            // are ascending, so this is a merge. The sweep accounts for the small transition from
+            // the stale value to zero in the convergence delta.
+            if (!first_screening) {
+                size_t i = prev_atoms_off[b], j = block_atoms_off[b];
+                const size_t iend = prev_atoms_off[b + 1], jend = block_atoms.size();
+                while (i < iend) {
+                    while (j < jend && block_atoms[j] < prev_atoms[i]) j++;
+                    if (j == jend || block_atoms[j] != prev_atoms[i]) block_drop.push_back(prev_atoms[i]);
+                    i++;
+                }
+            }
+        }
+        block_atoms_off[n_blocks] = block_atoms.size();
+        block_drop_off[n_blocks] = block_drop.size();
+        first_screening = false;
+    };
+
+    // One sweep over the grid at fixed parameters. It simultaneously
+    //   (a) rebuilds the pro-atom/promolecule densities for these parameters,
+    //   (b) accumulates the convergence delta against the previous sweep's densities, and
+    //   (c) accumulates the population/width sums that define the *next* parameters.
+    // The original code did (a)+(b) and (c) in two separate sweeps one iteration apart, evaluating
+    // the identical set of exponentials twice; fusing them halves the exponential count.
+    auto sweep = [&](std::vector<double>& sum_n, std::vector<double>& sum_s,
+                     std::vector<double>& delta_atom, bool accumulate_delta) {
+        std::fill(sum_n.begin(), sum_n.end(), 0.0);
+        std::fill(sum_s.begin(), sum_s.end(), 0.0);
+        std::fill(delta_atom.begin(), delta_atom.end(), 0.0);
+
+        // Fixed chunks preserve dynamic load balancing without making the summation order depend on
+        // which thread finishes first. The chunk count also caps the extra reduction storage.
+        constexpr size_t kMaxReductionChunks = 64;
+        const size_t n_chunks = std::min(n_blocks, kMaxReductionChunks);
+        std::vector<double> chunk_n(n_chunks * total_shells, 0.0), chunk_s(n_chunks * total_shells, 0.0);
+        std::vector<double> chunk_d(n_chunks * num_atoms, 0.0);
+
+#pragma omp parallel
+        {
+            std::vector<double> atom_r(num_atoms);
+            // Per-block flattened shell tables, so the exponentials of one grid point form a
+            // single contiguous batch instead of num_atoms batches of one to five.
+            std::vector<double> bcoef, brate, barg, bval;
+            std::vector<int> bglob, bstart;
+            // Accumulate into thread-local buffers and flush into the chunk slot at the end. The
+            // arithmetic order is still fixed by the chunk, so the result stays deterministic, but
+            // the hot accumulator stays in this thread's cache instead of living in a shared array.
+            std::vector<double> tls_n(total_shells), tls_s(total_shells), tls_d(num_atoms);
+
+            // Chunks vary in surviving-atom count, so hand them out dynamically. Each chunk covers a
+            // fixed contiguous range of blocks and owns its reduction buffers.
+#pragma omp for schedule(dynamic, 1)
+            for (size_t chunk = 0; chunk < n_chunks; chunk++) {
+                double* loc_n = tls_n.data();
+                double* loc_s = tls_s.data();
+                double* loc_d = tls_d.data();
+                std::fill(tls_n.begin(), tls_n.end(), 0.0);
+                std::fill(tls_s.begin(), tls_s.end(), 0.0);
+                std::fill(tls_d.begin(), tls_d.end(), 0.0);
+                const size_t block_begin = n_blocks * chunk / n_chunks;
+                const size_t block_end = n_blocks * (chunk + 1) / n_chunks;
+                for (size_t b = block_begin; b < block_end; b++) {
+                    const size_t off = block_offset[b], np = block_size[b];
+                    const int* atoms = block_atoms.data() + block_atoms_off[b];
+                    const int na = static_cast<int>(block_atoms_off[b + 1] - block_atoms_off[b]);
+
+                    // Atoms that left this block's list since the last sweep still hold that sweep's
+                    // densities; clear them so the (point, atom) entries stay uniformly valid.
+                    for (size_t k = block_drop_off[b]; k < block_drop_off[b + 1]; k++) {
+                        const int atom = block_drop[k];
+                        for (size_t p = off; p < off + np; p++) {
+                            double& stale_density = rho_a_0_points[p * num_atoms + atom];
+                            if (accumulate_delta) loc_d[atom] += weights[p] * stale_density * stale_density;
+                            stale_density = 0.0;
+                        }
+                    }
+                    if (na == 0) continue;
+
+                    bstart.assign(na + 1, 0);
+                    bcoef.clear();
+                    brate.clear();
+                    bglob.clear();
+                    for (int ia = 0; ia < na; ia++) {
+                        const int atom = atoms[ia];
+                        for (int s = shell_off[atom]; s < shell_off[atom + 1]; s++) {
+                            bcoef.push_back(shell_coef[s]);
+                            brate.push_back(shell_rate[s]);
+                            bglob.push_back(s);
+                        }
+                        bstart[ia + 1] = static_cast<int>(bcoef.size());
+                    }
+                    const int ns = static_cast<int>(bcoef.size());
+                    barg.resize(ns);
+                    bval.resize(ns);
+
+                    for (size_t point = off; point < off + np; point++) {
+                        const double xp = x_points[point], yp = y_points[point], zp = z_points[point];
+
+                        for (int ia = 0; ia < na; ia++) {
+                            const int atom = atoms[ia];
+                            const double dx = xp - atom_x[atom], dy = yp - atom_y[atom], dz = zp - atom_z[atom];
+                            const double r = std::sqrt(dx * dx + dy * dy + dz * dz);
+                            atom_r[atom] = r;
+                            for (int k = bstart[ia]; k < bstart[ia + 1]; k++) barg[k] = brate[k] * r;
+                        }
+
+                        mbis_exp_batch(barg.data(), bval.data(), ns);
+
+                        double rho_0 = 0.0;
+#pragma omp simd reduction(+ : rho_0)
+                        for (int k = 0; k < ns; k++) {
+                            bval[k] *= bcoef[k];
+                            rho_0 += bval[k];
+                        }
+
+                        const double w = weights[point];
+                        const double scale = w * rho[point] / rho_0;
+                        double* rho_a_0_here = &rho_a_0_points[point * num_atoms];
+
+                        for (int ia = 0; ia < na; ia++) {
+                            const int atom = atoms[ia];
+                            const double r = atom_r[atom];
+                            double rho_a_0 = 0.0;
+                            for (int k = bstart[ia]; k < bstart[ia + 1]; k++) {
+                                const double v = bval[k];
+                                loc_n[bglob[k]] += scale * v;
+                                loc_s[bglob[k]] += scale * r * v;
+                                rho_a_0 += v;
+                            }
+                            if (accumulate_delta) {
+                                const double d = rho_a_0 - rho_a_0_here[atom];
+                                loc_d[atom] += w * d * d;
+                            }
+                            rho_a_0_here[atom] = rho_a_0;
+                        }
+                        rho_0_points[point] = rho_0;
+                    }
+                }
+                std::copy(tls_n.begin(), tls_n.end(), chunk_n.begin() + chunk * total_shells);
+                std::copy(tls_s.begin(), tls_s.end(), chunk_s.begin() + chunk * total_shells);
+                std::copy(tls_d.begin(), tls_d.end(), chunk_d.begin() + chunk * num_atoms);
+            }
+        }
+
+        for (size_t chunk = 0; chunk < n_chunks; chunk++) {
+            const double* loc_n = chunk_n.data() + chunk * total_shells;
+            const double* loc_s = chunk_s.data() + chunk * total_shells;
+            const double* loc_d = chunk_d.data() + chunk * num_atoms;
+            for (int s = 0; s < total_shells; s++) {
+                sum_n[s] += loc_n[s];
+                sum_s[s] += loc_s[s];
+            }
+            for (int atom = 0; atom < num_atoms; atom++) delta_atom[atom] += loc_d[atom];
+        }
+
+        for (int s = 0; s < total_shells; s++) {
+            Nf_next[s] = sum_n[s];
+            Sf_next[s] = sum_s[s] / (3.0 * Nf_next[s]);
+            // A shell that has lost all of its population makes the width 0/0. There is no way to
+            // continue from that, and silently carrying the NaN through to the printed charges is
+            // the worst possible outcome, so say what happened.
+            if (!(Nf_next[s] > 0.0) || !std::isfinite(Sf_next[s])) {
+                throw PSIEXCEPTION(
+                    "MBIS: the stockholder iteration reached a shell with zero population, which "
+                    "leaves its width undefined. This usually means the pro-atom parameters have "
+                    "diverged; try MBIS_ANDERSON false, or a finer MBIS grid.");
+            }
+        }
+    };
+
+    std::vector<double> sum_n(total_shells), sum_s(total_shells), delta_rho_atoms_0(num_atoms);
+
+    // Priming sweep: builds the pro-densities for the initial guess and produces the first update.
+    // Its delta is meaningless (there is no previous density), so it is not accumulated.
+    timer_on("MBIS: stockholder");
+    refresh_shell_constants(Nf, Sf);
+    rebuild_screening();
+    sweep(sum_n, sum_s, delta_rho_atoms_0, false);
+    Nf = Nf_next;
+    Sf = Sf_next;
 
     // => Main Stockholder Loop <= //
 
     int iter = 1;
     bool is_converged = false;
-    double delta_rho_max_0;
+    double delta_rho_max_0 = 0.0;
+
+    // Anderson mixing is a pure convergence accelerator: switching it off must give the same
+    // fixed point, only more slowly. Keep that escape hatch genuinely reachable.
+    const bool anderson_enabled = options.get_bool("MBIS_ANDERSON");
+    bool accelerate = anderson_enabled;
+    MBISAnderson anderson(2 * static_cast<size_t>(total_shells), 6);
+    std::vector<double> log_x(2 * total_shells), log_g(2 * total_shells);
+
+    // Anderson steps are not monotone even when they are working, so a single uptick in the
+    // residual is normal. A large one is not: it means the extrapolation is fighting the
+    // iteration rather than helping it, and on ionic systems it can keep that up indefinitely.
+    // Dropping the history at that point falls back to plain Picard until it rebuilds.
+    constexpr double kResidualBlowup = 2.0;
+    double prev_delta = std::numeric_limits<double>::infinity();
+    bool last_step_accelerated = false;
 
     if (print_output && debug >= 1) outfile->Printf("                     Delta D\n");
     while (iter < max_iter) {
-// Self-consistent update of population and density
-#pragma omp parallel for
-        for (int atom = 0; atom < num_atoms; atom++) {
-            for (int m = 0; m < mA[atom]; m++) {
-                double sum_n = 0.0;
-                double sum_s = 0.0;
-
-                for (int point = 0; point < total_points; point++) {
-                    double rho_ai_0_point =
-                        rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom * total_points + point]);
-                    sum_n += weights[point] * rho[point] * rho_ai_0_point / rho_0_points[point];
-                    sum_s += weights[point] * distances[atom * total_points + point] * rho[point] * rho_ai_0_point /
-                             rho_0_points[point];
-                }
-
-                Nai_next[atom][m] = sum_n;
-                Sai_next[atom][m] = sum_s / (3 * Nai_next[atom][m]);
-            }
-        }
-
-        std::fill(rho_0_points_next.begin(), rho_0_points_next.end(), 0.0);
-        std::fill(rho_a_0_points_next.begin(), rho_a_0_points_next.end(), 0.0);
-
-#pragma omp parallel for
-        for (size_t point = 0; point < total_points; point++) {
-            for (int atom = 0; atom < num_atoms; atom++) {
-                for (int m = 0; m < mA[atom]; m++) {
-                    rho_a_0_points_next[atom * total_points + point] +=
-                        rho_ai_0(Nai_next[atom][m], Sai_next[atom][m], distances[atom * total_points + point]);
-                }
-                rho_0_points_next[point] += rho_a_0_points_next[atom * total_points + point];
-            }
-        }
-
-        // Convergence check (Equation 20 in Verstraelen et al.) and update of pro-densities
-        std::vector<double> delta_rho_atoms_0(num_atoms, 0.0);
-
-#pragma omp parallel for
-        for (int atom = 0; atom < num_atoms; atom++) {
-            double delta;
-            for (size_t point = 0; point < total_points; point++) {
-                delta = rho_a_0_points_next[atom * total_points + point] - rho_a_0_points[atom * total_points + point];
-                delta_rho_atoms_0[atom] += weights[point] * delta * delta;
-            }
-            delta_rho_atoms_0[atom] = sqrt(delta_rho_atoms_0[atom]);
-        }
+        refresh_shell_constants(Nf, Sf);
+        rebuild_screening();
+        sweep(sum_n, sum_s, delta_rho_atoms_0, true);
 
         delta_rho_max_0 = 0.0;
         for (int atom = 0; atom < num_atoms; atom++) {
-            if (delta_rho_atoms_0[atom] > delta_rho_max_0) delta_rho_max_0 = delta_rho_atoms_0[atom];
+            const double d = std::sqrt(delta_rho_atoms_0[atom]);
+            if (d > delta_rho_max_0) delta_rho_max_0 = d;
         }
-
-        // Update populations, widths, and densities
-        Nai = Nai_next;
-        Sai = Sai_next;
-        rho_0_points = rho_0_points_next;
-        rho_a_0_points = rho_a_0_points_next;
 
         if (print_output && debug >= 1) outfile->Printf("   @MBIS iter %3d:  %.3e\n", iter, delta_rho_max_0);
 
+        if (last_step_accelerated && delta_rho_max_0 > kResidualBlowup * prev_delta) {
+            anderson.reset();
+        }
+        prev_delta = delta_rho_max_0;
+
+        // The convergence test measures the density change between successive iterates. For a plain
+        // Picard step that change *is* the fixed-point residual, but an Anderson step is an
+        // extrapolation, so two accelerated iterates can be close together without being at the
+        // fixed point -- accepting that would silently loosen MBIS_D_CONVERGENCE (measured: errors
+        // grew from 1e-11 to 1.6e-5). So the first time the accelerated iteration looks converged,
+        // acceleration is switched off and the test must be passed again on an unaccelerated step,
+        // where step and residual coincide. That costs one or two extra sweeps and restores the
+        // original convergence semantics exactly.
         if (delta_rho_max_0 < conv) {
-            if (print_output && debug >= 1) outfile->Printf("  MBIS Atomic Density Converged\n\n");
-            is_converged = true;
-            break;
+            if (accelerate) {
+                accelerate = false;
+                anderson.reset();
+            } else {
+                if (print_output && debug >= 1) outfile->Printf("  MBIS Atomic Density Converged\n\n");
+                is_converged = true;
+                break;
+            }
+        } else if (anderson_enabled && !accelerate && delta_rho_max_0 > 100.0 * conv) {
+            // The switch-off was premature; the iterate was not as close as the step suggested.
+            accelerate = true;
         }
 
+        // rho_a_0_points/rho_0_points now describe Nf/Sf; step the parameters forward, with the
+        // Picard step handed to Anderson (log space, so positivity of N and sigma is automatic).
+        if (accelerate) {
+            for (int s = 0; s < total_shells; s++) {
+                log_x[s] = std::log(Nf[s]);
+                log_x[total_shells + s] = std::log(Sf[s]);
+                log_g[s] = std::log(Nf_next[s]);
+                log_g[total_shells + s] = std::log(Sf_next[s]);
+            }
+            const std::vector<double> log_new = anderson.next(log_x, log_g);
+            for (int s = 0; s < total_shells; s++) {
+                Nf[s] = std::exp(log_new[s]);
+                Sf[s] = std::exp(log_new[total_shells + s]);
+            }
+            last_step_accelerated = true;
+        } else {
+            Nf = Nf_next;
+            Sf = Sf_next;
+            last_step_accelerated = false;
+        }
         iter += 1;
+    }
+
+    timer_off("MBIS: stockholder");
+
+    // Repack into the per-atom form the printing and post-processing below expect.
+    std::vector<std::vector<double>> Nai(num_atoms), Sai(num_atoms);
+    for (int atom = 0; atom < num_atoms; atom++) {
+        Nai[atom].assign(Nf.begin() + shell_off[atom], Nf.begin() + shell_off[atom + 1]);
+        Sai[atom].assign(Sf.begin() + shell_off[atom], Sf.begin() + shell_off[atom + 1]);
     }
 
     if (!is_converged) throw ConvergenceError<int>("MBIS", max_iter, conv, delta_rho_max_0, __FILE__, __LINE__);
 
     // => Post-Processing <= //
 
-    // Atomic density, as defined in Equation 5 of Verstraelen et al.
-    std::vector<double> rho_a(num_atoms * total_points, 0.0);
+    // Multipoles and radial moments are integrals of the same atomic density (Equation 5 in
+    // Verstraelen et al.),
+    //     rho_a(p) = rho(p) * rho_a_0(p) / rho_0(p),
+    // against different polynomials in the point-to-nucleus displacement, so they are accumulated
+    // together in one screened pass over the grid. The previous code made num_atoms separate
+    // passes for the multipoles and num_atoms * (max_power - 1) more for the radial moments, each
+    // one streaming the whole (point, atom) pro-density array -- 12.9 GB of traffic at 48 atoms --
+    // and calling pow() once per point. Displacements are recomputed rather than stored: at 109
+    // atoms they would be another ~4 GB.
+    //
+    // Screened-out atoms hold an exact zero in rho_a_0_points, so restricting the inner loop to
+    // each block's atom list drops only terms that are identically zero.
 
-#pragma omp parallel for
-    for (int atom = 0; atom < num_atoms; atom++) {
-        for (size_t point = 0; point < total_points; point++) {
-            rho_a[atom * total_points + point] =
-                rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
-        }
-    }
-
-    // Kronecker Delta
-    std::vector<std::vector<double>> k_delta = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
-
-    // Non-redundant cartesian quadrupole components
-    std::vector<std::vector<int>> qpole_inds = {{0, 0}, {0, 1}, {0, 2}, {1, 1}, {1, 2}, {2, 2}};
-
-    // Non-redundant cartesian octupole components
-    std::vector<std::vector<int>> opole_inds = {{0, 0, 0}, {0, 0, 1}, {0, 0, 2}, {0, 1, 1}, {0, 1, 2},
-                                                {0, 2, 2}, {1, 1, 1}, {1, 1, 2}, {1, 2, 2}, {2, 2, 2}};
+    // Non-redundant cartesian quadrupole and octupole components
+    static const int qpole_inds[6][2] = {{0, 0}, {0, 1}, {0, 2}, {1, 1}, {1, 2}, {2, 2}};
+    static const int opole_inds[10][3] = {{0, 0, 0}, {0, 0, 1}, {0, 0, 2}, {0, 1, 1}, {0, 1, 2},
+                                          {0, 2, 2}, {1, 1, 1}, {1, 1, 2}, {1, 2, 2}, {2, 2, 2}};
 
     // Non-redundant cartesian multipoles, as given in the convention in the HORTON software
-    /* Commented out lines ending in _stone represent multipole conventions given in
-       "The Theory of Intermolecular Forces (2nd Edition)" by Anthony Stone (A possible future addition) */
+    /* Multipole conventions given in "The Theory of Intermolecular Forces (2nd Edition)" by
+       Anthony Stone are a possible future addition. */
     auto mpole = std::make_shared<Matrix>("MBIS Charges: (a.u.)", num_atoms, 1);
     auto dpole = std::make_shared<Matrix>("MBIS Dipoles: (a.u.)", num_atoms, 3);
     auto qpole = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
     auto opole = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
-// auto qpole_stone = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
-// auto opole_stone = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
-// Calculate atomic multipoles
-#pragma omp parallel for
-    for (int a = 0; a < num_atoms; a++) {
-        mpole->add(a, 0, mol->Z(a));
-        for (size_t p = 0; p < total_points; p++) {
-            auto ap = a * total_points + p;
 
-            // Atomic monopole
-            mpole->add(a, 0, weights[p] * -rho_a[ap]);
+    timer_on("MBIS: multipoles");
 
-            // Atomic dipole
-            for (int i = 0; i < 3; i++) {
-                dpole->add(a, i, weights[p] * -rho_a[ap] * disps[i][ap]);
-            }
+    // <r^n> for n = 2 .. rmom_top. MAX_RADIAL_MOMENT can ask for more, but <r^3> (the volume used
+    // for the free-atom volume ratios) must always be available.
+    const int rmom_top = std::max(4, options.get_int("MAX_RADIAL_MOMENT"));
+    const int n_rmom = rmom_top - 1;
+    const int n_acc = 20 + n_rmom;  // 1 monopole + 3 dipole + 6 quadrupole + 10 octupole + moments
 
-            // Atomic quadrupole
-            for (int q = 0; q < 6; q++) {
-                int i = qpole_inds[q][0], j = qpole_inds[q][1];
-                qpole->add(a, q, weights[p] * -rho_a[ap] * (disps[i][ap] * disps[j][ap]));
-                // qpole_stone->add(a, q, weights[p] * rho_a[ap] * (1.5 * disps[i][ap] * disps[j][ap] - 0.5 *
-                // pow(distances[ap], 2) * k_delta[i][j]));
-            }
+    std::vector<double> acc(static_cast<size_t>(num_atoms) * n_acc, 0.0);
+    constexpr size_t kMaxReductionChunks = 64;
+    const size_t n_chunks = std::min(n_blocks, kMaxReductionChunks);
+    std::vector<double> chunk_acc(n_chunks * acc.size(), 0.0);
 
-            // Atomic octupole
-            for (int o = 0; o < 10; o++) {
-                int i = opole_inds[o][0], j = opole_inds[o][1], k = opole_inds[o][2];
-                opole->add(a, o, weights[p] * -rho_a[ap] * (disps[i][ap] * disps[j][ap] * disps[k][ap]));
-                // opole_stone->add(a, o, weights[p] * rho_a[ap]
-                //    * (2.5 * disps[i][ap] * disps[j][ap] * disps[k][ap] - 0.5 * pow(distances[ap], 2)
-                //        * (k_delta[j][k] * disps[i][ap] + k_delta[i][k] * disps[j][ap] + k_delta[i][j] *
-                //        disps[k][ap])));
+#pragma omp parallel
+    {
+#pragma omp for schedule(dynamic, 1)
+        for (size_t chunk = 0; chunk < n_chunks; chunk++) {
+            double* loc = chunk_acc.data() + chunk * acc.size();
+            const size_t block_begin = n_blocks * chunk / n_chunks;
+            const size_t block_end = n_blocks * (chunk + 1) / n_chunks;
+            for (size_t b = block_begin; b < block_end; b++) {
+                const size_t off = block_offset[b], np = block_size[b];
+                const int* atoms = block_atoms.data() + block_atoms_off[b];
+                const int na = static_cast<int>(block_atoms_off[b + 1] - block_atoms_off[b]);
+                if (na == 0) continue;  // no atom reaches this block; rho_0 was never formed there
+
+                for (size_t p = off; p < off + np; p++) {
+                    const double xp = x_points[p], yp = y_points[p], zp = z_points[p];
+                    const double wrho = weights[p] * rho[p] / rho_0_points[p];
+                    const double* rho_a_0_here = &rho_a_0_points[p * num_atoms];
+
+                    for (int ia = 0; ia < na; ia++) {
+                        const int a = atoms[ia];
+                        const double d[3] = {xp - atom_x[a], yp - atom_y[a], zp - atom_z[a]};
+                        // c = -w * rho_a; the multipoles carry the electron's negative charge, the
+                        // radial moments do not.
+                        const double c = -wrho * rho_a_0_here[a];
+                        double* la = &loc[static_cast<size_t>(a) * n_acc];
+
+                        la[0] += c;
+                        for (int i = 0; i < 3; i++) la[1 + i] += c * d[i];
+                        for (int q = 0; q < 6; q++) la[4 + q] += c * d[qpole_inds[q][0]] * d[qpole_inds[q][1]];
+                        for (int o = 0; o < 10; o++)
+                            la[10 + o] += c * d[opole_inds[o][0]] * d[opole_inds[o][1]] * d[opole_inds[o][2]];
+
+                        const double r2 = d[0] * d[0] + d[1] * d[1] + d[2] * d[2];
+                        const double r = std::sqrt(r2);
+                        double rn = r2;  // n = 2
+                        la[20] -= c * rn;
+                        for (int n = 3; n <= rmom_top; n++) {
+                            rn *= r;
+                            la[20 + n - 2] -= c * rn;
+                        }
+                    }
+                }
             }
         }
     }
+    for (size_t chunk = 0; chunk < n_chunks; chunk++) {
+        const double* loc = chunk_acc.data() + chunk * acc.size();
+        for (size_t i = 0; i < acc.size(); i++) acc[i] += loc[i];
+    }
+
+    std::vector<SharedMatrix> rmoms;
+    for (int n = 2; n <= rmom_top; n++) {
+        rmoms.push_back(std::make_shared<Matrix>("ATOMIC RADIAL MOMENTS <R^" + std::to_string(n) + ">", num_atoms, 1));
+    }
+    for (int a = 0; a < num_atoms; a++) {
+        const double* la = &acc[static_cast<size_t>(a) * n_acc];
+        mpole->set(a, 0, mol->Z(a) + la[0]);
+        for (int i = 0; i < 3; i++) dpole->set(a, i, la[1 + i]);
+        for (int q = 0; q < 6; q++) qpole->set(a, q, la[4 + q]);
+        for (int o = 0; o < 10; o++) opole->set(a, o, la[10 + o]);
+        for (int n = 2; n <= rmom_top; n++) rmoms[n - 2]->set(a, 0, la[20 + n - 2]);
+    }
+
+    timer_off("MBIS: multipoles");
 
     if (print_output) {
         outfile->Printf("  MBIS Charges: (a.u.)\n");
@@ -2215,7 +2670,6 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     }
 
     const int max_power = options.get_int("MAX_RADIAL_MOMENT");
-    auto rmoms = compute_radial_moments(grid, rho_a, distances, num_atoms);
 
     for (int n = 2; n <= max_power; n++) {
         std::stringstream sstream;
