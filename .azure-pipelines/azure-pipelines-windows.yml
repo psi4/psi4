@@ -166,13 +166,6 @@ jobs:
           clang-cl --version
         displayName: "Install LLVM"
 
-      - script: |
-          C:\tools\miniforge3\python.exe -c "import sys; assert sys.version_info[:2] == (3,14), sys.version"
-          if errorlevel 1 exit /b %errorlevel%
-          C:\tools\miniforge3\python.exe -c "import numpy, qcmanybody"
-          if errorlevel 1 exit /b %errorlevel%
-        displayName: "Diagnostic"
-
       # Configure
       # call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
       # -DPython_NumPy_INCLUDE_DIR="C:/tools/miniforge3/lib/site-packages/numpy/core/include" ^  _core for np v2
