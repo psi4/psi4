@@ -585,6 +585,8 @@ void export_mints(py::module& m) {
         .def("absmax", &Matrix::absmax, "Returns the absolute maximum value")
         .def("scale_row", &Matrix::scale_row, "Scales row m of irrep h by a", "h"_a, "m"_a, "a"_a)
         .def("scale_column", &Matrix::scale_column, "Scales column n of irrep h by a", "h"_a, "n"_a, "a"_a)
+        .def("swap_columns", &Matrix::swap_columns, "Swaps columns i and j in irrep h", "h"_a, "i"_a, "j"_a)
+        .def("sort_cols", &Matrix::sort_cols, "Permutes the columns of each irrep by sortvec", "sortvec"_a)
         .def("transform", matrix_one(&Matrix::transform), "Transform this matrix with transformer", "transformer"_a)
         .def("transform", matrix_two(&Matrix::transform), "Transform A with transformer", "a"_a, "transformer"_a)
         .def("back_transform", matrix_one(&Matrix::back_transform), "Backtransform this with transformer",
