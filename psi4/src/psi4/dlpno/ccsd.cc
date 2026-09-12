@@ -1191,7 +1191,7 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
 
     if constexpr (crude) {
         // Clear information from old maps
-        std::vector<std::vector<int>> i_j_to_ij_new;
+        SparseMap i_j_to_ij_new;
         std::vector<std::pair<int,int>> ij_to_i_j_new;
         std::vector<int> ij_to_ji_new;
 
