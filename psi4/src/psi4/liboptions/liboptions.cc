@@ -233,10 +233,7 @@ int StringDataType::to_integer() const { return static_cast<int>(std::strtod(str
 double StringDataType::to_double() const { return std::strtod(str_.c_str(), nullptr); }
 
 void StringDataType::assign(bool b) {
-    if (b)
-        assign("TRUE");
-    else
-        assign("FALSE");
+    assign(std::string(b ? "TRUE" : "FALSE"));
 }
 
 void StringDataType::assign(int i) {
@@ -291,10 +288,7 @@ int IStringDataType::to_integer() const { return static_cast<int>(std::strtod(st
 double IStringDataType::to_double() const { return std::strtod(str_.c_str(), nullptr); }
 
 void IStringDataType::assign(bool b) {
-    if (b)
-        assign("TRUE");
-    else
-        assign("FALSE");
+    assign(std::string(b ? "TRUE" : "FALSE"));
 }
 
 void IStringDataType::assign(int i) {

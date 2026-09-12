@@ -29,6 +29,8 @@
 #include "local.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <random>
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
@@ -43,6 +45,25 @@
 using namespace psi;
 
 namespace psi {
+
+namespace {
+// Portable, unbiased draw of a uniform integer in [0, n).
+//
+// std::mt19937 produces values in [0, 2^32 - 1] by C++ standard, but
+// std::uniform_int_distribution is not required to map those outputs the same
+// way across libstdc++/libc++/MSVC. To keep the Jacobi-sweep ordering exactly
+// reproducible across platforms, we do rejection sampling ourselves using
+// only the engine output, %, and comparison.
+int bounded_uniform(std::mt19937& rng, int n) {
+    const std::uint64_t two32 = std::uint64_t{1} << 32;
+    const std::uint64_t cutoff = two32 - (two32 % static_cast<std::uint64_t>(n));
+    std::uint64_t r;
+    do {
+        r = rng();
+    } while (r >= cutoff);
+    return static_cast<int>(r % static_cast<std::uint64_t>(n));
+}
+}  // namespace
 
 Localizer::Localizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) : primary_(primary), C_(C) {
     if (C->nirrep() != 1) {
@@ -199,7 +220,7 @@ void BoysLocalizer::localize() {
 
     // => Seed the random idempotently <= //
 
-    srand(0L);
+    std::mt19937 rng(0);
 
     // => Metric <= //
 
@@ -226,7 +247,7 @@ void BoysLocalizer::localize() {
         }
         std::vector<int> order2;
         for (int i = 0; i < nmo; i++) {
-            int pivot = (1L * (nmo - i) * rand()) / RAND_MAX;
+            int pivot = bounded_uniform(rng, nmo - i);
             int i2 = order[pivot];
             order[pivot] = order[nmo - i - 1];
             order2.push_back(i2);
@@ -398,7 +419,7 @@ void PMLocalizer::localize() {
 
     // => Seed the random idempotently <= //
 
-    srand(0L);
+    std::mt19937 rng(0);
 
     // => Metric <= //
 
@@ -430,7 +451,7 @@ void PMLocalizer::localize() {
         }
         std::vector<int> order2;
         for (int i = 0; i < nmo; i++) {
-            int pivot = (1L * (nmo - i) * rand()) / RAND_MAX;
+            int pivot = bounded_uniform(rng, nmo - i);
             int i2 = order[pivot];
             order[pivot] = order[nmo - i - 1];
             order2.push_back(i2);
