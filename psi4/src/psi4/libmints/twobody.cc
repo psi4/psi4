@@ -173,27 +173,20 @@ double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
 // Haser 1989 Equations 6 to 14
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
-    // Maximum density matrix equation
-    double max_density = 0.0;
-
-    // Equation 6 (RHF Case)
-    if (max_dens_shell_pair_.size() == 1) {
-        max_density = std::max({4.0 * max_dens_shell_pair_[0][M * nshell_ + N], 4.0 * max_dens_shell_pair_[0][R * nshell_ + S], 
-            max_dens_shell_pair_[0][M * nshell_ + R], max_dens_shell_pair_[0][M * nshell_ + S],
-            max_dens_shell_pair_[0][N * nshell_ + R], max_dens_shell_pair_[0][N * nshell_ + S]});
-    } else { // UHF and ROHF
-        // J-like terms
-        double D_MN = max_dens_shell_pair_[0][M * nshell_ + N] + max_dens_shell_pair_[1][M * nshell_ + N];
-        double D_RS = max_dens_shell_pair_[0][R * nshell_ + S] + max_dens_shell_pair_[1][R * nshell_ + S];
-
-        // K-like terms
-        double D_MR = std::max(max_dens_shell_pair_[0][M * nshell_ + R], max_dens_shell_pair_[1][M * nshell_ + R]);
-        double D_MS = std::max(max_dens_shell_pair_[0][M * nshell_ + S], max_dens_shell_pair_[1][M * nshell_ + S]);
-        double D_NR = std::max(max_dens_shell_pair_[0][N * nshell_ + R], max_dens_shell_pair_[1][N * nshell_ + R]);
-        double D_NS = std::max(max_dens_shell_pair_[0][N * nshell_ + S], max_dens_shell_pair_[1][N * nshell_ + S]);
-
-        max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
+    // Equation 6, over every density in the list: J-like terms add up, K-like
+    // terms take the largest. One density is the RHF case and carries 4.0.
+    double D_MN = 0.0, D_RS = 0.0;
+    double D_MR = 0.0, D_MS = 0.0, D_NR = 0.0, D_NS = 0.0;
+    for (const auto& max_per_pair : max_dens_shell_pair_) {
+        D_MN += max_per_pair[M * nshell_ + N];
+        D_RS += max_per_pair[R * nshell_ + S];
+        D_MR = std::max(D_MR, max_per_pair[M * nshell_ + R]);
+        D_MS = std::max(D_MS, max_per_pair[M * nshell_ + S]);
+        D_NR = std::max(D_NR, max_per_pair[N * nshell_ + R]);
+        D_NS = std::max(D_NS, max_per_pair[N * nshell_ + S]);
     }
+    const double j_factor = (max_dens_shell_pair_.size() == 1) ? 4.0 : 2.0;
+    const double max_density = std::max({j_factor * D_MN, j_factor * D_RS, D_MR, D_MS, D_NR, D_NS});
 
     // Square of Cauchy-Schwarz Q_MN terms (Eq. 13)
     double mn_mn = shell_pair_values_[N * nshell_ + M];
