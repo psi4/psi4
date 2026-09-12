@@ -174,7 +174,8 @@ OrbitalSpace orthogonalize(const std::string &id, const std::string &name, const
     // vectors have to be dropped, partial Cholesky when the overlap is too ill conditioned
     // for that. The dependent directions are really removed from X rather than zeroed, so
     // the space that comes back has the reduced dimension instead of trailing null vectors.
-    BasisSetOrthogonalization orthog(BasisSetOrthogonalization::Automatic, overlap, lindep_tol, cholesky_tol, 1);
+    int print = Process::environment.options.get_int("PRINT");
+    BasisSetOrthogonalization orthog(BasisSetOrthogonalization::Automatic, overlap, lindep_tol, cholesky_tol, print);
     auto X = orthog.basis_to_orthog_basis();
 
     // Counted from X itself: nlindep() reports the number of functions kept rather than the
