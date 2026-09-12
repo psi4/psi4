@@ -531,7 +531,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             else:
                 # Run DIIS
-                _iter_detailed = True
+                _iter_detailed = False  # toggle for cuEST printing
                 _it3 = time.perf_counter()
                 core.timer_on("HF: DIIS")
                 diis_performed = False
