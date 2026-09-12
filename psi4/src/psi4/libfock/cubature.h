@@ -231,19 +231,28 @@ class DFTGrid : public MolecularGrid {
     /// Master builder methods
     void buildGridFromOptions(std::map<std::string, int> int_opts_map,
                               std::map<std::string, std::string> str_opts_map,
-                              std::map<std::string, double> float_opts_map);
+                              std::map<std::string, double> float_opts_map, bool use_cuest = false);
     /// The Options object
     Options& options_;
 
    public:
     std::shared_ptr<BasisSet> primary() const { return primary_; }
 
-    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
+    /// The `use_cuest` flag requests a GPU-resident cuEST grid *instead of* the host grid: when
+    /// it is set, the CPU-side blocks/points are never built, so `blocks()`, `npoints()`, etc. are
+    /// empty and only `cuest_grid()` is usable. It is therefore opt-in per construction site
+    /// (currently only VBase, the sole consumer of `cuest_grid()`) rather than being read from the
+    /// global USE_CUEST option: every other DFTGrid client (MBIS and other properties, COSX,
+    /// DLPNO, THC, ZORA, ...) integrates on the host and needs a fully post-processed host grid,
+    /// even in a run where the SCF itself is cuEST-accelerated.
+    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options,
+            bool use_cuest = false);
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-            std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options& options);
+            std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options& options,
+            bool use_cuest = false);
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
             std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, 
-            std::map<std::string, double> float_opts_map, Options& options);
+            std::map<std::string, double> float_opts_map, Options& options, bool use_cuest = false);
     ~DFTGrid() override;
 };
 
@@ -452,6 +461,8 @@ class BlockOPoints {
     double* w() const { return w_; }
     /// The center of the block
     Vector3 center() const { return xc_; }
+    /// The bounding radius of the block
+    double radius() const { return R_; }
 
     /// Relevant shells, local -> global
     const std::vector<int>& shells_local_to_global() const { return shells_local_to_global_; }

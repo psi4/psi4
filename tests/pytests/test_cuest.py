@@ -521,11 +521,139 @@ def test_cuest_symmetry(inp, request):
 
 
 # ===========================================================================
+# Host-grid consumers must still work inside a cuEST run
+# ===========================================================================
+#
+# A cuEST DFTGrid lives on the GPU and has no CPU-side blocks/points at all.
+# That is fine for VBase, the only consumer of DFTGrid::cuest_grid(), but
+# DFTGrid is *also* built by a pile of host-side code that integrates on the
+# CPU: MBIS in oeprop.cc, COSX, DLPNO, THC, ZORA. Deciding cuEST-vs-host from
+# the global USE_CUEST option handed all of those an empty grid, so e.g. MBIS
+# in a cuEST run integrated over nothing and died with
+#
+#   Number of electrons calculated using the grid (0.000000) does not match ...
+#
+# The cuEST grid is therefore opt-in per DFTGrid construction site (see the
+# DFTGrid constructor docs in cubature.h) and everyone else gets a host grid,
+# even when the SCF itself is cuEST-accelerated.
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+def test_cuest_property_grid_is_host_side():
+    """A plain DFTGrid must be host-usable even with USE_CUEST set."""
+    mol = psi4.geometry(__symm_geoms["water"])
+    mol.update_geometry()
+    basis = psi4.core.BasisSet.build(mol, "ORBITAL", "def2-svp")
+
+    psi4.set_options({'use_cuest': False})
+    host = psi4.core.DFTGrid.build(mol, basis)
+
+    psi4.set_options({'use_cuest': True})
+    under_cuest = psi4.core.DFTGrid.build(mol, basis)
+
+    assert compare_integers(host.npoints(), under_cuest.npoints(), 'DFTGrid npoints under USE_CUEST')
+    assert compare_integers(len(host.blocks()), len(under_cuest.blocks()), 'DFTGrid blocks under USE_CUEST')
+    assert under_cuest.npoints() > 0, "DFTGrid built under USE_CUEST has no host points to integrate over"
+
+
+# Reference values from regular (non-cuEST) Psi4, same options as the test below.
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+def test_cuest_mbis():
+    """MBIS (a host-grid property) must work, and agree, in a cuEST run."""
+    ref_energy = -76.35817215624168
+    ref_charges = [[-0.7996725425], [0.3998373140], [0.3998373140]]
+    ref_dipoles = [[0.0, 0.0, -0.1135276975],
+                   [0.0, -0.0222118902, 0.0032028507],
+                   [0.0, 0.0222118902, 0.0032028507]]
+    ref_widths = [[0.3991695161], [0.3577413466], [0.3577413466]]
+    ref_r3 = [[25.4595836211], [1.5871713470], [1.5871713470]]
+
+    psi4.core.set_num_threads(4)
+    psi4.set_options({
+        'scf_type': 'df',
+        'df_basis_scf': 'def2-universal-JKFIT',
+        'basis': 'def2-svp',
+        'puream': True,
+        'reference': 'rhf',
+        'dft_nuclear_scheme': 'stratmann',  # To get cuEST and Psi4 to agree exactly for DFT
+        'dft_radial_points': 100,
+        'dft_spherical_points': 590,
+        'd_convergence': 9,
+        'maxiter': 300,
+        'use_cuest': True,
+        'scf_properties': ['MBIS_CHARGES'],
+    })
+
+    mol = psi4.geometry(__symm_geoms["water"])
+    energy, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
+
+    assert compare_values(ref_energy, energy, 5e-6, 'mbis cuest energy')
+    assert compare_values(np.asarray(ref_charges), np.asarray(wfn.variable('MBIS CHARGES')), 1e-6, 'mbis cuest charges')
+    assert compare_values(np.asarray(ref_dipoles), np.asarray(wfn.variable('MBIS DIPOLES')), 1e-6, 'mbis cuest dipoles')
+    assert compare_values(np.asarray(ref_widths), np.asarray(wfn.variable('MBIS VALENCE WIDTHS')), 1e-6, 'mbis cuest valence widths')
+    assert compare_values(np.asarray(ref_r3), np.asarray(wfn.variable('MBIS RADIAL MOMENTS <R^3>')), 1e-5, 'mbis cuest <r^3>')
+
+
+# ===========================================================================
+# DF gradient workspace sizing (cuEST query under-reports for J+K)
+# ===========================================================================
+#
+# The size cuestDFSymmetricDerivativeComputeWorkspaceQuery returns is not the
+# size cuestDFSymmetricDerivativeCompute requires: they disagree by an exact
+# integer multiple of 256 bytes, in both directions. Where the query is short,
+# Compute throws "Out of memory" with the whole GPU free. It is short by 3 units
+# (768 B) for water in DZVP and STO-3G and by 1 unit for He2/STO-3G, and is
+# over-generous by ~25% above ~1 MB of workspace, which is why this reads as a
+# capricious basis-set dependence. It tracks nocc, not basis size. jk_grad.cc
+# pads the workspace; see the comment on query_df_derivative_workspace() and
+# NVIDIA_CUEST_WORKSPACE_REPORT.md.
+#
+# DZVP and STO-3G below are the cases that used to throw; cc-pVDZ is a control
+# that always worked. HF, not DFT, so the reference is Psi4's own analytic
+# gradient rather than a finite difference (psi4's analytic *DFT* gradient omits
+# grid-weight derivatives, which puts a ~1e-5 floor on any cross-engine
+# comparison and would swamp what this test is looking at).
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize("basis", ["dzvp", "sto-3g", "cc-pvdz"])
+def test_cuest_df_gradient_workspace(basis):
+    """DF gradients must not die in the cuEST workspace query, whatever the basis."""
+    psi4.core.set_num_threads(4)
+    options = {
+        'scf_type': 'df',
+        'basis': basis,
+        'puream': True,
+        'reference': 'rhf',
+        'e_convergence': 10,
+        'd_convergence': 9,
+        'cuest_mixed_precision': False,
+    }
+    geom = """
+    0 1
+    O
+    H 1 0.9584
+    H 1 0.9584 2 104.45
+    """
+
+    psi4.set_options({**options, 'use_cuest': True})
+    G_cuest = np.array(psi4.gradient('hf', molecule=psi4.geometry(geom)))
+
+    psi4.set_options({**options, 'use_cuest': False})
+    G_ref = np.array(psi4.gradient('hf', molecule=psi4.geometry(geom)))
+
+    assert compare_values(G_ref, G_cuest, 1e-7, f'{basis} cuEST DF gradient')
+
+
+# ===========================================================================
 # DFT code paths that cuEST does not implement must fail loudly
 # ===========================================================================
 #
-# Under USE_CUEST the quadrature grid is built on the GPU and the CPU-side grid
-# post-processing is skipped entirely (cubature.cc: "if (is_cuest) return;"
+# The XC grid that VBase asks cuEST for is built on the GPU and the CPU-side
+# grid post-processing is skipped entirely (cubature.cc: "if (is_cuest) return;"
 # before postProcess()), so grid_->blocks() is empty and functional_workers_ is
 # never populated. compute_V()/compute_gradient() have cuEST branches and are
 # fine, but compute_Vx(), compute_fock_derivatives(), SAP::compute_V() and

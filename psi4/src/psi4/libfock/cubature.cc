@@ -4356,30 +4356,32 @@ void BlockOPoints::print(std::string out, int print) {
         printer->Printf("\n\n");
     }
 }
-DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options &options)
+DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options &options,
+                 bool use_cuest)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
     std::map<std::string, std::string> str_opts_map;
     std::map<std::string, int> int_opts_map;
     std::map<std::string, double> float_opts_map;
-    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map, use_cuest);
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options &options)
+                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options &options,
+                 bool use_cuest)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
     std::map<std::string, double> float_opts_map;
-    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map, use_cuest);
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
                  std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map,
-                 std::map<std::string, double> float_opts_map, Options &options)
+                 std::map<std::string, double> float_opts_map, Options &options, bool use_cuest)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
-    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map, use_cuest);
 }
 DFTGrid::~DFTGrid() {}
 
 void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
                                    std::map<std::string, std::string> str_opts_map,
-                                   std::map<std::string, double> float_opts_map) {
+                                   std::map<std::string, double> float_opts_map, bool use_cuest) {
     std::map<std::string, std::string> full_str_options;
     std::vector<std::string> str_keys = {"DFT_RADIAL_SCHEME", "DFT_PRUNING_SCHEME", "DFT_NUCLEAR_SCHEME",
                                          "DFT_GRID_NAME", "DFT_BLOCK_SCHEME"};
@@ -4480,8 +4482,15 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     double epsilon = full_float_options["DFT_BASIS_TOLERANCE"];
     auto extents = std::make_shared<BasisExtents>(primary_, epsilon);
     timer_on("build grid");
-    // The options_ member is shadowed 
-    bool is_cuest = options_.get_bool("USE_CUEST");
+    // A cuEST grid lives on the GPU and has no host blocks/points, so the host post-processing
+    // below is skipped for it. This is requested explicitly by the caller (see the DFTGrid
+    // constructor docs) instead of being inferred from the global USE_CUEST option, so that host
+    // consumers such as MBIS still get a usable grid inside a cuEST-accelerated run.
+    bool is_cuest = use_cuest;
+#ifndef USING_cuEST
+    // Without cuEST compiled in there is no GPU grid to build; always fall back to the host grid.
+    is_cuest = false;
+#endif
     MolecularGrid::buildGridFromOptions(opt, is_cuest);
     timer_off("build grid");
     if (is_cuest) return;

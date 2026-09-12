@@ -3089,6 +3089,68 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute2(
     return val;
 }
 #ifdef USING_cuEST
+namespace {
+/// Size the temporary workspace for cuestDFSymmetricDerivativeCompute.
+///
+/// Works around a bug in cuEST 0.2: the size returned by
+/// cuestDFSymmetricDerivativeComputeWorkspaceQuery is not the size
+/// cuestDFSymmetricDerivativeCompute requires. The two disagree by an exact integer multiple
+/// of 256 bytes, in both directions. When the query is short, Compute throws "Out of memory"
+/// with the whole device free -- it is an internal size check rejecting our workspace, not an
+/// allocation failure (under gdb no cudaMalloc is attempted before the throw).
+///
+/// Measured on an RTX PRO 6000 Blackwell, cuEST 0.2, and reproduced identically on an L40S,
+/// so the sizing is a deterministic function of the problem and not of the GPU:
+///
+///     system           nocc   query says   actually needs   error / 256 B
+///     H2/STO-3G           1       55808          55808            0
+///     He2(2+)/STO-3G      1       89344          89344            0
+///     He2/STO-3G          2       90112          90368           +1   <- throws
+///     H2O/STO-3G          5      556032         556800           +3   <- throws
+///     H2O/DZVP            5      697088         697856           +3   <- throws
+///     H2O/cc-pVDZ         5     1388800        1005312        -1498
+///     benzene/STO-3G     21    23426048       18141952       -20641
+///
+/// The shortfall tracks nocc, not basis size: He2 and He2(2+) differ only in nocc, and
+/// H2O/STO-3G and H2O/DZVP have different nao but the same error. Above ~1 MB the query flips
+/// sign and over-allocates by 23-31% instead.
+///
+/// Ask for the requirement with the exchange term switched off as well, and allocate the sum.
+/// Be clear about what this is: it is the combined query plus a pad of size query(cScale=0),
+/// not a derived requirement. densityScale turns out not to affect the returned size at all
+/// (exchange == combined and neither == coulomb on every system tested), which is consistent
+/// with the Coulomb phase reusing the exchange scratch -- cuEST's own SCF path in cuESTJK.cc
+/// combines its J and K queries with std::max for the same reason. The pad is 6912-75264 B
+/// across the systems above, against a worst measured shortfall of 768 B, and it grows with
+/// system size, so the margin is comfortable. But it is empirical, and on large jobs it adds
+/// to the over-allocation noted above.
+///
+/// TODO: drop this once the cuEST query is fixed upstream. See
+/// NVIDIA_CUEST_WORKSPACE_REPORT.md and CUEST_WORKSPACE_RESULTS.md.
+cuestWorkspaceDescriptor_t query_df_derivative_workspace(
+    cuestDFIntPlan_t plan, const cuestDFSymmetricDerivativeComputeParameters_t parameters,
+    const cuestWorkspaceDescriptor_t* variableBufferSize, double densityScale,
+    const double* densityMatrix, double coefficientScale, uint64_t numCoefficientMatrices,
+    const uint64_t* numOccupied, const double* coefficientMatrices, double* outGradient) {
+    cuestWorkspaceDescriptor_t combined{}, coulomb{}, exchange{};
+
+    CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
+        cuest_handle, plan, parameters, variableBufferSize, &combined, densityScale, densityMatrix,
+        coefficientScale, numCoefficientMatrices, numOccupied, coefficientMatrices, outGradient));
+    CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
+        cuest_handle, plan, parameters, variableBufferSize, &coulomb, densityScale, densityMatrix,
+        0.0, numCoefficientMatrices, numOccupied, coefficientMatrices, outGradient));
+    CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
+        cuest_handle, plan, parameters, variableBufferSize, &exchange, 0.0, densityMatrix,
+        coefficientScale, numCoefficientMatrices, numOccupied, coefficientMatrices, outGradient));
+
+    combined.hostBufferSizeInBytes =
+        std::max(combined.hostBufferSizeInBytes, coulomb.hostBufferSizeInBytes + exchange.hostBufferSizeInBytes);
+    combined.deviceBufferSizeInBytes =
+        std::max(combined.deviceBufferSizeInBytes, coulomb.deviceBufferSizeInBytes + exchange.deviceBufferSizeInBytes);
+    return combined;
+}
+}  // namespace
 cuESTJKGrad::cuESTJKGrad(int deriv, std::shared_ptr<JK> jk) : jk_(jk), x_alpha_(0.0), x_beta_(0.0), JKGrad(deriv, jk->basisset()) { common_init(); }
 cuESTJKGrad::~cuESTJKGrad() {}
 void cuESTJKGrad::common_init() {
@@ -3171,19 +3233,17 @@ void cuESTJKGrad::compute_gradient() {
         std::shared_ptr<cuESTJK> cuest_jk = std::dynamic_pointer_cast<cuESTJK>(jk_);
         cuestDFIntPlan_t cuest_df_plan = cuest_jk->cuest_df_plan();
         
-        CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
-            cuest_handle,
+        *temporaryWorkspaceDescriptor = query_df_derivative_workspace(
             cuest_df_plan,
             df_grad_compute_parameters,
-            variableBufferSize, 
-            temporaryWorkspaceDescriptor, 
+            variableBufferSize,
             0.5,
             d_D,
             1.0 * x_alpha_,
             1,
             nocc.data(),
             d_C,
-            d_grad));
+            d_grad);
 
         cuestWorkspace_t* temporaryWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
 
@@ -3229,19 +3289,17 @@ void cuESTJKGrad::compute_gradient() {
         std::shared_ptr<cuESTJK> cuest_jk = std::dynamic_pointer_cast<cuESTJK>(jk_);
         cuestDFIntPlan_t cuest_df_plan = cuest_jk->cuest_df_plan();
         
-        CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
-            cuest_handle,
+        *temporaryWorkspaceDescriptor = query_df_derivative_workspace(
             cuest_df_plan,
             df_grad_compute_parameters,
-            variableBufferSize, 
-            temporaryWorkspaceDescriptor, 
+            variableBufferSize,
             0.5,
             d_D,
             0.5 * x_alpha_,
             2,
             nocc.data(),
             d_C,
-            d_grad));
+            d_grad);
 
         cuestWorkspace_t* temporaryWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
 
