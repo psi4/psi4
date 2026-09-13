@@ -1,8 +1,6 @@
 #! Triple and Singlet Oxygen energy SOSCF, also tests non-symmetric density matrices
 
-# Singlet PBE is the sensitive one: 6 macro-iterations with the internal packages, 8 with     #TEST
-# OpenTrustRegion, 10 with OpenOrbitalOptimizer driving the first-order half. Same energy in   #TEST
-# every case, so widen the bound whenever either package is in play.                           #TEST
+# Singlet PBE is sensitive: 6 int, 8 OTR, 10 OOO
 _internal_only = (psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL"       #TEST
                   and psi4.core.get_option("scf", "second_order_orbital_optimizer_package") == "INTERNAL")  #TEST
 niter_max = 8 if _internal_only else 12                                                        #TEST

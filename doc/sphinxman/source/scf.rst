@@ -1024,8 +1024,8 @@ for a trust-region method when an SCF keeps landing on an unstable solution --
 but it also means a deliberately prepared excited or symmetry-broken state may
 collapse to the ground state unless the occupation is pinned with
 |globals__docc| and |globals__socc|. Relatedly, OpenTrustRegion optimizes at a *fixed*
-occupation where the internal code re-runs the aufbau assignment each iteration;
-arriving after the handoff the occupation is usually settled, but if
+occupation where the internal code re-runs the aufbau assignment each iteration.
+The occupation is usually settled before the SOSCF handoff, but if
 canonicalizing the converged orbitals changes it, |PSIfour| reconverges from the
 new occupation.
 
@@ -1034,23 +1034,15 @@ iterations: a macro-iteration converges when the energy change is under
 |scf__e_convergence| and the RMS orbital gradient is under |scf__d_convergence|,
 both required. OpenTrustRegion applies that test through a callback, so those two
 keywords mean what they always mean and control the final result.
-
-OpenTrustRegion also carries a convergence threshold of its own, on the gradient
-alone, which it *or*\ s together with that callback. Left comparable to
-|scf__d_convergence| it can therefore end the SCF on the gradient while the energy
-is still moving, before the combined test is ever satisfied, so |PSIfour| scales it
-down by two orders of magnitude to leave its own criterion in charge. The asymmetry
-is what makes this safe: a loose value stops the SCF early, a tight one cannot,
-because the callback still has to pass.
+The OTR internal convergence threshold is tightened so the |PSIfour| convergence wins.
 
 Microiterations are a separate matter. They solve the trust-region subproblem
 within a macro-iteration, so they set how well each step is computed rather than
-how tightly the SCF finishes. The cap is *not* taken from |scf__soscf_max_iter|:
-its default of 5 suits the internal code's inner solve, where OpenTrustRegion's
-Davidson expects 50, and imposing 5 would degrade each step and so cost more
-macro-iterations to reach the same answer. |scf__soscf_print| turns on microiteration detail for both codes;
-|scf__otr_print| reaches the levels a boolean cannot and takes precedence
-wherever it has been set. The settings with no |PSIfour| counterpart are exposed
+how tightly the SCF finishes. The cap is *not* taken from |scf__soscf_max_iter|;
+it is presently unadjustible at 50.
+|scf__soscf_print| turns on microiteration detail for both codes;
+|scf__otr_print| allows further control for OpenTrustRegion.
+The settings with no |PSIfour| counterpart are exposed
 as ``OTR_*`` keywords, documented at :ref:`options:otr`.
 
 Some computations cannot use second-order convergence at all, whichever package is
