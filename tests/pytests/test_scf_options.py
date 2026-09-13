@@ -26,12 +26,10 @@ def test_guess_mix_for_broken_symmetry(inp):
     if (psi4.core.get_option("SCF", "SOSCF")
             and psi4.core.get_option("scf", "second_order_orbital_optimizer_package")
             in ["OTR", "OPENTRUSTREGION"]):
-        # This test pins first-order behaviour: that a plain UHF stops at the symmetric
-        # stationary point and needs guess_mix to reach the broken-symmetry solution. At this
-        # separation the symmetric solution is a saddle point, and OpenTrustRegion minimizes
-        # rather than seeking a stationary point, so it descends to -0.99872 with or without
-        # the mixing. Nothing to pin here the way an occupation could be pinned.
-        pytest.skip("OpenTrustRegion minimizes past the stationary point this test pins")
+        # This test expects a plain UHF to stop at -0.82648 but guess_mix to reach -0.99872 .
+        # The former is a saddle point, and OTR minimizes rather than seeking a stationary
+        # point, so OTR reaches -0.99872 w/ or w/o the mixing, so fails.
+        pytest.skip("OpenTrustRegion descends off the saddle point this test relies on")
 
     refENuc = 0.17639240356
     refSCF = -0.82648407827446

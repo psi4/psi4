@@ -1544,36 +1544,17 @@ int HF::opentrustregion_scf() {
     OTR::solver_settings_type settings = OTR::solver_settings_init();
 
     // override default settings
-    // Psi4 runs its own stability analysis in scf_finalize_energy, which is what fills
-    // SCF STABILITY EIGENVALUES and drives the follow-and-reconverge loop. Leave OTR's
-    // per-macro-iteration stability check off rather than doing the work twice and
-    // landing on a different solution than the internal solver would.
+    // Psi4 runs its own stability analysis in scf_finalize_energy, which drives the follow-and-reconverge
+    // loop. Leave OTR's per-macro-iter stability check off rather than 2x work & potential diff. sol'n.
     settings.stability = false;
-    // What actually decides convergence is the conv_check callback, otr_converged(), which
-    // applies psi4's usual macro-iteration test: energy change under E_CONVERGENCE and
-    // gradient RMS under D_CONVERGENCE, both required. conv_tol is a second, independent
-    // criterion of OpenTrustRegion's own, on the gradient alone, and its convergence gate ORs
-    // the two together:
-    //
-    //     grad_rms < conv_tol .or. max_precision_reached .or. conv_check_passed
-    //
-    // So a conv_tol comparable to D_CONVERGENCE can stop the solver on the gradient while the
-    // energy is still moving, before the callback's combined test is ever satisfied. Scaling
-    // it down demotes that path and leaves psi4's criterion in charge. The asymmetry is the
-    // point: a loose conv_tol ends the SCF early, a tight one cannot, because conv_check still
-    // has to pass. This is not a demand for two digits more accuracy than the user asked for.
+    // The callback otr_converged() actually decides convergence (usual Psi4 E_/D_CONV macro-
+    // iter check). conv_tol is a second, indep criterion of OTR's own, on the gradient alone, evaluated
+    // "OR" wrt the callback. Tighten this (0.01 factor) so Psi4's crit is in charge, lest SCF ends early.
     settings.conv_tol =
         0.01 * std::min(options_.get_double("D_CONVERGENCE"), options_.get_double("E_CONVERGENCE"));
-    // MAXITER caps the whole SCF, so hand OpenTrustRegion only what the first-order
-    // iterations have not already spent. Without this it would receive a fresh budget at the
-    // handoff, and another on every occupation restart, so a run could report far more
-    // iterations than the user allowed. The +1 is for OpenTrustRegion's macro-iteration 1,
-    // which evaluates the handoff state psi4 has already counted; the driver drops that first
-    // energy, so without it the solver would get one fewer new iteration than was asked for.
+    // Hand OTR the remaining iter budget after first-order. The +1 is for OTR's macro-iter 1, the already counted handoff.
     settings.n_macro = std::max(1, options_.get_int("MAXITER") - iteration_ + 1);
-    // n_micro is deliberately left at OpenTrustRegion's default. SOSCF_MAX_ITER means the
-    // same thing but defaults to 5 against OTR's 50, so mapping it would quietly hobble the
-    // subproblem solve for anyone who had tuned it for the internal second-order code.
+    // n_micro: leave at OTR default (50). SOSCF_MAX_ITER for internal SOSCF default (5) isn't a clean map.
     settings.n_random_trial_vectors = options_.get_int("OTR_N_RANDOM_TRIAL_VECTORS");
     settings.jacobi_davidson_start = options_.get_int("OTR_JACOBI_DAVIDSON_START");
     settings.line_search = options_.get_bool("OTR_LINE_SEARCH");
@@ -1588,9 +1569,7 @@ int HF::opentrustregion_scf() {
                        [](unsigned char c) { return std::tolower(c); });
         std::snprintf(settings.subsystem_solver, sizeof(settings.subsystem_solver), "%s", solver.c_str());
     }
-    // SOSCF_PRINT is the existing "show me the microiterations" switch, so honour it here
-    // too: off keeps OpenTrustRegion to its macro-iteration table, on adds the microiteration
-    // detail. OTR_PRINT reaches the levels a bool cannot and wins wherever the user set it.
+    // Honor the existing "show me the microiterations" switch SOSCF_PRINT. OTR_PRINT reaches more levels.
     auto print = options_.get_bool("SOSCF_PRINT") ? 2 : 1;
     if (options_["OTR_PRINT"].has_changed()) print = options_.get_int("OTR_PRINT");
     settings.verbose = (print <= 0) ? 2 : (print == 1) ? 3 : 4;
@@ -1601,10 +1580,8 @@ int HF::opentrustregion_scf() {
     auto error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper,
                              otr_n_param_, settings);
 
-    // Every OpenTrustRegion failure mode -- running out of macro-iterations, or a line
-    // search that could not lower the objective along an unstable mode -- means the
-    // orbitals are not converged. Hand the code back instead of throwing so the driver can
-    // turn it into an SCFConvergenceError and honour FAIL_ON_MAXITER.
+    // Every OTR failure mode means the orbs are unconverged. Hand the code back so the
+    // driver can turn it into an SCFConvergenceError and honour FAIL_ON_MAXITER.
     return static_cast<int>(error);
 #endif
 }
