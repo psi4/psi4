@@ -598,6 +598,8 @@ Convergence Stabilization
 
 A summary of Psi's supported convergence stabilization techniques is presented below.
 Alternatively, stabilization can run through the OpenOrbitalOptimizer library. See :ref:`options:ooo` for details.
+Where those techniques struggle, the second-order methods of :ref:`sec:soscf` -- either
+|PSIfour|'s own or the OpenTrustRegion library -- can finish a stubborn SCF instead.
 
 DIIS [On by Default]
     DIIS uses previous iterates of the Fock matrix together
@@ -994,8 +996,8 @@ the microiterations typically results in the overall cost being greater for
 SOSCF than for gradient-based methods. Therefore, SOSCF should only be used if
 it is difficult to locate a stable minimum.
 
-SOSCF is available for all HF and DFT references with the exception of meta-
-GGA functionals. To enable, set the option |scf__soscf| to ``true``.
+SOSCF is available for all HF and DFT references except those listed below, meta-GGA
+functionals among them. To enable, set the option |scf__soscf| to ``true``.
 Additional options to modify the number of microiterations taken are as
 follows:
 
@@ -1006,6 +1008,84 @@ follows:
     |scf__soscf_conv|: the relative convergence tolerance of the SOSCF microiterations
 
     |scf__soscf_print|: option to print the microiterations or not
+
+The second-order iterations can be run either by the internal code described
+above or by the OpenTrustRegion library, selected with
+|globals__second_order_orbital_optimizer_package|. This is independent of
+|globals__orbital_optimizer_package|, which chooses what drives the *first-order*
+iterations, so the two combine freely. In either case the division of work is
+the same: DIIS (or OpenOrbitalOptimizer) runs until the orbital gradient falls
+below |scf__soscf_start_convergence|, then hands the orbitals to the second-order
+package, which carries the calculation to convergence.
+
+The two second-order codes differ in what they are trying to do. The internal
+SOSCF code takes a Newton step toward the nearest stationary point, so it stays
+in the basin DIIS delivered it to. OpenTrustRegion minimizes the energy within
+a trust region, which means it can walk off a saddle point that the internal code
+would have converged onto. That is usually welcome -- it is the reason to reach
+for a trust-region method when an SCF keeps landing on an unstable solution --
+but it also means a deliberately prepared excited or symmetry-broken state may
+collapse to the ground state unless the occupation is pinned with
+|globals__docc| and |globals__socc|. Relatedly, OpenTrustRegion optimizes at a *fixed*
+occupation where the internal code re-runs the aufbau assignment each iteration.
+The occupation is usually settled before the SOSCF handoff, but if
+canonicalizing the converged orbitals changes it, |PSIfour| reconverges from the
+new occupation.
+
+Convergence is decided the same way whichever package runs the second-order
+iterations: a macro-iteration converges when the energy change is under
+|scf__e_convergence| and the RMS orbital gradient is under |scf__d_convergence|,
+both required. OpenTrustRegion applies that test through a callback, so those two
+keywords mean what they always mean and control the final result.
+The OTR internal convergence threshold is tightened so the |PSIfour| convergence wins.
+
+Microiterations are a separate matter. They solve the trust-region subproblem
+within a macro-iteration, so they set how well each step is computed rather than
+how tightly the SCF finishes. The cap is *not* taken from |scf__soscf_max_iter|;
+it is presently unadjustible at 50.
+|scf__soscf_print| turns on microiteration detail for both codes;
+|scf__otr_print| allows further control for OpenTrustRegion.
+The settings with no |PSIfour| counterpart are exposed
+as ``OTR_*`` keywords, documented at :ref:`options:otr`.
+
+Some computations cannot use second-order convergence at all, whichever package is
+selected, because the orbital Hessian cannot be formed or cannot be applied to the
+trial densities it needs. |PSIfour| raises for these rather than returning a
+converged but wrong answer:
+
+* a ``CUHF`` reference, for which no orbital Hessian is implemented,
+* meta-GGA and VV10 functionals, whose exchange-correlation kernel cannot supply the
+  rotated potential the Hessian needs,
+* fractional occupation (|scf__frac_start|), which varies the occupation during the
+  SCF where a second-order step is taken at fixed occupation,
+* incremental Fock builds (|scf__incfock|), which accumulate against the SCF's own
+  sequence of densities rather than the trial densities the Hessian is applied to,
+* the semi-numerical exchange builds (|globals__scf_type| ``DFDIRJ+COSX``,
+  ``DFDIRJ+LINK`` and ``DFDIRJ+SNLINK``), which cannot supply non-symmetric exchange
+  matrices.
+
+A smaller set OpenTrustRegion in particular cannot carry, because the python driver
+applies them per-iteration and would stop doing so once OpenTrustRegion owns the loop:
+MOM (|scf__mom_start|), a GRAC-shifted potential, which is spliced into the
+exchange-correlation potential outside the kernel the Hessian differentiates, and EFP,
+PCM, DDX and PE embedding. These fall back on the internal second-order code rather
+than raising, and a note in the output file names the condition that applied.
+
+Because of that fallback, what was requested and what ran are not always the
+same. A line above the iteration table names the packages actually in force::
+
+  The orbital optimizer module is Internal, second-order OpenTrustRegion
+
+and the same information is recorded on the wavefunction, so it can be inspected
+without scraping the output file::
+
+  >>> e, wfn = energy("scf", return_wfn=True)
+  >>> wfn.module_roles()
+  {'orbital_optimizer': 'internal', 'second_order_orbital_optimizer': 'opentrustregion'}
+
+Finally, stability analysis (|scf__stability_analysis|) always runs through
+|PSIfour|'s own code; OpenTrustRegion's internal stability check is left off so
+that both second-order packages land on the same solution.
 
 
 .. _`sec:scfstability_doc`:

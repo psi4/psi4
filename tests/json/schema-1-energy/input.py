@@ -114,8 +114,11 @@ psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Retur
 psi4.compare_integers(True, "MAYER INDICES" in json_ret["extras"]["qcvars"], "Mayer Indices Found")                           #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    if k == "scf_iterations" and psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") != "INTERNAL":  # KP-FLEX
-        psi4.compare(True, json_ret["properties"]["scf_iterations"] < 13, k.upper())  #TEST
+    if k == "scf_iterations" and (psi4.core.get_option("SCF", "SOSCF")
+                                  or psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") != "INTERNAL"):  # KP-FLEX
+        # second-order convergence gets there in fewer iterations, OpenOrbitalOptimizer in more
+        niter_max = 8 if psi4.core.get_option("SCF", "SOSCF") else 13  #TEST
+        psi4.compare(True, json_ret["properties"]["scf_iterations"] < niter_max, k.upper())  #TEST
     else:
         psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
 

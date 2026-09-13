@@ -327,6 +327,8 @@ are available pre-built from conda.
 
 * :ref:`OpenOrbitalOptimizer <cmake:ooo>` |w---w| `[what is OpenOrbitalOptimizer?] <sec:ooo>` (August 2025; added by v1.10)
 
+* :ref:`OpenTrustRegion <cmake:otr>` |w---w| `[what is OpenTrustRegion?] <sec:otr>` (added by v1.12)
+
 Additionally, there are runtime-loaded capabilities:
 
 * :ref:`PylibEFP & libefp <cmake:libefp>` |w---w| :ref:`[what is LibEFP?] <sec:libefp>` :source:`[LibEFP min version] <external/upstream/libefp/CMakeLists.txt#L1>`

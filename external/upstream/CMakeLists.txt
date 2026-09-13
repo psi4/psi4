@@ -19,6 +19,7 @@ foreach(dir
   qcengine
   qcmanybody
   openorbitaloptimizer
+  opentrustregion
   optking
   simint
   libxc
