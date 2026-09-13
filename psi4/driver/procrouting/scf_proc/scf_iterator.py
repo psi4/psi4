@@ -307,9 +307,8 @@ def _run_opentrustregion(self, e_conv, d_conv):
     """
     # OpenTrustRegion optimizes orbitals at fixed occupation, while the internal solver
     # re-runs find_occupation at every iteration. Arriving after the first-order handoff
-    # the occupation is usually settled, so this is a backstop rather than the common
-    # case, but a near-degeneracy can still have it move once the solution is
-    # canonicalized. Reconverge whenever it does.
+    # the occupation is usually settled, so this is a backstop rather than the common case,
+    # but a near-degeneracy can still have it move once the solution is canonicalized, so reconverge.
     # Keep counting from where the first-order iterations left off rather than resetting.
     SCFE_prev_attempt = None
     otr_e_conv = e_conv if e_conv is not None else core.get_option("SCF", "E_CONVERGENCE")
@@ -317,10 +316,8 @@ def _run_opentrustregion(self, e_conv, d_conv):
         occupation = _occupation(self)
         otr_error = self.opentrustregion_scf()
 
-        # OpenTrustRegion's last call back into Psi4 is often a Hessian-vector product,
-        # and cphf_Hx reuses the JK object that form_G has aliased J_/K_ onto. Rebuild
-        # the two-electron quantities from the converged orbitals before taking the
-        # energy, or J_/K_ still hold CPHF intermediates and compute_E returns garbage.
+        # OTR's last call to Psi4 is often a Hessian-vector product (cphf_Hx reuses JK)
+        # so rebuild from converged orbs lest compute_E return garbage.
         self.form_D()
         self.form_G()
         self.form_F()
@@ -329,23 +326,18 @@ def _run_opentrustregion(self, e_conv, d_conv):
         self.set_energies("Total Energy", SCFE)
         self.set_variable("SCF ITERATION ENERGY", SCFE)
 
-        # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL
-        # ENERGIES mean the same thing they do for the internal solver. OpenTrustRegion's
-        # macro-iteration 0 is the energy of the orbitals it was handed, which the
-        # first-order loop already recorded, so drop it rather than count it twice.
+        # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL ENERGIES
+        # mean the same thing as for internal solver. OTR's macro-iter=0 already recorded
         otr_energies = list(self.otr_iteration_energies())
         otr_energies[-1:] = [SCFE]
         otr_energies = otr_energies[1:]
         self.iteration_energies.extend(otr_energies)
         self.iteration_ += len(otr_energies)
 
-        # Canonicalize for post-SCF methods, but leave the occupation alone: this solution was
-        # optimized at a particular occupation and is returned at it. Ask what the aufbau rule
-        # would do, and commit to that answer only when another attempt is going to use it.
+        # Canonicalize for post-SCF methods, leaving the occupation where OTR used it.
+        # Ask what the aufbau rule would do, and commit to that answer only when another attempt is going to use it.
         self.canonicalize_orbitals()
-        # Canonicalization is only block diagonal to within convergence, so rebuild the density
-        # from the orbitals actually being returned rather than leaving the two disagreeing at
-        # that order. The occupied subspace, and so the density itself, is unchanged.
+        # Canonicalization is only block diagonal to w/i convergence, so rebuild the density.
         self.form_D()
 
         if otr_error:
@@ -402,11 +394,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     soscf_enabled = _validate_soscf()
     if soscf_enabled:
-        # Refuse here what would otherwise die deep in C++: there is no orbital Hessian for
-        # CUHF (hf.cc's soscf_update), and the XC kernel cannot build a rotated V for
-        # meta-GGA or VV10 functionals (v.cc's Vx). Both are limitations of second-order
-        # convergence itself, not of any one optimizer package, so the check sits here rather
-        # than with the package selection below.
+        # refuse here what would otherwise die deep in C++
         if reference == "CUHF":
             raise ValidationError(
                 "Second-order SCF: no orbital Hessian is implemented for a CUHF reference.\n"
@@ -419,11 +407,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 "     rotated potential the orbital Hessian needs.\n"
                 "     Please set SOSCF to false")
         if frac_enabled:
-            # A second-order step optimizes at fixed occupation while FRAC_START keeps
-            # changing the occupation through form_C. The internal code does not notice the
-            # conflict and returns a converged but wrong energy, so refuse. MOM is fine: it
-            # reassigns which orbitals are occupied, not how much, and the internal
-            # second-order code handles it.
+            # FRAC_START changes occ through form_C but SOSCF doesn't notice and returns wrong E
+            # MOM is fine: it reassigns which orbitals are occupied, not how much, and internal SOSCF ok
             raise ValidationError(
                 "Second-order SCF: fractional occupation varies the occupation during the\n"
                 "     SCF, which a second-order step, taken at fixed occupation, cannot follow.\n"
@@ -456,14 +441,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     if otr_soscf:
         # OpenTrustRegion takes over the iteration loop at the handoff, so anything applied
         # per-iteration from Python (EFP/PCM/DDX/PE) or through form_C (MOM) would stop being
-        # applied from that point on. CUHF, meta/VV10, FRAC, semi-numerical K and incremental
-        # Fock builds need no guard here: those are limitations of second-order convergence
-        # generally, and psi4 has already refused SOSCF for them above and in proc.py.
+        # applied thereafter. The GRAC shift splices its potential into V_xc outside the kernel
+        # cphf_Hx differentiates, so the Hessian never sees it.
+        # SOSCF in general already refused for CUHF, meta/VV10, FRAC, sn-LinK, IncFock.
         pcm_enabled = core.get_option('SCF', 'PCM')
         ddx_enabled = core.get_option('SCF', 'DDX')
         pe_enabled = core.get_option('SCF', 'PE')
-        # The GRAC shift splices its potential into V_xc outside the kernel cphf_Hx
-        # differentiates, so the Hessian never sees it.
         grac_enabled = (core.get_option("SCF", "DFT_GRAC_SHIFT") != 0.0
                         or core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE")
         if (self.MOM_excited_ or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled
@@ -473,8 +456,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, grac={grac_enabled}\n")
             otr_soscf = False
 
-    # Record what actually drove the orbitals, so callers can tell a demoted package from
-    # the one they asked for without scraping the output file.
+    # Record what actually drove the SCF, so demotions/altered defaults are detectable other than print format
     _LABELS = {"internal": "Internal", "openorbitaloptimizer": "OpenOrbitalOptimizer",
                "opentrustregion": "OpenTrustRegion"}
     first_module = "openorbitaloptimizer" if ooo_scf else "internal"

@@ -18,8 +18,7 @@ set {
 
 
 # This block wants the SCF to run out of iterations at maxiter 6 so the convergence error
-# can be inspected. Second-order convergence gets there first and no error is raised, so
-# pin the first-order path here whatever the ambient setting.                       #TEST
+# can be inspected. Second-order convergence gets there first, so evade.
 _ambient_soscf = psi4.core.get_option("SCF", "SOSCF")  # KP-LOGIC
 psi4.set_options({"soscf": False})                     # KP-LOGIC
 

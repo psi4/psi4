@@ -197,10 +197,10 @@ hardware_nvidia_gpu = pytest.mark.skipif(
 orbital_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
     pytest.param(None,  None,     id="internal"),
     pytest.param("ooo", None,     id="ooo", marks=using("ooo")),
-    pytest.param(None,  "soscf",  id="soscf-internal"),
-    pytest.param(None,  "otr",    id="soscf-otr", marks=using("otr")),
-    pytest.param("ooo", "soscf",  id="ooo-soscf-internal", marks=using("ooo")),
-    pytest.param("ooo", "otr",    id="ooo-soscf-otr", marks=[*using("ooo"), *using("otr")]),
+    pytest.param(None,  "soscf",  id="internal-soscf"),
+    pytest.param(None,  "otr",    id="internal-otr", marks=using("otr")),
+    pytest.param("ooo", "soscf",  id="ooo-soscf", marks=using("ooo")),
+    pytest.param("ooo", "otr",    id="ooo-otr", marks=[*using("ooo"), *using("otr")]),
 ])
 
 
@@ -215,9 +215,9 @@ first_order_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
 #: For tests that turn |scf__soscf| on themselves, so only the two packages are worth
 #: varying. Unlike the six-way, this never runs a first-order-only case.
 second_order_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
-    pytest.param(None,  None,  id="internal"),
-    pytest.param("ooo", None,  id="ooo", marks=using("ooo")),
-    pytest.param(None,  "otr", id="otr", marks=using("otr")),
+    pytest.param(None,  None,  id="internal-soscf"),
+    pytest.param("ooo", None,  id="ooo-soscf", marks=using("ooo")),
+    pytest.param(None,  "otr", id="internal-otr", marks=using("otr")),
     pytest.param("ooo", "otr", id="ooo-otr", marks=[*using("ooo"), *using("otr")]),
 ])
 
