@@ -97,7 +97,34 @@ The results will then look something like::
        F12/3C(FIX) Correlation Energy:     -0.026029803210
        CABS Singles Correction:            -0.000938283352
 
-The theory and common keywords used in MP2-F12 are presented below. 
+Streamed DF execution
+---------------------
+
+Set ``f12_subtype streamed`` to build the F12 correction one occupied pair at
+a time. This path uses the same DF-MP2-F12/3C(FIX) equations as ``INCORE``.
+It retains shared three-index integrals and reuses each worker's pair matrices,
+without constructing a complete four-index F12 integral archive. The Coulomb
+metric inverse is shared with Fock construction.
+
+AO integrals are transformed in blocks of auxiliary shells. The optional
+``f12_aux_block_size`` controls the target number of auxiliary functions per
+block (default 64); individual shells are never split. Pair workers follow
+the Psi4 thread count, up to the number of occupied pairs. Their results are
+summed in a fixed order after the parallel loop.
+
+``STREAMED`` currently requires an all-electron, closed-shell RHF reference
+in C1, ``mp2_type df``, and a nonempty CABS space. Orbital, CABS, and fitting
+bases are selected through the usual options; frozen core, ``f12_beta``, and
+``cabs_singles`` retain their usual meanings. ECP references and frozen virtual
+orbitals are rejected. ``f12_read_ints`` must be false. Only energies are
+implemented.
+
+Memory use includes shared three-index arrays, AO blocks, and one workspace
+per pair worker. The Psi4 memory allowance bounds the pair workspaces; shared
+arrays and other steps need additional memory. The underlying SCF and MP2
+steps may still use scratch files.
+
+The theory and common keywords used in MP2-F12 are presented below.
 
 .. index::
    pair: MP2-F12; theory

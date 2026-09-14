@@ -4801,8 +4801,12 @@ def run_mp2f12(name, **kwargs):
     ref_wfn.set_basisset("CABS", cabs)
 
     # Compute Energy
-    mp2f12_wfn = core.f12(ref_wfn)
-    mp2f12_wfn.compute_energy()
+    screening = p4util.OptionsState(["SCREENING"])
+    try:
+        mp2f12_wfn = core.f12(ref_wfn)
+        mp2f12_wfn.compute_energy()
+    finally:
+        screening.restore()
 
     mp2f12_wfn.set_variable('CURRENT ENERGY', mp2f12_wfn.variable('MP2-F12 TOTAL ENERGY'))
     mp2f12_wfn.set_variable('CURRENT REFERENCE ENERGY', mp2f12_wfn.variable('HF-CABS TOTAL ENERGY'))
