@@ -44,8 +44,77 @@
 namespace psi {
 namespace f12 {
 
+namespace {
+class ScopedTimer {
+   public:
+    explicit ScopedTimer(const char* label) : label_(label) { timer_on(label_); }
+    ~ScopedTimer() { stop(); }
+    ScopedTimer(const ScopedTimer&) = delete;
+    ScopedTimer& operator=(const ScopedTimer&) = delete;
+
+    void stop() {
+        if (label_) {
+            timer_off(label_);
+            label_ = nullptr;
+        }
+    }
+
+   private:
+    const char* label_;
+};
+
+struct ProfileSession {
+    ProfileSession() { einsums::profile::initialize(); }
+    ~ProfileSession() { einsums::profile::finalize(); }
+};
+}  // namespace
+
 StreamedMP2F12::StreamedMP2F12(SharedWavefunction ref_wfn, Options& options)
     : MP2F12(ref_wfn, options), auxiliary_block_size_(options.get_int("F12_AUX_BLOCK_SIZE")) {}
+
+int StreamedMP2F12::plan_pair_workers() const {
+    // Count doubles in the main arrays before allocating the shared DF state.
+    // AO blocks use basis-function counts; MO arrays use the retained spaces.
+    const double u = naux_, o = nobs_, r = nri_, a = nact_, v = nvir_, i = nocc_, c = ncabs_;
+    const double ao = std::max(bs_[0].basisset()->nbf(), bs_[1].basisset()->nbf());
+    const double mo = std::max(nobs_, ncabs_);
+    int largest_shell = 0;
+    for (int shell = 0; shell < DFBS_->nshell(); ++shell) {
+        largest_shell = std::max(largest_shell, DFBS_->shell(shell).nfunction());
+    }
+    const double block = std::min(naux_, std::max(auxiliary_block_size_, largest_shell));
+    auto transform_workspace = [&](int operators) {
+        return block * (operators * ao * ao + ao * mo + mo * mo) + 2 * ao * mo;
+    };
+
+    const double fock_shared = 3 * r * r + u * u + u * i * r;
+    const double metric_peak = fock_shared + 5 * u * u;
+    const double fock_peak = fock_shared + 2 * u * mo * mo + 3 * u * i * r +
+                             4 * r * r + transform_workspace(1);
+    const double operator_shared = 3 * r * r + u * u + 4 * u * a * r + 2 * u * a * a;
+    const double operator_peak = operator_shared + 2 * u * a * mo + transform_workspace(2);
+    const double pair_count = a * (a + 1) / 2;
+    const double pair_records = pair_count * (sizeof(std::pair<int, int>) + sizeof(PairResult)) / sizeof(double);
+    const double retained = operator_shared + 4 * u * u + pair_records;
+    const double workspace = 2 * o * r + 3 * r * r + 2 * a * r + 2 * a * a +
+                             3 * v * v + i * r + c * i + v * o + 3 * u * r;
+    const double singles_peak = retained + (singles_ ? 6 * r * r + 4 * r : 0);
+    const double serial_peak = std::max({metric_peak, fock_peak, operator_peak, singles_peak});
+    const double budget = static_cast<double>(Process::environment.get_memory()) / sizeof(double);
+    const double required = std::max(serial_peak, retained + workspace);
+    if (required > budget) {
+        outfile->Printf("     STREAMED estimated minimum array memory: %.1f MiB; available: %.1f MiB\n",
+                        required * sizeof(double) / 1048576.0, budget * sizeof(double) / 1048576.0);
+        throw PSIEXCEPTION("STREAMED arrays exceed the available memory; increase MEMORY or reduce F12_AUX_BLOCK_SIZE");
+    }
+
+    const int requested = std::min(nthreads_, static_cast<int>(pair_count));
+    const int workers = static_cast<int>(std::min(static_cast<double>(requested), (budget - retained) / workspace));
+    const double peak = std::max(serial_peak, retained + workers * workspace);
+    outfile->Printf("     STREAMED estimated array memory: %.1f MiB; pair workers: %d of %d\n",
+                    peak * sizeof(double) / 1048576.0, workers, requested);
+    return workers;
+}
 
 void StreamedMP2F12::form_df_fock_streamed(einsums::Tensor<double, 2> *f,
                                         einsums::Tensor<double, 2> *k,
@@ -175,16 +244,19 @@ double StreamedMP2F12::compute_energy() {
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    timer_on("MP2-F12 Compute Energy");
-    einsums::profile::initialize();
+    ScopedTimer total_timer("MP2-F12 Compute Energy");
+    ProfileSession profile;
     print_header();
 
-    timer_on("OBS and CABS");
-    form_basissets();
-    timer_off("OBS and CABS");
+    {
+        ScopedTimer timer("OBS and CABS");
+        form_basissets();
+    }
     if (ncabs_ == 0) {
         throw PSIEXCEPTION("F12_SUBTYPE=STREAMED requires a nonempty CABS space");
     }
+
+    const int pair_threads = plan_pair_workers();
 
     outfile->Printf("\n ===> Streamed DF-MP2-F12 <===\n");
     outfile->Printf("     Auxiliary shell blocks and reusable occupied-pair workspaces\n\n");
@@ -203,15 +275,17 @@ double StreamedMP2F12::compute_energy() {
         }
     }
 
-    timer_on("shared DF metric inverse");
-    form_metric_inverse(&metric_inverse);
-    timer_off("shared DF metric inverse");
+    {
+        ScopedTimer timer("shared DF metric inverse");
+        form_metric_inverse(&metric_inverse);
+    }
 
-    timer_on("blocked-AO streamed Fock Matrix and shared G");
-    form_df_fock_streamed(&f, &k, &fk, &metric_inverse, raw_g_occ_ri.get());
-    timer_off("blocked-AO streamed Fock Matrix and shared G");
+    {
+        ScopedTimer timer("blocked-AO streamed Fock Matrix and shared G");
+        form_df_fock_streamed(&f, &k, &fk, &metric_inverse, raw_g_occ_ri.get());
+    }
 
-    timer_on("shared metric/operator contexts");
+    ScopedTimer operators_timer("shared metric/operator contexts");
     // The Fock producer already generated the complete raw G occupied-by-RI
     // context.  Its active occupied rows are the G operator needed by the pair contractions;
     // apply the already-shared J^{-1} once to obtain the robust-DF metric.
@@ -248,7 +322,7 @@ double StreamedMP2F12::compute_energy() {
     form_oper_ints_pack(
         std::vector<std::string>{"F", "F2", "FG", "Uf"},
         std::vector<Tensor<double, 2>*>{&aux_f, &aux_f2, &aux_fg, &aux_uf});
-    timer_off("shared metric/operator contexts");
+    operators_timer.stop();
 
     const std::vector<char> order_g = {'o', 'O', 'o', 'O', 'o', 'O', 'o', 'C'};
     const std::vector<char> order_f = {'o', 'O', 'o', 'O', 'o', 'O', 'o', 'C',
@@ -283,17 +357,6 @@ double StreamedMP2F12::compute_energy() {
         for (int j = i; j < nact_; ++j) occupied_pairs.emplace_back(i, j);
     }
     std::vector<PairResult> pair_results(occupied_pairs.size());
-    const int pair_threads = std::min(nthreads_, static_cast<int>(occupied_pairs.size()));
-
-    const double workspace_doubles =
-        2.0 * nobs_ * nri_ + 2.0 * nri_ * nri_ + 2.0 * nact_ * nri_ +
-        2.0 * nact_ * nact_ + 3.0 * nvir_ * nvir_ + nri_ * nri_ +
-        nocc_ * nri_ + ncabs_ * nocc_ + nvir_ * nobs_ + 3.0 * naux_ * nri_;
-    const double workspace_bytes = workspace_doubles * sizeof(double);
-    const double total_workspace_bytes = workspace_bytes * pair_threads;
-    if (total_workspace_bytes > Process::environment.get_memory()) {
-        throw PSIEXCEPTION("STREAMED pair workspaces exceed the available memory; reduce the thread count");
-    }
 
     std::vector<std::unique_ptr<PairWorkspace>> pair_workspaces;
     pair_workspaces.reserve(pair_threads);
@@ -302,13 +365,10 @@ double StreamedMP2F12::compute_energy() {
             workspace_id, nobs_, nri_, nocc_, nact_, nvir_, ncabs_, naux_));
     }
 
-    outfile->Printf("     Pair workers: %d; workspace: %.3f MiB per worker\n",
-                    pair_threads, workspace_bytes / (1024.0 * 1024.0));
-
     outfile->Printf("  %1s   %1s  |     %14s     %14s     %12s \n", "i", "j", "E_F12(Singlet)",
                     "E_F12(Triplet)", "E_F12");
     outfile->Printf(" ----------------------------------------------------------------------\n");
-    timer_on("Streamed pair contraction");
+    ScopedTimer pairs_timer("Streamed pair contraction");
 #pragma omp parallel for schedule(static) num_threads(pair_threads)
     for (size_t pair_index = 0; pair_index < occupied_pairs.size(); ++pair_index) {
 #ifdef _OPENMP
@@ -516,7 +576,8 @@ double StreamedMP2F12::compute_energy() {
             pair_result.energy_t = E_t;
         }
     }
-    timer_off("Streamed pair contraction");
+    pairs_timer.stop();
+    pair_workspaces.clear();
 
     // Sum in occupied-pair order, independently of thread completion order.
     for (size_t pair_index = 0; pair_index < occupied_pairs.size(); ++pair_index) {
@@ -537,16 +598,13 @@ double StreamedMP2F12::compute_energy() {
     E_f12_ = E_f12_s + E_f12_t;
 
     if (singles_) {
-        timer_on("CABS Singles Correction");
+        ScopedTimer timer("CABS Singles Correction");
         MP2F12::form_cabs_singles(&f);
-        timer_off("CABS Singles Correction");
     }
     set_scalar_variable("F12 CABS CORRECTION ENERGY", E_singles_);
     print_results();
     set_energy(E_mp2f12_);
     if (print_ > 1) einsums::profile::report("timer_mp2f12_streamed.dat", false);
-    einsums::profile::finalize();
-    timer_off("MP2-F12 Compute Energy");
     return E_mp2f12_;
 }
 

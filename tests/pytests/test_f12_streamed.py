@@ -106,3 +106,113 @@ def test_streamed_rejects_ecp_reference():
     psi4.core.prepare_options_for_module("F12")
     with pytest.raises(RuntimeError, match="all-electron basis sets only"):
         psi4.core.f12(reference)
+
+
+@uusing("einsums")
+@pytest.mark.parametrize("failure", ["missing-cabs", "memory"])
+def test_f12_recovers_after_failure(failure, monkeypatch):
+    from psi4.driver.procrouting import proc
+
+    molecule = psi4.geometry("0 1\nH 0 0 0\nH 0 0 0.74\nsymmetry c1")
+    psi4.set_memory("2 GB")
+    psi4.set_num_threads(1)
+    psi4.set_options({
+        "basis": "sto-3g" if failure == "missing-cabs" else "cc-pvdz-f12",
+        "df_basis_f12": "aug-cc-pvdz-ri",
+        "f12_subtype": "streamed",
+        "mp2_type": "df",
+        "reference": "rhf",
+    })
+    # Allow the F12 driver to select DF-SCF and the default CABS itself.
+    psi4.core.set_global_option("SCF_TYPE", "PK")
+    psi4.core.revoke_global_option_changed("SCF_TYPE")
+
+    def options():
+        values = [(psi4.core.get_global_option(key), psi4.core.has_global_option_changed(key))
+                  for key in ("SCF_TYPE", "MP2_TYPE", "DF_BASIS_F12", "SCREENING",
+                              "CABS_BASIS", "DF_BASIS_SCF", "DF_BASIS_MP2")]
+        values.extend((psi4.core.get_local_option(module, key),
+                       psi4.core.has_local_option_changed(module, key))
+                      for module, key in (("F12", "CABS_BASIS"), ("SCF", "DF_BASIS_SCF"),
+                                          ("DFMP2", "DF_BASIS_MP2")))
+        return values
+
+    before = options()
+    memory = psi4.core.get_memory()
+    factory = psi4.core.f12
+    calls = []
+    start, stop = psi4.core.tstart, psi4.core.tstop
+
+    def tstart():
+        calls.append("start")
+        return start()
+
+    def tstop():
+        calls.append("stop")
+        return stop()
+
+    def small_budget(reference):
+        result = factory(reference)
+        # Lower only the F12 budget, after the real SCF and MP2 steps finish.
+        psi4.core.set_memory_bytes(1, quiet=True)
+        return result
+
+    monkeypatch.setattr(psi4.core, "tstart", tstart)
+    monkeypatch.setattr(psi4.core, "tstop", tstop)
+    with monkeypatch.context() as patch:
+        if failure == "memory":
+            patch.setattr(psi4.core, "f12", small_budget)
+        error = "No CABS_BASIS given" if failure == "missing-cabs" else "STREAMED arrays exceed"
+        try:
+            with pytest.raises((RuntimeError, psi4.ValidationError), match=error):
+                proc.run_mp2f12("mp2-f12", molecule=molecule)
+        finally:
+            psi4.core.set_memory_bytes(memory, quiet=True)
+
+    assert options() == before
+    assert calls.count("start") == calls.count("stop")
+    psi4.core.timer_on("after failed F12")
+    psi4.core.timer_off("after failed F12")
+    probe = next(record for record in psi4.core.get_timer_records().values()
+                 if record["timer_name"] == "after failed F12")
+    assert "MP2-F12 Compute Energy" not in probe["timer_path"]
+    assert "OBS and CABS" not in probe["timer_path"]
+
+    # No clean(), clean_options(), or clean_timers() between failure and retry.
+    psi4.set_options({"basis": "cc-pvdz-f12"})
+    recovered = proc.run_mp2f12("mp2-f12", molecule=molecule)
+    assert recovered.variable("MP2-F12 TOTAL ENERGY") < -1.0
+    assert options() == before
+    assert calls.count("start") == calls.count("stop")
+    psi4.set_options({"f12_subtype": "incore"})
+    expected = proc.run_mp2f12("mp2-f12", molecule=molecule)
+    assert recovered.variable("MP2-F12 TOTAL ENERGY") == pytest.approx(
+        expected.variable("MP2-F12 TOTAL ENERGY"), abs=1e-8, rel=0)
+
+
+@uusing("einsums")
+def test_streamed_repeated_thread_counts():
+    molecule = psi4.geometry("0 1\n" + WATER + "\nsymmetry c1")
+    psi4.set_memory("2 GB")
+    psi4.set_num_threads(1)
+    psi4.set_options({
+        "basis": "cc-pvdz-f12",
+        "df_basis_scf": "aug-cc-pvdz-ri",
+        "df_basis_f12": "aug-cc-pvdz-ri",
+        "scf_type": "df",
+        "mp2_type": "df",
+        "f12_subtype": "streamed",
+        "freeze_core": True,
+        "e_convergence": 1e-10,
+        "d_convergence": 1e-10,
+    })
+    _, reference = psi4.energy("scf", molecule=molecule, return_wfn=True)
+    expected = None
+    for threads in (1, 4, 4):
+        psi4.set_num_threads(threads)
+        energy, result = psi4.energy("mp2-f12", ref_wfn=reference, return_wfn=True)
+        values = [energy] + [result.variable(key) for key in COMPONENTS]
+        if expected is None:
+            expected = values
+        else:
+            assert values == pytest.approx(expected, abs=1e-9, rel=0)

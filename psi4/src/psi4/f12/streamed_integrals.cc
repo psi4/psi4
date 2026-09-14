@@ -29,6 +29,7 @@
 #include "streamed.h"
 
 #include <algorithm>
+#include <cstring>
 #include <memory>
 #ifdef _OPENMP
 #include <omp.h>
@@ -252,13 +253,12 @@ void StreamedMP2F12::three_index_mo_aux_blocked_pack(
 
 void StreamedMP2F12::form_metric_inverse(
     einsums::Tensor<double, 2>* metric_inverse) {
-    auto metric = std::make_shared<FittingMetric>(DFBS_, true);
-    metric->form_full_eig_inverse(1.0e-12);
-    SharedMatrix Jinv = metric->get_metric();
+    FittingMetric metric(DFBS_, true);
+    metric.form_full_eig_inverse(1.0e-12);
+    SharedMatrix Jinv = metric.get_metric();
+    double** rows = Jinv->pointer();
     for (size_t A = 0; A < naux_; ++A) {
-        for (size_t B = 0; B < naux_; ++B) {
-            (*metric_inverse)(A, B) = Jinv->get(A, B);
-        }
+        std::memcpy(&(*metric_inverse)(A, 0), rows[A], naux_ * sizeof(double));
     }
 }
 
@@ -270,10 +270,15 @@ void StreamedMP2F12::form_oper_ints_pack(
     if (int_types.empty() || int_types.size() != DF_ERI_outputs.size()) {
         throw PSIEXCEPTION("three-center operator pack types/outputs mismatch");
     }
+    for (auto* output : DF_ERI_outputs) {
+        if (output == nullptr) {
+            throw PSIEXCEPTION("three-center operator pack requires non-null outputs");
+        }
+    }
     const auto dim1 = DF_ERI_outputs[0]->dim(1);
     const auto dim2 = DF_ERI_outputs[0]->dim(2);
     for (auto* output : DF_ERI_outputs) {
-        if (output == nullptr || output->dim(0) != static_cast<size_t>(naux_) ||
+        if (output->dim(0) != static_cast<size_t>(naux_) ||
             output->dim(1) != dim1 || output->dim(2) != dim2) {
             throw PSIEXCEPTION("three-center operator pack requires identical output shapes");
         }
@@ -363,6 +368,8 @@ void StreamedMP2F12::form_oper_ints_pack(
 #pragma omp parallel for collapse(2) schedule(guided) num_threads(nthreads_)
     for (size_t A = 0; A < DFBS_->nshell(); ++A) {
         for (size_t B = 0; B < DFBS_->nshell(); ++B) {
+            if (B > A) continue;
+
             size_t rank = 0;
 #ifdef _OPENMP
             rank = omp_get_thread_num();
@@ -377,8 +384,9 @@ void StreamedMP2F12::form_oper_ints_pack(
                 size_t offset = 0;
                 for (size_t a = 0; a < numA; ++a) {
                     for (size_t b = 0; b < numB; ++b) {
-                        (*DF_ERI_outputs[op])(index_A + a, index_B + b) =
-                            buffer[offset++];
+                        const double value = buffer[offset++];
+                        (*DF_ERI_outputs[op])(index_A + a, index_B + b) = value;
+                        if (A != B) (*DF_ERI_outputs[op])(index_B + b, index_A + a) = value;
                     }
                 }
             }

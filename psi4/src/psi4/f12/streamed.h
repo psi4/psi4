@@ -94,6 +94,8 @@ class StreamedMP2F12 : public MP2F12 {
 
     int auxiliary_block_size_;
 
+    int plan_pair_workers() const;
+
     void three_index_direct_j_ao_computer(
         const einsums::Tensor<double, 1>& j_weight,
         einsums::Tensor<double, 2>* j_ao,

@@ -119,10 +119,12 @@ bases are selected through the usual options; frozen core, ``f12_beta``, and
 orbitals are rejected. ``f12_read_ints`` must be false. Only energies are
 implemented.
 
-Memory use includes shared three-index arrays, AO blocks, and one workspace
-per pair worker. The Psi4 memory allowance bounds the pair workspaces; shared
-arrays and other steps need additional memory. The underlying SCF and MP2
-steps may still use scratch files.
+Before allocating shared integrals, ``STREAMED`` estimates its main arrays
+for the metric, Fock, operator-transform, pair, and CABS-singles stages. It
+reduces the number of pair workers to fit the remaining memory after shared
+arrays, or reports insufficient memory before integral generation. The estimate
+excludes the reference wavefunction, basis construction, and library workspaces,
+so total process memory can be higher. SCF and MP2 may still use scratch files.
 
 The theory and common keywords used in MP2-F12 are presented below.
 
