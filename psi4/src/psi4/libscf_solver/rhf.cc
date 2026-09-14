@@ -939,6 +939,9 @@ bool RHF::stability_analysis() {
                                IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::QTOrder,
                                IntegralTransform::FrozenOrbitals::None);
         ints.set_keep_dpd_so_ints(true);
+        // FOLLOW calls this routine again after the re-SCF, but the driver computes the SO integrals only
+        // once; keep them so that the second transformation still finds its input file.
+        ints.set_keep_iwl_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
         dpd_set_default(ints.get_dpd_id());
@@ -948,10 +951,15 @@ bool RHF::stability_analysis() {
                                "MO Ints (OV|OV)");
         // Singlet A_ia_jb = 4 (ia|jb)
         global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "RHF Singlet Hessian (IA|JB)", 4.0);
-        // Triplet A_ia_jb = -(ib|ja)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[O,V]"),
-                                    "RHF Triplet Hessian (IA|JB)", -1.0);
+        // Triplet A_ia_jb = -(ib|ja). Written with a plain sort (overwrite) rather than sort_axpy: PSIF_LIBTRANS_DPD
+        // is kept between calls, and sort_axpy would accumulate onto the Hessian left behind by a previous
+        // stability analysis in the same run (e.g. the re-check after FOLLOW).
+        global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "RHF Triplet Hessian (IA|JB)");
         global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "RHF Triplet Hessian (IA|JB)");
+        global_dpd_->buf4_scm(&Atrip, -1.0);
+        global_dpd_->buf4_close(&Atrip);
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                                "MO Ints (OO|VV)");
         // Triplet A_ia_jb -= (ij|ab)
