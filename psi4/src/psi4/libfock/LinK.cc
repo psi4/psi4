@@ -255,6 +255,15 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         KT.push_back(K2);
     }
 
+    // accumulate K contributions into a zeroed buffer to avoid roundoff error
+    std::vector<SharedMatrix> K_delta;
+    for (const auto& Kmat : K) {
+        K_delta.push_back(Kmat->clone());
+    }
+    for (const auto& Kmat : K_delta) {
+        Kmat->zero();
+    }
+
     // ==> Start "Loop over significant 'bra'-shell pairs uh" in Fig. 1 of paper <== //
     // Number of computed shell quartets is tracked for benchmarking purposes
     num_computed_shells_ = 0L;
@@ -373,7 +382,6 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                     int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
 
                     for (size_t ind = 0; ind < D.size(); ind++) {
-                        double** Kp = K[ind]->pointer();
                         double** Dp = D[ind]->pointer();
                         double** KTp = KT[thread][ind]->pointer();
                         const double* buffer2 = buffer;
@@ -433,7 +441,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         for (size_t ind = 0; ind < D.size(); ind++) {
             double** KTp = KT[thread][ind]->pointer();
-            double** Kp = K[ind]->pointer();
+            double** Kp = K_delta[ind]->pointer();
 
             double* K1p = KTp[0L * max_functions_per_atom];
             double* K2p = KTp[1L * max_functions_per_atom];
@@ -488,8 +496,9 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     }  // End master task list
 
-    for (auto& Kmat : K) {
-        Kmat->hermitivitize();
+    for (size_t ind = 0; ind < K.size(); ind++) {
+        K[ind]->add(K_delta[ind]);
+        K[ind]->hermitivitize();
     }
 
     num_computed_shells_ = computed_shells;
