@@ -1,0 +1,60 @@
+#! RHF singlet (RHF->RHF) instability following with symmetry on the slightly rhombic H4 ring of the
+#! stability5 test (cc-pVDZ). In the full D2h point group the instability has B1g symmetry, so it is
+#! reported but not followed: FOLLOW only follows totally symmetric instabilities. In the C2h
+#! subgroup the same instability is totally symmetric, and FOLLOW relaxes to the lower
+#! symmetry-broken solution.
+
+molecule h4_d2h {
+0 1
+H   1.00   0.00  0.00
+H   0.00   1.05  0.00
+H  -1.00   0.00  0.00
+H   0.00  -1.05  0.00
+}
+
+molecule h4_c2h {
+0 1
+H   1.00   0.00  0.00
+H   0.00   1.05  0.00
+H  -1.00   0.00  0.00
+H   0.00  -1.05  0.00
+symmetry c2h
+}
+
+set {
+basis cc-pvdz
+reference rhf
+scf_type pk
+d_convergence 8
+e_convergence 10
+stability_analysis follow
+}
+
+nucenergy         =   1.9763769551  #TEST
+e_saddle_ref      =  -1.8949156257  #TEST
+e_relaxed_ref     =  -1.9223210113  #TEST
+eig_saddle_b1g    =  -0.063390      #TEST
+eig_saddle_ag     =   0.527943      #TEST
+
+# Stage 1: full D2h symmetry. The instability is B1g (irrep index 1), so nothing is followed.
+e_d2h, wfn = energy('scf', molecule=h4_d2h, return_wfn=True)
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, h4_d2h.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                 #TEST
+compare_integers(8, stab.nirrep(), "Stability eigenvalues are resolved into the 8 irreps of D2h")            #TEST
+compare_values(eig_saddle_b1g, stab.get(1, 0, 0), 4, "Negative singlet eigenvalue in B1g is detected")       #TEST
+compare_values(eig_saddle_ag, stab.get(0, 0, 0), 4, "Totally symmetric (Ag) block is stable")                #TEST
+compare_values(e_saddle_ref, e_d2h, 7, "Energy stays at the symmetric solution")                             #TEST
+compare_integers(1, wfn.attempt_number_, "Non-totally-symmetric instability is not followed")               #TEST
+
+clean()
+
+# Stage 2: C2h subgroup. The same instability is now Ag and FOLLOW relaxes the wavefunction.
+e_c2h, wfn = energy('scf', molecule=h4_c2h, return_wfn=True)
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_integers(4, stab.nirrep(), "Stability eigenvalues are resolved into the 4 irreps of C2h")            #TEST
+compare_values(e_relaxed_ref, e_c2h, 7, "RHF energy after following the instability in C2h")                 #TEST
+compare_integers(2, wfn.attempt_number_, "FOLLOW re-ran the SCF exactly once")                               #TEST
+compare_integers(1, int(stab.get(0, 0, 0) > 0.0), "Relaxed solution is stable in the totally symmetric irrep") #TEST
+compare_integers(1, int(e_c2h < e_d2h - 0.02), "FOLLOW lowered the energy")                                  #TEST
