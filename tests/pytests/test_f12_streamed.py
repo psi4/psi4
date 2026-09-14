@@ -216,3 +216,58 @@ def test_streamed_repeated_thread_counts():
             expected = values
         else:
             assert values == pytest.approx(expected, abs=1e-9, rel=0)
+
+
+@uusing("einsums")
+def test_streamed_reduces_pair_workers(monkeypatch, tmp_path):
+    molecule = psi4.geometry("0 1\n" + WATER + "\nsymmetry c1")
+    psi4.set_memory("2 GB")
+    psi4.set_num_threads(4)
+    # Small orbital/CABS spaces keep this a cheap scheduling test. With these
+    # spaces, 1 MiB fits the serial stages and two pair workspaces, but not four.
+    psi4.set_options({
+        "basis": "sto-3g",
+        "cabs_basis": "3-21g",
+        "df_basis_scf": "aug-cc-pvdz-ri",
+        "df_basis_f12": "aug-cc-pvdz-ri",
+        "scf_type": "df",
+        "mp2_type": "df",
+        "f12_subtype": "streamed",
+        "f12_aux_block_size": 1,
+        "freeze_core": True,
+        "e_convergence": 1e-10,
+        "d_convergence": 1e-10,
+    })
+    output = tmp_path / "pair-workers.out"
+    psi4.core.set_output_file(str(output), False)
+    _, reference = psi4.energy("scf", molecule=molecule, return_wfn=True)
+    energy, result = psi4.energy("mp2-f12", ref_wfn=reference, return_wfn=True)
+    expected = [energy] + [result.variable(key) for key in COMPONENTS]
+    psi4.core.flush_outfile()
+    assert "pair workers: 4 of 4" in output.read_text()
+
+    factory = psi4.core.f12
+    memory = psi4.core.get_memory()
+
+    def small_budget(reference):
+        result = factory(reference)
+        # SCF and MP2 retain their normal budget; only F12 is constrained.
+        psi4.core.set_memory_bytes(1024 * 1024, quiet=True)
+        return result
+
+    with monkeypatch.context() as patch:
+        patch.setattr(psi4.core, "f12", small_budget)
+        try:
+            energy, result = psi4.energy("mp2-f12", ref_wfn=reference, return_wfn=True)
+        finally:
+            psi4.core.set_memory_bytes(memory, quiet=True)
+    psi4.core.flush_outfile()
+    assert "pair workers: 2 of 4" in output.read_text()
+    assert psi4.core.get_num_threads() == 4
+    values = [energy] + [result.variable(key) for key in COMPONENTS]
+    assert values == pytest.approx(expected, abs=1e-9, rel=0)
+
+    psi4.set_options({"f12_subtype": "incore"})
+    energy, result = psi4.energy("mp2-f12", ref_wfn=reference, return_wfn=True)
+    values = [energy] + [result.variable(key) for key in COMPONENTS]
+    assert values == pytest.approx(expected, abs=1e-9, rel=0)
