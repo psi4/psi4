@@ -206,14 +206,13 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     std::vector<double> shell_ceilings(nshell, 0.0);
 
     // sqrt(Umax|Umax) in Ochsenfeld Eq. 3
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
     for (int P = 0; P < nshell; P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            double val = std::sqrt(eri_computers[0]->shell_ceiling2(P, Q, P, Q));
-            shell_ceilings[P] = std::max(shell_ceilings[P], val);
-#pragma omp critical
-            shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
+        double max_pair_value = 0.0;
+        for (int Q = 0; Q < nshell; Q++) {
+            max_pair_value = std::max(max_pair_value, eri_computers[0]->shell_pair_value(P, Q));
         }
+        shell_ceilings[P] = std::sqrt(max_pair_value);
     }
 
     std::vector<std::vector<int>> significant_kets(nshell);
