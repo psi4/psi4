@@ -56,8 +56,8 @@ struct MOInfo {
     Dimension frdocc;                       /* no. of frozen core orbitals per irrep */
     Dimension fruocc;                       /* no. of frozen unoccupied orbitals per irrep */
     int nvirt;                         /* total no. of (active) virtual orbitals */
-    std::vector<std::string> irr_labs; /* irrep labels */
-    char **irr_labs_lowercase;         /* irrep labels */
+    std::vector<std::string> irr_labs;           /* irrep labels */
+    std::vector<std::string> irr_labs_lowercase; /* irrep labels, lowercased */
     Dimension occpi;                        /* no. of occupied orbs. (incl. open) per irrep */
     Dimension aoccpi;                       /* no. of alpha occupied orbs. (incl. open) per irrep */
     Dimension boccpi;                       /* no. of beta occupied orbs. (incl. open) per irrep */
