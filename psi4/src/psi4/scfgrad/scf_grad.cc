@@ -250,9 +250,10 @@ SharedMatrix SCFDeriv::compute_gradient()
 #else
     // In order to expose range-seperated functioinals through cuEST, cuest_df_plan_ was passed alpha, beta, and omega in cuESTJK.cc.
     // These quantities must be reset here, as the gradient computation re-uses the same cuest_df_plan_ and thus already implicitly carries alpha, beta.
+    // This covers range-separated functionals too: the plan carries omega alongside alpha and beta, so cuESTJKGrad hands cuEST only the
+    // sign and spin factor and receives the combined J + K + wK derivative in gradients_["Coulomb"].
     const bool use_cuest_grad = options_.get_str("SCF_TYPE").find("DF") != std::string::npos
-                                && options_.get_bool("USE_CUEST")
-                                && !functional_->is_x_lrc();
+                                && options_.get_bool("USE_CUEST");
 
     if (use_cuest_grad) {
         alpha = 1.0;
