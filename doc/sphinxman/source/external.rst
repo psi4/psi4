@@ -482,8 +482,9 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
 .. option:: --inplace
 
-   Runs |PSIfour| with compiled code from <objdir> but driver code from source,
-   so no need to ``make`` between Python edits. Expert mode.
+   Deprecated. See the :ref:`developer workflow <faq:inplace>` instead.
+   Runs |PSIfour| with compiled code from <objdir> but driver code
+   from source, so no need to ``make`` between Python edits. Expert mode.
 
 .. option:: -k, --skip-preprocessor
 
