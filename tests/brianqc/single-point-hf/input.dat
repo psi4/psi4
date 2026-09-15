@@ -1,6 +1,6 @@
 #! Water with sto-3g
 
-refenergy = -74.9631013239886386
+refenergy = -74.9631013240031905
 
 molecule water {
     symmetry c1
@@ -16,6 +16,7 @@ set = {
     scf_type direct
     df_scf_guess False
     brianqc_enable True
+    d_convergence 9
 }
 
 thisenergy = energy('scf')

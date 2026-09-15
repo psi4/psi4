@@ -40,9 +40,9 @@ def test_dft_atomic_blocking():
     xc_e = 0.0
 
     rho = []
-    points_func = Vpot.properties()[0]
+    points_func = Vpot.psi_manager().properties()[0]
     superfunc = Vpot.functional()
-    grid = Vpot.grid()
+    grid = Vpot.psi_manager().grid()
     # Loop over atoms and their blocks
     for atom in range(mol.nallatom()):
         xc_atom = 0

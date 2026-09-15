@@ -48,7 +48,7 @@
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libfock/v.h"
+#include "psi4/libfock/integrator_dispatcher.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
@@ -66,7 +66,6 @@
 extern bool brianCPHFFlag;
 extern BrianCookie brianCookie;
 extern bool brianEnable;
-extern bool brianEnableDFT;
 
 #endif
 
@@ -252,7 +251,7 @@ SharedMatrix SCFDeriv::compute_gradient()
     double beta = functional_->x_beta();
     
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -403,8 +402,6 @@ SharedMatrix SCFDeriv::compute_hessian()
     }
 
     // => Potential/Functional <= //
-    std::shared_ptr<VBase> potential;
-
     if (functional_->needs_xc()) {
         if (options_.get_str("REFERENCE") == "RKS") {
             potential_->set_D({Da_});

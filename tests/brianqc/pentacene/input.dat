@@ -1,6 +1,6 @@
 #! Pentacene with cc-pvdz, b3lyp with eml(50,110) grid
 
-refenergy = -846.8494421
+refenergy = -846.8495870759593345
 
 molecule pentacene {
     symmetry c1
@@ -53,6 +53,7 @@ set = {
 	scf_type direct
 	df_scf_guess False
 	brianqc_enable True
+	d_convergence 9
 }
 
 set_num_threads(8)
