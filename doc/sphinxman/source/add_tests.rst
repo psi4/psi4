@@ -344,4 +344,3 @@ Extra QCA Functions
 .. autofunction:: psi4.compare
 
 .. autofunction:: psi4.compare_recursive
-

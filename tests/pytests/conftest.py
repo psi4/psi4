@@ -1,14 +1,29 @@
 import os
+from pathlib import Path
+
 import pytest
 
 
+# CMake installs this file one level higher, as ``psi4/tests/conftest.py``.
+# In the source tree the repository-level conftest loads the reporting plugin;
+# in the installed layout this file must expose its hooks directly.  A nested
+# ``pytest_plugins`` declaration is rejected by pytest 9.
+_installed_test_layout = Path(__file__).parent.name == "tests"
+if _installed_test_layout:
+    import addon_report
+
+
 def pytest_addoption(parser):
+    if _installed_test_layout:
+        addon_report.pytest_addoption(parser)
     parser.addoption(
         "--runnonroutine", action="store_true", default=False, help="run the nonroutine tests in stdsuite"
     )
 
 
 def pytest_collection_modifyitems(config, items):
+    if _installed_test_layout:
+        addon_report.pytest_collection_modifyitems(items)
     if config.getoption("--runnonroutine"):
         # --runnonroutine given in cli: do not skip nonroutine tests
         return
@@ -16,6 +31,11 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "nonroutine" in item.keywords:
             item.add_marker(skip_nonroutine)
+
+
+def pytest_configure(config):
+    if _installed_test_layout:
+        addon_report.pytest_configure(config)
 
 
 @pytest.fixture(scope="session", autouse=True)
