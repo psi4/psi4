@@ -17,6 +17,17 @@ COMPONENTS = (
 )
 
 
+@pytest.fixture(autouse=True)
+def restore_runtime_settings():
+    nthreads = psi4.core.get_num_threads()
+    memory = psi4.core.get_memory()
+    try:
+        yield
+    finally:
+        psi4.set_num_threads(nthreads)
+        psi4.core.set_memory_bytes(memory, quiet=True)
+
+
 @uusing("einsums")
 @pytest.mark.parametrize(
     "geometry,basis,frozen,beta,singles,puream,threads,block",
