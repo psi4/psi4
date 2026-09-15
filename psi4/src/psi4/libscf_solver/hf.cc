@@ -33,6 +33,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -101,6 +102,9 @@ void HF::common_init() {
     sad_ = false;
     module_ = "scf";
     frac_performed_ = false;
+    step_scale_ = 0.0;
+    step_increment_ = 0.0;
+    last_hess_eigval_ = std::nullopt;
 
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();

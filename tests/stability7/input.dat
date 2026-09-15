@@ -1,0 +1,53 @@
+#! RHF singlet (RHF->RHF) instability following without symmetry on near-square (slightly rhombic)
+#! cyclobutadiene in 6-31G. The symmetric guess converges to the D2h-symmetric closed-shell RHF
+#! solution, which is a saddle point of the RHF energy: a CHECK run reports the negative totally
+#! symmetric singlet eigenvalue, and a FOLLOW run relaxes to the lower symmetry-broken solution.
+
+molecule c4h4 {
+0 1
+C   1.02   0.00  0.00
+H   2.10   0.00  0.00
+C   0.00   1.04  0.00
+H   0.00   2.12  0.00
+C  -1.02   0.00  0.00
+H  -2.10   0.00  0.00
+C   0.00  -1.04  0.00
+H   0.00  -2.12  0.00
+symmetry c1
+}
+
+set {
+basis 6-31g
+reference rhf
+scf_type pk
+d_convergence 8
+e_convergence 10
+stability_analysis check
+}
+
+nucenergy       =   98.3903790010  #TEST
+e_saddle_ref    = -153.5130231505  #TEST
+e_relaxed_ref   = -153.5228981247  #TEST
+eig_saddle_ref  =   -0.022527      #TEST
+eig_relaxed_ref =    0.023769      #TEST
+
+# Stage 1: CHECK only. The SCF lands on the symmetric saddle point and reports the instability.
+e_saddle, wfn = energy('scf', return_wfn=True)
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, c4h4.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                 #TEST
+compare_values(e_saddle_ref, e_saddle, 6, "RHF energy of the symmetric (saddle point) solution")           #TEST
+compare_values(eig_saddle_ref, stab.get(0, 0, 0), 4, "Lowest singlet Hessian eigenvalue is negative")      #TEST
+compare_integers(1, wfn.attempt_number_, "CHECK does not re-run the SCF")                                  #TEST
+
+clean()
+
+# Stage 2: FOLLOW. The orbitals are rotated along the unstable eigenvector and the SCF is re-run.
+set stability_analysis follow
+e_relaxed, wfn = energy('scf', return_wfn=True)
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_values(e_relaxed_ref, e_relaxed, 6, "RHF energy after following the instability")                  #TEST
+compare_integers(2, wfn.attempt_number_, "FOLLOW re-ran the SCF exactly once")                              #TEST
+compare_values(eig_relaxed_ref, stab.get(0, 0, 0), 4, "Relaxed solution is singlet-stable")                 #TEST
+compare_integers(1, int(e_relaxed < e_saddle - 0.005), "FOLLOW lowered the energy")                         #TEST

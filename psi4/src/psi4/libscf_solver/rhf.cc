@@ -890,7 +890,43 @@ bool RHF::stability_analysis() {
     }
     if (scf_type_ == "DF" || scf_type_ == "CD") {
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
-    } else {
+    }
+    // Validate up front rather than silently clamping. A non-positive SOLVER_N_ROOT would
+    // produce a zero-column `stabvals` Matrix and silently report no eigenvalues; failing
+    // fast makes the misconfiguration obvious.
+    if (options_.get_int("SOLVER_N_ROOT") < 1) {
+        throw PSIEXCEPTION("RHF::stability_analysis: SOLVER_N_ROOT must be a positive integer.");
+    }
+
+    // FOLLOW tracking: capture lowest totally-symmetric (h=0) singlet eigenvector.
+    // UHF stability follows only totally symmetric rotations (subclass_methods.py:174);
+    // the same convention is adopted here. Instabilities in other irreps would break the
+    // ground-state spatial symmetry and are out of scope.
+    // Declared at function scope so the FOLLOW block (after the else) can reference them.
+    SharedMatrix stability_eigvec;
+    double lowest_singlet_eval = std::numeric_limits<double>::max();
+
+    // Per-irrep flat buffer for the captured singlet eigenvector, sized (doccpi[h] x virpi[h]).
+    // Populated only for h==0 (totally-symmetric singlet); scattered as ia -> [isym][irel*virpi+arel].
+    // Committed into `stability_eigvec` via bulk Matrix::set(const double** const, int h) after the
+    // diagonalization loop, replacing the former element-wise Matrix::set(h, irel, arel, val) call
+    // (which was an un-bounds-checked inline matrix_[h][m][n] = val and the source of a heap-corruption
+    // bug when its index arithmetic was wrong).
+    const Dimension virpi_eig = nmopi_ - nalphapi_;
+    std::vector<std::vector<double>> eigvec_buf(nirrep_);
+    for (int h = 0; h < nirrep_; ++h) eigvec_buf[h].assign(nalphapi_[h] * virpi_eig[h], 0.0);
+
+    // Allocate the SCF STABILITY EIGENVALUES matrix (singlet), matching the ROHF/UHF
+    // convention so that downstream consumers (tests, variable("SCF STABILITY EIGENVALUES"))
+    // behave the same regardless of reference.
+    const int nSavedEigvals = options_.get_int("SOLVER_N_ROOT");
+    std::vector<int> onevec(nirrep_, 1);
+    std::vector<int> dimvec(nirrep_, nSavedEigvals);
+    Dimension ones(onevec);
+    Dimension evalsdim(dimvec);
+    const auto stabvals = std::make_shared<Matrix>("Eigenvalues from RHF stability calculation", evalsdim, ones);
+
+    {
 #define ID(x) ints.DPD_ID(x)
         // Build the Fock Matrix
         auto moF = std::make_shared<Matrix>("MO basis fock matrix", nmopi_, nmopi_);
@@ -903,6 +939,9 @@ bool RHF::stability_analysis() {
                                IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::QTOrder,
                                IntegralTransform::FrozenOrbitals::None);
         ints.set_keep_dpd_so_ints(true);
+        // FOLLOW calls this routine again after the re-SCF, but the driver computes the SO integrals only
+        // once; keep them so that the second transformation still finds its input file.
+        ints.set_keep_iwl_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
         dpd_set_default(ints.get_dpd_id());
@@ -912,10 +951,15 @@ bool RHF::stability_analysis() {
                                "MO Ints (OV|OV)");
         // Singlet A_ia_jb = 4 (ia|jb)
         global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "RHF Singlet Hessian (IA|JB)", 4.0);
-        // Triplet A_ia_jb = -(ib|ja)
-        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[O,V]"),
-                                    "RHF Triplet Hessian (IA|JB)", -1.0);
+        // Triplet A_ia_jb = -(ib|ja). Written with a plain sort (overwrite) rather than sort_axpy: PSIF_LIBTRANS_DPD
+        // is kept between calls, and sort_axpy would accumulate onto the Hessian left behind by a previous
+        // stability analysis in the same run (e.g. the re-check after FOLLOW).
+        global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "RHF Triplet Hessian (IA|JB)");
         global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                               "RHF Triplet Hessian (IA|JB)");
+        global_dpd_->buf4_scm(&Atrip, -1.0);
+        global_dpd_->buf4_close(&Atrip);
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                                "MO Ints (OO|VV)");
         // Triplet A_ia_jb -= (ij|ab)
@@ -981,6 +1025,54 @@ bool RHF::stability_analysis() {
             int mindim = dim < 5 ? dim : 5;
             for (int i = 0; i < mindim; i++) singlet_eval_sym.push_back(std::make_pair(evals[i], h));
 
+            // Save the lowest `nSavedEigvals` singlet eigenvalues per irrep into stabvals.
+            double** pEvals = stabvals->pointer(h);
+            for (int i = 0; i < nSavedEigvals && i < dim; ++i) pEvals[i][0] = evals[i];
+
+            // Capture the lowest totally-symmetric (h=0) singlet eigenvector for FOLLOW.
+            // Only the totally-symmetric irrep can yield an internal instability that respects
+            // the ground-state spatial symmetry, matching UHF's convention.
+            if (h == 0 && evals[0] < lowest_singlet_eval) {
+                lowest_singlet_eval = evals[0];
+                // Zero per-irrep fill buffers in case a previous (defensively-impossible for h==0)
+                // iteration left stale entries; cheap and makes the loop invariant explicit.
+                for (auto& buf : eigvec_buf) std::fill(buf.begin(), buf.end(), 0.0);
+                // Unflatten DPD column 0 of `evecs` into per-irrep (doccpi x virpi) blocks.
+                // Asing.params->roworb[h][ia][0/1] give absolute (i, a) indices; for h=0,
+                // isym == asym, so each pair slots cleanly into matrix irrep `isym`.
+                for (int ia = 0; ia < dim; ++ia) {
+                    int iabs = Asing.params->roworb[h][ia][0];
+                    int aabs = Asing.params->roworb[h][ia][1];
+                    int isym = Asing.params->psym[iabs];
+                    int asym = Asing.params->qsym[aabs];
+                    // For the h=0 block of a closed-shell RHF wfn (G_gs == 0), isym == asym.
+                    int irel = iabs - Asing.params->poff[isym];
+                    // Both aabs and qoff[asym] are offsets within the virtual-only subspace
+                    // (libdpd init.cc::orboff starts each subspace at 0), so their difference
+                    // is the 0-based virtual-relative column index. Do NOT subtract nalphapi_.
+                    int arel = aabs - Asing.params->qoff[asym];
+                    // Explicit bounds check: any arithmetic regression here throws instead of
+                    // corrupting heap metadata via an out-of-bounds write.
+                    if (isym < 0 || isym >= nirrep_ || asym < 0 || asym >= nirrep_) {
+                        throw PSIEXCEPTION("RHF stability FOLLOW: eigenvector irrep index out of bounds.");
+                    }
+                    // The scatter below picks the buffer by isym and strides it by virpi_eig[isym],
+                    // so it only addresses the intended slot when both halves of the pair share an
+                    // irrep. That is guaranteed here (h == 0, and G_gs == 0 for a closed-shell RHF,
+                    // hence isym ^ asym == 0), but check it rather than assume it: an isym != asym
+                    // regression is exactly the case a bound taken from virpi_eig[asym] would wave
+                    // through, whenever virpi_eig[asym] > virpi_eig[isym].
+                    if (isym != asym) {
+                        throw PSIEXCEPTION("RHF stability FOLLOW: eigenvector pair is not totally symmetric.");
+                    }
+                    // Bound against the same irrep the scatter indexes with, not against asym.
+                    if (irel < 0 || irel >= nalphapi_[isym] || arel < 0 || arel >= virpi_eig[isym]) {
+                        throw PSIEXCEPTION("RHF stability FOLLOW: eigenvector occ/vir index out of bounds.");
+                    }
+                    eigvec_buf[isym][irel * virpi_eig[isym] + arel] = evecs[ia][0];
+                }
+            }
+
             zero_arr(evals, dim);
             zero_mat(evecs, dim, dim);
 
@@ -1001,10 +1093,68 @@ bool RHF::stability_analysis() {
         print_stability_analysis(singlet_eval_sym);
         outfile->Printf("    Lowest triplet (RHF->UHF) stability eigenvalues:\n");
         print_stability_analysis(triplet_eval_sym);
+        Process::environment.arrays["SCF STABILITY EIGENVALUES"] = stabvals;
         psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+        // Commit the captured singlet eigenvector (if any) from the flat per-irrep scatter
+        // buffers into a SharedMatrix, using the bulk Matrix::set(const double** const, int h)
+        // per irrep. This replaces the prior per-element Matrix::set(h, irel, arel, val) loop.
+        // Only allocate when the FOLLOW block below will actually consume the Matrix: i.e. only
+        // when an instability was detected (lowest_singlet_eval < 0.0) AND the user asked for
+        // FOLLOW. On stable spectra or REPORT-only mode, this skip avoids the Matrix allocation
+        // and per-irrep row-pointer construction entirely.
+        if (lowest_singlet_eval < 0.0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
+            stability_eigvec = std::make_shared<Matrix>("Stability eigenvector", nalphapi_, virpi_eig);
+            for (int h = 0; h < nirrep_; ++h) {
+                if (nalphapi_[h] == 0 || virpi_eig[h] == 0) continue;
+                // Build a row-pointer view into the flat irrep buffer; Matrix::set(h) copies
+                // rowspi_[h] x colspi_[h] = nalphapi_[h] x virpi_eig[h] elements out of it.
+                std::vector<double*> row_ptrs(nalphapi_[h]);
+                for (int r = 0; r < nalphapi_[h]; ++r)
+                    row_ptrs[r] = &eigvec_buf[h][r * virpi_eig[h]];
+                stability_eigvec->set(row_ptrs.data(), h);
+            }
+        }
     }
 
-    // FOLLOW is not implemented for RHF
+    // FOLLOW: rotate orbitals along the lowest totally-symmetric singlet eigenvector.
+    // Mirrors _UHF_stability_analysis (subclass_methods.py:209-229). Singlet rotation is
+    // spin-symmetric so Ca_ (which equals Cb_ in RHF) carries both spins.
+    // Triplet (RHF->UHF) external instabilities are reported above but not followed; users
+    // detecting a triplet instability should rerun with REFERENCE UHF.
+    if (lowest_singlet_eval < 0.0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW") {
+        // Adaptive step_scale: increment if cycling back to the same minimum is detected.
+        if (last_hess_eigval_.has_value() && std::abs(*last_hess_eigval_ - lowest_singlet_eval) < 1e-4) {
+            outfile->Printf("    Negative eigenvalue similar to previous one, wavefunction\n");
+            outfile->Printf("    likely to be in the same minimum.\n");
+            step_scale_ += options_.get_double("FOLLOW_STEP_INCREMENT");
+            outfile->Printf("    Modifying FOLLOW_STEP_SCALE to %f.\n", step_scale_);
+        } else {
+            step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
+        }
+        last_hess_eigval_ = lowest_singlet_eval;
+
+        outfile->Printf("    Rotating orbitals by %f * pi / 2 radians along unstable eigenvector.\n", step_scale_);
+        // rotate_orbitals builds U = exp(x - x^T), so the rotation angle is |x|: to honor
+        // FOLLOW_STEP_SCALE's documented meaning (read_options.cc, "a full step of pi/2
+        // corresponds to a value of 1.0") the scaled eigenvector must have norm
+        // step_scale_ * pi / 2.
+        //
+        // The half is where this differs from the UHF path it otherwise mirrors, and the
+        // difference is in the eigenvector, not the intent. UHF takes its vector from
+        // davidson_solver, which normalizes to 1/2 over both spin blocks summed
+        // (solvers.py "The solution vector is normalized to 1/2";
+        // PairedMatPerVector::vector_dot adds the alpha and beta dots), so a spin-symmetric
+        // instability arrives with |x_alpha| = 1/2 and scaling by step_scale_ * pi already
+        // lands on step_scale_ * pi / 2. Here the vector is a column of DSYEV_ascending,
+        // i.e. a LAPACK dsyev eigenvector, which is orthonormal: |x| = 1. Scaling by the
+        // UHF factor would therefore rotate twice as far as both the option docstring and
+        // the message printed just above promise.
+        stability_eigvec->scale(step_scale_ * M_PI / 2.0);
+        rotate_orbitals(Ca_, stability_eigvec);
+        return true;
+    }
+
     return false;
 }
 
