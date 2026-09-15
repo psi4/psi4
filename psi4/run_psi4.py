@@ -154,9 +154,9 @@ if args["inplace"]:
 
     warnings.warn(
         "--inplace is deprecated and will be removed in a future version of Psi4. "
-        "For a development edit-and-run workflow, use CMAKE_INSTALL_MODE=ABS_SYMLINK "
-        "when configuring CMake instead:\n"
-        "  cmake -DCMAKE_INSTALL_MODE=ABS_SYMLINK ...\n"
+        "For a development edit-and-run workflow, set CMAKE_INSTALL_MODE=ABS_SYMLINK "
+        "when installing instead:\n"
+        "  CMAKE_INSTALL_MODE=ABS_SYMLINK cmake --build <build-dir> --target install\n"
         "This creates symlinks from the staged install tree back to the source files, "
         "removing the need for --inplace.",
         FutureWarning,
@@ -177,14 +177,7 @@ if args["inplace"]:
         os.environ["PSIDATADIR"] = data_dir
 
 elif "CMAKE_INSTALL_LIBDIR" in lib_dir:
-    raise ImportError(
-        "Psi4 was not installed correctly! The library directory still contains "
-        "unsubstituted CMake template variables. If you are running from the source tree "
-        "without a CMake-configured build, use --inplace (deprecated; see warning above). "
-        "If configuring with CMake, ensure the build completes successfully. "
-        "For a development workflow, consider setting CMAKE_INSTALL_MODE=ABS_SYMLINK:\n"
-        "  cmake -DCMAKE_INSTALL_MODE=ABS_SYMLINK ..."
-    )
+    raise ImportError("Psi4 was not installed correctly!")
 
 # Replace input/output if unknown kwargs
 if len(unknown) > 0:
