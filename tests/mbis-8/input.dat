@@ -1,0 +1,101 @@
+#! MBIS guards: Anderson must not change the fixed point (NaCl), and ghosts must say so
+#
+# Anderson mixing is a convergence accelerator, so switching it off must reach the same
+# stockholder fixed point, only more slowly. NaCl is the case that proves this is not automatic:
+# an unsafeguarded Anderson iteration oscillates here, drives a shell population to zero, and
+# returns NaN charges -- while reporting convergence, because the density change between two
+# all-zero densities is exactly zero. This test pins both halves of that: the two paths agree
+# with each other, and neither produces a non-finite number.
+#
+# References are the mbis-4 values, so both paths are anchored to known-good results rather than
+# merely to one another.
+
+import numpy as np
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [ 0.96523585],   #TEST
+ [-0.96523183]])  #TEST
+
+vwidths_ref = psi4.Matrix.from_list([  #TEST
+ [1.13464706],     #TEST
+ [0.56829083]])    #TEST
+
+molecule mol {
+  0 1
+  Na 0.00 0.00 0.00
+  Cl 0.00 0.00 2.36
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 9
+  mbis_radial_points 99
+  mbis_spherical_points 350
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+
+results = {}
+for label, accelerate in (("anderson", True), ("picard", False)):
+    psi4.set_options({"mbis_anderson": accelerate})
+    oeprop(wfn, 'MBIS_CHARGES', title='NaCl ' + label)
+    results[label] = {
+        "charges": np.array(wfn.array_variable('MBIS CHARGES')),
+        "vwidths": np.array(wfn.array_variable('MBIS VALENCE WIDTHS')),
+        "vcharges": np.array(wfn.array_variable('MBIS VALENCE CHARGES')),
+    }
+
+# The NaN regression: every MBIS quantity must be a number, on both paths.
+for label, quantities in results.items():                                                  #TEST
+    for name, value in quantities.items():                                                 #TEST
+        compare_integers(1, int(np.all(np.isfinite(value))),                               #TEST
+                         "MBIS %s %s finite" % (label, name))                              #TEST
+
+# Acceleration must not move the fixed point. MBIS_D_CONVERGENCE = 1e-8 is a tolerance on the
+# pro-atom *density*, and it does not pin every derived quantity equally: two iteration paths that
+# both satisfy it agree to ~1e-7 on the charges but only ~1e-6 on the valence widths, which are
+# sum_s / (3 N) and so divide one converged sum by another. The tolerances below are set from
+# that measured behaviour, not from an assumption that the two paths are interchangeable to
+# machine precision.
+cross_path_digits = {"charges": 6, "vcharges": 6, "vwidths": 5}                            #TEST
+for name, digits in cross_path_digits.items():                                             #TEST
+    compare_values(results["picard"][name], results["anderson"][name], digits,             #TEST
+                   "MBIS %s: Anderson matches Picard" % name)                              #TEST
+
+# ... and both must still be right.
+for label in ("anderson", "picard"):                                                       #TEST
+    compare_matrices(charges_ref, psi4.Matrix.from_array(results[label]["charges"]), 5,    #TEST
+                     "MBIS Charges (%s)" % label)                                          #TEST
+    compare_matrices(vwidths_ref, psi4.Matrix.from_array(results[label]["vwidths"]), 5,    #TEST
+                     "MBIS Valence Widths (%s)" % label)                                   #TEST
+
+
+# A ghost atom carries basis functions but no electrons, so Z == 0 while its element says
+# otherwise -- the same inequality an ECP trips. Both used to be reported as "ECP detected",
+# which sends anyone doing a counterpoise correction after an all-electron basis they do not
+# need. Pin the two apart: the ghost must be named as a ghost, and must not be called an ECP.
+ghosted = psi4.geometry("""
+0 1
+Ne 0.00 0.00 0.00
+--
+@Ne 0.00 0.00 3.00
+symmetry c1
+no_reorient
+no_com
+""")
+
+e_gh, wfn_gh = energy('hf/cc-pvdz', return_wfn=True, molecule=ghosted)
+ghost_error = ""
+try:
+    oeprop(wfn_gh, 'MBIS_CHARGES', title='ghost')
+except RuntimeError as exc:
+    ghost_error = str(exc)
+
+compare(True, "does not support ghost atoms" in ghost_error,                               #TEST
+        "ghost atom is named as a ghost")                                                  #TEST
+compare(True, "ECP" not in ghost_error,                                                    #TEST
+        "ghost atom is not misreported as an ECP")                                         #TEST

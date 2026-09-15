@@ -178,6 +178,7 @@ void UHF::form_V() {
     // Va_ = V[0];
     // Vb_ = V[1];
     potential_->set_D({Da_, Db_});
+    potential_->set_Cocc({Ca_subset("AO", "OCC"), Cb_subset("AO", "OCC")});
     potential_->compute_V({Va_, Vb_});
     // Vb_ = Va_;
 }
@@ -204,7 +205,12 @@ void UHF::form_G() {
     const std::vector<SharedMatrix>& wK = jk_->wK();
     J_->copy(J[0]);
     J_->add(J[1]);
-    if (functional_->is_x_hybrid()) {
+#ifdef USING_cuEST
+    const bool use_cuest = options_.get_bool("USE_CUEST");
+#else
+    const bool use_cuest = false;
+#endif
+    if (functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) {
         Ka_ = K[0];
         Kb_ = K[1];
     }
@@ -226,7 +232,15 @@ void UHF::form_G() {
     }
 #endif
 
-    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+#ifdef USING_cuEST
+    if (use_cuest) {
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
+    if ((functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) &&
+        !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
     } else {
@@ -234,7 +248,7 @@ void UHF::form_G() {
         Kb_->zero();
     }
 
-    if (functional_->is_x_lrc()) {
+    if (functional_->is_x_lrc() && !use_cuest) { // if using cuEST, wK is encapsulated in K
         if (jk_->get_wcombine()) {
             Ga_->axpy(-1.0, wKa_);
             Gb_->axpy(-1.0, wKb_);
@@ -379,6 +393,12 @@ double UHF::compute_E() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
+#ifdef USING_cuEST
+    const bool use_cuest = options_.get_bool("USE_CUEST");
+#else
+    const bool use_cuest = false;
+#endif
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -387,12 +407,20 @@ double UHF::compute_E() {
     }
 #endif
 
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (use_cuest) {
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
     double exchange_E = 0.0;
-    if (functional_->is_x_hybrid()) {
+    if (functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) {
         exchange_E -= alpha * Da_->vector_dot(Ka_);
         exchange_E -= alpha * Db_->vector_dot(Kb_);
     }
-    if (functional_->is_x_lrc()) {
+    if (functional_->is_x_lrc() && !use_cuest) {
         if (jk_->get_do_wK() && jk_->get_wcombine()) {
             exchange_E -= Da_->vector_dot(wKa_);
             exchange_E -= Db_->vector_dot(wKb_);
@@ -643,6 +671,14 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (options_.get_bool("USE_CUEST")) {
         alpha = 1.0;
         beta = 1.0;
     }
@@ -1327,6 +1363,14 @@ void UHF::openorbital_scf() {
       // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
       alpha = 1.0;
       beta = 1.0;
+    }
+#endif
+
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (options_.get_bool("USE_CUEST")) {
+        alpha = 1.0;
+        beta = 1.0;
     }
 #endif
 
