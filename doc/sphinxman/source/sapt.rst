@@ -534,7 +534,53 @@ keywords |sapt__sapt_dft_grac_shift_a| and |sapt__sapt_dft_grac_shift_b|,
 which should be equal to the difference of the actual ionization
 potential and the corresponding Kohn-Sham HOMO energy. However,
 |PSIfour| can automatically compute a GRAC shift for monomers A and B
-if |sapt__sapt_dft_grac_compute| is set to ``SINGLE`` or ``ITERATIVE``. 
+if |sapt__sapt_dft_grac_compute| is set to ``SINGLE`` or ``ITERATIVE``.
+
+GRAC shifts without an interaction-energy calculation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Set |sapt__sapt_dft_grac_shift_only| to ``true`` to compute the shifts
+and stop before dimer HF, monomer HF/DFT, dispersion, or F-SAPT.
+Continue to request ``energy('sapt(dft)')`` (or a SAPT(DFT) alias) on
+the same dimer. Select ``SINGLE`` or ``ITERATIVE`` convergence; ``NONE``
+and an ``HF`` functional are incompatible with this mode.
+Only restricted references are supported.
+
+The returned wavefunction describes the dimer, with ``CURRENT ENERGY``
+equal to zero as a placeholder, **not** an interaction energy.
+No SAPT energy variables are produced. ``SAPT DFT GRAC SHIFT ONLY`` is
+1.0 for this mode and 0.0 for a full calculation.
+Both ``SAPT DFT GRAC SHIFT A`` and ``B`` are available globally and on
+the wavefunction, including in QCSchema ``extras["qcvars"]``.
+Computed shifts also publish ``SAPT DFT GRAC MONOMER ENERGY A/B``,
+``IONIZED MONOMER ENERGY A/B``, ``HOMO A/B``, and ``IP A/B`` under the
+same ``SAPT DFT GRAC`` prefix, in Hartree.
+Ionization removes one electron (charge +1, even for an anionic monomer);
+the shift equals the ionized-minus-given energy plus the given HOMO.
+Explicitly supplied shifts are echoed without recomputation; their
+intermediate variables are absent.
+
+This permits a two-stage workflow: compute shifts in a small-memory job,
+then supply them through |sapt__sapt_dft_grac_shift_a| and
+|sapt__sapt_dft_grac_shift_b| in the full calculation.
+The caller must check that monomer geometry, functional, GRAC basis,
+convergence tier, and external-potential settings match before reusing shifts.
+With GRAC basis ``AUTO``, this includes the orbital basis.
+Psi4 provides no persistent cache or dataset orchestration.
+
+By default the GRAC SCFs use no external potential.
+|sapt__sapt_dft_grac_use_ext_pot| includes only A in monomer A's shift
+and B in monomer B's shift, never C. With nonempty C a warning explains
+that the consuming monomer DFT still sees C+A or C+B.
+Charges needed in a shift may be copied into A/B as well as C. A copy that
+is exactly equal to a C row is trimmed from A/B before that monomer's SCF,
+so the consuming monomer is not charged twice, while the shift still sees
+it. Rows shared between A and B are never trimmed, since A and B partition
+the field the dimer sees, and two equal rows anywhere else mean two equal
+charges. Matrix operators are summed, never trimmed.
+When reusing shifts with this option, the A/B payload must also match.
+Strong embedding fields may yield unphysical IPs; this option does not
+validate the physical appropriateness of including MM charges in ionization.
 
 
 The dispersion term needs to be computed with orbital response for good
