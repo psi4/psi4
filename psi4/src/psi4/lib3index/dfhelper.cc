@@ -1459,6 +1459,51 @@ double* DFHelper::metric_prep_core(double m_pow) {
     }
     return metrics_[power]->pointer()[0];
 }
+SharedMatrix DFHelper::get_AO_tensor() {
+    if (!built_) {
+        throw PSIEXCEPTION("DFHelper::get_AO_tensor: call initialize() first.");
+    }
+    if (!AO_core_) {
+        throw PSIEXCEPTION(
+            "DFHelper::get_AO_tensor: the AO integrals are not held in core. Raise the memory given to "
+            "set_memory(), or call set_AO_core(true).");
+    }
+    if (!(direct_ || direct_iaQ_)) {
+        throw PSIEXCEPTION(
+            "DFHelper::get_AO_tensor: the STORE method contracts the fitting metric into the AO integrals as it "
+            "builds them, so they are no longer raw. Use set_method(\"DIRECT\") or set_method(\"DIRECT_iaQ\").");
+    }
+
+    auto out = std::make_shared<Matrix>("(Q|mn)", naux_, nbf_ * nbf_);
+    double** outp = out->pointer();
+
+    if (direct_iaQ_) {
+        // Already dense and already (Q, m, n).
+        C_DCOPY(naux_ * nbf_ * nbf_, Ppq_.get(), 1, outp[0], 1);
+        return out;
+    }
+
+    // Sparse pQq: for basis function p, a (naux, small_skips_[p]) block starting
+    // at big_skips_[p], whose second axis is indexed by the position of q among
+    // p's significant partners. schwarz_fun_index_ is one-based so that zero can
+    // mean "screened out"; those elements stay at the zero Matrix starts with.
+    double const* ppq = Ppq_.get();
+#pragma omp parallel for num_threads(nthreads_) schedule(static)
+    for (size_t p = 0; p < nbf_; p++) {
+        size_t const skips = small_skips_[p];
+        size_t const base = big_skips_[p];
+        for (size_t q = 0; q < nbf_; q++) {
+            size_t const compressed = schwarz_fun_index_[p * nbf_ + q];
+            if (!compressed) {
+                continue;
+            }
+            for (size_t Q = 0; Q < naux_; Q++) {
+                outp[Q][p * nbf_ + q] = ppq[base + Q * skips + (compressed - 1)];
+            }
+        }
+    }
+    return out;
+}
 void DFHelper::prepare_metric() {
     // construct metric
     FittingMetric J(aux_, true);

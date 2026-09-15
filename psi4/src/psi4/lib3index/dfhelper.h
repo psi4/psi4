@@ -91,6 +91,24 @@ class PSI_API DFHelper {
     /// Returns the number of doubles in the *screened* AO integrals
     size_t get_AO_size() { return big_skips_[nbf_]; }
 
+    /// Raw three-index AO integrals (Q|mn), as a dense (naux, nbf * nbf) matrix.
+    ///
+    /// "Raw" is the point: no fitting metric is applied, so these are the
+    /// integrals themselves rather than the B tensors the transformations
+    /// produce. Local correlation methods fit per domain rather than globally,
+    /// and so need the unfitted quantity; recovering it from a J^-1/2 fitted
+    /// tensor means multiplying by J^1/2, which round-trips every element
+    /// through the metric's condition number for no reason.
+    ///
+    /// What this gives over building the same integrals with MintsHelper::ao_eri
+    /// is that DFHelper's AO construction is threaded and Schwarz screened.
+    /// Screened-out elements are returned as exact zeros.
+    ///
+    /// Requires in-core AO integrals and a method that leaves them unfitted:
+    /// STORE contracts the metric into the AO integrals as it builds them, so
+    /// only DIRECT and DIRECT_iaQ can answer this.
+    SharedMatrix get_AO_tensor();
+
     /// Returns the size of the in-core version in doubles
     size_t get_core_size() {
         AO_core(false);

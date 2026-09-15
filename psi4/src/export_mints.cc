@@ -1483,6 +1483,15 @@ void export_mints(py::module& m) {
         .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
         .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
              "include_perturbations"_a = true)
+        .def("so_eri_blocked", &MintsHelper::so_eri_blocked,
+             "SO two-electron integrals (pq|rs) as symmetry-allowed irrep-quadruple blocks: a list of "
+             "([hp, hq, hr, hs], Matrix) pairs, each Matrix a dense row-major (d1*d2, d3*d4) block over "
+             "the within-irrep compound indices")
+        .def("mo_bra_half_transform", &MintsHelper::mo_bra_half_transform,
+             "Integral-direct first-half (bra) MO transform (pq|ls) = sum_mn C1[m,p] C2[n,q] (mn|ls), "
+             "returned as the rank-4 (n1, n2, nbf, nbf) row-major array flattened to a (n1*n2, nbf*nbf) "
+             "Matrix; the N^4 AO tensor is never materialized",
+             "C1"_a, "C2"_a)
 #ifdef USING_ecpint
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
