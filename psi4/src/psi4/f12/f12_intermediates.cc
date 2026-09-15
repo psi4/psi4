@@ -51,7 +51,7 @@ void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2>
         Tensor<double, 4> J_sorted{"pqiI", nri_, nri_, nocc_, nocc_};
         permute(Indices{p, q, i, I}, &J_sorted, Indices{p, i, q, I}, J);
         J.reset();
-        einsum(1.0, Indices{p, q}, &(*f), 2.0, Indices{p, q, i, I}, J_sorted, Indices{i, I}, Id);
+        einsum(1.0, Indices{p, q}, f, 2.0, Indices{p, q, i, I}, J_sorted, Indices{i, I}, Id);
     }
 
     {
@@ -62,10 +62,10 @@ void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2>
         Tensor<double, 4> K_sorted{"pqiI", nri_, nri_, nocc_, nocc_};
         permute(Indices{p, q, i, I}, &K_sorted, Indices{p, i, I, q}, K);
         K.reset();
-        einsum(Indices{p, q}, &(*k), Indices{p, q, i, I}, K_sorted, Indices{i, I}, Id);
+        einsum(Indices{p, q}, k, Indices{p, q, i, I}, K_sorted, Indices{i, I}, Id);
     }
 
-    tensor_algebra::element([](double const &val1, double const &val2) -> double { return val1 - val2; }, &(*f), *k);
+    tensor_algebra::element([](double const &val1, double const &val2) -> double { return val1 - val2; }, f, *k);
 }
 
 void MP2F12::form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k) {
@@ -89,7 +89,7 @@ void MP2F12::form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double,
 
             Tensor<double, 1> tmp{"B", naux_};
             einsum(Indices{B}, &tmp, Indices{B, i, j}, J_Oper, Indices{i, j}, Id);
-            einsum(1.0, Indices{P, Q}, &(*f), 2.0, Indices{B, P, Q}, J_Metric, Indices{B}, tmp);
+            einsum(1.0, Indices{P, Q}, f, 2.0, Indices{B, P, Q}, J_Metric, Indices{B}, tmp);
         }
 
         {
@@ -99,11 +99,11 @@ void MP2F12::form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double,
 
             Tensor<double, 3> tmp{"", naux_, nocc_, nri_};
             permute(Indices{B, i, P}, &tmp, Indices{B, P, i}, K_Metric);
-            einsum(Indices{P, Q}, &(*k), Indices{B, i, P}, tmp, Indices{B, i, Q}, K_Oper);
+            einsum(Indices{P, Q}, k, Indices{B, i, P}, tmp, Indices{B, i, Q}, K_Oper);
         }
     }
 
-    tensor_algebra::element([](double const &val1, double const &val2) -> double { return val1 - val2; }, &(*f), *k);
+    tensor_algebra::element([](double const &val1, double const &val2) -> double { return val1 - val2; }, f, *k);
 }
 
 void MP2F12::form_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X) {
@@ -121,26 +121,26 @@ void MP2F12::form_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> 
         Tensor<double, 4> tmp{"Temp", nact_, nact_, nact_, nact_};
         {
             einsum(Indices{i, j, k, l}, &tmp, Indices{i, j, m, q}, F_oooc, Indices{k, l, m, q}, F_oooc);
-            permute(1.0, Indices{i, j, k, l}, &(*X), -1.0, Indices{i, j, k, l}, tmp);
-            permute(1.0, Indices{i, j, k, l}, &(*X), -1.0, Indices{j, i, l, k}, tmp);
+            permute(1.0, Indices{i, j, k, l}, X, -1.0, Indices{i, j, k, l}, tmp);
+            permute(1.0, Indices{i, j, k, l}, X, -1.0, Indices{j, i, l, k}, tmp);
         }
 
         Tensor<double, 4> G_oooc{"<oo|oC>", nact_, nact_, nocc_, ncabs_};
         form_teints("G", &G_oooc, {'o', 'o', 'o', 'C'});
 
         einsum(Indices{i, j, k, l}, &tmp, Indices{i, j, m, q}, G_oooc, Indices{k, l, m, q}, F_oooc);
-        permute(1.0, Indices{i, j, k, l}, &(*V), -1.0, Indices{i, j, k, l}, tmp);
-        permute(1.0, Indices{i, j, k, l}, &(*V), -1.0, Indices{j, i, l, k}, tmp);
+        permute(1.0, Indices{i, j, k, l}, V, -1.0, Indices{i, j, k, l}, tmp);
+        permute(1.0, Indices{i, j, k, l}, V, -1.0, Indices{j, i, l, k}, tmp);
     }
 
     {
         Tensor<double, 4> F_oopq{"<oo|F|OO>", nact_, nact_, nobs_, nobs_};
         form_teints("F", &F_oopq, {'o', 'O', 'o', 'O'});
-        einsum(1.0, Indices{i, j, k, l}, &(*X), -1.0, Indices{i, j, p, q}, F_oopq, Indices{k, l, p, q}, F_oopq);
+        einsum(1.0, Indices{i, j, k, l}, X, -1.0, Indices{i, j, p, q}, F_oopq, Indices{k, l, p, q}, F_oopq);
 
         Tensor<double, 4> G_oopq{"<oo|OO>", nact_, nact_, nobs_, nobs_};
         form_teints("G", &G_oopq, {'o', 'O', 'o', 'O'});
-        einsum(1.0, Indices{i, j, k, l}, &(*V), -1.0, Indices{i, j, p, q}, G_oopq, Indices{k, l, p, q}, F_oopq);
+        einsum(1.0, Indices{i, j, k, l}, V, -1.0, Indices{i, j, p, q}, G_oopq, Indices{k, l, p, q}, F_oopq);
     }
 }
 
@@ -160,26 +160,26 @@ void MP2F12::form_df_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 
         Tensor<double, 4> tmp{"Temp", nact_, nact_, nact_, nact_};
         {
             einsum(Indices{i, j, k, l}, &tmp, Indices{i, j, m, q}, F_oooc, Indices{k, l, m, q}, F_oooc);
-            permute(1.0, Indices{i, j, k, l}, &(*X), -1.0, Indices{i, j, k, l}, tmp);
-            permute(1.0, Indices{i, j, k, l}, &(*X), -1.0, Indices{j, i, l, k}, tmp);
+            permute(1.0, Indices{i, j, k, l}, X, -1.0, Indices{i, j, k, l}, tmp);
+            permute(1.0, Indices{i, j, k, l}, X, -1.0, Indices{j, i, l, k}, tmp);
         }
 
         Tensor<double, 4> G_oooc{"<oo|oC>", nact_, nact_, nocc_, ncabs_};
         form_df_teints("G", &G_oooc, J_inv_AB, {'o', 'o', 'o', 'C'});
 
         einsum(Indices{i, j, k, l}, &tmp, Indices{i, j, m, q}, G_oooc, Indices{k, l, m, q}, F_oooc);
-        permute(1.0, Indices{i, j, k, l}, &(*V), -1.0, Indices{i, j, k, l}, tmp);
-        permute(1.0, Indices{i, j, k, l}, &(*V), -1.0, Indices{j, i, l, k}, tmp);
+        permute(1.0, Indices{i, j, k, l}, V, -1.0, Indices{i, j, k, l}, tmp);
+        permute(1.0, Indices{i, j, k, l}, V, -1.0, Indices{j, i, l, k}, tmp);
     }
 
     {
         Tensor<double, 4> F_oopq{"<oo|F|OO>", nact_, nact_, nobs_, nobs_};
         form_df_teints("F", &F_oopq, J_inv_AB, {'o', 'O', 'o', 'O'});
-        einsum(1.0, Indices{i, j, k, l}, &(*X), -1.0, Indices{i, j, p, q}, F_oopq, Indices{k, l, p, q}, F_oopq);
+        einsum(1.0, Indices{i, j, k, l}, X, -1.0, Indices{i, j, p, q}, F_oopq, Indices{k, l, p, q}, F_oopq);
 
         Tensor<double, 4> G_oopq{"<oo|OO>", nact_, nact_, nobs_, nobs_};
         form_df_teints("G", &G_oopq, J_inv_AB, {'o', 'O', 'o', 'O'});
-        einsum(1.0, Indices{i, j, k, l}, &(*V), -1.0, Indices{i, j, p, q}, G_oopq, Indices{k, l, p, q}, F_oopq);
+        einsum(1.0, Indices{i, j, k, l}, V, -1.0, Indices{i, j, p, q}, G_oopq, Indices{k, l, p, q}, F_oopq);
     }
 }
 
@@ -199,8 +199,8 @@ void MP2F12::form_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f
     Tensor<double, 4> tmp{"Temp", nact_, nact_, nvir_, nvir_};
 
     einsum(Indices{k, l, a, b}, &tmp, Indices{k, l, a, q}, F_oovc, Indices{b, q}, f_vc);
-    permute(Indices{k, l, a, b}, &(*C), Indices{k, l, a, b}, tmp);
-    permute(1.0, Indices{k, l, a, b}, &(*C), 1.0, Indices{l, k, b, a}, tmp);
+    permute(Indices{k, l, a, b}, C, Indices{k, l, a, b}, tmp);
+    permute(1.0, Indices{k, l, a, b}, C, 1.0, Indices{l, k, b, a}, tmp);
 }
 
 void MP2F12::form_df_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f,
@@ -220,8 +220,8 @@ void MP2F12::form_df_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2>
     Tensor<double, 4> tmp{"Temp", nact_, nact_, nvir_, nvir_};
 
     einsum(Indices{k, l, a, b}, &tmp, Indices{k, l, a, q}, F_oovc, Indices{b, q}, f_vc);
-    permute(Indices{k, l, a, b}, &(*C), Indices{k, l, a, b}, tmp);
-    permute(1.0, Indices{k, l, a, b}, &(*C), 1.0, Indices{l, k, b, a}, tmp);
+    permute(Indices{k, l, a, b}, C, Indices{k, l, a, b}, tmp);
+    permute(1.0, Indices{k, l, a, b}, C, 1.0, Indices{l, k, b, a}, tmp);
 }
 
 void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k) {
@@ -246,8 +246,8 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
         }
 
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, n, I}, F2_ooo1, Indices{m, I}, fk_o1);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), 1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), 1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, 1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, 1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     auto F = std::make_unique<Tensor<double, 4>>("<oo|F|11>", nact_, nact_, nri_, nri_);
@@ -258,8 +258,8 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
 
         einsum(Indices{l, index::k, P, A}, &rank4, Indices{l, index::k, P, C}, *F, Indices{C, A}, *k);
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, P, A}, rank4, Indices{n, m, P, A}, *F);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     {
@@ -268,8 +268,8 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
 
         einsum(Indices{l, index::k, j, A}, &rank4, Indices{l, index::k, j, C}, F_ooo1, Indices{C, A}, *f);
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, j, A}, rank4, Indices{n, m, j, A}, F_ooo1);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     TensorView<double, 4> F_ooco_temp{(*F), Dim<4>{nact_, nact_, ncabs_, nocc_}, Offset<4>{0, 0, nobs_, 0}};
@@ -280,8 +280,8 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
 
         einsum(Indices{l, index::k, p, i}, &rank4, Indices{l, index::k, p, j}, F_ooco, Indices{j, i}, f_oo);
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, p, i}, rank4, Indices{n, m, p, i}, F_ooco);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), 1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), 1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, 1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, 1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     TensorView<double, 4> F_oovq_temp{(*F), Dim<4>{nact_, nact_, nvir_, nobs_}, Offset<4>{0, 0, nocc_, 0}};
@@ -292,8 +292,8 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
 
         einsum(Indices{l, index::k, b, p}, &rank4, Indices{l, index::k, b, r}, F_oovq, Indices{r, p}, f_pq);
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, b, p}, rank4, Indices{n, m, b, p}, F_oovq);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     {
@@ -303,9 +303,10 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, ncabs_, nocc_};
 
         einsum(Indices{l, index::k, p, j}, &rank4, Indices{l, index::k, p, I}, F_ooc1, Indices{j, I}, f_o1);
-        einsum(0.0, Indices{l, index::k, n, m}, &tmp, 2.0, Indices{l, index::k, p, j}, rank4, Indices{n, m, p, j}, F_ooco);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        einsum(0.0, Indices{l, index::k, n, m}, &tmp, 2.0, Indices{l, index::k, p, j}, rank4, Indices{n, m, p, j},
+               F_ooco);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     {
@@ -315,13 +316,14 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, nvir_, ncabs_};
 
         einsum(Indices{l, index::k, b, q}, &rank4, Indices{l, index::k, b, r}, F_oovq, Indices{r, q}, f_pc);
-        einsum(0.0, Indices{l, index::k, n, m}, &tmp, 2.0, Indices{l, index::k, b, q}, rank4, Indices{n, m, b, q}, F_oovc);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        einsum(0.0, Indices{l, index::k, n, m}, &tmp, 2.0, Indices{l, index::k, b, q}, rank4, Indices{n, m, b, q},
+               F_oovc);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     auto B_nosymm = (*B)(All, All, All, All);
-    permute(0.5, Indices{m, n, index::k, l}, &(*B), 0.5, Indices{index::k, l, m, n}, B_nosymm);
+    permute(0.5, Indices{m, n, index::k, l}, B, 0.5, Indices{index::k, l, m, n}, B_nosymm);
 }
 
 void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k,
@@ -360,8 +362,8 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
 
         einsum(Indices{l, index::k, P, A}, &rank4, Indices{l, index::k, P, C}, *F, Indices{C, A}, *k);
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, P, A}, rank4, Indices{n, m, P, A}, *F);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     {
@@ -370,8 +372,8 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
 
         einsum(Indices{l, index::k, j, A}, &rank4, Indices{l, index::k, j, C}, F_ooo1, Indices{C, A}, *f);
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, j, A}, rank4, Indices{n, m, j, A}, F_ooo1);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     TensorView<double, 4> F_ooco_temp{(*F), Dim<4>{nact_, nact_, ncabs_, nocc_}, Offset<4>{0, 0, nobs_, 0}};
@@ -382,8 +384,8 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
 
         einsum(Indices{l, index::k, p, i}, &rank4, Indices{l, index::k, p, j}, F_ooco, Indices{j, i}, f_oo);
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, p, i}, rank4, Indices{n, m, p, i}, F_ooco);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), 1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), 1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, 1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, 1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     TensorView<double, 4> F_oovq_temp{(*F), Dim<4>{nact_, nact_, nvir_, nobs_}, Offset<4>{0, 0, nocc_, 0}};
@@ -394,8 +396,8 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
 
         einsum(Indices{l, index::k, b, p}, &rank4, Indices{l, index::k, b, r}, F_oovq, Indices{r, p}, f_pq);
         einsum(Indices{l, index::k, n, m}, &tmp, Indices{l, index::k, b, p}, rank4, Indices{n, m, b, p}, F_oovq);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     {
@@ -405,9 +407,10 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, ncabs_, nocc_};
 
         einsum(Indices{l, index::k, p, j}, &rank4, Indices{l, index::k, p, I}, F_ooc1, Indices{j, I}, f_o1);
-        einsum(0.0, Indices{l, index::k, n, m}, &tmp, 2.0, Indices{l, index::k, p, j}, rank4, Indices{n, m, p, j}, F_ooco);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        einsum(0.0, Indices{l, index::k, n, m}, &tmp, 2.0, Indices{l, index::k, p, j}, rank4, Indices{n, m, p, j},
+               F_ooco);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     {
@@ -417,13 +420,14 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, nvir_, ncabs_};
 
         einsum(Indices{l, index::k, b, q}, &rank4, Indices{l, index::k, b, r}, F_oovq, Indices{r, q}, f_pc);
-        einsum(0.0, Indices{l, index::k, n, m}, &tmp, 2.0, Indices{l, index::k, b, q}, rank4, Indices{n, m, b, q}, F_oovc);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{index::k, l, m, n}, tmp);
-        permute(1.0, Indices{index::k, l, m, n}, &(*B), -1.0, Indices{l, index::k, n, m}, tmp);
+        einsum(0.0, Indices{l, index::k, n, m}, &tmp, 2.0, Indices{l, index::k, b, q}, rank4, Indices{n, m, b, q},
+               F_oovc);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{index::k, l, m, n}, tmp);
+        permute(1.0, Indices{index::k, l, m, n}, B, -1.0, Indices{l, index::k, n, m}, tmp);
     }
 
     auto B_nosymm = (*B)(All, All, All, All);
-    permute(0.5, Indices{m, n, index::k, l}, &(*B), 0.5, Indices{index::k, l, m, n}, B_nosymm);
+    permute(0.5, Indices{m, n, index::k, l}, B, 0.5, Indices{index::k, l, m, n}, B_nosymm);
 }
 
 ////////////////////////////////

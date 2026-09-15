@@ -3397,11 +3397,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SUBSECTION General Options -*/
         /*- Algorithm to use for MP2-F12 computation, conventional or density-fitted. -*/
         options.add_str("MP2_TYPE", "DF", "DF CONV");
-        /*- For certain |globals__mp2_type| algorithms that have internal sub-algorithms
-            depending on available memory or other hardware constraints, select a sub-algorithm
-            Presently, ``MP2_TYPE=DF`` and ``MP2_TYPE=CONV``
-	        can have ``INCORE`` and ``DISK`` selected. In future, ``AUTO`` will be added. -*/
-        options.add_str("F12_SUBTYPE", "INCORE", "INCORE DISK");
+        /*- Execution algorithm for MP2-F12. INCORE and DISK support conventional and
+            density-fitted calculations. STREAMED contracts occupied pairs from shared
+            three-index integrals and requires an all-electron DF reference. -*/
+        options.add_str("F12_SUBTYPE", "INCORE", "INCORE DISK STREAMED");
+        /*- Target auxiliary functions per shell block for |f12__f12_subtype| STREAMED.
+            Complete shells are retained, so a single shell can exceed this target. -*/
+        options.add_int("F12_AUX_BLOCK_SIZE", 64);
         /*- Whether to read-in stored integrals from previous computation -*/
         options.add_bool("F12_READ_INTS", false);
         /*- Set contracted Gaussian-type geminal beta value -*/
