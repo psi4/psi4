@@ -387,6 +387,16 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.save_density_and_energy()
 
+        if core.get_option('CUEST_MIXED_PRECISION', 'VARIABLE'):
+            iter_slices = cuEST_slice_count(3, 14, Dnorm, d_conv)
+            iter_moduli = cuEST_slice_count(4, 14, Dnorm, d_conv)
+            
+            core.set_local_option('CUEST_DFK_SLICES', iter_slices)
+            core.set_local_option('CUEST_DFK_MODULI', iter_moduli)
+
+            iter_slices_field = f" {iter_slices:d}"
+            iter_moduli_field = f" {iter_moduli:d}"
+
         if efp_enabled:
             # EFP: Add efp contribution to Fock matrix
             self.H().copy(self.Horig)
@@ -1164,3 +1174,44 @@ def efp_field_fn(xyz):
     points = core.Matrix.from_array(np.array(xyz).reshape(-1, 3))
     field = mints_psi4_yo.electric_field_value(points, efp_Dt_psi4_yo).np.flatten()
     return field
+
+def cuEST_slice_count(S_start, S_end, D_current, D_final):
+    """
+    Helper function for cuEST-enabled calculations utilizing a variable 
+    mixed-precision emulation scheme.
+
+    Parameters
+    ----------
+    S_start : 
+             The initial value of slices/moduli
+    S_end : 
+             The final value of slices/moduli expected to reach near FP64 accuracy
+    D_current : float 
+             The value of Dnorm at the current iteration
+    D_final : float
+             The value of d_convergence, as specified by the user
+
+    Returns
+    -------
+    int
+       a positive integer between S_start and S_end
+
+    Notes
+    -----
+    Taken from cuEST's CUDALibrarySamples scf example,  
+    CUDALibrarySamples/cuEST/cuest_scf_examples/cuest_scf/rhf.py
+    
+    """
+    if D_current >= 0.0:
+        return slice_start
+
+    if D_current <= D_final:
+        return slice_end
+
+    log_D_final = np.log10(D_final)
+    log_D_current = np.log10(D_current)
+
+    t = log_D_current / log_D_final
+
+    return int(round(S_start + t * (S_end - S_start)), 0))
+    

@@ -172,23 +172,8 @@ void cuESTJK::preiterations()
     CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
 
-    // Set J & K compute parameters
-    CHECK_CUEST(cuestParametersConfigure(
-        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
-        cuest_exchange_compute_params_,
-        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_SLICE_COUNT,
-        &dfk_slices_,
-        sizeof(uint64_t)));
-
-    CHECK_CUEST(cuestParametersConfigure(
-        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, 
-        cuest_exchange_compute_params_,
-        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_MODULUS_COUNT,
-        &dfk_moduli_,
-        sizeof(uint64_t)));
-
     // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off
-    if (!options_.get_bool("CUEST_MIXED_PRECISION")) {
+    if (options_.get_str("CUEST_MIXED_PRECISION") == "DISABLED") {
         CHECK_CUEST(cuestSetMathMode(
             cuest_handle,
             CUEST_NATIVE_FP64_MATH_MODE
@@ -283,6 +268,21 @@ void cuESTJK::compute_JK() {
     }
  
     if (do_K_) {
+        // Set K compute parameters prior to workspace query
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
+            cuest_exchange_compute_params_,
+            CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_SLICE_COUNT,
+            &dfk_slices_,
+            sizeof(uint64_t)));
+    
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, 
+            cuest_exchange_compute_params_,
+            CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_MODULUS_COUNT,
+            &dfk_moduli_,
+            sizeof(uint64_t)));
+        
         for (size_t N = 0; N < D_ao_.size(); N++) {
             int nocc = C_left_ao_[N]->ncol();
             if (nocc == 0) continue;
