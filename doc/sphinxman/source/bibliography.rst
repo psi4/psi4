@@ -815,6 +815,31 @@ Bibliography
    *J. Chem. Phys.* **161**, 082502 (2024).
    https://doi.org/10.1063/5.0219963
 
+.. [Jiang:2025:2386]
+   A. Jiang, H. F. Schaefer III, and J. M. Turney,
+   *J. Chem. Theory Comput.* **21**, 2386-2401 (2025).
+   https://doi.org/10.1021/acs.jctc.4c01716
+
+.. [Jiang:2025:144102]
+   A. Jiang, H. F. Schaefer III, and J. M. Turney,
+   *J. Chem. Phys.* **162**, 144102 (2025).
+   https://doi.org/10.1063/5.0257672
+
+.. [Jiang:2026:2825]
+   A. Jiang, D. A. Matthews, D. Poole, C. G. Briggs, J. M. Turney, C. D. Sherrill, and H. F. Schaefer III
+   *J. Chem. Theory Comput.* **22**, 2825-2845 (2026).
+   https://doi.org/10.1021/acs.jctc.5c01910
+
+.. [Fishman:2026:3233]
+   V. Fishman, B. D. Lorincz, E. Semidalas, A. Barman, J. M. L. Martin, P. R. Nagy, and M. Kallay,
+   *J. Phys. Chem. A* **130**, 3233-3248 (2026).
+   https://doi.org/10.1021/acs.jpca.6c00607
+
+.. [Bomble:2005:054101]
+   Y. J. Bomble, J. F. Stanton, M. Kallay, and J. Gauss,
+   *J. Chem. Phys.* **123**, 054101 (2005).
+   https://doi.org/10.1063/1.1950567
+
 .. [Pak:2025:094110]
    "Fast simulation of soft x-ray near-edge spectra using a relativistic state-interaction approach"
    S. Pak, M. A. Dada, N. Govind and D. R. Nascimento,

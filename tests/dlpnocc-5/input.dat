@@ -1,0 +1,114 @@
+#! regression test of DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ, including C2v-to-C1 reference casting
+
+ref_scf                   =    -76.0267872755965             #TEST
+
+ref_dlpnoccsdt_corl       =     -0.214499682682              #TEST
+ref_dlpnoccsdt_tot        =    -76.241286958276              #TEST
+ref_dlpnoccsdt_q_corl     =     -0.214981281550              #TEST
+ref_dlpnoccsdt_q_tot      =    -76.241768557100              #TEST
+ref_dlpnoccsdtq_tot       =    -76.241742918936              #TEST
+ref_dlpnoccsdtq_corl      =     -0.214955643341              #TEST
+
+memory 2 GB
+
+molecule h2o {
+0 1
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set mp2_type df
+set cc_type  df
+set nat_orbs False
+# Match the tighter SCF reference used automatically by post-SCF energy calls;
+# the explicit C2v SCF below otherwise retains the looser standalone default.
+set e_convergence 1.0e-8
+set d_convergence 1.0e-8
+set r_convergence 1.0e-8
+set pno_convergence very_tight
+# Preserve the historical high-order regression domain while allowing an
+# explicitly selected PNO_CONVERGENCE preset to control production inputs.
+set t_cut_pairs 1.0e-8
+set t_cut_pre 1.0e-8
+set write_quadruples_intermediates false
+# Exercise the PSIO keys for metric-transformed TNO and QNO integrals explicitly.
+set dlpno_ccsdt_disk_ints true
+set dlpno_ccsdtq_disk_ints true
+
+# Algorithm 5 is a Jacobi iteration.  Exercise the immutable old/new T4
+# generations in both storage modes and with different OpenMP schedules before
+# the full CCSDTQ regression.  The two answers must be storage- and
+# thread-count independent.
+print('   Testing in-core/disk DLPNO-CCSDT(Q) Jacobi equivalence ...')
+set_num_threads(1)
+val_q_incore = energy('dlpno-ccsdt(q)')
+compare_values(ref_dlpnoccsdt_corl, variable('CCSDT CORRELATION ENERGY'), 6,
+               'standalone ccsdt corl before (q)')  #TEST
+compare_values(ref_dlpnoccsdt_tot, variable('CCSDT TOTAL ENERGY'), 6,
+               'standalone ccsdt total before (q)')  #TEST
+compare_values(ref_dlpnoccsdt_q_tot, val_q_incore, 6,
+               'in-core standalone ccsdt(q) total')  #TEST
+clean()
+
+set_options({
+    'WRITE_QIA_PNO': True,
+    'WRITE_QAB_PNO': True,
+    'WRITE_TRIPLES_AMPLITUDES': True,
+    'WRITE_QUADRUPLES_INTERMEDIATES': True,
+})
+set_num_threads(2)
+val_q_disk = energy('dlpno-ccsdt(q)')
+compare_values(val_q_incore, val_q_disk, 8, 'ccsdt(q) Jacobi storage/thread equivalence')  #TEST
+clean()
+
+print('   Testing DLPNO-CCSDTQ from a supplied higher-symmetry SCF reference ...')
+molecule h2o_c2v {
+0 1
+O
+H 1 0.957
+H 1 0.957 2 104.5
+}
+
+# Exercise the C1-copy path with an explicit source-symmetry occupation array.
+# The C2v occupations must be preserved, not re-applied to the one-irrep copy.
+set docc [3, 0, 1, 1]
+scf_energy, sym_ref_wfn = energy('scf', molecule=h2o_c2v, return_wfn=True)
+compare_integers(4, sym_ref_wfn.nirrep(), 'C2v SCF reference irreps')                    #TEST
+compare_values(ref_scf, scf_energy, 7, 'C2v scf ref')                                    #TEST
+
+set_num_threads(4)
+val, dlpno_wfn = energy('dlpno-ccsdtq', ref_wfn=sym_ref_wfn, return_wfn=True)
+c1_ref_wfn = dlpno_wfn.reference_wavefunction()
+compare_integers(1, c1_ref_wfn.nirrep(), 'CCSDTQ C1 reference irreps')                   #TEST
+compare_strings('c1', c1_ref_wfn.get_basisset('DF_BASIS_CC').molecule().schoenflies_symbol(),
+                'CCSDTQ C1 auxiliary basis point group')                                  #TEST
+for accessor in ('frzcpi', 'frzvpi', 'nalphapi', 'nbetapi', 'nsopi', 'nmopi'):
+    source_dimension = getattr(sym_ref_wfn, accessor)()
+    c1_dimension = getattr(c1_ref_wfn, accessor)()
+    compare_integers(1, c1_dimension.n(), f'CCSDTQ C1 {accessor}')                        #TEST
+    compare_integers(source_dimension.sum(), c1_dimension[0],
+                     f'CCSDTQ C1 {accessor} total')                                       #TEST
+compare_integers(4, sym_ref_wfn.nirrep(), 'supplied C2v reference remains unchanged')    #TEST
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                 #TEST
+compare_values(ref_dlpnoccsdt_corl, variable('CCSDT CORRELATION ENERGY'), 6, 'ccsdt corl')          #TEST
+compare_values(ref_dlpnoccsdt_tot, variable('CCSDT TOTAL ENERGY'), 6, 'ccsdt tot')                  #TEST
+compare_values(ref_dlpnoccsdt_q_corl, variable('CCSDT(Q) CORRELATION ENERGY'), 6, 'ccsdt(q) corl')  #TEST
+compare_values(ref_dlpnoccsdt_q_tot, variable('CCSDT(Q) TOTAL ENERGY'), 6, 'ccsdt(q) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 6, 'scf ref')                         #TEST
+compare_values(ref_dlpnoccsdtq_corl, variable('CURRENT CORRELATION ENERGY'), 6, 'ccsdtq corl')   #TEST
+compare_values(ref_dlpnoccsdtq_tot, variable('CURRENT ENERGY'), 6, 'ccsdtq tot')                 #TEST
+compare_values(ref_dlpnoccsdtq_corl, variable('CCSDTQ CORRELATION ENERGY'), 6, 'ccsdtq corl')   #TEST
+compare_values(ref_dlpnoccsdtq_tot, variable('CCSDTQ TOTAL ENERGY'), 6, 'ccsdtq tot')                 #TEST
+compare_values(ref_dlpnoccsdtq_tot - ref_dlpnoccsdt_tot,
+               variable('Q CORRECTION ENERGY'), 6, 'ccsdtq - ccsdt')                    #TEST
+compare_values(ref_dlpnoccsdtq_tot - ref_dlpnoccsdt_q_tot,
+               variable('CCSDTQ TOTAL ENERGY') - variable('CCSDT(Q) TOTAL ENERGY'),
+               6, 'ccsdtq - ccsdt(q)')                                                  #TEST
+compare_values(ref_dlpnoccsdtq_tot, val, 6, 'ccsdtq return')                                     #TEST
+clean()

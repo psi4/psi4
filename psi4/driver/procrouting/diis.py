@@ -198,6 +198,9 @@ class DIIS:
                 Rix = self.load_quantity("error", i, item_num)
                 Rjx = self.load_quantity("error", j, item_num)
                 dot_product += Rix.vector_dot(Rjx)
+                # Do not retain the preceding pair while allocating the next
+                # chunk; high-rank coupled-cluster items can be individually large.
+                del Rix, Rjx
 
             self.cached_dot_products[key] = dot_product
             return dot_product
@@ -210,6 +213,14 @@ class DIIS:
     def set_vector_size(self, *args):
         """ Set the template for the extrapolation target. Kept mainly for backwards compatibility. """
         self.template["target"] = template_helper(*args)
+
+    def set_error_vector_size_from_list(self, args):
+        """Set an error template from a runtime-sized C++ list of DIIS items."""
+        self.set_error_vector_size(*args)
+
+    def set_vector_size_from_list(self, args):
+        """Set a target template from a runtime-sized C++ list of DIIS items."""
+        self.set_vector_size(*args)
 
     def build_entry(self, entry, target_index):
         return {key: [self.copier(elt, self.get_name(key, target_index, i)) for i, elt in enumerate(val)] for key, val in entry.items()}
@@ -241,12 +252,19 @@ class DIIS:
                 raise Exception(f"RemovalPolicy {self.removal_policy} not recognized. This is a bug: contact developers.")
             # Purge imminently-outdated values from cache.
             self.cached_dot_products = {key: val for key, val in self.cached_dot_products.items() if target_index not in key}
-            # Set the new entry.
+            # Release the entry selected for replacement before cloning the new
+            # one. This avoids retaining two complete entries simultaneously,
+            # which is significant for chunked high-rank coupled-cluster data.
+            self.stored_vectors[target_index] = None
             self.stored_vectors[target_index] = self.build_entry(entry, target_index)
         else:
             self.stored_vectors.append(self.build_entry(entry, self.iter_num))
 
         return True
+
+    def add_entry_from_lists(self, errors, targets):
+        """Add one entry whose error and target items were chunked at runtime."""
+        return self.add_entry(*(list(errors) + list(targets)))
 
     def diis_coefficients(self):
         dim = len(self.stored_vectors) + 1
@@ -417,8 +435,13 @@ class DIIS:
             for i, ci in enumerate(coeffs):
                 Tij = self.load_quantity("target", i, j)
                 axpy(Tj, ci, Tij)
+                del Tij
 
         return performed
+
+    def extrapolate_from_list(self, targets):
+        """Extrapolate a runtime-sized C++ list of target chunks in place."""
+        return self.extrapolate(*targets)
 
     def delete_diis_file(self):
         """ Purge all data in the DIIS file. """
@@ -433,4 +456,3 @@ class DIIS:
                 os.remove(filename)
             except FileNotFoundError:
                 pass
-
