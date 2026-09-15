@@ -924,10 +924,23 @@ How to run Psi4 as executable after compilation using driver from source
 ------------------------------------------------------------------------
 
 When developing python driver code, it can be annoying to keep `make`\
-ing to test the code. |PSIfour| can be run "inplace" through the
-following procedure. To be clear, this is running compiled C++ from the
-build directory and python from the source directory. This is an expert
-option for development, and not all functionality will be available. ::
+ing to test the code. |PSIfour| can be compiled with :envvar:`CMAKE_INSTALL_MODE`
+set to ``ABS_SYMLINK``. ::
+
+    >>> export CMAKE_INSTALL_MODE=ABS_SYMLINK
+    # Configure and build
+    >>> cmake --build {objdir}
+    >>> {objdir}/stage/bin/psi4 input.dat
+
+
+Instead of copying source files to the install tree, CMake symlinks back to
+them. Thus, |PSIfour| runs compiled C++ from the build directory and python
+from the source directory.
+
+Previously, the ``--inplace`` option could be used for the same purpose. This
+option is now deprecated.
+
+This is an expert option for development, and not all functionality will be available. ::
 
     >>> cd {objdir}
     >>> ln -s {top-level-psi4-dir}/{objdir}/stage/lib/psi4/core.cpython-{ext_will_vary}.so ../psi4/core.cpython-{ext_will_vary}.so

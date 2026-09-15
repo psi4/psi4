@@ -36,7 +36,7 @@ isort:skip_file
 # * note that all path entities are directories except for "executable" that is a file
 import os
 from pathlib import Path
-psi4_module_loc = Path(__file__).resolve().parent
+psi4_module_loc = Path(__file__).absolute().parent
 
 prefix = Path(r"@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
 cmake_install_bindir = r"@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
