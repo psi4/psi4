@@ -483,8 +483,8 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 .. option:: --inplace
 
    Deprecated. See the :ref:`developer workflow <faq:inplace>` instead.
-   Runs |PSIfour| with compiled code from <objdir> but driver code
-   from source, so no need to ``make`` between Python edits. Expert mode.
+   Runs |PSIfour| with compiled code from <objdir> but driver code from source,
+   so no need to ``make`` between Python edits. Expert mode.
 
 .. option:: -k, --skip-preprocessor
 
@@ -581,6 +581,13 @@ Environment Variables
 =====================
 
 These environment variables will influence |PSIfours| behavior.
+
+.. envvar:: CMAKE_INSTALL_MODE
+
+   When set to ``ABS_SYMLINK`` during a |PSIfour| build, CMake symlinks the
+   Python driver code rather than copying it to the staging directory. This
+   means that updates to existing Python files do not require a rebuild. See
+   :ref:`faq:inplace` for more details.
 
 .. envvar:: CONDA_PREFIX
 

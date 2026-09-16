@@ -938,9 +938,8 @@ them. Thus, |PSIfour| runs compiled C++ from the build directory and python
 from the source directory.
 
 Previously, the ``--inplace`` option could be used for the same purpose. This
-option is now deprecated.
-
-This is an expert option for development, and not all functionality will be available. ::
+option is now deprecated. This is an expert option for development, and not
+all functionality will be available. ::
 
     >>> cd {objdir}
     >>> ln -s {top-level-psi4-dir}/{objdir}/stage/lib/psi4/core.cpython-{ext_will_vary}.so ../psi4/core.cpython-{ext_will_vary}.so
