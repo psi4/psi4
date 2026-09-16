@@ -145,7 +145,7 @@ def test_cuest_dft_findiff(inp, request, tmp_path):
         'd_convergence': 9,
         'puream': True,
         'use_cuest': True,
-        'cuest_mixed_precision': False,
+        'cuest_mixed_precision': 'disabled',
         'reference': inp['reference'],
     })
 

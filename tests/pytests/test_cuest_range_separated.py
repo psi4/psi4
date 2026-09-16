@@ -65,7 +65,7 @@ def test_cuest_range_separated_energy(functional):
     psi4_energy = psi4.energy(functional, molecule=molecule)
 
     psi4.core.clean()
-    psi4.set_options({**options, "use_cuest": True, "cuest_mixed_precision": False})
+    psi4.set_options({**options, "use_cuest": True, "cuest_mixed_precision": "disabled"})
     cuest_energy = psi4.energy(functional, molecule=molecule)
 
     assert psi4.compare_values(
