@@ -456,7 +456,11 @@ extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/%
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3.12', None),
                        "numpy": ("https://numpy.org/doc/stable/", None),
-                       'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+                       # NOTE: no 'scipy' entry on purpose. It was pulling
+                       #   docs.scipy.org/objects.inv on every CI docs build to serve a
+                       #   single xref. Link scipy targets explicitly (see
+                       #   block_diagonal_array in psi4/driver/p4util/numpy_helper.py)
+                       #   rather than reinstating it.
                        'matplotlib': ('https://matplotlib.org/stable/', None),
                        "qcelemental": ("https://molssi.github.io/QCElemental/dev/", None),
                        "qcelemental_v1": ("https://molssi.github.io/QCElemental/v0.30.2/", None),

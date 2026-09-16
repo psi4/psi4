@@ -1485,7 +1485,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             forcibly select a sub-algorithm (usually only for debugging or profiling).
             Presently, ``SCF_TYPE=DF``, ``SCF_TYPE=MEM_DF``, and ``SCF_TYPE=DISK_DF``
 	        can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
-	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected. !expert -*/
+	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected.
+	        ``SCF_TYPE=CD`` has no out-of-core sub-algorithm, so it accepts only ``AUTO`` and
+	        ``INCORE``; any other value raises an exception. !expert -*/
 	    options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);

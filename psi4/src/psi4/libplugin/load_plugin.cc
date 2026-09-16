@@ -31,7 +31,7 @@
 #include <algorithm>
 #include <cctype>
 
-#include "psi4/libfilesystem/path.h"
+#include <filesystem>
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
@@ -62,7 +62,7 @@ plugin_info plugin_load(std::string &plugin_pathname) {
         throw PSIEXCEPTION(msg);
     }
 
-    info.name = filesystem::path(plugin_pathname).stem();
+    info.name = std::filesystem::path(plugin_pathname).stem().string();
 
     // Modify info.name converting things that are allowed
     // filename characters to allowed C++ function names.
