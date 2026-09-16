@@ -317,14 +317,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
 configure_file(run_psi4.py psi4 @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-    # Yes, the same file is being installed to two separate locations. It serves
-    # two distinct purposes. Above is your usual /bin/psi4. Below, the configured
-    # `run_psi4.py` is put in a python-importable location for pip installations.
-    # It is required by [project.scripts] within pyproject.toml. A main
-    # alternative is wrapping run_psi4.py within a new file in driver.
-install(FILES ${CMAKE_BINARY_DIR}/psi4
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
-        RENAME run_psi4.py)
 
 if(WIN32)
     # Generate a batch script, which wraps "bin/psi4" script to "python bin/psi4"
