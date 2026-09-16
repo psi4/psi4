@@ -36,6 +36,16 @@ import subprocess
 import sys
 
 
+class Provider:
+    """Expose Psi4's computed version to the packaging backend."""
+
+    @staticmethod
+    def dynamic_metadata(settings, _project):
+        del settings
+        version_data = reconcile_and_compute_version_output(quiet=True)
+        return {'version': version_data['__version__']}
+
+
 def collect_version_input_from_fallback(meta_file='metadata.py'):
     """From *meta_file*, collect lines matching ``_version_{key} = {value}``
     and return as dictionary.
