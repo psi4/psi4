@@ -1,9 +1,50 @@
+import numpy as np
 import pytest
 
 from addons import uusing
 from utils import compare_values
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+
+@uusing("ecpint")
+@pytest.mark.parametrize("puream", [False, True], ids=["cartesian", "spherical"])
+@pytest.mark.parametrize("basis_names", [
+    pytest.param(("def2-svp", "def2-svp"), id="svp-svp"),
+    pytest.param(("def2-svp", "def2-tzvp"), id="svp-tzvp"),
+    pytest.param(("def2-svp", "def2-qzvp"), id="svp-qzvp"),
+    pytest.param(("def2-tzvp", "def2-qzvp"), id="tzvp-qzvp"),
+])
+def test_ecp_mixed_basis_transpose(basis_names, puream):
+    """The same ECP operator must transpose when its bra and ket are exchanged."""
+    import psi4
+
+    mol = psi4.geometry("""
+        -1 1
+        I 0 0 0
+        symmetry c1
+        no_com
+        no_reorient
+    """)
+    # These def2 bases all carry the same 28-electron ECP for iodine.
+    bra, ket = [
+        psi4.core.BasisSet.build(mol, "ORBITAL", name, puream=puream)
+        for name in basis_names
+    ]
+    assert bra.n_ecp_core() == ket.n_ecp_core() == 28
+    if basis_names[0] != basis_names[1]:
+        assert bra.max_am() < ket.max_am()
+
+    mints = psi4.core.MintsHelper(bra)
+    square = mints.ao_ecp().np.copy()
+    np.testing.assert_allclose(square, square.T, rtol=1e-10, atol=1e-10)
+    forward = mints.ao_ecp(bra, ket).np.copy()
+    reverse = mints.ao_ecp(ket, bra).np.copy()
+    assert forward.shape == (bra.nbf(), ket.nbf())
+    assert reverse.shape == (ket.nbf(), bra.nbf())
+    assert np.isfinite(forward).all()
+    assert np.isfinite(reverse).all()
+    np.testing.assert_allclose(forward, reverse.T, rtol=1e-10, atol=1e-10)
 
 
 @uusing("ecpint")
