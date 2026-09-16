@@ -315,8 +315,12 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
 
     # <<<  install bin/  >>>
 configure_file(run_psi4.py psi4 @ONLY)
+set(PSI4_CLI_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+if(SKBUILD_SCRIPTS_DIR)
+    set(PSI4_CLI_INSTALL_DIR ${SKBUILD_SCRIPTS_DIR})
+endif()
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+        DESTINATION ${PSI4_CLI_INSTALL_DIR})
 
 if(WIN32)
     # Generate a batch script, which wraps "bin/psi4" script to "python bin/psi4"
