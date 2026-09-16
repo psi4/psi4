@@ -18,7 +18,6 @@ list(APPEND sources
   basisset.cc
   wavefunction.cc
   irrep.cc
-  fjt.cc
   chartab.cc
   corrtab.cc
   symop.cc

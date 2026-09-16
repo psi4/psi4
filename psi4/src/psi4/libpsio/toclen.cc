@@ -43,7 +43,7 @@ namespace psi {
 /// @brief Compute the length of the TOC for a given unit using the in-core TOC list
 /// @param unit : file unit number
 /// @return length of the TOC for a given unit
-size_t PSIO::toclen(const size_t unit) {
+size_t PSIO::toclen(const size_t unit) const {
     size_t len = 0;
     psio_tocentry *this_entry = psio_unit[unit].toc;
 

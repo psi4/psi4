@@ -745,6 +745,11 @@ void VBase::build_collocation_cache(size_t memory) {
         collocation_size *= 10;  // For gradients and Hessians
     }
 
+    cache_map_.clear();
+    if (memory == 0) {
+        return;
+    }
+
     // Figure out stride as closest whole number to amount we need
     size_t stride = (size_t)(std::ceil(collocation_size / (double)memory));
 
@@ -752,7 +757,6 @@ void VBase::build_collocation_cache(size_t memory) {
     if (stride == 0) {
         stride = 1;
     }
-    cache_map_.clear();
 
     // Effectively zero blocks saved.
     if (stride > grid_->blocks().size()) {
@@ -802,8 +806,8 @@ void VBase::build_collocation_cache(size_t memory) {
         cache_map_[block->index()] = collocation_map;
     }
 
-    size_t saved_size = std::accumulate(saved_size_rank.begin(), saved_size_rank.end(), 0.0);
-    size_t ncomputed = std::accumulate(ncomputed_rank.begin(), ncomputed_rank.end(), 0.0);
+    size_t saved_size = std::accumulate(saved_size_rank.begin(), saved_size_rank.end(), (size_t)0);
+    size_t ncomputed = std::accumulate(ncomputed_rank.begin(), ncomputed_rank.end(), (size_t)0);
 
     double gib_saved = 8.0 * (double)saved_size / 1024.0 / 1024.0 / 1024.0;
     double fraction = (double)ncomputed / grid_->blocks().size() * 100;
