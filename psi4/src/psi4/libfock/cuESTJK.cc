@@ -172,11 +172,21 @@ void cuESTJK::preiterations()
     CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
 
-    // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off
+    // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off.
+    // Set unconditionally, including the DEFAULT branch: cuest_handle is a process-global destroyed only at interpreter
+    // exit (cuest_runtime::shutdown, reached via atexit core.finalize), so the mode outlives the calculation that set it.
+    // Without the else, a DISABLED calculation would latch FP64 for every later calculation in the same process, and
+    // because FP64 takes precedence over the emulation parameters, a subsequent ENABLED or VARIABLE run would silently
+    // ignore its slice/moduli counts rather than error.
     if (options_.get_str("CUEST_MIXED_PRECISION") == "DISABLED") {
         CHECK_CUEST(cuestSetMathMode(
             cuest_handle,
             CUEST_NATIVE_FP64_MATH_MODE
+        ));
+    } else {
+        CHECK_CUEST(cuestSetMathMode(
+            cuest_handle,
+            CUEST_DEFAULT_MATH_MODE
         ));
     }
 
@@ -413,11 +423,16 @@ void cuESTJK::compute_JK() {
     double ms_free = std::chrono::duration<double, std::milli>(t_free_end - t_free_start).count();
     double ms_total = std::chrono::duration<double, std::milli>(t_free_end - t_total_start).count();
  
-    outfile->Printf("    cuESTJK compute_JK: total=%7.2fms | alloc=%5.2fms ws=%5.2fms "
-                     "J=%6.2fms K=%6.2fms memcpy(H2D)=%5.2fms memcpy(D2H)=%5.2fms "
-                     "transpose=%5.2fms free=%5.2fms\n",
-                     ms_total, ms_alloc, ms_wsquery, ms_J_compute, ms_K_compute,
-                     ms_memcpy_h2d, ms_memcpy_d2h, ms_transpose, ms_free);
+    // Per-call timings would otherwise interleave with the SCF iteration table, one
+    // block per iteration. bench_ is wired from the BENCH keyword in JK::build_JK,
+    // so these are off by default and returned by setting BENCH to 1 or above.
+    if (bench_) {
+        outfile->Printf("    cuESTJK compute_JK: total=%7.2fms | alloc=%5.2fms ws=%5.2fms "
+                         "J=%6.2fms K=%6.2fms memcpy(H2D)=%5.2fms memcpy(D2H)=%5.2fms "
+                         "transpose=%5.2fms free=%5.2fms\n",
+                         ms_total, ms_alloc, ms_wsquery, ms_J_compute, ms_K_compute,
+                         ms_memcpy_h2d, ms_memcpy_d2h, ms_transpose, ms_free);
+    }
 }
 
 void cuESTJK::postiterations() 
