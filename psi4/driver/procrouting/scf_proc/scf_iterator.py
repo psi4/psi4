@@ -283,8 +283,11 @@ def scf_initialize(self):
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
     diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
     core.print_out("  ==> Iterations <==\n\n")
-    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|    Wall\n\n" %
-                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+    cuest_variable = core.get_option('SCF', 'CUEST_MIXED_PRECISION') == 'VARIABLE'
+    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|    Wall%s%s\n\n" %
+                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX",
+                    "  Ozaki-I Slices" if cuest_variable else "",
+                    "  Ozaki-II Moduli" if cuest_variable else ""))
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
@@ -372,6 +375,15 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # has early_screening changed from True to False?
     early_screening_disabled = False
 
+    # cuEST mixed-precision emulation. Under VARIABLE the Ozaki slice and modulus
+    # counts are ramped from a cheap setting toward near-FP64 as the DIIS error
+    # aproaches convergence; under ENABLED the values are used unchanged every iteration.
+    cuest_variable = core.get_option('SCF', 'CUEST_MIXED_PRECISION') == 'VARIABLE'
+    cuest_slices_field = ""
+    cuest_moduli_field = ""
+    if cuest_variable:
+        cuest_d_conv = d_conv if d_conv is not None else core.get_option("SCF", "D_CONVERGENCE")
+
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
@@ -386,6 +398,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         #self.MOM_performed_ = False  # redundant from common_init()
 
         self.save_density_and_energy()
+
+        if cuest_variable:
+            iter_slices = cuEST_slice_count(3, 14, Dnorm, cuest_d_conv)
+            iter_moduli = cuEST_slice_count(4, 14, Dnorm, cuest_d_conv)
+            core.set_local_option('SCF', 'CUEST_DFK_SLICES', iter_slices)
+            core.set_local_option('SCF', 'CUEST_DFK_MODULI', iter_moduli)
+            cuest_slices_field = f"  {iter_slices:^14d}"
+            cuest_moduli_field = f"  {iter_moduli:^15d}"
 
         if efp_enabled:
             # EFP: Add efp contribution to Fock matrix
@@ -604,9 +624,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         # Print out the iteration
         iter_wall = time.perf_counter() - iter_t0
         core.print_out(
-            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %7.2fs %s\n" %
+            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %7.2fs%s%s %s\n" %
             ("DF-" if is_dfjk else "", reference, "SAD" if
-             ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, iter_wall, '/'.join(status)))
+             ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, iter_wall,
+             cuest_slices_field, cuest_moduli_field, '/'.join(status)))
 
         if _iter_detailed:
             core.print_out(
@@ -1164,3 +1185,43 @@ def efp_field_fn(xyz):
     points = core.Matrix.from_array(np.array(xyz).reshape(-1, 3))
     field = mints_psi4_yo.electric_field_value(points, efp_Dt_psi4_yo).np.flatten()
     return field
+
+def cuEST_slice_count(S_start, S_end, D_current, D_final):
+    """
+    Helper function for cuEST-enabled calculations utilizing a variable 
+    mixed-precision emulation scheme.
+
+    Parameters
+    ----------
+    S_start : 
+             The initial value of slices/moduli
+    S_end : 
+             The final value of slices/moduli expected to reach near FP64 accuracy
+    D_current : float 
+             The value of Dnorm at the current iteration
+    D_final : float
+             The value of d_convergence, as specified by the user
+
+    Returns
+    -------
+    int
+       a positive integer between S_start and S_end
+
+    Notes
+    -----
+    Taken from cuEST's CUDALibrarySamples scf example,  
+    CUDALibrarySamples/cuEST/cuest_scf_examples/cuest_scf/rhf.py
+    
+    """
+    if D_current <= 0.0:
+        return S_start
+
+    if D_current <= D_final:
+        return S_end
+
+    log_D_final = np.log10(D_final)
+    log_D_current = np.log10(D_current)
+
+    t = min(1.0, max(0.0, log_D_current / log_D_final))
+
+    return int(round(S_start + t * (S_end - S_start)))

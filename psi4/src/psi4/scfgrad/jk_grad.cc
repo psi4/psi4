@@ -3185,7 +3185,8 @@ void cuESTJKGrad::compute_gradient() {
         gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
     }
     if (do_wK_) {
-        throw PSIEXCEPTION("cuESTJKGrad does not support range-separated exchange");
+
+        gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient", natom, 3);
     }
 
     // => Sizing <= //

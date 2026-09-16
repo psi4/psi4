@@ -251,8 +251,7 @@ SharedMatrix SCFDeriv::compute_gradient()
     // In order to expose range-seperated functioinals through cuEST, cuest_df_plan_ was passed alpha, beta, and omega in cuESTJK.cc.
     // These quantities must be reset here, as the gradient computation re-uses the same cuest_df_plan_ and thus already implicitly carries alpha, beta.
     const bool use_cuest_grad = options_.get_str("SCF_TYPE").find("DF") != std::string::npos
-                                && options_.get_bool("USE_CUEST")
-                                && !functional_->is_x_lrc();
+                                && options_.get_bool("USE_CUEST");
 
     if (use_cuest_grad) {
         alpha = 1.0;
