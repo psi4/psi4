@@ -172,12 +172,6 @@ void cuESTJK::preiterations()
     CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
 
-    // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off.
-    // Set unconditionally, including the DEFAULT branch: cuest_handle is a process-global destroyed only at interpreter
-    // exit (cuest_runtime::shutdown, reached via atexit core.finalize), so the mode outlives the calculation that set it.
-    // Without the else, a DISABLED calculation would latch FP64 for every later calculation in the same process, and
-    // because FP64 takes precedence over the emulation parameters, a subsequent ENABLED or VARIABLE run would silently
-    // ignore its slice/moduli counts rather than error.
     if (options_.get_str("CUEST_MIXED_PRECISION") == "DISABLED") {
         CHECK_CUEST(cuestSetMathMode(
             cuest_handle,
@@ -234,9 +228,6 @@ void cuESTJK::print_header() const {
         outfile->Printf("    Omega:                 %11.3E\n", omega_);
         outfile->Printf("    Pseudoinverse cutoff:  %11.1E\n", condition_);
         outfile->Printf("    Threshold PQ:          %11.1E\n", pq_threshold_);
-        // Only meaningful, and only fixed for the whole calculation, under ENABLED.
-        // DISABLED computes in FP64 so the counts are unused, and VARIABLE retunes
-        // them every iteration, where they are reported per-iteration instead.
         if (options_.get_str("CUEST_MIXED_PRECISION") == "ENABLED") {
             outfile->Printf("    Ozaki-I Slices:        %11d\n", static_cast<int>(dfk_slices_));
             outfile->Printf("    Ozaki-II Moduli:       %11d\n", static_cast<int>(dfk_moduli_));
@@ -285,16 +276,10 @@ void cuESTJK::compute_JK() {
     }
  
     if (do_K_) {
-        // Re-read the slice/modulus counts every iteration rather than relying on
-        // the values cached in the constructor. Under CUEST_MIXED_PRECISION=VARIABLE
-        // the SCF iterator retunes these keywords between iterations (see
-        // scf_iterator.py), and a JK object built once at initialize() would
-        // otherwise pin whatever they were at construction time. Under ENABLED the
-        // keywords do not change, so this is a no-op re-read.
+        // Set K compute parameters prior to workspace query
         dfk_slices_ = options_.get_int("CUEST_DFK_SLICES");
         dfk_moduli_ = options_.get_int("CUEST_DFK_MODULI");
 
-        // Set K compute parameters prior to workspace query
         CHECK_CUEST(cuestParametersConfigure(
             CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
             cuest_exchange_compute_params_,
@@ -422,10 +407,7 @@ void cuESTJK::compute_JK() {
     double ms_wsquery = std::chrono::duration<double, std::milli>(t_ws - t_alloc).count();
     double ms_free = std::chrono::duration<double, std::milli>(t_free_end - t_free_start).count();
     double ms_total = std::chrono::duration<double, std::milli>(t_free_end - t_total_start).count();
- 
-    // Per-call timings would otherwise interleave with the SCF iteration table, one
-    // block per iteration. bench_ is wired from the BENCH keyword in JK::build_JK,
-    // so these are off by default and returned by setting BENCH to 1 or above.
+
     if (bench_) {
         outfile->Printf("    cuESTJK compute_JK: total=%7.2fms | alloc=%5.2fms ws=%5.2fms "
                          "J=%6.2fms K=%6.2fms memcpy(H2D)=%5.2fms memcpy(D2H)=%5.2fms "

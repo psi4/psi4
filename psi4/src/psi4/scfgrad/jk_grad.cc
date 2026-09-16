@@ -3185,14 +3185,7 @@ void cuESTJKGrad::compute_gradient() {
         gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
     }
     if (do_wK_) {
-        // The long-range exchange derivative is not computed separately: the cuEST DF
-        // integral plan already carries lrc_exchange_fraction and lr_exchange_omega
-        // (set in cuESTJK.cc), so cuestDFSymmetricDerivativeCompute weights the
-        // full-range and attenuated exchange derivatives internally and folds both into
-        // the same buffer as the Coulomb term below. This zero matrix exists only so
-        // that SCFDeriv::compute_gradient(), which is shared with the CPU JKGrad route,
-        // finds a valid matrix at gradients_["Exchange,LR"] to scale rather than
-        // default-constructing a null SharedMatrix and dereferencing it.
+
         gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient", natom, 3);
     }
 
