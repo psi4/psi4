@@ -376,16 +376,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     early_screening_disabled = False
 
     # cuEST mixed-precision emulation. Under VARIABLE the Ozaki slice and modulus
-    # counts are ramped from a cheap setting toward near-FP64 as the orbital
-    # gradient falls; under ENABLED the keyword values are left alone and so are
-    # used unchanged for every iteration.
+    # counts are ramped from a cheap setting toward near-FP64 as the DIIS error
+    # aproaches convergence; under ENABLED the values are used unchanged every iteration.
     cuest_variable = core.get_option('SCF', 'CUEST_MIXED_PRECISION') == 'VARIABLE'
-    # One field per column so each value centers under its own header label. Any
-    # user-set counts are deliberately overwritten while VARIABLE is active.
     cuest_slices_field = ""
     cuest_moduli_field = ""
     if cuest_variable:
-        # d_conv is None unless a caller overrode convergence; same contract as _converged.
         cuest_d_conv = d_conv if d_conv is not None else core.get_option("SCF", "D_CONVERGENCE")
 
     # SCF iterations!
@@ -406,18 +402,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if cuest_variable:
             iter_slices = cuEST_slice_count(3, 14, Dnorm, cuest_d_conv)
             iter_moduli = cuEST_slice_count(4, 14, Dnorm, cuest_d_conv)
-
-            # Set SCF-local rather than global: a changed local shadows the global
-            # for the duration of the SCF (liboptions Options::use) without
-            # overwriting whatever the user put in the keyword, so nothing needs
-            # restoring afterwards. cuESTJK re-reads both at the top of every
-            # compute_JK, which is what makes this take effect mid-SCF rather than
-            # being frozen at JK construction.
             core.set_local_option('SCF', 'CUEST_DFK_SLICES', iter_slices)
             core.set_local_option('SCF', 'CUEST_DFK_MODULI', iter_moduli)
-
-            # Widths match len("Ozaki-I Slices") and len("Ozaki-II Moduli") in the
-            # iteration header above, so each count centers under its own label.
             cuest_slices_field = f"  {iter_slices:^14d}"
             cuest_moduli_field = f"  {iter_moduli:^15d}"
 
@@ -1227,8 +1213,6 @@ def cuEST_slice_count(S_start, S_end, D_current, D_final):
     CUDALibrarySamples/cuEST/cuest_scf_examples/cuest_scf/rhf.py
     
     """
-    # Dnorm is initialized to 0.0 before the first iteration computes it, so a
-    # non-positive value means "no orbital gradient yet" -> stay at the cheap end.
     if D_current <= 0.0:
         return S_start
 
@@ -1238,8 +1222,6 @@ def cuEST_slice_count(S_start, S_end, D_current, D_final):
     log_D_final = np.log10(D_final)
     log_D_current = np.log10(D_current)
 
-    # t runs 0 -> 1 as Dnorm falls from O(1) toward d_convergence. Clamped because
-    # Dnorm > 1 early in a bad guess makes the ratio negative.
     t = min(1.0, max(0.0, log_D_current / log_D_final))
 
     return int(round(S_start + t * (S_end - S_start)))
