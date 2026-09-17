@@ -2688,19 +2688,26 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     wfn_->set_array_variable("MBIS VALENCE WIDTHS", valence_widths);
     wfn_->set_array_variable("MBIS VALENCE CHARGES", valence_charges);
 
-    // Compute the volume widths, only for molecules
-    bool free_atom = (num_atoms == 1);
+    // Volume ratios divide each atom's <r^3> by that of the isolated neutral atom, whose value the
+    // driver has already deposited as "MBIS FREE ATOM <symbol> VOLUME" (see
+    // p4util.free_atom_volumes).  Two things that look like details but are not:
+    //
+    //  * The key is the *element symbol*, which is what free_atom_volumes stores.  mol->label()
+    //    is the user's input label and is only the same string when no custom label was given;
+    //    on "O1 / H1 / H2" input it turned this lookup into a hard error.
+    //  * A one-atom input is not exempt.  It is only a *free* atom when it is neutral and in its
+    //    reference multiplicity; a bare anion or a non-reference spin state has a perfectly
+    //    meaningful, non-unit ratio.  Skipping the single-atom case left MBIS VOLUME RATIOS
+    //    silently unset -- for callers that requested it, an answer that never arrives.
     auto volume_ratios = valence_widths->clone();
     if (free_atom_volumes) {
         volume_ratios->zero();
-        if (free_atom == false) {
-            for (int a = 0; a < num_atoms; ++a) {
-                double free_atom = wfn_->scalar_variable("MBIS FREE ATOM " + mol->label(a) + " VOLUME");
-                double vr = rmoms[1]->get(a, 0) / free_atom;
-                volume_ratios->set(a, 0, vr);
-            }
-            wfn_->set_array_variable("MBIS VOLUME RATIOS", volume_ratios);
+        for (int a = 0; a < num_atoms; ++a) {
+            double free_atom = wfn_->scalar_variable("MBIS FREE ATOM " + mol->symbol(a) + " VOLUME");
+            double vr = rmoms[1]->get(a, 0) / free_atom;
+            volume_ratios->set(a, 0, vr);
         }
+        wfn_->set_array_variable("MBIS VOLUME RATIOS", volume_ratios);
     }
 
     if (print_output) {
@@ -2733,13 +2740,11 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         }
 
         if (free_atom_volumes) {
-            if (free_atom == false) {
-                outfile->Printf("\n\n  MBIS Volume Ratios: \n");
-                outfile->Printf("   Center  Symbol  Z     \n");
-                for (int a = 0; a < num_atoms; a++) {
-                    outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(),
-                                    static_cast<int>(mol->Z(a)), volume_ratios->get(a, 0));
-                }
+            outfile->Printf("\n\n  MBIS Volume Ratios: \n");
+            outfile->Printf("   Center  Symbol  Z     \n");
+            for (int a = 0; a < num_atoms; a++) {
+                outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(),
+                                static_cast<int>(mol->Z(a)), volume_ratios->get(a, 0));
             }
         }
     }
