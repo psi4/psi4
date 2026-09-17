@@ -375,7 +375,7 @@ def main(argv=None):
 
     # Run the program!
     try:
-        exec(content)
+        exec(content, globals())
         psi4.extras._success_flag_ = True
 
     # Capture _any_ python error message

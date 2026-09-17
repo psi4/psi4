@@ -237,6 +237,11 @@ message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MIN
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+if(DEFINED SKBUILD_SCRIPTS_DIR)
+    # Propagate the pip-build marker to the nested psi4-core project.
+    set(_psi4_core_skbuild_scripts_arg
+        "-DSKBUILD_SCRIPTS_DIR=${SKBUILD_SCRIPTS_DIR}")
+endif()
 add_subdirectory(external/common)
 add_subdirectory(external/upstream)
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
@@ -280,6 +285,7 @@ ExternalProject_Add(psi4-core
 
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
+              ${_psi4_core_skbuild_scripts_arg}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
               -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
