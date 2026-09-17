@@ -666,9 +666,32 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
         // Compute second derivative
         if (deriv >= 2) {
             if (meta_) {
-                throw PSIEXCEPTION(
-                    "Second derivative for meta functionals is not yet "
-                    "available");
+                std::vector<double> flapl2(npoints);
+                std::vector<double> fv2_rho2(npoints);
+                std::vector<double> fv2_rho_gamma(npoints);
+                std::vector<double> fv2_rho_lapl(npoints);
+                std::vector<double> fv2_rho_tau(npoints);
+                std::vector<double> fv2_gamma2(npoints);
+                std::vector<double> fv2_gamma_lapl(npoints);
+                std::vector<double> fv2_gamma_tau(npoints);
+                std::vector<double> fv2_lapl2(npoints);
+                std::vector<double> fv2_lapl_tau(npoints);
+                std::vector<double> fv2_tau2(npoints);
+
+                xc_mgga_fxc(xc_functional_.get(), npoints, rho_ap, gamma_aap, flapl2.data(), tau_ap, fv2_rho2.data(),
+                            fv2_rho_gamma.data(), fv2_rho_lapl.data(), fv2_rho_tau.data(), fv2_gamma2.data(),
+                            fv2_gamma_lapl.data(), fv2_gamma_tau.data(), fv2_lapl2.data(), fv2_lapl_tau.data(),
+                            fv2_tau2.data());
+
+                C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
+                C_DAXPY(npoints, alpha_, fv2_gamma2.data(), 1, v_gamma_aa_gamma_aa, 1);
+                C_DAXPY(npoints, alpha_, fv2_rho_gamma.data(), 1, v_rho_a_gamma_aa, 1);
+                // Like V_TAU_A = 1/2 vtau above, every TAU index of a second
+                // derivative carries a factor 1/2: the Vx contraction code
+                // pairs each with the bare grad phi . grad phi bilinear.
+                C_DAXPY(npoints, 0.5 * alpha_, fv2_rho_tau.data(), 1, v_rho_a_tau_a, 1);
+                C_DAXPY(npoints, 0.5 * alpha_, fv2_gamma_tau.data(), 1, v_gamma_aa_tau_a, 1);
+                C_DAXPY(npoints, 0.25 * alpha_, fv2_tau2.data(), 1, v_tau_a_tau_a, 1);
 
             } else if (gga_) {
                 std::vector<double> fv2_rho2(npoints);
@@ -694,7 +717,16 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             // parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
-                throw PSIEXCEPTION("Second derivative for meta functionals not yet available.");
+                for (int i = 0; i < npoints; i++) {
+                    if (std::isnan(v_rho_a_rho_a[i]) || std::isnan(v_gamma_aa_gamma_aa[i]) ||
+                        std::isnan(v_rho_a_gamma_aa[i]) || std::isnan(v_rho_a_tau_a[i]) ||
+                        std::isnan(v_gamma_aa_tau_a[i]) || std::isnan(v_tau_a_tau_a[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 %.6e %.6e\n", rho_ap[i] / 2,
+                                        rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4,
+                                        tau_ap[i] / 2, tau_ap[i] / 2);
+                        found_nan = true;
+                    }
+                }
             } else if (gga_) {
                 for (int i = 0; i < npoints; i++) {
                     if (std::isnan(v_rho_a_rho_a[i]) || std::isnan(v_gamma_aa_gamma_aa[i]) ||
@@ -838,7 +870,68 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
         // Compute second deriv
         if (deriv >= 2) {
             if (meta_) {
-                throw PSIEXCEPTION("Second derivative for meta functionals is not yet available");
+                std::vector<double> fv2_rho2(npoints * 3);
+                std::vector<double> fv2_rhogamma(npoints * 6);
+                std::vector<double> fv2_rholapl(npoints * 4);
+                std::vector<double> fv2_rhotau(npoints * 4);
+                std::vector<double> fv2_gamma2(npoints * 6);
+                std::vector<double> fv2_gammalapl(npoints * 6);
+                std::vector<double> fv2_gammatau(npoints * 6);
+                std::vector<double> fv2_lapl2(npoints * 3);
+                std::vector<double> fv2_lapltau(npoints * 4);
+                std::vector<double> fv2_tau2(npoints * 3);
+
+                xc_mgga_fxc(xc_functional_.get(), npoints, frho.data(), fgamma.data(), flapl.data(), ftau.data(),
+                            fv2_rho2.data(), fv2_rhogamma.data(), fv2_rholapl.data(), fv2_rhotau.data(),
+                            fv2_gamma2.data(), fv2_gammalapl.data(), fv2_gammatau.data(), fv2_lapl2.data(),
+                            fv2_lapltau.data(), fv2_tau2.data());
+
+                for (size_t i = 0; i < npoints; i++) {
+                    // v2rho2(3)       = (u_u, u_d, d_d)
+                    v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
+                    v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
+                    v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i + 2];
+
+                    // v2gamma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd, dd_dd)
+                    v_gamma_aa_gamma_aa[i] += alpha_ * fv2_gamma2[6 * i];
+                    v_gamma_aa_gamma_ab[i] += alpha_ * fv2_gamma2[6 * i + 1];
+                    v_gamma_aa_gamma_bb[i] += alpha_ * fv2_gamma2[6 * i + 2];
+                    v_gamma_ab_gamma_ab[i] += alpha_ * fv2_gamma2[6 * i + 3];
+                    v_gamma_ab_gamma_bb[i] += alpha_ * fv2_gamma2[6 * i + 4];
+                    v_gamma_bb_gamma_bb[i] += alpha_ * fv2_gamma2[6 * i + 5];
+
+                    // v2rhogamma(6)   = (u_uu, u_ud, u_dd, d_uu, d_ud, d_dd)
+                    v_rho_a_gamma_aa[i] += alpha_ * fv2_rhogamma[6 * i];
+                    v_rho_a_gamma_ab[i] += alpha_ * fv2_rhogamma[6 * i + 1];
+                    v_rho_a_gamma_bb[i] += alpha_ * fv2_rhogamma[6 * i + 2];
+                    v_rho_b_gamma_aa[i] += alpha_ * fv2_rhogamma[6 * i + 3];
+                    v_rho_b_gamma_ab[i] += alpha_ * fv2_rhogamma[6 * i + 4];
+                    v_rho_b_gamma_bb[i] += alpha_ * fv2_rhogamma[6 * i + 5];
+
+                    // Like V_TAU_A = 1/2 vtau above, every TAU index of a
+                    // second derivative carries a factor 1/2: the Vx
+                    // contraction code pairs each with the bare
+                    // grad phi . grad phi bilinear.
+                    // v2rhotau(4)     = (u_u, u_d, d_u, d_d)
+                    v_rho_a_tau_a[i] += 0.5 * alpha_ * fv2_rhotau[4 * i];
+                    v_rho_a_tau_b[i] += 0.5 * alpha_ * fv2_rhotau[4 * i + 1];
+                    v_rho_b_tau_a[i] += 0.5 * alpha_ * fv2_rhotau[4 * i + 2];
+                    v_rho_b_tau_b[i] += 0.5 * alpha_ * fv2_rhotau[4 * i + 3];
+
+                    // v2gammatau(6)   = (uu_u, uu_d, ud_u, ud_d, dd_u, dd_d)
+                    v_gamma_aa_tau_a[i] += 0.5 * alpha_ * fv2_gammatau[6 * i];
+                    v_gamma_aa_tau_b[i] += 0.5 * alpha_ * fv2_gammatau[6 * i + 1];
+                    v_gamma_ab_tau_a[i] += 0.5 * alpha_ * fv2_gammatau[6 * i + 2];
+                    v_gamma_ab_tau_b[i] += 0.5 * alpha_ * fv2_gammatau[6 * i + 3];
+                    v_gamma_bb_tau_a[i] += 0.5 * alpha_ * fv2_gammatau[6 * i + 4];
+                    v_gamma_bb_tau_b[i] += 0.5 * alpha_ * fv2_gammatau[6 * i + 5];
+
+                    // v2tau2(3)       = (u_u, u_d, d_d)
+                    v_tau_a_tau_a[i] += 0.25 * alpha_ * fv2_tau2[3 * i];
+                    v_tau_a_tau_b[i] += 0.25 * alpha_ * fv2_tau2[3 * i + 1];
+                    v_tau_b_tau_b[i] += 0.25 * alpha_ * fv2_tau2[3 * i + 2];
+                }
+
             } else if (gga_) {
                 std::vector<double> fv2_rho2(npoints * 3);
                 std::vector<double> fv2_rhogamma(npoints * 6);
@@ -887,7 +980,19 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             // parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
-                throw PSIEXCEPTION("Second derivative for meta functionals not yet available.");
+                for (int i = 0; i < npoints; i++) {
+                    if (std::isnan(v_rho_a_rho_a[i]) || std::isnan(v_rho_a_rho_b[i]) || std::isnan(v_rho_b_rho_b[i]) ||
+                        std::isnan(v_gamma_aa_gamma_aa[i]) || std::isnan(v_gamma_ab_gamma_ab[i]) ||
+                        std::isnan(v_gamma_bb_gamma_bb[i]) || std::isnan(v_rho_a_gamma_aa[i]) ||
+                        std::isnan(v_rho_b_gamma_bb[i]) || std::isnan(v_rho_a_tau_a[i]) ||
+                        std::isnan(v_rho_b_tau_b[i]) || std::isnan(v_gamma_aa_tau_a[i]) ||
+                        std::isnan(v_gamma_bb_tau_b[i]) || std::isnan(v_tau_a_tau_a[i]) ||
+                        std::isnan(v_tau_a_tau_b[i]) || std::isnan(v_tau_b_tau_b[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 %.6e %.6e\n", rho_ap[i], rho_bp[i],
+                                        gamma_aap[i], gamma_abp[i], gamma_bbp[i], tau_ap[i], tau_bp[i]);
+                        found_nan = true;
+                    }
+                }
             } else if (gga_) {
                 for (int i = 0; i < npoints; i++) {
                     if (std::isnan(v_rho_a_rho_a[i]) || std::isnan(v_rho_a_rho_b[i]) || std::isnan(v_rho_b_rho_b[i]) ||

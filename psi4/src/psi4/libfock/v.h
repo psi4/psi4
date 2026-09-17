@@ -64,6 +64,8 @@ class PSI_API VBase {
     int nbf_;
     /// Rho threshold for the second derivative;
     double v2_rho_cutoff_;
+    /// Include quadrature grid response in nuclear derivatives?
+    bool grid_response_;
     /// VV10 interior kernel threshold
     double vv10_rho_cutoff_;
     /// Options object, used to build grid

@@ -691,7 +691,16 @@ void BasisFunctions::allocate() {
         basis_temps_["PHI_ZZ"] = std::make_shared<Matrix>("PHI_ZZ", max_points_, max_functions_);
     }
 
-    if (deriv_ >= 3) throw PSIEXCEPTION("BasisFunctions: Only up to Hessians are currently supported");
+    if (deriv_ >= 3) {
+        static const char* keys3[10] = {"PHI_XXX", "PHI_XXY", "PHI_XXZ", "PHI_XYY", "PHI_XYZ",
+                                        "PHI_XZZ", "PHI_YYY", "PHI_YYZ", "PHI_YZZ", "PHI_ZZZ"};
+        for (const char* key : keys3) {
+            basis_values_[key] = std::make_shared<Matrix>(key, max_points_, max_functions_);
+            basis_temps_[key] = std::make_shared<Matrix>(key, max_points_, max_functions_);
+        }
+    }
+
+    if (deriv_ >= 4) throw PSIEXCEPTION("BasisFunctions: Only up to third derivatives are currently supported");
 }
 void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     // Pull out data
@@ -714,6 +723,9 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     double *tmp_xxp, *tmp_xyp, *tmp_xzp, *tmp_yyp, *tmp_yzp, *tmp_zzp;
     double *valuesp, *values_xp, *values_yp, *values_zp;
     double *values_xxp, *values_xyp, *values_xzp, *values_yyp, *values_yzp, *values_zzp;
+    static const char* keys3[10] = {"PHI_XXX", "PHI_XXY", "PHI_XXZ", "PHI_XYY", "PHI_XYZ",
+                                    "PHI_XZZ", "PHI_YYY", "PHI_YYZ", "PHI_YZZ", "PHI_ZZZ"};
+    double *tmp_3p[10], *values_3p[10];
 
     if (deriv_ >= 0) {
         tmpp = basis_temps_["PHI"]->pointer()[0];
@@ -740,6 +752,12 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
         values_yyp = basis_values_["PHI_YY"]->pointer()[0];
         values_yzp = basis_values_["PHI_YZ"]->pointer()[0];
         values_zzp = basis_values_["PHI_ZZ"]->pointer()[0];
+    }
+    if (deriv_ >= 3) {
+        for (int k = 0; k < 10; k++) {
+            tmp_3p[k] = basis_temps_[keys3[k]]->pointer()[0];
+            values_3p[k] = basis_values_[keys3[k]]->pointer()[0];
+        }
     }
 
     int nvals = 0;
@@ -792,6 +810,14 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
             gg_collocation_deriv2(L, npoints, xyz.data(), 1, nprim, norm, alpha, center.data(), order, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start,
                                   phi_yy_start, phi_yz_start, phi_zz_start);
+        } else if (deriv_ == 3) {
+            gg_collocation_deriv3(L, npoints, xyz.data(), 1, nprim, norm, alpha, center.data(), order, phi_start,
+                                  tmp_xp + row_shift, tmp_yp + row_shift, tmp_zp + row_shift, tmp_xxp + row_shift,
+                                  tmp_xyp + row_shift, tmp_xzp + row_shift, tmp_yyp + row_shift, tmp_yzp + row_shift,
+                                  tmp_zzp + row_shift, tmp_3p[0] + row_shift, tmp_3p[1] + row_shift,
+                                  tmp_3p[2] + row_shift, tmp_3p[3] + row_shift, tmp_3p[4] + row_shift,
+                                  tmp_3p[5] + row_shift, tmp_3p[6] + row_shift, tmp_3p[7] + row_shift,
+                                  tmp_3p[8] + row_shift, tmp_3p[9] + row_shift);
         }
 
         if (puream_) {
@@ -816,6 +842,11 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
         gg_fast_transpose(nso, npoints, tmp_yyp, values_yyp);
         gg_fast_transpose(nso, npoints, tmp_yzp, values_yzp);
         gg_fast_transpose(nso, npoints, tmp_zzp, values_zzp);
+    }
+    if (deriv_ >= 3) {
+        for (int k = 0; k < 10; k++) {
+            gg_fast_transpose(nso, npoints, tmp_3p[k], values_3p[k]);
+        }
     }
 }
 void BasisFunctions::print(std::string out, int print) const {
