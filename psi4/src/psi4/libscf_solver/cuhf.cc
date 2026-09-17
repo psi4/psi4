@@ -375,7 +375,7 @@ double CUHF::compute_E() {
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
-    energies_["VV10_E"] = 0.0;
+    energies_["VV10"] = 0.0;
     energies_["-D"] = 0.0;
 
     // outfile->Printf( "electronic energy = %20.14f\n", Eelec);
