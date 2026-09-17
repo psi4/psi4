@@ -23,6 +23,9 @@ dependencies = [
     "msgpack",
 ]
 
+[project.scripts]
+psi4 = "psi4.run_psi4:main"
+
 [[tool.dynamic-metadata]]
 field = "version"
 provider = {path = "psi4", module = "versioner:Provider"}
