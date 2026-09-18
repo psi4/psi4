@@ -511,6 +511,18 @@ void DFHelper::prepare_AO_wK() {
     std::vector<std::pair<size_t, size_t>> psteps;
     std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 0, psteps);
 }
+void DFHelper::update_core_claim() {
+    // Read the claim off the buffers themselves rather than off the branch that
+    // allocated them: the in-core AO integrals come in three pieces that appear and
+    // disappear independently (wK adds wPpq_ and m1Ppq_, and a transform may drop
+    // Ppq_ early to make room for the metric contraction).
+    const size_t block = direct_iaQ_ ? naux_ * nbf_ * nbf_ : big_skips_[nbf_];
+    size_t held = 0;
+    if (Ppq_) held += block;
+    if (wPpq_) held += block;
+    if (m1Ppq_) held += block;
+    core_claim_.set(held);
+}
 void DFHelper::prepare_AO_core() {
     // get each thread an eri object
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
@@ -537,6 +549,7 @@ void DFHelper::prepare_AO_core() {
     } else {
         Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
     }
+    update_core_claim();
 
     double* ppq = Ppq_.get();
 
@@ -618,6 +631,7 @@ void DFHelper::prepare_AO_wK_core() {
     m1Ppq_ = std::make_unique<double[]>(big_skips_[nbf_]);
 
     if (!wcombine_) Ppq_ = std::make_unique<double[]>(big_skips_[nbf_]);
+    update_core_claim();
 
 
     double* wppq = wPpq_.get();
@@ -2059,6 +2073,7 @@ void DFHelper::transform() {
     // release in-core AO 
     if (AO_core_ && release_core_AO_before_metric_)  {
         Ppq_.reset();
+        update_core_claim();
     }
 
     if (direct_iaQ_ || direct_) {

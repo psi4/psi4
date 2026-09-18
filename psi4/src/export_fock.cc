@@ -39,6 +39,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/memory_ledger.h"
 #include "psi4/libscf_solver/sad.h"
 
 using namespace psi;
@@ -46,6 +47,13 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_fock(py::module &m) {
+    m.def("memory_committed", &MemoryClaim::committed,
+          "Number of doubles the large, long-lived buffers of this process are holding right now: the "
+          "in-core density-fitted integrals of every live JK object and the DFT collocation cache of every "
+          "live V object. get_memory() describes an empty process, so a driver that keeps earlier "
+          "wavefunctions alive -- SAPT(DFT), or a GRAC shift holding the neutral while the cation runs -- "
+          "must subtract this before dividing the SCF memory budget, or each SCF claims the whole budget again.");
+
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
         .def_static("build_JK",
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {

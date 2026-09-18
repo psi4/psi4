@@ -733,7 +733,12 @@ void VBase::print_header() const {
 }
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
-void VBase::finalize() { grid_.reset(); }
+void VBase::finalize() {
+    // The collocation cache is keyed by grid block index, so it must never
+    // outlive the grid it was built from.
+    clear_collocation_cache();
+    grid_.reset();
+}
 void VBase::build_collocation_cache(size_t memory) {
     // Figure out many blocks to skip
 
@@ -745,7 +750,7 @@ void VBase::build_collocation_cache(size_t memory) {
         collocation_size *= 10;  // For gradients and Hessians
     }
 
-    cache_map_.clear();
+    clear_collocation_cache();
     if (memory == 0) {
         return;
     }
@@ -808,6 +813,8 @@ void VBase::build_collocation_cache(size_t memory) {
 
     size_t saved_size = std::accumulate(saved_size_rank.begin(), saved_size_rank.end(), (size_t)0);
     size_t ncomputed = std::accumulate(ncomputed_rank.begin(), ncomputed_rank.end(), (size_t)0);
+
+    cache_claim_.set(saved_size);
 
     double gib_saved = 8.0 * (double)saved_size / 1024.0 / 1024.0 / 1024.0;
     double fraction = (double)ncomputed / grid_->blocks().size() * 100;

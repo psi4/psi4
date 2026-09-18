@@ -1172,6 +1172,12 @@ def compute_GRAC_shift(
                     **scf_kwargs,
                 )
             except ConvergenceError:
+                # A failed attempt's wavefunctions are still bound in this
+                # function's scope, so without dropping them here they stay
+                # resident -- grid data, collocation cache and all -- while the
+                # next convergence tier allocates its own from the full budget.
+                wfn_given = None
+                wfn_cation = None
                 if len(grac_options) == 1:
                     raise Exception(
                         "Convergence error in GRAC shift calculation, please try a different convergence tier."

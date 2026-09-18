@@ -32,6 +32,7 @@
 #include "psi4/psi4-dec.h"
 #include <psi4/libmints/typedefs.h>
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/memory_ledger.h"
 
 #include <map>
 #include <list>
@@ -340,6 +341,9 @@ class PSI_API DFHelper {
     // => memory in doubles <=
     size_t memory_ = 256000000;
     size_t required_core_size_;
+    // What the in-core AO integrals above are costing the process right now, so that an
+    // SCF started while this object is alive can see that the memory is already spent.
+    MemoryClaim core_claim_;
 
     // => internal holders <=
     std::string method_ = "STORE";
@@ -388,6 +392,8 @@ class PSI_API DFHelper {
     // => AO building machinery <=
     void prepare_AO();
     void prepare_AO_core();
+    /// Re-report the in-core AO integrals to the process memory ledger from the buffers that exist now
+    void update_core_claim();
     void compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_sparse_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,
