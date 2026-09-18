@@ -53,6 +53,17 @@ from ..solvent.efp import get_qm_atoms_opts, modify_Fock_induced, modify_Fock_pe
 #    self.iterations(e_conv=1.e-5, d_conv=1.e-4)
 
 
+def _release_collocation_cache(self):
+    """Free the DFT collocation cache held by this wavefunction's V_potential.
+
+    The cache is sized from the *whole* memory budget (see scf_initialize), so it
+    must be released as soon as the SCF is done with it -- including when the SCF
+    fails, since a non-converged SCF never reaches finalize_energy().
+    """
+    if self.V_potential():
+        self.V_potential().clear_collocation_cache()
+
+
 def scf_compute_energy(self):
     """Base class Wavefunction requires this function. Here it is
     simply a wrapper around initialize(), iterations(), finalize_energy(). It
@@ -71,6 +82,7 @@ def scf_compute_energy(self):
                 self.iterations()
             except SCFConvergenceError:
                 self.finalize()
+                _release_collocation_cache(self)
                 raise SCFConvergenceError("""SCF DF preiterations""", self.iteration_, self, 0, 0)
         core.print_out("\n  DF guess converged.\n\n")
 
@@ -90,6 +102,7 @@ def scf_compute_energy(self):
             # energy = 0.0
             # A P::e fn to either throw or protest upon nonconvergence
             # die_if_not_converged()
+            _release_collocation_cache(self)
             raise e
         else:
             core.print_out("  Energy and/or wave function did not converge, but proceeding anyway.\n\n")
@@ -106,6 +119,82 @@ def _build_jk(wfn, memory):
                        do_wK=wfn.functional().is_x_lrc(),
                        memory=memory)
     return jk
+
+
+def _scf_memory_reserve(wfn):
+    """Estimate, in doubles, what this SCF will spend *outside* the two budgets it hands out.
+
+    ``scf_initialize`` divides the memory setting between the JK and the DFT collocation
+    cache, but those are not the only two consumers.  The SCF matrices, the grid itself,
+    the per-thread point-function scratch and the JK's own per-call transients are all
+    paid for out of whatever the split happens to leave behind, and none of them is
+    declared to the memory ledger.  That residue is what ``SCF_MEM_SAFETY_FACTOR`` has
+    really been covering, and a fixed fraction of a user-chosen number is the wrong shape
+    for it: the transient term grows as naux*nocc*nbf while the fraction stays put, so
+    the factor is wasteful on small jobs and too small on exactly the large ones where
+    running out of memory is most expensive.
+
+    Every input below is known before a single integral is computed, so this can run
+    before the budget is divided.  The coefficients come from per-stage high-water
+    measurements on eight systems (nanotube and peptide dimers, cc-pVDZ through
+    aug-cc-pVTZ, 4-32 threads); see ~/docs/saptdft-memory.html for the derivations.
+    """
+    nbf = wfn.basisset().nbf()
+    nthread = core.get_num_threads()
+
+    # Columns of C that the JK is handed: one set of occupieds if the densities are
+    # constrained equal, alpha and beta separately otherwise.
+    nocc = max(1, wfn.nalpha())
+    if not wfn.same_a_b_dens():
+        nocc += wfn.nbeta()
+
+    # Interpreter, library statics and per-thread scratch that no module declares.  Flat
+    # at 0.21 GiB across every probe, plus ~0.9 MB per thread of OpenMP/BLAS stacks.
+    base = (0.21 * 1024**3 + 0.9e6 * nthread) / 8
+
+    # The nbf^2 matrices an SCF holds: H, S, X, Fa/Fb, Ca/Cb, Da/Db, Va/Vb and friends,
+    # plus two DIIS vectors (error and target) per subspace entry.
+    matrices = float(nbf**2 * (12 + 2 * core.get_option("SCF", "DIIS_MAX_VECS")))
+
+    # Grid storage and the point-function scratch.  Both are zero for a grid-less SCF.
+    grid_mem = 0.0
+    points_mem = 0.0
+    vbase = wfn.V_potential()
+    grid = vbase.grid() if vbase else None
+    if grid:
+        nblocks = len(grid.blocks())
+        max_points = grid.max_points()
+        max_functions = grid.max_functions()
+        # BlockOPoints: x/y/z/w per point (32 B), plus a local-function map per block
+        # (26 B per function held), plus ~4 MB/thread of libxc workspace.
+        grid_mem = (32.0 * grid.npoints() + 26.0 * nblocks * max_functions + 4.0e6 * nthread) / 8
+        # PointFunctions basis/point values, per thread.  The fit is for a GGA (phi and
+        # three gradient components); an LDA needs a quarter of it, a meta-GGA 2.5x.
+        ansatz_scale = {0: 0.25, 1: 1.0, 2: 2.5}.get(vbase.functional().ansatz(), 1.0)
+        points_mem = ansatz_scale * nthread * (3.38 * max_points * max_functions +
+                                               1.887 * max_functions**2)
+
+    # compute_JK's per-call buffers.  DFHelper does size these against its own grant, but
+    # the BLAS/libint working set that sits on top of the accounted T1/T2/C_buffers is
+    # not: the measured ratio of real high-water to accounted buffers is 1.36-1.69 over
+    # six MemDFJK configurations, hence the 1.5.  The naux*nocc*nbf term is the largest
+    # Q-block case and so an upper bound -- deliberately, since this is a guard.
+    scf_type = core.get_global_option("SCF_TYPE").upper()
+    naux = 0
+    if "DF" in scf_type and "+" not in scf_type:
+        try:
+            naux = wfn.get_basisset("DF_BASIS_SCF").nbf()
+        except Exception:
+            naux = 0
+    jk_mem = 1.5 * (naux * nocc * nbf + nthread * nbf * max(nocc, nbf) + nbf**2)
+
+    return {
+        "base": base,
+        "matrices": matrices,
+        "grid": grid_mem,
+        "points": points_mem,
+        "jk": jk_mem,
+    }
 
 
 def initialize_jk(self, memory, jk=None):
@@ -134,8 +223,34 @@ def scf_initialize(self):
 
     # Figure out memory distributions
 
-    # Get memory in terms of doubles
-    total_memory = (core.get_memory() / 8) * core.get_global_option("SCF_MEM_SAFETY_FACTOR")
+    # Get memory in terms of doubles.  The memory setting describes an empty process, but
+    # an SCF is often started with earlier wavefunctions still alive -- SAPT(DFT) holds the
+    # dimer and both monomers, and a GRAC shift holds the neutral while the cation runs --
+    # whose JK integrals and collocation caches are already spending it.  Divide up what is
+    # actually left instead of handing out the whole setting again.  Our own cache, if this
+    # wavefunction has one from a previous SCF, would otherwise be double-counted against
+    # us; drop it only on a first attempt, which is the only case that rebuilds it below.
+    if self.attempt_number_ == 1:
+        _release_collocation_cache(self)
+    committed_memory = core.memory_committed()
+    unclaimed_memory = max(0.0, (core.get_memory() / 8) - committed_memory)
+
+    # Set aside the undeclared-but-mandatory part before dividing up the rest.  Without
+    # this the JK and the cache are handed a fraction of the whole setting and everything
+    # else -- SCF matrices, grid, JK transients -- has to fit in the rounding error, which
+    # is why a job whose printed JK estimate fits its allocation can still be killed.  The
+    # reserve is capped at half the budget so that an under-declared run degrades into an
+    # out-of-core JK (which DFHelper handles) rather than a zero grant.
+    reserve_terms = _scf_memory_reserve(self)
+    reserve_memory = min(sum(reserve_terms.values()), 0.5 * unclaimed_memory)
+
+    # With an absolute reserve subtracted, the factor is only residual slop, so the 0.75
+    # default is far too conservative; honour it if the user set it, otherwise use 0.95.
+    if core.has_option_changed("SCF", "SCF_MEM_SAFETY_FACTOR"):
+        safety_factor = core.get_option("SCF", "SCF_MEM_SAFETY_FACTOR")
+    else:
+        safety_factor = 0.95
+    total_memory = max(0.0, unclaimed_memory - reserve_memory) * safety_factor
 
     # Figure out how large the DFT collocation matrices are
     vbase = self.V_potential()
@@ -156,10 +271,23 @@ def scf_initialize(self):
     else:
         initialize_jk_obj = True
         jk = _build_jk(self, total_memory)
-    jk_size = jk.memory_estimate()
+
+    if initialize_jk_obj:
+        # What this SCF is about to allocate for a JK of its own.  DiskJK, DirectJK and
+        # CompositeJK all return 0 here because they cannot predict their footprint; that
+        # means "unknown", not "nothing", so the remainder is not the cache's to take --
+        # treating it that way is what lets an out-of-core SCF claim a *larger* collocation
+        # cache than the DF one it was meant to be cheaper than.
+        jk_size = jk.memory_estimate()
+        jk_size_known = jk_size > 0
+    else:
+        # A re-used JK is already holding its integrals and is already counted in
+        # committed_memory, so this SCF will allocate nothing further for it.
+        jk_size = 0
+        jk_size_known = True
 
     # Give remaining to collocation
-    if total_memory > jk_size:
+    if jk_size_known and total_memory > jk_size:
         collocation_memory = total_memory - jk_size
     # Give up to 10% to collocation
     elif (total_memory * 0.1) > collocation_size:
@@ -176,6 +304,45 @@ def scf_initialize(self):
     self.memory_collocation_ = int(collocation_memory)
 
     if self.get_print():
+        gib = lambda doubles: doubles * 8 / 1024**3
+
+        core.print_out("  ==> SCF Memory <==\n\n")
+        core.print_out("    Memory setting                  {:11.3f} [GiB]\n".format(core.get_memory() / 1024**3))
+        if committed_memory:
+            core.print_out("    Held by live JK / grid caches   {:11.3f} [GiB]\n".format(gib(committed_memory)))
+        core.print_out("    Reserve estimate                {:11.3f} [GiB]\n".format(gib(reserve_memory)))
+        for label, key in (("SCF matrices", "matrices"), ("DFT grid", "grid"),
+                           ("DFT point functions", "points"), ("JK per-call transients", "jk"),
+                           ("Interpreter and libraries", "base")):
+            if reserve_terms[key]:
+                core.print_out("      {:30s}{:11.3f}\n".format(label, gib(reserve_terms[key])))
+        if sum(reserve_terms.values()) > reserve_memory:
+            core.print_out("      (capped at half the remaining budget; this job is under-declared)\n")
+        core.print_out("    JK allocation                   {:11.3f} [GiB]\n".format(gib(self.memory_jk_)))
+        if collocation_size:
+            core.print_out("    Collocation cache               {:11.3f} [GiB]  of {:.3f} [GiB] full\n".format(
+                gib(self.memory_collocation_), gib(collocation_size)))
+
+        if jk_size_known:
+            # jk_size is what a JK built here will allocate; a re-used one reports 0
+            # because its integrals are already inside committed_memory.
+            required = committed_memory + reserve_memory + jk_size
+            peak = required + self.memory_collocation_
+            core.print_out("    Estimated peak                  {:11.3f} [GiB]\n".format(gib(peak)))
+            core.print_out("    Minimum memory for this SCF     {:11.3f} [GiB]".format(gib(1.05 * required)))
+            if collocation_size:
+                core.print_out("  {:.3f} [GiB] to also cache the grid".format(
+                    gib(1.05 * required + collocation_size)))
+            core.print_out("\n")
+        else:
+            core.print_out("    Estimated peak                      unknown  {} cannot predict its footprint\n".format(
+                core.get_global_option("SCF_TYPE")))
+        core.print_out("\n")
+        if committed_memory:
+            core.print_out("  The memory already held above belongs to wavefunctions that are still alive\n"
+                           "  (a SAPT dimer and its monomers, or the neutral behind a GRAC shift); this SCF\n"
+                           "  divides up the remainder rather than the whole setting.\n\n")
+
         core.print_out("  ==> Integral Setup <==\n\n")
 
     # Initialize EFP
@@ -798,8 +965,7 @@ def scf_finalize_energy(self):
 
     # TODO re-enable
     self.finalize()
-    if self.V_potential():
-        self.V_potential().clear_collocation_cache()
+    _release_collocation_cache(self)
 
     core.print_out("\nComputation Completed\n")
     core.del_variable("SCF D NORM")
