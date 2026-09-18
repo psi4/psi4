@@ -34,6 +34,12 @@ from . import optproc
 
 __all__ = ['free_atom_volumes']
 
+# Re-entrancy guard for free_atom_volumes. The atomic reference computations it runs go through
+# the ordinary energy() path, which calls back into this routine whenever MBIS_VOLUME_RATIOS is in
+# SCF_PROPERTIES. The flag -- rather than "is this a single atom?" -- is what stops that recursion,
+# so that a single-atom *input* still gets a reference computation and hence a volume ratio.
+_computing_free_atom_volumes = False
+
 
 def free_atom_volumes(wfn: psi4.core.Wavefunction, **kwargs):
     """ 
@@ -52,13 +58,12 @@ def free_atom_volumes(wfn: psi4.core.Wavefunction, **kwargs):
         atomic computations
     """
 
-    # If we're already a free atom, break to avoid recursion
-    # We don't ever need volume ratios for free atoms since they
-    # are by definition 1.0
-    natom = wfn.molecule().natom()
-    if natom == 1:
-        return 0 
-    
+    # Break the recursion described at _computing_free_atom_volumes: this call is coming from
+    # inside one of our own atomic reference computations, which needs no volumes of its own.
+    global _computing_free_atom_volumes
+    if _computing_free_atom_volumes:
+        return 0
+
     # We need to know the level of theory of the system to compute the free atoms
     # This isn't stored or might have been preloaded so we search the psi4 variables for
     # the best match
@@ -103,7 +108,26 @@ def free_atom_volumes(wfn: psi4.core.Wavefunction, **kwargs):
 
     psi4.core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
 
-    optstash = optproc.OptionsState(["SCF", 'REFERENCE'])
+    # The atomic reference computations get their MBIS pass from the explicit oeprop() call below,
+    # so the properties the driver would otherwise run on them are stripped: that pass is redundant
+    # work, and asking it for MBIS_VOLUME_RATIOS would be asking an atom for its own volume ratio.
+    optstash = optproc.OptionsState(["SCF", 'REFERENCE'], ["SCF", 'SCF_PROPERTIES'])
+    psi4.core.set_local_option("SCF", "SCF_PROPERTIES", [])
+    _computing_free_atom_volumes = True
+    try:
+        _run_free_atom_volumes(wfn, unq_atoms, theory, reference_S)
+    finally:
+        _computing_free_atom_volumes = False
+        # reset mol and reference to original
+        optstash.restore()
+        mol.update_geometry()
+        psi4.molutil.activate(mol)
+
+    return 0
+
+
+def _run_free_atom_volumes(wfn, unq_atoms, theory, reference_S):
+    """Run one atomic reference computation per unique atom, recording its MBIS volume on `wfn`."""
     for a_sym, a_z, basis in unq_atoms:
 
         # make sure we do UHF/UKS if we're not a singlet
@@ -137,8 +161,3 @@ def free_atom_volumes(wfn: psi4.core.Wavefunction, **kwargs):
         
         psi4.core.clean()
         psi4.core.clean_variables()
-
-    # reset mol and reference to original
-    optstash.restore()
-    mol.update_geometry()
-    psi4.molutil.activate(mol)

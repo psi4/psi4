@@ -1,0 +1,69 @@
+#! MBIS volume ratios for one-atom inputs
+#
+# A one-atom input used to be treated as a free atom by fiat: MBIS VOLUME RATIOS was skipped
+# entirely, so a caller that asked for it got a successful calculation with the answer missing.
+# But "one atom" and "free atom" are not the same claim. The ratio is 1 only for a neutral atom
+# in its reference multiplicity; an ion has a genuinely different volume from the neutral atom
+# it is compared against, and that number is the whole point of asking.
+#
+# Pinned here: the ratio is produced at all, it is 1 for the neutral reference atoms (the value
+# the old short-circuit assumed), and it is not 1 for an anion.
+#
+# The second half pins a separate lookup bug at the same site. The free-atom volumes are stored
+# under the element symbol, but were read back under the input label, so any molecule written
+# with custom labels ("O1", "H1", ...) died with "MBIS FREE ATOM O1 VOLUME was not set".
+
+import numpy as np
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  mbis_radial_points 75
+  mbis_spherical_points 302
+  scf_properties ['MBIS_CHARGES', 'MBIS_VOLUME_RATIOS']
+}
+
+# Neutral atoms in their reference states: closed shell (Ne) and open shell (O, triplet, UKS).
+for label, mol_str, reference in (("Ne", "0 1\nNe 0.0 0.0 0.0\n", "rhf"),
+                                  ("O",  "0 3\nO  0.0 0.0 0.0\n", "uhf")):
+    atom = psi4.geometry(mol_str + "symmetry c1\nno_reorient\nno_com\n")
+    psi4.set_options({"reference": reference})
+    e, wfn = energy('pbe/cc-pvdz', return_wfn=True, molecule=atom)
+    vr = np.array(wfn.array_variable('MBIS VOLUME RATIOS'))
+    compare_values(1.0, vr[0, 0], 4, "free %s: volume ratio is 1" % label)              #TEST
+
+# An anion is a one-atom input but not a free atom: it is compared against the neutral atom and
+# must come out larger. The old code reported nothing at all here.
+anion = psi4.geometry("""
+-1 1
+Cl 0.0 0.0 0.0
+symmetry c1
+no_reorient
+no_com
+""")
+psi4.set_options({"reference": "rhf"})
+e, wfn = energy('pbe/cc-pvdz', return_wfn=True, molecule=anion)
+vr_anion = np.array(wfn.array_variable('MBIS VOLUME RATIOS'))[0, 0]
+compare(True, vr_anion > 1.2, "Cl- is more diffuse than free Cl (ratio %.4f)" % vr_anion)  #TEST
+
+# Custom atom labels must not break the free-atom lookup, and must give the same ratios as the
+# identical molecule written with bare element symbols.
+psi4.set_options({"reference": "rhf"})
+ratios = {}
+for key, first, second, third in (("plain", "O", "H", "H"), ("labeled", "O1", "H1", "H2")):
+    mol = psi4.geometry("""
+    0 1
+    %s 0.000000 0.000000 0.000000
+    %s 0.000000 0.000000 1.810000
+    %s 0.000000 1.810000 0.000000
+    symmetry c1
+    no_reorient
+    no_com
+    units bohr
+    """ % (first, second, third))
+    e, wfn = energy('pbe/cc-pvdz', return_wfn=True, molecule=mol)
+    ratios[key] = np.array(wfn.array_variable('MBIS VOLUME RATIOS'))
+
+compare_values(ratios["plain"], ratios["labeled"], 6,                                   #TEST
+               "labeled atoms give the same volume ratios as bare symbols")             #TEST
