@@ -183,6 +183,39 @@ iterative :math:`(T)` amplitudes, and DLPNO-CCSDTQ always forms the iterative
    ``T_CUT_QNO_FULL`` controls both quadruplet classes. |PSIfour| prints a runtime
    warning when explicitly set values are superseded in this way.
 
+.. note::
+
+   **Post-publication TNO and QNO truncation corrections.**
+
+   The |PSIfour| implementation augments the published higher-order DLPNO
+   algorithms with additive semicanonical estimates of the correlation energy
+   omitted by the looser natural-orbital spaces used for the full-rank
+   iterations. For full triples, the correction is
+
+   .. math::
+
+      \Delta E_{\mathrm{TNO}} =
+      E_{(T0)}(\mathtt{T\_CUT\_TNO}) -
+      E_{(T0)}(\mathtt{T\_CUT\_TNO\_FULL}),
+
+   evaluated over the same surviving triplets. It is added to DLPNO-CCSDT and
+   every higher-method total energy. For full quadruples, the analogous
+   correction is
+
+   .. math::
+
+      \Delta E_{\mathrm{QNO}} =
+      E_{(Q0)}(\mathtt{T\_CUT\_QNO}) -
+      E_{(Q0)}(\mathtt{T\_CUT\_QNO\_FULL}),
+
+   evaluated over the same surviving quadruplets and added to the
+   DLPNO-CCSDTQ total energy. The corrections are reported as
+   :psivar:`DLPNO TNO TRUNCATION ERROR` and
+   :psivar:`DLPNO QNO TRUNCATION ERROR`, respectively. This correction scheme
+   is a post-publication implementation enhancement and was not part of the
+   algorithms documented in [Jiang:2025:2386]_, [Jiang:2025:144102]_, or
+   [Jiang:2026:2825]_.
+
 DLPNO-CCSDT
 ~~~~~~~~~~~
 

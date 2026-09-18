@@ -927,10 +927,22 @@ PSI Variables by Alpha
 
    Various corrections in the overall DLPNO-CCSD correlation energy
 
+.. psivar:: DLPNO QNO TRUNCATION ERROR
+
+   Semicanonical quadruples correction [E_h] defined as the DLPNO-(Q0) energy
+   at |dlpno__t_cut_qno| minus that at |dlpno__t_cut_qno_full|. Included in
+   the DLPNO-CCSDTQ total energy.
+
 .. psivar:: DLPNO SEMICANONICAL (T0) ENERGY
    DLPNO SCREENED TRIPLETS ENERGY
 
    Various components to the overall DLPNO-(T) correlation energy
+
+.. psivar:: DLPNO TNO TRUNCATION ERROR
+
+   Semicanonical triples correction [E_h] defined as the DLPNO-(T0) energy at
+   |dlpno__t_cut_tno| minus that at |dlpno__t_cut_tno_full|. Included in
+   DLPNO-CCSDT and higher total energies.
 
 .. psivar:: DOUBLE-HYBRID CORRECTION ENERGY
 

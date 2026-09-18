@@ -2488,8 +2488,8 @@ double DLPNOCCSDT_Q::compute_energy() {
     outfile->Printf("    * Screened Quadruplets Contribution:        %16.12f\n", de_lccsdt_q_screened_);
 
     double e_scf = variables_["SCF TOTAL ENERGY"];
-    double e_ccsdt_q_corr = E_Q0 + de_lccsdt_q_screened_ + e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ +
-                            de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+    double e_ccsdt_q_corr = E_Q0 + de_lccsdt_q_screened_ + e_lccsdt_ + de_tno_ +
+                            de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_ccsdt_q_total = e_scf + e_ccsdt_q_corr;
 
     outfile->Printf("\n\n  @Total DLPNO-CCSDT(Q0) Energy: %16.12f\n", e_ccsdt_q_total);
@@ -2525,6 +2525,12 @@ double DLPNOCCSDT_Q::compute_energy() {
         double E_Q0_iteration_domains = compute_gamma_ijkl(true);
         double E_Q = lccsdt_q_iterations();
         double dE_Q = E_Q - E_Q0_iteration_domains;
+        if (full_quadruples_follow) {
+            // The full-T4 iteration uses the looser T_CUT_QNO_FULL space. Recover
+            // the omitted QNO contribution from the semicanonical (Q0) difference
+            // over the same surviving quadruplets.
+            de_qno_ = E_Q0 - E_Q0_iteration_domains;
+        }
         E_Q_ = E_Q;
         e_lccsdt_q_ = E_Q0 + dE_Q;
 
@@ -2549,7 +2555,11 @@ double DLPNOCCSDT_Q::compute_energy() {
         outfile->Printf("    DLPNO-(Q0) energy at looser tolerance:      %16.12f\n",
                         E_Q0_iteration_domains);
         outfile->Printf("    DLPNO-(Q)  energy at looser tolerance:      %16.12f\n", E_Q);
-        outfile->Printf("    * Net Iterative (Q) contribution:           %16.12f\n\n", dE_Q);
+        outfile->Printf("    * Net Iterative (Q) contribution:           %16.12f\n", dE_Q);
+        if (full_quadruples_follow) {
+            outfile->Printf("    * QNO Truncation Error:                     %16.12f\n", de_qno_);
+        }
+        outfile->Printf("\n");
 
         outfile->Printf("    (Total) DLPNO-(Q) Correlation Energy:       %16.12f\n", E_Q0 + dE_Q + de_lccsdt_q_screened_);
         outfile->Printf("    * DLPNO-(Q0) Contribution:                  %16.12f\n", E_Q0);
@@ -2558,8 +2568,8 @@ double DLPNOCCSDT_Q::compute_energy() {
 
         // Overall DLPNO-CCSDT(Q) assembly, Eq. (63), including the preceding
         // local-pair/triplet truncation corrections.
-        e_ccsdt_q_corr = E_Q0 + dE_Q + de_lccsdt_q_screened_ + e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ +
-                         de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+        e_ccsdt_q_corr = E_Q0 + dE_Q + de_lccsdt_q_screened_ + e_lccsdt_ + de_tno_ +
+                         de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
         e_ccsdt_q_total = e_scf + e_ccsdt_q_corr;
         e_total = e_ccsdt_q_total;
 
@@ -2576,6 +2586,9 @@ double DLPNOCCSDT_Q::compute_energy() {
     set_scalar_variable("CURRENT ENERGY", e_ccsdt_q_total);
     set_scalar_variable(quadruples_correction_label + " CORRECTION ENERGY",
                         e_ccsdt_q_total - variables_["CCSDT TOTAL ENERGY"]);
+    if (algorithm_ == DLPNOMethod::CCSDTQ) {
+        set_scalar_variable("DLPNO QNO TRUNCATION ERROR", de_qno_);
+    }
 
     print_results();
 
@@ -2609,8 +2622,8 @@ void DLPNOCCSDT_Q::print_results() {
         algorithm_ == DLPNOMethod::CCSDT_Q && options_.get_bool("Q0_APPROXIMATION");
     const char* quadruples_label = q0_approximation ? "DLPNO-(Q0) Contribution" : "DLPNO-(Q) Contribution";
     const double lower_rank_correlation =
-        e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ +
-        de_dipole_ + de_pno_total_;
+        e_lccsdt_ + de_tno_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ +
+        de_pno_total_;
     const double quadruples_correlation = e_lccsdt_q_ + de_lccsdt_q_screened_;
     const double total_correlation = lower_rank_correlation + quadruples_correlation;
     const double total_energy = variables_["SCF TOTAL ENERGY"] + total_correlation;
@@ -2619,7 +2632,11 @@ void DLPNOCCSDT_Q::print_results() {
     outfile->Printf("  \n");
     outfile->Printf("  Total DLPNO-CCSDT(Q) Correlation Energy: %16.12f \n", total_correlation);
     outfile->Printf("    LCCSDT Correlation Energy:             %16.12f \n", e_lccsdt_);
+    outfile->Printf("    TNO Truncation Error:                  %16.12f \n", de_tno_);
     outfile->Printf("    %-38s %16.12f \n", quadruples_label, e_lccsdt_q_);
+    if (algorithm_ == DLPNOMethod::CCSDTQ) {
+        outfile->Printf("    QNO Truncation Error (included above): %16.12f \n", de_qno_);
+    }
     outfile->Printf("    Screened Quadruplets Contribution:     %16.12f \n", de_lccsdt_q_screened_);
     outfile->Printf("    Screened Triplets Contribution:        %16.12f \n", de_lccsd_t_screened_);
     outfile->Printf("    Weak Pair Contribution:                %16.12f \n", de_weak_);
@@ -5938,6 +5955,8 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
         r_converged &= fabs(r_curr4) < options_.get_double("R_CONVERGENCE");
         e_converged = fabs(e_curr - e_prev) < options_.get_double("E_CONVERGENCE");
 
+        // Raw full-quadruples energy in the T_CUT_TNO_FULL/T_CUT_QNO_FULL
+        // spaces. compute_energy() adds both semicanonical truncation errors.
         e_lccsdtq_ = e_curr - e_weak;
         de_weak_ = e_weak;
 
@@ -6023,8 +6042,8 @@ double DLPNOCCSDTQ::compute_energy() {
     timer_off("DLPNO-CCSDTQ");
 
     double e_scf = variables_["SCF TOTAL ENERGY"];
-    double e_ccsdtq_corr = e_lccsdtq_ + de_lccsdt_q_screened_ + de_lccsd_t_screened_ + de_weak_ +
-                           de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
+    double e_ccsdtq_corr = e_lccsdtq_ + de_tno_ + de_qno_ + de_lccsdt_q_screened_ +
+                           de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_ccsdtq_total = e_scf + e_ccsdtq_corr;
 
     set_scalar_variable("CCSDTQ CORRELATION ENERGY", e_ccsdtq_corr);
@@ -6033,6 +6052,8 @@ double DLPNOCCSDTQ::compute_energy() {
     set_scalar_variable("CURRENT ENERGY", e_ccsdtq_total);
     set_scalar_variable("Q CORRECTION ENERGY",
                         e_ccsdtq_total - variables_["CCSDT TOTAL ENERGY"]);
+    set_scalar_variable("DLPNO TNO TRUNCATION ERROR", de_tno_);
+    set_scalar_variable("DLPNO QNO TRUNCATION ERROR", de_qno_);
 
     print_results();
 
@@ -6051,7 +6072,7 @@ void DLPNOCCSDTQ::print_results() {
     set_scalar_variable("CC T1 DIAGNOSTIC", t1_diagnostic);
 
     const double total_correlation =
-        e_lccsdtq_ + de_lccsdt_q_screened_ + de_lccsd_t_screened_ + de_weak_ +
+        e_lccsdtq_ + de_tno_ + de_qno_ + de_lccsdt_q_screened_ + de_lccsd_t_screened_ + de_weak_ +
         de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     const double total_energy = variables_["SCF TOTAL ENERGY"] + total_correlation;
     const double ccsdtq_minus_ccsdt = total_energy - variables_["CCSDT TOTAL ENERGY"];
@@ -6060,6 +6081,8 @@ void DLPNOCCSDTQ::print_results() {
     outfile->Printf("  \n");
     outfile->Printf("  Total DLPNO-CCSDTQ Correlation Energy: %16.12f \n", total_correlation);
     outfile->Printf("    LCCSDTQ Correlation Energy:           %16.12f \n", e_lccsdtq_);
+    outfile->Printf("    TNO Truncation Error:                 %16.12f \n", de_tno_);
+    outfile->Printf("    QNO Truncation Error:                 %16.12f \n", de_qno_);
     outfile->Printf("    Screened Triplets Contribution:       %16.12f \n", de_lccsd_t_screened_);
     outfile->Printf("    Screened Quadruplets Contribution:    %16.12f \n", de_lccsdt_q_screened_);
     outfile->Printf("    CCSDTQ - CCSDT Energy:                %16.12f \n", ccsdtq_minus_ccsdt);

@@ -1507,13 +1507,13 @@ double DLPNOCCSD_T::compute_energy() {
     // Full triples and higher methods always form the iterative-(T) amplitudes
     // used as their starting point; T0_APPROXIMATION applies only when
     // DLPNO-CCSD(T) is the final requested method.
-    const bool t0_only = algorithm_ == DLPNOMethod::CCSD_T && options_.get_bool("T0_APPROXIMATION");
+    const bool full_triples_follow = algorithm_ != DLPNOMethod::CCSD_T;
+    const bool t0_only = !full_triples_follow && options_.get_bool("T0_APPROXIMATION");
     if (!t0_only) {
         outfile->Printf("\n\n  ==> Computing Full Iterative (T) <==\n\n");
 
         sort_triplets(E_T0);
 
-        const bool full_triples_follow = algorithm_ != DLPNOMethod::CCSD_T;
         const double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
         const double t_cut_tno_strong =
             full_triples_follow
@@ -1533,10 +1533,22 @@ double DLPNOCCSD_T::compute_energy() {
         E_T_ = lccsd_t_iterations();
         double dE_T = E_T_ - E_T0_crude;
 
+        // The full-T3 iteration uses the looser T_CUT_TNO_FULL space. Recover the
+        // TNOs omitted from that space with a semicanonical differential evaluated
+        // over the same surviving triplets. This post-publication correction is
+        // carried separately into CCSDT and every higher-rank total energy.
+        if (full_triples_follow) {
+            de_tno_ = E_T0 - E_T0_crude;
+        }
+
         outfile->Printf("\n");
         outfile->Printf("    DLPNO-CCSD(T0) energy at looser tolerance: %16.12f\n", E_T0_crude);
         outfile->Printf("    DLPNO-CCSD(T)  energy at looser tolerance: %16.12f\n", E_T_);
-        outfile->Printf("    * Net Iterative (T) contribution:          %16.12f\n\n", dE_T);
+        outfile->Printf("    * Net Iterative (T) contribution:          %16.12f\n", dE_T);
+        if (full_triples_follow) {
+            outfile->Printf("    * TNO Truncation Error:                     %16.12f\n", de_tno_);
+        }
+        outfile->Printf("\n");
 
         e_lccsd_t_ += dE_T;
     }
@@ -1565,12 +1577,14 @@ double DLPNOCCSD_T::compute_energy() {
     }
     set_scalar_variable("DLPNO SEMICANONICAL (T0) ENERGY", E_T0 + de_lccsd_t_screened_);
     set_scalar_variable("DLPNO SCREENED TRIPLETS ENERGY", de_lccsd_t_screened_);
+    if (full_triples_follow) {
+        set_scalar_variable("DLPNO TNO TRUNCATION ERROR", de_tno_);
+    }
 
     // Iterative CCSDT needs the converged T3 amplitudes in memory. If the
     // preceding (T) stage used disk storage, hydrate that final generation
     // before deleting its PSIO file.
-    const bool ccsdt_follows = algorithm_ != DLPNOMethod::CCSD_T;
-    if (ccsdt_follows && write_amplitudes_) {
+    if (full_triples_follow && write_amplitudes_) {
         const int n_lmo_triplets = ijk_to_i_j_k_.size();
 #pragma omp parallel for schedule(dynamic, 1)
         for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
@@ -1601,6 +1615,9 @@ void DLPNOCCSD_T::print_results() {
     outfile->Printf("    DLPNO-CCSD Contribution:              %16.12f \n", e_dlpno_ccsd);
     outfile->Printf("    DLPNO-(T) Contribution:               %16.12f \n", e_lccsd_t_ - e_lccsd_ - de_lccsd_t_screened_);
     outfile->Printf("    Screened Triplets Contribution:       %16.12f \n", de_lccsd_t_screened_);
+    if (algorithm_ != DLPNOMethod::CCSD_T) {
+        outfile->Printf("    TNO Truncation Error (included above): %16.12f \n", de_tno_);
+    }
     outfile->Printf("\n\n  @Total DLPNO-CCSD(T) Energy: %16.12f \n",
                     variables_["SCF TOTAL ENERGY"] + de_weak_ + de_lmp2_eliminated_ + e_lccsd_t_ + de_pno_total_ + de_dipole_);
     outfile->Printf("    *** Andy Jiang... FOR THREEEEEEEEEEE!!!\n\n");
@@ -3824,6 +3841,8 @@ void DLPNOCCSDT::lccsdt_iterations() {
         r_converged &= fabs(r_curr3) < options_.get_double("R_CONVERGENCE");
         e_converged = fabs(e_curr - e_prev) < options_.get_double("E_CONVERGENCE");
 
+        // Raw full-triples energy in the T_CUT_TNO_FULL space. compute_energy()
+        // adds the tight-minus-full semicanonical TNO truncation error.
         e_lccsdt_ = e_curr - e_weak;
         de_weak_ = e_weak;
 
@@ -3939,10 +3958,11 @@ double DLPNOCCSDT::compute_energy() {
     timer_off("DLPNO-CCSDT");
 
     // de_lccsd_t_screened_ is the screened-triplet component carried forward from the
-    // preceding DLPNO-(T) calculation. It is not a separate TNO-rank correction here.
+    // preceding DLPNO-(T) calculation. de_tno_ restores the semicanonical contribution
+    // lost when the iterative T3 space is truncated at T_CUT_TNO_FULL.
     double e_scf = variables_["SCF TOTAL ENERGY"];
-    double e_ccsdt_corr = e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ +
-                          de_pno_total_;
+    double e_ccsdt_corr = e_lccsdt_ + de_tno_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ +
+                          de_dipole_ + de_pno_total_;
     double e_ccsdt_total = e_scf + e_ccsdt_corr;
 
     set_scalar_variable("CCSDT CORRELATION ENERGY", e_ccsdt_corr);
@@ -3951,6 +3971,7 @@ double DLPNOCCSDT::compute_energy() {
     set_scalar_variable("CURRENT ENERGY", e_ccsdt_total);
     set_scalar_variable("T CORRECTION ENERGY",
                         e_ccsdt_total - variables_["CCSD TOTAL ENERGY"]);
+    set_scalar_variable("DLPNO TNO TRUNCATION ERROR", de_tno_);
 
     print_results();
 
@@ -3978,7 +3999,7 @@ void DLPNOCCSDT::print_results() {
     }
     set_scalar_variable("CC T1 DIAGNOSTIC", t1diag);
 
-    double e_total = e_lccsdt_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ +
+    double e_total = e_lccsdt_ + de_tno_ + de_lccsd_t_screened_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ +
                      de_pno_total_;
     const double e_ccsdt_total = variables_["SCF TOTAL ENERGY"] + e_total;
     const double ccsdt_minus_ccsd = e_ccsdt_total - variables_["CCSD TOTAL ENERGY"];
@@ -3987,6 +4008,7 @@ void DLPNOCCSDT::print_results() {
     outfile->Printf("  \n");
     outfile->Printf("  Total DLPNO-CCSDT Correlation Energy: %16.12f \n", e_total);
     outfile->Printf("    LCCSDT Correlation Energy:          %16.12f \n", e_lccsdt_);
+    outfile->Printf("    TNO Truncation Error:               %16.12f \n", de_tno_);
     outfile->Printf("    Screened Triplets Contribution:     %16.12f \n", de_lccsd_t_screened_);
     outfile->Printf("    CCSDT - CCSD Energy:                %16.12f \n", ccsdt_minus_ccsd);
     outfile->Printf("    CCSDT - CCSD(T) Energy:             %16.12f \n", ccsdt_minus_ccsd_t);

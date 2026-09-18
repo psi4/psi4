@@ -505,6 +505,7 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
 
     /// final energies
     double de_lccsd_t_screened_; ///< energy contribution from screened triplets
+    double de_tno_ = 0.0; ///< TNO truncation error, E_(T0)[T_CUT_TNO] - E_(T0)[T_CUT_TNO_FULL]
     double e_lccsd_t_; ///< local (T) correlation energy
     double E_T_; ///< raw iterative (T) energy at weaker triples cutoffs
 
@@ -685,6 +686,7 @@ class DLPNOCCSDT_Q : public DLPNOCCSDT {
 
     /// final energies
     double de_lccsdt_q_screened_; ///< energy contribution from screened quadruples
+    double de_qno_ = 0.0; ///< QNO truncation error, E_(Q0)[T_CUT_QNO] - E_(Q0)[T_CUT_QNO_FULL]
     double e_lccsdt_q_; ///< local (Q) correlation energy
     double E_Q_; ///< raw iterative (Q) energy at weaker quadruples cutoffs
 

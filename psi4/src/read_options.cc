@@ -2765,7 +2765,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION DLPNO Full-Triples (CCSDT) Options -*/
 
-        /*- Occupation number threshold for removing TNOs with full triples !expert -*/
+        /*- Occupation number threshold for removing TNOs with full triples. The
+            semicanonical energy difference between T_CUT_TNO and this cutoff is
+            added as the TNO truncation error in DLPNO-CCSDT and higher methods. !expert -*/
         options.add_double("T_CUT_TNO_FULL", 1.0e-7);
         /*- Number of T1/T2 microiteration updates per full-triples iteration
             (increase this value for systems with strong multireference character) !expert -*/
@@ -2806,7 +2808,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION DLPNO Full-Quadruples (CCSDTQ) Options -*/
 
-        /*- Occupation number threshold for removing QNOs with full quadruples !expert -*/
+        /*- Occupation number threshold for removing QNOs with full quadruples. The
+            semicanonical energy difference between T_CUT_QNO and this cutoff is
+            added as the QNO truncation error in DLPNO-CCSDTQ. !expert -*/
         options.add_double("T_CUT_QNO_FULL", 3.33e-6);
         /*- Occupation number threshold for extended pair natural orbitals (XPNOs) !expert -*/
         options.add_double("T_CUT_XPNO", 1.0e-5);
