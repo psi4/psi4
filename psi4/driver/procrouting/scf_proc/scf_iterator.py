@@ -28,6 +28,8 @@
 """
 The SCF iteration functions
 """
+import os
+
 import numpy as np
 
 from psi4 import core
@@ -119,6 +121,27 @@ def _build_jk(wfn, memory):
                        do_wK=wfn.functional().is_x_lrc(),
                        memory=memory)
     return jk
+
+
+def _resident_doubles():
+    """What this process is actually holding right now, in doubles, or None off Linux.
+
+    ``memory_committed()`` only knows about the stores that declare themselves -- an
+    in-core (Q|mn), a collocation cache -- and that is less than the process is holding.
+    The rest is the holes glibc leaves behind: a released cache is tens of thousands of
+    small matrices, so ``malloc_trim`` can hand back the free tops of the arenas but not
+    a hole with a live allocation above it.  An SCF that divides up
+    ``setting - committed`` therefore hands out memory the process has already spent;
+    measured at 1.5 GiB by the last SCF of a SAPT(DFT) job, enough to put the peak over
+    the declaration even though every printed grant fit.  VmRSS is what a cgroup kills
+    on, so budget against that when we can read it.
+    """
+    try:
+        with open("/proc/self/statm") as fh:
+            resident_pages = int(fh.read().split()[1])
+    except (OSError, IndexError, ValueError):
+        return None
+    return resident_pages * os.sysconf("SC_PAGE_SIZE") / 8
 
 
 def _scf_memory_reserve(wfn):
@@ -232,7 +255,11 @@ def scf_initialize(self):
     # us; drop it only on a first attempt, which is the only case that rebuilds it below.
     if self.attempt_number_ == 1:
         _release_collocation_cache(self)
+    # Return whatever the caches we just dropped were still holding before measuring, so
+    # that recoverable arena space is not mistaken for memory this SCF cannot have.
+    core.release_freed_memory()
     committed_memory = core.memory_committed()
+    resident_memory = _resident_doubles()
     unclaimed_memory = max(0.0, (core.get_memory() / 8) - committed_memory)
 
     # Set aside the undeclared-but-mandatory part before dividing up the rest.  Without
@@ -242,7 +269,28 @@ def scf_initialize(self):
     # reserve is capped at half the budget so that an under-declared run degrades into an
     # out-of-core JK (which DFHelper handles) rather than a zero grant.
     reserve_terms = _scf_memory_reserve(self)
-    reserve_memory = min(sum(reserve_terms.values()), 0.5 * unclaimed_memory)
+    reserve_total = sum(reserve_terms.values())
+    if reserve_total >= unclaimed_memory:
+        # The declaration is smaller than the parts of this SCF that are not negotiable, so
+        # it is not a budget at all -- a test that asks for two megabytes to force a disk
+        # algorithm, say.  Holding a reserve back cannot make such a job fit; it only pushes
+        # the JK under the floor its out-of-core algorithm needs to start.  Hand over the
+        # whole (fictional) budget and let the JK pick the smallest algorithm it has.
+        reserve_memory = 0.0
+    else:
+        reserve_memory = min(reserve_total, 0.5 * unclaimed_memory)
+
+    # What the process is resident for beyond both the stores that declared themselves and
+    # the interpreter we just reserved for: the holes glibc leaves where a released cache
+    # used to be, and anything else in this process that never announced itself.  It is not
+    # subtracted from the budget -- the memory keyword has always described the big arrays
+    # rather than the process, and a job that declares a megabyte to force an out-of-core
+    # algorithm would be handed nothing at all -- it only caps the cache below.
+    if resident_memory is None:
+        overhead_memory = 0.0
+    else:
+        overhead_memory = max(0.0, resident_memory - committed_memory - reserve_terms["base"])
+    held_memory = committed_memory + overhead_memory
 
     # With an absolute reserve subtracted, the factor is only residual slop, so the 0.75
     # default is far too conservative; honour it if the user set it, otherwise use 0.95.
@@ -298,9 +346,20 @@ def scf_initialize(self):
     if collocation_memory > collocation_size:
         collocation_memory = collocation_size
 
+    # Keep the cache under what is actually left of the declaration once the undeclared
+    # residue is counted.  Everything else in this SCF is sized by the problem; the cache is
+    # the only part that can be asked to take less, and it is what pushed the peak past the
+    # declaration when fragmentation reached a GiB and a half by the last SCF of a SAPT(DFT)
+    # job.  This is a ceiling rather than a subtraction on purpose: a job with headroom to
+    # spare keeps its whole cache, and with no residue to account for the safety factor
+    # already holds the split below this line, so nothing changes.  The JK keeps its budget.
+    cache_ceiling = safety_factor * max(0.0, (core.get_memory() / 8) - held_memory - reserve_memory - jk_size)
+    withheld_memory = max(0.0, collocation_memory - cache_ceiling)
+    collocation_memory -= withheld_memory
+
     # Set constants
     self.iteration_ = 0
-    self.memory_jk_ = int(total_memory - collocation_memory)
+    self.memory_jk_ = int(total_memory - collocation_memory - withheld_memory)
     self.memory_collocation_ = int(collocation_memory)
 
     if self.get_print():
@@ -310,14 +369,20 @@ def scf_initialize(self):
         core.print_out("    Memory setting                  {:11.3f} [GiB]\n".format(core.get_memory() / 1024**3))
         if committed_memory:
             core.print_out("    Held by live JK / grid caches   {:11.3f} [GiB]\n".format(gib(committed_memory)))
+        if overhead_memory > 0.01 * 1024**3 / 8:
+            core.print_out("    Resident but unaccounted        {:11.3f} [GiB]".format(gib(overhead_memory)))
+            if withheld_memory:
+                core.print_out("  {:.3f} [GiB] withheld from the cache".format(gib(withheld_memory)))
+            core.print_out("\n")
         core.print_out("    Reserve estimate                {:11.3f} [GiB]\n".format(gib(reserve_memory)))
         for label, key in (("SCF matrices", "matrices"), ("DFT grid", "grid"),
                            ("DFT point functions", "points"), ("JK per-call transients", "jk"),
                            ("Interpreter and libraries", "base")):
             if reserve_terms[key]:
                 core.print_out("      {:30s}{:11.3f}\n".format(label, gib(reserve_terms[key])))
-        if sum(reserve_terms.values()) > reserve_memory:
-            core.print_out("      (capped at half the remaining budget; this job is under-declared)\n")
+        if reserve_total > reserve_memory:
+            core.print_out("      (reserve {}; this job is under-declared)\n".format(
+                "not taken" if reserve_memory == 0.0 else "capped at half the remaining budget"))
         core.print_out("    JK allocation                   {:11.3f} [GiB]\n".format(gib(self.memory_jk_)))
         if collocation_size:
             core.print_out("    Collocation cache               {:11.3f} [GiB]  of {:.3f} [GiB] full\n".format(
@@ -326,7 +391,7 @@ def scf_initialize(self):
         if jk_size_known:
             # jk_size is what a JK built here will allocate; a re-used one reports 0
             # because its integrals are already inside committed_memory.
-            required = committed_memory + reserve_memory + jk_size
+            required = held_memory + reserve_memory + jk_size
             peak = required + self.memory_collocation_
             core.print_out("    Estimated peak                  {:11.3f} [GiB]\n".format(gib(peak)))
             core.print_out("    Minimum memory for this SCF     {:11.3f} [GiB]".format(gib(1.05 * required)))
@@ -338,7 +403,7 @@ def scf_initialize(self):
             core.print_out("    Estimated peak                      unknown  {} cannot predict its footprint\n".format(
                 core.get_global_option("SCF_TYPE")))
         core.print_out("\n")
-        if committed_memory:
+        if held_memory:
             core.print_out("  The memory already held above belongs to wavefunctions that are still alive\n"
                            "  (a SAPT dimer and its monomers, or the neutral behind a GRAC shift); this SCF\n"
                            "  divides up the remainder rather than the whole setting.\n\n")
