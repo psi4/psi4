@@ -54,6 +54,13 @@ void export_fock(py::module &m) {
           "wavefunctions alive -- SAPT(DFT), or a GRAC shift holding the neutral while the cation runs -- "
           "must subtract this before dividing the SCF memory budget, or each SCF claims the whole budget again.");
 
+    m.def("release_freed_memory", &release_freed_memory,
+          "Hand memory that has already been freed back to the operating system. The big caches are "
+          "made of many small allocations, which glibc keeps in its arenas after the free, so a "
+          "driver that drops a wavefunction or finalizes a JK object sees memory_committed() fall "
+          "while the resident set does not move. Call this once after dropping something large; it "
+          "walks every arena, so it does not belong in a loop.");
+
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
         .def_static("build_JK",
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {

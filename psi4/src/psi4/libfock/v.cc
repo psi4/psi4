@@ -738,6 +738,9 @@ void VBase::finalize() {
     // outlive the grid it was built from.
     clear_collocation_cache();
     grid_.reset();
+    // The grid is a block list, i.e. many small allocations, so the same arena retention that
+    // hides a released collocation cache hides this too.
+    release_freed_memory();
 }
 void VBase::build_collocation_cache(size_t memory) {
     clear_collocation_cache();

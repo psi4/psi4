@@ -33,6 +33,10 @@
 #include <cstddef>
 #include <cstdint>
 
+#ifdef __GLIBC__
+#include <malloc.h>
+#endif
+
 namespace psi {
 
 /*! \brief Process-wide tally of the budget-sized buffers that are resident right now.
@@ -82,6 +86,22 @@ class MemoryClaim {
         return tally;
     }
 };
+
+/*! \brief Hand memory freed by a released buffer back to the operating system.
+ *
+ * A collocation cache is tens of thousands of small matrices rather than one large buffer, so
+ * glibc serves it from its arenas and keeps those arenas on free: clearing a 6 GiB cache drops
+ * MemoryClaim::committed() by 6 GiB and VmRSS by nothing at all.  The next stage then allocates
+ * on top of memory this process is holding but no longer using, and the high-water mark grows by
+ * every cache the job ever built even though each stage stayed inside its own budget -- which is
+ * what gets a cgroup-limited job OOM-killed.  malloc_trim() returns the free tops of the arenas.
+ * It walks every arena, so call it where a budget-sized buffer was just released, never in a loop.
+ */
+inline void release_freed_memory() {
+#ifdef __GLIBC__
+    malloc_trim(0);
+#endif
+}
 
 }  // namespace psi
 

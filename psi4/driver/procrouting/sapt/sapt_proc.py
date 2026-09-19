@@ -704,6 +704,9 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
             sapt_jk.finalize()
 
             del hf_wfn_A, hf_wfn_B, sapt_jk
+            # The DFT segment below allocates its own caches; without this the arenas these
+            # wavefunctions leave behind are still resident when it does.
+            core.release_freed_memory()
 
         else:
             wfn_A = hf_wfn_A
@@ -1642,6 +1645,7 @@ def sapt_dft(
     if cleanup_jk:
         core.print_out("\n   => Finalizing SAPT JK object to free memory <= \n\n")
         sapt_jk.finalize()
+        core.release_freed_memory()
 
     if do_disp:
         # Hybrid xc kernel check

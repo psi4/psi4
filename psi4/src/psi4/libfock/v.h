@@ -127,9 +127,12 @@ class PSI_API VBase {
     // Creates a collocation cache map based on stride
     void build_collocation_cache(size_t memory);
     void clear_collocation_cache() {
+        const bool had_cache = !cache_map_.empty();
         cache_map_.clear();
         cache_map_deriv_ = -1;
         cache_claim_.set(0);
+        // The cache is many small matrices, so its memory does not come back on free alone.
+        if (had_cache) release_freed_memory();
     }
 
     // Set the D matrix, get it back if needed
