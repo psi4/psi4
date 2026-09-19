@@ -1,0 +1,22 @@
+h2o = psi4.geometry("""
+    0 1
+    O
+    H 1 1.0
+    H 1 1.0 2 101.5
+""")
+
+psi4.set_options({
+    "basis": "sto-6g",
+    "d_convergence": 10,
+    "tdscf_states": [0, 0, 0, 2],
+    "tdscf_tda": True,
+    "d_convergence": 10,
+})
+
+wfn = psi4.energy("td-scf", return_wfn=True)[1]
+
+exc_1 = 0.65353 # TEST
+exc_2 = 0.75067 # TEST
+
+compare_values(exc_1, wfn.variable("TD-HF ROOT 0 (IN A1) -> ROOT 0 (IN B2) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
+compare_values(exc_2, wfn.variable("TD-HF ROOT 0 (IN A1) -> ROOT 1 (IN B2) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
