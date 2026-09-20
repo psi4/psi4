@@ -4,6 +4,7 @@ set(sources
   denominator.cc
   fittingmetric.cc
   cholesky.cc
+  local_qia.cc
   )
 psi4_add_module(lib 3index sources)
 

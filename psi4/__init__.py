@@ -93,7 +93,25 @@ atexit.register(core.finalize)
 from .driver import endorsed_plugins
 
 # Manage threads. Must be after endorsed plugins, honestly.
-core.set_num_threads(1, quiet=True)
+#
+# Importing psi4 sets the thread count for the whole PROCESS, not just for
+# psi4: set_num_threads calls omp_set_num_threads, so every other OpenMP
+# library loaded alongside it - numpy's BLAS, an embedding application's own
+# kernels - is silently reconfigured by an import that ran no calculation.
+# Defaulting to 1 is right when psi4 is the driver, because it stops psi4's
+# own threading from oversubscribing against a threaded BLAS underneath it.
+# It is wrong when psi4 is a library in someone else's process, where it
+# overrides a deliberate choice and does so invisibly.
+#
+# So an explicitly set OMP_NUM_THREADS is honoured, and the default is
+# otherwise unchanged. A caller who wants the old behaviour unconditionally
+# can still say so with set_num_threads.
+_omp_num_threads = os.environ.get("OMP_NUM_THREADS", "").strip()
+if _omp_num_threads.isdigit() and int(_omp_num_threads) > 0:
+    core.set_num_threads(int(_omp_num_threads), quiet=True)
+else:
+    core.set_num_threads(1, quiet=True)
+del _omp_num_threads
 
 # Load driver and outfile paraphernalia
 from .driver import *
