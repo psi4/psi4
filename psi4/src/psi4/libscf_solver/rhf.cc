@@ -173,7 +173,6 @@ void RHF::form_V() {
     // std::vector<SharedMatrix> & C = potential_->C();
     // C.clear();
     // C.push_back(Ca_subset("SO", "OCC"));
-
     // // Run the potential object
     // potential_->compute();
 
@@ -181,6 +180,7 @@ void RHF::form_V() {
     // const std::vector<SharedMatrix> & V = potential_->V();
     // Va_ = V[0];
     potential_->set_D({Da_});
+    potential_->set_Cocc({Ca_subset("AO", "OCC")});
     potential_->compute_V({Va_});
     Vb_ = Va_;
 }
@@ -191,7 +191,6 @@ void RHF::form_G() {
     } else {
         G_->zero();
     }
-
     /// Push the C matrix on
     std::vector<SharedMatrix>& C = jk_->C_left();
     C.clear();
@@ -205,7 +204,12 @@ void RHF::form_G() {
     const std::vector<SharedMatrix>& K = jk_->K();
     const std::vector<SharedMatrix>& wK = jk_->wK();
     J_ = J[0];
-    if (functional_->is_x_hybrid()) {
+#ifdef USING_cuEST
+    const bool use_cuest = options_.get_bool("USE_CUEST");
+#else
+    const bool use_cuest = false;
+#endif
+    if (functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) {
         K_ = K[0];
     }
     if (functional_->is_x_lrc()) {
@@ -225,13 +229,22 @@ void RHF::form_G() {
     }
 #endif
 
-    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (use_cuest) {
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
+    if ((functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) &&
+        !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         G_->axpy(-alpha, K_);
     } else {
         K_->zero();
     }
 
-    if (functional_->is_x_lrc()) {
+    if (functional_->is_x_lrc() && !use_cuest) { // if using cuEST, wK is encapsulated in K
         if (jk_->get_wcombine()) {
             G_->axpy(-1.0, wK_);
         } else {
@@ -324,6 +337,12 @@ double RHF::compute_E() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
+#ifdef USING_cuEST
+    const bool use_cuest = options_.get_bool("USE_CUEST");
+#else
+    const bool use_cuest = false;
+#endif
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -332,10 +351,18 @@ double RHF::compute_E() {
     }
 #endif
 
-    if (functional_->is_x_hybrid()) {
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (use_cuest) {
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
+    if (functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) {
         exchange_E -= alpha * Da_->vector_dot(K_);
     }
-    if (functional_->is_x_lrc()) {
+    if (functional_->is_x_lrc() && !use_cuest) {
         if (jk_->get_do_wK() && jk_->get_wcombine()) {
             exchange_E -= Da_->vector_dot(wK_);
         } else {
@@ -520,6 +547,14 @@ std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bo
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (options_.get_bool("USE_CUEST")) {
         alpha = 1.0;
         beta = 1.0;
     }
@@ -1105,6 +1140,14 @@ void RHF::openorbital_scf() {
       // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
       alpha = 1.0;
       beta = 1.0;
+    }
+#endif
+
+#ifdef USING_cuEST
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (options_.get_bool("USE_CUEST")) {
+        alpha = 1.0;
+        beta = 1.0;
     }
 #endif
 
