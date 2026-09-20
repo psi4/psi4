@@ -1,3 +1,4 @@
+#! td-rhf (tda) test on singlet water, covering edge case of no SOs connect to an occupied space for a given transition symmetry
 h2o = psi4.geometry("""
     0 1
     O
@@ -9,8 +10,7 @@ psi4.set_options({
     "basis": "sto-6g",
     "d_convergence": 10,
     "tdscf_states": [0, 0, 0, 2],
-    "tdscf_tda": True,
-    "d_convergence": 10,
+    "tdscf_tda": True
 })
 
 wfn = psi4.energy("td-scf", return_wfn=True)[1]
