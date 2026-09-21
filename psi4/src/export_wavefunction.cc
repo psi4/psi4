@@ -228,6 +228,15 @@ void export_wavefunction(py::module& m) {
              "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
         .def("module", &Wavefunction::module, py::return_value_policy::copy,
              "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
+        .def("set_module_role", &Wavefunction::set_module_role, "role"_a, "module"_a,
+             "Records which module (internal or external) filled a named role.")
+        .def("module_role", &Wavefunction::module_role, "role"_a, py::return_value_policy::copy,
+             "Module that filled a named role, or an empty string if that role was never filled.")
+        .def("module_roles", &Wavefunction::module_roles, py::return_value_policy::copy,
+             "Modules that filled named roles, keyed by role. The ``qc_module`` role is the "
+             "level-of-theory module for the current energy, the same string :py:meth:`module` "
+             "returns; the others record which package did a particular job along the way, "
+             "e.g. ``orbital_optimizer``.")
         .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "id"_a, "basis"_a, "subset"_a, R"pbdoc(
             Creates OrbitalSpace with information about the requested alpha orbital space.
 
@@ -322,6 +331,10 @@ void export_wavefunction(py::module& m) {
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
+        .def("canonicalize_orbitals", &scf::HF::canonicalize_orbitals,
+             "Forms the Orbital Matrices from the current Fock Matrices, as :py:meth:`form_C` does, "
+             "but leaves the occupation to the caller rather than reassigning it by the aufbau rule.",
+             "shift"_a = 0.0)
         .def("form_initial_C", &scf::HF::form_initial_C,
              "Forms the initial Orbital Matrices from the current Fock Matrices.")
         .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
@@ -399,7 +412,10 @@ void export_wavefunction(py::module& m) {
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.")
         .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring")
-        .def("openorbital_scf", &scf::HF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer");
+        .def("openorbital_scf", &scf::HF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer")
+        .def("opentrustregion_scf", &scf::HF::opentrustregion_scf, "Runs SCF with OpenTrustRegion")
+        .def("otr_iteration_energies", &scf::HF::otr_iteration_energies,
+             "Total energy at each OpenTrustRegion macro-iteration");
 
     /// HF Functions
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")

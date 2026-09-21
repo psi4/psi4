@@ -1,13 +1,6 @@
-import pytest
 from addons import *
 
 @ctest_labeler("cc;cart;noc1;eom;findif")
-@pytest.mark.parametrize("oopkg", [
-    pytest.param(False, id="internal"),
-    pytest.param(True,  id="openorbitaloptimizer", marks=using("ooo")),
-])
-def test_cc24(oopkg):
-    setenv = ["_PSI4_USE_OOPKG"] if oopkg else None
-
-    ctest_runner(__file__, setenv=setenv)
-
+@representative_optimizer_combinations
+def test_cc24(oopkg, soopkg):
+    ctest_runner(__file__, setenv=orbital_optimizer_setenv(oopkg, soopkg))
