@@ -27,13 +27,38 @@
  */
 
 #include "mp2.h"
+#include "streamed.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 
 namespace psi {
 namespace f12 {
 
 SharedWavefunction f12(SharedWavefunction ref_wfn, Options& options) {
     std::shared_ptr<Wavefunction> f12;
-    if (options.get_str("F12_SUBTYPE").find("DISK") != std::string::npos) {
+    if (options.get_str("F12_SUBTYPE") == "STREAMED") {
+        if (options.get_str("MP2_TYPE") != "DF") {
+            throw PSIEXCEPTION("F12_SUBTYPE=STREAMED requires MP2_TYPE=DF");
+        }
+        if (options.get_bool("F12_READ_INTS")) {
+            throw PSIEXCEPTION("F12_SUBTYPE=STREAMED does not read saved F12 integrals");
+        }
+        if (options.get_int("F12_AUX_BLOCK_SIZE") < 1) {
+            throw PSIEXCEPTION("F12_AUX_BLOCK_SIZE must be positive");
+        }
+        if (ref_wfn->molecule()->schoenflies_symbol() != "c1") {
+            throw PSIEXCEPTION("F12_SUBTYPE=STREAMED requires C1 symmetry");
+        }
+        if (ref_wfn->basisset()->has_ECP() || ref_wfn->get_basisset("CABS")->has_ECP() ||
+            ref_wfn->get_basisset("DF_BASIS_MP2")->has_ECP()) {
+            throw PSIEXCEPTION("F12_SUBTYPE=STREAMED currently supports all-electron basis sets only");
+        }
+        if (ref_wfn->frzvpi()[0] != 0 || ref_wfn->doccpi()[0] <= ref_wfn->frzcpi()[0] ||
+            ref_wfn->nmo() <= ref_wfn->doccpi()[0]) {
+            throw PSIEXCEPTION("F12_SUBTYPE=STREAMED requires active occupied and virtual orbitals, with no frozen virtuals");
+        }
+        f12 = std::make_shared<StreamedMP2F12>(ref_wfn, options);
+    } else if (options.get_str("F12_SUBTYPE").find("DISK") != std::string::npos) {
         f12 = std::make_shared<DiskMP2F12>(ref_wfn, options);
     } else {
         f12 = std::make_shared<MP2F12>(ref_wfn, options);
