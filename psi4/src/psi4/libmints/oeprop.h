@@ -248,6 +248,9 @@ class MultipolePropCalc : public Prop {
 class PopulationAnalysisCalc : public Prop {
    private:
     PopulationAnalysisCalc();
+    std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles_impl(
+        bool free_atom_volumes, bool print_output, SharedMatrix orbitals,
+        std::vector<SharedMatrix>* orbital_populations);
 
    public:
     typedef std::shared_ptr<std::vector<double>> SharedStdVector;
@@ -259,6 +262,10 @@ class PopulationAnalysisCalc : public Prop {
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
     /// Compute MBIS Multipoles (doi:10.1021/acs.jctc.6b00456)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles(bool free_atom_volumes = false, bool print_output = false);
+    /// Compute atom-resolved MBIS stockholder population operators in an orthonormal orbital subspace.
+    /// Their diagonal elements are the populations used by generalized Pipek--Mezey localization.
+    std::vector<SharedMatrix> compute_mbis_orbital_populations(SharedMatrix orbitals,
+                                                               bool print_output = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_mayer_indices(bool print_output = false);
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)

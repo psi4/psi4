@@ -72,6 +72,7 @@
 #include <regex>
 #include <tuple>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <map>
 #include <vector>
@@ -1822,6 +1823,20 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
 // Minimal Basis Iterative Stockholder (JCTC, 2016, p. 3894-3912, Verstraelen et al.)
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_mbis_multipoles(
     bool free_atom_volumes, bool print_output) {
+    return compute_mbis_multipoles_impl(free_atom_volumes, print_output, nullptr, nullptr);
+}
+
+std::vector<SharedMatrix> PopulationAnalysisCalc::compute_mbis_orbital_populations(SharedMatrix orbitals,
+                                                                                   bool print_output) {
+    std::vector<SharedMatrix> populations;
+    compute_mbis_multipoles_impl(false, print_output, std::move(orbitals), &populations);
+    return populations;
+}
+
+std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix>
+PopulationAnalysisCalc::compute_mbis_multipoles_impl(bool free_atom_volumes, bool print_output,
+                                                     SharedMatrix orbitals,
+                                                     std::vector<SharedMatrix>* orbital_populations) {
     if (print_output) outfile->Printf("  ==> Computing MBIS Charges <==\n\n");
     timer_on("MBIS");
 
@@ -1857,7 +1872,9 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         max_points = std::max(max_points, blocks[b]->npoints());
         max_nbf = std::max(max_nbf, blocks[b]->local_nbf());
     }
-    SharedMatrix Da = wfn_->Da_subset("AO");
+    // Use Prop's working density rather than rereading the wavefunction.  This is
+    // essential when MBIS is used during an orbital-optimization macroiteration.
+    SharedMatrix Da = Da_ao();
     SharedMatrix Db;
     auto point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<RKSFunctions>(basisset_, max_points, max_nbf));
 
@@ -1865,7 +1882,7 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         Db = Da->clone();
         point_func->set_pointers(Da);
     } else {
-        Db = wfn_->Db_subset("AO");
+        Db = Db_ao();
         point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<UKSFunctions>(basisset_, max_points, max_nbf));
         point_func->set_pointers(Da, Db);
     }
@@ -2118,6 +2135,67 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
             rho_a[atom * total_points + point] =
                 rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
         }
+    }
+
+    if (orbital_populations) {
+        if (!orbitals || orbitals->nirrep() != 1 || orbitals->nrow() != nbf)
+            throw PSIEXCEPTION("MBIS orbital populations require a C1 AO-by-orbital coefficient matrix");
+
+        const int nmo = orbitals->ncol();
+        orbital_populations->clear();
+        orbital_populations->reserve(num_atoms);
+        for (int atom = 0; atom < num_atoms; ++atom)
+            orbital_populations->push_back(
+                std::make_shared<Matrix>("MBIS stockholder population", nmo, nmo));
+
+        // Generalized PM needs atom-resolved population *operators*, not merely
+        // the scalar MBIS charges.  For converged MBIS pro-atoms, form
+        //
+        //   Q^A_ij = integral w_A(r) phi_i(r) phi_j(r) dr,
+        //   w_A(r) = rho_A^0(r) / sum_B rho_B^0(r).
+        //
+        // Their diagonals are orbital populations, and sum_A Q^A approaches
+        // the identity in an orthonormal orbital space as the grid is refined.
+        auto orbital_values = std::make_shared<RKSFunctions>(basisset_, static_cast<int>(max_points),
+                                                              static_cast<int>(max_nbf));
+        orbital_values->set_Cs(orbitals);
+        size_t point_offset = 0;
+        for (const auto& block : blocks) {
+            const size_t block_points = block->npoints();
+            orbital_values->compute_orbitals(block);
+            auto psi = orbital_values->orbital_value("PSI_A");
+            double** psip = psi->pointer();
+            const int point_stride = psi->ncol();
+
+            for (size_t point = 0; point < block_points; ++point) {
+                const size_t global_point = point_offset + point;
+                const double denominator = rho_0_points[global_point];
+                if (denominator <= std::numeric_limits<double>::min()) continue;
+                for (int atom = 0; atom < num_atoms; ++atom) {
+                    const double stockholder_weight =
+                        rho_a_0_points[atom * total_points + global_point] / denominator;
+                    const double quadrature_weight = weights[global_point] * stockholder_weight;
+                    C_DGER(nmo, nmo, quadrature_weight, &psip[0][point], point_stride, &psip[0][point],
+                           point_stride, (*orbital_populations)[atom]->pointer()[0], nmo);
+                }
+            }
+            point_offset += block_points;
+        }
+
+        auto population_sum = std::make_shared<Matrix>("Sum of MBIS population operators", nmo, nmo);
+        for (const auto& population : *orbital_populations) population_sum->add(population);
+        double max_partition_error = 0.0;
+        for (int i = 0; i < nmo; ++i) {
+            for (int j = 0; j < nmo; ++j) {
+                const double target = (i == j ? 1.0 : 0.0);
+                max_partition_error = std::max(max_partition_error, std::fabs(population_sum->get(i, j) - target));
+            }
+        }
+        if (print_output)
+            outfile->Printf("  MBIS orbital-population partition error: %11.3E\n\n", max_partition_error);
+        if (max_partition_error > 1.0E-3)
+            outfile->Printf("  Warning: MBIS orbital populations are not grid-complete to 1.0E-3; consider a denser "
+                            "MBIS grid.\n\n");
     }
 
     // Kronecker Delta

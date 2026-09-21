@@ -298,8 +298,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Use DF approximation when computing LS-THC factorization? -*/
     options.add_bool("LS_THC_DF", true);
+    /*- Auxiliary basis set for THC density fitting computations.
+        :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
+    options.add_str("DF_BASIS_THC", "");
     /*- Number of spherical points in LS-THC grid -*/
-    options.add_int("LS_THC_SPHERICAL_POINTS", 50);
+    options.add_int("LS_THC_SPHERICAL_POINTS", 26);
     /*- Number of radial points in LS-THC grid -*/
     options.add_int("LS_THC_RADIAL_POINTS", 10);
     /*- Screening criteria for basis function values on LS-THC grids !expert -*/
@@ -1926,8 +1929,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("DFT_VV10_POSTSCF", false);
         /*- The convergence on the orbital localization procedure -*/
         options.add_double("LOCAL_CONVERGENCE", 1E-12);
+        /*- Maximum orbital-gradient component for Boys, generalized Pipek--Mezey, and IBO localization -*/
+        options.add_double("LOCAL_GRADIENT_CONVERGENCE", 1E-8);
         /*- The maxiter on the orbital localization procedure -*/
         options.add_int("LOCAL_MAXITER", 200);
+        /*- Use trust-region augmented-Hessian steps and explicit saddle checks in Boys/PM/IBO/ER localization -*/
+        options.add_bool("LOCAL_USE_AUGMENTED_HESSIAN", true);
+        /*- First localization iteration on which the augmented Hessian is used !expert -*/
+        options.add_int("LOCAL_AH_START", 3);
+        /*- Maximum number of independent rotations for a dense localization Hessian !expert -*/
+        options.add_int("LOCAL_AH_MAX_ROTATIONS", 512);
+        /*- Maximum Davidson subspace dimension for a matrix-free localization augmented Hessian !expert -*/
+        options.add_int("LOCAL_AH_MAX_SUBSPACE", 20);
+        /*- Initial Euclidean trust radius for augmented-Hessian localization rotations !expert -*/
+        options.add_double("LOCAL_AH_TRUST_RADIUS", 0.25);
+        /*- Positive-curvature threshold for rejecting a localization saddle !expert -*/
+        options.add_double("LOCAL_SADDLE_TOLERANCE", 1E-8);
         /*- The number of NOONs to print in a UHF calc -*/
         options.add_str("UHF_NOONS", "3");
         /*- Save the UHF NOs -*/
@@ -2653,27 +2670,75 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_CC", "");
         /*- General convergence criteria for DLPNO methods -*/
-        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT VERY_TIGHT");
-        /*- Convergence criteria for the Foster-Boys orbital localization -*/
+        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT VERY_TIGHT GLACIER");
+        /*- Relative objective convergence criterion for orbital localization -*/
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
-        /*- Maximum iterations in Foster-Boys localization -*/
+        /*- Maximum orbital-gradient component for Boys, generalized Pipek--Mezey, and IBO localization -*/
+        options.add_double("LOCAL_GRADIENT_CONVERGENCE", 1.0E-8);
+        /*- Maximum iterations in orbital localization -*/
         options.add_int("LOCAL_MAXITER", 1000);
+        /*- Use trust-region augmented-Hessian steps and explicit saddle checks in Boys/PM/IBO/ER localization -*/
+        options.add_bool("LOCAL_USE_AUGMENTED_HESSIAN", true);
+        /*- First localization iteration on which the augmented Hessian is used !expert -*/
+        options.add_int("LOCAL_AH_START", 3);
+        /*- Maximum number of independent rotations for a dense localization Hessian !expert -*/
+        options.add_int("LOCAL_AH_MAX_ROTATIONS", 512);
+        /*- Maximum Davidson subspace dimension for the matrix-free THC-ER augmented Hessian !expert -*/
+        options.add_int("LOCAL_AH_MAX_SUBSPACE", 20);
+        /*- Initial Euclidean trust radius for augmented-Hessian localization rotations !expert -*/
+        options.add_double("LOCAL_AH_TRUST_RADIUS", 0.25);
+        /*- Positive-curvature threshold for rejecting a localization saddle !expert -*/
+        options.add_double("LOCAL_SADDLE_TOLERANCE", 1.0E-8);
         /*- Energy convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
         options.add_double("E_CONVERGENCE", 1e-6);
         /*- Residual convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
         options.add_double("R_CONVERGENCE", 1e-6);
         /*- Orbital localizer -*/
-        options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
+        options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY PIPEK_MEZEY_MBIS IBO ER");
+        /*- Use minimal-basis functions on ghost atoms in the IAO/IBO population metric !expert -*/
+        options.add_bool("LOCAL_USE_GHOSTS", false);
+        /*- Eigenvalue cutoff for inverse square roots in IAO construction !expert -*/
+        options.add_double("LOCAL_IBO_CONDITION", 1.0E-7);
+        /*- Generalized Pipek--Mezey power used for IBO localization -*/
+        options.add_int("LOCAL_IBO_POWER", 4);
+        /*- Minimal basis used to construct intrinsic atomic orbitals -*/
+        options.add_str("MINAO_BASIS", "CC-PVTZ-MINAO");
         /*- Maximum number of iterations to determine the MP2/CCSD/CCSD(T) amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
         /*- Perform automatic memory checks to toggle between core and disk? 
             (NOT recommended to change this for average user). -*/
         options.add_bool("DLPNO_TOGGLE_MEMORY", true);
+        /*- How much to damp T1 updates in DLPNO-CCSD -*/
+        options.add_double("DLPNO_T1_DAMPING", 0.0);
+        /*- How much to damp T2 updates in DLPNO-CCSD -*/
+        options.add_double("DLPNO_T2_DAMPING", 0.0);
+        /*- How much to damp the lambda updates, recommend 0.3 for hard to converge cases !expert -*/
+        options.add_double("DLPNO_LAMBDA_DAMPING", 0.0);
+        /*- Use Brueckner orbitals? -*/
+        options.add_bool("DLPNO_BRUECKNER_ORBS", false);
+        /*- Scaling factor for orbital rotation for DLPNO Brueckner orbitals
+            Make it smaller for systems with a large T1 (like 0.6-0.9) -*/
+        options.add_double("DLPNO_BRUECKNER_ALPHA", 1.0);
+        /*- How many iterations to run DLPNO-CCSD before performing a Brueckner rotation !expert -*/
+        options.add_int("DLPNO_BRUECKNER_N_MICRO_ITER", 10);
+        /*- When to start gradient mixing for Brueckner orbital optimizations -*/
+        options.add_double("BRUECKNER_GMIX_START", 1.0e-4);
+        /*- Macroiteration at which to begin collecting fixed-reference Brueckner DIIS vectors.
+            Delaying DIIS lets the unextrapolated T1 rotations establish a stable orbital path. -*/
+        options.add_int("BRUECKNER_DIIS_START", 3);
+        /*- Number of additional macroiterations to collect vectors before the first Brueckner DIIS extrapolation -*/
+        options.add_int("BRUECKNER_DIIS_DELAY", 2);
+        /*- How many DIIS vectors to use for Brueckner rotations -*/
+        options.add_int("BRUECKNER_DIIS_MAX_VECS", 4);
 
         /*- SUBSECTION Expert Options -*/
 
         /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
         options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T)");
+        /*- Solve the DLPNO-CCSD Lambda equations for an asymmetric-triples result. !expert -*/
+        options.add_bool("DLPNO_DO_LAMBDA", false);
+        /*- Form the correlated DLPNO-CCSD AO OPDM for the properties driver. !expert -*/
+        options.add_bool("DLPNO_DO_ONEPDM", false);
         /*- Use T0 approximation for DLPNO-CCSD(T)? (not set explicitly), 
         triggered by indicating 'dlpno-ccsd(t0)' rather than 'dlpno-ccsd(t)' !expert -*/
         options.add_bool("T0_APPROXIMATION", false);

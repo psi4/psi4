@@ -1682,6 +1682,9 @@ void export_mints(py::module& m) {
                                                       "Class containing orbital localization procedures")
         .def_static("build", localizer_with_type(&Localizer::build), "Build the localization scheme")
         .def("localize", &Localizer::localize, "Perform the localization procedure")
+        .def("fock_update", &Localizer::fock_update,
+             "Transform a Fock matrix to the localized basis and energy-order orbitals within each range", "F"_a,
+             "ranges"_a = std::vector<int>())
         .def_property_readonly("L", py::cpp_function(&Localizer::L), "Localized orbital coefficients")
         .def_property_readonly("U", py::cpp_function(&Localizer::U), "Orbital rotation matrix")
         .def_property_readonly("converged", py::cpp_function(&Localizer::converged),
@@ -1690,7 +1693,29 @@ void export_mints(py::module& m) {
     py::class_<BoysLocalizer, std::shared_ptr<BoysLocalizer>, Localizer>(m, "BoysLocalizer",
                                                                          "Performs Boys orbital localization");
     py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>, Localizer>(m, "PMLocalizer",
-                                                                     "Performs Pipek-Mezey orbital localization");
+                                                                     "Performs Pipek-Mezey orbital localization")
+        .def("set_power", &PMLocalizer::set_power, "Set the generalized PM objective power");
+
+    typedef std::shared_ptr<IBOLocalizer> (*ibo_localizer_three)(std::shared_ptr<BasisSet>,
+                                                                 std::shared_ptr<BasisSet>,
+                                                                 std::shared_ptr<Matrix>);
+    typedef std::shared_ptr<IBOLocalizer> (*ibo_localizer_four)(std::shared_ptr<BasisSet>,
+                                                                std::shared_ptr<BasisSet>,
+                                                                std::shared_ptr<Matrix>,
+                                                                std::shared_ptr<Matrix>);
+    py::class_<IBOLocalizer, std::shared_ptr<IBOLocalizer>, PMLocalizer>(
+        m, "IBOLocalizer", "Performs IAO-based intrinsic bond orbital localization")
+        .def_static("build", ibo_localizer_three(&IBOLocalizer::build), "Build an IBO localizer", "primary"_a,
+                    "minao"_a, "C"_a)
+        .def_static("build", ibo_localizer_four(&IBOLocalizer::build),
+                    "Build an IBO localizer with a separate complete occupied reference", "primary"_a, "minao"_a,
+                    "C"_a, "C_reference"_a)
+        .def("print_charges", &IBOLocalizer::print_charges, "Print IAO atomic charges", "scale"_a = 2.0)
+        .def("set_use_ghosts", &IBOLocalizer::set_use_ghosts, "Include ghost-center functions in the IAO metric")
+        .def("set_condition", &IBOLocalizer::set_condition, "Set the IAO metric eigenvalue cutoff")
+        .def("set_ranges", &IBOLocalizer::set_ranges, "Restrict localization to independent orbital ranges")
+        .def_property_readonly("A", py::cpp_function(&IBOLocalizer::A), "Intrinsic atomic orbital coefficients")
+        .def_property_readonly("Q", py::cpp_function(&IBOLocalizer::Q), "Localized-orbital IAO populations");
 
     py::class_<FCHKWriter, std::shared_ptr<FCHKWriter>>(m, "FCHKWriter",
                                                         "Extracts information from a wavefunction object, \

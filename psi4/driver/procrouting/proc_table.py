@@ -166,8 +166,14 @@ procedures = {
         'acpf'          : proc.run_cepa,
         'aqcc'          : proc.run_cepa,
         'dlpno-ccsd'    : proc.run_dlpnoccsd,
+        'dlpno-bccd'    : proc.run_dlpnoccsd,
         'dlpno-ccsd(t0)': proc.run_dlpnoccsd_t,
         'dlpno-ccsd(t)' : proc.run_dlpnoccsd_t,
+        'dlpno-ccsd(t)_l': proc.run_dlpnoccsd_t,
+        'dlpno-ccsd(at)': proc.run_dlpnoccsd_t,
+        'dlpno-bccd(t)' : proc.run_dlpnoccsd_t,
+        'dlpno-bccd(t)_l': proc.run_dlpnoccsd_t,
+        'dlpno-bccd(at)': proc.run_dlpnoccsd_t,
         'efp'           : proc.run_efp,
         'dmrg-scf'      : proc.run_dmrgscf,
         'dmrg-caspt2'   : proc.run_dmrgscf,
@@ -236,6 +242,8 @@ procedures = {
         'cvs-adc(2)'   : proc.run_adcc_property,
         'cvs-adc(2)-x' : proc.run_adcc_property,
         'cvs-adc(3)'   : proc.run_adcc_property,
+        'dlpno-ccsd'   : proc.run_dlpnoccsd_property,
+        'dlpno-bccd'   : proc.run_dlpnoccsd_property,
     }} # yapf: disable
 
 # Will only allow energy to be run for the following methods

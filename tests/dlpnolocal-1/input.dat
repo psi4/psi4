@@ -1,0 +1,112 @@
+#! Exercise Hessian-stable Boys/PM/IBO localization and MBIS-based generalized
+#! Pipek--Mezey localization in DLPNO-MP2.
+
+import numpy as np
+
+memory 1 GB
+
+molecule h2o {
+0 1
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set {
+    basis cc-pvdz
+    reference rhf
+    freeze_core true
+    scf_type df
+    df_basis_scf cc-pvdz-jkfit
+    df_basis_mp2 cc-pvdz-ri
+    local_convergence 1.0e-10
+    local_gradient_convergence 1.0e-8
+    local_use_augmented_hessian true
+    local_ah_start 1
+    local_ah_max_rotations 512
+    local_ah_trust_radius 0.25
+    local_saddle_tolerance 1.0e-8
+    mbis_radial_points 50
+    mbis_spherical_points 110
+}
+
+e_scf, wfn_scf = energy("scf", return_wfn=True)
+C_occ = wfn_scf.Ca_subset("AO", "OCC")
+
+for scheme in ["BOYS", "PIPEK_MEZEY"]:
+    localizer = psi4.core.Localizer.build(scheme, wfn_scf.basisset(), C_occ)
+    localizer.localize()
+    compare_values(1, int(localizer.converged), 0, scheme + " localization convergence")  #TEST
+    U = localizer.U.to_array()
+    compare_arrays(np.eye(U.shape[0]), U.T @ U, 1.0e-10, scheme + " unitary rotation")       #TEST
+
+# The shared libmints IBO implementation constructs IAOs but delegates its
+# fourth-power generalized-PM optimization to the same AH/saddle-controlled
+# engine as Boys and PM. Keep the oxygen 1s orbital in a separate block to
+# exercise the core/valence range boundary inherited from FISAPT.
+minao = psi4.core.BasisSet.build(h2o, "BASIS", "CC-PVTZ-MINAO")
+ibo = psi4.core.IBOLocalizer.build(wfn_scf.basisset(), minao, C_occ)
+ibo.set_ranges([0, 1, C_occ.np.shape[1]])
+ibo.localize()
+compare_values(1, int(ibo.converged), 0, "IBO localization convergence")                    #TEST
+U_ibo = ibo.U.to_array()
+compare_arrays(np.eye(U_ibo.shape[0]), U_ibo.T @ U_ibo, 1.0e-10,
+               "IBO unitary rotation")                                                       #TEST
+A_iao = ibo.A.to_array()
+S_ao = wfn_scf.S().to_array()
+compare_arrays(np.eye(A_iao.shape[1]), A_iao.T @ S_ao @ A_iao, 1.0e-8,
+               "orthonormal intrinsic atomic orbitals")                                      #TEST
+Q_ibo = ibo.Q.to_array()
+compare_arrays(np.ones(Q_ibo.shape[1]), Q_ibo.sum(axis=0), 1.0e-7,
+               "IBO population completeness")                                                #TEST
+
+# The refactored interface retains FISAPT's range-aware Fock ordering without
+# allowing the frozen-core and valence IBO blocks to mix.
+C_occ_np = C_occ.to_array()
+F_occ = psi4.core.Matrix.from_array(C_occ_np.T @ wfn_scf.Fa().to_array() @ C_occ_np)
+ibo.fock_update(F_occ, [0, 1, C_occ_np.shape[1]])
+U_ibo_ordered = ibo.U.to_array()
+compare_arrays(np.eye(U_ibo_ordered.shape[0]), U_ibo_ordered.T @ U_ibo_ordered, 1.0e-10,
+               "range-ordered IBO unitary rotation")                                         #TEST
+compare_values(1.0, abs(U_ibo_ordered[0, 0]), 10,
+               "range ordering preserves frozen core")                                       #TEST
+
+clean()
+
+set {
+    dlpno_local_orbitals ibo
+    # Remove the domain and PNO screens so this compact test primarily probes
+    # construction and optimization of the localization population operators.
+    t_cut_pno 0.0
+    t_cut_do 0.0
+    t_cut_do_pre 0.0
+    t_cut_do_ij 0.0
+    t_cut_do_uv 0.0
+    t_cut_mkn 0.0
+    t_cut_pairs 0.0
+    t_cut_pairs_mp2 0.0
+    t_cut_pre 0.0
+    t_cut_clmo 0.0
+    t_cut_cpao 0.0
+    f_cut 0.0
+    dlpno_ao_ints_tol 1.0e-14
+    dlpno_toggle_memory false
+}
+
+e_ibo, wfn_ibo = energy("dlpno-mp2", return_wfn=True)
+compare_values(e_ibo, wfn_ibo.variable("MP2 TOTAL ENERGY"), 10,
+               "IBO DLPNO-MP2 total energy")                                                #TEST
+compare_values(e_ibo, variable("CURRENT ENERGY"), 10,
+               "IBO DLPNO-MP2 current energy")                                              #TEST
+
+clean()
+set dlpno_local_orbitals pipek_mezey_mbis
+
+e_mbis, wfn_mbis = energy("dlpno-mp2", return_wfn=True)
+compare_values(e_mbis, wfn_mbis.variable("MP2 TOTAL ENERGY"), 10,
+               "MBIS-PM DLPNO-MP2 total energy")                                            #TEST
+compare_values(e_mbis, variable("CURRENT ENERGY"), 10,
+               "MBIS-PM DLPNO-MP2 current energy")                                          #TEST
+
+clean()
