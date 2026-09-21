@@ -1,0 +1,240 @@
+ tid: 0x0 [2026.04.07-13:09:56.131] [INFO] Begin brianAPIInit
+ tid: 0x0 [2026.04.07-13:09:56.131] [INFO] Detected compatible BrianQC interface version 5
+ tid: 0x0 [2026.04.07-13:09:56.131] [INFO] Reading config from /home/jpmisiewicz/brian_files/1.5.0/config.json
+ tid: 0x0 [2026.04.07-13:09:56.132] [INFO] Setting Brian root dir to /home/jpmisiewicz/brian_files/1.5.0
+ tid: 0x0 [2026.04.07-13:09:56.133] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/10603610112-1715011099_kernel_g_v1_5_0_125b6af99d_CUDA_Tesla_V100.db
+ tid: 0x0 [2026.04.07-13:09:56.133] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/6953332736-1715010260_kernel_g_v1_5_0_125b6af99d_CUDA_GeForce_RTX_2080_Ti.db
+ tid: 0x0 [2026.04.07-13:09:56.134] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/13035212800-1715010745_kernel_g_v1_5_0_125b6af99d_CUDA_Tesla_A100.db
+ tid: 0x0 [2026.04.07-13:09:56.135] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/467988480-1715023474_kernel_g_v1_5_0_14e7bbc887_CUDA_GeForce_RTX_4090.db
+ tid: 0x0 [2026.04.07-13:09:56.135] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18874368-1715009708_dft_kernel_v1_5_0_125b6af99d_CUDA_Tesla_V100.db
+ tid: 0x0 [2026.04.07-13:09:56.136] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18759680-1715009628_dft_kernel_v1_5_0_125b6af99d_CUDA_GeForce_RTX_2080_Ti.db
+ tid: 0x0 [2026.04.07-13:09:56.136] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18714624-1715009665_dft_kernel_v1_5_0_125b6af99d_CUDA_Tesla_A100.db
+ tid: 0x0 [2026.04.07-13:09:56.137] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/12394496-1716812243_dft_kernel_v1_5_0_c0ea4e0e4a_CUDA_GeForce_RTX_4090.db
+ tid: 0x0 [2026.04.07-13:09:56.137] [INFO] No MM DBs specified in config, using the default: /home/jpmisiewicz/brian_files/1.5.0/integrators/mm.db
+ tid: 0x0 [2026.04.07-13:09:56.137] [WARNING] MM features will not be available, because the MM DB does not exist: /home/jpmisiewicz/brian_files/1.5.0/integrators/mm.db
+ tid: 0x0 [2026.04.07-13:09:56.137] [INFO] Start BrianQC module initialization
+ tid: 0x0 [2026.04.07-13:09:56.153] [INFO] GPU 0# NVIDIA_A30_GPU-ccf39815-8e21-789a-46e4-d3d8873216fd
+ tid: 0x0 [2026.04.07-13:09:56.155] [SYSTEM] BrianQC version: v1_5_1_7f6b4fa0eb licensed to: Trial User
+ tid: 0x0 [2026.04.07-13:09:56.160] [SYSTEM] Visit us at: https://brianqc.com
+ tid: 0x0 [2026.04.07-13:09:56.171] [SYSTEM] BrianQC copyright Streamnovation Ltd. 2013-2022
+ tid: 0x0 [2026.04.07-13:09:56.181] [SYSTEM] Contributors: Gy. Cserey, B. Czetenyi, A. Jasz, G. Kis, I. Ladjanszki, A. Rak, G. J. Tornai, A. Vas
+ tid: 0x0 [2026.04.07-13:09:56.399] [INFO] Signing in to license server: license.brainqc.com 443
+ tid: 0x0 [2026.04.07-13:09:56.425] [INFO] Scratch dir is disabled, storing everything in memory
+ tid: 0x0 [2026.04.07-13:09:56.665] [INFO] Detected device: CPU
+ tid: 0x0 [2026.04.07-13:09:56.665] [INFO] Detected device: CUDA NVIDIA A30#0000:CA:00.0
+ tid: 0x0 [2026.04.07-13:09:56.732] [INFO] Allocating 3 threads for GPU: CUDA NVIDIA A30#0000:CA:00.0 on node 0
+ tid: 0x0 [2026.04.07-13:09:59.696] [INFO] Used GPU count: 1
+ tid: 0x0 [2026.04.07-13:09:59.834] [INFO] End BrianQC BrianQC initialization tid: 0x0 [2026.04.07-13:09:59.841] [I   => Libint2 <=
+
+     tid: 0x0 [2026.04.07-13:10:00.046] [INFO] Re-init GPU for small molecule mode
+ tid: 0x0 [2026.04.07-13:10:00.159] [INFO] Detected device: CPU
+ tid: 0x0 [2026.04.07-13:10:00.159] [INFO] Detected device: CUDA NVIDIA A30#0000:CA:00.0
+ tid: 0x0 [2026.04.07-13:10:00.210] [INFO] Allocating 1 threads for GPU: CUDA NVIDIA A30#0000:CA:00.0 on node 0
+ tid: 0x0 [2026.04.07-13:10:00.210] [INFO] Used GPU count: 1
+    Reference energy......................................................................PASSED
+ tid: 0x0 [2026.04.07-13:10:26.651] [INFO] Begin brianAPIRelease
+ tid: 0x0 [2026.04.07-13:10:26.785] [INFO] End brianAPIRelease
+----------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O           -0.053907893057     0.038121115629    -0.000000000000    15.994914619570
+         H           -0.007393538524    -0.917938884372     0.000000000000     1.007825032230
+         H            0.862950921205     0.312929115629     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.05749  B =     14.72077  C =      9.53384 [cm^-1]
+  Rotational constants: A = 811163.27102  B = 441317.72906  C = 285817.29594 [MHz]
+  Nuclear repulsion =    9.196691580896005
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-09
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVQZ
+    Blend: CC-PVQZ
+    Number of shells: 35
+    Number of basis functions: 115
+    Number of Cartesian functions: 140
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Screening Type:           CSAM
+    Screening Cutoff:        1E-12
+    Incremental Fock:           No
+
+  BrianQC enabled, using Canonical Orthogonalization with cutoff of 1.0000000000E-07.
+  Overall, 0 of 115 possible MOs eliminated.
+
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A        115     115 
+   -------------------------
+    Total     115     115
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:   -76.50441163127994   -7.65044e+01   0.00000e+00 
+   @RHF iter   1:   -75.96656281602219    5.37849e-01   3.64905e-03 ADIIS/DIIS
+   @RHF iter   2:   -76.04930924301654   -8.27464e-02   1.99422e-03 ADIIS/DIIS
+   @RHF iter   3:   -76.06395971642307   -1.46505e-02   3.62765e-04 ADIIS/DIIS
+   @RHF iter   4:   -76.06473858257020   -7.78866e-04   7.09859e-05 DIIS
+   @RHF iter   5:   -76.06478725995557   -4.86774e-05   2.00440e-05 DIIS
+   @RHF iter   6:   -76.06479145492764   -4.19497e-06   3.05428e-06 DIIS
+   @RHF iter   7:   -76.06479160946432   -1.54537e-07   5.45542e-07 DIIS
+   @RHF iter   8:   -76.06479161453905   -5.07472e-09   7.98109e-08 DIIS
+   @RHF iter   9:   -76.06479161461336   -7.43086e-11   9.49559e-09 DIIS
+   @RHF iter  10:   -76.06479161461446   -1.10845e-12   2.12463e-09 DIIS
+   @RHF iter  11:   -76.06479161461466   -1.98952e-13   2.92898e-10 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.560064     2A     -1.349992     3A     -0.713216  
+       4A     -0.583179     5A     -0.508341  
+
+    Virtual:                                                              
+
+       6A      0.116971     7A      0.171167     8A      0.448778  
+       9A      0.462243    10A      0.502984    11A      0.583586  
+      12A      0.603633    13A      0.614857    14A      0.657467  
+      15A      0.716333    16A      0.851856    17A      0.920646  
+      18A      1.112732    19A      1.156330    20A      1.345472  
+      21A      1.419033    22A      1.482293    23A      1.484264  
+      24A      1.576204    25A      1.686738    26A      1.912582  
+      27A      2.064080    28A      2.191354    29A      2.294235  
+      30A      2.364735    31A      2.423421    32A      2.490813  
+      33A      2.518330    34A      2.582686    35A      2.590086  
+      36A      2.654673    37A      2.671059    38A      2.839518  
+      39A      2.856742    40A      3.036340    41A      3.134012  
+      42A      3.294575    43A      3.342462    44A      3.462930  
+      45A      3.629944    46A      3.826075    47A      4.001336  
+      48A      4.125894    49A      4.188653    50A      4.212355  
+      51A      4.435606    52A      4.496436    53A      4.712548  
+      54A      4.752362    55A      4.791194    56A      4.929222  
+      57A      5.364328    58A      5.393907    59A      5.964506  
+      60A      6.103891    61A      6.248420    62A      6.323744  
+      63A      6.746577    64A      6.781643    65A      7.078646  
+      66A      7.273529    67A      7.308122    68A      7.364228  
+      69A      7.436126    70A      7.546520    71A      7.552842  
+      72A      7.569647    73A      7.998516    74A      8.077551  
+      75A      8.098641    76A      8.148955    77A      8.151702  
+      78A      8.278372    79A      8.324189    80A      8.359456  
+      81A      8.433363    82A      8.610335    83A      8.842887  
+      84A      8.905316    85A      8.962885    86A      9.235051  
+      87A      9.387155    88A      9.436792    89A      9.919492  
+      90A     10.016461    91A     10.305236    92A     10.451240  
+      93A     10.660630    94A     10.743110    95A     10.812057  
+      96A     11.296223    97A     11.411294    98A     11.604035  
+      99A     11.639872   100A     11.702834   101A     11.847139  
+     102A     12.201817   103A     12.336986   104A     12.429502  
+     105A     12.434482   106A     12.451802   107A     13.627489  
+     108A     13.822868   109A     14.291736   110A     14.645910  
+     111A     14.685830   112A     14.875343   113A     16.447555  
+     114A     16.851330   115A     44.384931  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+    NA   [     5 ]
+    NB   [     5 ]
+
+  @RHF Final Energy:   -76.06479161461466
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1966915808960046
+    One-Electron Energy =                -123.0933825644463582
+    Two-Electron Energy =                  37.8318993689356873
+    Total Energy =                        -76.0647916146146770
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.1538702            0.8017999            0.6479297
+ Dipole Y            :          0.1088180           -0.5669950           -0.4581770
+ Dipole Z            :         -0.0000000            0.0000000           -0.0000000
+ Magnitude           :                                                    0.7935610
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on fal025 at Tue Apr  7 13:10:26 2026
+Module time:
+	user time   =       9.69 seconds =       0.16 minutes
+	system time =      21.79 seconds =       0.36 minutes
+	total time  =         27 seconds =       0.45 minutes
+Total time:
+	user time   =       9.69 seconds =       0.16 minutes
+	system time =      21.79 seconds =       0.36 minutes
+	total time  =         27 seconds =       0.45 minutes
+    Reference energy......................................................................PASSED
+
+    Psi4 stopped on: Tuesday, 07 April 2026 01:10PM
+    Psi4 wall time for execution: 0:00:30.55
+
+*** Psi4 exiting successfully. Buy a developer a beer!
+Releasing the BrianQC module
