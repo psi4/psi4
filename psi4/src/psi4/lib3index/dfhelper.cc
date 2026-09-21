@@ -1608,12 +1608,14 @@ void DFHelper::contract_metric_Qpq(std::string file, double* metp, double* Mp, d
     }
 
     // The pre-metric copy is dead the moment the metric has been folded out of
-    // it, and it is exactly as large as the result.  Drop it here instead of at
-    // clear_all(): a big transform otherwise carries both copies of every
-    // tensor on scratch until the DFHelper goes away, which doubles the peak
-    // disk a job needs.  erase() releases the last reference to the stream, and
-    // ~StreamStruct closes and unlinks the file.
-    file_streams_.erase(getf);
+    // it, and it is exactly as large as the result.  Callers that transform each
+    // name once can drop it here instead of at clear_all(): a big transform
+    // otherwise carries both copies of every tensor on scratch until the
+    // DFHelper goes away, which doubles the peak disk a job needs.  erase()
+    // releases the last reference to the stream, and ~StreamStruct closes and
+    // unlinks the file.  Re-registering the name with add_transformation() and
+    // transforming again simply rebuilds it into a fresh file.
+    if (release_pre_metric_tensors_) file_streams_.erase(getf);
 }
 
 void DFHelper::contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
@@ -1673,12 +1675,14 @@ void DFHelper::contract_metric(std::string file, double* metp, double* Mp, doubl
     }
 
     // The pre-metric copy is dead the moment the metric has been folded out of
-    // it, and it is exactly as large as the result.  Drop it here instead of at
-    // clear_all(): a big transform otherwise carries both copies of every
-    // tensor on scratch until the DFHelper goes away, which doubles the peak
-    // disk a job needs.  erase() releases the last reference to the stream, and
-    // ~StreamStruct closes and unlinks the file.
-    file_streams_.erase(getf);
+    // it, and it is exactly as large as the result.  Callers that transform each
+    // name once can drop it here instead of at clear_all(): a big transform
+    // otherwise carries both copies of every tensor on scratch until the
+    // DFHelper goes away, which doubles the peak disk a job needs.  erase()
+    // releases the last reference to the stream, and ~StreamStruct closes and
+    // unlinks the file.  Re-registering the name with add_transformation() and
+    // transforming again simply rebuilds it into a fresh file.
+    if (release_pre_metric_tensors_) file_streams_.erase(getf);
 }
 
 void DFHelper::contract_metric_AO_core(double* Qpq, double* metp) {
@@ -1908,6 +1912,20 @@ void DFHelper::transform() {
 
     // get optimal path and info
     if (!ordered_) info_ = identify_order();
+
+    // Drop any pre-metric scratch left over from an earlier transform() of these
+    // same names.  add_transformation() hands a re-registered name a fresh file,
+    // so this only bites a name that survived in transf_ without being
+    // re-registered: it keeps its original file, put_transformations_Qpq() opens
+    // that file in append mode, and contract_metric_Qpq() keeps reading the
+    // first pass's bytes from offset zero.  The file would then grow by a full
+    // copy per transform() while the extra passes are silently discarded.
+    // Unlinking here makes that pattern fail loudly instead of quietly eating
+    // scratch; callers should pair clear_spaces() with clear_transformations().
+    for (const auto& name : order_) {
+        auto entry = files_.find(name);
+        if (entry != files_.end()) file_streams_.erase(std::get<0>(entry->second));
+    }
     size_t wtmp = std::get<0>(info_);
     size_t wfinal = std::get<1>(info_);
 

@@ -5637,8 +5637,15 @@ void FISAPT::felst() {
     }
 
 
-    // Prepare DFHelper object for the next module
+    // Prepare DFHelper object for the next module.  clear_spaces() drops the
+    // spaces and the transformation order but not the transformations
+    // themselves, so without this the next transform() would rebuild the order
+    // from the transformations registered here and recompute them against
+    // whatever spaces the next module binds to the same labels -- redundant
+    // work whose output is appended to, and then discarded from, the scratch
+    // file this pass already wrote.
     dfh_->clear_spaces();
+    dfh_->clear_transformations();
 
     // => Summation <= //
 
@@ -5874,8 +5881,15 @@ void FISAPT::fexch() {
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
 
-    // Prepare DFHelper object for the next module
+    // Prepare DFHelper object for the next module.  clear_spaces() drops the
+    // spaces and the transformation order but not the transformations
+    // themselves, so without this the next transform() would rebuild the order
+    // from the transformations registered here and recompute them against
+    // whatever spaces the next module binds to the same labels -- redundant
+    // work whose output is appended to, and then discarded from, the scratch
+    // file this pass already wrote.
     dfh_->clear_spaces();
+    dfh_->clear_transformations();
 }
 
 // Compute fragment-fragment partitioning of induction contribution

@@ -243,6 +243,12 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
 
     // transform
     dfh_->set_release_core_AO_before_metric(true);
+    // Every name here is transformed exactly once -- the hybrid second round
+    // below starts from clear_transformations() -- so the pre-metric scratch
+    // copies can go as soon as the metric is folded into them.  That halves the
+    // scratch this transform needs, which is what a protein-sized dimer runs
+    // out of.  The flag is sticky, so it covers the second round too.
+    dfh_->set_release_pre_metric_tensors(true);
     dfh_->transform();
 
     // transformations specific for hybrid functional
