@@ -565,7 +565,17 @@ class BasisSet(object):
         mol.update_geometry()
 
         # load in the basis sets
-        sets = [BasisSet.pyconstruct(mol, keys[at], targets[at], fitroles[at], others[at]) for at in range(len(keys))]
+        sets = []
+        obs_ecp_map = None
+        for at in range(len(keys)):
+            if fitroles[at] == "ORBITAL":
+                obs, obs_dict = BasisSet.pyconstruct(
+                    mol, keys[at], targets[at], fitroles[at], others[at], return_dict=True
+                )
+                sets.append(obs)
+                obs_ecp_map = obs_dict.get("ecp_shell_map")
+            else:
+                sets.append(BasisSet.pyconstruct(mol, keys[at], targets[at], fitroles[at], others[at]))
         name = " + ".join(targets)
         keywords = " + ".join(keys)
         blends = " + ".join([bas.name.upper() for bas in sets])
@@ -615,6 +625,8 @@ class BasisSet(object):
             bsdict['blend'] = blends
             bsdict['puream'] = int(basisset.has_puream())
             bsdict['shell_map'] = basisset.export_for_libmints("CABS")
+            if obs_ecp_map:
+                bsdict['ecp_shell_map'] = obs_ecp_map
             return bsdict
 
     @staticmethod
