@@ -29,7 +29,11 @@
 #include "dfhelper.h"
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
+#include <cstring>
+#include <filesystem>
+#include <system_error>
 #ifdef _MSC_VER
 #include <process.h>
 #define SYSTEM_GETPID ::_getpid
@@ -61,6 +65,43 @@
 #include "dftensor.h"
 
 namespace psi {
+
+namespace {
+
+// Report a stdio transfer that moved fewer doubles than it was asked to.
+// Anything short of the exact count leaves the tensor on disk truncated, so it
+// is an error even when it is not zero.  Scratch space is the usual culprit for
+// a large DF job, so say how much of it is left.
+void df_io_check(const char* who, const std::string& file, size_t done, size_t wanted, FILE* fp, bool reading) {
+    if (done == wanted) return;
+
+    const int err = errno;  // grab before anything below can clobber it
+
+    std::stringstream error;
+    error << "DFHelper:" << who << ": " << (reading ? "read " : "wrote ") << done << " of " << wanted
+          << " doubles (" << (wanted - done) * sizeof(double) << " bytes short)";
+    error << "\n  file: " << file;
+    if (fp != nullptr) {
+        const long pos = ftell(fp);
+        if (pos >= 0) error << "\n  stream offset: " << pos << " bytes";
+        if (ferror(fp)) error << "\n  stream error flag is set";
+        if (reading && feof(fp)) error << "\n  stream is at end of file";
+    }
+    if (err != 0) error << "\n  " << std::strerror(err) << " (errno " << err << ")";
+
+    std::error_code ec;
+    const std::filesystem::path dir = std::filesystem::path(file).parent_path();
+    const auto space = std::filesystem::space(dir, ec);
+    if (!ec) {
+        const double gib = 1024.0 * 1024.0 * 1024.0;
+        error << "\n  scratch directory " << dir.string() << " has " << space.available / gib << " GiB free of "
+              << space.capacity / gib << " GiB";
+    }
+
+    throw PSIEXCEPTION(error.str().c_str());
+}
+
+}  // namespace
 
 DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux)
     : primary_(primary), aux_(aux) {
@@ -978,30 +1019,20 @@ void DFHelper::put_tensor(std::string file, double* Mp, const size_t start1, con
     // is everything contiguous?
     if (st == 0) {
         size_t s = fwrite(&Mp[0], sizeof(double), a0 * a1, fp);
-        if (!s) {
-            std::stringstream error;
-            error << "DFHelper:put_tensor: write error";
-            throw PSIEXCEPTION(error.str().c_str());
-        }
+        df_io_check("put_tensor", file, s, a0 * a1, fp, false);
     } else {
-        for (size_t i = start1; i < stop1; i++) {
+        // Mp is a0 x a1 and starts at its own row 0, so index it relative to
+        // start1 the way get_tensor_ does.
+        for (size_t i = 0; i < a0 - 1; i++) {
             // write
             size_t s = fwrite(&Mp[i * a1], sizeof(double), a1, fp);
-            if (!s) {
-                std::stringstream error;
-                error << "DFHelper:put_tensor: write error";
-                throw PSIEXCEPTION(error.str().c_str());
-            }
+            df_io_check("put_tensor", file, s, a1, fp, false);
             // advance stream
             fseek(fp, st * sizeof(double), SEEK_CUR);
         }
         // manual last one
         size_t s = fwrite(&Mp[(a0 - 1) * a1], sizeof(double), a1, fp);
-        if (!s) {
-            std::stringstream error;
-            error << "DFHelper:put_tensor: write error";
-            throw PSIEXCEPTION(error.str().c_str());
-        }
+        df_io_check("put_tensor", file, s, a1, fp, false);
     }
 }
 void DFHelper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t start, std::string op) {
@@ -1013,11 +1044,7 @@ void DFHelper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t s
 
     // everything is contiguous
     size_t s = fwrite(&Mp[0], sizeof(double), size, fp);
-    if (!s) {
-        std::stringstream error;
-        error << "DFHelper:put_tensor_AO: write error";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
+    df_io_check("put_tensor_AO", file, s, size, fp, false);
 }
 void DFHelper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t start) {
     // begin stream
@@ -1028,11 +1055,7 @@ void DFHelper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t s
 
     // everything is contiguous
     size_t s = fread(&Mp[0], sizeof(double), size, fp);
-    if (!s) {
-        std::stringstream error;
-        error << "DFHelper:get_tensor_AO: read error";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
+    df_io_check("get_tensor_AO", file, s, size, fp, true);
 }
 void DFHelper::get_tensor_(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
                            std::pair<size_t, size_t> i2) {
@@ -1088,35 +1111,23 @@ void DFHelper::get_tensor_(std::string file, double* b, const size_t start1, con
     // is everything contiguous?
     if (st == 0) {
         size_t s = fread(&b[0], sizeof(double), a0 * a1, fp);
-        if (!s) {
-            std::stringstream error;
-            error << "DFHelper:get_tensor: read error";
-            throw PSIEXCEPTION(error.str().c_str());
-        }
+        df_io_check("get_tensor", file, s, a0 * a1, fp, true);
     } else {
         for (size_t i = 0; i < a0 - 1; i++) {
             // read
             size_t s = fread(&b[i * a1], sizeof(double), a1, fp);
-            if (!s) {
-                std::stringstream error;
-                error << "DFHelper:get_tensor: read error";
-                throw PSIEXCEPTION(error.str().c_str());
-            }
+            df_io_check("get_tensor", file, s, a1, fp, true);
             // advance stream
-            s = fseek(fp, st * sizeof(double), SEEK_CUR);
-            if (s) {
+            if (fseek(fp, st * sizeof(double), SEEK_CUR)) {
                 std::stringstream error;
-                error << "DFHelper:get_tensor: read error";
+                error << "DFHelper:get_tensor: could not seek " << st * sizeof(double) << " bytes ahead in " << file;
+                if (errno != 0) error << "\n  " << std::strerror(errno) << " (errno " << errno << ")";
                 throw PSIEXCEPTION(error.str().c_str());
             }
         }
         // manual last one
         size_t s = fread(&b[(a0 - 1) * a1], sizeof(double), a1, fp);
-        if (!s) {
-            std::stringstream error;
-            error << "DFHelper:get_tensor: read error";
-            throw PSIEXCEPTION(error.str().c_str());
-        }
+        df_io_check("get_tensor", file, s, a1, fp, true);
     }
 }
 
