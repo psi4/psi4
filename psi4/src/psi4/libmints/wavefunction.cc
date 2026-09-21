@@ -378,7 +378,10 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->energy_ = energy_;
     wfn->efzc_ = efzc_;
 
-    // collapse all the Dimension objects down to one element
+    // Collapse every per-irrep Dimension member owned by Wavefunction to one
+    // element. HF::common_init() subsequently initializes its additional
+    // original_nalphapi_ and original_nbetapi_ members from these collapsed
+    // occupation dimensions.
     wfn->frzcpi_.init(1, frzcpi_.name());
     wfn->frzcpi_[0] = frzcpi_.sum();
     wfn->frzvpi_.init(1, frzvpi_.name());
