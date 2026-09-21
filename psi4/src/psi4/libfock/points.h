@@ -143,6 +143,10 @@ class PointFunctions : public BasisFunctions {
     /// force_compute forces basis function values at points to be re-computed.
     virtual void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true) = 0;
 
+    /// Point basis_values_ at the block's collocation, from the cache when one is available
+    /// and force_compute is false, otherwise by computing it. Builds no density quantities.
+    void prepare_basis_only(std::shared_ptr<BlockOPoints> block, bool force_compute = false);
+
     // => Accessors <= //
 
     std::shared_ptr<Vector> point_value(const std::string& key);
@@ -279,26 +283,12 @@ class UKSFunctions : public PointFunctions {
     /// Allocate registers
     void allocate() override;
 
-    // => Orbital Collocation <= //
-
-    /// Orbital coefficients, AO
-    SharedMatrix Ca_AO_;
-    /// Orbital coefficients, AO
-    SharedMatrix Cb_AO_;
-    /// Orbital coefficients, local AO
-    SharedMatrix Ca_local_;
-    /// Orbital coefficients, local AO
-    SharedMatrix Cb_local_;
-
    public:
     UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     ~UKSFunctions() override;
 
     void set_pointers(SharedMatrix Da_occ_AO) override;
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) override;
-    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) {
-        cache_map_ = cache_map;
-    }
 
     /// Compute the needed DFT intermediates at the points in the block.
     /// "Which DFT intermediates are needed?" is determined from ansatz_.

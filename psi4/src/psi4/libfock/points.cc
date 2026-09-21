@@ -43,6 +43,16 @@
 
 namespace psi {
 
+void PointFunctions::prepare_basis_only(std::shared_ptr<BlockOPoints> block, bool force_compute) {
+    block_index_ = block->index();
+    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
+        current_basis_map_ = &(*cache_map_)[block->index()];
+    } else {
+        current_basis_map_ = &basis_values_;
+        BasisFunctions::compute_functions(block);
+    }
+}
+
 SAPFunctions::SAPFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
     : PointFunctions(primary, max_points, max_functions) {
     current_basis_map_ = &basis_values_;
@@ -60,14 +70,7 @@ void SAPFunctions::allocate() {
     build_temps();
 }
 void SAPFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
+    prepare_basis_only(block, force_compute);
 }
 void SAPFunctions::print(std::string out, int print) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
@@ -153,14 +156,7 @@ void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/) 
 void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     if (!D_AO_) throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
 
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
+    prepare_basis_only(block, force_compute);
 
     // => Global information <= //
     int npoints = block->npoints();
@@ -298,14 +294,7 @@ void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
 void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute) {
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
+    prepare_basis_only(block, force_compute);
     // timer_off("Functions: Points");
 
     // => Global information <= //
@@ -408,7 +397,7 @@ void UKSFunctions::allocate() {
 
     if (ansatz_ >= 2) {
         point_values_["TAU_A"] = std::make_shared<Vector>("TAU_A", max_points_);
-        point_values_["TAU_B"] = std::make_shared<Vector>("TAU_A", max_points_);
+        point_values_["TAU_B"] = std::make_shared<Vector>("TAU_B", max_points_);
     }
     build_temps();
 }
@@ -422,14 +411,7 @@ void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO) {
 void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     if (!Da_AO_) throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
 
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
+    prepare_basis_only(block, force_compute);
 
     // => Global information <= //
     int npoints = block->npoints();
@@ -559,60 +541,12 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
 void UKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/) {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
 }
-void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO) {
-    Ca_AO_ = Ca_AO;
-    Cb_AO_ = Cb_AO;
-    Ca_local_ = std::make_shared<Matrix>("Ca local", max_functions_, Ca_AO_->colspi()[0]);
-    Cb_local_ = std::make_shared<Matrix>("Cb local", max_functions_, Cb_AO_->colspi()[0]);
-    orbital_values_["PSI_A"] = std::make_shared<Matrix>("PSI_A", Ca_AO_->colspi()[0], max_points_);
-    orbital_values_["PSI_B"] = std::make_shared<Matrix>("PSI_B", Cb_AO_->colspi()[0], max_points_);
+void UKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
+    throw PSIEXCEPTION("UKSFunctions::orbitals are not implemented. Read the source.");
 }
-void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute) {
-    // => Build basis function values <= //
-    block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
-        current_basis_map_ = &(*cache_map_)[block->index()];
-    } else {
-        current_basis_map_ = &basis_values_;
-        BasisFunctions::compute_functions(block);
-    }
-
-    // => Global information <= //
-
-    int npoints = block->npoints();
-    const std::vector<int>& function_map = block->functions_local_to_global();
-    int nglobal = max_functions_;
-    int nlocal = function_map.size();
-
-    // => Build local C matrix <= //
-
-    int na = Ca_AO_->colspi()[0];
-    double** Cap = Ca_AO_->pointer();
-    double** Ca2p = Ca_local_->pointer();
-    for (int ml = 0; ml < nlocal; ml++) {
-        int mg = function_map[ml];
-        C_DCOPY(na, Cap[mg], 1, Ca2p[ml], 1);
-    }
-
-    int nb = Cb_AO_->colspi()[0];
-    double** Cbp = Cb_AO_->pointer();
-    double** Cb2p = Cb_local_->pointer();
-    for (int ml = 0; ml < nlocal; ml++) {
-        int mg = function_map[ml];
-        C_DCOPY(na, Cbp[mg], 1, Cb2p[ml], 1);
-    }
-
-    // => Build orbitals <= //
-
-    double** phip = basis_value("PHI")->pointer();
-    double** psiap = orbital_value("PSI_A")->pointer();
-    double** psibp = orbital_value("PSI_B")->pointer();
-    size_t coll_funcs = basis_value("PHI")->ncol();
-
-    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], coll_funcs, 0.0, psiap[0], max_points_);
-    C_DGEMM('T', 'T', nb, npoints, nlocal, 1.0, Cb2p[0], nb, phip[0], coll_funcs, 0.0, psibp[0], max_points_);
+void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> /*block*/, bool /*force_compute*/) {
+    throw PSIEXCEPTION("UKSFunctions::orbitals are not implemented. Read the source.");
 }
-
 void UKSFunctions::print(std::string out, int print) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     std::string ans;
