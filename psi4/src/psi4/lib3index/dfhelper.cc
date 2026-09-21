@@ -1606,6 +1606,14 @@ void DFHelper::contract_metric_Qpq(std::string file, double* metp, double* Mp, d
         timer_off("DFH: Total Workflow");
         put_tensor(putf, Fp, begin, end, 0, r * Q - 1, op);
     }
+
+    // The pre-metric copy is dead the moment the metric has been folded out of
+    // it, and it is exactly as large as the result.  Drop it here instead of at
+    // clear_all(): a big transform otherwise carries both copies of every
+    // tensor on scratch until the DFHelper goes away, which doubles the peak
+    // disk a job needs.  erase() releases the last reference to the stream, and
+    // ~StreamStruct closes and unlinks the file.
+    file_streams_.erase(getf);
 }
 
 void DFHelper::contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
@@ -1663,6 +1671,14 @@ void DFHelper::contract_metric(std::string file, double* metp, double* Mp, doubl
             put_tensor(putf, Fp, 0, a0 - 1, begin * a2, (end + 1) * a2 - 1, op);
         }
     }
+
+    // The pre-metric copy is dead the moment the metric has been folded out of
+    // it, and it is exactly as large as the result.  Drop it here instead of at
+    // clear_all(): a big transform otherwise carries both copies of every
+    // tensor on scratch until the DFHelper goes away, which doubles the peak
+    // disk a job needs.  erase() releases the last reference to the stream, and
+    // ~StreamStruct closes and unlinks the file.
+    file_streams_.erase(getf);
 }
 
 void DFHelper::contract_metric_AO_core(double* Qpq, double* metp) {
