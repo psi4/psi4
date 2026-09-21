@@ -1,0 +1,48 @@
+#! Collapsed closed-shell consistency limit for UHF-to-QRO DLPNO-CCSD
+#! Full pair and PNO spaces make the result directly comparable to RHF.
+
+molecule h2o {
+0 1
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core false
+set scf_type direct
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+set t_cut_pno 0.0
+set t_cut_pno_mp2 0.0
+set t_cut_pairs 0.0
+set t_cut_do 0.0
+set t_cut_mkn 0.0
+set dlpno_toggle_memory false
+
+set reference rhf
+print('   Computing the RHF DLPNO-CCSD closed-shell reference ...')
+rhf_total = energy('dlpno-ccsd')
+rhf_ref = variable('SCF TOTAL ENERGY')
+rhf_corr = variable('CCSD CORRELATION ENERGY')
+clean()
+
+set reference uhf
+print('   Testing the collapsed UHF-to-QRO DLPNO-CCSD limit ...')
+qro_total = energy('dlpno-ccsd')
+input_uhf = variable('SCF TOTAL ENERGY')
+qro_ref = variable('QRO REFERENCE ENERGY')
+qro_corr = variable('CCSD CORRELATION ENERGY')
+
+compare_values(rhf_ref, input_uhf, 8, 'collapsed UHF SCF energy')                            #TEST
+compare_values(rhf_ref, qro_ref, 8, 'collapsed QRO reference energy')                       #TEST
+compare_values(rhf_corr, qro_corr, 7, 'collapsed QRO correlation energy')                   #TEST
+compare_values(rhf_total, qro_total, 7, 'collapsed QRO total energy')                       #TEST
+compare_values(qro_ref + qro_corr, qro_total, 10, 'QRO reference plus correlation')         #TEST
+compare_values(qro_ref, variable('CURRENT REFERENCE ENERGY'), 10, 'current QRO reference')  #TEST
+compare_values(5.0, variable('QRO ALPHA ELECTRONS'), 8, 'QRO alpha electron count')          #TEST
+compare_values(5.0, variable('QRO BETA ELECTRONS'), 8, 'QRO beta electron count')            #TEST
+compare_values(0.0, variable('QRO UHF SPIN DENSITY NORM'), 7, 'collapsed spin density')      #TEST
+compare_values(0.0, variable('QRO ORTHONORMALITY ERROR'), 7, 'QRO orthonormality')           #TEST
+clean()
