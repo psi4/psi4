@@ -269,7 +269,15 @@ def scf_initialize(self):
     # reserve is capped at half the budget so that an under-declared run degrades into an
     # out-of-core JK (which DFHelper handles) rather than a zero grant.
     reserve_terms = _scf_memory_reserve(self)
-    reserve_total = sum(reserve_terms.values())
+    # The interpreter-and-libraries term is resident before psi4 allocates anything, so it
+    # is not part of what the memory keyword describes -- that keyword has always sized the
+    # big arrays, not the process.  Subtracting it from the budget would silently take a
+    # fifth of a gigabyte away from every job that declares a small one, which is enough to
+    # push a Cholesky or in-core DF JK under the floor it needs to start.  It is still real
+    # memory, so it is still counted against the cache ceiling below and in the advice about
+    # how much this SCF actually needs; it just is not taken out of the split.
+    process_reserve = reserve_terms["base"]
+    reserve_total = sum(reserve_terms.values()) - process_reserve
     if reserve_total >= unclaimed_memory:
         # The declaration is smaller than the parts of this SCF that are not negotiable, so
         # it is not a budget at all -- a test that asks for two megabytes to force a disk
@@ -289,7 +297,7 @@ def scf_initialize(self):
     if resident_memory is None:
         overhead_memory = 0.0
     else:
-        overhead_memory = max(0.0, resident_memory - committed_memory - reserve_terms["base"])
+        overhead_memory = max(0.0, resident_memory - committed_memory - process_reserve)
     held_memory = committed_memory + overhead_memory
 
     # With an absolute reserve subtracted, the factor is only residual slop, so the 0.75
@@ -353,13 +361,23 @@ def scf_initialize(self):
     # job.  This is a ceiling rather than a subtraction on purpose: a job with headroom to
     # spare keeps its whole cache, and with no residue to account for the safety factor
     # already holds the split below this line, so nothing changes.  The JK keeps its budget.
-    cache_ceiling = safety_factor * max(0.0, (core.get_memory() / 8) - held_memory - reserve_memory - jk_size)
+    cache_ceiling = safety_factor * max(
+        0.0, (core.get_memory() / 8) - held_memory - process_reserve - reserve_memory - jk_size)
     withheld_memory = max(0.0, collocation_memory - cache_ceiling)
     collocation_memory -= withheld_memory
 
     # Set constants
     self.iteration_ = 0
     self.memory_jk_ = int(total_memory - collocation_memory - withheld_memory)
+    # When the cache takes everything above the JK's own estimate, the line above is
+    # total_memory - (total_memory - jk_size), which is jk_size only up to the rounding
+    # of two float subtractions -- and int() then truncates, so the JK can be handed one
+    # double less than the size it just asked for.  DFHelper and CDJK both treat that as
+    # "not enough memory to do in-core" and throw, which turns a grant that is exactly
+    # right into a fatal error.  Never hand the JK less than it reported it needs; it
+    # cannot exceed total_memory here, because this branch only runs when it is smaller.
+    if jk_size_known and jk_size > 0:
+        self.memory_jk_ = max(self.memory_jk_, int(jk_size))
     self.memory_collocation_ = int(collocation_memory)
 
     if self.get_print():
@@ -376,10 +394,11 @@ def scf_initialize(self):
             core.print_out("\n")
         core.print_out("    Reserve estimate                {:11.3f} [GiB]\n".format(gib(reserve_memory)))
         for label, key in (("SCF matrices", "matrices"), ("DFT grid", "grid"),
-                           ("DFT point functions", "points"), ("JK per-call transients", "jk"),
-                           ("Interpreter and libraries", "base")):
+                           ("DFT point functions", "points"), ("JK per-call transients", "jk")):
             if reserve_terms[key]:
                 core.print_out("      {:30s}{:11.3f}\n".format(label, gib(reserve_terms[key])))
+        core.print_out("    Interpreter and libraries       {:11.3f} [GiB]  (not taken from the budget)\n".format(
+            gib(process_reserve)))
         if reserve_total > reserve_memory:
             core.print_out("      (reserve {}; this job is under-declared)\n".format(
                 "not taken" if reserve_memory == 0.0 else "capped at half the remaining budget"))
@@ -391,7 +410,7 @@ def scf_initialize(self):
         if jk_size_known:
             # jk_size is what a JK built here will allocate; a re-used one reports 0
             # because its integrals are already inside committed_memory.
-            required = held_memory + reserve_memory + jk_size
+            required = held_memory + process_reserve + reserve_memory + jk_size
             peak = required + self.memory_collocation_
             core.print_out("    Estimated peak                  {:11.3f} [GiB]\n".format(gib(peak)))
             core.print_out("    Minimum memory for this SCF     {:11.3f} [GiB]".format(gib(1.05 * required)))
