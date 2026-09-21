@@ -2086,13 +2086,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         filename = core.get_writer_file_prefix(scf_molecule.name()) + ".molden"
         dovirt = bool(core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
 
-        occa = scf_wfn.occupation_a()
-        occb = scf_wfn.occupation_a()
-
-        mw = core.MoldenWriter(scf_wfn)
-        mw.write(filename, scf_wfn.Ca(), scf_wfn.Cb(), scf_wfn.epsilon_a(),
-                 scf_wfn.epsilon_b(), scf_wfn.occupation_a(),
-                 scf_wfn.occupation_b(), dovirt)
+        scf_wfn.write_molden(filename, dovirt, False)
 
     # Write checkpoint file (orbitals and basis); Can be disabled, e.g., for findif displacements
     if write_checkpoint_file and isinstance(_chkfile, str):
