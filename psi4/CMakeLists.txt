@@ -313,10 +313,19 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
 
 # <<<  Install  >>>
 
-    # <<<  install bin/  >>>
 configure_file(run_psi4.py psi4 @ONLY)
-install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+if(DEFINED SKBUILD_SCRIPTS_DIR)
+    # <<<  install lib/psi4/run_psi4.py  >>>
+    # pyproject.toml [project.scripts] requires psi4 have a python-importable
+    # entry point to install the CLI.
+    install(FILES ${CMAKE_BINARY_DIR}/psi4
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
+            RENAME run_psi4.py)
+else()
+    # <<<  install bin/psi4  >>>
+    install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+endif()
 
 if(WIN32)
     # Generate a batch script, which wraps "bin/psi4" script to "python bin/psi4"
