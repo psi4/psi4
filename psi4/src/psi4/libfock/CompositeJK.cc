@@ -275,17 +275,16 @@ void CompositeJK::compute_JK() {
         timer_on("CompositeJK: INCFOCK Preprocessing");
 
         auto reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
-        auto incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         auto Dnorm = Process::environment.globals["SCF D NORM"];
         // Do IFB on this iteration?
-        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        do_incfock_iter_ = !initial_iteration_ && (incfock_count_ % reset != reset - 1);
 
         if (k_algo_->name() == "sn-LinK") {
             auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
             k_algo_derived->set_incfock_iter(do_incfock_iter_);
         }
 
-        if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
+        if (!initial_iteration_) incfock_count_ += 1;
 
         incfock_setup();
         

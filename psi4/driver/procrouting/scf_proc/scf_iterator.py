@@ -256,9 +256,10 @@ def scf_initialize(self):
     # Print iteration header
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
     diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
+    variable_screening = "DIRECT" in core.get_option('SCF', 'SCF_TYPE') and core.get_option('SCF', 'INCFOCK') and core.get_option('SCF', 'INCFOCK_VAR_INTS_TOL')
     core.print_out("  ==> Iterations <==\n\n")
-    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
-                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|%s\n\n" %
+                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX", "    Ints Tol" if variable_screening else ""))
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
@@ -276,6 +277,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
+    directjk_enabled = "DIRECT" in core.get_option('SCF', 'SCF_TYPE')
+    incfock_enabled = core.get_option('SCF', 'INCFOCK')
+    var_tol_enabled = core.get_option('SCF', 'INCFOCK_VAR_INTS_TOL')
     ooo_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OOO", "OPENORBITALOPTIMIZER"]
     if ooo_scf:
         pcm_enabled = core.get_option('SCF', 'PCM')
@@ -337,6 +341,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         early_screening = True
         self.jk().set_COSX_grid("Initial")
 
+    variable_screening = False
+    if directjk_enabled and incfock_enabled and var_tol_enabled:
+        variable_screening = True
+
     # maximum number of scf iterations to run after early screening is disabled
     scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
 
@@ -345,6 +353,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
     # has early_screening changed from True to False?
     early_screening_disabled = False
+    fixed_ints_tol = core.get_option('SCF', 'INTS_TOLERANCE') if variable_screening else None
 
     # SCF iterations!
     SCFE_old = 0.0
@@ -371,6 +380,16 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         SCFE = 0.0
         self.clear_external_potentials()
+
+        ints_tol_field = ""
+        if variable_screening: # trying out qchem's incfock error mitigation strategy            
+            if self.iteration_ == 1:
+                itr_thresh = 1.0e-6
+            else:
+                itr_thresh = fixed_ints_tol * Dnorm
+
+            core.set_local_option("SCF", "INTS_TOLERANCE", itr_thresh)
+            ints_tol_field = f" {itr_thresh:11.3e}"
 
         # Two-electron contribution to Fock matrix from self.jk()
         core.timer_on("HF: Form G")
@@ -558,9 +577,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         # Print out the iteration
         core.print_out(
-            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e%s %s\n" %
             ("DF-" if is_dfjk else "", reference, "SAD" if
-             ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
+             ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, ints_tol_field, '/'.join(status)))
 
         # if a an excited MOM is requested but not started, don't stop yet
         # Note that MOM_performed_ just checks initialization, and our convergence measures used the pre-MOM orbitals
