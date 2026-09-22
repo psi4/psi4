@@ -261,6 +261,7 @@ ExternalProject_Add(psi4-core
            einsums_external
            gau2grid_external
            gdma_external
+           libspill_external
            libint2_external
            pcmsolver_external
            ddx_external
@@ -348,6 +349,7 @@ ExternalProject_Add(psi4-core
               -DEinsums_DIR=${Einsums_DIR}
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
+              -Dlibspill_DIR=${libspill_DIR}
               -DLibint2_DIR=${Libint2_DIR}
               -DOpenOrbitalOptimizer_DIR=${OpenOrbitalOptimizer_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
