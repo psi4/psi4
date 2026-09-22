@@ -31,11 +31,10 @@
 
 #include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/libmints/dimension.h"
+#include "psi4/libmints/basewavefunction.h"
 
 #include <cstddef>
 #include <vector>
-#include <array>
 #include <memory>
 #include <map>
 
@@ -65,109 +64,26 @@ extern double fac[MAX_FAC];
 
 namespace psi {
 
-class Molecule;
-class BasisSet;
-class IntegralFactory;
-class MintsHelper;
 class Matrix;
 class Vector;
-class MatrixFactory;
-class Options;
-class SOBasisSet;
-class PCM;
-class PSIO;
 class OrbitalSpace;
-class ExternalPotential;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
+class PSI_API Wavefunction : public BaseWavefunction, public std::enable_shared_from_this<Wavefunction> {
    protected:
-    /// Name of the wavefunction
-    std::string name_;
-
-    /// Module name for CURRENT ENERGY
-    std::string module_;
-
-    /// The ORBITAL basis
-    std::shared_ptr<BasisSet> basisset_;
-
-    /// Primary basis set for SO integrals
-    std::shared_ptr<SOBasisSet> sobasisset_;
-
     /// AO2SO conversion matrix (AO in rows, SO in cols)
     SharedMatrix AO2SO_;
-
-    /// Molecule that this wavefunction is run on
-    std::shared_ptr<Molecule> molecule_;
-
-    /// Options object
-    Options& options_;
-
-    // PSI file access variables
-    std::shared_ptr<PSIO> psio_;
-
-    /// Integral factory
-    std::shared_ptr<IntegralFactory> integral_;
-
-    /// MintsHelper
-    std::shared_ptr<MintsHelper> mintshelper_;
-
-    /// Matrix factory for creating standard sized matrices
-    std::shared_ptr<MatrixFactory> factory_;
-
-    std::shared_ptr<Wavefunction> reference_wavefunction_;
-
-    /// How much memory you have access to.
-    long int memory_;
-
-    /// Perturb the Hamiltonian?
-    int perturb_h_;
-    /// With what...
-    enum FieldType { nothing, dipole_x, dipole_y, dipole_z, dipole, embpot, dx, sphere };
-    FieldType dipole_field_type_;
-    /// How big of a field perturbation to apply
-    std::array<double, 3> dipole_field_strength_;
-
-    /// Debug flag
-    size_t debug_;
-    /// Print flag
-    size_t print_;
 
     /// Total alpha and beta electrons
     int nalpha_, nbeta_;
 
-    /// Total frozen core orbitals
-    int nfrzc_;
-
-    /// Number of frozen core per irrep
-    Dimension frzcpi_;
-    /// Number of frozen virtuals per irrep
-    Dimension frzvpi_;
     /// Number of alpha electrons per irrep
     Dimension nalphapi_;
     /// Number of beta electrons per irrep
     Dimension nbetapi_;
-
-    /// Number of so per irrep
-    Dimension nsopi_;
-    /// Number of mo per irrep
-    Dimension nmopi_;
-
-    /// The energy associated with this wavefunction
-    double energy_;
-
-    /// Frozen-core energy associated with this wavefunction
-    double efzc_;
-
-    /// Total number of SOs
-    int nso_;
-    /// Total number of MOs
-    int nmo_;
-    /// Number of irreps
-    int nirrep_;
 
     /// Overlap matrix
     SharedMatrix S_;
@@ -223,27 +139,17 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     //                of which are to be returned.
     std::vector<std::vector<int>> subset_occupation(const Dimension& noccpi, const std::string& subset) const;
 
-    /// Should nuclear electrostatic potentials be available, they will be here
-    std::shared_ptr<std::vector<double>> esp_at_nuclei_;
-
     /// Should molecular orbital extents be available, they will be here
     std::vector<SharedVector> mo_extents_;
 
-    /// If atomic point charges are available they will be here
-    std::shared_ptr<std::vector<double>> atomic_point_charges_;
+    /// Matrix factory for creating standard sized matrices
+    std::shared_ptr<MatrixFactory> factory_;
 
-    /// Should natural orbital occupations be available, they will be here
-    std::vector<std::vector<std::tuple<double, int, int>>> no_occupations_;
+    std::shared_ptr<Wavefunction> reference_wavefunction_;
 
     /// Same orbs or dens
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
-
-    // The external potential for the current wave function
-    std::shared_ptr<ExternalPotential> external_pot_;
-
-    // Collection of scalar variables
-    std::map<std::string, double> variables_;
 
     // Collection of Matrix variables
     // * any '<mtd> GRADIENT' is an energy derivative w.r.t. nuclear perturbations (a.u.) as a (nat, 3) Matrix
@@ -251,22 +157,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     //   by dipole component (3 * nat, 3) Matrix
     std::map<std::string, SharedMatrix> arrays_;
 
-    // Collection of external potentials; this member variable is provisional and might be removed in the future.
-    // This member variable is currently used for passing ExternalPotential objects to the F/I-SAPT code
-    // The above defined external_pot_ member variable contains the total external potential defined for the current
-    // wave function. For F/I-SAPT, we need a set of external potential that can be assigned to either the interacting
-    // fragments or to the environment
-    // For F/I-SAPT the keys can be A, B, or C (all optionals), where A and B signify the interacting subsystem
-    // and C signify the envirnoment
-    std::map<std::string, std::shared_ptr<ExternalPotential>> potentials_;
-
-    // Polarizable continuum model
-    bool PCM_enabled_;
-    std::shared_ptr<PCM> PCM_;
-
-   private:
-    // Wavefunction() {}
-    void common_init();
+    void common_init() override;
 
    public:
     /// Constructor for an entirely new wavefunction with an existing basis
@@ -288,6 +179,13 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Blank constructor for derived classes
     Wavefunction(Options& options);
+
+    /// Returns the MatrixFactory object that pertains to this wavefunction
+    std::shared_ptr<MatrixFactory> matrix_factory() const { return factory_; }
+    /// Returns the reference wavefunction
+    std::shared_ptr<Wavefunction> reference_wavefunction() const;
+    /// Sets the reference wavefunction
+    void set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn);
 
     /**
      * Copy the contents of another Wavefunction into this one.
@@ -319,7 +217,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
      **/
     std::shared_ptr<Wavefunction> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 
-    virtual ~Wavefunction();
+    ~Wavefunction() override;
 
     /// Compute energy. Subclasses override this function to compute its energy.
     virtual double compute_energy() {
@@ -344,35 +242,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// with occupations mapped to the current point group
     Dimension map_irreps(const Dimension& dimpi);
 
-    /// Returns the molecule object that pertains to this wavefunction.
-    std::shared_ptr<Molecule> molecule() const;
-    std::shared_ptr<PSIO> psio() const;
-    Options& options() const;
-
-    /// An integral factory with basisset() on each center.
-    std::shared_ptr<IntegralFactory> integral() const;
-    /// An molecular integrals helper with basisset() on each center.
-    std::shared_ptr<MintsHelper> mintshelper() const;
-    /// Returns the basis set object that pertains to this wavefunction.
-    std::shared_ptr<BasisSet> basisset() const;
-    /// Returns the SO basis set object that pertains to this wavefunction.
-    std::shared_ptr<SOBasisSet> sobasisset() const;
-
-    /// Getters and setters for other basis sets
-    std::map<std::string, std::shared_ptr<BasisSet>> basissets() const;
-    std::shared_ptr<BasisSet> get_basisset(std::string label);
-    void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
-    bool basisset_exists(std::string label);
-
-    /// Returns the MatrixFactory object that pertains to this wavefunction
-    std::shared_ptr<MatrixFactory> matrix_factory() const;
-    /// Returns the reference wavefunction
-    std::shared_ptr<Wavefunction> reference_wavefunction() const;
-    /// Sets the reference wavefunction
-    void set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn);
-
-    /// Returns the print level
-    int get_print() const { return print_; }
     static void initialize_singletons();
 
     /// Returns the DOCC per irrep array. Not recommended for unrestricted code.
@@ -383,22 +252,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Flag `warn_on_beta_socc` triggers warning on singly occupied beta orbitals,
     /// which break assumptions made in pre-1.7 DOCC/SOCC handling.
     const Dimension soccpi(bool warn_on_beta_socc = true) const;
-    /// Returns the number of SOs per irrep array.
-    const Dimension& nsopi() const { return nsopi_; }
-    /// Returns the number of MOs per irrep array.
-    const Dimension& nmopi() const { return nmopi_; }
     /// Returns the number of alpha electrons per irrep array.
     const Dimension& nalphapi() const { return nalphapi_; }
     /// Returns the number of beta electrons per irrep array.
     const Dimension& nbetapi() const { return nbetapi_; }
-    /// Returns the frozen core orbitals per irrep array.
-    const Dimension& frzcpi() const { return frzcpi_; }
-    /// Returns the frozen virtual orbitals per irrep array.
-    const Dimension& frzvpi() const { return frzvpi_; }
-
-    /* Return the magnitude of the dipole perturbation strength in the x,y,z direction */
-    std::array<double, 3> get_dipole_field_strength() const;
-    FieldType get_dipole_perturbation_type() const;
 
     /**
      * @brief Expert specialized use only. Sets the number of doubly and singly occupied orbitals per irrep. Results in an
@@ -407,28 +264,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
      */
     void force_occpi(const Dimension& input_doccpi, const Dimension& input_soccpi);
 
-    /// Sets the frozen virtual orbitals per irrep array.
-    void set_frzvpi(const Dimension& frzvpi);
-
-    /// Return the number of frozen core orbitals
-    int nfrzc() const { return nfrzc_; }
     /// Return the number of alpha electrons
     int nalpha() const { return nalpha_; }
     /// Return the number of beta electrons
     int nbeta() const { return nbeta_; }
-    /// Returns the number of SOs
-    int nso() const { return nso_; }
-    /// Returns the number of MOs
-    int nmo() const { return nmo_; }
-    /// Returns the number of irreps
-    int nirrep() const { return nirrep_; }
-    double energy() const { return energy_; }
-    /// Sets the energy
-    void set_energy(double ene);
-    /// Returns the frozen-core energy
-    double efzc() const { return efzc_; }
-    /// Sets the frozen-core energy
-    void set_efzc(double efzc) { efzc_ = efzc; }
 
     /// Returns the overlap matrix
     SharedMatrix S() const { return S_; }
@@ -590,14 +429,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Set the Hessian for the wavefunction
     void set_hessian(SharedMatrix hess);
 
-    /// Returns electrostatic potentials at nuclei
-    std::shared_ptr<std::vector<double>> esp_at_nuclei() const { return esp_at_nuclei_; }
-
     /// Returns electrostatic potentials at nuclei in Vector form for python output
     std::shared_ptr<Vector> get_esp_at_nuclei() const;
-
-    /// Sets the electrostatic potentials at nuclei
-    void set_esp_at_nuclei(const std::shared_ptr<std::vector<double>>& nesps) { esp_at_nuclei_ = nesps; }
 
     /// Returns Molecular orbital extents
     std::vector<SharedVector> mo_extents() const { return mo_extents_; }
@@ -608,79 +441,21 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Sets molecular orbital extents
     void set_mo_extents(const std::vector<SharedVector> mo_es) { mo_extents_ = mo_es; }
 
-    /// Returns the atomic point charges
-    std::shared_ptr<std::vector<double>> atomic_point_charges() const { return atomic_point_charges_; }
     /// Returns the atomic point charges in Vector form for python output.
     SharedVector get_atomic_point_charges() const;
-
-    /// Sets the atomic point charges
-    void set_atomic_point_charges(const std::shared_ptr<std::vector<double>>& apcs) { atomic_point_charges_ = apcs; }
-
-    /// Returns NO occupations
-    std::vector<std::vector<std::tuple<double, int, int>>> no_occupations() const { return no_occupations_; }
 
     /// Returns the NO occupations in vector form for python output
     std::vector<std::vector<std::tuple<double, int, int>>> get_no_occupations() const;
 
-    /// Sets the NO occupations
-    void set_no_occupations(const std::vector<std::vector<std::tuple<double, int, int>>> no_ocs) {
-        no_occupations_ = no_ocs;
-    }
-
-    /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
-    void set_name(const std::string& name) { name_ = name; }
-
-    /// Returns the wavefunction name
-    const std::string& name() const { return name_; }
-
-    /// Set the module name (e.g. "OCC", "CCENERGY", "CCT3")
-    void set_module(const std::string& module) { module_ = module; }
-
-    /// Returns the module name
-    const std::string& module() const { return module_; }
-
-    // Set the print flag level
-    void set_print(size_t print) { print_ = print; }
-
-    // Set the debug flag level
-    void set_debug(size_t debug) { debug_ = debug; }
-
     /// Save the wavefunction to checkpoint
     virtual void save() const;
 
-    // Get the external potential
-    std::shared_ptr<ExternalPotential> external_pot() const;
-
-    // Set the external potential
-    void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
-
-    /// Get and set variables, arrays, and potentials dictionaries
-    bool has_scalar_variable(const std::string& key);
+    /// Get and set array variable dictionaries
     bool has_array_variable(const std::string& key);
-    // The function below is provisional and might be removed in the future
-    bool has_potential_variable(const std::string& key);
-    double scalar_variable(const std::string& key);
     SharedMatrix array_variable(const std::string& key);
-    // The function below is provisional and might be removed in the future
-    std::shared_ptr<ExternalPotential> potential_variable(const std::string& key);
-    void set_scalar_variable(const std::string& key, double value);
     void set_array_variable(const std::string& key, SharedMatrix value);
-    // The function below is provisional and might be removed in the future
-    void set_potential_variable(const std::string& key, std::shared_ptr<ExternalPotential> value);
-    int del_scalar_variable(const std::string& key);
     int del_array_variable(const std::string& key);
-    // The function below is provisional and might be removed in the future
-    int del_potential_variable(const std::string& key);
-    std::map<std::string, double> scalar_variables();
     std::map<std::string, SharedMatrix> array_variables();
-    // The function below is provisional and might be removed in the future
-    std::map<std::string, std::shared_ptr<ExternalPotential>> potential_variables();
-
-    /// Set PCM object
-    void set_PCM(const std::shared_ptr<PCM>& pcm);
-    /// Get PCM object
-    std::shared_ptr<PCM> get_PCM() const;
-    bool PCM_enabled() const { return PCM_enabled_; }
 
     /// The below members are experimental and are designed to hold densities when the
     /// "current density" is ambiguous, e.g., non-orbital optimized methods and multi-

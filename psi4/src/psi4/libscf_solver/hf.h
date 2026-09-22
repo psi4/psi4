@@ -35,7 +35,7 @@
 #include "psi4/libmints/vector3.h"
 #include "psi4/psi4-dec.h"
 
-#include "psi4/pybind11.h"
+#include "psi4/libscf_solver/basehf.h"
 
 namespace psi {
 using PerturbedPotentialFunction = std::function<SharedMatrix(SharedMatrix)>;
@@ -50,8 +50,12 @@ class DIISManager;
 class PSIO;
 namespace scf {
 
-class HF : public Wavefunction {
+class HF : public Wavefunction, public BaseHF {
    protected:
+    // Prefer BaseHF's copies over BaseWavefunction's for these names.
+    using BaseHF::nelectron_;
+    using BaseHF::multiplicity_;
+
     /// The kinetic energy matrix
     SharedMatrix T_;
     /// The 1e potential energy matrix
@@ -83,21 +87,9 @@ class HF : public Wavefunction {
     // Q: right now, thresholds are removed from Wfn since only appear once, py-side.
     //    should we instead store here the E & D to which SCF was converged?
 
-    /// Table of energy components
-    std::map<std::string, double> energies_;
-
     /// Basis list for SAD
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
     std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
-
-    /// Current Iteration
-    int iteration_;
-
-    /// Did the SCF converge?
-    bool converged_;
-
-    /// Nuclear repulsion energy
-    double nuclearrep_;
 
     /// DOCC vector from input (if found)
     bool input_docc_;
@@ -113,30 +105,13 @@ class HF : public Wavefunction {
     Dimension original_nbetapi_;
     int original_nalpha_;
     int original_nbeta_;
-    // Reset occupations in SCF iteration?
-    bool reset_occ_;
-    // SAD guess, non-idempotent guess density?
-    bool sad_;
 
     /// Mapping arrays
     int* so2symblk_;
     int* so2index_;
 
-    /// SCF algorithm type
-    std::string scf_type_;
-
-    /// The value below which integrals are neglected
-    double integral_threshold_;
-
     /// The soon to be ubiquitous JK object
     std::shared_ptr<JK> jk_;
-
-    /// Are we to do MOM?
-    bool MOM_enabled_;
-    /// Are we to do excited-state MOM?
-    bool MOM_excited_;
-    /// MOM performed?
-    bool MOM_performed_;
 
     /// Frac started? (Same thing as frac_performed_)
     bool frac_performed_;
@@ -144,25 +119,12 @@ class HF : public Wavefunction {
     SharedMatrix unscaled_Ca_;
     SharedMatrix unscaled_Cb_;
 
-    /// DIIS manager intiialized?
-    bool initialized_diis_manager_;
-    /// DIIS manager for all SCF wavefunctions
-    py::object diis_manager_;
-
-    /// When do we start collecting vectors for DIIS
-    int diis_start_;
-    /// Are we even using DIIS?
-    int diis_enabled_;
-
     // parameters for hard-sphere potentials
     double radius_;     // radius of spherical potential
     double thickness_;  // thickness of spherical barrier
     int r_points_;      // number of radial integration points
     int theta_points_;  // number of colatitude integration points
     int phi_points_;    // number of azimuthal integration points
-
-    /// DFT variables
-    std::shared_ptr<SuperFunctional> functional_;
 
     // CPHF info
     int cphf_nfock_builds_;
@@ -175,7 +137,7 @@ class HF : public Wavefunction {
     void print_occupation();
 
     /// Common initializer
-    void common_init();
+    void common_init() override;
     /// Part of the common initializer that runs after subclass specific tasks
     void subclass_init();
     /// Construct the DFT potential.
@@ -196,19 +158,6 @@ class HF : public Wavefunction {
 
     /// Prints the orbitals energies and symmetries (helper method)
     void print_orbital_pairs(const char* header, std::vector<std::pair<double, std::pair<std::string, int>>> orbs);
-
-    /// Which set of iterations we're on in this computation, e.g., for stability
-    /// analysis, where we want to retry SCF without going through all of the setup
-    int attempt_number_;
-
-    /// The number of electrons
-    int nelectron_;
-
-    /// The charge of the system
-    int charge_;
-
-    /// The multiplicity of the system (specified as 2 Ms + 1)
-    int multiplicity_;
 
     /// SAD Guess and propagation
     virtual void compute_SAD_guess(bool natorb);
@@ -232,18 +181,6 @@ class HF : public Wavefunction {
 
     ~HF() override;
 
-    /// Get and set current iteration
-    int iteration() const { return iteration_; }
-    void set_iteration(int iter) { iteration_ = iter; }
-
-    /// Are we even using DIIS?
-    bool diis_enabled() const { return bool(diis_enabled_); }
-    void set_diis_enabled(bool tf) { diis_enabled_ = int(tf); }
-
-    /// When do we start collecting vectors for DIIS
-    int diis_start() const { return diis_start_; }
-    void set_diis_start(int iter) { diis_start_ = iter; }
-
     /// Frac performed current iteration?
     bool frac_performed() const { return frac_performed_; }
     void set_frac_performed(bool tf) { frac_performed_ = tf; }
@@ -251,35 +188,17 @@ class HF : public Wavefunction {
     /// Runs the SCF using OpenOrbitalOptimizer
     virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
 
-    /// Are we to do excited-state MOM?
-    bool MOM_excited() const { return MOM_excited_; }
-    void set_MOM_excited(bool tf) { MOM_excited_ = tf; }
-
-    /// MOM performed?
-    bool MOM_performed() const { return MOM_performed_; }
-    void set_MOM_performed(bool tf) { MOM_performed_ = tf; }
-
     // Q: MOM_started_ was ditched b/c same info as MOM_performed_
-
-    /// Which set of iterations we're on in this computation, e.g., for stability
-    /// analysis, where we want to retry SCF without going through all of the setup
-    int attempt_number() const { return attempt_number_; }
-    void set_attempt_number(int an) { attempt_number_ = an; }
 
     /// Check the stability of the wavefunction, and correct (if requested)
     /// For UHF, this is defined Python-side. The other methods should be joining it.
     virtual bool stability_analysis();
 
-    /** Computes the initial energy. */
-    virtual double compute_initial_E() { return 0.0; }
-
-    const std::string& scf_type() const { return scf_type_; }
-
     /// Check MO phases
     void check_phases();
 
     /// Prints the orbitals in arbitrary order (works with MOM)
-    void print_orbitals();
+    void print_orbitals() override;
 
     /// Prints some opening information
     void print_header();
@@ -289,22 +208,28 @@ class HF : public Wavefunction {
 
     virtual void compute_spin_contamination();
 
-    /// The DIIS object
-    // std::shared_ptr<py::object> is probably saner, but that hits a compile error.
-    // Quite probably https://github.com/pybind/pybind11/issues/787
-    py::object& diis_manager() { return diis_manager_; }
-    void set_diis_manager(py::object& manager) { diis_manager_ = manager; }
-    bool initialized_diis_manager() const { return initialized_diis_manager_; }
-    void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
-
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
 
     /// Sets the internal JK object (expert)
     void set_jk(std::shared_ptr<JK> jk);
 
-    /// The DFT Functional object (or null if it has been deleted)
-    std::shared_ptr<SuperFunctional> functional() const { return functional_; }
+    /* Builds the correct JK object. This is a new function defined so that the
+    * python side no longer constructs the JK object separately from wfn.
+    * ComplexJKs should be built for ComplexWavefunctions. However, any mechanism
+    * to determine if ComplexJK is requested within JK::build_JK is smelly.
+    *   1. We could infer a ComplexJK with `REFERENCE CGHF`, but every new complex
+    *      reference would require an addition to this list.
+    *   2. We could add another option for `IS_COMPLEX`, but being a global option
+    *      anyone could change it. (not obvious what the source of truth is)
+    *   3. We could pass in the wfn directly to Build_JK and do RTTI. This works
+    *      but is awfuly smelly too *insert foghorn sound*
+    * Here, we build the correct JK via an overriden pure virtual function.
+    * Notice the const qualifier: This doesn't change `HF::jk_`. A downside
+    * to this approach is that shared ptrs are not covariant, meaning
+    * a bit more work is required to upcast JK/ComplexJK --> BaseJK.
+    */
+    std::shared_ptr<JK> build_jk(size_t memory) const;
 
     /// The DFT Potential object (or null if it has been deleted)
     /// This needs to be virtual so that subclasses can enforce their
@@ -323,7 +248,7 @@ class HF : public Wavefunction {
     void reset_occupation();
 
     /// Compute energy for the iteration.
-    virtual double compute_E();
+    double compute_E() override;
 
     /** Applies second-order convergence acceleration */
     virtual int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print);
@@ -355,38 +280,38 @@ class HF : public Wavefunction {
     void frac_renormalize();
     void frac_helper();
 
-    /// Formation of H is the same regardless of RHF, ROHF, UHF
-    // Temporarily converting to virtual function for testing embedding
-    // potentials.  TDC, 5/23/12.
-    virtual void form_H();
+    /// Form core Hamiltonian
+    void form_H() override;
+
+    /// Form the S^{1/2} orthogonalization matrix
+    void form_Shalf() override;
+
+    /// Compute MO coefficients from the current Fock matrix
+    void form_C(double shift = 0.0) override;
+
+    /// Compute initial MO coefficients (default calls form_C)
+    void form_initial_C() override { form_C(); }
+
+    /// Form the density matrix from the current orbitals
+    void form_D() override;
+
+    /// Form the Kohn-Sham potential matrix from the current density
+    void form_V() override;
+
+    /// Form the Fock matrix
+    void form_F() override;
+
+    /// Form the initial Fock matrix (default calls form_F)
+    void form_initial_F() override { form_F(); }
+
+    /// Form the G (J-K) matrix
+    void form_G() override;
 
     /// Do any needed integral JK setup
     virtual void initialize_gtfock_jk();
 
-    /// Formation of S^+1/2 and S^-1/2 are the same
-    void form_Shalf();
-
     /// Form the guess (guarantees C, D, and E)
     virtual void guess();
-
-    /// Compute the MO coefficients (C_) using level shift
-    virtual void form_C(double shift = 0.0);
-    /** Computes the initial MO coefficients (default is to call form_C) */
-    virtual void form_initial_C() { form_C(); }
-
-    /// Computes the density matrix (D_)
-    virtual void form_D();
-
-    /// Computes the density matrix (V_)
-    virtual void form_V();
-
-    /** Computes the Fock matrix */
-    virtual void form_F();
-    /** Computes the initial Fock matrix (default is to call form_F) */
-    virtual void form_initial_F() { form_F(); }
-
-    /** Forms the G matrix */
-    virtual void form_G();
 
     /** Form X'(FDS - SDF)X (for DIIS) **/
     virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
@@ -414,22 +339,11 @@ class HF : public Wavefunction {
     void guess_Ca(SharedMatrix Ca) { guess_Ca_ = Ca; }
     void guess_Cb(SharedMatrix Cb) { guess_Cb_ = Cb; }
 
-    // Expert option to reset the occuption or not at iteration zero
-    bool reset_occ() const { return reset_occ_; }
-    void set_reset_occ(bool reset) { reset_occ_ = reset; }
-    // Expert option to toggle non-idempotent density matrix or not at iteration zero
-    bool sad() const { return sad_; }
-    void set_sad(bool sad) { sad_ = sad; }
-
     // SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
     void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) {
         sad_fitting_basissets_ = basis_vec;
     }
-
-    // Energies data
-    void set_energies(std::string key, double value) { energies_[key] = value; }
-    double get_energies(std::string key) { return energies_[key]; }
 
     // External potentials
     void clear_external_potentials() { external_potentials_.clear(); }

@@ -16,6 +16,7 @@ list(APPEND sources
   apps.cc
   cubature.cc
   hamiltonian.cc
+  basejk.cc
   jk.cc
   points.cc
   sap.cc
