@@ -142,8 +142,6 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
     int **cachelist, *cachefiles;
     struct iwlbuf OutBuf;
     struct iwlbuf OutBuf_AA, OutBuf_BB, OutBuf_AB;
-    dpdfile2 D;
-    double tval;
 
     init_io();
     title();
@@ -516,7 +514,6 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
 // must be fixed with options for excited state densities
 void init_io() {
     int i, num_unparsed;
-    char *argv_unparsed[100];
 
     params.onepdm = 0;
     params.prop_all = 0;

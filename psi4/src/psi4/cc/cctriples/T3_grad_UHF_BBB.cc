@@ -66,10 +66,6 @@ double T3_grad_UHF_BBB() {
     int Gab, Gba, Gac, Gca, Gbc, Gcb, Gcd;
     int ncols, nrows, nlinks;
     double value_c, value_d, dijk, denom, ET;
-    double t_ia, t_ib, t_ic, t_ja, t_jb, t_jc, t_ka, t_kb, t_kc;
-    double f_ia, f_ib, f_ic, f_ja, f_jb, f_jc, f_ka, f_kb, f_kc;
-    double D_jkbc, D_jkac, D_jkba, D_ikbc, D_ikac, D_ikba, D_jibc, D_jiac, D_jiba;
-    double t_jkbc, t_jkac, t_jkba, t_ikbc, t_ikac, t_ikba, t_jibc, t_jiac, t_jiba;
     dpdbuf4 T2, Fints, Eints, Dints, S2, Gijab, Gijka, Gidab;
     dpdfile2 fIJ, fAB, fIA, T1, S1, Dab, Dij;
     dpdfile2 fij, fab, fia;

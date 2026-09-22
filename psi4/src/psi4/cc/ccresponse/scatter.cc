@@ -213,7 +213,6 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
     FILE *dipole_moment;
     hessian = fopen("file15.dat", "r");
     auto F = std::make_shared<Matrix>(natom * 3, natom * 3);
-    double Fval;
     auto M = std::make_shared<Matrix>(natom * 3, natom * 3);
     for (i = 0; i < (3 * natom); i++) {
         for (j = 0; j < (3 * natom); j++) {

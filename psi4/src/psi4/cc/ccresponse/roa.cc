@@ -66,7 +66,6 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;
     char **cartcomp, pert[32], pert_x[32], pert_y[32];
     int alpha, beta, gamma, i, j, k, l, irrep;
-    double omega_nm, omega_ev, omega_cm;
     char lbl1[32], lbl2[32], lbl3[32], lbl4[32];
     int compute_rl = 0, compute_pl = 0;
     psio_address next;

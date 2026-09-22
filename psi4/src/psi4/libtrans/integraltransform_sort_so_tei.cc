@@ -137,8 +137,6 @@ std::vector<SharedMatrix> IntegralTransform::compute_fock_like_matrices(SharedMa
                     int rssym = rsym ^ ssym;
                     int qrsym = qsym ^ rsym;
                     int pssym = psym ^ ssym;
-                    int prsym = psym ^ rsym;
-                    int qssym = qsym ^ ssym;
                     double value = J.matrix[h][pq][rs];
                     for (int N = 0; N < nmats; ++N) {
                         SharedMatrix D = Dmats[N];

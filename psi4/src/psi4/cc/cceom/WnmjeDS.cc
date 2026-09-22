@@ -49,7 +49,6 @@ void WnmjeDS(int i, int C_irr) {
     dpdbuf4 WMNIE, Wmnie, WMnIe, WmNiE, WM, WP, W;
     dpdbuf4 TIJAB, TIjAb, Tijab;
     char CME_lbl[32], Cme_lbl[32], SIJAB_lbl[32], Sijab_lbl[32], SIjAb_lbl[32];
-    double tval;
 
     if (params.eom_ref == 0) { /* RHF */
         sprintf(CME_lbl, "%s %d", "CME", i);

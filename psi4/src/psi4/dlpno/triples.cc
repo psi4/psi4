@@ -280,7 +280,6 @@ void DLPNOCCSD_T::triples_sparsity(bool prescreening) {
     for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
         int i, j, k;
         std::tie(i, j, k) = ijk_to_i_j_k_[ijk];
-        int ij = i_j_to_ij_[i][j], jk = i_j_to_ij_[j][k], ik = i_j_to_ij_[i][k];
 
         lmotriplet_to_ribfs_[ijk] = merge_lists(lmo_to_ribfs[i], merge_lists(lmo_to_ribfs[j], lmo_to_ribfs[k]));
         for (int l = 0; l < naocc; ++l) {
@@ -794,7 +793,6 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
             int i, j, k;
             std::tie(i, j, k) = perms[idx];
 
-            int ii = i_j_to_ij_[i][i];
             int ij = i_j_to_ij_[i][j], jk = i_j_to_ij_[j][k], ik = i_j_to_ij_[i][k];
             int kj = ij_to_ji_[jk];
 
@@ -992,11 +990,6 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
         int ntno_ijk = n_tno_[ijk];
         if (ntno_ijk == 0) continue;
 
-        int kji = i_j_k_to_ijk_[k * naocc * naocc + j * naocc + i];
-        int ikj = i_j_k_to_ijk_[i * naocc * naocc + k * naocc + j];
-        int jik = i_j_k_to_ijk_[j * naocc * naocc + i * naocc + k];
-        int jki = i_j_k_to_ijk_[j * naocc * naocc + k * naocc + i];
-        int kij = i_j_k_to_ijk_[k * naocc * naocc + i * naocc + j];
 
         double prefactor = 1.0;
         if (i == j && j == k) {

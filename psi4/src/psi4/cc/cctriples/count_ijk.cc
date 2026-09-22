@@ -46,7 +46,6 @@ void count_ijk() {
     int I, J, K;
     int Ga, Gb, Gc;
     int a, b, c;
-    int A, B, C;
     const int *occ_off, *aocc_off, *bocc_off;
     const int *vir_off, *avir_off, *bvir_off;
     int nijk;

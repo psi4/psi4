@@ -336,7 +336,6 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
 
         int pstart = auxiliary_->shell(Pstart).function_index();
         int pstop = (Pstop == auxiliary_->nshell() ? nQ : auxiliary_->shell(Pstop).function_index());
-        int np = pstop - pstart;
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
@@ -893,7 +892,6 @@ void DFOCC::trans_oei() {
 void DFOCC::b_so_non_zero() {
     // defs
     SharedTensor2d K, L, J, G;
-    int nmn_nz, syc;
 
     // Read SO integrals
     bQso = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_);
@@ -1982,8 +1980,6 @@ void DFOCC::cd_abcd_cints() {
     timer_on("CD (AB|CD)");
 
     // Variables
-    int dim1 = navirA;
-    int dim2 = navirA;
     int naux = nQ;
 
     SharedTensor1d D, D2, L1, U1, R1;

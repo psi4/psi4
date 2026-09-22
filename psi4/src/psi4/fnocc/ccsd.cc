@@ -416,7 +416,6 @@ PsiReturnType CoupledCluster::CCSDIterations() {
     eccsd = 0.0;
 
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     outfile->Printf("\n");
     if (isccsd) {
@@ -671,7 +670,6 @@ void CoupledCluster::DefineTilingCPU() {
     long int o = ndoccact;
     long int ov2 = o * v * v;
     long int ov = o * v;
-    long int o2 = o * o;
 
     // number of doubles in total memory
     long int ndoubles = memory / 8L;
@@ -1034,7 +1032,6 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params) {
     // add the singles parts to I1(a,b). n^4
     long int i, j, l, k, c, d;
     if (isccsd) {
-        double sum = 0.;
         psio->open(PSIF_DCC_ABCI2, PSIO_OPEN_OLD);
         psio_address addr;
         addr = PSIO_ZERO;
@@ -1113,7 +1110,6 @@ void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params) {
     long int o = ndoccact;
     long int v = nvirt;
     long int a, b, c, i, j, id = 0;
-    long int ov2 = o * v * v;
     long int o2v = o * o * v;
 
     auto psio = std::make_shared<PSIO>();
@@ -2038,7 +2034,6 @@ double CoupledCluster::CheckEnergy() {
     long int o = ndoccact;
     long int rs = nmo;
     long int i, j, a, b;
-    double ta, tnew, dijab, da, dab, dabi;
     long int iajb, jaib, ijab = 0;
     double energy = 0.0;
     auto psio = std::make_shared<PSIO>();

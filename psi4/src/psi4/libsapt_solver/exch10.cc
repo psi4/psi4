@@ -551,7 +551,6 @@ void SAPT2::exch10() {
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
-    int rank = 0;
 
     double **P = block_matrix(noccA_ + noccB_, noccA_ + noccB_);
 

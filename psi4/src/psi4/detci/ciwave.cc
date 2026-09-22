@@ -685,7 +685,6 @@ void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec, Sha
 
     // Figure out phase
     if (!Parameters_->Ms0) {
-        int phase = 1;
     } else {
         int phase = ((int)Parameters_->S % 2) ? -1 : 1;
     }
