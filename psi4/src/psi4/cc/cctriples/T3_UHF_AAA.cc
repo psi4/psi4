@@ -125,7 +125,6 @@ void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, 
     int Gd, Gl;
     int Gid, Gjd, Gkd;
     int Gab, Gcb, Gca, Gbc, Gac;
-    int Gla, Glb, Glc;
     int Gil, Gjl, Gkl;
     int a, b, c, A, B, C;
     int ab, bc, ac;

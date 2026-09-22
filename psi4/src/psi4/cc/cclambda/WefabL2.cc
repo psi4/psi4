@@ -115,7 +115,6 @@ void WefabL2(int L_irr) {
     dpdbuf4 tau_a, tau_s, tau;
     dpdbuf4 B_a, B_s;
     dpdbuf4 S, A;
-    int h;
     double **B_diag, **tau_diag;
     int ij, Gc, C, c, cc;
     int nbuckets, rows_per_bucket, rows_left, m, row_start, ab, cd, dc, d;

@@ -312,7 +312,6 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block, bool fo
 
     int npoints = block->npoints();
     const std::vector<int>& function_map = block->functions_local_to_global();
-    int nglobal = max_functions_;
     int nlocal = function_map.size();
 
     // => Build local C matrix <= //
@@ -581,7 +580,6 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block, bool fo
 
     int npoints = block->npoints();
     const std::vector<int>& function_map = block->functions_local_to_global();
-    int nglobal = max_functions_;
     int nlocal = function_map.size();
 
     // => Build local C matrix <= //

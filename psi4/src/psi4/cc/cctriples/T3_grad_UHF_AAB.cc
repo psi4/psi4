@@ -58,7 +58,6 @@ extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int 
                            int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega);
 
 double T3_grad_UHF_AAB() {
-    int cnt;
     int h, nirreps;
     int Gi, Gj, Gk, Ga, Gb, Gc, Gd, Gl;
     int Gji, Gij, Gjk, Gkj, Gik, Gki, Gijk;

@@ -78,7 +78,6 @@ void DCTSolver::initialize_amplitudes_RHF() {
     dct_timer_off("DCTSolver::g_IJAB / D_IJAB");
 
     /* build lambda <OO|VV> for tau and G intermediates */
-    dpdbuf4 T;
     // Amplitude_IJAB = Amplitude_IjAb - Amplitude_JiAb
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
                            "Amplitude SF <OO|VV>");

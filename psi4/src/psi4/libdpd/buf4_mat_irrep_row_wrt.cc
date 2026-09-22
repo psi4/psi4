@@ -49,7 +49,6 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
     int bufpq, bufrs; /* Input dpdbuf row and column indices */
     int filepq;
     int rowtot, coltot; /* dpdfile row and column dimensions */
-    int permute;
     double value;
 
     all_buf_irrep = Buf->file.my_irrep;

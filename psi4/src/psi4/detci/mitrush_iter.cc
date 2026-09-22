@@ -88,10 +88,8 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
     double E, E_curr, E_last, E_est, E12, norm = 1.0, S;
     double **H2x2, *evals2x2, **evecs2x2, alast, acur;
     double x, y, c1norm = 0.0;
-    int sm_tridim, buf;
     double *sm_mat, *sm_evals, **sm_evecs;
     int *mi_iac, *mi_ibc, *mi_iaidx, *mi_ibidx;
-    double testS = 0.0;
     double tval, *mi_coeff, *buffer1, *buffer2;
     double **alpha, chknorm;
     int diag_method;

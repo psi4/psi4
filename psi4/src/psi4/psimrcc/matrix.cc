@@ -281,7 +281,6 @@ double CCMatrix::dot_product(CCMatrix* B_Matrix, CCMatrix* C_Matrix, int h) {
     double value = 0.0;
     size_t block_size = B_Matrix->get_block_sizepi(h);
     if (block_size > 0) {
-        size_t i;
         double* B_matrix = &(B_Matrix->get_matrix()[h][0][0]);
         double* C_matrix = &(C_Matrix->get_matrix()[h][0][0]);
         for (size_t i = 0; i < block_size; i++) value += B_matrix[i] * C_matrix[i];

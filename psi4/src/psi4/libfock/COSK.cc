@@ -512,7 +512,6 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         for(size_t TAU = 0; TAU < ns_block_all; TAU++) {
             for(size_t KAPPA_ind = 0; KAPPA_ind < ns_block; KAPPA_ind++) {
-                size_t KAPPA = shell_map[KAPPA_ind];
                 if (D_block_shellp[TAU][KAPPA_ind] > dscreen_) {
                     shell_map_tau.push_back(TAU);
                     break;

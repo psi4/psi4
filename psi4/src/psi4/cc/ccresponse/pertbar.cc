@@ -54,7 +54,6 @@ namespace ccresponse {
 */
 
 void pertbar(const char *pert, int irrep, int anti) {
-    int i;
     dpdfile2 fbar1, f, t1, z;
     dpdbuf4 t2, fbar2;
     char lbl[32], prefix1[32], prefix2[32], prefix3[32];
