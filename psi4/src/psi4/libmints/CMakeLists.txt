@@ -131,6 +131,13 @@ if(TARGET simint::simint)
     )
 endif()
 
+if(TARGET libcint::libcint)
+  target_sources(mints
+    PRIVATE
+      libcinteri.cc
+    )
+endif()
+
 # OpenOrbitalOptimizer needs to be PUBLIC so USING_OpenOrbitalOptimizer propagates
 # to modules that link to libmints (this enables armadillo support in matrix.h)
 # but doesn't pollute unrelated modules like libqt (which would get BLAS conflicts)
