@@ -73,8 +73,6 @@ MOInfoSCF::MOInfoSCF(Wavefunction& ref_wfn_, Options& options_) : MOInfoBase(ref
     print_mo();
 }
 
-MOInfoSCF::~MOInfoSCF() {}
-
 void MOInfoSCF::read_mo_spaces() {
     /*****************************************************
        See if we're in a subgroup for finite difference
