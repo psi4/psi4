@@ -325,21 +325,34 @@ void GauRV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
 #endif
 
     for (size_t i = 0; i < Dx.size(); i++) {
-        Eigen::MatrixXd eigen_dx = psi::linalg::eigen_map(*Dx[i]);
+        SharedMatrix AO_TDMh;
+        if (Dx[i]->nirrep() != 1) {
+            AO_TDMh = std::make_shared<Matrix>("D AO temp", nbf_, nbf_);
+            AO_TDMh->remove_symmetry(Dx[i], USO2AO_);
+        } else {
+            AO_TDMh = Dx[i]->clone();
+        }
+        AO_TDMh->hermitivitize();
+        Eigen::MatrixXd eigen_dx = psi::linalg::eigen_map(*AO_TDMh);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
         if (primary_->has_puream()) {
             eigen_dx = permuter * eigen_dx * permuter.transpose();
         }
 #endif
-	GauXC::IntegratorSettingsEXC_GRAD set;
-	set.include_weight_derivatives = false;
-        auto vx = integrator_->eval_fxc_contraction(eigen_d, eigen_dx, set);
+    //GauXC::IntegratorSettingsXC set;
+        auto vx = integrator_->eval_fxc_contraction(eigen_d, eigen_dx);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
         if (primary_->has_puream()) {
             vx = permuter.transpose() * vx * permuter;
         }
 #endif
-        ret[i]->copy_from(vx.data());
+        // Set the result
+        auto ao = psi::linalg::matrix_from_eigen(vx);
+        if (AO2USO_) {
+            (*ret[i]).apply_symmetry(ao, *AO2USO_);
+        } else {
+            (*ret[i]).copy(ao);
+        }
         ret[i]->scale(0.5);
     }
     timer_off("GauRV: Form Vx");
@@ -383,8 +396,21 @@ void GauUV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
         Ds->add(Dx[2*i+1]);
         auto Dz = Dx[2*i]->clone();
         Dz->subtract(Dx[2*i+1]);
-        Eigen::MatrixXd eigen_dxs = psi::linalg::eigen_map(*Ds);
-        Eigen::MatrixXd eigen_dxz = psi::linalg::eigen_map(*Dz);
+        SharedMatrix AO_TDMhs;
+        SharedMatrix AO_TDMhz;
+        if (Dx[i]->nirrep() != 1) {
+            AO_TDMhs = std::make_shared<Matrix>("Ds AO temp", nbf_, nbf_);
+            AO_TDMhs->remove_symmetry(Ds, USO2AO_);
+            AO_TDMhz = std::make_shared<Matrix>("Dz AO temp", nbf_, nbf_);
+            AO_TDMhz->remove_symmetry(Dz, USO2AO_);
+        } else {
+            AO_TDMhs = Ds;
+            AO_TDMhz = Dz;
+        }
+        AO_TDMhs->hermitivitize();
+        AO_TDMhz->hermitivitize();
+        Eigen::MatrixXd eigen_dxs = psi::linalg::eigen_map(*AO_TDMhs);
+        Eigen::MatrixXd eigen_dxz = psi::linalg::eigen_map(*AO_TDMhz);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
         if (primary_->has_puream()) {
             eigen_dxs = permuter * eigen_dxs * permuter.transpose();
