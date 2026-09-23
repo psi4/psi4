@@ -40,7 +40,6 @@
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/matrix.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

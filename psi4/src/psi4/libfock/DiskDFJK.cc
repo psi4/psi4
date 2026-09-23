@@ -166,7 +166,9 @@ SharedVector DiskDFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
     E_left_ = std::make_shared<Matrix>("E_left", nso, maxrows * nocc);
     E_right_ = std::make_shared<Matrix>("E_right", nvir, maxrows * nocc);
 
-    // Disk overhead
+    // Disk overhead. Note: this re-evaluates the (virtual) is_core() rather than using the
+    // is_core_ flag cached by preiterations(); the two agree unless memory_ or subalgo_
+    // changed in between.
     psio_address addr = PSIO_ZERO;
     if (!is_core()) {
         Qmn_ = std::make_shared<Matrix>("(Q|mn) Block", maxrows, num_nm);
@@ -288,7 +290,7 @@ void DiskDFJK::print_header() const {
     }
 }
 bool DiskDFJK::is_core() {
-    auto do_core = is_core_;
+    bool do_core = false;
 
     // determine do_core either automatically...
     if (subalgo_ == "AUTO") {
@@ -313,7 +315,9 @@ bool DiskDFJK::is_core() {
             do_core = true;
         }
     } else {
-        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
+        throw PSIEXCEPTION(
+            "Invalid SCF_SUBTYPE option in DiskDFJK! Valid choices of SCF_SUBTYPE for the DiskDFJK implementation of "
+            "density-fitted JK are AUTO, INCORE, and OUT_OF_CORE.");
     }
 
     return do_core;
@@ -452,7 +456,8 @@ void DiskDFJK::preiterations() {
         }
     }
 
-    // Core or disk?
+    // Core or disk? Virtual dispatch: CDJK overrides is_core() to validate SCF_SUBTYPE and force the in-core
+    // subalgorithm, so the disk branches below are DF-only.
     is_core_ = is_core();
 
     if (is_core_)

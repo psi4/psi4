@@ -51,7 +51,6 @@
 
 #include "algebra_interface.h"
 #include "blas.h"
-#include "matrix.h"
 #include "index.h"
 #include "transform.h"
 

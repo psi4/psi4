@@ -18,7 +18,6 @@ list(APPEND sources
   basisset.cc
   wavefunction.cc
   irrep.cc
-  fjt.cc
   chartab.cc
   corrtab.cc
   symop.cc
@@ -38,6 +37,7 @@ list(APPEND sources
   numinthelper.cc
   coordentry.cc
   matrix.cc
+  matrix_eigen.cc
   gshell.cc
   integraliter.cc
   pointgrp.cc

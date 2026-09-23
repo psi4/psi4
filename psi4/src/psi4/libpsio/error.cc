@@ -65,15 +65,6 @@ void psio_error(size_t unit, size_t errval, std::string prev_msg /* = ""*/) {
         case PSIO_ERROR_DONE:
             prev_msg += "PSIO_ERROR: " + std::to_string(PSIO_ERROR_DONE) + " (I/O cleanup failed)\n";
             break;
-        case PSIO_ERROR_MAXVOL:
-            prev_msg += "PSIO_ERROR: " + std::to_string(PSIO_ERROR_MAXVOL) + " (maximum number of volumes exceeded)\n";
-            break;
-        case PSIO_ERROR_NOVOLPATH:
-            prev_msg += "PSIO_ERROR: " + std::to_string(PSIO_ERROR_NOVOLPATH) + " (no volume path given)\n";
-            break;
-        case PSIO_ERROR_IDENTVOLPATH:
-            prev_msg += "PSIO_ERROR: " + std::to_string(PSIO_ERROR_IDENTVOLPATH) + " (two identical volume paths)\n";
-            break;
         case PSIO_ERROR_OPEN:
             prev_msg += "PSIO_ERROR: " + std::to_string(PSIO_ERROR_OPEN) + " (open call failed)\n\n"
                         " Check the location of your scratch directory which can be\n"

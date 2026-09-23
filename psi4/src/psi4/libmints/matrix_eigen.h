@@ -26,47 +26,20 @@
  * @END LICENSE
  */
 
-/*!
- \file
- \ingroup PSIO
- */
+#pragma once
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/psi4-dec.h"
+#include "psi4/libmints/matrix.h"
+
+#include <eigen3/Eigen/Core>
 
 namespace psi {
+namespace linalg {
 
-void PSIO::get_volpath(size_t unit, size_t volume, char **path) {
-    std::string kval;
-    char volumeX[20];
-    sprintf(volumeX, "VOLUME%zu", volume + 1);
+/// Map a single-irrep Psi4 Matrix onto its underlying data.
+PSI_API Eigen::Map<Eigen::MatrixXd> eigen_map(Matrix& matrix);
 
-    kval = filecfg_kwd("PSI", volumeX, unit);
-    if (!kval.empty()) {
-        *path = strdup(kval.c_str());
-        return;
-    }
-    kval = filecfg_kwd("PSI", volumeX, -1);
-    if (!kval.empty()) {
-        *path = strdup(kval.c_str());
-        return;
-    }
-    kval = filecfg_kwd("DEFAULT", volumeX, unit);
-    if (!kval.empty()) {
-        *path = strdup(kval.c_str());
-        return;
-    }
-    kval = filecfg_kwd("DEFAULT", volumeX, -1);
-    if (!kval.empty()) {
-        *path = strdup(kval.c_str());
-        return;
-    }
+/// Map each irrep block of a Psi4 Matrix onto its underlying data.
+PSI_API std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps(Matrix& matrix);
 
-    // assume default has been provided
-    abort();
-}
+}  // namespace linalg
 }  // namespace psi

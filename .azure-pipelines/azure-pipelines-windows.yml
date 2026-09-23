@@ -124,13 +124,10 @@ jobs:
       # pydantic=1.10.17 ensures v1 pydantic still working
       - script: |
           conda install cmake ^
-                        anaconda-project ^
-                        anaconda-client ^
                         conda-build ^
                         m2-sed ^
                         eigen ^
                         libboost-headers ^
-                        conda-verify ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^
                         msgpack-python ^
@@ -153,7 +150,8 @@ jobs:
                         pydantic ^
                         optking ^
                         scipy
-          which anaconda
+          if errorlevel 1 exit /b %errorlevel%
+          which conda
           conda list
         displayName: "Install conda packages"
           #conda install --only-deps anaconda-client

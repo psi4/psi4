@@ -52,7 +52,26 @@ namespace psi {
 CDJK::CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance)
     : DiskDFJK(primary, primary, options), cholesky_tolerance_(cholesky_tolerance) {}
 
-void CDJK::initialize_JK_disk() { throw PSIEXCEPTION("Disk algorithm for CD JK not implemented."); }
+void CDJK::initialize_JK_disk() {
+    throw PSIEXCEPTION(
+        "CDJK::initialize_JK_disk(): internal error: the out-of-core path was selected even though CDJK::is_core() "
+        "guarantees the in-core subalgorithm. If you are seeing this, there is a bug!");
+}
+
+bool CDJK::is_core() {
+    // CD has no out-of-core algorithm, so the only meaningful subalgorithm is in-core.
+    if (subalgo_ != "AUTO" && subalgo_ != "INCORE") {
+        throw PSIEXCEPTION(
+            "Invalid SCF_SUBTYPE option in CDJK! Valid choices of SCF_SUBTYPE for Cholesky JK are AUTO and INCORE. "
+            "SCF_SUBTYPE=OUT_OF_CORE is not supported with SCF_TYPE=CD: the Cholesky JK algorithm is in-core only. Use"
+            " SCF_TYPE=DISK_DF if you need an out-of-core algorithm.");
+    }
+    // The true memory requirement cannot be known before the decomposition runs (ncholesky_ is determined by
+    // CHOLESKY_TOLERANCE), so the memory_estimate() gate used by DiskDFJK::is_core() is deliberately not applied here;
+    // a pessimistic estimate must not route CD onto the nonexistent disk path. The authoritative memory check lives in
+    // initialize_JK_core(), after ncholesky_ is known.
+    return true;
+}
 
 void CDJK::set_do_wK(const bool do_wK) {
     if (do_wK)
