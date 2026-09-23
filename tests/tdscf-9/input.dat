@@ -1,0 +1,23 @@
+#! td-rhf (tda) test on singlet water, covering edge case of tighter convergence than a hermitian eigenproblem affords
+h2o = psi4.geometry("""
+    0 1
+    O
+    H 1 1.0
+    H 1 1.0 2 101.5
+""")
+
+psi4.set_options({
+    "basis": "cc-pvdz",
+    "d_convergence": 10,
+    "r_convergence": 10,
+    "tdscf_states": [0, 0, 0, 2],
+    "tdscf_tda": True
+})
+
+wfn = psi4.energy("td-pbe", return_wfn=True)[1]
+
+exc_1 = 0.42453 # TEST
+exc_2 = 0.48542 # TEST
+
+compare_values(exc_1, wfn.variable("TD-PBE ROOT 0 (IN A1) -> ROOT 0 (IN B2) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
+compare_values(exc_2, wfn.variable("TD-PBE ROOT 0 (IN A1) -> ROOT 1 (IN B2) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
