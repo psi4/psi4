@@ -1,0 +1,38 @@
+#! cGHF STO-3G energy on a H7 heptagon (ring) with R = 1.0 Angstroms with a PySCF guess density matrix
+import numpy as np
+
+guess_D = np.load("density.dat")
+
+ref_energy          =  -3.52044517959956
+spin_broken_energy  =  -3.53252123533222
+
+molecule h7 {
+0 2
+H 1.15238244 0.0 0.0
+H 0.7184987 0.90096887 0.0
+H -0.25642922 1.1234898 0.0
+H -1.0382607 0.5 0.0
+H -1.0382607 -0.5 0.0
+H -0.25642922 -1.1234898 0.0
+H 0.7184987 -0.90096887 0.0
+symmetry c1
+}
+
+set = {
+    reference cghf
+    scf_type   pk
+    basis      sto-3g
+    guess sad
+    e_convergence 1e-9
+}
+thisenergy, wfn = energy('scf', return_wfn=True)
+
+wfn.restart_with_guess_density(guess_D)
+core.print_out("\n\nRestarting CGHF calculation with NumPy density matrix\n\n")
+wfn.iterations()
+
+calc_sb_energy = wfn.compute_E()
+
+compare_values(spin_broken_energy, calc_sb_energy, 7, "Complex spin-broken energy")
+compare_values(ref_energy, thisenergy, 7, "Energy before spin breaking")
+
