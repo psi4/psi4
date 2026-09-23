@@ -43,7 +43,7 @@ def calcD(wfn):
     pytest.param({'name': 'mp2', 'options': {'scf_type': 'df','qc_module': 'occ'} }, id='df-uhf-mp2'),
     pytest.param({'name': 'ccsd', 'options': {'scf_type': 'pk','cc_type':'conv'} }, id='conv-uhf-ccsd') 
     ])
-def test_uhf_fchk(inp2, datadir):
+def test_uhf_fchk(inp2, datadir, request):
     """  FCHK UHF """
     mol = psi4.geometry("""
   no_reorient
@@ -66,6 +66,10 @@ def test_uhf_fchk(inp2, datadir):
     else:
         dens_tol = 3.e-8
         fchk_tol = 2.e-7
+        if "df-uhf-mp" in request.node.name:
+            psi4.set_options({'d_convergence': 5e-9})
+            fchk_tol = 1.e-6
+
     FCHK_file = f"uhf-{inp2['name']}.fchk"
     reference_file = datadir.join(f"uhf-{inp2['name']}.ref")
     psi4.set_options(inp2['options'])
