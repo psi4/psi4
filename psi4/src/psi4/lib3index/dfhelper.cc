@@ -582,7 +582,27 @@ void DFHelper::prepare_AO_core() {
 
     // determine blocking
     std::vector<std::pair<size_t, size_t>> psteps;
-    std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 1, psteps);
+    // The symmetric build below stages each block of AOs in a scratch buffer and
+    // immediately contracts it into Ppq_, so that buffer is transient -- but
+    // pshell_blocks_for_AO_build() sizes it from whatever memory the caller
+    // happens to have, and a caller with room to spare gets a single block as
+    // large as the AO tensor itself.  That doubles this routine's high-water
+    // mark to buy nothing: the integrals are computed once either way, and the
+    // metric contraction does the same work in eight passes as in one.  Cap the
+    // staging at an eighth of the tensor, but never below the largest single p
+    // shell block, which is the smallest the blocking can legally return.
+    size_t ao_budget = memory_;
+    if (!direct_iaQ_ && !direct_) {
+        size_t largest_shell = 0;
+        for (size_t i = 0; i < pshells_; i++) {
+            size_t cur = symm_big_skips_[pshell_aggs_[i + 1]] - symm_big_skips_[pshell_aggs_[i]];
+            if (do_wK_) cur *= (wcombine_ ? 2 : 3);
+            largest_shell = std::max(largest_shell, cur);
+        }
+        size_t staging_cap = std::max(big_skips_[nbf_] / 8, largest_shell);
+        ao_budget = std::min(memory_, big_skips_[nbf_] + naux_ * naux_ + 2 * staging_cap);
+    }
+    std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(ao_budget, 1, psteps);
 
     // allocate final AO vector
     if (direct_iaQ_) {
