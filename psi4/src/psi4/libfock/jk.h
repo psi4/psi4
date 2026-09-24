@@ -400,6 +400,13 @@ class PSI_API JK {
     // TODO: investigate if JK::memory_estimate and all of its derived variants could be made const
     // Probably requires refactoring DFHelper and MemDFJK first.
     virtual size_t memory_estimate() = 0;
+    /// The memory this object was granted, in doubles
+    size_t memory() const { return memory_; }
+    /// What this object's integral store is holding right now, in doubles, as reported to
+    /// the process memory ledger.  The difference from memory() is what it may still
+    /// allocate on each build: an out-of-core DiskDFJK holds nothing between SCFs and
+    /// then reads its integrals back in blocks sized from the whole grant.
+    virtual size_t memory_held() const { return integrals_claim_.held(); }
 
     // => Knobs <= //
 
@@ -1148,6 +1155,7 @@ class PSI_API MemDFJK : public JK {
 
     std::string name() override { return "MemDFJK"; }
     size_t memory_estimate() override;
+    size_t memory_held() const override;
 
     /// This class wraps a DFHelper object
     std::shared_ptr<DFHelper> dfh_;

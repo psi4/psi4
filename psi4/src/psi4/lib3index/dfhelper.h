@@ -92,6 +92,9 @@ class PSI_API DFHelper {
     /// Returns the number of doubles in the *screened* AO integrals
     size_t get_AO_size() { return big_skips_[nbf_]; }
 
+    /// Returns the in-core AO integrals currently held, in doubles, as reported to the memory ledger
+    size_t get_AO_held() const { return core_claim_.held(); }
+
     /// Returns the size of the in-core version in doubles
     size_t get_core_size() {
         AO_core(false);

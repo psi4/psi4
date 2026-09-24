@@ -67,6 +67,10 @@ size_t MemDFJK::memory_estimate() {
     dfh_->set_schwarz_cutoff(cutoff_);
     return dfh_->get_core_size();
 }
+size_t MemDFJK::memory_held() const {
+    // The integrals live in DFHelper, which reports them to the ledger itself.
+    return dfh_->get_AO_held();
+}
 
 void MemDFJK::preiterations() {
     // Initialize calls your derived class's preiterations member

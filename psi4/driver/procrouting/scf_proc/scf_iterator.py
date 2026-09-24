@@ -337,9 +337,17 @@ def scf_initialize(self):
         jk_size = jk.memory_estimate()
         jk_size_known = jk_size > 0
     else:
-        # A re-used JK is already holding its integrals and is already counted in
-        # committed_memory, so this SCF will allocate nothing further for it.
-        jk_size = 0
+        # A re-used JK's integrals are already counted in committed_memory, but the buffers it
+        # allocates on every build are not.  An out-of-core DiskDFJK holds nothing between
+        # SCFs and then reads (Q|mn) back in blocks sized from its whole grant, so treating it
+        # as free hands that grant to the cache a second time: the second SCF of a GRAC pair,
+        # and monomer B after monomer A, then cached the full grid on top of a 70 GiB JK and
+        # were killed in their first iteration.  Charge what the JK may still allocate.  JKs
+        # that cannot predict their footprint report 0 and keep the old treatment.
+        if jk.memory_estimate() > 0:
+            jk_size = max(0, jk.memory() - jk.memory_held())
+        else:
+            jk_size = 0
         jk_size_known = True
 
     # Give remaining to collocation
@@ -408,8 +416,8 @@ def scf_initialize(self):
                 gib(self.memory_collocation_), gib(collocation_size)))
 
         if jk_size_known:
-            # jk_size is what a JK built here will allocate; a re-used one reports 0
-            # because its integrals are already inside committed_memory.
+            # jk_size is what a JK built here will allocate; for a re-used one it is what
+            # it may still allocate beyond the integrals already inside committed_memory.
             required = held_memory + process_reserve + reserve_memory + jk_size
             peak = required + self.memory_collocation_
             core.print_out("    Estimated peak                  {:11.3f} [GiB]\n".format(gib(peak)))

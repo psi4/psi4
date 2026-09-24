@@ -72,6 +72,9 @@ void export_fock(py::module &m) {
                     })
         .def("name", &JK::name)
         .def("memory_estimate", &JK::memory_estimate)
+        .def("memory", &JK::memory, "The memory this JK was granted, in doubles")
+        .def("memory_held", &JK::memory_held,
+             "The integrals this JK holds right now, in doubles, as reported to the memory ledger")
         .def("initialize", &JK::initialize)
         .def("basisset", &JK::basisset)
         .def("set_print", &JK::set_print)
