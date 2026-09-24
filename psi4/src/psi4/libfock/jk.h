@@ -404,8 +404,8 @@ class PSI_API JK {
     size_t memory() const { return memory_; }
     /// What this object's integral store is holding right now, in doubles, as reported to
     /// the process memory ledger.  The difference from memory() is what it may still
-    /// allocate on each build: an out-of-core DiskDFJK holds nothing between SCFs and
-    /// then reads its integrals back in blocks sized from the whole grant.
+    /// allocate on each build: a MemDFJK on its disk algorithm holds nothing in core and
+    /// sizes its integral blocks and work buffers from the whole grant on every build.
     virtual size_t memory_held() const { return integrals_claim_.held(); }
 
     // => Knobs <= //

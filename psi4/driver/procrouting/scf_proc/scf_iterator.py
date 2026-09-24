@@ -338,8 +338,9 @@ def scf_initialize(self):
         jk_size_known = jk_size > 0
     else:
         # A re-used JK's integrals are already counted in committed_memory, but the buffers it
-        # allocates on every build are not.  An out-of-core DiskDFJK holds nothing between
-        # SCFs and then reads (Q|mn) back in blocks sized from its whole grant, so treating it
+        # allocates on every build are not.  A MemDFJK on its disk algorithm (SCF_SUBTYPE
+        # OUT_OF_CORE, or AUTO when the AOs do not fit) holds nothing in core and sizes its
+        # (Q|mn) blocks and M/T/C buffers from its whole grant on every build, so treating it
         # as free hands that grant to the cache a second time: the second SCF of a GRAC pair,
         # and monomer B after monomer A, then cached the full grid on top of a 70 GiB JK and
         # were killed in their first iteration.  Charge what the JK may still allocate.  JKs
