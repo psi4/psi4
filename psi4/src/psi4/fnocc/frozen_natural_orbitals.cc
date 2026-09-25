@@ -265,7 +265,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     // diagonalize virtual-virtual block of opdm
     int symmetry = Ca_->symmetry();
-    auto D = std::make_shared<Matrix>("Dab", nirrep_, aVirOrbsPI, aVirOrbsPI, symmetry);
+    auto D = std::make_shared<Matrix>("Dab", aVirOrbsPI, aVirOrbsPI, symmetry);
 
     global_dpd_->file2_init(&Dab, PSIF_LIBTRANS_DPD, 0, 1, 1, "Dab");
     global_dpd_->file2_mat_init(&Dab);
@@ -286,12 +286,12 @@ void FrozenNO::ComputeNaturalOrbitals() {
     psio->close(PSIF_LIBTRANS_DPD, 1);
     ints.reset();
 
-    auto eigvec = std::make_shared<Matrix>("Dab eigenvectors", nirrep_, aVirOrbsPI, aVirOrbsPI, symmetry);
+    auto eigvec = std::make_shared<Matrix>("Dab eigenvectors", aVirOrbsPI, aVirOrbsPI, symmetry);
     auto eigval = std::make_shared<Vector>("Dab eigenvalues", aVirOrbsPI);
     D->diagonalize(eigvec, eigval, descending);
 
     // overwrite ao/mo C matrix with ao/no transformation
-    auto temp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, aVirOrbsPI, symmetry);
+    auto temp = std::make_shared<Matrix>("temp", nsopi_, aVirOrbsPI, symmetry);
     for (int h = 0; h < nirrep_; h++) {
         int v = aVirOrbsPI[h];
 
@@ -411,7 +411,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     // transform Fock matrix to truncated NO basis
 
-    auto Fab = std::make_shared<Matrix>("Fab(NO)", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
+    auto Fab = std::make_shared<Matrix>("Fab(NO)", newVirOrbsPI, newVirOrbsPI, symmetry);
     for (int h = 0; h < nirrep_; h++) {
         int o = nalphapi_[h];
         int vnew = newVirOrbsPI[h];
@@ -431,7 +431,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
     }
 
     // semicanonicalize orbitals:
-    auto eigvecF = std::make_shared<Matrix>("Fab eigenvectors", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
+    auto eigvecF = std::make_shared<Matrix>("Fab eigenvectors", newVirOrbsPI, newVirOrbsPI, symmetry);
     auto eigvalF = std::make_shared<Vector>("Fab eigenvalues", newVirOrbsPI);
     Fab->diagonalize(eigvecF, eigvalF);
 

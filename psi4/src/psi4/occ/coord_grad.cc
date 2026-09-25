@@ -94,7 +94,7 @@ void OCCWave::dump_pdms() {
             alpha_pitzer_to_corr[alpha_corr_to_pitzer[n]] = n;
         }
 
-        Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
+        Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nsopi_, nsopi_);
         Lagrangian_->back_transform(*GFock, *Ca_);
 
         auto *aocc_qt = new int[nooA];
@@ -263,8 +263,8 @@ void OCCWave::dump_pdms() {
             beta_pitzer_to_corr[beta_corr_to_pitzer[n]] = n;
         }
 
-        Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
-        auto temp_lagrangian = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+        Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nsopi_, nsopi_);
+        auto temp_lagrangian = std::make_shared<Matrix>("temp", nsopi_, nsopi_);
         Lagrangian_->back_transform(*GFockA, *Ca_);
         temp_lagrangian->back_transform(*GFockB, *Cb_);
         Lagrangian_->add(temp_lagrangian);

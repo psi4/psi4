@@ -266,8 +266,8 @@ void DCTSolver::compute_orbital_gradient() {
 
     // Initialize the idempotent contribution to the OPDM (Kappa)
     if (!orbital_optimized_) {
-        auto full_kappa_a = std::make_shared<Matrix>("MO basis Full Kappa (Alpha)", nirrep_, nmopi_, nmopi_);
-        auto full_kappa_b = std::make_shared<Matrix>("MO basis Full Kappa (Beta)", nirrep_, nmopi_, nmopi_);
+        auto full_kappa_a = std::make_shared<Matrix>("MO basis Full Kappa (Alpha)", nmopi_, nmopi_);
+        auto full_kappa_b = std::make_shared<Matrix>("MO basis Full Kappa (Beta)", nmopi_, nmopi_);
         // Compute Kappa in the MO basis
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < naoccpi_[h]; ++i) {
