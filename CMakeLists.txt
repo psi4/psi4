@@ -128,6 +128,7 @@ option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
+option(ENABLE_Einsums2 "Enables the Einsums v2 tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
@@ -151,6 +152,10 @@ option(psi4_SKIP_ENABLE_Fortran "Suppress enabling Fortran language even when Fo
 if(ENABLE_ccsort OR ENABLE_transqt2)
   set(ENABLE_pasture ON)
   message(STATUS "Enabling pasture plugins")
+endif()
+
+if(ENABLE_Einsums AND ENABLE_Einsums2)
+  message(FATAL_ERROR "ENABLE_Einsums and ENABLE_Einsums2 are mutually exclusive")
 endif()
 
 if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_PCMSolver)
@@ -259,6 +264,7 @@ ExternalProject_Add(psi4-core
            ecpint_external
            libefp_external
            einsums_external
+           einsums2_external
            gau2grid_external
            gdma_external
            libint2_external
@@ -344,8 +350,10 @@ ExternalProject_Add(psi4-core
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
               -Decpint_DIR=${ecpint_DIR}
+              -DENABLE_Einsums2=${ENABLE_Einsums2}
               -Dlibefp_DIR=${libefp_DIR}
               -DEinsums_DIR=${Einsums_DIR}
+              -DEinsums2_DIR=${Einsums2_DIR}
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
               -DLibint2_DIR=${Libint2_DIR}

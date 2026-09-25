@@ -2,7 +2,7 @@ list(APPEND sources
   ein_test.cc
   )
 
-if(TARGET Einsums::Einsums)
+if(TARGET Einsums::Einsums AND NOT ENABLE_Einsums2)
     psi4_add_module(bin dummy_einsums sources)
 
     if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD})
