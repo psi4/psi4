@@ -384,9 +384,11 @@ def scf_initialize(self):
     # of two float subtractions -- and int() then truncates, so the JK can be handed one
     # double less than the size it just asked for.  DFHelper and CDJK both treat that as
     # "not enough memory to do in-core" and throw, which turns a grant that is exactly
-    # right into a fatal error.  Never hand the JK less than it reported it needs; it
-    # cannot exceed total_memory here, because this branch only runs when it is smaller.
-    if jk_size_known and jk_size > 0:
+    # right into a fatal error.  Never hand the JK less than it reported it needs -- but
+    # only when that need fits the budget.  An out-of-core DiskDFJK reports its in-core
+    # size, which can be larger than the whole setting; flooring at it then gave the JK
+    # 108 GiB of a 96 GiB job, which it sized its blocks from and was killed.
+    if jk_size_known and 0 < jk_size <= total_memory:
         self.memory_jk_ = max(self.memory_jk_, int(jk_size))
     self.memory_collocation_ = int(collocation_memory)
 
