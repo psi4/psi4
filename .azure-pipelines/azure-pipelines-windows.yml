@@ -99,9 +99,9 @@ jobs:
       - script: |
           choco install miniforge3 --yes
           set PATH=C:\tools\miniforge3\Scripts;C:\tools\miniforge3;C:\tools\miniforge3\Library\bin;C:\tools\miniforge3\Library\mingw-w64\bin;%PATH%
-          echo '##vso[task.setvariable variable=PATH]%PATH%'
+          echo ##vso[task.setvariable variable=PATH]%PATH%
           set LIB=C:\tools\miniforge3\Library\lib;%LIB%
-          echo '##vso[task.setvariable variable=LIB]%LIB%'
+          echo ##vso[task.setvariable variable=LIB]%LIB%
           conda --version
         displayName: "Install Miniconda"
 
@@ -123,7 +123,7 @@ jobs:
       # Note: c-f eigen has Config.cmake file
       # pydantic=1.10.17 ensures v1 pydantic still working
       - script: |
-          conda install cmake ^
+          conda install -p C:\tools\miniforge3 cmake ^
                         conda-build ^
                         m2-sed ^
                         eigen ^
@@ -172,6 +172,9 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+          where python
+          C:\tools\miniforge3\python.exe --version
+          C:\tools\miniforge3\python.exe -c "import numpy; print(numpy.__version__, numpy.__file__)"
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
