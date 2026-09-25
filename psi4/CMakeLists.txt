@@ -369,6 +369,7 @@ install(
     PATTERN "f12_libint1.json"
     PATTERN "tdscf_reference_data.json"
     PATTERN "utils.py"
+    PATTERN "addon_report.py"
   )
 install(
   DIRECTORY
