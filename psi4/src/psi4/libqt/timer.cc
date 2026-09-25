@@ -1383,4 +1383,17 @@ PSI_API std::vector<TimerRecord> get_timer_records() {
     return result;
 }
 
+PSI_API std::map<std::string, std::map<std::string, double>> get_timer_dict() {
+    std::map<std::string, std::map<std::string, double>> result;
+    for (const auto& record : get_timer_records()) {
+        result[record.timer_id] = {
+            {"wall_time", record.wall_time},
+            {"user_time", record.user_time},
+            {"system_time", record.system_time},
+            {"n_calls", static_cast<double>(record.n_calls)},
+        };
+    }
+    return result;
+}
+
 }  // namespace psi

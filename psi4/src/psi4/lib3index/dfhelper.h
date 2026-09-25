@@ -32,6 +32,7 @@
 #include "psi4/psi4-dec.h"
 #include <psi4/libmints/typedefs.h>
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/memory_ledger.h"
 
 #include <map>
 #include <list>
@@ -91,6 +92,9 @@ class PSI_API DFHelper {
     /// Returns the number of doubles in the *screened* AO integrals
     size_t get_AO_size() { return big_skips_[nbf_]; }
 
+    /// Returns the in-core AO integrals currently held, in doubles, as reported to the memory ledger
+    size_t get_AO_held() const { return core_claim_.held(); }
+
     /// Returns the size of the in-core version in doubles
     size_t get_core_size() {
         AO_core(false);
@@ -116,6 +120,18 @@ class PSI_API DFHelper {
     /// metric contraction step, like SAPT(DFT), can call this to free
     /// up memory for storing intermediates during metric contraction.
     void set_release_core_AO_before_metric(bool release) { release_core_AO_before_metric_ = release; }
+
+    /// Sets the flag to unlink each tensor's pre-metric scratch copy as soon as
+    /// the metric has been folded into it, instead of holding every one of them
+    /// until clear_all().  A disk-backed transform otherwise keeps two full
+    /// copies of every tensor on scratch, which doubles the disk a large job
+    /// needs.
+    ///
+    /// Off by default only to keep the extra unlink off callers that do not need
+    /// the space.  A caller that transforms the same name again must re-register
+    /// it with add_transformation() first -- which it should be doing anyway, so
+    /// that sizes_ describes the spaces actually being transformed.
+    void set_release_pre_metric_tensors(bool release) { release_pre_metric_tensors_ = release; }
 
     ///
     /// Sets the MO integrals to in-core. (Defaults to FALSE)
@@ -340,6 +356,9 @@ class PSI_API DFHelper {
     // => memory in doubles <=
     size_t memory_ = 256000000;
     size_t required_core_size_;
+    // What the in-core AO integrals above are costing the process right now, so that an
+    // SCF started while this object is alive can see that the memory is already spent.
+    MemoryClaim core_claim_;
 
     // => internal holders <=
     std::string method_ = "STORE";
@@ -350,6 +369,7 @@ class PSI_API DFHelper {
     bool AO_core_ = true;
     bool MO_core_ = false;
     bool release_core_AO_before_metric_ = false;
+    bool release_pre_metric_tensors_ = false;
     size_t nthreads_ = 1;
     double cutoff_ = 1e-12;
     double condition_ = 1e-12;
@@ -388,6 +408,8 @@ class PSI_API DFHelper {
     // => AO building machinery <=
     void prepare_AO();
     void prepare_AO_core();
+    /// Re-report the in-core AO integrals to the process memory ledger from the buffers that exist now
+    void update_core_claim();
     void compute_dense_Qpq_blocking_Q(const size_t start, const size_t stop, double* Mp,
                                       std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_sparse_pQq_blocking_Q(const size_t start, const size_t stop, double* Mp,

@@ -1753,6 +1753,35 @@ PSI Variables by Alpha
    to improve the accuracy by correctly describing the electron density
    at long-range.
 
+.. psivar:: SAPT DFT GRAC SHIFT ONLY
+
+   1.0 when SAPT(DFT) stops after GRAC shifts by request; 0.0 for a full run.
+   In shift-only mode CURRENT ENERGY is a zero placeholder, not an interaction energy.
+
+.. psivar:: SAPT DFT GRAC MONOMER ENERGY A
+           SAPT DFT GRAC MONOMER ENERGY B
+
+   SCF energy [E_h] of the monomer as given, used to compute its GRAC shift.
+   Absent when that monomer's shift was supplied explicitly.
+
+.. psivar:: SAPT DFT GRAC IONIZED MONOMER ENERGY A
+           SAPT DFT GRAC IONIZED MONOMER ENERGY B
+
+   SCF energy [E_h] after removing one electron from the monomer (charge +1).
+   The ionized species need not be a cation. Absent for supplied shifts.
+
+.. psivar:: SAPT DFT GRAC HOMO A
+           SAPT DFT GRAC HOMO B
+
+   Highest occupied alpha eigenvalue [E_h] of the monomer as given in the
+   GRAC calculation. Absent for supplied shifts.
+
+.. psivar:: SAPT DFT GRAC IP A
+           SAPT DFT GRAC IP B
+
+   Ionized-minus-given monomer SCF energy [E_h]. Adding the GRAC HOMO yields
+   the GRAC shift. Absent for supplied shifts.
+
 
 .. psivar:: SCF ITERATIONS
    ADC ITERATIONS
@@ -2094,4 +2123,3 @@ PSI Variables by Alpha
 
    The interatomic contributions to the dispersion correction [E_h].
    Sums to the dispersion energy.
-

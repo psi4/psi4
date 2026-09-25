@@ -39,6 +39,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/memory_ledger.h"
 #include "psi4/libscf_solver/sad.h"
 
 using namespace psi;
@@ -46,6 +47,20 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_fock(py::module &m) {
+    m.def("memory_committed", &MemoryClaim::committed,
+          "Number of doubles the large, long-lived buffers of this process are holding right now: the "
+          "in-core density-fitted integrals of every live JK object and the DFT collocation cache of every "
+          "live V object. get_memory() describes an empty process, so a driver that keeps earlier "
+          "wavefunctions alive -- SAPT(DFT), or a GRAC shift holding the neutral while the cation runs -- "
+          "must subtract this before dividing the SCF memory budget, or each SCF claims the whole budget again.");
+
+    m.def("release_freed_memory", &release_freed_memory,
+          "Hand memory that has already been freed back to the operating system. The big caches are "
+          "made of many small allocations, which glibc keeps in its arenas after the free, so a "
+          "driver that drops a wavefunction or finalizes a JK object sees memory_committed() fall "
+          "while the resident set does not move. Call this once after dropping something large; it "
+          "walks every arena, so it does not belong in a loop.");
+
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
         .def_static("build_JK",
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {
@@ -57,6 +72,9 @@ void export_fock(py::module &m) {
                     })
         .def("name", &JK::name)
         .def("memory_estimate", &JK::memory_estimate)
+        .def("memory", &JK::memory, "The memory this JK was granted, in doubles")
+        .def("memory_held", &JK::memory_held,
+             "The integrals this JK holds right now, in doubles, as reported to the memory ledger")
         .def("initialize", &JK::initialize)
         .def("basisset", &JK::basisset)
         .def("set_print", &JK::set_print)
@@ -177,6 +195,31 @@ void export_fock(py::module &m) {
         .def("set_MO_core", &DFHelper::set_MO_core)
         .def("get_MO_core", &DFHelper::get_MO_core)
         .def("add_space", &DFHelper::add_space)
+        .def("add_disk_tensor", &DFHelper::add_disk_tensor)
+        .def("write_disk_tensor", 
+             py::overload_cast<std::string, SharedMatrix>(&DFHelper::write_disk_tensor),
+             "name"_a, "M"_a)
+        .def("write_disk_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>>(&DFHelper::write_disk_tensor),
+             "name"_a, "M"_a, "a1"_a)
+        .def("write_disk_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>, std::vector<size_t>>(&DFHelper::write_disk_tensor),
+             "name"_a, "M"_a, "a1"_a, "a2"_a)
+        .def("write_disk_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>, std::vector<size_t>, std::vector<size_t>>(&DFHelper::write_disk_tensor),
+             "name"_a, "M"_a, "a1"_a, "a2"_a, "a3"_a)
+        .def("fill_tensor", 
+             py::overload_cast<std::string, SharedMatrix>(&DFHelper::fill_tensor),
+             "name"_a, "M"_a)
+        .def("fill_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>>(&DFHelper::fill_tensor),
+             "name"_a, "M"_a, "a1"_a)
+        .def("fill_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>, std::vector<size_t>>(&DFHelper::fill_tensor),
+             "name"_a, "M"_a, "a1"_a, "a2"_a)
+        .def("fill_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>, std::vector<size_t>, std::vector<size_t>>(&DFHelper::fill_tensor),
+             "name"_a, "M"_a, "a1"_a, "a2"_a, "a3"_a)
         .def("initialize", &DFHelper::initialize)
         .def("print_header", &DFHelper::print_header)
         .def("add_transformation", &DFHelper::add_transformation, "name"_a, "key1"_a, "key2"_a, "order"_a = "Qpq")

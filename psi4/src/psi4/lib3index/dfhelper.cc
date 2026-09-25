@@ -29,7 +29,11 @@
 #include "dfhelper.h"
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
+#include <cstring>
+#include <filesystem>
+#include <system_error>
 #ifdef _MSC_VER
 #include <process.h>
 #define SYSTEM_GETPID ::_getpid
@@ -61,6 +65,43 @@
 #include "dftensor.h"
 
 namespace psi {
+
+namespace {
+
+// Report a stdio transfer that moved fewer doubles than it was asked to.
+// Anything short of the exact count leaves the tensor on disk truncated, so it
+// is an error even when it is not zero.  Scratch space is the usual culprit for
+// a large DF job, so say how much of it is left.
+void df_io_check(const char* who, const std::string& file, size_t done, size_t wanted, FILE* fp, bool reading) {
+    if (done == wanted) return;
+
+    const int err = errno;  // grab before anything below can clobber it
+
+    std::stringstream error;
+    error << "DFHelper:" << who << ": " << (reading ? "read " : "wrote ") << done << " of " << wanted
+          << " doubles (" << (wanted - done) * sizeof(double) << " bytes short)";
+    error << "\n  file: " << file;
+    if (fp != nullptr) {
+        const long pos = ftell(fp);
+        if (pos >= 0) error << "\n  stream offset: " << pos << " bytes";
+        if (ferror(fp)) error << "\n  stream error flag is set";
+        if (reading && feof(fp)) error << "\n  stream is at end of file";
+    }
+    if (err != 0) error << "\n  " << std::strerror(err) << " (errno " << err << ")";
+
+    std::error_code ec;
+    const std::filesystem::path dir = std::filesystem::path(file).parent_path();
+    const auto space = std::filesystem::space(dir, ec);
+    if (!ec) {
+        const double gib = 1024.0 * 1024.0 * 1024.0;
+        error << "\n  scratch directory " << dir.string() << " has " << space.available / gib << " GiB free of "
+              << space.capacity / gib << " GiB";
+    }
+
+    throw PSIEXCEPTION(error.str().c_str());
+}
+
+}  // namespace
 
 DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux)
     : primary_(primary), aux_(aux) {
@@ -511,6 +552,18 @@ void DFHelper::prepare_AO_wK() {
     std::vector<std::pair<size_t, size_t>> psteps;
     std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 0, psteps);
 }
+void DFHelper::update_core_claim() {
+    // Read the claim off the buffers themselves rather than off the branch that
+    // allocated them: the in-core AO integrals come in three pieces that appear and
+    // disappear independently (wK adds wPpq_ and m1Ppq_, and a transform may drop
+    // Ppq_ early to make room for the metric contraction).
+    const size_t block = direct_iaQ_ ? naux_ * nbf_ * nbf_ : big_skips_[nbf_];
+    size_t held = 0;
+    if (Ppq_) held += block;
+    if (wPpq_) held += block;
+    if (m1Ppq_) held += block;
+    core_claim_.set(held);
+}
 void DFHelper::prepare_AO_core() {
     // get each thread an eri object
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
@@ -529,7 +582,27 @@ void DFHelper::prepare_AO_core() {
 
     // determine blocking
     std::vector<std::pair<size_t, size_t>> psteps;
-    std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 1, psteps);
+    // The symmetric build below stages each block of AOs in a scratch buffer and
+    // immediately contracts it into Ppq_, so that buffer is transient -- but
+    // pshell_blocks_for_AO_build() sizes it from whatever memory the caller
+    // happens to have, and a caller with room to spare gets a single block as
+    // large as the AO tensor itself.  That doubles this routine's high-water
+    // mark to buy nothing: the integrals are computed once either way, and the
+    // metric contraction does the same work in eight passes as in one.  Cap the
+    // staging at an eighth of the tensor, but never below the largest single p
+    // shell block, which is the smallest the blocking can legally return.
+    size_t ao_budget = memory_;
+    if (!direct_iaQ_ && !direct_) {
+        size_t largest_shell = 0;
+        for (size_t i = 0; i < pshells_; i++) {
+            size_t cur = symm_big_skips_[pshell_aggs_[i + 1]] - symm_big_skips_[pshell_aggs_[i]];
+            if (do_wK_) cur *= (wcombine_ ? 2 : 3);
+            largest_shell = std::max(largest_shell, cur);
+        }
+        size_t staging_cap = std::max(big_skips_[nbf_] / 8, largest_shell);
+        ao_budget = std::min(memory_, big_skips_[nbf_] + naux_ * naux_ + 2 * staging_cap);
+    }
+    std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(ao_budget, 1, psteps);
 
     // allocate final AO vector
     if (direct_iaQ_) {
@@ -537,6 +610,7 @@ void DFHelper::prepare_AO_core() {
     } else {
         Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
     }
+    update_core_claim();
 
     double* ppq = Ppq_.get();
 
@@ -618,6 +692,7 @@ void DFHelper::prepare_AO_wK_core() {
     m1Ppq_ = std::make_unique<double[]>(big_skips_[nbf_]);
 
     if (!wcombine_) Ppq_ = std::make_unique<double[]>(big_skips_[nbf_]);
+    update_core_claim();
 
 
     double* wppq = wPpq_.get();
@@ -964,30 +1039,20 @@ void DFHelper::put_tensor(std::string file, double* Mp, const size_t start1, con
     // is everything contiguous?
     if (st == 0) {
         size_t s = fwrite(&Mp[0], sizeof(double), a0 * a1, fp);
-        if (!s) {
-            std::stringstream error;
-            error << "DFHelper:put_tensor: write error";
-            throw PSIEXCEPTION(error.str().c_str());
-        }
+        df_io_check("put_tensor", file, s, a0 * a1, fp, false);
     } else {
-        for (size_t i = start1; i < stop1; i++) {
+        // Mp is a0 x a1 and starts at its own row 0, so index it relative to
+        // start1 the way get_tensor_ does.
+        for (size_t i = 0; i < a0 - 1; i++) {
             // write
             size_t s = fwrite(&Mp[i * a1], sizeof(double), a1, fp);
-            if (!s) {
-                std::stringstream error;
-                error << "DFHelper:put_tensor: write error";
-                throw PSIEXCEPTION(error.str().c_str());
-            }
+            df_io_check("put_tensor", file, s, a1, fp, false);
             // advance stream
             fseek(fp, st * sizeof(double), SEEK_CUR);
         }
         // manual last one
         size_t s = fwrite(&Mp[(a0 - 1) * a1], sizeof(double), a1, fp);
-        if (!s) {
-            std::stringstream error;
-            error << "DFHelper:put_tensor: write error";
-            throw PSIEXCEPTION(error.str().c_str());
-        }
+        df_io_check("put_tensor", file, s, a1, fp, false);
     }
 }
 void DFHelper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t start, std::string op) {
@@ -999,11 +1064,7 @@ void DFHelper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t s
 
     // everything is contiguous
     size_t s = fwrite(&Mp[0], sizeof(double), size, fp);
-    if (!s) {
-        std::stringstream error;
-        error << "DFHelper:put_tensor_AO: write error";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
+    df_io_check("put_tensor_AO", file, s, size, fp, false);
 }
 void DFHelper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t start) {
     // begin stream
@@ -1014,11 +1075,7 @@ void DFHelper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t s
 
     // everything is contiguous
     size_t s = fread(&Mp[0], sizeof(double), size, fp);
-    if (!s) {
-        std::stringstream error;
-        error << "DFHelper:get_tensor_AO: read error";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
+    df_io_check("get_tensor_AO", file, s, size, fp, true);
 }
 void DFHelper::get_tensor_(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
                            std::pair<size_t, size_t> i2) {
@@ -1074,35 +1131,23 @@ void DFHelper::get_tensor_(std::string file, double* b, const size_t start1, con
     // is everything contiguous?
     if (st == 0) {
         size_t s = fread(&b[0], sizeof(double), a0 * a1, fp);
-        if (!s) {
-            std::stringstream error;
-            error << "DFHelper:get_tensor: read error";
-            throw PSIEXCEPTION(error.str().c_str());
-        }
+        df_io_check("get_tensor", file, s, a0 * a1, fp, true);
     } else {
         for (size_t i = 0; i < a0 - 1; i++) {
             // read
             size_t s = fread(&b[i * a1], sizeof(double), a1, fp);
-            if (!s) {
-                std::stringstream error;
-                error << "DFHelper:get_tensor: read error";
-                throw PSIEXCEPTION(error.str().c_str());
-            }
+            df_io_check("get_tensor", file, s, a1, fp, true);
             // advance stream
-            s = fseek(fp, st * sizeof(double), SEEK_CUR);
-            if (s) {
+            if (fseek(fp, st * sizeof(double), SEEK_CUR)) {
                 std::stringstream error;
-                error << "DFHelper:get_tensor: read error";
+                error << "DFHelper:get_tensor: could not seek " << st * sizeof(double) << " bytes ahead in " << file;
+                if (errno != 0) error << "\n  " << std::strerror(errno) << " (errno " << errno << ")";
                 throw PSIEXCEPTION(error.str().c_str());
             }
         }
         // manual last one
         size_t s = fread(&b[(a0 - 1) * a1], sizeof(double), a1, fp);
-        if (!s) {
-            std::stringstream error;
-            error << "DFHelper:get_tensor: read error";
-            throw PSIEXCEPTION(error.str().c_str());
-        }
+        df_io_check("get_tensor", file, s, a1, fp, true);
     }
 }
 
@@ -1581,6 +1626,16 @@ void DFHelper::contract_metric_Qpq(std::string file, double* metp, double* Mp, d
         timer_off("DFH: Total Workflow");
         put_tensor(putf, Fp, begin, end, 0, r * Q - 1, op);
     }
+
+    // The pre-metric copy is dead the moment the metric has been folded out of
+    // it, and it is exactly as large as the result.  Callers that transform each
+    // name once can drop it here instead of at clear_all(): a big transform
+    // otherwise carries both copies of every tensor on scratch until the
+    // DFHelper goes away, which doubles the peak disk a job needs.  erase()
+    // releases the last reference to the stream, and ~StreamStruct closes and
+    // unlinks the file.  Re-registering the name with add_transformation() and
+    // transforming again simply rebuilds it into a fresh file.
+    if (release_pre_metric_tensors_) file_streams_.erase(getf);
 }
 
 void DFHelper::contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t total_mem) {
@@ -1638,6 +1693,16 @@ void DFHelper::contract_metric(std::string file, double* metp, double* Mp, doubl
             put_tensor(putf, Fp, 0, a0 - 1, begin * a2, (end + 1) * a2 - 1, op);
         }
     }
+
+    // The pre-metric copy is dead the moment the metric has been folded out of
+    // it, and it is exactly as large as the result.  Callers that transform each
+    // name once can drop it here instead of at clear_all(): a big transform
+    // otherwise carries both copies of every tensor on scratch until the
+    // DFHelper goes away, which doubles the peak disk a job needs.  erase()
+    // releases the last reference to the stream, and ~StreamStruct closes and
+    // unlinks the file.  Re-registering the name with add_transformation() and
+    // transforming again simply rebuilds it into a fresh file.
+    if (release_pre_metric_tensors_) file_streams_.erase(getf);
 }
 
 void DFHelper::contract_metric_AO_core(double* Qpq, double* metp) {
@@ -1867,6 +1932,20 @@ void DFHelper::transform() {
 
     // get optimal path and info
     if (!ordered_) info_ = identify_order();
+
+    // Drop any pre-metric scratch left over from an earlier transform() of these
+    // same names.  add_transformation() hands a re-registered name a fresh file,
+    // so this only bites a name that survived in transf_ without being
+    // re-registered: it keeps its original file, put_transformations_Qpq() opens
+    // that file in append mode, and contract_metric_Qpq() keeps reading the
+    // first pass's bytes from offset zero.  The file would then grow by a full
+    // copy per transform() while the extra passes are silently discarded.
+    // Unlinking here makes that pattern fail loudly instead of quietly eating
+    // scratch; callers should pair clear_spaces() with clear_transformations().
+    for (const auto& name : order_) {
+        auto entry = files_.find(name);
+        if (entry != files_.end()) file_streams_.erase(std::get<0>(entry->second));
+    }
     size_t wtmp = std::get<0>(info_);
     size_t wfinal = std::get<1>(info_);
 
@@ -2059,6 +2138,7 @@ void DFHelper::transform() {
     // release in-core AO 
     if (AO_core_ && release_core_AO_before_metric_)  {
         Ppq_.reset();
+        update_core_claim();
     }
 
     if (direct_iaQ_ || direct_) {

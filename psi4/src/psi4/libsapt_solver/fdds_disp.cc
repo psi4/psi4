@@ -39,6 +39,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/lib3index/dfhelper.h"
+#include "psi4/libpsi4util/memory_ledger.h"
 
 #include <iomanip>
 
@@ -50,6 +51,61 @@
 namespace psi {
 
 namespace sapt {
+
+namespace {
+
+/*! \brief Size of a buffer, in whichever of MiB or GiB reads at human scale. */
+std::string memory_size(double bytes) {
+    const double mib = 1024.0 * 1024.0;
+    std::stringstream size;
+    size << std::fixed << std::setprecision(3);
+    if (bytes < 1024.0 * mib) {
+        size << bytes / mib << " [MiB]";
+    } else {
+        size << bytes / (1024.0 * mib) << " [GiB]";
+    }
+    return size.str();
+}
+
+/*! \brief Message for the memory checks below.
+ *
+ * Every check here knows both the size of the buffers it is about to allocate and the size of
+ * the budget it is checking them against, so the exception says both instead of only that the
+ * memory was "too little".  The checks all measure themselves against 80% of the memory
+ * setting, so the figure to raise the setting to is scaled back up by that same factor.
+ * `needed` and `doubles` are counts of doubles; set `thread_scaled` when `needed` is
+ * proportional to the thread count, which the user can lower instead of raising memory.
+ */
+std::string too_little_memory(const std::string& where, const std::string& what, size_t needed, size_t doubles,
+                              bool thread_scaled = false) {
+    const double held = (double)MemoryClaim::committed() * sizeof(double);
+    std::stringstream message;
+    message << "Too little memory for " << where << ": " << what << " needs "
+            << memory_size((double)needed * sizeof(double)) << ", but only "
+            << memory_size((double)doubles * sizeof(double)) << " is available to it (80% of the "
+            << memory_size((double)Process::environment.get_memory()) << " memory setting, less "
+            << memory_size(held) << " held by live integral and grid caches)." << std::endl;
+    message << "       Raise the memory setting to at least "
+            << memory_size((double)needed * sizeof(double) / 0.8 + held);
+    message << (thread_scaled ? ", or run with fewer threads." : ".");
+    return message.str();
+}
+
+/*! \brief Doubles this module may allocate, net of memory already held elsewhere.
+ *
+ * These buffers are allocated while the monomer SCF stores are still resident -- DFT collocation
+ * caches and in-core DF integrals, which outlive the SCF that built them -- so budgeting against
+ * the raw memory setting counts that memory twice and overruns the setting.
+ * `MemoryClaim::committed()` is what those stores report holding, so take 80% of what is left
+ * after subtracting it rather than 80% of the setting.
+ */
+size_t available_doubles() {
+    const size_t total = Process::environment.get_memory() / sizeof(double);
+    const size_t held = MemoryClaim::committed();
+    return (size_t)(0.8 * (double)(total > held ? total - held : 0));
+}
+
+}  // namespace
 
 FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  std::map<std::string, SharedMatrix> matrix_cache,
@@ -152,7 +208,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     Cstack_vec.push_back(matrix_cache_["Cocc_B"]);
     Cstack_vec.push_back(matrix_cache_["Cvir_B"]);
 
-    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
+    size_t doubles = available_doubles();
     size_t max_MO = 0;
     for (auto& mat : Cstack_vec) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
@@ -187,6 +243,12 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
 
     // transform
     dfh_->set_release_core_AO_before_metric(true);
+    // Every name here is transformed exactly once -- the hybrid second round
+    // below starts from clear_transformations() -- so the pre-metric scratch
+    // copies can go as soon as the metric is folded into them.  That halves the
+    // scratch this transform needs, which is what a protein-sized dimer runs
+    // out of.  The flag is sticky, so it covers the second round too.
+    dfh_->set_release_pre_metric_tensors(true);
     dfh_->transform();
 
     // transformations specific for hybrid functional
@@ -277,14 +339,15 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     }
 
     // Check on memory real quick
-    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    size_t mem_size = nbf2 * auxiliary_->max_nprimitive() * nthread;
+    size_t doubles = available_doubles();
+    // The per-thread scratch allocated just below is max_function_per_shell() x nbf^2, so gate on
+    // that rather than on max_nprimitive(), which counts the primitives contracted into a shell and
+    // can be 1 for an uncontracted auxiliary basis while that same shell still holds 7 functions.
+    size_t mem_size = nbf2 * auxiliary_->max_function_per_shell() * nthread;
     if (mem_size > doubles) {
-        std::stringstream message;
-        double mem_gb = ((double)(mem_size) / 0.8 * sizeof(double));
-        message << "FDDS Dispersion requires at least nbf^2 * max_ang * nthread of memory." << std::endl;
-        message << "       After taxes this is " << std::setprecision(2) << mem_gb << " GB of memory.";
-        throw PSIEXCEPTION(message.str());
+        throw PSIEXCEPTION(too_little_memory("FDDS_Dispersion::project_densities()",
+                                             "nbf^2 * max_function_per_shell * nthread", mem_size, doubles,
+                                             true));
     }
 
     // Build result and temp vectors
@@ -464,14 +527,11 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     size_t naux = auxiliary_->nbf();
 
     // Check on memory real quick
-    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
+    size_t doubles = available_doubles();
     size_t mem_size = 2 * naux * nvir + naux * naux + nvir * nocc;
     if (mem_size > doubles) {
-        std::stringstream message;
-        double mem_gb = ((double)(mem_size) / 0.8 * sizeof(double));
-        message << "FDDS Dispersion requires at least naux * nvir + naux * naux of memory." << std::endl;
-        message << "       After taxes this is " << std::setprecision(2) << mem_gb << " GB of memory.";
-        throw PSIEXCEPTION(message.str());
+        throw PSIEXCEPTION(too_little_memory("FDDS_Dispersion::form_unc_amplitude()",
+                                             "2 * naux * nvir + naux^2 + nvir * nocc", mem_size, doubles));
     }
 
     // ==> Uncoupled Amplitudes <==
@@ -583,15 +643,21 @@ std::map<std::string, SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::stri
 
     // => Blocking <= //
 
-    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    long long int rem = doubles - 2 * nocc * nvir - 6 * naux * naux;
+    size_t doubles = available_doubles();
+    const size_t fixed = 2 * nocc * nvir + 6 * naux * naux;
+    const size_t per_occ = 7 * nvir * naux;
+    long long int rem = doubles - (long long int)fixed;
     if (rem < 0)
-        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_aux_matrices()");
+        throw PSIEXCEPTION(too_little_memory("FDDS_Dispersion::form_aux_matrices()",
+                                             "2 * nocc * nvir + 6 * naux^2 of fixed storage", fixed, doubles));
 
-    size_t maxo = rem / (7 * nvir * naux);
+    size_t maxo = rem / per_occ;
     maxo = (maxo > nocc ? nocc : maxo);
     if (maxo < 1)
-        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_aux_matrices()");
+        throw PSIEXCEPTION(too_little_memory("FDDS_Dispersion::form_aux_matrices()",
+                                             "the fixed storage plus one occupied block, "
+                                             "2 * nocc * nvir + 6 * naux^2 + 7 * nvir * naux",
+                                             fixed + per_occ, doubles));
 
     // => Scalars <= //
 
@@ -743,15 +809,21 @@ void FDDS_Dispersion::form_X(std::string monomer) {
     nthread = Process::environment.get_n_threads();
 #endif
 
-    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    long long int rem = doubles - nthread * nvir * nvir;
-    if (rem < 0) 
-        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_X()");
+    size_t doubles = available_doubles();
+    const size_t fixed = (size_t)nthread * nvir * nvir;
+    const size_t per_occ = 6 * nvir * naux;
+    long long int rem = doubles - (long long int)fixed;
+    if (rem < 0)
+        throw PSIEXCEPTION(
+            too_little_memory("FDDS_Dispersion::form_X()", "nthread * nvir^2 of fixed storage", fixed, doubles, true));
 
-    size_t maxo = rem / (6 * nvir * naux);
+    size_t maxo = rem / per_occ;
     maxo = (maxo > nocc ? nocc : maxo);
-    if (maxo < 1) 
-        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_X()");
+    if (maxo < 1)
+        throw PSIEXCEPTION(too_little_memory("FDDS_Dispersion::form_X()",
+                                             "the fixed storage plus one occupied block, "
+                                             "nthread * nvir^2 + 6 * nvir * naux",
+                                             fixed + per_occ, doubles, true));
 
     // => Tensor Slices <= //
 
@@ -865,18 +937,25 @@ void FDDS_Dispersion::form_Y(std::string monomer) {
     nthread = Process::environment.get_n_threads();
 #endif
 
-    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    long long int rem = doubles - nthread * nocc * nvir;
-    if (rem < 0) 
-        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_Y()");
+    size_t doubles = available_doubles();
+    const size_t fixed = (size_t)nthread * nocc * nvir;
+    long long int rem = doubles - (long long int)fixed;
+    if (rem < 0)
+        throw PSIEXCEPTION(
+            too_little_memory("FDDS_Dispersion::form_Y()", "nthread * nocc * nvir of fixed storage", fixed, doubles,
+                              true));
 
     size_t kov = nvir / nocc + 1; // Ratio of v/o, take ceiling for worst case
-    size_t maxo = rem / ((kov * kov + 4 * kov + 1) * nocc * naux);
+    const size_t per_occ = (kov * kov + 4 * kov + 1) * nocc * naux;
+    size_t maxo = rem / per_occ;
     size_t maxv = maxo * (kov - 1); 
     maxo = (maxo > nocc ? nocc : maxo);
     maxv = (maxv > nvir ? nvir : maxv);
-    if (maxo < 1) 
-        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_Y()");
+    if (maxo < 1)
+        throw PSIEXCEPTION(too_little_memory("FDDS_Dispersion::form_Y()",
+                                             "the fixed storage plus one occupied block, "
+                                             "nthread * nocc * nvir + (kov^2 + 4 * kov + 1) * nocc * naux",
+                                             fixed + per_occ, doubles, true));
 
     // => Tensor Slices <= //
 
@@ -978,10 +1057,11 @@ SharedMatrix FDDS_Dispersion::QR(std::string monomer) {
 
     // => Meomry Check <= //
 
-    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
+    size_t doubles = available_doubles();
     size_t req_mem = 2 * nov * naux + naux * naux + naux; 
-    if (doubles < req_mem) 
-        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::QR()");
+    if (doubles < req_mem)
+        throw PSIEXCEPTION(too_little_memory("FDDS_Dispersion::QR()", "2 * nocc * nvir * naux + naux^2 + naux",
+                                             req_mem, doubles));
 
     // => Tensor Slices <= //
 
