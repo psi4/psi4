@@ -219,6 +219,8 @@ jobs:
         -D CMAKE_C_COMPILER=${C_COMPILER} \
         -D CMAKE_Fortran_COMPILER=${F_COMPILER} \
         -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -D CMAKE_C_FLAGS="-Wall -Wextra" \
+        -D CMAKE_CXX_FLAGS="-Wall -Wextra" \
         -D ENABLE_PLUGIN_TESTING=ON \
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \

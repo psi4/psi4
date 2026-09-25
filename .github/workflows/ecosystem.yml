@@ -28,6 +28,8 @@ jobs:
             pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D CMAKE_C_FLAGS="-Wall -Wextra"
+              -D CMAKE_CXX_FLAGS="-Wall -Wextra"
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
@@ -40,6 +42,8 @@ jobs:
             pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D CMAKE_C_FLAGS="-Wall -Wextra"
+              -D CMAKE_CXX_FLAGS="-Wall -Wextra"
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
             # Notes:
@@ -58,7 +62,8 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.14/site-packages/numpy/_core/include"
-              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_C_FLAGS="-Wall -Wextra"
+              -D CMAKE_CXX_FLAGS="-Wall -Wextra -Wno-deprecated-declarations"
               -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
@@ -86,7 +91,8 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
-              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_C_FLAGS="-Wall -Wextra"
+              -D CMAKE_CXX_FLAGS="-Wall -Wextra -Wno-deprecated-declarations"
               -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
 
           - label: "Conda Clang (M-Silicon)"
@@ -101,7 +107,8 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
-              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_C_FLAGS="-Wall -Wextra"
+              -D CMAKE_CXX_FLAGS="-Wall -Wextra -Wno-deprecated-declarations"
               -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
 
           - label: "LLVM clang-cl (W)"
@@ -113,6 +120,8 @@ jobs:
             pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D CMAKE_C_FLAGS="-Wall -Wextra"
+              -D CMAKE_CXX_FLAGS="-Wall -Wextra"
               -D psi4_SKIP_ENABLE_Fortran=ON
 
           - label: "LLVM clang-cl (W)"
@@ -124,6 +133,8 @@ jobs:
             pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D CMAKE_C_FLAGS="-Wall -Wextra"
+              -D CMAKE_CXX_FLAGS="-Wall -Wextra"
               -D psi4_SKIP_ENABLE_Fortran=ON
 
             # Notes:
