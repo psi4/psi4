@@ -32,7 +32,7 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
- void export_benchmarks(py::module& m) {
+ void export_benchmarks(py::module_& m) {
     m.def("benchmark_blas1", &psi::benchmark_blas1, "max_dim"_a, "min_time"_a,
           "Perform benchmark traverse of BLAS 1 routines. Use up to *max_dim* with each routine run at least *min_time* [s].");
     m.def("benchmark_blas2", &psi::benchmark_blas2, "max_dim"_a, "min_time"_a,
