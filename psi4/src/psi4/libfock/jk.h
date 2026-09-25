@@ -43,7 +43,6 @@ PRAGMA_WARNING_POP
 #include "psi4/libfock/SplitJK.h"
 
 namespace psi {
-class MinimalInterface;
 class BasisSet;
 class Matrix;
 class TwoBodyAOInt;
@@ -379,8 +378,6 @@ class PSI_API JK {
     /**
     * Static instance constructor, used to get prebuilt DiskDFJK/DirectJK objects
     * using knobs in options.
-    * Nmat and sym are options for GTFock
-    * sym means that all density matrices will be symmetric
     * @return abstract JK object, tuned in with preset options
     */
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
@@ -821,62 +818,6 @@ class PSI_API DirectJK : public JK {
     * type on output file
     */
     void print_header() const override;
-};
-
-/** \brief Derived class extending the JK object to GTFock
- *
- *   Unfortunately GTFock needs to know the number of density
- *   matrices and whether they are symmetric at construction.
- *   These two points are not within the design considerations of
- *   the base JK object and so this adds a slight complication if you
- *   want to use GTFock under those circumstances.  To get around
- *   this, you'll need to manually build a GTFockJK
- *   object and pass it into the constructor.  Don't worry
- *   building a GTFockJK object is easy, take a look at
- *   the Hartree-Fock code in HF.cc
- *
- */
-class GTFockJK : public JK {
-   private:
-    /// The actual instance that does the implementing
-    std::shared_ptr<MinimalInterface> Impl_;
-    int NMats_ = 0;
-
-    std::string name() override { return "GTFockJK"; }
-    size_t memory_estimate() override;
-
-   protected:
-    /// Do we need to backtransform to C1 under the hood?
-    bool C1() const override { return true; }
-    /// Setup integrals, files, etc
-    void preiterations() override {}
-    /// Compute J/K for current C/D
-    void compute_JK() override;
-    /// Delete integrals, files, etc
-    void postiterations() override {}
-    /// I don't fell the need to further clutter the output...
-    void print_header() const override {}
-
-   public:
-    /** \brief Your public interface to GTFock
-     *
-     *  \param[in] Primary used by the base JK object, but not
-     *         by GTFock.  Long term, this should be changed,
-     *         but the reality is GTFock under the hood gets
-     *         its basis in the same way as JK::build_JK gets
-     *         Primary, so this shouldn't be an issue
-     *  \param[in] NMats The number of density matrices you are
-     *         passing in and consequently the number of Js and Ks
-     *         you'll be getting back
-     *  \param[in] AreSymm A flag specifying whether the density
-     *         matrices you'll be passing in are symmetric.
-     */
-    GTFockJK(std::shared_ptr<psi::BasisSet> Primary, size_t NMats, bool AreSymm);
-    /** \brief Your interface to GTFock that works well with libfock
-    *   GTFock needs number of densities and symmetric at initialization
-    *   This code calls GTFock once the number of densities was read from jk object
-    */
-    GTFockJK(std::shared_ptr<psi::BasisSet> Primary);
 };
 
 /**
