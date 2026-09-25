@@ -345,7 +345,8 @@ def scf_initialize(self):
         # and monomer B after monomer A, then cached the full grid on top of a 70 GiB JK and
         # were killed in their first iteration.  Charge what the JK may still allocate.  JKs
         # that cannot predict their footprint report 0 and keep the old treatment.
-        if jk.memory_estimate() > 0:
+        reused_jk_predictable = jk.memory_estimate() > 0
+        if reused_jk_predictable:
             jk_size = max(0, jk.memory() - jk.memory_held())
         else:
             jk_size = 0
@@ -411,7 +412,16 @@ def scf_initialize(self):
         if reserve_total > reserve_memory:
             core.print_out("      (reserve {}; this job is under-declared)\n".format(
                 "not taken" if reserve_memory == 0.0 else "capped at half the remaining budget"))
-        core.print_out("    JK allocation                   {:11.3f} [GiB]\n".format(gib(self.memory_jk_)))
+        if initialize_jk_obj:
+            core.print_out("    JK allocation                   {:11.3f} [GiB]\n".format(gib(self.memory_jk_)))
+        # A re-used JK keeps the grant it was built with and never sees memory_jk_, so show
+        # what it may still allocate per build, which is what the split above charged for it.
+        elif reused_jk_predictable:
+            core.print_out("    Re-used JK working budget       {:11.3f} [GiB]  of {:.3f} [GiB] granted\n".format(
+                gib(jk_size), gib(jk.memory())))
+        else:
+            core.print_out("    Re-used JK working budget           unknown  {} cannot predict its footprint\n".format(
+                jk.name()))
         if collocation_size:
             core.print_out("    Collocation cache               {:11.3f} [GiB]  of {:.3f} [GiB] full\n".format(
                 gib(self.memory_collocation_), gib(collocation_size)))
