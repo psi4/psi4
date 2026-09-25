@@ -259,7 +259,7 @@ void SADGuess::common_init() {
     print_ = options_.get_int("SAD_PRINT");
     debug_ = options_.get_int("DEBUG");
     if (options_["SOCC"].size() > 0 || options_["DOCC"].size() > 0)
-        PSIEXCEPTION("SAD guess not implemented for user-specified SOCCs and/or DOCCs yet");
+        throw PSIEXCEPTION("SAD guess not implemented for user-specified SOCCs and/or DOCCs yet");
 }
 void SADGuess::compute_guess() {
     timer_on("SAD Guess");
