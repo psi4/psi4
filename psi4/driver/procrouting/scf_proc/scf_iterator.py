@@ -302,7 +302,13 @@ def scf_initialize(self):
 
     # With an absolute reserve subtracted, the factor is only residual slop, so the 0.75
     # default is far too conservative; honour it if the user set it, otherwise use 0.95.
+    # When the reserve was not taken, nothing else is held back, and 0.95 hands an
+    # out-of-core DiskDFJK -- which really does fill its grant -- the whole setting: the
+    # SAPT(DFT) dHF dimer got 60.8 GiB of a 64 GiB job and was killed where the 0.75
+    # default had given it 48 GiB and finished.  Keep the default there.
     if core.has_option_changed("SCF", "SCF_MEM_SAFETY_FACTOR"):
+        safety_factor = core.get_option("SCF", "SCF_MEM_SAFETY_FACTOR")
+    elif reserve_memory == 0.0 and reserve_total > 0.0:
         safety_factor = core.get_option("SCF", "SCF_MEM_SAFETY_FACTOR")
     else:
         safety_factor = 0.95
