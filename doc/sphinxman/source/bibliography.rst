@@ -833,3 +833,13 @@ Bibliography
    *J. Chem. Phys.* **152**, 184102 (2020)
    https://doi.org/10.1063/5.0004997
 
+.. [Almloef:1982:385]
+   J. Almlöf, K. Faegri Jr, and K. Korsell
+   *J. Comput. Chem.* **3**, 385 (1982).
+   https://doi.org/10.1002/jcc.540030314
+
+.. [Parrish:2016:131101]
+   R. M. Parrish, F. Liu, and T. J. Martínez
+   *J. Chem. Phys.* **144**, 131101 (2016).
+   https://doi.org/10.1063/1.4945277
+
