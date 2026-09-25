@@ -90,6 +90,35 @@ funcs.append({
 })
 
 funcs.append({
+    "name": "XYG3",
+    "x_functionals": {
+        "LDA_X": {
+            "alpha": -0.0140  # 1 - aX - a0
+        },
+        "GGA_X_B88": {
+            "alpha": 0.2107  # a0
+        }
+    },
+    "x_hf": {
+        "alpha": 0.8033  # aX
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.6789  # 1 - aC
+        }
+    },
+    "c_mp2": {
+        "alpha": 0.3211  # aC
+    },
+    "xdh": {
+        "orbital_functional": "B3LYP",
+    },
+    "citation": '    Y. Zhang, X. Xu, W. A. Goddard III, Proc. Natl. Acad. Sci. U.S.A. 106, 4963-4968, 2009\n',
+    "description": '    XYG3 xDH Double Hybrid Exchange-Correlation Functional\n',
+    # composition from Eq. 7 of https://pubs.acs.org/doi/10.1021/ct100466k
+})
+
+funcs.append({
     "name": "DSD-BLYP",
     "x_functionals": {
         "GGA_X_B88": {

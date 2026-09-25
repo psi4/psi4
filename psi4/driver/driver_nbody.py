@@ -452,6 +452,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                 "specification": specification,
                 "keywords": mbkwargs,
                 "driver": driver,
+                "protocols": {"component_results": "all"},
             },
             molecule=molecule.to_schema(dtype=3),
         )
@@ -705,6 +706,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             grad = core.Matrix.from_array(nbody_model.properties.return_gradient)
             wfn.set_hessian(ret)
             wfn.set_gradient(grad)
+
+        wfn.qcschema = nbody_model
 
         if return_wfn:
             return (ret, wfn)
