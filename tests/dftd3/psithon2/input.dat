@@ -30,7 +30,6 @@ set globals {
     SCF_TYPE DF
     PRINT 1
     R_CONVERGENCE 11
-    JOBTYPE SP
     GUESS CORE
 }
 
