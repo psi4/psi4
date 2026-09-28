@@ -1164,7 +1164,11 @@ void export_mints(py::module& m) {
         .def("original_coef", &GaussianShell::original_coef, "Return unnormalized coefficient of the pi'th primitive",
              "pi"_a)
         .def("erd_coef", &GaussianShell::erd_coef, "Return ERD normalized coefficient of pi'th primitive", "pi"_a)
-        .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", "pi"_a);
+        .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", "pi"_a)
+        .def("nval", &GaussianShell::nval,
+             "Return the radial power of the pi'th primitive of an ECP shell, as the basis file gives it: "
+             "the term is r^(nval-2) exp(-a r^2), as libecpint evaluates it",
+             "pi"_a);
 
     py::enum_<PrimitiveType>(m, "PrimitiveType", "May be Normalized or Unnormalized")
         .value("Normalized", Normalized)

@@ -136,6 +136,7 @@ option(ENABLE_OpenOrbitalOptimizer "Enables the OpenOrbitalOptimizer library (re
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_qcmanybody "Enables qcmanybody for n-body/BSSE workflows (can also be added at runtime)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
+option(ENABLE_trexio "Enables TrexIO file I/O, built with the HDF5 back end (requires HDF5; can also be added at runtime)" OFF)
 option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_psi4fockci "Enables Psi4FockCI plugin (can also be added at runtime)" OFF)
 option(ENABLE_cct3 "Enables cct3 plugin (requires Fortran; can also be added at runtime)" OFF)
@@ -271,6 +272,7 @@ ExternalProject_Add(psi4-core
            qcmanybody_external
            openorbitaloptimizer_external
            optking_external
+           trexio_external
            simint_external
            libxc_external
            mdi_external
