@@ -22,6 +22,7 @@ foreach(dir
   optking
   simint
   cint
+  trexio
   libxc
   brianqc
   ddx

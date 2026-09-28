@@ -41,6 +41,7 @@ from .ipi_broker import ipi_broker
 from .molutil import *
 from .p4util.fchk import *
 from .p4util.fcidump import *
+from .p4util.trexio import *
 from .p4util.python_helpers import basis_helper, pcm_helper, set_module_options, set_options
 from .p4util.testing import *
 from .p4util.text import *
