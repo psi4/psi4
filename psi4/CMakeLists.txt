@@ -256,6 +256,11 @@ get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
 
+find_package(libspill 0.1 CONFIG REQUIRED)  # scratch/out-of-core I/O backend behind libpsio
+get_property(_loc TARGET libspill::spill PROPERTY LOCATION)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using libspill${ColourReset}: ${_loc} (version ${libspill_VERSION})")
+
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)
 elseif(UNIX)

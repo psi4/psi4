@@ -11,6 +11,7 @@ foreach(dir
   einsums
   gau2grid
   gdma
+  libspill
   libint2
   mdi
   pcmsolver

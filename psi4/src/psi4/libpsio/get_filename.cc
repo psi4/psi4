@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
@@ -77,5 +78,19 @@ void PSIO::get_filename(size_t unit, char **name, bool remove_namespace) const {
 
     // assume that the default has been provided already
     abort();
+}
+
+/* Compose the full on-disk path for a unit: PSIOManager's directory for this
+ * file number, the name above, and the unit number. #3515 factored this out of
+ * open.cc; open.cc is gone with the rest of the I/O core, so it lives here, in
+ * the file that owns filename composition. PSIOManager's psiclean() unlinks
+ * exactly the strings this produces, so nothing may open a scratch file by any
+ * other path. */
+std::string PSIO::get_unit_filename(size_t unit) const {
+    char *name;
+    get_filename(unit, &name);
+    std::string full_path = PSIOManager::shared_object()->get_file_path(unit) + name + "." + std::to_string(unit);
+    free(name);
+    return full_path;
 }
 }  // namespace psi
