@@ -245,15 +245,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     relatively fast, and only happens once, so don't cheap out on the radial points! -*/
     options.add_int("ZORA_RADIAL_POINTS", 140);
 
-	/*- Number of spherical points for the ZORA effective potential grid -*/
+    /*- Number of spherical points for the ZORA effective potential grid -*/
     options.add_int("ZORA_SPHERICAL_POINTS", 2030);
 
     /*- Pruning scheme for the ZORA effective potential grid. ``P_slater`` is the best option if
     you must prune, but ``none`` is recommended. ``Robust`` and ``Treutler`` are not recommended
     for the ZORA grid as they cut too many points near the nuclear cusp. !expert -*/
     options.add_str("ZORA_PRUNING_SCHEME", "NONE", "NONE P_SLATER ROBUST LOG_SLATER TREUTLER");
-	
-	/*- Basis tolerance for the ZORA effective potential grid !expert -*/
+    
+    /*- Basis tolerance for the ZORA effective potential grid !expert -*/
     options.add_double("ZORA_BASIS_TOLERANCE", 1e-12);
 
     /*- Compute the non-relativistic kinetic energy with the ZORA code.
@@ -1484,11 +1484,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
             forcibly select a sub-algorithm (usually only for debugging or profiling).
             Presently, ``SCF_TYPE=DF``, ``SCF_TYPE=MEM_DF``, and ``SCF_TYPE=DISK_DF``
-	        can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
-	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected.
-	        ``SCF_TYPE=CD`` has no out-of-core sub-algorithm, so it accepts only ``AUTO`` and
-	        ``INCORE``; any other value raises an exception. !expert -*/
-	    options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
+            can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
+            ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected.
+            ``SCF_TYPE=CD`` has no out-of-core sub-algorithm, so it accepts only ``AUTO`` and
+            ``INCORE``; any other value raises an exception. !expert -*/
+        options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
         /*- Memory safety factor for allocating JK -*/
@@ -1729,8 +1729,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
         options.add_int("DF_INTS_NUM_THREADS", 0);
         /*- IO caching for CP corrections, etc. Previous to v1.10, changing this selected Disk_DF over Mem_DF.
-	That is, setting this forced DiskDFJK when SCF_TYPE=DF. Starting with v1.10, changing this affects 
- 	|globals__scf_type| = ``CD`` or ``DISK_DF`` but does not force ``DISK_DF`` when given ``DF``. !expert -*/
+    That is, setting this forced DiskDFJK when SCF_TYPE=DF. Starting with v1.10, changing this affects 
+     |globals__scf_type| = ``CD`` or ``DISK_DF`` but does not force ``DISK_DF`` when given ``DF``. !expert -*/
         options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
         /*- Fitting Condition, i.e. eigenvalue threshold for RI basis. Analogous to S_TOLERANCE !expert -*/
         options.add_double("DF_FITTING_CONDITION", 1.0E-10);
@@ -2104,6 +2104,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SEKINO", false);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
+    /*- Maximum number of DIIS vectors to use. -*/
+    options.add_int("DIIS_MAX_VECS", 8);
         /*- The algorithm to use for the $\left\langle VV||VV \right\rangle$ terms -*/
         options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
         /*- Type of ABCD algorithm will be used -*/
@@ -2345,6 +2347,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("R_CONVERGENCE", 1e-7);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", 1);
+    /*- Maximum number of DIIS vectors. -*/
+    options.add_int("DIIS_MAX_VECS", 8);
         /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
         (default) for dipole polarizabilities, ``ROTATION`` for specific rotations,
         ``ROA`` for Raman Optical Activity (``ROA_TENSOR`` for each displacement),
@@ -2526,6 +2530,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("CC_NUM_THREADS", 1);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
+        /*- Set the maximum number of DIIS vectors to use. -*/
+        options.add_int("DIIS_MAX_VECS", 8);
         /*- -*/
         options.add_bool("T2_COUPLED", false);
         /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
@@ -3400,7 +3406,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- For certain |globals__mp2_type| algorithms that have internal sub-algorithms
             depending on available memory or other hardware constraints, select a sub-algorithm
             Presently, ``MP2_TYPE=DF`` and ``MP2_TYPE=CONV``
-	        can have ``INCORE`` and ``DISK`` selected. In future, ``AUTO`` will be added. -*/
+            can have ``INCORE`` and ``DISK`` selected. In future, ``AUTO`` will be added. -*/
         options.add_str("F12_SUBTYPE", "INCORE", "INCORE DISK");
         /*- Whether to read-in stored integrals from previous computation -*/
         options.add_bool("F12_READ_INTS", false);

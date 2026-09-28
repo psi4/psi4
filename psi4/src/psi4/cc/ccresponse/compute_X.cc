@@ -47,26 +47,26 @@
 namespace psi {
 namespace ccresponse {
 
-void init_X(const char *pert, int irrep, double omega);
-void sort_X(const char *pert, int irrep, double omega);
-void cc2_sort_X(const char *pert, int irrep, double omega);
-void X1_build(const char *pert, int irrep, double omega);
-void X2_build(const char *pert, int irrep, double omega);
-void cc2_X1_build(const char *pert, int irrep, double omega);
-void cc2_X2_build(const char *pert, int irrep, double omega);
-double converged(const char *pert, int irrep, double omega);
-void save_X(const char *pert, int irrep, double omega);
-void print_X(const char *pert, int irrep, double omega);
-void update_X(const char *pert, int irrep, double omega);
-void diis(int iter, const char *pert, int irrep, double omega);
-double pseudopolar(const char *pert, int irrep, double omega);
+void init_X(const char* pert, int irrep, double omega);
+void sort_X(const char* pert, int irrep, double omega);
+void cc2_sort_X(const char* pert, int irrep, double omega);
+void X1_build(const char* pert, int irrep, double omega);
+void X2_build(const char* pert, int irrep, double omega);
+void cc2_X1_build(const char* pert, int irrep, double omega);
+void cc2_X2_build(const char* pert, int irrep, double omega);
+double converged(const char* pert, int irrep, double omega);
+void save_X(const char* pert, int irrep, double omega);
+void print_X(const char* pert, int irrep, double omega);
+void update_X(const char* pert, int irrep, double omega);
+void diis(int iter, const char* pert, int irrep, double omega);
+double pseudopolar(const char* pert, int irrep, double omega);
 void cleanup();
 void exit_io();
-void amp_write(const char *pert, int irrep, double omega);
+void amp_write(const char* pert, int irrep, double omega);
 
-void analyze(const char *pert, int irrep, double omega);
+void analyze(const char* pert, int irrep, double omega);
 
-void compute_X(const char *pert, int irrep, double omega) {
+void compute_X(const char* pert, int irrep, double omega) {
     int i, iter = 0, done = 0;
     double rms, polar, X2_norm;
     char lbl[32];
@@ -119,7 +119,7 @@ void compute_X(const char *pert, int irrep, double omega) {
 
             break;
         }
-        if (params.diis) diis(iter, pert, irrep, omega);
+        if (params.diis && params.max_diis_vecs > 0) diis(iter, pert, irrep, omega);
         save_X(pert, irrep, omega);
         if (params.wfn == "CC2")
             cc2_sort_X(pert, irrep, omega);
