@@ -33,7 +33,6 @@ Miscellaneous tools for driver and users.
 from .exceptions import *
 from .fchk import *
 from .fcidump import *
-from .inpsight import *
 from .numpy_helper import *
 from .optproc import *
 from .p4regex import *
