@@ -429,7 +429,10 @@ class HF : public Wavefunction {
 
     // Energies data
     void set_energies(std::string key, double value) { energies_[key] = value; }
-    double get_energies(std::string key) { return energies_[key]; }
+    double get_energies(std::string key) const {
+        auto it = energies_.find(key);
+        return it == energies_.end() ? 0.0 : it->second;
+    }
 
     // External potentials
     void clear_external_potentials() { external_potentials_.clear(); }
