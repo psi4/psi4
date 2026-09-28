@@ -2,6 +2,7 @@ list(APPEND sources
   exceptions
   fcidump
   fchk
+  trexio
   inpsight
   numpy_helper
   optproc
