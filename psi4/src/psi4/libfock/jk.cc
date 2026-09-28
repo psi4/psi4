@@ -354,10 +354,8 @@ void JK::compute_D() {
 }
 void JK::allocate_JK() {
     // Allocate J/K in the case that the algorithm uses USOs, so AO2USO will not allocate.
-    bool same = true;
-    if (J_.size() != D_.size()) {
-        same = false;
-    } else {
+    bool same = J_.size() == D_.size() && (!do_K_ || K_.size() == D_.size()) && (!do_wK_ || wK_.size() == D_.size());
+    if (same) {
         for (size_t N = 0; N < D_.size(); N++) {
             if (D_[N]->symmetry() != J_[N]->symmetry()) same = false;
         }
