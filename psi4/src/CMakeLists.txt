@@ -19,9 +19,19 @@ target_link_libraries(core
   PRIVATE
     # pybind11::module includes Python headers, pybind11::headers, Python::Module
     pybind11::module
-    pybind11::lto
     pybind11::windows_extras
 )
+# pybind11::lto would attach -flto only to core.cc + export_*.cc, which is a
+# small slice of the codebase since the per-module static libs built by
+# psi4_add_module aren't LTO-compiled. When psi4_ENABLE_IPO is ON, full IPO
+# is applied to every module and to core via INTERPROCEDURAL_OPTIMIZATION, so
+# pybind11::lto would be redundant (and double-toggling LTO has been a
+# source of linker warnings).
+if(NOT psi4_ENABLE_IPO)
+    target_link_libraries(core PRIVATE pybind11::lto)
+else()
+    set_target_properties(core PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 pybind11_extension(core)
 if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
     # Strip unnecessary sections of the binary on Linux/macOS
