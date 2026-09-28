@@ -48,7 +48,6 @@ set = {
 	reference rhf
 	dft_radial_scheme em
 	dft_radial_points 50
-	dft_spherical_scheme lebedev
 	dft_spherical_points 110
 	scf_type direct
 	df_scf_guess False
