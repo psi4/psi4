@@ -360,9 +360,6 @@ class HF : public Wavefunction {
     // potentials.  TDC, 5/23/12.
     virtual void form_H();
 
-    /// Do any needed integral JK setup
-    virtual void initialize_gtfock_jk();
-
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
 

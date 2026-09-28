@@ -59,7 +59,6 @@ PRAGMA_WARNING_POP
 #include "psi4/libpsi4util/exception.h"
 
 namespace psi {
-class MinimalInterface;
 class BasisSet;
 class Matrix;
 class TwoBodyAOInt;

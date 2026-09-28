@@ -233,8 +233,7 @@ std::pair<double, std::vector<arma::mat>> SADGuess::fock_builder(const OpenOrbit
 // Parse options: either use DF or exact integrals.
 static bool SAD_use_fitting(const Options& opt) {
     std::string jk_type(opt.get_str("SAD_SCF_TYPE"));
-    if ((jk_type == "DIRECT") || (jk_type == "PK") || (jk_type == "OUT_OF_CORE") || (jk_type == "CD") ||
-        (jk_type == "GTFOCK")) {
+    if ((jk_type == "DIRECT") || (jk_type == "PK") || (jk_type == "OUT_OF_CORE") || (jk_type == "CD")) {
         return false;
     }
     if ((jk_type == "DF") || (jk_type == "MEM_DF") || (jk_type == "DISK_DF")) {
