@@ -107,6 +107,8 @@ CharacterTable::~CharacterTable() {
 }
 
 CharacterTable& CharacterTable::operator=(const CharacterTable& ct) {
+    if (this == &ct) return *this;
+
     nt = ct.nt;
     pg = ct.pg;
     nirrep_ = ct.nirrep_;
