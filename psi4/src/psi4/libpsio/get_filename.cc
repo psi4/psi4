@@ -31,48 +31,23 @@
  \ingroup PSIO
  */
 
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
 
 namespace psi {
 
-void PSIO::get_filename(size_t unit, char **name, bool remove_namespace) const {
-    std::string kval;
-    std::string dot(".");
-    std::string ns = dot + pid_;
-    ns += (default_namespace_ == "" || remove_namespace) ? "" : dot + default_namespace_;
-    // std::string path = PSIOManager::shared_object()->get_file_path(unit);
-    // printf("%s %s: %d\n", path.c_str(), ns.c_str(), unit);
-    //*name = strdup((path + ns).c_str());
-    // return;
+std::string PSIO::get_filename(size_t unit, bool remove_namespace) const {
+    std::string ns = "." + pid_;
+    if (!(default_namespace_.empty() || remove_namespace)) ns += "." + default_namespace_;
 
-    kval = filecfg_kwd("PSI", "NAME", unit);
-    if (!kval.empty()) {
-        kval = kval + ns;
-        *name = strdup(kval.c_str());
-        return;
-    }
-    kval = filecfg_kwd("PSI", "NAME", -1);
-    if (!kval.empty()) {
-        kval = kval + ns;
-        *name = strdup(kval.c_str());
-        return;
-    }
-    kval = filecfg_kwd("DEFAULT", "NAME", unit);
-    if (!kval.empty()) {
-        kval = kval + ns;
-        *name = strdup(kval.c_str());
-        return;
-    }
-    kval = filecfg_kwd("DEFAULT", "NAME", -1);
-    if (!kval.empty()) {
-        kval = kval + ns;
-        *name = strdup(kval.c_str());
-        return;
+    for (const char *kwdgrp : {"PSI", "DEFAULT"}) {
+        for (int u : {static_cast<int>(unit), -1}) {
+            const std::string &kval = filecfg_kwd(kwdgrp, "NAME", u);
+            if (!kval.empty()) return kval + ns;
+        }
     }
 
     // assume that the default has been provided already
