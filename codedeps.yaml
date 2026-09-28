@@ -1552,6 +1552,27 @@ data:
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
       
+  - project: trexio
+    use:
+      added: "1.12"
+      required: false
+      required_note: "Allows writing and reading TrexIO files (psi4.trexio, trexio_from_file, trexio_to_wavefunction)."
+      buildable: true
+      buildtime: false
+      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
+      cms: true
+    repository:
+      host: url
+      url: https://files.pythonhosted.org/packages/65/e1/9deb3a2f66d322e0ff3c850463798c5c9197d37a2914e612701b40d7b030/trexio-2.6.1.tar.gz
+      url_note: "The PyPI sdist, not a GitHub tarball: python/src (the C sources and SWIG wrapper) is generated and only the sdist carries it."
+    cmake:
+      name: trexio
+      constraint: "ATLEAST 2.5.0"
+      enable: ENABLE_trexio
+      target: null
+    conda: null
+      # conda-forge's trexio is the C library only; there is no package with the
+      # Python module. Psi4 builds that itself, with the HDF5 back end.
   - project: openorbitaloptimizer
     use:
       added: "1.10"

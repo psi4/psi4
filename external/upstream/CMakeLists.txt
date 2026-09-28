@@ -21,6 +21,7 @@ foreach(dir
   openorbitaloptimizer
   optking
   simint
+  trexio
   libxc
   brianqc
   ddx
