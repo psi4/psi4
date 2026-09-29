@@ -197,11 +197,15 @@ def _scf_memory_reserve(wfn):
         points_mem = ansatz_scale * nthread * (3.38 * max_points * max_functions +
                                                1.887 * max_functions**2)
 
-    # compute_JK's per-call buffers.  DFHelper does size these against its own grant, but
-    # the BLAS/libint working set that sits on top of the accounted T1/T2/C_buffers is
-    # not: the measured ratio of real high-water to accounted buffers is 1.36-1.69 over
-    # six MemDFJK configurations, hence the 1.5.  The naux*nocc*nbf term is the largest
-    # Q-block case and so an upper bound -- deliberately, since this is a guard.
+    # compute_JK's per-call buffers, but only the part that lands outside the JK's grant.
+    # The large ones -- DFHelper's T1/T2 and DiskDFJK's E_left/E_right/Q_temp, which scale
+    # as naux*nocc*nbf -- are blocked against the grant itself (Qshell_blocks_for_JK_build,
+    # DiskDFJK::max_rows), so charging them here as well counted them twice: the omol25
+    # SAPT(DFT) dHF dimer was told it needed 136 GiB and peaked at 54.9.  What escapes the
+    # grant is the BLAS/libint working set on top of those blocks, plus the per-thread C
+    # buffers.  Over 45 SCFs in five such jobs (24 threads, grants of 27-83 GiB, MemDFJK and
+    # DiskDFJK) the high-water above base + grant + cache + the terms above never exceeded
+    # 0.16 * naux*nocc*nbf; 0.2 keeps that as a margin.
     scf_type = core.get_global_option("SCF_TYPE").upper()
     naux = 0
     if "DF" in scf_type and "+" not in scf_type:
@@ -209,7 +213,7 @@ def _scf_memory_reserve(wfn):
             naux = wfn.get_basisset("DF_BASIS_SCF").nbf()
         except Exception:
             naux = 0
-    jk_mem = 1.5 * (naux * nocc * nbf + nthread * nbf * max(nocc, nbf) + nbf**2)
+    jk_mem = 0.2 * naux * nocc * nbf + 1.5 * (nthread * nbf * max(nocc, nbf) + nbf**2)
 
     return {
         "base": base,
@@ -278,6 +282,21 @@ def scf_initialize(self):
     # how much this SCF actually needs; it just is not taken out of the split.
     process_reserve = reserve_terms["base"]
     reserve_total = sum(reserve_terms.values()) - process_reserve
+
+    # What the process is resident for beyond both the stores that declared themselves and
+    # the interpreter we just reserved for: the holes glibc leaves where a released cache
+    # used to be, the matrices and grids of wavefunctions that are still alive, and anything
+    # else in this process that never announced itself.  It caps the cache below, and when the
+    # declaration is a real budget it is also held back from the split; it is never taken from
+    # a nominal one, where a job that declares a megabyte to force an out-of-core algorithm
+    # would be handed nothing at all.
+    if resident_memory is None:
+        overhead_memory = 0.0
+    else:
+        overhead_memory = max(0.0, resident_memory - committed_memory - process_reserve)
+    held_memory = committed_memory + overhead_memory
+
+    resident_hold = 0.0
     if reserve_total >= unclaimed_memory:
         # The declaration is smaller than the parts of this SCF that are not negotiable, so
         # it is not a budget at all -- a test that asks for two megabytes to force a disk
@@ -287,18 +306,11 @@ def scf_initialize(self):
         reserve_memory = 0.0
     else:
         reserve_memory = min(reserve_total, 0.5 * unclaimed_memory)
-
-    # What the process is resident for beyond both the stores that declared themselves and
-    # the interpreter we just reserved for: the holes glibc leaves where a released cache
-    # used to be, and anything else in this process that never announced itself.  It is not
-    # subtracted from the budget -- the memory keyword has always described the big arrays
-    # rather than the process, and a job that declares a megabyte to force an out-of-core
-    # algorithm would be handed nothing at all -- it only caps the cache below.
-    if resident_memory is None:
-        overhead_memory = 0.0
-    else:
-        overhead_memory = max(0.0, resident_memory - committed_memory - process_reserve)
-    held_memory = committed_memory + overhead_memory
+        # A real budget also has to cover what is already resident without a ledger entry.
+        # The JK never sees that memory and an out-of-core DiskDFJK fills whatever it is
+        # granted: the SAPT(DFT) monomers in the dimer basis start with 9 GiB of it, which
+        # an oversized JK-transient term used to cover by accident.  Same half cap.
+        resident_hold = min(overhead_memory, max(0.0, 0.5 * unclaimed_memory - reserve_memory))
 
     # With an absolute reserve subtracted, the factor is only residual slop, so the 0.75
     # default is far too conservative; honour it if the user set it, otherwise use 0.95.
@@ -312,7 +324,7 @@ def scf_initialize(self):
         safety_factor = core.get_option("SCF", "SCF_MEM_SAFETY_FACTOR")
     else:
         safety_factor = 0.95
-    total_memory = max(0.0, unclaimed_memory - reserve_memory) * safety_factor
+    total_memory = max(0.0, unclaimed_memory - reserve_memory - resident_hold) * safety_factor
 
     # Figure out how large the DFT collocation matrices are
     vbase = self.V_potential()
@@ -407,6 +419,8 @@ def scf_initialize(self):
             core.print_out("    Held by live JK / grid caches   {:11.3f} [GiB]\n".format(gib(committed_memory)))
         if overhead_memory > 0.01 * 1024**3 / 8:
             core.print_out("    Resident but unaccounted        {:11.3f} [GiB]".format(gib(overhead_memory)))
+            if resident_hold:
+                core.print_out("  {:.3f} [GiB] held back from the split".format(gib(resident_hold)))
             if withheld_memory:
                 core.print_out("  {:.3f} [GiB] withheld from the cache".format(gib(withheld_memory)))
             core.print_out("\n")
