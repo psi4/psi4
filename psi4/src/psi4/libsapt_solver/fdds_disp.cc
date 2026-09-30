@@ -212,15 +212,37 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     size_t max_MO = 0;
     for (auto& mat : Cstack_vec) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
+    // The FDDS transforms dominate SAPT(DFT)'s memory and scratch footprint, so
+    // which DFHelper storage algorithm they use matters more here than anywhere
+    // else.  STORE is the only one that both keeps the AO integrals in the
+    // Schwarz-screened sparse layout -- DIRECT_iaQ stores them densely, which on
+    // a protein-sized dimer is a third explicit zeros -- and folds the fitting
+    // metric into the AO integrals, so each transformed tensor is written once,
+    // in final form, instead of being written, read back, contracted with the
+    // metric and written again.  Both rounds below want exactly that, so STORE
+    // is the default; the older paths stay reachable for comparison.
+    std::string round1_algo = options.get_str("SAPT_FDDS_DISP_DF_ALGORITHM");
+    if (round1_algo == "AUTO") round1_algo = "STORE";
+    if (round1_algo == "LEGACY") round1_algo = (is_hybrid_ ? "DIRECT" : "DIRECT_iaQ");
+    if (round1_algo == "DIRECT_IAQ") round1_algo = "DIRECT_iaQ";
+    // DFHelper::filename_maker() gives every DIRECT_iaQ transformation the
+    // (p,q,Q) final layout and ignores the requested op, which is why the hybrid
+    // round used to need DIRECT: it asked for a "Qpq" tensor.  It no longer does
+    // -- every transformation below is "pqQ" -- so DIRECT_iaQ is legal for
+    // hybrids too.  LEGACY still maps to DIRECT there, because its job is to
+    // reproduce what this code did before, not to be the best available choice.
+    // The hybrid second round only ever had a dense option; give it the sparse
+    // one when it is available and leave it alone otherwise.
+    std::string round2_algo = (round1_algo == "STORE" ? "STORE" : "DIRECT_iaQ");
+
     // Build DFHelper
     dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
-    if (is_hybrid_) {
-        dfh_->set_method("DIRECT");
-    } else {
-        dfh_->set_method("DIRECT_iaQ");
-    }
+    dfh_->set_method(round1_algo);
     dfh_->set_nthreads(nthread);
+    // Power zero: this round wants the bare three-index integrals, and DFHelper
+    // now recognises that as "no metric" rather than building and contracting an
+    // identity.
     dfh_->set_metric_pow(0.0);
     dfh_->initialize();
     dfh_->print_header();
@@ -237,69 +259,111 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     if (is_hybrid_) {
         dfh_->add_transformation("raQ", "r", "a", "pqQ");
         dfh_->add_transformation("sbQ", "s", "b", "pqQ");
-        dfh_->add_transformation("Qar", "a", "r", "Qpq");
-        dfh_->add_transformation("Qbs", "b", "s", "Qpq");
+        // (Q|ar) used to be transformed a third time, into its own scratch file,
+        // purely so QR() could read it column-major.  It holds exactly the same
+        // numbers as (ar|Q), which is transformed here anyway and outlives the
+        // whole method, so QR() transposes that instead.  One fewer MO transform
+        // per monomer, and 37 GiB of scratch never written on a protein-sized
+        // dimer.
     }
 
     // transform
     dfh_->set_release_core_AO_before_metric(true);
-    // Every name here is transformed exactly once -- the hybrid second round
-    // below starts from clear_transformations() -- so the pre-metric scratch
-    // copies can go as soon as the metric is folded into them.  That halves the
-    // scratch this transform needs, which is what a protein-sized dimer runs
-    // out of.  The flag is sticky, so it covers the second round too.
+    // Only the DIRECT/DIRECT_iaQ paths produce pre-metric scratch at all.  Every
+    // name here is transformed exactly once -- the hybrid second round below
+    // starts from clear_transformations() -- so those copies can go as soon as
+    // the metric is folded into them.  That halves the scratch those paths need,
+    // which is what a protein-sized dimer runs out of.  The flag is sticky, so
+    // it covers the second round too.
     dfh_->set_release_pre_metric_tensors(true);
     dfh_->transform();
 
     // transformations specific for hybrid functional
 
-    if (is_hybrid_) {
-        // Contracted 3-index integrals to reproduce 4-index ERI
+    // The hybrid second round transforms (aa|R), (ar|R), (rr|R) for A and the
+    // same three for B, and QR()/form_X()/form_Y() then consume one monomer's
+    // set and release it.  Nothing ever reads the two sets together, so
+    // transforming both in one pass only makes them coexist on scratch: on a
+    // protein-sized dimer (rr|R) and (ss|R) alone are 283 and 322 GiB.  Doing
+    // one monomer at a time costs a second AO integral build and metric fold
+    // and takes roughly a third off the scratch high-water mark.
+    bool split_monomers = is_hybrid_ && options.get_bool("SAPT_FDDS_DISP_SPLIT_MONOMERS");
+
+    auto round2_transform = [&](const std::vector<std::string>& monomers, bool rebuild_ao) {
         // Clear spaces to re-order spaces and transformations in DFHelper
-        // Clear transformations to avoid overwriting pqQ tensors 
+        // Clear transformations to avoid overwriting pqQ tensors
         dfh_->clear_spaces();
         dfh_->clear_transformations();
-        dfh_->set_method("DIRECT_iaQ");
+        dfh_->set_method(round2_algo);
         dfh_->set_metric_pow(-0.5);
-        dfh_->initialize();
+        // initialize() rebuilds the AO integrals.  The first pass has to: this
+        // round folds a different metric power into them than round one did.
+        // A second pass only has to when the first pass gave the in-core copy
+        // back before the metric contraction -- if the AO integrals are on
+        // disk they are still there, still folded against this round's metric,
+        // and rebuilding them means paying for the whole three-index integral
+        // build and rewriting the file for nothing.
+        if (rebuild_ao) dfh_->initialize();
 
-        dfh_->add_space("a", Cstack_vec[0]);
-        dfh_->add_space("r", Cstack_vec[1]);
-        dfh_->add_space("b", Cstack_vec[2]);
-        dfh_->add_space("s", Cstack_vec[3]);
-
-        dfh_->add_transformation("aaR", "a", "a", "pqQ");
-        dfh_->add_transformation("arR", "a", "r", "pqQ");
-        dfh_->add_transformation("rrR", "r", "r", "pqQ");
-        dfh_->add_transformation("bbR", "b", "b", "pqQ");
-        dfh_->add_transformation("bsR", "b", "s", "pqQ");
-        dfh_->add_transformation("ssR", "s", "s", "pqQ");
+        for (const auto& monomer : monomers) {
+            bool is_A = (monomer == "A");
+            std::string o = (is_A ? "a" : "b");
+            std::string v = (is_A ? "r" : "s");
+            dfh_->add_space(o, Cstack_vec[is_A ? 0 : 2]);
+            dfh_->add_space(v, Cstack_vec[is_A ? 1 : 3]);
+            dfh_->add_transformation(o + o + "R", o, o, "pqQ");
+            dfh_->add_transformation(o + v + "R", o, v, "pqQ");
+            dfh_->add_transformation(v + v + "R", v, v, "pqQ");
+        }
         dfh_->set_release_core_AO_before_metric(true);
         dfh_->transform();
-    }
+        dfh_->clear_spaces();
+    };
 
-    dfh_->clear_spaces();
-
-    if (is_hybrid_) {
+    auto round2_consume = [&](const std::string& monomer) {
         // QR Factorization of (ar|Q)
         timer_on("FDDS: QR");
-        R_A_ = QR("A");
-        R_B_ = QR("B");
+        (monomer == "A" ? R_A_ : R_B_) = QR(monomer);
         timer_off("FDDS: QR");
 
         // form (ar|(Q)X|Q) = (ar'|a'r) (a'r'|(Q)|Q)
         timer_on("FDDS: Form X");
-        form_X("A");
-        form_X("B");
+        form_X(monomer);
         timer_off("FDDS: Form X");
 
         // form (ar|(Q)Y|Q) = (aa'|rr') (a'r'|(Q)|Q)
         timer_on("FDDS: Form Y");
-        form_Y("A");
-        form_Y("B");
+        form_Y(monomer);
         timer_off("FDDS: Form Y");
-    }
+    };
 
+    // transform() is the only consumer of the three-index AO integrals, so once
+    // the last one has run they are dead weight -- and they are the biggest
+    // single thing DFHelper owns, a couple of hundred GiB on a protein-sized
+    // dimer in core or on scratch.  QR/X/Y read only MO tensors, and their
+    // blocking asks DFHelper how much memory is free, so handing the AO
+    // integrals back here both lowers the high-water mark and buys those loops
+    // bigger blocks.
+    if (split_monomers) {
+        bool rebuild_ao = true;
+        for (std::string monomer : {"A", "B"}) {
+            round2_transform({monomer}, rebuild_ao);
+            // Only the in-core AO integrals are handed back before the metric
+            // contraction, so only they have to be rebuilt for monomer B.
+            rebuild_ao = dfh_->get_AO_core();
+            if (monomer == "B") dfh_->release_AO();
+            round2_consume(monomer);
+        }
+    } else if (is_hybrid_) {
+        // Contracted 3-index integrals to reproduce 4-index ERI
+        round2_transform({"A", "B"}, true);
+        dfh_->release_AO();
+        round2_consume("A");
+        round2_consume("B");
+    } else {
+        dfh_->clear_spaces();
+        dfh_->release_AO();
+    }
 }
 
 FDDS_Dispersion::~FDDS_Dispersion() {}
@@ -891,6 +955,12 @@ void FDDS_Dispersion::form_X(std::string monomer) {
         dfh_->write_disk_tensor(XarQ_name, XarQ, {astart, astart + nablock});
         dfh_->write_disk_tensor(QXarQ_name, QXarQ, {astart, astart + nablock});
     }
+
+    // (ar|R) and (ar|Q|Q) exist only to build X; form_aux_matrices() reads
+    // (ar|Q), X and Y but never these.  Give the scratch back now rather than
+    // holding it through form_Y, which is where the footprint peaks.
+    dfh_->release_tensor(arR_name);
+    dfh_->release_tensor(QarQ_name);
 }
 
 void FDDS_Dispersion::form_Y(std::string monomer) {
@@ -1022,23 +1092,31 @@ void FDDS_Dispersion::form_Y(std::string monomer) {
         dfh_->write_disk_tensor(YarQ_name, YarQ, {astart, astart + nablock});
         dfh_->write_disk_tensor(QYarQ_name, QYarQ, {astart, astart + nablock});
     }
+
+    // Likewise for Y's inputs.  (rr|R) and (ss|R) are the two largest tensors
+    // the whole method produces -- 283 and 322 GiB on a protein-sized dimer --
+    // and this is their last read.
+    dfh_->release_tensor(aaR_name);
+    dfh_->release_tensor(rrR_name);
+    dfh_->release_tensor(raQ_name);
+    dfh_->release_tensor(QraQ_name);
 }
 
 SharedMatrix FDDS_Dispersion::QR(std::string monomer) {
 
     // => Configuration <= //
 
-    std::string Qar_name, QarQ_name, QraQ_name;
+    std::string arQ_name, QarQ_name, QraQ_name;
     SharedVector eps_occ, eps_vir;
     
     if (monomer == "A") {
-        Qar_name = "Qar";
+        arQ_name = "arQ";
         QarQ_name = "QarQ";
         QraQ_name = "QraQ";
         eps_occ = vector_cache_["eps_occ_A"];
         eps_vir = vector_cache_["eps_vir_A"];
     } else if (monomer == "B") {
-        Qar_name = "Qbs";
+        arQ_name = "bsQ";
         QarQ_name = "QbsQ";
         QraQ_name = "QsbQ";
         eps_occ = vector_cache_["eps_occ_B"];
@@ -1055,6 +1133,11 @@ SharedMatrix FDDS_Dispersion::QR(std::string monomer) {
     size_t naux = auxiliary_->nbf();    
     size_t nov = nocc * nvir;
 
+    int nthread = 1;
+#ifdef _OPENMP
+    nthread = Process::environment.get_n_threads();
+#endif
+
     // => Meomry Check <= //
 
     size_t doubles = available_doubles();
@@ -1065,8 +1148,32 @@ SharedMatrix FDDS_Dispersion::QR(std::string monomer) {
 
     // => Tensor Slices <= //
 
+    // DGEQRF wants (ar|Q) column-major, which is (Q|ar) row-major.  Rather than
+    // keep a second, transposed copy of the same integrals on disk, read (ar|Q)
+    // a block of occupieds at a time -- that is a contiguous read, since a is
+    // its leading index -- and scatter each block into place.  The blocking is
+    // only here to bound the read buffer; it does not change what is built.
     auto Qar = std::make_shared<Matrix>("Qar", naux, nov); 
-    dfh_->fill_tensor(Qar_name, Qar, {0, naux});
+    double** Qarp_fill = Qar->pointer();
+    {
+        // Q (nov * naux) is allocated below and the check above already reserved
+        // it, so that much of the budget is what this buffer may borrow.
+        size_t per_occ = nvir * naux;
+        size_t maxa = (per_occ ? (nov * naux) / per_occ : nocc);
+        maxa = (maxa < 1 ? 1 : (maxa > nocc ? nocc : maxa));
+        auto blk = std::make_shared<Matrix>("arQ block", maxa * nvir, naux);
+        double** blkp = blk->pointer();
+        for (size_t astart = 0; astart < nocc; astart += maxa) {
+            size_t na = (astart + maxa >= nocc ? nocc - astart : maxa);
+            dfh_->fill_tensor(arQ_name, blk, {astart, astart + na});
+#pragma omp parallel for num_threads(nthread) schedule(static)
+            for (size_t Q = 0; Q < naux; Q++) {
+                for (size_t ar = 0; ar < na * nvir; ar++) {
+                    Qarp_fill[Q][astart * nvir + ar] = blkp[ar][Q];
+                }
+            }
+        }
+    }
 
     // => Target <= //
     auto Q = std::make_shared<Matrix>("Q", nov, naux);

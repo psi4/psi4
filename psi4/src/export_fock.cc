@@ -226,6 +226,10 @@ void export_fock(py::module &m) {
         .def("transform", &DFHelper::transform)
         .def("clear_spaces", &DFHelper::clear_spaces)
         .def("clear_all", &DFHelper::clear_all)
+        .def("release_AO", &DFHelper::release_AO,
+             "Give back the three-index AO integrals.  They are only read by transform(), so once the last\n"
+             "transform has run they are dead weight -- and on a large dimer they are the biggest thing\n"
+             "DFHelper owns.  initialize() must be called again before transforming any further.")
         .def("transpose", &DFHelper::transpose)
         .def("get_space_size", &DFHelper::get_space_size)
         .def("get_tensor_size", &DFHelper::get_tensor_size)

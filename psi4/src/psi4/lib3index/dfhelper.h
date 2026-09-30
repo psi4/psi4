@@ -335,6 +335,29 @@ class PSI_API DFHelper {
     /// clears spaces and transformations
     void clear_all();
 
+    /// Drop a single tensor and unlink its scratch file.
+    ///
+    /// clear_all() is the only other way to return scratch to the filesystem,
+    /// and it takes everything with it.  A caller that knows a transformed
+    /// tensor has no consumers left -- FDDS dispersion knows this for most of
+    /// its intermediates -- can hand the space back here instead of carrying
+    /// it to the end of the calculation.  Erasing the StreamStruct is what
+    /// does the work: its destructor closes and std::remove()s the file.
+    /// Reading the name afterwards throws, as it would for a name that was
+    /// never added.
+    void release_tensor(std::string name);
+
+    /// Give back the three-index AO integrals.
+    ///
+    /// They are only ever read by transform(); once the last transform is
+    /// done they are dead weight, and they are the single largest thing
+    /// DFHelper owns -- on a protein-sized dimer the Schwarz-screened sparse
+    /// AO tensor is a couple of hundred GiB whether it is in core or on
+    /// scratch.  Releasing them drops the in-core buffers and unlinks the
+    /// out-of-core file, and marks the object uninitialized so that a caller
+    /// that does want to transform again has to call initialize() first.
+    void release_AO();
+
     /// get sizes, shapes of tensors
     size_t get_space_size(std::string key);
     size_t get_tensor_size(std::string key);
@@ -489,6 +512,20 @@ class PSI_API DFHelper {
 
     // => Coulomb metric handling <=
     std::vector<std::pair<double, std::string>> metric_keys_;
+    // A metric power of zero is the identity, not merely something cheap:
+    // Matrix::power() only applies its condition cutoff for negative powers,
+    // so every eigenvalue maps to 1.0 and J^0 = V V^T = 1.  Callers that ask
+    // for it want the bare three-index integrals, so the metric is never
+    // built and never contracted.
+    bool metric_is_identity() const { return mpower_ < 1e-13 && mpower_ > -1e-13; }
+    // DIRECT parks its transformed blocks in a pre-metric file and folds the
+    // metric in a second, name-by-name disk pass.  With an identity metric
+    // there is nothing to fold, so the blocks go straight to the final file
+    // and the pass is skipped: that is one fewer full copy of every
+    // transformed tensor on disk, and two fewer passes over it.  DIRECT_iaQ
+    // cannot take the shortcut because its pre-metric file is (Q,p,q) and the
+    // metric pass is also what transposes it into the requested layout.
+    bool needs_metric_pass() const { return direct_iaQ_ || (direct_ && !metric_is_identity()); }
     // Create J and write it to disk.
     void prepare_metric();
     // Create J and cache it in metrics_.
