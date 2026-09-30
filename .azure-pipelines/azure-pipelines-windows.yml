@@ -123,7 +123,7 @@ jobs:
       # Note: c-f eigen has Config.cmake file
       # pydantic=1.10.17 ensures v1 pydantic still working
       - script: |
-          conda install -p C:\tools\miniforge3 cmake ^
+          conda install -p cmake ^
                         conda-build ^
                         m2-sed ^
                         eigen ^
@@ -150,7 +150,7 @@ jobs:
                         pydantic ^
                         optking ^
                         scipy
-          if errorlevel 1 exit /b %errorlevel%
+          if %errorlevel% neq 0 exit /b %errorlevel%
           which conda
           conda list
         displayName: "Install conda packages"
