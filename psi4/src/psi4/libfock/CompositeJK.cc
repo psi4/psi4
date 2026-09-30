@@ -276,8 +276,9 @@ void CompositeJK::compute_JK() {
 
         auto reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         auto Dnorm = Process::environment.globals["SCF D NORM"];
-        // Do IFB on this iteration?
-        do_incfock_iter_ = !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        // Keep both the SAD guess build and the first build after it full.
+        // Incremental builds are eligible starting at SCF iteration 2.
+        do_incfock_iter_ = !initial_iteration_ && incfock_count_ > 0 && (incfock_count_ % reset != reset - 1);
 
         if (k_algo_->name() == "sn-LinK") {
             auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 

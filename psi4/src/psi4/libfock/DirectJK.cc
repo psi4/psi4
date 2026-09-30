@@ -364,8 +364,9 @@ void DirectJK::compute_JK() {
     if (incfock_) {
         timer_on("DirectJK: INCFOCK Preprocessing");
         int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
-        // Do IFB on this iteration?
-        do_incfock_iter_ = !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        // Keep both the SAD guess build and the first build after it full.
+        // Incremental builds are eligible starting at SCF iteration 2.
+        do_incfock_iter_ = !initial_iteration_ && incfock_count_ > 0 && (incfock_count_ % reset != reset - 1);
         
         if (!initial_iteration_) incfock_count_ += 1;
         
