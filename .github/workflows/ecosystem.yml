@@ -339,7 +339,7 @@ jobs:
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
 
     - name: Special Config - Download MolSSI/QCFractal Repo
-      if: runner.os == 'Linux'
+      if: runner.os != 'Windows'
       uses: actions/checkout@v6
       with:
         repository: MolSSI/QCFractal
@@ -348,7 +348,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install All QCArchive packages
-      if: runner.os == 'Linux'
+      if: runner.os != 'Windows'
       working-directory: ./qca
       run: |
           pip install -e ./qcportal -e ./qcfractalcompute -e ./qcfractal[services,geoip,snowflake]
