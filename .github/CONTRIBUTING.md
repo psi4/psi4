@@ -41,7 +41,7 @@ GitHub](https://docs.github.com/en/get-started/exploring-projects-on-github/cont
 * When you're ready to be considered for merging, issue a PR comment with only `/review-ready`
   as content to let the Psi4 team know that the changes are ready for review.
   The code will not be merged until the continuous
-  integration (GiHub Actions and Azure DevOps) returns checkmarks,
+  integration (GitHub Actions and Azure DevOps) returns checkmarks,
   and multiple core developers give "Approved" reviews.
 
 # Additional Resources
