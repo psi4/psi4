@@ -449,9 +449,16 @@ def scf_initialize(self):
                 gib(self.memory_collocation_), gib(collocation_size)))
 
         if jk_size_known:
-            # jk_size is what a JK built here will allocate; for a re-used one it is what
-            # it may still allocate beyond the integrals already inside committed_memory.
-            required = held_memory + process_reserve + reserve_memory + jk_size
+            # jk_size is what a JK built here would allocate in core; for a re-used one it is
+            # what it may still allocate beyond the integrals already inside committed_memory.
+            # A new JK whose in-core size does not fit goes out of core and fills only its
+            # grant, so charge the grant: charging the in-core size told the omol25 SAPT(DFT)
+            # dimer it would peak at 145 GiB of 64 when it peaked at 60.
+            jk_charged = jk_size
+            jk_out_of_core = initialize_jk_obj and jk_size > self.memory_jk_
+            if jk_out_of_core:
+                jk_charged = self.memory_jk_
+            required = held_memory + process_reserve + reserve_memory + jk_charged
             peak = required + self.memory_collocation_
             core.print_out("    Estimated peak                  {:11.3f} [GiB]\n".format(gib(peak)))
             core.print_out("    Minimum memory for this SCF     {:11.3f} [GiB]".format(gib(1.05 * required)))
@@ -459,6 +466,9 @@ def scf_initialize(self):
                 core.print_out("  {:.3f} [GiB] to also cache the grid".format(
                     gib(1.05 * required + collocation_size)))
             core.print_out("\n")
+            if jk_out_of_core:
+                core.print_out("      (JK out of core; {:.3f} [GiB] more would hold it in core)\n".format(
+                    gib(jk_size - jk_charged)))
         else:
             core.print_out("    Estimated peak                      unknown  {} cannot predict its footprint\n".format(
                 core.get_global_option("SCF_TYPE")))
