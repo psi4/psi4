@@ -46,6 +46,7 @@ jobs:
 
           # Define our labels
           READY_LABEL = "review-requested"
+          AWAITING_LABEL = "awaiting-author-contribution"
           QUEUE_LABEL = "review-this-pr-of-mine-next"
 
           # --- CONFIGURATION ---
@@ -67,6 +68,8 @@ jobs:
           # ==========================================
           if command == "/review-ready":
               print(f"Processing /review-ready command from {commenter} on PR #{current_pr_num}")
+              if AWAITING_LABEL in [label.name for label in current_pr.labels]:
+                  current_pr.remove_from_labels(AWAITING_LABEL)
               current_pr.add_to_labels(READY_LABEL)
               print(f"Successfully added standard '{READY_LABEL}' label.")
 
