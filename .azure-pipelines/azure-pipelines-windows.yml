@@ -123,7 +123,7 @@ jobs:
       # Note: c-f eigen has Config.cmake file
       # pydantic=1.10.17 ensures v1 pydantic still working
       - script: |
-          conda install -p cmake ^
+          conda install cmake ^
                         conda-build ^
                         m2-sed ^
                         eigen ^
