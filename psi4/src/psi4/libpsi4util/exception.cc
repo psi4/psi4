@@ -86,7 +86,7 @@ PsiException::PsiException(std::string msg, const char *_file, int _line) noexce
 }
 
 PsiException::PsiException(const PsiException &copy) noexcept
-    : runtime_error(copy.msg_), msg_(copy.msg_), file_(strdup(copy.file_)), line_(copy.line_) {}
+    : runtime_error(copy.msg_), msg_(copy.msg_), file_(copy.file_), line_(copy.line_) {}
 
 void PsiException::rewrite_msg(std::string msg) noexcept { msg_ = msg; }
 
@@ -98,7 +98,7 @@ const char *PsiException::what() const noexcept {
     return msg_.c_str();
 }
 
-const char *PsiException::file() const noexcept { return file_; }
+const char *PsiException::file() const noexcept { return file_.c_str(); }
 
 int PsiException::line() const noexcept { return line_; }
 
