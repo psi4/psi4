@@ -91,7 +91,6 @@ void WAbEi_UHF() {
     global_dpd_->file2_mat_rd(&T1);
     for (int Gef = 0; Gef < moinfo.nirreps; Gef++) {
         int Gei = Gef;
-        int Gab = Gef; /* W and B are totally symmetric */
         for (int Ge = 0; Ge < moinfo.nirreps; Ge++) {
             int Gf = Ge ^ Gef;
             int Gi = Gf;

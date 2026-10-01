@@ -56,7 +56,6 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
                                  std::map<std::string, SharedVector> vector_cache, 
                                  bool is_hybrid)
     : primary_(primary), auxiliary_(auxiliary), matrix_cache_(matrix_cache), vector_cache_(vector_cache), is_hybrid_(is_hybrid) {
-    Options& options = Process::environment.options;
 
     // ==> Check incoming cache <==
     std::vector<std::string> matrix_cache_check = {"Cocc_A", "Cvir_A", "Cocc_B", "Cvir_B"};
@@ -579,7 +578,6 @@ std::map<std::string, SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::stri
     size_t nocc = eps_occ->dim(0);
     size_t nvir = eps_vir->dim(0);
     size_t naux = auxiliary_->nbf();
-    size_t nov = nocc * nvir;
 
     // => Blocking <= //
 

@@ -52,7 +52,6 @@ void Fmi_for_Fai();
 void Fai_build() {
     dpdfile2 newtIA, newtia, tIA, tia, fIA, fia;
     dpdfile2 FAE, Fae, FMI, Fmi, FME, Fme;
-    dpdfile2 dIA, dia;
     dpdbuf4 tIJAB, tijab, tIjAb, tiJaB, T2;
     dpdbuf4 C, C_anti, D, F_anti, F, E_anti, E, Z;
     int Gma, Gmi, Gm, Gi, Ga, ma, m, a, A, nrows, ncols, h, e, nirreps;

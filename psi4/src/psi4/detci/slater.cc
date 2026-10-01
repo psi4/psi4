@@ -131,7 +131,6 @@ void common_orbs(int *same_alpha, int *same_beta, int cnt_alpha, int cnt_beta, i
                  int *common_beta_socc, int *cnt_docc, int *cnt_alpha_socc, int *cnt_beta_socc) {
     int i = 0;
     int j = 0;
-    int k = 0;
 
     while ((i < cnt_alpha) && (j < cnt_beta)) {
         if (same_alpha[i] == same_beta[j]) {

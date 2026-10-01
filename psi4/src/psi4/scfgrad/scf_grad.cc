@@ -471,12 +471,6 @@ SharedMatrix SCFDeriv::compute_hessian()
             int nQ = s2.nfunction();
             int oQ = s2.function_index();
             int aQ = s2.ncenter();
-            int Px = 3 * aP + 0;
-            int Py = 3 * aP + 1;
-            int Pz = 3 * aP + 2;
-            int Qx = 3 * aQ + 0;
-            int Qy = 3 * aQ + 1;
-            int Qz = 3 * aQ + 2;
 #define DEBUGINTS 0
 
 #if DEBUGINTS
@@ -854,9 +848,6 @@ SharedMatrix SCFDeriv::compute_hessian()
             int nP = s1.nfunction();
             int oP = s1.function_index();
             int aP = s1.ncenter();
-            int Px = 3 * aP + 0;
-            int Py = 3 * aP + 1;
-            int Pz = 3 * aP + 2;
             int nQ = s2.nfunction();
             int oQ = s2.function_index();
             int aQ = s2.ncenter();
@@ -955,9 +946,6 @@ SharedMatrix SCFDeriv::compute_hessian()
             int nQ = s2.nfunction();
             int oQ = s2.function_index();
             int aQ = s2.ncenter();
-            int Px = 3 * aP + 0;
-            int Py = 3 * aP + 1;
-            int Pz = 3 * aP + 2;
 
             Sints[thread]->compute_shell_deriv2(P, Q);
             const auto &buffers = Sints[thread]->buffers();

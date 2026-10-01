@@ -156,8 +156,6 @@ void CoupledCluster::CPU_I2p_abci_refactored_term1_linear(CCTaskParams params) {
     long int o = ndoccact;
     long int v = nvirt;
     long int a, b, c, i, j, id = 0;
-    long int ov2 = o * v * v;
-    long int o2v = o * o * v;
 
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_ABCI5, PSIO_OPEN_OLD);
@@ -198,7 +196,6 @@ void CoupledCluster::UpdateT1_mp4(long int iter) {
     long int o = ndoccact;
     long int rs = nmo;
     long int i, j, a, b;
-    long int id = 0;
     double tnew, dia, energy;
 
     if (iter < 1) {
@@ -417,7 +414,6 @@ void CoupledCluster::I2piajk_linear(CCTaskParams params) {
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     psio->open(PSIF_DCC_IJAK2, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IJAK2, "E2ijak2", (char*)&tempv[0], o * o * o * v * sizeof(double));
@@ -574,7 +570,6 @@ void CoupledCluster::I2iabj_linear(CCTaskParams params) {
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IAJB, "E2iajb", (char*)&integrals[0], o * o * v * v * sizeof(double));
@@ -629,7 +624,6 @@ void CoupledCluster::I2iajb_linear(CCTaskParams params) {
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     psio->open(PSIF_DCC_IJAB, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IJAB, "E2ijab", (char*)&tempt[0], o * o * v * v * sizeof(double));

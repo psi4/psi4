@@ -542,7 +542,6 @@ void DFCorrGrad::build_UV_terms() {
 void DFCorrGrad::UV_helper(SharedMatrix V, double c, size_t file, const std::string& label, size_t naux, size_t nij,
                            size_t memory) {
     int max_rows;
-    size_t effective_memory = memory - 1L * naux * naux;
     size_t row_cost = 2L * nij;
     size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
@@ -823,7 +822,6 @@ void DFCorrGrad::build_Amn_x_terms() {
             int aN = primary_->shell(N).ncenter();
             int oN = primary_->shell(N).function_index();
 
-            int ncart = cP * cM * cN;
             const auto & buffers = eri[thread]->buffers();
             const double* Px = buffers[0];
             const double* Py = buffers[1];

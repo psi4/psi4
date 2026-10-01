@@ -959,8 +959,6 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     int sad_maxiter = options_.get_int("SAD_MAXITER");
     bool diis_rms = options_.get_bool("DIIS_RMS_ERROR");
 
-    double E_old = E;
-    int iteration = 0;
 
     // Setup DIIS
     DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);

@@ -86,10 +86,6 @@ void fold_UHF(const struct RHO_Params& rho_params) {
     const auto& avir_off = moinfo.avir_off;
     const auto& bocc_off = moinfo.bocc_off;
     const auto& bvir_off = moinfo.bvir_off;
-    const auto& aocc_sym = moinfo.aocc_sym;
-    const auto& avir_sym = moinfo.avir_sym;
-    const auto& bocc_sym = moinfo.bocc_sym;
-    const auto& bvir_sym = moinfo.bvir_sym;
 
     if (params.debug_) {
         outfile->Printf("\n\tEnergies re-computed from Fock-adjusted CC density:\n");

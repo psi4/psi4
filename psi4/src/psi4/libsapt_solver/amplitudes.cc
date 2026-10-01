@@ -890,7 +890,6 @@ void SAPT2p3::Y3_1(double **yAR, int intfile, const char *AAlabel, const char *A
             for (int a2 = 0; a2 < aoccA; a2++) {
                 for (int r = 0; r < nvirA; r++) {
                     int ar = a * nvirA + r;
-                    int a1r = a1 * nvirA + r;
                     int a2r = a2 * nvirA + r;
                     int aa1 = a * aoccA + a1;
                     int a1a2 = a1 * aoccA + a2;

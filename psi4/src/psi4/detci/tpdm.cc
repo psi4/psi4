@@ -394,11 +394,9 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
     for (int p = 0; p < nact; p++) {
         for (int q = 0; q < nact; q++) {
             int pq = p * nact + q;
-            int qp = q * nact + p;
             for (int r = 0; r < nact; r++) {
                 for (int s = 0; s < nact; s++) {
                     int rs = r * nact + s;
-                    int sr = s * nact + r;
 
                     tpdmp[pq][rs] =
                         0.5 * (tpdm_aamp[pq][rs] + tpdm_bbmp[pq][rs] + tpdm_abmp[pq][rs] + tpdm_abmp[rs][pq]);
@@ -445,7 +443,6 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist, struct stringwr **bet
     double C1, C2, Ib_sgn, Ia_sgn, Kb_sgn, Ka_sgn, tval;
     int i, j, k, l, ij, kl, ijkl, oij, okl, *Jboij, *Jaoij, *Kboij, *Kaoij;
 
-    double cutoff = 1.e-14;
 
     timer_on("CIWave: TPDM Block");
     /* loop over Ia in Ia_list */

@@ -1098,7 +1098,6 @@ double SAPT2::exch120_k11u_3() {
         C_DGEMM('N', 'T', r1 + 1, nvirA_ * noccB_, (ndf_ + 3), 1.0, B_p_RR[r1 * nvirA_], (ndf_ + 3), B_p_RB[0],
                 (ndf_ + 3), 0.0, zRB[0], nvirA_ * noccB_);
         for (int r2 = 0; r2 <= r1; r2++) {
-            int r1r2 = r1 * nvirA_ + r2;
             C_DGEMM('N', 'T', nvirA_, noccB_, aoccA_ * aoccA_, 1.0, tRRAA[r2 * nvirA_], aoccA_ * aoccA_,
                     thetaRBAA[r1 * noccB_], aoccA_ * aoccA_, 0.0, yRB, noccB_);
             if (r1 != r2)
@@ -1143,7 +1142,6 @@ double SAPT2::exch120_k11u_3() {
         C_DGEMM('N', 'T', r1 + 1, noccB_ * noccB_, (ndf_ + 3), 1.0, B_p_RR[r1 * nvirA_], (ndf_ + 3), B_p_BB[0],
                 (ndf_ + 3), 0.0, zBB[0], noccB_ * noccB_);
         for (int r2 = 0; r2 <= r1; r2++) {
-            int r1r2 = r1 * nvirA_ + r2;
             C_DGEMM('N', 'T', noccB_, noccB_, aoccA_ * aoccA_, 1.0, &(tRBAA[r2 * noccB_][0]), aoccA_ * aoccA_,
                     &(thetaRBAA[r1 * noccB_][0]), aoccA_ * aoccA_, 0.0, yBB, noccB_);
             if (r1 != r2)
@@ -1243,7 +1241,6 @@ double SAPT2::exch102_k11u_3() {
         C_DGEMM('N', 'T', s1 + 1, nvirB_ * noccA_, (ndf_ + 3), 1.0, B_p_SS[s1 * nvirB_], (ndf_ + 3), B_p_SA[0],
                 (ndf_ + 3), 0.0, zSA[0], nvirB_ * noccA_);
         for (int s2 = 0; s2 <= s1; s2++) {
-            int s1s2 = s1 * nvirA_ + s2;
             C_DGEMM('N', 'T', nvirB_, noccA_, aoccB_ * aoccB_, 1.0, tSSBB[s2 * nvirB_], aoccB_ * aoccB_,
                     thetaSABB[s1 * noccA_], aoccB_ * aoccB_, 0.0, ySA, noccA_);
             if (s1 != s2)
@@ -1288,7 +1285,6 @@ double SAPT2::exch102_k11u_3() {
         C_DGEMM('N', 'T', s1 + 1, noccA_ * noccA_, (ndf_ + 3), 1.0, B_p_SS[s1 * nvirB_], (ndf_ + 3), B_p_AA[0],
                 (ndf_ + 3), 0.0, zAA[0], noccA_ * noccA_);
         for (int s2 = 0; s2 <= s1; s2++) {
-            int s1s2 = s1 * nvirB_ + s2;
             C_DGEMM('N', 'T', noccA_, noccA_, aoccB_ * aoccB_, 1.0, &(tSABB[s2 * noccA_][0]), aoccB_ * aoccB_,
                     &(thetaSABB[s1 * noccA_][0]), aoccB_ * aoccB_, 0.0, yAA, noccA_);
             if (s1 != s2)

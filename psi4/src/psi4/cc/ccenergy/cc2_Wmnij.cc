@@ -331,7 +331,6 @@ void CCEnergyWavefunction::purge_cc2_Wmnij() {
 
     nirreps = moinfo_.nirreps;
     const auto& occpi = moinfo_.occpi;
-    const auto& virtpi = moinfo_.virtpi;
     occ_off = moinfo_.occ_off;
     vir_off = moinfo_.vir_off;
     occ_sym = moinfo_.occ_sym;

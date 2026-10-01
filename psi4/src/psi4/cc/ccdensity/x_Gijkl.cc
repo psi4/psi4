@@ -48,7 +48,6 @@ void x_Gijkl() {
     dpdfile2 R1, T1;
     dpdbuf4 L2, I2, GIJKL, Gijkl, GIjKl;
     int L_irr, R_irr, G_irr;
-    double value;
     L_irr = params.L_irr;
     R_irr = params.R_irr;
     G_irr = params.G_irr;

@@ -188,7 +188,6 @@ void OCCWave::trans_ints_ump2() {
 void OCCWave::denominators_ump2() {
     // outfile->Printf("\n denominators is starting... \n");
     dpdbuf4 D;
-    dpdfile2 Fo, Fv;
 
     auto *aOccEvals = new double[nacooA];
     auto *bOccEvals = new double[nacooB];

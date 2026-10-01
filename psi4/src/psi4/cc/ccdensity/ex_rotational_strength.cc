@@ -57,15 +57,12 @@ void transp(const MintsHelper &mints, double sign);
 void transL(const MintsHelper &mints, double sign);
 
 void ex_rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data) {
-    int i, j, k;
     int no, nv, nt;
     double rs_lx, rs_ly, rs_lz;
     double rs_rx, rs_ry, rs_rz;
     double rs_x, rs_y, rs_z;
     double rs;
-    double conv;
     double delta_ee;
-    int nmo = moinfo.nmo;
     const auto& mints = *wfn.mintshelper();
 
     transdip(mints);

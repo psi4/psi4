@@ -60,7 +60,6 @@ namespace ccdensity {
 void add_ref_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB) {
     int mo_offset = 0;
     for (int h = 0; h < moinfo.nirreps; h++) {
-        auto clsd_h = moinfo.frdocc[h] + moinfo.clsdpi[h];
         // Alpha
         for (int i = 0; i < moinfo.frdocc[h] + moinfo.aoccpi[h]; i++) {
             // One electron alpha

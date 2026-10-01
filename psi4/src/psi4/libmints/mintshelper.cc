@@ -548,7 +548,6 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
         size_t oQ = basisset_->shell(Q).function_index();
         size_t aQ = basisset_->shell(Q).ncenter();
 
-        size_t offset = nP * nQ;
         double perm = (P == Q ? 1.0 : 2.0);
 
         // Px
@@ -2438,7 +2437,6 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         int aQ = auxiliary->shell(Q).ncenter();
         int oQ = auxiliary->shell(Q).function_index();
 
-        int ncart = cP * cQ;
         const double *Px = buffers[0];
         const double *Py = buffers[1];
         const double *Pz = buffers[2];
@@ -2720,7 +2718,6 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string &aux_name, const std:
             int aN = primary->shell(N).ncenter();
             int oN = primary->shell(N).function_index();
 
-            int ncart = cP * cM * cN;
             const double *Px = buffers[0];
             const double *Py = buffers[1];
             const double *Pz = buffers[2];
@@ -3016,7 +3013,6 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
 
         GInt->compute_shell_deriv1(P, Q);
         const auto &buffers = GInt->buffers();
-        int offset = 0;
         if (aP == atom && half_der_side == "LEFT") {
             // Px
             for (int p = 0; p < nP; p++) {

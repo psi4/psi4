@@ -65,7 +65,6 @@ void build_Z_UHF() {
     double **A, *Z;
     int num_ai, a, i, ai, bj;
     int h, nirreps, count, dim_A, dim_B;
-    int *ipiv, info;
 
     nirreps = moinfo.nirreps;
     const auto& aoccpi = moinfo.aoccpi;

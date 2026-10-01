@@ -855,7 +855,6 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 }
 
 int RHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) {
-    int fock_builds;
     std::time_t start, stop;
     start = std::time(nullptr);
 

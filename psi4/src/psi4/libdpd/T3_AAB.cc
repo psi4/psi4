@@ -108,7 +108,6 @@ void DPD::T3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
     int Gd, Gl;
     int Gid, Gjd, Gkd;
     int Gab, Gcb, Gca, Gac, Gbc;
-    int Gla, Glb, Glc;
     int Gil, Gjl, Gkl;
     int a, b, c, A, B, C;
     int ab;

@@ -47,7 +47,6 @@ namespace cceom {
 void sigma0S(int i, int C_irr) {
     dpdfile2 FME, Fme;
     dpdfile2 CME, Cme;
-    dpdbuf4 W;
     char lbl[32];
     double S0, S0_old;
 

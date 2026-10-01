@@ -2393,7 +2393,6 @@ void RDFMP2::form_gradient() {
     int nfvir = Cfvir_->colspi()[0];
     int nmo = nfocc + naocc + navir + nfvir;
     int nocc = nfocc + naocc;
-    int nvir = nfvir + navir;
 
     // => Tensors <= //
 

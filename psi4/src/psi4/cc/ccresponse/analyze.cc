@@ -48,7 +48,6 @@ double **Build_R();
 double **Build_U();
 
 void analyze(const char *pert, int irrep, double omega) {
-    FILE *efile;
     dpdbuf4 T2;
     dpdfile2 T1;
     char lbl[32];

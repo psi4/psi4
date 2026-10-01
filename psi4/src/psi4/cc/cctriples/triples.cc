@@ -100,11 +100,6 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
     double ETAAA, ETAAB, ETABB, ETBBB, ET;
     long int memory;
     int **cachelist, *cachefiles;
-    dpdfile2 T1;
-    double **geom, *zvals, value;
-    FILE *efile;
-    int i, errcod, natom;
-    char *keyw = nullptr;
 
     init_io();
     title();

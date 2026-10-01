@@ -73,9 +73,7 @@ void DPD::cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int do_s
     int da, di, dj, dk;
     int Gad, Gdi, Gdj, Gdk, Glc, Gli, Glk, cnt;
     int nlinks;
-    double value, F_val, t_val, E_val;
     double dijk, denom, *tvect, **Z;
-    double value_ia, value_ka, denom_ia, denom_ka;
     dpdfile2 fIJ, fIJ2, fAB, fAB2, SIA_inc;
     dpdbuf4 SIjAb_inc, buf4_tmp;
     double ***W3, ***W3a;

@@ -71,7 +71,6 @@ namespace cceom {
     dpdbuf4 *SIjAb, double energy); */
 
 void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega) {
-    int ii, j, a, b, A, B, Ga, Gb, Gij = 0, ab, ab0, ab1;
     dpdfile2 SIA, FME;
     dpdbuf4 CMnEf, WAbEi, WMbIj, Dints, WmAEf, WMnIe, SIjAb;
     dpdbuf4 tIjAb;

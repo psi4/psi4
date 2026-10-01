@@ -138,7 +138,6 @@ int ras_set3(int nirreps, int nmo, int *orbspi, int *docc, int *socc, int *frdoc
     int i, irrep, point, tmpi, cnt = 0;
     int errcod, errbad = 0;
     int *used, *offset, **tras;
-    int *tmp_frdocc, *tmp_fruocc;
     bool parsed_ras1 = false, parsed_ras2 = false;
     bool parsed_ras3 = false, parsed_ras4 = false;
     bool parsed_frozen_docc = false, parsed_restr_docc = false;

@@ -1170,7 +1170,6 @@ void DFOCC::ccsd_canonic_triples_grad() {
                 // Compute energy
                 double value_ = 0.0;
                 double value2_ = 0.0;
-                double value3_ = 0.0;
 //#pragma omp parallel for private(value_,value2_,value3_) reduction(+:sum)
 #pragma omp parallel for
                 for (long int a = 0; a < navirA; ++a) {
