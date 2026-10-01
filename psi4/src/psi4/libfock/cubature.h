@@ -439,6 +439,8 @@ class BlockOPoints {
     double* w() const { return w_; }
     /// The center of the block
     Vector3 center() const { return xc_; }
+    /// The bounding radius of the block
+    double radius() const { return R_; }
 
     /// Relevant shells, local -> global
     const std::vector<int>& shells_local_to_global() const { return shells_local_to_global_; }
