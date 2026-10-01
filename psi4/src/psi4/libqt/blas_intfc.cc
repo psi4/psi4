@@ -57,6 +57,8 @@
 #include "psi4/pragma.h"
 #include "psi4/libqt/blas_intfc_mangle.h"
 
+// Fortran BLAS entry points, visible to this translation unit only.
+namespace {
 extern "C" {
 
 extern void F_DSWAP(int *length, double *x, int *incx, double *y, int *inc_y);
@@ -80,6 +82,7 @@ extern double F_DNRM2(int *n, double *x, int *incx);
 extern double F_DASUM(int *n, double *x, int *incx);
 extern int F_IDAMAX(int *n, double *x, int *incx);
 }
+}  // namespace
 
 namespace psi {
 
