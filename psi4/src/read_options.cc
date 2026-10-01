@@ -1263,6 +1263,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         protein-sized dimer (rr|R) and (ss|R) alone are 283 and 322 GiB.  The
         split costs one extra AO integral build and metric fold. !expert -*/
         options.add_bool("SAPT_FDDS_DISP_SPLIT_MONOMERS", true);
+        /*- Where the STORE path of FDDS dispersion keeps its Schwarz-screened
+        three-index AO integrals.  INCORE holds them in memory, which is the
+        whole of STORE's memory increase over LEGACY; OUT_OF_CORE writes them to
+        scratch and reads them back per transformation, which keeps memory at the
+        LEGACY level; AUTO holds them in memory when they fit the dispersion
+        budget and writes them to scratch otherwise.  Ignored by DIRECT,
+        DIRECT_IAQ and LEGACY, which do not store the AO integrals. !expert -*/
+        options.add_str("SAPT_FDDS_DISP_AO_STORAGE", "AUTO", "AUTO INCORE OUT_OF_CORE");
         /*- FSAPT localization through SAPT(DFT)? Set SAPTDFT for PyEinsums
          f-terms or use an FISAPT object (C++ side) for f-terms.
         -*/

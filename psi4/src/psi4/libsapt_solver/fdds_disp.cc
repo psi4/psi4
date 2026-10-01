@@ -239,6 +239,15 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
     dfh_->set_method(round1_algo);
+    // Where STORE keeps its screened AO integrals.  In core, they cost RAM that
+    // the direct paths never spend -- they recompute them per block -- and that
+    // is the whole of STORE's RSS step over LEGACY.  On disk, RAM stays at the
+    // direct paths' level and the file is read back per transform.  DFHelper
+    // otherwise takes this from SCF_SUBTYPE, whose unset default is INCORE, so a
+    // job whose AO integrals do not fit would throw rather than go to disk; set
+    // it here so AUTO really is "in core if it fits".  LEGACY keeps the old
+    // behaviour untouched, so the direct paths are left alone.
+    if (round1_algo == "STORE") dfh_->set_subalgo(options.get_str("SAPT_FDDS_DISP_AO_STORAGE"));
     dfh_->set_nthreads(nthread);
     // Power zero: this round wants the bare three-index integrals, and DFHelper
     // now recognises that as "no metric" rather than building and contracting an
