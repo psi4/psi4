@@ -501,6 +501,14 @@ void DFHelper::prepare_AO() {
     AO_filename_maker(2);
     std::string putf = AO_names_[1];
     std::string op = "ab";
+    // Every reader uses AO_names_[1], so a repeated initialize() writes back to
+    // the file the previous one left -- and "ab" ignores the fseek below, so the
+    // new integrals were appended after the old ones while transform() kept
+    // reading the old ones from offset 0.  FDDS dispersion's hybrid second round
+    // re-initializes with J^-1/2 after a J^0 first round, and out of core it
+    // silently transformed the unfitted integrals.  Start from an empty file.
+    file_streams_.erase(putf);
+    std::remove(putf.c_str());
 
     // Contract metric according to previously calculated scheme
     size_t count = 0;
