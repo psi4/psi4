@@ -332,7 +332,7 @@ double PSI_API C_DASUM(size_t length, double *x, int inc_x) {
  *               Must be of at least length (1+(N-1)*abs(inc_x).
  * \param inc_x  how many places to skip to get to next element in x
  *
- * @returns the index of the largest absolute value
+ * @returns the zero-based position in x of the largest absolute value
  *
  * \ingroup QT
  */
@@ -340,19 +340,26 @@ double PSI_API C_DASUM(size_t length, double *x, int inc_x) {
 size_t C_IDAMAX(size_t length, double *x, int inc_x) {
     if (length == 0) return 0L;
 
-    size_t reg = 0L;
-    size_t reg2 = 0L;
+    // F_IDAMAX takes an int length and returns a one-based position, so scan in
+    // chunks of at most INT_MAX elements and keep the best chunk winner.
+    const size_t stride = static_cast<size_t>(inc_x);
+    size_t best = 0L;
+    double best_abs = std::fabs(x[0]);
 
-    int big_blocks = (int)(length / INT_MAX);
-    int small_size = (int)(length % INT_MAX);
-    for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
-        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
-        reg2 = ::F_IDAMAX(&length_s, x_s, &inc_x) + static_cast<size_t>(block) * inc_x * INT_MAX;
-        if (std::fabs(x[reg]) > std::fabs(x[reg2])) reg = reg2;
+    for (size_t done = 0L; done < length;) {
+        const size_t remaining = length - done;
+        signed int chunk =
+            static_cast<signed int>(remaining < static_cast<size_t>(INT_MAX) ? remaining : INT_MAX);
+        const size_t cand = done + static_cast<size_t>(::F_IDAMAX(&chunk, &x[done * stride], &inc_x)) - 1L;
+        const double cand_abs = std::fabs(x[cand * stride]);
+        if (cand_abs > best_abs) {
+            best_abs = cand_abs;
+            best = cand;
+        }
+        done += static_cast<size_t>(chunk);
     }
 
-    return reg;
+    return best;
 }
 
 }  // namespace psi
