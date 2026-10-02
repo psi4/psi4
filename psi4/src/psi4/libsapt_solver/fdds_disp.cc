@@ -247,7 +247,17 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     // job whose AO integrals do not fit would throw rather than go to disk; set
     // it here so AUTO really is "in core if it fits".  LEGACY keeps the old
     // behaviour untouched, so the direct paths are left alone.
-    if (round1_algo == "STORE") dfh_->set_subalgo(options.get_str("SAPT_FDDS_DISP_AO_STORAGE"));
+    // An explicit SCF_SUBTYPE still wins under AUTO: a job that forced the SCF
+    // out of core to fit its memory wants the same here.
+    if (round1_algo == "STORE") {
+        std::string ao_storage = options.get_str("SAPT_FDDS_DISP_AO_STORAGE");
+        if (ao_storage == "AUTO" && options["SCF_SUBTYPE"].has_changed()) {
+            std::string subtype = options.get_str("SCF_SUBTYPE");
+            if (subtype == "INCORE") ao_storage = "INCORE";
+            else if (subtype.find("OUT_OF_CORE") != std::string::npos) ao_storage = "OUT_OF_CORE";
+        }
+        dfh_->set_subalgo(ao_storage);
+    }
     dfh_->set_nthreads(nthread);
     // Power zero: this round wants the bare three-index integrals, and DFHelper
     // now recognises that as "no metric" rather than building and contracting an
