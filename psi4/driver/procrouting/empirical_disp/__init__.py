@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2026 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,25 +26,4 @@
 # @END LICENSE
 #
 
-from . import psifiles as psif
-from .constants import *
-
-# isort: split
-
-from . import aliases, diatomic, frac, gaussian_n
-from . import schema_wrapper as schema_wrapper
-from . import wrapper_autofrag, wrapper_database
-from .driver import *
-from .driver_cbs import cbs  # remove in v1.8 when UpgradeHelper expires
-from .inputparser import process_input
-from .ipi_broker import ipi_broker
-from .molutil import *
-from .p4util.fchk import *
-from .p4util.fcidump import *
-from .p4util.python_helpers import basis_helper, pcm_helper, set_module_options, set_options
-from .p4util.testing import *
-from .p4util.text import *
-from .p4util.util import *
-from .p4util.writer import *
-from .pluginutil import *
-from .qmmm import QMMM, QMMMbohr
+from .empirical_dispersion import EmpiricalDispersion
