@@ -750,6 +750,12 @@ class PSI_API DirectJK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
+    /// \Delta J & \Delta K matricies to accumulate eri contributions into this iteration (to avoid roundoff error)
+    std::vector<SharedMatrix> J_delta_;
+    std::vector<SharedMatrix> K_delta_;
+    std::vector<SharedMatrix> wK_delta_;
+
+
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
 
