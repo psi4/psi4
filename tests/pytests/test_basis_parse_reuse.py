@@ -133,6 +133,20 @@ def test_decontracted_and_contracted_share_source(monkeypatch):
             assert _center_shells(basis, center) == _center_shells(ref, 0)
 
 
+def test_mixed_library_bases_for_one_element(monkeypatch):
+    names = ["cc-pvtz", "cc-pvdz", "6-31g*", "cc-pvdz", "cc-pvdz-decon", "cc-pvtz"]
+    geom = "\n".join(f"C{i + 1} 0 0 {1.5 * i}" for i in range(len(names)))
+    refs = {name: _construct("C 0 0 0", [name])[0] for name in set(names)}
+
+    calls = _count_parses(monkeypatch)
+    basis, _, _ = _construct(geom, names)
+    assert max(calls.values()) == 1
+    # cc-pvdz and cc-pvdz-decon read one file, so "C" is parsed once per distinct file
+    assert sum(n for (entry, _), n in calls.items() if entry == "C") == 3
+    for center, name in enumerate(names):
+        assert _center_shells(basis, center) == _center_shells(refs[name], 0)
+
+
 def test_repeated_ecp_atoms():
     _, _, ref = _construct("I 0 0 0", ["def2-svp"])
     _, _, ecp = _construct("I1 0 0 0\nI2 0 0 3\nI3 0 0 6", ["def2-svp"] * 3)
