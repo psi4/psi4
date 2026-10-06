@@ -5,7 +5,7 @@ list(APPEND sources
   f12_intermediates.cc
   )
 
-if(TARGET Einsums::Einsums)
+if(TARGET Einsums::Einsums AND NOT ENABLE_Einsums2)
     psi4_add_module(bin f12 sources)
     if (psi4_ENABLE_PRECOMPILE_HEADERS)
         target_precompile_headers(f12 REUSE_FROM psio)
