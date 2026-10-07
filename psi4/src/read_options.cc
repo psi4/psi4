@@ -3085,6 +3085,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("POINTS", 3);  // Can we error check integers?
         /*- Displacement size in au for finite-differences. -*/
         options.add_double("DISP_SIZE", 0.005);
+        /*- Do take |findif__disp_size| steps in mass-weighted coordinates? When true (default),
+        an atom of mass :math:`m` is displaced by |findif__disp_size| :math:`/\sqrt{m}`, so heavy atoms
+        take small Cartesian steps and noise in the energies is amplified by :math:`\sqrt{m}` in their
+        gradient components. When false, all atoms take Cartesian steps of |findif__disp_size|.
+        Presently only affects gradients by finite differences of energies. -*/
+        options.add_bool("DISP_MASS_WEIGHT", true);
         /*- Do write a gradient output file?  If so, the filename will end in
         .grad, and the prefix is determined by |globals__writer_file_label|
         (if set), or else by the name of the output file plus the name of
