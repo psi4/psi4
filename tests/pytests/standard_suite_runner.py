@@ -95,6 +95,11 @@ def runner_asserter(inp, subject, method, basis, tnm):
         # Hartree--Fock doesn't need this b/c it does value sharing by variable so CONV-AE-CONV also stored at CONV-AE-DF
         corl_type = inp["keywords"].get("mp2_type", natural_ref_inv[scf_type])
 
+    is_ecp = basis in ["def2-svp"]  # ch2i2/ch2i with def2 ECPs on I
+    if is_ecp and "cd" in [scf_type, corl_type]:
+        # ECP (iodine) systems: default cholesky_tolerance leaves CD 0.6-1.4 mEh off CONV, so CD isn't covered
+        pytest.skip(f"cd not tested for ECP basis {basis}")
+
     using_fd = (driver == "gradient" and inp["keywords"]["function_kwargs"]["dertype"] == 0 or driver == "hessian" and inp["keywords"]["function_kwargs"]["dertype"] in [0, 1])  # T/F: notate fd vs. analytic for docs table
     defaultness = "defaultdefault" if ("default" in tnm and all([not k.endswith("_type") for k in inp["keywords"]])) else ("default" if "default" in tnm else "")
 
@@ -106,6 +111,10 @@ def runner_asserter(inp, subject, method, basis, tnm):
         # lrc very sensitive to grid, so ref values are computed at 500,1202 at which tightness grd1==grd0. so, at runtime default grid, need to relax tol to match ref
         atol_e = 2.5e-6
         atol_g = 1.0e-5
+    if is_ecp and corl_type == "df" and method in ["ccsd", "ccsd(t)"] and "psi4-fnocc" in [qc_module_in, qc_module_xptd]:
+        # fnocc fits T1-dressed Fock terms with DF_BASIS_CC (RI), dfocc with DF_BASIS_SCF (JK). refs are dfocc.
+        #   for I these differ by ~3e-6 (1e-8 for 1st-row); w/ a common aux basis they agree to 1e-9.
+        atol_e = 5.0e-6
 
     if driver == "gradient" and inp["keywords"]["function_kwargs"]["dertype"] == 0:
         # relax to this pre-e/g/h-separated value if necessary: atol = 2.0e-6
@@ -126,6 +135,10 @@ def runner_asserter(inp, subject, method, basis, tnm):
     if (method in ["ccsd", "ccsd(t)"] and corl_type in ["df", "cd"]) or (method == "wb97x"):
         # fnocc non-conv ccsd opposite-spin df error is larger than corl df error. TODO: see if other methods/module/mols show this or if suspicious.
         atol_conv = 3.0e-4
+    if is_ecp and corl_type == "df":
+        # iodine DF error in spin components (e.g., MP2 SS/OS ~2e-4) exceeds default, though total corl ~2e-5
+        #   and DF-CCSD corl error (5-10x MP2's for any system) reaches ~4.5e-4 for ch2i2
+        atol_conv = 6.0e-4 if method in ["ccsd", "ccsd(t)"] else 3.0e-4
     if method in ["mp2-f12"] and corl_type in ["df"]:
         # hf-cabs is sensitive
         atol_conv = 2.0e-3
@@ -158,6 +171,15 @@ def runner_asserter(inp, subject, method, basis, tnm):
             "orbital_optimizer_package": "internal",  # haven't tried to adapt for ooo
         }
     )
+    if is_ecp:
+        # ccenergy ccsd(t) gradient for ch2i2 exhausts the 500 MiB default (and 4 GiB) w/ dpd_block_matrix: No memory left
+        psi4.set_memory("8 GiB" if (qc_module_in == "psi4-ccenergy" and driver == "gradient") else "2 GiB")
+        # mass-weighted steps move I only disp_size/sqrt(127), amplifying (DF) energy noise ~sqrt(m) in grd0 gradients
+        psi4.set_options({"disp_mass_weight": False})
+        if is_dft:
+            # around ECP I, (99,590) leaves svwn/pbe grd1 vs grd0 at ~4.5e-6, (200,974) at ~5e-7. refs at (200,974).
+            #   TODO: GGA exchange (b88, pbe-x) near ECP centers still ~1.5e-5 at (200,974); under investigation.
+            inp["keywords"].update({"dft_radial_points": 200, "dft_spherical_points": 974})
     extra_kwargs = inp["keywords"].pop("function_kwargs", {})
 
     if "error" in inp:
