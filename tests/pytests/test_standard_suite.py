@@ -121,6 +121,7 @@ _w1 = ("CCSD TOTAL GRADIENT",  "wrong semicanonical ae rohf ccsd gradients by cc
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -217,6 +218,7 @@ def test_hf_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, reque
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -320,6 +322,7 @@ def test_hf_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, req
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -470,6 +473,7 @@ def test_mp2_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, requ
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -672,6 +676,7 @@ def test_mp2_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -790,6 +795,7 @@ def test_mp2_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp, pytest.mark.long]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3324,6 +3330,7 @@ def test_ccsd_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, req
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3474,6 +3481,7 @@ def test_ccsd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3573,6 +3581,7 @@ def test_ccsd_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, r
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3717,6 +3726,7 @@ def test_ccsd_prt_pr_energy_default(inp, dertype, basis, subjects, clsd_open_pmo
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
