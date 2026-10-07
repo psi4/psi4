@@ -68,9 +68,11 @@ void CoupledCluster::MP2() {
     std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
+    // * frozen orbitals must be recognized so QT ordering places them first, as SortOVOV assumes (as for CC in fnocc.cc).
+    //   with FrozenOrbitals::None, frozen core spread over irreps (e.g., S 2p, I 4s4p) is interleaved with active occ.
     std::shared_ptr<IntegralTransform> ints = std::make_shared<IntegralTransform>(
         wfn, spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::IWLOnly,
-        IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::None, false);
+        IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::OccAndVir, false);
     ints->set_keep_dpd_so_ints(1);
     ints->set_keep_iwl_so_ints(1);
     ints->initialize();
