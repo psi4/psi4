@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 /*!
     \defgroup MINTS libmints: Integral library
@@ -59,6 +62,13 @@
 #include <cmath>
 #include <map>
 #include <list>
+
+#ifdef USING_cuEST
+#include <cuest.h>
+#include <cuda_runtime.h>
+#include "psi4/libfock/cuESTCommon.h"
+extern cuestHandle_t cuest_handle;
+#endif
 
 using namespace psi;
 
@@ -119,9 +129,17 @@ BasisSet::BasisSet() {
     target_ = "(Empty Basis Set)";
     shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_.data(), ucoefficients_.data(),
                                uerd_coefficients_.data(), uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
+#ifdef USING_cuEST
+    cuest_basis_ = nullptr;
+    cuest_basis_ws_ptr_ = nullptr;
+#endif
 }
 
-BasisSet::~BasisSet() {}
+BasisSet::~BasisSet() {
+#ifdef USING_cuEST
+    cuest_finalize();
+#endif
+}
 
 std::shared_ptr<BasisSet> BasisSet::build(std::shared_ptr<Molecule> /*molecule*/,
                                           const std::vector<ShellInfo> & /*shells*/) {
@@ -614,6 +632,11 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &shell_map,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &ecp_shell_map)
     : name_(basistype), molecule_(mol) {
+#ifdef USING_cuEST
+    cuest_basis_ = nullptr;
+    cuest_basis_ws_ptr_ = nullptr;
+#endif
+
     // Singletons
     initialize_singletons();
 
@@ -862,6 +885,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             }
         }
     }
+
 }
 
 void BasisSet::update_l2_shells(bool embed_normalization) {
@@ -1283,3 +1307,78 @@ void BasisSet::negative_gaussian_normalization_to_coefficients() {
   // the usual renormalization steps
   update_l2_shells(false);
 }
+
+#ifdef USING_cuEST
+cuestAOBasis_t BasisSet::cuest_basis()
+{
+    if (cuest_basis_ == nullptr) {
+        cuest_common::ensure_cuest_initialized();
+        cuest_initialize();
+    }
+    return cuest_basis_;
+}
+
+void BasisSet::cuest_initialize()
+{
+    cuest_common::ensure_cuest_initialized();
+
+    int natom = molecule_->natom();
+
+    cuestAOShellParameters_t shell_params;
+    CHECK_CUEST(cuestParametersCreate(CUEST_AOSHELL_PARAMETERS, reinterpret_cast<void**>(&shell_params)));
+
+    std::vector<cuestAOShell_t> shells_out;
+    std::vector<uint64_t> shells_per_atom(natom);
+
+    for (int A = 0; A < natom; A++) {
+        int nshell_on_atom = nshell_on_center(A);
+        shells_per_atom[A] = static_cast<uint64_t>(nshell_on_atom);
+        for (int Q = 0; Q < nshell_on_atom; Q++) {
+            int shell_idx = shell_on_center(A, Q);
+            const GaussianShell& gshell = shell(shell_idx);
+            cuestAOShell_t cuest_shell;
+            CHECK_CUEST(cuestAOShellCreate(cuest_handle, gshell.is_pure() ? 1 : 0,
+                                           static_cast<uint64_t>(gshell.am()),
+                                           static_cast<uint64_t>(gshell.nprimitive()),
+                                           gshell.exps(), gshell.coefs(), shell_params, &cuest_shell));
+            shells_out.push_back(cuest_shell);
+        }
+    }
+    cuestParametersDestroy(CUEST_AOSHELL_PARAMETERS, shell_params);
+
+    cuestAOBasisParameters_t basis_params;
+    CHECK_CUEST(cuestParametersCreate(CUEST_AOBASIS_PARAMETERS, reinterpret_cast<void**>(&basis_params)));
+
+    cuestWorkspaceDescriptor_t* persistentWorkspaceDescriptor = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+    cuestWorkspaceDescriptor_t* temporaryWorkspaceDescriptor = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+
+    CHECK_CUEST(cuestAOBasisCreateWorkspaceQuery(cuest_handle, static_cast<uint64_t>(natom),
+        shells_per_atom.data(), shells_out.data(), basis_params, persistentWorkspaceDescriptor, temporaryWorkspaceDescriptor, nullptr));
+
+    cuest_basis_ws_ptr_ = cuest_common::allocateWorkspace(persistentWorkspaceDescriptor);
+    cuestWorkspace_t* temporaryBasisWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
+
+    CHECK_CUEST(cuestAOBasisCreate(cuest_handle, static_cast<uint64_t>(natom),
+        shells_per_atom.data(), shells_out.data(), basis_params, cuest_basis_ws_ptr_, temporaryBasisWorkspace, &cuest_basis_));
+
+    cuest_common::freeWorkspace(temporaryBasisWorkspace);
+    cuestParametersDestroy(CUEST_AOBASIS_PARAMETERS, basis_params);
+
+    free(persistentWorkspaceDescriptor);
+    free(temporaryWorkspaceDescriptor);
+
+    for (auto& s : shells_out) cuestAOShellDestroy(s);
+}
+
+void BasisSet::cuest_finalize()
+{
+    if (cuest_basis_ != nullptr) {
+        cuestAOBasisDestroy(cuest_basis_);
+        cuest_basis_ = nullptr;
+    }
+    if (cuest_basis_ws_ptr_ != nullptr) {
+        cuest_common::freeWorkspace(cuest_basis_ws_ptr_);
+        cuest_basis_ws_ptr_ = nullptr;
+    }
+}
+#endif

@@ -6,6 +6,9 @@ refenergy =  -25.10354689562797 #TEST
 molecule bh {
     b      0.0000        0.0000        0.0000
     h      0.0000        0.0000        1.0000
+units angstrom
+no_reorient
+symmetry c1
 }
 
 # Get a reasonable guess, to save some iterations

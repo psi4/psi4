@@ -25,6 +25,10 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
+
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psifiles.h"
@@ -52,6 +56,9 @@
 #include "psi4/libpsi4util/process.h"
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
+#endif
+#ifdef USING_cuEST
+#include "psi4/libpsipcm/cuestpcm.h"
 #endif
 
 #include <typeinfo>
@@ -248,6 +255,11 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 #ifdef USING_PCMSolver
     if (PCM_enabled_) {
         PCM_ = other->PCM_;
+    }
+#endif
+#ifdef USING_cuEST
+    if (options_.get_bool("CUEST_PCM")) {
+        cuestPCM_ = other->cuestPCM_;
     }
 #endif
 }
@@ -1370,3 +1382,10 @@ void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
 }
 
 std::shared_ptr<PCM> Wavefunction::get_PCM() const { return PCM_; }
+
+void Wavefunction::set_cuestPCM(const std::shared_ptr<cuestPCM>& cuestPCM) {
+    cuestPCM_ = cuestPCM;
+    PCM_enabled_ = true;
+}
+
+std::shared_ptr<cuestPCM> Wavefunction::get_cuestPCM() const { return cuestPCM_; }

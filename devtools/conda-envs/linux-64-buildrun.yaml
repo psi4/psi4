@@ -23,6 +23,7 @@ dependencies:
     # qc buildtime required
   - gau2grid
   #- psi4::libint              # opt'l with libint; Optionally for linux-64, an AM=7 build is available here.
+  - nvidia::libcuest-dev
   - libint
   - libxc-c
   - optking>=0.5.0
