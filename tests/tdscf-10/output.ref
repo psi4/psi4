@@ -34,7 +34,7 @@
 
     Psi4 started on: Wednesday, 07 October 2026 10:51PM
 
-    Process ID: 42908
+    Process ID: 42787
     Host:       jonathon-Laptop
     PSIDATADIR: /home/jonathon/psi4/objdir_p4dev/stage/share/psi4
     Memory:     500.0 MiB
@@ -49,7 +49,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! td-rhf (tda) test on singlet water, covering edge case of tighter convergence than a hermitian eigenproblem affords
+#! td-rhf (rpa) test on singlet water, covering edge case of tighter convergence than hamiltonian eigensolver affords
 h2o = psi4.geometry("""
     0 1
     O
@@ -61,17 +61,17 @@ psi4.set_options({
     "basis": "cc-pvdz",
     "d_convergence": 12,
     "r_convergence": 12,
-    "tdscf_states": [0, 0, 0, 2],
-    "tdscf_tda": True
+    "tdscf_states": [2, 0, 0, 0],
+    "tdscf_tda": False
 })
 
-wfn = psi4.energy("td-pbe", return_wfn=True)[1]
+wfn = psi4.energy("td-svwn", return_wfn=True)[1]
 
-exc_1 = 0.42453 # TEST
-exc_2 = 0.48542 # TEST
+exc_1 = 0.34995 # TEST
+exc_2 = 0.59236 # TEST
 
-compare_values(exc_1, wfn.variable("TD-PBE ROOT 0 (IN A1) -> ROOT 0 (IN B2) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
-compare_values(exc_2, wfn.variable("TD-PBE ROOT 0 (IN A1) -> ROOT 1 (IN B2) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
+compare_values(exc_1, wfn.variable("TD-SVWN ROOT 0 (IN A1) -> ROOT 1 (IN A1) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
+compare_values(exc_2, wfn.variable("TD-SVWN ROOT 0 (IN A1) -> ROOT 2 (IN A1) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /tmp/
@@ -83,7 +83,7 @@ Scratch directory: /tmp/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on jonathon-Laptop
-*** at Wed Oct  7 22:51:52 2026
+*** at Wed Oct  7 22:51:28 2026
 
    => Loading Basis Set <=
 
@@ -155,15 +155,16 @@ Scratch directory: /tmp/
     Version 7.1.2
     S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
 
-   => Composite Functional: PBE <= 
+   => Composite Functional: SVWN <= 
 
-    PBE GGA Exchange-Correlation Functional
-
-    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
-
+    Slater exchange
+    Vosko, Wilk & Nusair (VWN5_RPA)
+    P. A. M. Dirac,  Math. Proc. Cambridge Philos. Soc. 26, 376 (1930) (10.1017/S0305004100016108)
+    F. Bloch,  Z. Phys. 57, 545 (1929) (10.1007/BF01340281)
+    S. H. Vosko, L. Wilk, and M. Nusair,  Can. J. Phys. 58, 1200 (1980) (10.1139/p80-159)
 
     Deriv               =              1
-    GGA                 =           TRUE
+    GGA                 =          FALSE
     Meta                =          FALSE
 
     Exchange Hybrid     =          FALSE
@@ -171,16 +172,16 @@ Scratch directory: /tmp/
 
    => Exchange Functionals <=
 
-    1.0000     XC_GGA_X_PBE
+    1.0000         XC_LDA_X
 
    => Correlation Functionals <=
 
-    1.0000     XC_GGA_C_PBE
+    1.0000   XC_LDA_C_VWN_RPA
 
    => LibXC Density Thresholds  <==
 
-    XC_GGA_C_PBE:  1.00E-12 
-    XC_GGA_X_PBE:  1.00E-15 
+    XC_LDA_C_VWN_RPA:  1.00E-15 
+    XC_LDA_X:  1.00E-15 
 
    => Molecular Quadrature <=
 
@@ -209,7 +210,7 @@ Scratch directory: /tmp/
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.320 GiB. 
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.355 GiB. 
   SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
   Using in-core AOs.
 
@@ -219,7 +220,7 @@ Scratch directory: /tmp/
     K tasked:                    No
     wK tasked:                   No
     OpenMP threads:               1
-    Memory [MiB]:               327
+    Memory [MiB]:               363
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
     Mask sparsity (%):       0.0000
@@ -235,7 +236,7 @@ Scratch directory: /tmp/
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Cached 100.0% of DFT collocation blocks in 0.046 [GiB].
+  Cached 100.0% of DFT collocation blocks in 0.012 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 3.5226673831E-02.
   Reciprocal condition number of the overlap matrix is 1.1327684263E-02.
@@ -260,44 +261,44 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.04254832831538   -7.60425e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.16781689477872   -1.25269e-01   4.85244e-02 DIIS/ADIIS
-   @DF-RKS iter   2:   -75.77672261406551    3.91094e-01   8.43150e-02 DIIS/ADIIS
-   @DF-RKS iter   3:   -76.31505964962821   -5.38337e-01   1.65181e-02 DIIS/ADIIS
-   @DF-RKS iter   4:   -76.33308624576269   -1.80266e-02   1.98240e-03 DIIS/ADIIS
-   @DF-RKS iter   5:   -76.33335565088784   -2.69405e-04   1.14314e-04 DIIS/ADIIS
-   @DF-RKS iter   6:   -76.33335655242253   -9.01535e-07   7.35169e-06 DIIS
-   @DF-RKS iter   7:   -76.33335655630205   -3.87952e-09   3.65803e-07 DIIS
-   @DF-RKS iter   8:   -76.33335655631221   -1.01608e-11   4.84072e-08 DIIS
-   @DF-RKS iter   9:   -76.33335655631234   -1.27898e-13   1.45844e-09 DIIS
-   @DF-RKS iter  10:   -76.33335655631234    0.00000e+00   1.83970e-11 DIIS
-   @DF-RKS iter  11:   -76.33335655631234    0.00000e+00   1.45031e-12 DIIS
-   @DF-RKS iter  12:   -76.33335655631234    0.00000e+00   7.90821e-14 DIIS
+   @DF-RKS iter SAD:   -75.76990945843887   -7.57699e+01   0.00000e+00 
+   @DF-RKS iter   1:   -75.87787521237026   -1.07966e-01   4.95894e-02 ADIIS/DIIS
+   @DF-RKS iter   2:   -75.46383481573636    4.14040e-01   8.71762e-02 ADIIS/DIIS
+   @DF-RKS iter   3:   -76.02844152987275   -5.64607e-01   1.79772e-02 ADIIS/DIIS
+   @DF-RKS iter   4:   -76.04950833889741   -2.10668e-02   2.18361e-03 ADIIS/DIIS
+   @DF-RKS iter   5:   -76.04983143898284   -3.23100e-04   1.13951e-04 ADIIS/DIIS
+   @DF-RKS iter   6:   -76.04983232678505   -8.87802e-07   6.54920e-06 DIIS
+   @DF-RKS iter   7:   -76.04983232971877   -2.93372e-09   3.82622e-07 DIIS
+   @DF-RKS iter   8:   -76.04983232973116   -1.23919e-11   2.99984e-08 DIIS
+   @DF-RKS iter   9:   -76.04983232973115    1.42109e-14   3.07799e-10 DIIS
+   @DF-RKS iter  10:   -76.04983232973116   -1.42109e-14   4.62601e-11 DIIS
+   @DF-RKS iter  11:   -76.04983232973113    2.84217e-14   5.23637e-12 DIIS
+   @DF-RKS iter  12:   -76.04983232973115   -1.42109e-14   7.76655e-14 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
    Electrons on quadrature grid:
-      Ntotal   =   10.0000000140 ; deviation = 1.401e-08 
+      Ntotal   =   10.0000000191 ; deviation = 1.912e-08 
 
     Orbital Energies [Eh]
     ---------------------
 
     Doubly Occupied:                                                      
 
-       1A1   -18.746895     2A1    -0.888742     1B2    -0.439093  
-       3A1    -0.308495     1B1    -0.222773  
+       1A1   -18.606058     2A1    -0.900152     1B2    -0.458747  
+       3A1    -0.326517     1B1    -0.243888  
 
     Virtual:                                                              
 
-       4A1     0.022323     2B2     0.096029     3B2     0.489221  
-       5A1     0.546574     6A1     0.857025     2B1     0.866831  
-       4B2     0.950216     7A1     1.135043     1A2     1.179248  
-       3B1     1.353700     8A1     1.537765     5B2     1.588232  
-       6B2     1.955747     9A1     1.996642     4B1     2.810906  
-       2A2     2.827603    10A1     2.993255    11A1     3.323580  
-       7B2     3.614014  
+       4A1     0.004769     2B2     0.079502     3B2     0.480625  
+       5A1     0.536507     6A1     0.827819     2B1     0.834827  
+       4B2     0.918939     7A1     1.113123     1A2     1.156068  
+       3B1     1.331400     8A1     1.515168     5B2     1.564447  
+       6B2     1.932784     9A1     1.975429     4B1     2.799074  
+       2A2     2.815139    10A1     2.979514    11A1     3.312938  
+       7B2     3.600801  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -305,17 +306,17 @@ Scratch directory: /tmp/
     NA   [     3,    0,    1,    1 ]
     NB   [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.33335655631234
+  @DF-RKS Final Energy:   -76.04983232973115
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8085077863310630
-    One-Electron Energy =                -122.4771484531007104
-    Two-Electron Energy =                  46.5765578316460065
-    DFT Exchange-Correlation Energy =      -9.2412737211886959
+    One-Electron Energy =                -122.4784027433866100
+    Two-Electron Energy =                  46.5707990626340731
+    DFT Exchange-Correlation Energy =      -8.9507364353096595
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3333565563123386
+    Total Energy =                        -76.0498323297311458
 
 Computation Completed
 
@@ -334,20 +335,20 @@ Properties computed using the SCF density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000           -0.0000000           -0.0000000
- Dipole Z            :         -0.3009798            1.0531808            0.7522010
- Magnitude           :                                                    0.7522010
+ Dipole Z            :         -0.2611713            1.0531808            0.7920095
+ Magnitude           :                                                    0.7920095
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jonathon-Laptop at Wed Oct  7 22:51:53 2026
+*** tstop() called on jonathon-Laptop at Wed Oct  7 22:51:28 2026
 Module time:
-	user time   =       1.10 seconds =       0.02 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.10 seconds =       0.02 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -369,24 +370,24 @@ Total time:
      Residual threshold  : 1.0000e-10
      Initial guess       : denominators
      Reference           : RHF
-     Solver type         : TDA (Davidson)
+     Solver type         : RPA (Hamiltonian)
 
 
   ==> Requested Excitations <==
 
-      0 singlet states with A1 symmetry
+      2 singlet states with A1 symmetry
       0 singlet states with A2 symmetry
       0 singlet states with B1 symmetry
-      2 singlet states with B2 symmetry
+      0 singlet states with B2 symmetry
 
 
-  ==> Seeking the lowest 2 singlet states with B2 symmetry
+  ==> Seeking the lowest 2 singlet states with A1 symmetry
 
 Warning! r_convergence truncated to 1.000000e-09.
 	Psi cannot reliably converge tighter.
 
-                         Generalized Davidson Solver                         
-                               By Ruhee Dcunha                               
+                        Generalized Hamiltonian Solver                       
+                              By Andrew M. James                             
 
   ==> Options <==
 
@@ -395,12 +396,15 @@ Warning! r_convergence truncated to 1.000000e-09.
     Max number of expansion vectors = 1000 
 
   => Iterations <=
-                           Max[D[value]]     Max[|R|]   # vectors
-  DavidsonSolver iter   1:   4.85968e-01  6.89063e-02      8      
-  DavidsonSolver iter   2:   1.90090e-03  1.38834e-03     10      
-  DavidsonSolver iter   3:   6.31730e-07  1.63523e-05     12      
-  DavidsonSolver iter   4:   6.43834e-11  1.23909e-07     14      
-  DavidsonSolver iter   5:   2.60902e-15  4.64966e-10     16      Converged
+                              Max[D[value]]     Max[|R|]   # vectors
+  HamiltonianSolver iter   1:   5.94796e-01  1.02371e-01      8      
+  HamiltonianSolver iter   2:   2.41718e-03  1.52149e-02     10      
+  HamiltonianSolver iter   3:   1.74765e-05  2.18573e-03     14      
+  HamiltonianSolver iter   4:   2.97700e-07  3.21248e-04     18      
+  HamiltonianSolver iter   5:   4.39167e-09  8.01767e-05     22      
+  HamiltonianSolver iter   6:   8.59578e-11  5.97231e-06     26      
+  HamiltonianSolver iter   7:   1.13420e-12  2.29177e-08     30      
+  HamiltonianSolver iter   8:   4.77396e-15  1.35513e-10     31      Converged
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -410,23 +414,23 @@ Warning! r_convergence truncated to 1.000000e-09.
                                     Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
      #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
     ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
-     1      A1->B2 (1 B2)      0.42453         11.55214       -75.90882        0.0625          0.0246          0.0000         -0.0000        
-     2      A1->B2 (1 B2)      0.48542         13.20898       -75.84794        0.3462          0.2522          0.0000         -0.0000        
+     1      A1->A1 (1 A1)      0.34995         9.52266        -75.69988        0.0839          0.1900          0.0000         -0.0000        
+     2      A1->A1 (1 A1)      0.59236         16.11896       -75.45747        0.1356          0.1489          0.0000         -0.0000        
 
 
 
-Contributing excitations
+Contributing excitations and de-excitations
 Only contributions with abs(coeff) > 1.00e-01 will be printed:
 
-Excited State    1 (1 B2):   0.42453 au   107.33 nm f = 0.0625
-  Sums of squares: Xssq =  1.000000e+00
-      3a1  ->   2b2     0.979433 (95.929%)
-      1b2  ->   4a1     0.179222 ( 3.212%)
+Excited State    1 (1 A1):   0.34995 au   130.20 nm f = 0.0839
+  Sums of squares: Xssq =  1.002287e+00; Yssq =  2.286531e-03; Xssq - Yssq =  1.000000e+00
+      3a1  ->   4a1     0.993398 (98.684%)
+      1b2  ->   2b2     0.104535 ( 1.093%)
 
-Excited State    2 (1 B2):   0.48542 au   93.86 nm f = 0.3462
-  Sums of squares: Xssq =  1.000000e+00
-      3a1  ->   2b2    -0.171939 ( 2.956%)
-      1b2  ->   4a1     0.979755 (95.992%)
+Excited State    2 (1 A1):   0.59236 au   76.92 nm f = 0.1356
+  Sums of squares: Xssq =  1.006107e+00; Yssq =  6.107500e-03; Xssq - Yssq =  1.000000e+00
+      1b2  ->   2b2     0.974881 (95.039%)
+      1b2  ->   3b2    -0.108619 ( 1.180%)
 
 
 ******************************************************************************************
@@ -441,6 +445,6 @@ Excited State    2 (1 B2):   0.48542 au   93.86 nm f = 0.3462
     Second Excitation Energy..............................................................PASSED
 
     Psi4 stopped on: Wednesday, 07 October 2026 10:51PM
-    Psi4 wall time for execution: 0:00:02.10
+    Psi4 wall time for execution: 0:00:01.77
 
 *** Psi4 exiting successfully. Buy a developer a beer!
