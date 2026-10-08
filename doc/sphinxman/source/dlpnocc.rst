@@ -100,6 +100,47 @@ An example input file for a DLPNO-CCSD(T) computation is::
    
    energy('dlpno-ccsd(t)') # dlpno-ccsd(t0) for the semicanonical (T0) computation
 
+Open-Shell References and UHF-to-QRO Transformation
+----------------------------------------------------
+
+``DLPNO-CCSD`` and ``DLPNO-CCSD(T)`` support high-spin ``ROHF`` references.
+When ``REFERENCE UHF`` is requested for DLPNO-CCSD, |PSIfour| first constructs
+a common set of quasi-restricted orbitals (QROs) and then invokes the restricted
+open-shell DLPNO-CCSD solver.
+The QRO construction follows Neese [Neese:2006:10213]_ and the open-shell
+local-correlation formulation of Hansen, Liakos, and Neese
+[Hansen:2011:214102]_.  Related restricted-orbital open-shell local-correlation
+considerations are discussed by Szabó *et al.* [Szabo:2021:2886]_.  The
+spin-resolved semicanonical and iterative triples corrections follow the
+open-shell DLPNO-(T0/T) formulation of Guo *et al.* [Guo:2020:024116]_.
+
+The spin-summed UHF density is diagonalized to obtain unrestricted natural
+orbitals.  The first :math:`N_\beta` orbitals define the doubly occupied space,
+the next :math:`N_\alpha-N_\beta` define the singly occupied space, and the
+remainder define the external space.  These three spaces are separately
+semicanonicalized with :math:`F^\beta`,
+:math:`(F^\alpha+F^\beta)/2`, and :math:`F^\alpha`, respectively.  Rotations
+between occupation classes are not permitted.
+
+The resulting restricted high-spin determinant is not an optimized ROHF
+determinant.  Therefore, occupied--virtual Fock elements and their singles
+contributions are retained.  Its spin-resolved Fock matrices and determinant
+energy are rebuilt from the QRO densities.  Energy variables follow
+
+.. math::
+
+   E_\text{DLPNO-CCSD}=E_\text{QRO reference}+E_\text{CCSD correlation}.
+
+``SCF TOTAL ENERGY`` remains the energy of the input UHF calculation for
+provenance, while ``QRO REFERENCE ENERGY`` and ``CURRENT REFERENCE ENERGY``
+contain the determinant energy used by the correlation calculation.  A
+broken-symmetry UHF singlet cannot be represented by this high-spin restricted
+formalism and is rejected; a collapsed closed-shell UHF reference is allowed.
+At present, the UHF-to-QRO route is available for ``DLPNO-CCSD`` only.
+
+This implementation was developed from published equations and native
+|PSIfour| infrastructure.  No ORCA source code was used.
+
 PNO Convergence Settings
 ------------------------
 
@@ -147,7 +188,10 @@ Practical Advice
 
 * Note that DLPNO does not yet have molecular point group symmetry implemented and will run in C1 symmetry.
 
-* At this time, DLPNO-CCSD/(T) is only available for closed-shell RHF computations.
+* DLPNO-CCSD is available for closed-shell RHF, high-spin ROHF, and high-spin
+  UHF references transformed to QROs.  The perturbative triples correction is
+  available for closed-shell RHF and high-spin ROHF computations; the UHF-to-QRO
+  route is presently available only for DLPNO-CCSD.
 
 Computation Size Limits
 -----------------------
