@@ -1,0 +1,23 @@
+#! td-rhf (rpa) test on singlet water, covering edge case of tighter convergence than hamiltonian eigensolver affords
+h2o = psi4.geometry("""
+    0 1
+    O
+    H 1 1.0
+    H 1 1.0 2 101.5
+""")
+
+psi4.set_options({
+    "basis": "cc-pvdz",
+    "d_convergence": 12,
+    "r_convergence": 12,
+    "tdscf_states": [2, 0, 0, 0],
+    "tdscf_tda": False
+})
+
+wfn = psi4.energy("td-svwn", return_wfn=True)[1]
+
+exc_1 = 0.34995 # TEST
+exc_2 = 0.59236 # TEST
+
+compare_values(exc_1, wfn.variable("TD-SVWN ROOT 0 (IN A1) -> ROOT 1 (IN A1) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
+compare_values(exc_2, wfn.variable("TD-SVWN ROOT 0 (IN A1) -> ROOT 2 (IN A1) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
