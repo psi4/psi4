@@ -123,6 +123,10 @@ def runner_asserter(inp, subject, method, basis, tnm):
         atol_h = 1.0e-5
         if is_dft:
             atol_h = 7.0e-5
+        if is_ecp and scf_type in ["df", "mem_df", "disk_df"]:
+            # I jkfit metric is ill-conditioned (~1e9), so DF grads carry ~1e-8 run-to-run noise; mass-weighted
+            #   steps on I are only 0.005/sqrt(127) bohr, so findif-of-grads hessians scatter up to ~7e-5 from analytic
+            atol_h = 1.0e-4
 
 
     chash = answer_hash(
