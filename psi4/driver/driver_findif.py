@@ -173,7 +173,7 @@ logger = logging.getLogger(__name__)
 # h is the index of an irrep.
 
 
-def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: core.CdSalcList, i_m: Iterator[Tuple], step_size: float) -> Tuple[np.ndarray, str]:
+def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: core.CdSalcList, i_m: Iterator[Tuple], step_size: float, displacement_space: str = "CdSalc") -> Tuple[np.ndarray, str]:
     """Displace a geometry along the specified displacement SALCs.
 
     Parameters
@@ -190,6 +190,8 @@ def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: core.CdSalcLis
         the salc at that index.
     step_size
         The size of a single "step," i.e., the stencil size.
+    displacement_space
+        ``"molsym"`` when `salc_list` holds MolSym SALCs, else ``"CdSalc"``.
 
     Returns
     -------
@@ -205,13 +207,13 @@ def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: core.CdSalcLis
     # an arbitrary number of SALCs.
 
     #MolSym "salc_list" contains the salcs and the SymText object
-    if core.get_option("FINDIF", "SALC_PACKAGE").lower() == "molsym":
+    if displacement_space == "molsym":
         salcs = salc_list[0]
         symtext = salc_list[1]
         for salc_index, disp_steps in i_m:
             for atom_idx in range(symtext.mol.natoms):
                 for xyz_idx in range(3):
-                    disp_geom[atom_idx, xyz_idx] += disp_steps * step_size * salcs.salcs[salc_index].coeffs[atom_idx * 3 + xyz_idx] / np.sqrt(symtext.mol.masses[atom_idx]) 
+                    disp_geom[atom_idx, xyz_idx] += disp_steps * step_size * salcs.salcs[salc_index].coeffs[atom_idx * 3 + xyz_idx] / np.sqrt(mass[atom_idx])
             label.append(f"{salc_index}: {disp_steps}")
         label = ', '.join(reversed(label))
         return disp_geom, label
@@ -298,16 +300,31 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     # Get settings for CdSalcList, then get the CdSalcList.
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
     # core.get_option returns an int, but CdSalcList expect a bool, so re-cast
-    if core.get_option("FINDIF", "SALC_PACKAGE").lower() == "molsym":
+    use_molsym = core.get_option("FINDIF", "SALC_PACKAGE").lower() == "molsym"
+    # The driver turns off t_project for external potentials, PERTURB_H and EFP, which MolSym can't see
+    if use_molsym and not t_project:
+        if print_lvl and verbose:
+            info = "    External potential or field present; using SALC_PACKAGE INTERNAL for this finite difference.\n"
+            core.print_out(info)
+            logger.info(info)
+        use_molsym = False
+    if use_molsym:
         try:
             import molsym
         except ImportError:
             raise ModuleNotFoundError("Python module molsym not found. Solve by installing it: `conda install -c conda-forge molsym` or `pip install molsym`")
-        displacement_space = "molsym"
         molsym_mol = molsym.Molecule.from_psi4_molecule(mol)
-        symtext = molsym.Symtext.nonstandard_symtext(molsym.Symtext.from_molecule(molsym_mol))
-
-        cart_coords = molsym.salcs.CartesianCoordinates(symtext)
+        symtext = molsym.Symtext.from_molecule(molsym_mol)
+        if mol.symmetry_from_input() and mol.schoenflies_symbol().capitalize() != symtext.pg.str:
+            # Use the point group the input asked for instead of MolSym's own.
+            symtext = symtext.subgroup_symtext(mol.schoenflies_symbol())
+        displacement_space = "molsym"
+        if symtext.pg.is_linear:
+            # Linear groups have no nonstandard frame; MolSym keeps the psi4 frame.
+            cart_coords = molsym.salcs.cartesian_coordinates.LinearCartesian(symtext)
+        else:
+            symtext = molsym.Symtext.nonstandard_symtext(symtext)
+            cart_coords = molsym.salcs.CartesianCoordinates(symtext)
 
         if t_project and r_project:
             project_eckart = "both"
@@ -423,7 +440,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         for h, salcs_h in enumerate(salc_indices_pi):
             n_disp = 0
             for salc in salcs_h:
-                n_disp += 2 if not molsym.salcs.salc_tools.maps_to_negative(symtext, salcs[salc]) else 1
+                n_disp += len(disps["asym_irr" if asym_list[salc] else "sym_irr"])
             if mode == "2_0":
                 n_disp += len(salcs_h) * (len(salcs_h) - 1) // 2 * len(disps["off"])
             n_disp_pi.append(n_disp)
@@ -444,8 +461,11 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         core.print_out(info)
         logger.info(info)
     if print_lvl > 1 and verbose:
-        for i in range(len(salc_list)):
-            salc_list[i].print_out()
+        if displacement_space == "molsym":
+            core.print_out(str(salcs))
+        else:
+            for i in range(len(salc_list)):
+                salc_list[i].print_out()
     data.update({
         "n_disp_pi": n_disp_pi,
         "n_irrep": n_irrep,
@@ -604,7 +624,7 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
 
         # Next, to make this salc/magnitude composite.
         disp_geom, label = _displace_cart(findifrec['molecule']['masses'], ref_geom, data["salc_list"],
-                                          zip(indices, steps), data["step_size"])
+                                          zip(indices, steps), data["step_size"], data["displacement_space"])
         if data["print_lvl"] > 2:
             info = "\nDisplacement '{}'\n{}\n".format(label, nppp10(disp_geom))
             core.print_out(info)
@@ -935,7 +955,14 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
                 if core.get_option("FINDIF", "MOLSYM_EXPLOIT_DEGENERACY"):
                     irrep = symtext.irreps[h]
                     test_array = np.array([[1, 0, 2],[0, 1, 2]])
-                    if irrep.d > 1:
+                    if irrep.d > 1 and symtext.pg.is_linear:
+                        pf_sidx = salc_index + len(salc_indices)
+                        pf_dipole = molsym.salcs.salc_tools.generate_degenerate_partner(
+                            symtext, salc, salc_list[pf_sidx], dipole[salc_index], data_type="dipole")
+                        if pf_dipole is None:
+                            raise ValidationError("FINDIF: Could not relate the components of a degenerate linear SALC.")
+                        dipole[pf_sidx] = pf_dipole
+                    elif irrep.d > 1:
                         proj_on_neg = symtext.proj_on_dipole(neg_dip, irrep)
                         proj_on_pos = symtext.proj_on_dipole(pos_dip, irrep)
                         if len(symtext.assign_dipole_irrep[irrep.symbol]) != 0:
@@ -1101,14 +1128,16 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
                 grad_entries = []
 
                 if molsym.salcs.salc_tools.maps_to_negative(symtext, salc):
-                    # build negative displacements
+                    # build negative displacements, then their symmetric partners, ordered -n..-1, 1..n
+                    pos_entries = []
                     for j in range(max_disp, 0, -1):
                         key_minus = f"{salc_index}: {-j}"
                         grad_raw = displacements[key_minus]["gradient"]
                         grad_mat = np.reshape(grad_raw, (N, 3))
                         grad_entries.append(grad_mat)
                         pos_grad, _ = molsym.salcs.salc_tools.generate_symmetric_partner(symtext, salc, grad_mat, data_type = "gradient")
-                        grad_entries.append(pos_grad)
+                        pos_entries.append(pos_grad)
+                    grad_entries.extend(reversed(pos_entries))
 
                 else:
                     # explicit +/- displacements exist
