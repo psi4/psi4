@@ -76,7 +76,7 @@ CCEnergyWavefunction::~CCEnergyWavefunction() {}
 
 void CCEnergyWavefunction::init() {
     shallow_copy(reference_wavefunction_);
-    module_ = "ccenergy";
+    set_module("ccenergy");
     // shallow_copy leaves this wfn's Density as the same object as the ref's.
     // Because ccdensity/ccdensity.cc needs to modify the object at that memory
     // location, make this object's densities point to a different memory locationn

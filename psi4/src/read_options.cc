@@ -30,6 +30,9 @@
     \defgroup PSI4
 */
 
+#include <cstdlib>
+#include <string>
+
 #include "psi4/physconst.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
@@ -192,12 +195,24 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
-#ifdef USING_OpenOrbitalOptimizer
-    /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
+#if defined(USING_OpenOrbitalOptimizer)
+    /*- Package driving the first-order SCF iterations. If compiled with
+        OpenOrbitalOptimizer support, change this to use it or the internal code. The
+        second-order iterations, if any, are selected separately with
+        |globals__second_order_orbital_optimizer_package|. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
 #else
-    /*- Orbital optimizer package to use for SCF. -*/
+    /*- Package driving the first-order SCF iterations. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+#endif
+#if defined(USING_OpenTrustRegion)
+    /*- Package driving the second-order SCF iterations once |scf__soscf| turns them on.
+        The first-order iterations that precede them are selected separately with
+        |globals__orbital_optimizer_package|. Ignored when |scf__soscf| is false. -*/
+    options.add_str("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OTR OPENTRUSTREGION");
+#else
+    /*- Package driving the second-order SCF iterations once |scf__soscf| turns them on. -*/
+    options.add_str("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
 #endif
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
@@ -1614,6 +1629,39 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SOSCF_CONV", 5.0E-3);
         /*- Do we print the SOSCF microiterations?. -*/
         options.add_bool("SOSCF_PRINT", false);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, solver used for the
+            trust-region subproblem. `TCG` is often faster, markedly so with diffuse basis
+            sets, but is less robust: it can stall before reaching the convergence
+            threshold. -*/
+        options.add_str("OTR_SUBSYSTEM_SOLVER", "DAVIDSON", "DAVIDSON JACOBI-DAVIDSON TCG");
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, number of random
+            trial vectors seeding each microiteration space. Raising it is OpenTrustRegion's
+            suggested remedy when it reports a trial subspace that is too small, at the cost
+            of one Hessian application per vector. -*/
+        options.add_int("OTR_N_RANDOM_TRIAL_VECTORS", 1);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, microiteration at
+            which to switch from Davidson to Jacobi-Davidson. -*/
+        options.add_int("OTR_JACOBI_DAVIDSON_START", 30);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, do a line search
+            along the trust-region step. -*/
+        options.add_bool("OTR_LINE_SEARCH", false);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, initial trust
+            radius. -*/
+        options.add_double("OTR_START_TRUST_RADIUS", 0.4);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, relative residual
+            reduction demanded of the microiterations far from convergence. -*/
+        options.add_double("OTR_GLOBAL_RED_FACTOR", 1.0E-3);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, relative residual
+            reduction demanded of the microiterations near convergence. -*/
+        options.add_double("OTR_LOCAL_RED_FACTOR", 1.0E-4);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, seed for the random
+            trial vectors. Fixed so runs are reproducible. -*/
+        options.add_int("OTR_SEED", 42);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, verbosity of the
+            solver's own printing: 0 macro-iterations only, 1 the default table, 2 or more
+            adds microiteration detail. Unset, this follows |scf__soscf_print| ; setting it
+            overrides that. -*/
+        options.add_int("OTR_PRINT", 1);
         /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
             performed. CHECK will print out the analysis of the wavefunction stability at the end of
             the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability

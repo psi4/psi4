@@ -16,6 +16,11 @@ __all__ = [
     "uusing",
     "ctest_labeler",
     "ctest_runner",
+    "orbital_optimizer_combinations",
+    "first_order_optimizer_combinations",
+    "second_order_optimizer_combinations",
+    "representative_optimizer_combinations",
+    "orbital_optimizer_setenv",
 ]
 
 
@@ -97,6 +102,7 @@ _programs = {
     "gauxc": psi4.addons("gauxc"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
+    "otr": psi4.addons("otr"),
 }
 
 
@@ -185,6 +191,58 @@ hardware_nvidia_gpu = pytest.mark.skipif(
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
 
 
+#: The six meaningful combinations of orbital optimizer packages. ORBITAL_OPTIMIZER_PACKAGE
+#: drives the first-order iterations; SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE takes over once
+#: SOSCF turns second-order iterations on, so it is only meaningful when SOSCF is true.
+orbital_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
+    pytest.param(None,  None,     id="internal"),
+    pytest.param("ooo", None,     id="ooo", marks=using("ooo")),
+    pytest.param(None,  "soscf",  id="internal-soscf"),
+    pytest.param(None,  "otr",    id="internal-otr", marks=using("otr")),
+    pytest.param("ooo", "soscf",  id="ooo-soscf", marks=using("ooo")),
+    pytest.param("ooo", "otr",    id="ooo-otr", marks=[*using("ooo"), *using("otr")]),
+])
+
+
+#: For tests whose method rules out second-order convergence altogether -- a VV10 or
+#: meta-GGA functional, say -- so that only the first-order package is worth varying.
+first_order_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
+    pytest.param(None,  None, id="internal"),
+    pytest.param("ooo", None, id="ooo", marks=using("ooo")),
+])
+
+
+#: For tests that turn |scf__soscf| on themselves, so only the two packages are worth
+#: varying. Unlike the six-way, this never runs a first-order-only case.
+second_order_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
+    pytest.param(None,  None,  id="internal-soscf"),
+    pytest.param("ooo", None,  id="ooo-soscf", marks=using("ooo")),
+    pytest.param(None,  "otr", id="internal-otr", marks=using("otr")),
+    pytest.param("ooo", "otr", id="ooo-otr", marks=[*using("ooo"), *using("otr")]),
+])
+
+
+#: For expensive downstream tests -- gradients, hessians, finite differences -- where the
+#: optimizer only sets up the SCF reference and the full cross-product is not worth the
+#: runtime. A baseline and one configuration exercising both add-ons at once.
+representative_optimizer_combinations = pytest.mark.parametrize("oopkg,soopkg", [
+    pytest.param(None,  None,  id="internal"),
+    pytest.param("ooo", "otr", id="ooo-otr", marks=[*using("ooo"), *using("otr")]),
+])
+
+
+def orbital_optimizer_setenv(oopkg, soopkg):
+    """Environment flags for one entry of :data:`orbital_optimizer_combinations`."""
+    setenv = []
+    if oopkg == "ooo":
+        setenv.append("_PSI4_USE_OOPKG")
+    if soopkg == "soscf":
+        setenv.append("_PSI4_USE_SOSCF")
+    elif soopkg == "otr":
+        setenv.append("_PSI4_USE_OTRPKG")
+    return setenv or None
+
+
 def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = None, setenv: List = None):
     """Called from a mock PyTest function, this takes a full path ``inputdatloc`` to an ``"input.dat"`` file set up for
     CTest and submits it to the ``psi4`` executable. Any auxiliary files with names listed in ``extra_infiles`` that reside
@@ -239,5 +297,14 @@ def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = No
         command = [sys.executable, psi4.executable, inputdat]
     _, output = execute(command, infiles_with_contents, outfiles, environment=env, scratch_messy=False)
 
-    success = output["proc"].poll() == 0
-    assert success, output["stdout"] + output["stderr"]
+    retcode = output["proc"].poll()
+    success = retcode == 0
+    if not success:
+        # Report the return code, not just the streams. A crash before Psi4 prints anything
+        # -- an illegal instruction in a linked add-on, say -- leaves stdout and stderr empty,
+        # and then the return code is the only clue there is.
+        report = f"psi4 exited {retcode}"
+        if retcode is not None and retcode < 0:
+            report += f" (killed by signal {-retcode})"
+        report += "\n\n=== stdout ===\n" + output["stdout"] + "\n=== stderr ===\n" + output["stderr"]
+    assert success, report

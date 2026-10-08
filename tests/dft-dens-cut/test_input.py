@@ -1,6 +1,6 @@
 from addons import *
 
 @ctest_labeler("quick;dft;scf;cart")
-def test_dft_dens_cut():
-    ctest_runner(__file__)
-
+@first_order_optimizer_combinations
+def test_dft_dens_cut(oopkg, soopkg):
+    ctest_runner(__file__, setenv=orbital_optimizer_setenv(oopkg, soopkg))
