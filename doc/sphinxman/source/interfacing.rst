@@ -60,6 +60,7 @@ platform capabilities, *etc*.
    gdma
    libint
    molden
+   molsym
    mrcc
    ooo
    pcmsolver
