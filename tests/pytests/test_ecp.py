@@ -303,3 +303,39 @@ def test_ecp_ghost_sanity():
 
     assert compare_values(0.0, diff, 7, "ECP + valence vs. only valence")
 
+
+
+@uusing("ecpint")
+@pytest.mark.medlong
+def test_ecp_la2o3_grad_findif():
+    """Analytic HF gradient of La2O3 (two 46-electron La ECPs) must match 5-point finite differences of energies.
+
+    Before libecpint's fixes for narrow type-2 radial integrands and the early-stopping one-point quadrature,
+    ECP integrals jumped discontinuously with geometry: the energy was off by 7.5e-5 Eh and findif deviated from
+    analytic by 1.6e-4 Eh/a0 (no amount of tightening convergence helped). Now agreement is ~1e-7.
+    """
+    import psi4
+
+    psi4.geometry("""
+        La  0.0      0.944863  -0.3286479
+        La  0.0     -0.944863  -0.3286479
+        O   0.0      1.88973    1.5610781
+        O   0.0      0.0        1.5610781
+        O   0.0     -1.88973    1.5610781
+        units au
+        no_com
+        no_reorient
+    """)
+    psi4.set_options({
+        "scf_type": "pk",
+        "basis": "def2-svp",
+        "puream": True,
+        "e_convergence": 10,
+        "d_convergence": 10,
+        "points": 5,
+    })
+
+    analytic, wfn = psi4.gradient("hf", dertype=1, return_wfn=True)
+    findif = psi4.gradient("hf", dertype=0)
+    assert compare_values(analytic, findif, 6, "La2O3 HF gradient: analytic vs findif")
+    assert compare_values(-261.405809790, wfn.energy(), 6, "La2O3 HF energy")
