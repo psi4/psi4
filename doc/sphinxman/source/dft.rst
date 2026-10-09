@@ -330,13 +330,14 @@ any of these options, see the relevant section below, or in the preceding
 :ref:`Hartree--Fock section <sec:scf>`.
 
 .. _`sec:ks-integrators`:
+
 Integrators
 ~~~~~~~~~~~
 |PSIfour| supports the use of three different engines to perform the numerical integrations necessary for KS-DFT. |PSIfour| has its own integrator, and it also has interfaces to the GauXC and :ref:`BrianQC <sec:brianqc>` modules, both of which provide GPU support. More information about these modules is provided on their respective webpages.
 
 |PSIfour| allows multiple integrators to be initialized. |PSIfour| will attempt the computation with each initialized integrator and fall back to the next if none are set. Integrators are set in the order of: BrianQC, GauXC, and lastly the |PSIfour| built-in integrator.
 
-By default, only |PSIfour| is enabled, for backwards compatability. The defaults may be overridden by changing the respective boolean variables: |scf_brianqc_integrate}, |scf_gauxc_integrate|, |scf__dft_enable_psi|.
+By default, only |PSIfour| is enabled, for backwards compatability. The defaults may be overridden by changing the respective boolean variables: |scf_brianqc_integrate|, |scf_gauxc_integrate|, |scf__dft_enable_psi|.
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
