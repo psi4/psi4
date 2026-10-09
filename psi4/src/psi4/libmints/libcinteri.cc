@@ -85,17 +85,26 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
     if (deriv_ != 0)
         throw PSIEXCEPTION("LIBCINT backend: integral derivatives are not implemented (use INTEGRAL_PACKAGE LIBINT2).");
 
-    // Determine whether the (non-dummy) bases are cartesian or spherical. psi4
-    // uses one convention per calculation (the PUREAM option), so a single flag
-    // suffices; the l=0 dummy shell is identical either way. Density fitting is
-    // handled by the dummy s-shell (l=0, exp=0) that psi4 places in the absent
-    // center's slot -- see append_basis / normalize_shells.
-    cart_ = false;
+    // Determine whether the (non-dummy) bases are cartesian, spherical, or a mix.
+    // Bases can differ (e.g., a cartesian 6-31G* primary with a spherical RI
+    // auxiliary in DF-MP2), but libcint picks int2e_cart or int2e_sph per call, not
+    // per shell. A mix is computed cartesian and the spherical shells transformed
+    // here (transform_mixed). The l=0 dummy shell is identical either way. Density
+    // fitting is handled by the dummy s-shell (l=0, exp=0) that psi4 places in the
+    // absent center's slot -- see append_basis / normalize_shells.
+    bool any_cart = false, any_pure = false;
     for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()}) {
         if (is_dummy_basis(*bs)) continue;
-        for (int s = 0; s < bs->nshell(); ++s)
-            if (bs->shell(s).is_cartesian() && bs->shell(s).am() > 0) cart_ = true;
+        for (int s = 0; s < bs->nshell(); ++s) {
+            if (bs->shell(s).am() == 0) continue;
+            if (bs->shell(s).is_cartesian())
+                any_cart = true;
+            else
+                any_pure = true;
+        }
     }
+    cart_ = any_cart;
+    mixed_ = any_cart && any_pure;
 
     build_environment();
     common_init();
@@ -108,7 +117,10 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
       env_(rhs.env_),
       opt_(nullptr),
       basis_starts_(rhs.basis_starts_),
-      omega_(rhs.omega_) {
+      omega_(rhs.omega_),
+      cart_(rhs.cart_),
+      mixed_(rhs.mixed_),
+      bas_pure_(rhs.bas_pure_) {
     bas_start_[0] = rhs.bas_start_[0];
     bas_start_[1] = rhs.bas_start_[1];
     bas_start_[2] = rhs.bas_start_[2];
@@ -145,6 +157,11 @@ void LibcintTwoElectronInt::common_init() {
     const size_t blk = nmax * nmax * nmax * nmax;
     target_store_.assign(blk, 0.0);
     cint_buf_.assign(blk, 0.0);
+    if (mixed_) {
+        mixed_buf_.assign(blk, 0.0);
+        sph_trans_.clear();
+        for (int l = 0; l <= maxam; ++l) sph_trans_.emplace_back(l);
+    }
     target_full_ = target_store_.data();
     source_full_ = nullptr;
     buffers_.resize(1, target_full_);
@@ -154,6 +171,23 @@ void LibcintTwoElectronInt::common_init() {
 }
 
 int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
+    // Atoms: each basis contributes its own molecule's centers, so bases on
+    // different molecules (or a dummy basis) never index the wrong coordinates.
+    const int atom_start = static_cast<int>(atm_.size() / ATM_SLOTS);
+    auto mol = bs.molecule();
+    for (int a = 0; a < mol->natom(); ++a) {
+        const int coord_off = static_cast<int>(env_.size());
+        env_.push_back(mol->x(a));
+        env_.push_back(mol->y(a));
+        env_.push_back(mol->z(a));
+        atm_.push_back(static_cast<int>(mol->true_atomic_number(a)));  // CHARGE_OF
+        atm_.push_back(coord_off);                                     // PTR_COORD
+        atm_.push_back(0);                                             // NUC_MOD_OF
+        atm_.push_back(0);                                             // PTR_ZETA
+        atm_.push_back(0);
+        atm_.push_back(0);
+    }
+
     const int start = static_cast<int>(bas_.size() / BAS_SLOTS);
     for (int s = 0; s < bs.nshell(); ++s) {
         const GaussianShell &sh = bs.shell(s);
@@ -189,7 +223,8 @@ int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
             for (int p = 0; p < nprim; ++p) env_.push_back(sh.original_coef(p) * CINTgto_norm(l, sh.exp(p)));
         }
 
-        bas_.push_back(bs.shell_to_center(s));  // ATOM_OF
+        bas_pure_.push_back(sh.is_pure() ? 1 : 0);
+        bas_.push_back(atom_start + bs.shell_to_center(s));  // ATOM_OF
         bas_.push_back(sh.am());                // ANG_OF
         bas_.push_back(nprim);                  // NPRIM_OF
         bas_.push_back(1);                      // NCTR_OF
@@ -203,23 +238,6 @@ int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
 
 void LibcintTwoElectronInt::build_environment() {
     env_.assign(PTR_ENV_START, 0.0);
-
-    // Atoms: all four bases share one molecule (primary/auxiliary on the same
-    // nuclei), so one atm/coord table indexed by shell_to_center() suffices.
-    auto mol = original_bs1_->molecule();
-    const int natom = mol->natom();
-    for (int a = 0; a < natom; ++a) {
-        const int coord_off = static_cast<int>(env_.size());
-        env_.push_back(mol->x(a));
-        env_.push_back(mol->y(a));
-        env_.push_back(mol->z(a));
-        atm_.push_back(static_cast<int>(mol->true_atomic_number(a)));  // CHARGE_OF
-        atm_.push_back(coord_off);                                     // PTR_COORD
-        atm_.push_back(0);                                             // NUC_MOD_OF
-        atm_.push_back(0);                                             // PTR_ZETA
-        atm_.push_back(0);
-        atm_.push_back(0);
-    }
 
     const BasisSet *bs[4] = {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()};
     for (int i = 0; i < 4; ++i) {
@@ -316,7 +334,44 @@ size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, in
             }
         }
     }
+    if (mixed_) {
+        const int g[4] = {g1, g2, g3, g4};
+        const int l[4] = {l1, l2, l3, l4};
+        return transform_mixed(g, l);
+    }
     return n;
+}
+
+size_t LibcintTwoElectronInt::transform_mixed(const int *g, const int *l) {
+    // target_full_ holds a row-major cartesian quartet. Transform, one index at a
+    // time, each shell psi4 wants spherical, using psi4's solid harmonics (the
+    // same cartesian -> Gaussian-ordered spherical transform the Libint2 path
+    // effectively applies, given libcint cartesians normalized like libint2's).
+    size_t d[4];
+    for (int k = 0; k < 4; ++k) d[k] = ncart(l[k]);
+    double *data = target_full_;
+    for (int k = 0; k < 4; ++k) {
+        if (!bas_pure_[g[k]] || l[k] == 0) continue;
+        const size_t np = 2 * l[k] + 1;
+        size_t pre = 1, post = 1;
+        for (int j = 0; j < k; ++j) pre *= d[j];
+        for (int j = k + 1; j < 4; ++j) post *= d[j];
+        double *out = mixed_buf_.data();
+        std::fill(out, out + pre * np * post, 0.0);
+        const SphericalTransform &st = sph_trans_[l[k]];
+        for (int c = 0; c < st.n(); ++c) {
+            const size_t ci = st.cartindex(c), pi = st.pureindex(c);
+            const double coef = st.coef(c);
+            for (size_t i = 0; i < pre; ++i) {
+                const double *src = data + (i * d[k] + ci) * post;
+                double *dst = out + (i * np + pi) * post;
+                for (size_t j = 0; j < post; ++j) dst[j] += coef * src[j];
+            }
+        }
+        d[k] = np;
+        std::copy(out, out + pre * np * post, data);
+    }
+    return d[0] * d[1] * d[2] * d[3];
 }
 
 size_t LibcintTwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {

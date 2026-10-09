@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "psi4/libmints/twobody.h"
+#include "psi4/libmints/integral.h"
 
 namespace psi {
 
@@ -97,16 +98,30 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// (0 = full Coulomb, >0 = erf/long-range, <0 = erfc/short-range).
     double omega_;
 
-    /// Whether the (non-dummy) bases are cartesian (int2e_cart) or spherical.
+    /// Whether libcint is asked for cartesian (int2e_cart) or spherical (int2e_sph) integrals.
     bool cart_;
+    /// Whether the bases mix cartesian and spherical shells (e.g., a cartesian primary
+    /// with a spherical auxiliary). Then cart_ is true and the spherical shells are
+    /// transformed here, shell by shell, with psi4's own solid harmonics.
+    bool mixed_;
+    /// Per libcint bas index, whether psi4 wants the shell spherical (used when mixed_).
+    std::vector<char> bas_pure_;
+    /// psi4 cartesian -> spherical transforms by angular momentum (used when mixed_).
+    std::vector<SphericalTransform> sph_trans_;
+    /// Scratch for the mixed_ transformation.
+    std::vector<double> mixed_buf_;
 
     void common_init();
 
     /// Build the libcint atm/bas/env arrays from the four psi4 basis sets.
     void build_environment();
 
-    /// Append one psi4 basis set's shells to bas_/env_, return its bas start.
+    /// Append one psi4 basis set's atoms and shells to atm_/bas_/env_, return its bas start.
     int append_basis(const BasisSet &bs);
+
+    /// Transform a row-major cartesian quartet in place of target_full_ for the spherical
+    /// shells among g1..g4 (mixed_ only). Returns the final number of integrals.
+    size_t transform_mixed(const int *g, const int *l);
 
     /// Rescale each shell's contraction to unit self-overlap (matches libint2).
     void normalize_shells();
