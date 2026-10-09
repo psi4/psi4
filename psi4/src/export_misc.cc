@@ -41,6 +41,9 @@ void export_misc(py::module &m) {
     m.def("tstart", tstart, "Start module-level timer. Only one active at once.");
     m.def("tstop", tstop, "Stop module-level timer. Prints user, system, and total times to outfile.");
     m.def("clean_timers", clean_timers, "Reinitialize timers for independent ``timer.dat`` entries. Vital when earlier independent calc finished improperly.");
+    m.def("get_timer_dict", get_timer_dict,
+          "Get timing information as a dictionary keyed by timer path. Each value contains wall_time, "
+          "user_time, system_time, and n_calls.");
     m.def("get_timer_records", [](bool compact) {
         auto records = get_timer_records();
 

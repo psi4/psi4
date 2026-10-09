@@ -64,6 +64,7 @@
 #include "psi4/dfep2/dfep2.h"
 
 #include "psi4/fisapt/fisapt.h"
+#include "psi4/fisapt/local2.h"
 
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
@@ -482,7 +483,19 @@ void export_wavefunction(py::module& m) {
         .def("find", &fisapt::FISAPT::find, "F-SAPT0 induction.")
         .def("fdisp", &fisapt::FISAPT::fdisp, "F-SAPT0 dispersion.")
         .def("raw_plot", &fisapt::FISAPT::raw_plot, "Plot some analysis files.")
-        .def("print_trailer", &fisapt::FISAPT::print_trailer, "Print SAPT results.");
+        .def("print_trailer", &fisapt::FISAPT::print_trailer, "Print SAPT results.")
+        .def("set_vector", &fisapt::FISAPT::set_vector, "Set internal vectors by dictionary")
+        .def("set_scalar", &fisapt::FISAPT::set_scalar, "Set internal scalars by dictionary")
+        .def("set_matrix", &fisapt::FISAPT::set_matrix, "Set internal matrices by dictionary");
+
+    /// IBOLocalizer2 for FISAPT
+    py::class_<fisapt::IBOLocalizer2, std::shared_ptr<fisapt::IBOLocalizer2>>(m, "IBOLocalizer2", "An IBO2 Localizer")
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>>())
+        .def("build", &fisapt::IBOLocalizer2::build, "Build the IBO2 localized orbitals.")
+        .def("localize", &fisapt::IBOLocalizer2::localize, "Localize the orbitals.")
+        .def("print_header", &fisapt::IBOLocalizer2::print_header, "print header information for IBO2 localizer.")
+        .def("print_charges", &fisapt::IBOLocalizer2::print_charges, "print charges information for IBO2 localizer.")
+    ;
 
     /// CIWavefunction functions
     void (detci::CIvect::*py_civ_copy)(std::shared_ptr<psi::detci::CIvect>, int, int) = &detci::CIvect::copy;
