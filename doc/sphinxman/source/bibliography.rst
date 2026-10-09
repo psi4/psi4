@@ -822,7 +822,7 @@ Bibliography
    https://doi.org/10.1063/5.0276628
 
 .. [vanWullen:1998:392]
-   "Molecular Density Functional Calculations in the Regular Relativistic Approximation: Method, Application to Coinage Metal Diatomics, Hydrides, Fluorides and Chlorides, and Comparison with First-Order Relativistic Calculations."
+   "Molecular Density Functional Calculations in the Regular Relativistic Approximation: Method, Application to Coinage Metal Diatomics, Hydrides, Fluorides and Chlorides, and Comparison with First-Order Relativistic Calculations"
    C. van W\ |u_dots|\ llen,
    *J. Chem. Phys.* **109** (2), 392-399.
    https://doi.org/10.1063/1.476576
@@ -833,3 +833,12 @@ Bibliography
    *J. Chem. Phys.* **152**, 184102 (2020)
    https://doi.org/10.1063/5.0004997
 
+.. [Almlof:1982:385]
+   "Principles for a Direct SCF Approach to LCAO-MO Ab-initio Calculations"
+   J. Alml\ |o_dots|\ f, K. Faegri, Jr. and K. Korsell,
+   *J. Comput. Chem.* **3**, 385 (1982)
+
+.. [VanLenthe:2006:926]
+   "Starting SCF Calculations by Superposition of Atomic Densities"
+   J. H. Van Lenthe, R. Zwaans, H. J. J. Van Dam, and M. F. Guest,
+   *J. Comput. Chem.*  **27**, 926 (2006)
