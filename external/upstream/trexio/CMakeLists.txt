@@ -25,7 +25,7 @@ if(${ENABLE_trexio})
             # `import trexio` succeeding says nothing about HDF5, and the public
             # API has no has_backend(); the low-level binding does.
             execute_process(
-                COMMAND ${Python_EXECUTABLE} -c "import sys, trexio, pytrexio.pytrexio as p; sys.exit(0 if p.trexio_has_backend(trexio.TREXIO_HDF5) else 1)"
+                COMMAND ${Python_EXECUTABLE} -c "import sys, trexio; sys.exit(0 if trexio.pytr.trexio_has_backend(trexio.TREXIO_HDF5) else 1)"
                 RESULT_VARIABLE _trexio_has_hdf5
                 OUTPUT_QUIET ERROR_QUIET)
             if(NOT _trexio_has_hdf5 EQUAL 0)
