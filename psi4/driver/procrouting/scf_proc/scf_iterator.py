@@ -376,13 +376,17 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     early_screening_disabled = False
 
     # cuEST mixed-precision emulation. Under VARIABLE the Ozaki slice and modulus
-    # counts are ramped from a cheap setting toward near-FP64 as the DIIS error
-    # aproaches convergence; under ENABLED the values are used unchanged every iteration.
+    # counts are ramped from the initial to the final settings as the DIIS error
+    # approaches convergence; under ENABLED the values are used unchanged every iteration.
     cuest_variable = core.get_option('SCF', 'CUEST_MIXED_PRECISION') == 'VARIABLE'
     cuest_slices_field = ""
     cuest_moduli_field = ""
     if cuest_variable:
         cuest_d_conv = d_conv if d_conv is not None else core.get_option("SCF", "D_CONVERGENCE")
+        cuest_slices_initial = core.get_option('SCF', 'CUEST_DFK_SLICES_INITIAL')
+        cuest_moduli_initial = core.get_option('SCF', 'CUEST_DFK_MODULI_INITIAL')
+        cuest_slices_final = core.get_option('SCF', 'CUEST_DFK_SLICES_FINAL')
+        cuest_moduli_final = core.get_option('SCF', 'CUEST_DFK_MODULI_FINAL')
 
     # SCF iterations!
     SCFE_old = 0.0
@@ -400,8 +404,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.save_density_and_energy()
 
         if cuest_variable:
-            iter_slices = cuEST_slice_count(3, 14, Dnorm, cuest_d_conv)
-            iter_moduli = cuEST_slice_count(4, 14, Dnorm, cuest_d_conv)
+            iter_slices = cuEST_slice_count(cuest_slices_initial, cuest_slices_final, Dnorm, cuest_d_conv)
+            iter_moduli = cuEST_slice_count(cuest_moduli_initial, cuest_moduli_final, Dnorm, cuest_d_conv)
             core.set_local_option('SCF', 'CUEST_DFK_SLICES', iter_slices)
             core.set_local_option('SCF', 'CUEST_DFK_MODULI', iter_moduli)
             cuest_slices_field = f"  {iter_slices:^14d}"
