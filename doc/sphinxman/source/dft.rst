@@ -337,7 +337,7 @@ Integrators
 
 |PSIfour| allows multiple integrators to be initialized. |PSIfour| will attempt the computation with each initialized integrator and fall back to the next if none are set. Integrators are set in the order of: BrianQC, GauXC, and lastly the |PSIfour| built-in integrator.
 
-By default, only |PSIfour| is enabled, for backwards compatability. The defaults may be overridden by changing the respective boolean variables: |scf_brianqc_integrate|, |scf_gauxc_integrate|, |scf__dft_enable_psi|.
+By default, only |PSIfour| is enabled, for backwards compatability. The defaults may be overridden by changing the respective boolean variables: |scf__brianqc_integrate|, |scf__gauxc_dft_enable|, |scf__dft_enable_psi|.
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
