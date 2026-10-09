@@ -111,6 +111,7 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// Scratch for the mixed_ transformation.
     std::vector<double> mixed_buf_;
 
+    /// Set up the libcint optimizer and buffers (fresh objects and clones alike).
     void common_init();
 
     /// Build the libcint atm/bas/env arrays from the four psi4 basis sets.
@@ -138,6 +139,8 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
                           bool use_shell_pairs = false, bool needs_exchange = false);
     LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs);
     ~LibcintTwoElectronInt() override;
+
+    void initialize_sieve() override;
 
     size_t compute_shell(const AOShellCombinationsIterator &) override;
     size_t compute_shell(int s1, int s2, int s3, int s4) override;

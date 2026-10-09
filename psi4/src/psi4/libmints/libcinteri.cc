@@ -108,6 +108,10 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
 
     build_environment();
     common_init();
+    // Clones copy the sieve and blocks from rhs (TwoBodyAOInt copy constructor),
+    // so only a fresh object computes them.
+    setup_sieve();
+    create_blocks();
 }
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
@@ -165,8 +169,12 @@ void LibcintTwoElectronInt::common_init() {
     target_full_ = target_store_.data();
     source_full_ = nullptr;
     buffers_.resize(1, target_full_);
+}
 
-    setup_sieve();
+void LibcintTwoElectronInt::initialize_sieve() {
+    // Manual initialization, for objects built with SCREENING NONE. Unlike
+    // Libint2, there are no engine-side shell-pair data to rebuild.
+    create_sieve_pair_info_manager();
     create_blocks();
 }
 

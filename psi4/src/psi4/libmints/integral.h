@@ -491,6 +491,10 @@ class PSI_API IntegralFactory {
     /// Want to change the name of this after the PCM dust settles
     virtual std::unique_ptr<OneBodyAOInt> pcm_potentialint();
 
+    /// Forget which two-electron engines have been reported to the output file, so the
+    /// next request for each class of integral prints its engine line again.
+    static void reset_engine_notes();
+
     /// Returns an ERI integral object
     virtual std::unique_ptr<TwoBodyAOInt> eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 

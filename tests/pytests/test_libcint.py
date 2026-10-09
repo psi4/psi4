@@ -194,3 +194,55 @@ def test_engine_threaded_df_mp2(engine, basis):
         assert compare_values(energy("libint2"), energy(engine), 8, f"{engine} threaded DF-MP2 {basis}")
     finally:
         psi4.set_num_threads(nthreads)
+
+
+@pytest.mark.parametrize("engine", [p for p in ENGINES if p.values[0] != "simint"])  # simint segfaults here
+def test_engine_screening_none(engine):
+    """SCREENING NONE makes DF codes initialize the ERI sieve manually."""
+    import psi4
+
+    psi4.core.clean()
+    _water()
+    psi4.set_options({
+        "basis": "cc-pvdz", "scf_type": "df", "mp2_type": "df", "screening": "none",
+        "e_convergence": 1e-9, "d_convergence": 1e-9,
+    })
+
+    def energy(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return psi4.energy("mp2")
+
+    assert compare_values(energy("libint2"), energy(engine), 8, f"{engine} DF-MP2 screening=none")
+
+
+@pytest.mark.parametrize("engine", [pytest.param("libcint", marks=using("libcint"))])
+def test_engine_gradient_fallback(engine, tmp_path):
+    """LIBCINT computes energies itself and falls back to Libint2 for derivatives; LIBCINT_ONLY refuses."""
+    import psi4
+
+    psi4.core.clean()
+    _water()
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "e_convergence": 1e-10, "d_convergence": 1e-10})
+
+    def gradient(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return np.asarray(psi4.gradient("scf"))
+
+    ref = gradient("libint2")
+    out = tmp_path / "fallback.out"
+    psi4.set_output_file(str(out), False)
+    try:
+        tst = gradient("libcint")
+    finally:
+        psi4.set_output_file("output.dat", True)
+    assert compare_values(ref, tst, 8, "LIBCINT SCF gradient (Libint2 fallback for derivatives)")
+    text = out.read_text()
+    assert "Two-electron integrals (ERI) from libcint." in text
+    assert "Two-electron integrals (ERI 1st deriv) from Libint2 (fallback from LIBCINT)." in text
+
+    psi4.set_options({"integral_package": "libcint_only"})
+    psi4.core.clean()
+    with pytest.raises(Exception, match="LIBCINT_ONLY: libcint cannot supply ERI 1st deriv"):
+        psi4.gradient("scf")
