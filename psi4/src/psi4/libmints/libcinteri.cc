@@ -35,22 +35,18 @@
 #include "psi4/libmints/gshell.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libqt/qt.h"
 
 #include <cmath>
 
+#include <libint2/shell.h>
+
 extern "C" {
-#include <cint.h>
-int int2e_sph(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env, CINTOpt *opt,
-              double *cache);
-int int2e_cart(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env, CINTOpt *opt,
-               double *cache);
-void int2e_optimizer(CINTOpt **opt, int *atm, int natm, int *bas, int nbas, double *env);
-int int1e_ovlp_sph(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env,
-                   CINTOpt *opt, double *cache);
-int int1e_ovlp_cart(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env,
-                    CINTOpt *opt, double *cache);
-double CINTgto_norm(int n, double a);
+#include <cint_funcs.h>
 }
+
+// The atm/bas/shls arrays here are plain int, as is libcint's FINT unless it was built with -DI8.
+static_assert(sizeof(FINT) == sizeof(int), "LIBCINT backend requires libcint built without I8 (32-bit FINT).");
 
 namespace psi {
 
@@ -77,6 +73,31 @@ inline int libcint_m(int i, int l) {
 
 inline int ncart(int l) { return (l + 1) * (l + 2) / 2; }
 
+/// Factor converting a Libint2 contraction coefficient into the libcint coefficient
+/// describing the same function, for angular momentum l. Both conventions scale a
+/// primitive's coefficient as a^((2l+3)/4), so the ratio of the unit-normalized
+/// single-primitive coefficients (here at exponent 1) holds for every exponent.
+/// libcint's is measured with its own overlap integral (cartesian: the axial
+/// component, as Libint2 normalizes), keeping us agnostic of its l=0,1 factors.
+double libint2_to_libcint(int l, bool cart) {
+    std::vector<int> atm = {0, PTR_ENV_START, 0, 0, 0, 0};
+    std::vector<int> bas = {0, l, 1, 1, 0, PTR_ENV_START + 3, PTR_ENV_START + 4, 0};
+    std::vector<double> env(PTR_ENV_START + 5, 0.0);
+    env[PTR_ENV_START + 3] = 1.0;
+    env[PTR_ENV_START + 4] = CINTgto_norm(l, 1.0);
+    std::vector<double> ov(static_cast<size_t>(ncart(l)) * ncart(l));
+    int shls[2] = {0, 0};
+    if (cart)
+        int1e_ovlp_cart(ov.data(), nullptr, shls, atm.data(), 1, bas.data(), 1, env.data(), nullptr, nullptr);
+    else
+        int1e_ovlp_sph(ov.data(), nullptr, shls, atm.data(), 1, bas.data(), 1, env.data(), nullptr, nullptr);
+    const double libcint_unit = env[PTR_ENV_START + 4] / std::sqrt(ov[0]);
+    const libint2::Shell unit_prim(libint2::svector<double>{1.0}, {libint2::Shell::Contraction{l, !cart, {1.0}}},
+                                   {{0.0, 0.0, 0.0}});
+    const double libint2_unit = unit_prim.contr[0].coeff[0];
+    return libcint_unit / libint2_unit;
+}
+
 }  // namespace
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, int deriv, double omega,
@@ -91,7 +112,7 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
     // per shell. A mix is computed cartesian and the spherical shells transformed
     // here (transform_mixed). The l=0 dummy shell is identical either way. Density
     // fitting is handled by the dummy s-shell (l=0, exp=0) that psi4 places in the
-    // absent center's slot -- see append_basis / normalize_shells.
+    // absent center's slot -- see append_basis.
     bool any_cart = false, any_pure = false;
     for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()}) {
         if (is_dummy_basis(*bs)) continue;
@@ -106,12 +127,14 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
     cart_ = any_cart;
     mixed_ = any_cart && any_pure;
 
+    timer_on("LibcintTwoElectronInt::LibcintTwoElectronInt");
     build_environment();
     common_init();
     // Clones copy the sieve and blocks from rhs (TwoBodyAOInt copy constructor),
     // so only a fresh object computes them.
     setup_sieve();
     create_blocks();
+    timer_off("LibcintTwoElectronInt::LibcintTwoElectronInt");
 }
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
@@ -169,6 +192,20 @@ void LibcintTwoElectronInt::common_init() {
     target_full_ = target_store_.data();
     source_full_ = nullptr;
     buffers_.resize(1, target_full_);
+
+    // libcint mallocs its working cache on every call unless handed one. Size one
+    // up front as the largest any quartet needs; as in pyscf, the (gg|gg) diagonal
+    // quartets bound all others. (A null `out` makes libcint return the size.)
+    size_t cache_size = 0;
+    for (int g = 0; g < nbas; ++g) {
+        int shls[4] = {g, g, g, g};
+        const size_t sz = cart_ ? int2e_cart(nullptr, nullptr, shls, atm_.data(), natm, bas_.data(), nbas,
+                                             env_.data(), nullptr, nullptr)
+                                : int2e_sph(nullptr, nullptr, shls, atm_.data(), natm, bas_.data(), nbas,
+                                            env_.data(), nullptr, nullptr);
+        cache_size = std::max(cache_size, sz);
+    }
+    cache_.assign(cache_size, 0.0);
 }
 
 void LibcintTwoElectronInt::initialize_sieve() {
@@ -178,7 +215,7 @@ void LibcintTwoElectronInt::initialize_sieve() {
     create_blocks();
 }
 
-int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
+int LibcintTwoElectronInt::append_basis(const BasisSet &bs, const std::vector<double> &coef_ratio) {
     // Atoms: each basis contributes its own molecule's centers, so bases on
     // different molecules (or a dummy basis) never index the wrong coordinates.
     const int atom_start = static_cast<int>(atm_.size() / ATM_SLOTS);
@@ -204,14 +241,6 @@ int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
         const int exp_off = static_cast<int>(env_.size());
         for (int p = 0; p < nprim; ++p) env_.push_back(sh.exp(p));
 
-        // libcint takes env coefficients as multipliers of the *unnormalized*
-        // primitive, expecting the primitive normalization baked in via
-        // CINTgto_norm (the standard pyscf convention). psi4's *original*
-        // coefficients are the same normalized-contraction coefficients psi4
-        // hands libint2 (basisset.cc update_l2_shells), so
-        //   env_coef_p = original_coef_p * CINTgto_norm(l, a_p)
-        // reproduces libint2's embed-normalized basis function exactly
-        // (verified in-tree: unit shell self-overlap, ERIs to ~1e-13).
         const int l = sh.am();
         const int coef_off = static_cast<int>(env_.size());
         const bool dummy = (nprim == 1 && l == 0 && sh.exp(0) == 0.0);
@@ -228,7 +257,13 @@ int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
             // threshold discards when it is inverted.
             env_.push_back(std::sqrt(4.0 * M_PI));
         } else {
-            for (int p = 0; p < nprim; ++p) env_.push_back(sh.original_coef(p) * CINTgto_norm(l, sh.exp(p)));
+            // Exactly the coefficients the Libint2 path uses -- normalization embedded,
+            // or deliberately not (diffuse external charges and SAP potentials; see
+            // BasisSet::negative_gaussian_normalization_to_coefficients) -- in
+            // libcint's convention. Re-deriving the normalization from the original
+            // coefficients instead would silently override such bases.
+            const auto &l2coef = bs.l2_shell(s).contr[0].coeff;
+            for (int p = 0; p < nprim; ++p) env_.push_back(l2coef[p] * coef_ratio[l]);
         }
 
         bas_pure_.push_back(sh.is_pure() ? 1 : 0);
@@ -248,55 +283,20 @@ void LibcintTwoElectronInt::build_environment() {
     env_.assign(PTR_ENV_START, 0.0);
 
     const BasisSet *bs[4] = {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()};
+    int maxam = 0;
+    for (const auto *b : bs) maxam = std::max(maxam, b->max_am());
+    std::vector<double> coef_ratio;
+    for (int l = 0; l <= maxam; ++l) coef_ratio.push_back(libint2_to_libcint(l, cart_));
+
     for (int i = 0; i < 4; ++i) {
         int start = -1;
         for (const auto &kv : basis_starts_)
             if (kv.first == bs[i]) start = kv.second;
         if (start < 0) {
-            start = append_basis(*bs[i]);
+            start = append_basis(*bs[i], coef_ratio);
             basis_starts_.emplace_back(bs[i], start);
         }
         bas_start_[i] = start;
-    }
-
-    normalize_shells();
-}
-
-void LibcintTwoElectronInt::normalize_shells() {
-    // Rescale each shell's contraction to unit self-overlap, matching libint2's
-    // embed_normalization. Doing this through libcint's own int1e_ovlp keeps us
-    // convention-agnostic: generally-contracted bases that psi4 splits into
-    // segmented shells arrive here un-normalized, and this restores unit norm
-    // exactly as the Libint2 path does. Single-primitive shells are already
-    // unit-normalized via CINTgto_norm, so they are left effectively unchanged.
-    const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
-    const int natm = static_cast<int>(atm_.size() / ATM_SLOTS);
-    std::vector<double> ov;
-    for (int g = 0; g < nbas; ++g) {
-        const int l = bas_[g * BAS_SLOTS + ANG_OF];
-        const int nprim = bas_[g * BAS_SLOTS + NPRIM_OF];
-        const int coef_off = bas_[g * BAS_SLOTS + PTR_COEFF];
-        const int exp_off = bas_[g * BAS_SLOTS + PTR_EXP];
-        // Skip the dummy/unit shell (exp=0): its self-overlap diverges and it
-        // must stay the bare constant to mirror libint2's unit shell.
-        if (nprim == 1 && l == 0 && env_[exp_off] == 0.0) continue;
-        const int nf = cart_ ? ncart(l) : 2 * l + 1;
-        ov.assign(static_cast<size_t>(nf) * nf, 0.0);
-        int shls[2] = {g, g};
-        if (cart_)
-            int1e_ovlp_cart(ov.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(), nullptr, nullptr);
-        else
-            int1e_ovlp_sph(ov.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(), nullptr, nullptr);
-        // ov[0] is the axial (l,0,0) cartesian / m=0 spherical self-overlap.
-        // Normalizing it to 1 matches libint2: for spherical every component
-        // shares this norm; for cartesian libint2 likewise normalizes the axial
-        // component and lets the off-axis ones follow, and libcint differs only
-        // by a single per-shell scale, so this one factor aligns the whole shell.
-        const double s = ov[0];
-        if (s > 0.0) {
-            const double inv = 1.0 / std::sqrt(s);
-            for (int p = 0; p < nprim; ++p) env_[coef_off + p] *= inv;
-        }
     }
 }
 
@@ -312,9 +312,9 @@ size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, in
     const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
     const int natm = static_cast<int>(atm_.size() / ATM_SLOTS);
     int ok = cart_ ? int2e_cart(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
-                                static_cast<CINTOpt *>(opt_), nullptr)
+                                static_cast<CINTOpt *>(opt_), cache_.data())
                    : int2e_sph(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
-                               static_cast<CINTOpt *>(opt_), nullptr);
+                               static_cast<CINTOpt *>(opt_), cache_.data());
     double *tgt = target_full_;
     if (!ok) {
         std::fill(tgt, tgt + n, 0.0);

@@ -47,29 +47,28 @@ class IntegralFactory;
  *
  *  Experimental optional backend, selected with INTEGRAL_PACKAGE LIBCINT.
  *
- *  Design (validated against libint2 to ~1e-14 in-tree; ERIs, erf-ERIs and SCF
- *  energies for s..f, cc-pVDZ/TZ and def2-SVP):
- *   - Requests spherical integrals from libcint (int2e_sph).
- *   - Basis functions are reproduced exactly by feeding libcint the *original*
- *     coefficients scaled by CINTgto_norm, then rescaling each contraction to
- *     unit self-overlap via libcint's own int1e_ovlp (normalize_shells) --
- *     matching libint2's embed_normalization, including split general
- *     contractions.
+ *  Design (validated against libint2 to ~1e-13 in-tree; see tests/pytests/test_libcint.py):
+ *   - Requests spherical (int2e_sph) or cartesian (int2e_cart) integrals to match
+ *     the bases. When they mix (e.g., cartesian primary, spherical auxiliary), all
+ *     are requested cartesian and the spherical shells transformed with psi4's
+ *     solid harmonics (transform_mixed).
+ *   - Basis functions are exactly those of the Libint2 path: each shell's Libint2
+ *     contraction coefficients (BasisSet::l2_shell) times a per-l factor between
+ *     the two conventions (libint2_to_libcint, measured with libcint's own
+ *     overlap). Bases with deliberately non-normalized coefficients (diffuse
+ *     external charges, SAP potentials) thus carry over unchanged.
  *   - Component ordering: for spherical shells libcint uses m = -l..+l for
  *     l != 1 and the cartesian order (px,py,pz) for l == 1, while psi4 (libint2,
  *     Gaussian solid-harmonic ordering) uses m = 0,+1,-1,+2,-2,...; for
  *     cartesian shells (int2e_cart) libcint's order already equals psi4's
  *     CartesianIter order, so the map is the identity. All relative signs +1.
- *   - Cartesian normalization: libcint's cartesian shell differs from psi4's by
- *     a single per-shell scale; normalizing the axial (l,0,0) self-overlap to 1
- *     via int1e_ovlp_cart (see normalize_shells) cancels it.
+ *     (This assumes libcint built without -DPYPZPX.)
  *   - libcint writes col-major (first index fastest); psi4 wants row-major
  *     (first index slowest). Both are handled in the same repack.
  *
- *  Current scope: 4-center (ab|cd), spherical and cartesian basis sets,
+ *  Current scope: 4-center (ab|cd), spherical, cartesian, and mixed basis sets,
  *  deriv=0, plus the range-separated erf/erfc variants (env[PTR_RANGE_OMEGA]).
- *  Density-fitting
- *  (2-/3-center) works too: psi4 passes the absent center as a dummy s-shell
+ *  Density-fitting (2-/3-center) works too: psi4 passes the absent center as a dummy s-shell
  *  (l=0, exp=0) which is fed to libcint as a bare constant matching libint2's
  *  unit shell, so int2e_sph over the dummy yields (ij|k)/(i|k) integrals
  *  bit-identical to the Libint2 path. (A first-class native 2c/3c interface is
@@ -93,6 +92,8 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     std::vector<double> target_store_;
     /// Scratch for libcint's (col-major) output before repack into target_.
     std::vector<double> cint_buf_;
+    /// libcint's working cache, sized for the most demanding quartet.
+    std::vector<double> cache_;
 
     /// Range-separation parameter written to env[PTR_RANGE_OMEGA]
     /// (0 = full Coulomb, >0 = erf/long-range, <0 = erfc/short-range).
@@ -118,14 +119,12 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     void build_environment();
 
     /// Append one psi4 basis set's atoms and shells to atm_/bas_/env_, return its bas start.
-    int append_basis(const BasisSet &bs);
+    /// coef_ratio[l] converts Libint2 contraction coefficients to libcint's convention.
+    int append_basis(const BasisSet &bs, const std::vector<double> &coef_ratio);
 
     /// Transform a row-major cartesian quartet in place of target_full_ for the spherical
     /// shells among g1..g4 (mixed_ only). Returns the final number of integrals.
     size_t transform_mixed(const int *g, const int *l);
-
-    /// Rescale each shell's contraction to unit self-overlap (matches libint2).
-    void normalize_shells();
 
     /// Compute one shell quartet (given libcint bas indices and angular momenta)
     /// into target_full_ in psi4 order. Returns the number of integrals computed.

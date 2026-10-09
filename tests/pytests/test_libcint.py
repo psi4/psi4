@@ -246,3 +246,23 @@ def test_engine_gradient_fallback(engine, tmp_path):
     psi4.core.clean()
     with pytest.raises(Exception, match="LIBCINT_ONLY: libcint cannot supply ERI 1st deriv"):
         psi4.gradient("scf")
+
+
+@pytest.mark.parametrize("engine", ENGINES)
+def test_engine_diffuse_external_charge(engine):
+    """Diffuse external charges use deliberately non-normalized s shells (as do SAPGAU guesses)."""
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    mol.fix_com(True)
+    mol.fix_orientation(True)
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "df", "e_convergence": 1e-10, "d_convergence": 1e-10})
+    external = [None, [[0.5, [1.5, 0.5, 0.0], 0.8], [-0.5, [-1.0, 1.0, 1.0], 2.0]]]
+
+    def energy(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return psi4.energy("scf", external_potentials=external)
+
+    assert compare_values(energy("libint2"), energy(engine), 9, f"{engine} SCF with diffuse external charges")
