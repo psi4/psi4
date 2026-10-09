@@ -368,7 +368,7 @@ def test_cuest_scf(inp, request):
         "puream": True,
         "reference": "rhf",
         'use_cuest': True,
-        'cuest_mixed_precision': False,
+        'cuest_mixed_precision': 'disabled',
     })
 
     # Override with the test-specific options from above
@@ -630,7 +630,7 @@ def test_cuest_df_gradient_workspace(basis):
         'reference': 'rhf',
         'e_convergence': 10,
         'd_convergence': 9,
-        'cuest_mixed_precision': False,
+        'cuest_mixed_precision': 'disabled',
     }
     geom = """
     0 1

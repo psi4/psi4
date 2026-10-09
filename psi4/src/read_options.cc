@@ -170,12 +170,30 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 #endif
     /*- Whether to enable NVIDIA cuEST GPU acceleration (requires CUDA and cuEST libraries) -*/
     options.add_bool("USE_CUEST", false);
-    /*- Whether to allow GPU calculations to use mixed precision emulation (requires CUDA and cuEST libraries) -*/
-    options.add_bool("CUEST_MIXED_PRECISION", true);
+    /*- How GPU calculations should use mixed precision emulation (requires CUDA and cuEST libraries).
+    ``ENABLED`` uses |globals__cuest_dfk_slices| and |globals__cuest_dfk_moduli| unchanged for every
+    iteration. ``VARIABLE`` ignores those keywords and instead ramps both counts from
+    |globals__cuest_dfk_slices_initial| and |globals__cuest_dfk_moduli_initial| to
+    |globals__cuest_dfk_slices_final| and |globals__cuest_dfk_moduli_final| as the SCF
+    orbital gradient approaches convergence. ``DISABLED`` turns
+    off all mixed precision emulation and computes in native FP64. -*/
+    options.add_str("CUEST_MIXED_PRECISION", "ENABLED", "ENABLED DISABLED VARIABLE");
     /*- Tune # of Ozaki Slices in emulated DF K computations (requires CUDA and cuEST libraries) -*/
     options.add_int("CUEST_DFK_SLICES", 5);
     /*- Tune # of Ozaki Moduli in emulated DF K computations (requires CUDA and cuEST libraries) -*/
     options.add_int("CUEST_DFK_MODULI", 8);
+    /*- Initial number of Ozaki slices in emulated DF K computations when
+    |globals__cuest_mixed_precision| is ``VARIABLE`` (requires CUDA and cuEST libraries). -*/
+    options.add_int("CUEST_DFK_SLICES_INITIAL", 3);
+    /*- Initial number of Ozaki moduli in emulated DF K computations when
+    |globals__cuest_mixed_precision| is ``VARIABLE`` (requires CUDA and cuEST libraries). -*/
+    options.add_int("CUEST_DFK_MODULI_INITIAL", 4);
+    /*- Final number of Ozaki slices in emulated DF K computations when
+    |globals__cuest_mixed_precision| is ``VARIABLE`` (requires CUDA and cuEST libraries). -*/
+    options.add_int("CUEST_DFK_SLICES_FINAL", 7);
+    /*- Final number of Ozaki moduli in emulated DF K computations when
+    |globals__cuest_mixed_precision| is ``VARIABLE`` (requires CUDA and cuEST libraries). -*/
+    options.add_int("CUEST_DFK_MODULI_FINAL", 12);
 
     // Note that case-insensitive options are only functional as
     //   globals, not as module-level, and should be defined sparingly

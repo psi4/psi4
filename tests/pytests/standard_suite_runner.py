@@ -107,6 +107,8 @@ def runner_asserter(inp, subject, method, basis, tnm):
         atol_e = 2.5e-6
         atol_g = 1.0e-5
 
+    using_cuest = inp["keywords"].get("use_cuest", False)
+
     if driver == "gradient" and inp["keywords"]["function_kwargs"]["dertype"] == 0:
         # relax to this pre-e/g/h-separated value if necessary: atol = 2.0e-6
         pass
@@ -155,6 +157,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
             # runtime conv crit
             "points": 5,
             "fd_project": False,
+            **({"disp_size": 0.005} if using_cuest else {}),
             "orbital_optimizer_package": "internal",  # haven't tried to adapt for ooo
         }
     )
@@ -186,6 +189,31 @@ def runner_asserter(inp, subject, method, basis, tnm):
         assert qc_module_out == qc_module_xptd, f"QC_MODULE used ({qc_module_out}) != expected ({qc_module_xptd})"
 
     ref_block = std_suite[chash]
+
+    if using_cuest:
+        # The existing DF block describes Psi4's DF integrals, not cuEST's.
+        # There are no cuEST reference values in qcengine: compare energies
+        # loosely to Psi4 and derivatives to finite differences of cuEST energy.
+        assert driver in ("energy", "gradient") and method in ("pbe", "b3lyp", "wb97x")
+        assert compare_values(ref_block[f"{method.upper()} TOTAL ENERGY"], wfn.energy(),
+                              tnm + " cuEST energy v. Psi4 DF", atol=5.0e-4, rtol=1.0e-16)
+        assert compare_values(wfn.energy(), query_qcvar(psi4.core, "CURRENT ENERGY"),
+                              tnm + " cuEST current energy", atol=1.0e-8)
+        if driver == "energy":
+            assert compare_values(wfn.energy(), ret, tnm + " cuEST return energy", atol=1.0e-8)
+        else:
+            assert compare_values(wfn.gradient().np, ret.np, tnm + " cuEST return gradient", atol=1.0e-8)
+        for key, value in (("N BASIS FUNCTIONS", wfn.nso()), ("N MOLECULAR ORBITALS", wfn.nmo()),
+                           ("N ALPHA ELECTRONS", wfn.nalpha()), ("N BETA ELECTRONS", wfn.nbeta())):
+            assert compare(ref_block[key], value, tnm + " cuEST " + key)
+        if driver == "gradient":
+            # Both sides must use the same grid, DF scheme, and XC code path.
+            analytic = ret.np.copy()
+            psi4.core.clean()
+            findif = psi4.gradient(method, molecule=subject, dertype=0)
+            assert compare_values(findif.np, analytic, tnm + " cuEST analytic v. 5-point FD",
+                                  atol=5.0e-5, rtol=1.0e-16)
+        return
 
     # qcvars
     contractual_args = [

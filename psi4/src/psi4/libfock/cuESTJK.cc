@@ -172,26 +172,15 @@ void cuESTJK::preiterations()
     CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
 
-    // Set J & K compute parameters
-    CHECK_CUEST(cuestParametersConfigure(
-        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
-        cuest_exchange_compute_params_,
-        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_SLICE_COUNT,
-        &dfk_slices_,
-        sizeof(uint64_t)));
-
-    CHECK_CUEST(cuestParametersConfigure(
-        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, 
-        cuest_exchange_compute_params_,
-        CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_MODULUS_COUNT,
-        &dfk_moduli_,
-        sizeof(uint64_t)));
-
-    // Set global math mode, if CUEST_NATIVE_FP64_MATH_MODE, all forms of mixed precision emulation will be turned off
-    if (!options_.get_bool("CUEST_MIXED_PRECISION")) {
+    if (options_.get_str("CUEST_MIXED_PRECISION") == "DISABLED") {
         CHECK_CUEST(cuestSetMathMode(
             cuest_handle,
             CUEST_NATIVE_FP64_MATH_MODE
+        ));
+    } else {
+        CHECK_CUEST(cuestSetMathMode(
+            cuest_handle,
+            CUEST_DEFAULT_MATH_MODE
         ));
     }
 
@@ -239,6 +228,10 @@ void cuESTJK::print_header() const {
         outfile->Printf("    Omega:                 %11.3E\n", omega_);
         outfile->Printf("    Pseudoinverse cutoff:  %11.1E\n", condition_);
         outfile->Printf("    Threshold PQ:          %11.1E\n", pq_threshold_);
+        if (options_.get_str("CUEST_MIXED_PRECISION") == "ENABLED") {
+            outfile->Printf("    Ozaki-I Slices:        %11d\n", static_cast<int>(dfk_slices_));
+            outfile->Printf("    Ozaki-II Moduli:       %11d\n", static_cast<int>(dfk_moduli_));
+        }
         outfile->Printf("\n");
     }
 }
@@ -283,6 +276,24 @@ void cuESTJK::compute_JK() {
     }
  
     if (do_K_) {
+        // Set K compute parameters prior to workspace query
+        dfk_slices_ = options_.get_int("CUEST_DFK_SLICES");
+        dfk_moduli_ = options_.get_int("CUEST_DFK_MODULI");
+
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS,
+            cuest_exchange_compute_params_,
+            CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_SLICE_COUNT,
+            &dfk_slices_,
+            sizeof(uint64_t)));
+    
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, 
+            cuest_exchange_compute_params_,
+            CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS_INT8_MODULUS_COUNT,
+            &dfk_moduli_,
+            sizeof(uint64_t)));
+        
         for (size_t N = 0; N < D_ao_.size(); N++) {
             int nocc = C_left_ao_[N]->ncol();
             if (nocc == 0) continue;
@@ -396,12 +407,14 @@ void cuESTJK::compute_JK() {
     double ms_wsquery = std::chrono::duration<double, std::milli>(t_ws - t_alloc).count();
     double ms_free = std::chrono::duration<double, std::milli>(t_free_end - t_free_start).count();
     double ms_total = std::chrono::duration<double, std::milli>(t_free_end - t_total_start).count();
- 
-    outfile->Printf("    cuESTJK compute_JK: total=%7.2fms | alloc=%5.2fms ws=%5.2fms "
-                     "J=%6.2fms K=%6.2fms memcpy(H2D)=%5.2fms memcpy(D2H)=%5.2fms "
-                     "transpose=%5.2fms free=%5.2fms\n",
-                     ms_total, ms_alloc, ms_wsquery, ms_J_compute, ms_K_compute,
-                     ms_memcpy_h2d, ms_memcpy_d2h, ms_transpose, ms_free);
+
+    if (bench_) {
+        outfile->Printf("    cuESTJK compute_JK: total=%7.2fms | alloc=%5.2fms ws=%5.2fms "
+                         "J=%6.2fms K=%6.2fms memcpy(H2D)=%5.2fms memcpy(D2H)=%5.2fms "
+                         "transpose=%5.2fms free=%5.2fms\n",
+                         ms_total, ms_alloc, ms_wsquery, ms_J_compute, ms_K_compute,
+                         ms_memcpy_h2d, ms_memcpy_d2h, ms_transpose, ms_free);
+    }
 }
 
 void cuESTJK::postiterations() 

@@ -5716,6 +5716,42 @@ def test_pbe_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
     runner_asserter(*_processor(inp, dertype, basis, subjects, clsd_open_pmols, request, "pbe", "gradient"))
 
 
+# cuEST uses a different DF scheme and includes grid-weight derivatives in its
+# analytic DFT gradients. Keep its comparisons in the standard-suite runner,
+# but do not treat Psi4's DF gradients as cuEST reference gradients.
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize(
+    "method, driver, basis, subjects, reference",
+    [
+        pytest.param("pbe", "energy", "cc-pvdz", ["hf", "bh3p", "bh3p"], "uhf", id="pbe-ene-open"),
+        pytest.param("pbe", "energy", "aug-cc-pvdz", ["h2o", "nh2", "nh2"], "rhf", id="pbe-ene-closed", marks=pytest.mark.long),
+        pytest.param("pbe", "gradient", "cc-pvdz", ["hf", "bh3p", "bh3p"], "uhf", id="pbe-grd-open", marks=pytest.mark.findif),
+        pytest.param("b3lyp", "gradient", "aug-cc-pvdz", ["h2o", "nh2", "nh2"], "rhf", id="b3lyp-grd-closed", marks=[pytest.mark.long, pytest.mark.findif]),
+        pytest.param("wb97x", "gradient", "cc-pvdz", ["hf", "bh3p", "bh3p"], "uhf", id="wb97x-grd-open", marks=pytest.mark.findif),
+    ],
+)
+def test_cuest_dft_module(method, driver, basis, subjects, reference, clsd_open_pmols, request):
+    inp = {
+        "keywords": {
+            "reference": reference,
+            "scf_type": "df",
+            "freeze_core": "false",
+            "use_cuest": True,
+            "cuest_mixed_precision": "disabled",
+            "dft_nuclear_scheme": "stratmann",
+            "dft_radial_points": 100,
+            "dft_spherical_points": 590,
+            "e_convergence": 10,
+            "d_convergence": 9,
+            "maxiter": 300,
+        },
+        "xptd": {"qc_module": "scf"},
+    }
+    runner_asserter(*_processor(inp, 0 if driver == "energy" else 1, basis, subjects,
+                                clsd_open_pmols, request, method, driver))
+
+
 #
 #  ,-----.  ,----. ,--.,--.   ,--.,------.     ,------.
 #  |  |) /_ '.-.  ||  | \  `.'  / |  .--. '    |  .---',--,--,  ,---. ,--.--. ,---.,--. ,--.
