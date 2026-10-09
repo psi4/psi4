@@ -26,10 +26,18 @@ jobs:
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
             pytest-name-expr: "not pe_ecp"
+            # TrexIO: build the Python module through Psi4's own recipe (there is
+            # no conda-forge package, and none can be found here), then check the
+            # files Psi4 writes with trexio-validate. Python 3.14 has no trexio
+            # wheel on PyPI, so this is also the configuration most likely to
+            # meet the silent TEXT-only build the recipe guards against.
+            trexio-validate: true
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+              -D ENABLE_trexio=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_trexio=ON
 
           - label: "Conda Clang (M-Intel)"
             runs-on: macos-15-intel
@@ -211,6 +219,11 @@ jobs:
           # sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
+        if [[ "${{ matrix.cfg.trexio-validate }}" == "true" ]]; then
+          grep -qE "^\s*- hdf5\b" env_p4build.yaml || echo "  - hdf5" >> env_p4build.yaml
+          echo "  - libcint" >> env_p4build.yaml
+          echo "  - trexio=*=nompi_*" >> env_p4build.yaml
+        fi
         echo "::group::View Env Spec File for Conda (Edited)"
         printf "\n<<<  env_p4build.yaml  >>>\n"
         cat env_p4build.yaml
@@ -405,6 +418,34 @@ jobs:
       if: runner.os == 'macOS'
       working-directory: ./objdir
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
+
+      # trexio-validate recomputes a TrexIO file's contents from the basis set in
+      # it, following the TrexIO specification rather than any one program. Its
+      # own suite runs first, so a broken validator cannot pass as a clean psi4.
+    - name: Build trexio-validate (TrexIO lane)
+      if: matrix.cfg.trexio-validate
+      run: |
+        git clone https://github.com/TREX-CoE/trexio-validate.git
+        git -C trexio-validate checkout b9882bcd431928467814460a166e50d6951b5f3c  # pinned: CI must not move with upstream master
+        cmake -S trexio-validate -B trexio-validate/build -G Ninja \
+          -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -D LIBCINT_INCLUDE_DIR="${CONDA_PREFIX}/include" \
+          -D LIBCINT_LIBRARY="${CONDA_PREFIX}/lib/libcint.so" \
+          -D TREXIO_VALIDATE_PYTHON=OFF
+        cmake --build trexio-validate/build
+        ctest --test-dir trexio-validate/build --output-on-failure
+
+      # PSI4_TREXIO_VALIDATE_REQUIRED turns every would-be skip (no validator, a
+      # trexio module without HDF5) into a failure, so this step cannot go green
+      # by checking nothing. `-m trexio` also runs the round-trip tests.
+    - name: Validate TrexIO files (TrexIO lane)
+      if: matrix.cfg.trexio-validate
+      working-directory: ./objdir
+      env:
+        TREXIO_VALIDATE: ${{ github.workspace }}/trexio-validate/build/src/trexio-validate
+        PSI4_TREXIO_VALIDATE_REQUIRED: 1
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --color yes -m trexio stage/lib/psi4/tests/
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
