@@ -100,8 +100,9 @@ def _validator():
 
 
 def _require_hdf5():
-    import pytrexio.pytrexio as low
-    if not low.trexio_has_backend(trexio.TREXIO_HDF5):
+    # trexio.pytr is the SWIG module in both the old (top-level pytrexio) and
+    # the new (trexio.pytrexio) package layouts
+    if not trexio.pytr.trexio_has_backend(trexio.TREXIO_HDF5):
         msg = "the trexio Python module was built without the HDF5 back end"
         if _REQUIRED:
             pytest.fail(msg + ", and PSI4_TREXIO_VALIDATE_REQUIRED is set")

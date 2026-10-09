@@ -37,7 +37,7 @@ def _save(wfn, tmp_path, name, **kwargs):
     return path
 
 
-def _h2o_rhf(scf_type="pk"):
+def _h2o_rhf(scf_type="pk", puream=None):
     psi4.core.clean()
     psi4.core.clean_options()
     psi4.core.clean_variables()
@@ -53,6 +53,8 @@ def _h2o_rhf(scf_type="pk"):
     psi4.set_options(
         {"basis": "cc-pvdz", "scf_type": scf_type, "e_convergence": 10, "d_convergence": 10}
     )
+    if puream is not None:
+        psi4.set_options({"puream": puream})
     return psi4.energy("hf", return_wfn=True)
 
 
@@ -108,6 +110,11 @@ def test_save_roundtrip_rhf(tmp_path):
 
     occ = np.asarray(data["mo"]["occupation"])
     assert np.isclose(occ.sum(), wfn.nalpha() + wfn.nbeta())
+
+    # Psi4 writes the global ao.cartesian; the reader expands it per shell.
+    assert data["ao"]["cartesian"] is False
+    assert (data["ao"]["cartesian_shell"] == 0).all()
+    assert len(data["ao"]["cartesian_shell"]) == wfn.basisset().nshell()
 
 
 def test_save_uhf(tmp_path):
@@ -262,3 +269,58 @@ def test_load_wavefunction(tmp_path):
     np.testing.assert_allclose(
         np.asarray(rebuilt.epsilon_a()), np.asarray(wfn.epsilon_a()), atol=1e-12
     )
+
+
+_needs_cartesian_shell = pytest.mark.skipif(
+    not hasattr(trexio, "write_ao_cartesian_shell"),
+    reason="this trexio predates ao.cartesian_shell",
+)
+
+
+def _use_cartesian_shell(path, flags):
+    """Replace the file's global ao.cartesian by per-shell ao.cartesian_shell."""
+    with trexio.File(path, mode="u", back_end=_BACK_END) as f:
+        num = trexio.read_ao_num(f)
+        shell = trexio.read_ao_shell(f)
+        norm = trexio.read_ao_normalization(f)
+        trexio.delete_ao(f)
+        trexio.write_ao_num(f, num)
+        trexio.write_ao_shell(f, shell)
+        trexio.write_ao_normalization(f, norm)
+        trexio.write_ao_cartesian_shell(f, flags)
+    with trexio.File(path, mode="r", back_end=_BACK_END) as f:
+        assert not trexio.has_ao_cartesian(f)
+
+
+@_needs_cartesian_shell
+@pytest.mark.parametrize("puream", [True, False], ids=["spherical", "cartesian"])
+def test_load_uniform_cartesian_shell(tmp_path, puream):
+    e, wfn = _h2o_rhf(puream=puream)
+    path = _save(wfn, tmp_path, "h2o_cart_shell")
+    nshell = wfn.basisset().nshell()
+    _use_cartesian_shell(path, [0 if puream else 1] * nshell)
+
+    data = psi4.trexio_from_file(path)
+    assert data["ao"]["cartesian"] is (not puream)
+    np.testing.assert_array_equal(data["ao"]["cartesian_shell"], [0 if puream else 1] * nshell)
+
+    rebuilt = psi4.trexio_to_wavefunction(path)
+    assert rebuilt.basisset().has_puream() == puream
+    assert rebuilt.basisset().nbf() == wfn.basisset().nbf()
+    np.testing.assert_allclose(
+        np.asarray(rebuilt.epsilon_a()), np.asarray(wfn.epsilon_a()), atol=1e-12
+    )
+
+
+@_needs_cartesian_shell
+def test_load_mixed_cartesian_shell_refused(tmp_path):
+    e, wfn = _h2o_rhf()
+    path = _save(wfn, tmp_path, "h2o_mixed_shell")
+    nshell = wfn.basisset().nshell()
+    _use_cartesian_shell(path, [1] + [0] * (nshell - 1))
+
+    # The raw data is readable; only a Psi4 basis set cannot represent it.
+    data = psi4.trexio_from_file(path)
+    assert data["ao"]["cartesian"] is None
+    with pytest.raises(psi4.TrexIOError, match="mixes Cartesian and spherical"):
+        psi4.trexio_to_wavefunction(path)
