@@ -1535,17 +1535,18 @@ data:
       host: github
       account: MolSSI
       name: QCManyBody
-      commit: v0.7.1
+      commit: v0.8.0
       githttps: true
     cmake:
       name: qcmanybody
-      constraint: "ATLEAST 0.7.1"
+      constraint: "ATLEAST 0.8.0"
       enable: "ENABLE_qcmanybody"
       target: null
     conda:
       channel: conda-forge
       name: qcmanybody
-      constraint: ">=0.7.1"
+      constraint: ">=0.8.0"
+      constraint_note: "v0.8.0 required for per-fragment external potentials."
       cmake:
         ENABLE_qcmanybody: true
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
