@@ -73,6 +73,9 @@ inline int libcint_m(int i, int l) {
 
 inline int ncart(int l) { return (l + 1) * (l + 2) / 2; }
 
+/// libcint's default primitive screening cutoff (EXPCUTOFF in its config.h, not installed).
+constexpr double EXPCUTOFF_DEFAULT = 60.0;
+
 /// Factor converting a Libint2 contraction coefficient into the libcint coefficient
 /// describing the same function, for angular momentum l. Both conventions scale a
 /// primitive's coefficient as a^((2l+3)/4), so the ratio of the unit-normalized
@@ -298,6 +301,24 @@ void LibcintTwoElectronInt::build_environment() {
         }
         bas_start_[i] = start;
     }
+
+    // libcint drops a primitive quartet when its log-magnitude estimate falls below
+    // -expcutoff (default 60). The estimate approximates the polynomial factor as
+    // (d+1)^(li+lj) where its own derivation (CINTset_pairdata) has
+    // (d+1/sqrt(aij))^(li+lj), so for diffuse high-l functions it underestimates by
+    // up to (li+lj)/2 ln(1/aij) per pair and wrongly drops significant integrals
+    // (e.g., (gg|gg) = 0.01 for a g exponent of 2.6e-4; scf-auto-cholesky). Raise the
+    // cutoff by that bound over the bases' smallest exponent and largest l so libcint
+    // never screens what libint2 keeps; psi4's own sieve does the real screening.
+    double amin = 1.0;
+    int lmax = 0;
+    for (const auto *b : bs) {
+        if (is_dummy_basis(*b)) continue;
+        lmax = std::max(lmax, b->max_am());
+        for (int s = 0; s < b->nshell(); ++s)
+            for (int p = 0; p < b->shell(s).nprimitive(); ++p) amin = std::min(amin, b->shell(s).exp(p));
+    }
+    env_[PTR_EXPCUTOFF] = EXPCUTOFF_DEFAULT + 4 * lmax * 0.5 * std::log(1.0 / amin);
 }
 
 size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, int l1, int l2, int l3, int l4) {

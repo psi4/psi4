@@ -61,6 +61,47 @@ def test_engine_ao_eri(engine, basis, puream):
     assert compare_values(ref, tst, 11, f"{engine} AO ERI {basis} puream={puream}")
 
 
+@pytest.mark.parametrize("engine", ENGINES)
+@pytest.mark.parametrize("puream", [True, False])
+def test_engine_diffuse_high_am(engine, puream):
+    """Very diffuse high-l shells (as in auto-generated Cholesky aux bases) aren't screened away.
+
+    libcint's primitive screening underestimates diffuse high-l quartets, e.g., dropping
+    (gg|gg) = 0.01 for a g exponent of 2.6e-4 at its default cutoff (scf-auto-cholesky).
+    """
+    import psi4
+
+    psi4.core.clean()
+    mol = psi4.geometry("""
+        He 0 0 0
+        He 0 0 1.5
+        symmetry c1
+        """)
+    psi4.basis_helper("""
+        ****
+        He 0
+        S 1 1.0
+          1.0 1.0
+        P 1 1.0
+          1.0e-3 1.0
+        G 1 1.0
+          0.5 1.0
+        G 1 1.0
+          2.6e-4 1.0
+        ****
+        """, name="diffuse_g", set_option=True)
+    psi4.set_options({"puream": puream})
+
+    def ao_eri(pkg):
+        psi4.set_options({"integral_package": pkg})
+        wfn = psi4.core.Wavefunction.build(mol, psi4.core.get_global_option("BASIS"))
+        return np.asarray(psi4.core.MintsHelper(wfn.basisset()).ao_eri())
+
+    ref = ao_eri("libint2")
+    assert np.abs(ref).max() > 1.e-3
+    assert compare_values(ref, ao_eri(engine), 10, f"{engine} AO ERI diffuse g puream={puream}")
+
+
 @pytest.mark.parametrize("engine", [p for p in ENGINES if p.values[0] != "simint"])  # simint has no erf
 def test_engine_erf_eri(engine):
     """Range-separated erf AO ERIs match Libint2."""
