@@ -60,6 +60,10 @@ recomputes the integrals from the basis stored in the file:
 * **Cartesian per-AO factor**: ``ao_normalization[i] = sqrt((2L-1)!! /
   ((2lx-1)!!(2ly-1)!!(2lz-1)!!))`` so every Cartesian AO has unit self-overlap.
   Sphericals use ``ao_normalization = 1``.
+* **Spherical vs Cartesian**: Psi4 writes the global ``ao.cartesian``. On
+  read, the per-shell ``ao.cartesian_shell`` (added after TrexIO 2.6.1) is
+  accepted in its place, provided all shells agree; a Psi4 basis set cannot
+  mix the two.
 * **Two-electron integrals**: physicists' notation ``<ij|kl> = (ik|jl)``.
   Psi4 computes chemists' ``(ij|kl)``; the indices are reordered on write.
 * **Effective core potentials** (``ecp`` group): ``nucleus.charge`` is the
@@ -341,6 +345,12 @@ def _basisset_from_trexio(data: dict, mol) -> "core.BasisSet":
     basis = data["basis"]
     ao = data["ao"]
     nuc = data["nucleus"]
+
+    # A Psi4 BasisSet is either all spherical or all Cartesian.
+    if ao["cartesian"] is None:
+        raise TrexIOError(
+            "TrexIO file mixes Cartesian and spherical shells (ao.cartesian_shell); "
+            "Psi4 basis sets must be uniformly one or the other")
 
     natom = nuc["num"]
     shell_ang_mom = np.asarray(basis["shell_ang_mom"], dtype=np.int64)
@@ -1040,9 +1050,27 @@ def _read_basis(f) -> dict:
 
 
 def _read_ao(f) -> dict:
+    """Read the ao group.
+
+    The file stores the Cartesian/spherical choice either globally in
+    ``ao.cartesian`` or shell by shell in ``ao.cartesian_shell`` (added after
+    TrexIO 2.6.1; the two are mutually exclusive). Either way,
+    ``cartesian_shell`` holds the per-shell flags, and ``cartesian`` is the
+    common flag, or None when the shells are mixed.
+    """
     trexio = _trexio()
+    if trexio.has_ao_cartesian(f):
+        cartesian = bool(trexio.read_ao_cartesian(f))
+        nshell = trexio.read_basis_shell_num(f) if trexio.has_basis_shell_num(f) else 0
+        shell_flags = np.full(nshell, int(cartesian), dtype=np.int64)
+    elif hasattr(trexio, "has_ao_cartesian_shell") and trexio.has_ao_cartesian_shell(f):
+        shell_flags = np.asarray(trexio.read_ao_cartesian_shell(f), dtype=np.int64)
+        cartesian = bool(shell_flags[0]) if len(set(shell_flags.tolist())) == 1 else None
+    else:
+        raise TrexIOError("TrexIO file defines neither ao.cartesian nor ao.cartesian_shell")
     return {
-        "cartesian": bool(trexio.read_ao_cartesian(f)),
+        "cartesian": cartesian,
+        "cartesian_shell": shell_flags,
         "num": trexio.read_ao_num(f),
         "shell": trexio.read_ao_shell(f),
         "normalization": trexio.read_ao_normalization(f) if trexio.has_ao_normalization(f) else None,
