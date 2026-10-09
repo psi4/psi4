@@ -23,7 +23,7 @@ if(${ENABLE_gauxc})
         #== check if MAGMA-enabled GauXC is found, if MAGMA is specified ==#
         get_property(_magma TARGET gauxc::gauxc PROPERTY GAUXC_HAS_MAGMA)
         
-        if(${gauxc_ENABLE_MAGMA} AND (NOT ${GAUXC_ENABLE_GPU}))
+        if(${gauxc_ENABLE_MAGMA} AND (NOT ${gauxc_ENABLE_GPU}))
            message(FATAL_ERROR "gauxc_ENABLE_MAGMA turned on, but gauxc_ENABLE_GPU is turned off! Magma only works with device-enabled GauXC instances.")
         endif()
         
@@ -34,8 +34,7 @@ if(${ENABLE_gauxc})
         endif()
 
         #== normal print-out and library addition ==#
-        get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION_RELWITHDEBINFO)
-        #get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION)
+        get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
         message(STATUS "${Cyan}Found gauxc ${ColourReset}: ${_loc} (found version ${gauxc_VERSION})")
         add_library(gauxc_external INTERFACE)  # dummy
 
@@ -48,7 +47,9 @@ if(${ENABLE_gauxc})
             message(FATAL_ERROR "Suitable gauxc could not be externally located as user insists")
         endif()
 
-        if(${gauxc_ENABLE_GPU} AND (NOT DEFINED ${CMAKE_CUDA_ARCHITECTURES}))
+        set(CMAKE_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}" CACHE STRING "CUDA architectures")
+
+        if(${gauxc_ENABLE_GPU} AND (NOT DEFINED CMAKE_CUDA_ARCHITECTURES OR "${CMAKE_CUDA_ARCHITECTURES}" STREQUAL ""))
            message(FATAL_ERROR "Internal GPU-enabled GauXC construction specified, but CMAKE_CUDA_ARCHITECTURES is not defined!")
         endif()
 
@@ -70,7 +71,6 @@ if(${ENABLE_gauxc})
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                    -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
                    -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
-                   -DCMAKE_CUDA_ARCHITECTURES=${CMAKE_CUDA_ARCHITECTURES}
                    -DLibxc_DIR=${Libxc_DIR}
                    -Dgau2grid_DIR=${gau2grid_DIR}
                    -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
@@ -93,10 +93,11 @@ if(${ENABLE_gauxc})
                          -DOpenMP_C_LIB_NAMES:STRING=${OpenMP_C_LIB_NAMES}
                          -DOpenMP_CXX_LIB_NAMES:STRING=${OpenMP_CXX_LIB_NAMES}
                          -DBLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
+                         -DCMAKE_CUDA_ARCHITECTURES:STRING=${CMAKE_CUDA_ARCHITECTURES}
                          # CMAKE_PREFIX_PATH propagates to GauXC's FetchContent builds (ExchCXX)
                          # allowing ExchCXX to find Psi4's LibXC without rebuilding from source
                          -DCMAKE_PREFIX_PATH:STRING=${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH})
-        set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
+        set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()
 else()
     message(STATUS "Optional addon ${Blue}unsought: gauxc${ColourReset}")

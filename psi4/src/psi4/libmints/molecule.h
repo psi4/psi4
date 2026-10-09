@@ -42,6 +42,10 @@
 #include "typedefs.h"
 #include "coordentry.h"
 
+#ifdef USING_gauxc
+#include <gauxc/molecule.hpp>
+#endif
+
 namespace psi {
 class PointGroup;
 class BasisSet;
@@ -685,6 +689,10 @@ class PSI_API Molecule {
      * of the variables. The atoms list is cleared, and then rebuilt by this routine.
      */
     void update_geometry();
+
+#ifdef USING_gauxc
+    GauXC::Molecule to_gauxc_molecule() const;
+#endif
 };
 
 }  // namespace psi

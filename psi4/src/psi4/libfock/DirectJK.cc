@@ -65,7 +65,6 @@
 extern void checkBrian();
 extern BrianCookie brianCookie;
 extern bool brianEnable;
-extern bool brianEnableDFT;
 extern bool brianCPHFFlag;
 extern bool brianCPHFLeftSideFlag;
 extern brianInt brianRestrictionType;
@@ -175,7 +174,7 @@ void DirectJK::compute_JK() {
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
 
-        if (do_wK_ and not brianEnableDFT) {
+        if (do_wK_ and not options_.get_bool("BRIAN_INTEGRATE")) {
             throw PSIEXCEPTION("Currently, BrianQC cannot compute range-separated exact exchange when Psi4 is handling the DFT terms");
         }
 
