@@ -196,19 +196,32 @@ void LibcintTwoElectronInt::common_init() {
     source_full_ = nullptr;
     buffers_.resize(1, target_full_);
 
-    // libcint mallocs its working cache on every call unless handed one. Size one
-    // up front as the largest any quartet needs; as in pyscf, the (gg|gg) diagonal
-    // quartets bound all others. (A null `out` makes libcint return the size.)
-    size_t cache_size = 0;
-    for (int g = 0; g < nbas; ++g) {
-        int shls[4] = {g, g, g, g};
+    // libcint mallocs its working cache on every call unless handed one, and it never
+    // checks the size of one it is handed, so size it up front to bound every quartet.
+    // A quartet's need (CINT2e_drv) is an angular momentum part that grows with each
+    // shell's l, plus a primitive part, ~5 (n_i n_j + n_k n_l). The diagonal quartet
+    // (s s|s s) of a highest-l shell bounds the first, and that of a most-primitive shell
+    // the second, so their sum bounds every quartet, mixed ones like (A A|B B) included.
+    // (The largest diagonal alone, as in pyscf, has sufficed in practice but isn't
+    // guaranteed. erfc doubles the Rys roots only for quartets of total l <= 5, which the
+    // diagonal of any d or higher shell still exceeds.) A null `out` makes libcint
+    // return the size.
+    int lmax = 0, nprim_max = 0;
+    for (int sh = 0; sh < nbas; ++sh) {
+        lmax = std::max(lmax, bas_[sh * BAS_SLOTS + ANG_OF]);
+        nprim_max = std::max(nprim_max, bas_[sh * BAS_SLOTS + NPRIM_OF]);
+    }
+    size_t cache_l = 0, cache_prim = 0;
+    for (int sh = 0; sh < nbas; ++sh) {
+        int shls[4] = {sh, sh, sh, sh};
         const size_t sz = cart_ ? int2e_cart(nullptr, nullptr, shls, atm_.data(), natm, bas_.data(), nbas,
                                              env_.data(), nullptr, nullptr)
                                 : int2e_sph(nullptr, nullptr, shls, atm_.data(), natm, bas_.data(), nbas,
                                             env_.data(), nullptr, nullptr);
-        cache_size = std::max(cache_size, sz);
+        if (bas_[sh * BAS_SLOTS + ANG_OF] == lmax) cache_l = std::max(cache_l, sz);
+        if (bas_[sh * BAS_SLOTS + NPRIM_OF] == nprim_max) cache_prim = std::max(cache_prim, sz);
     }
-    cache_.assign(cache_size, 0.0);
+    cache_.assign(cache_l + cache_prim, 0.0);
 }
 
 void LibcintTwoElectronInt::initialize_sieve() {

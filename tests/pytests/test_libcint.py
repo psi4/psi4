@@ -290,6 +290,29 @@ def test_engine_gradient_fallback(engine, tmp_path):
 
 
 @pytest.mark.parametrize("engine", ENGINES)
+def test_engine_sapgau_guess(engine):
+    """The SAPGAU guess's 3-center integrals use deliberately non-normalized s shells.
+
+    Stop at the first iteration, whose energy reflects the guess, since a converged
+    energy hides a wrong guess.
+    """
+    import psi4
+
+    psi4.core.clean()
+    _water()
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "guess": "sapgau", "maxiter": 1,
+                      "fail_on_maxiter": False})
+
+    def energy(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return psi4.energy("scf")
+
+    ref = energy("libint2")
+    assert compare_values(ref, energy(engine), 10, f"{engine} SCF energy at first iteration from SAPGAU guess")
+
+
+@pytest.mark.parametrize("engine", ENGINES)
 def test_engine_diffuse_external_charge(engine):
     """Diffuse external charges use deliberately non-normalized s shells (as do SAPGAU guesses)."""
     import psi4
