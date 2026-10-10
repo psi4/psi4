@@ -1002,9 +1002,6 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
     const int max_points = nlgrid.max_points();
     const int natom = primary_->molecule()->natom();
 
-    // VV10 temps
-    std::vector<double> vv10_exc(num_threads_);
-
     // Per thread temporaries
     std::vector<SharedMatrix> G_local, U_local;
     for (size_t i = 0; i < num_threads_; i++) {
@@ -1030,15 +1027,14 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
         pworker->compute_points(block);
 
         parallel_timer_on("Kernel", rank);
-        vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block, npoints, true);
+        // Called for its side effects (V_RHO_A, V_GAMMA_AA); the energy is unused.
+        fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block, npoints, true);
         parallel_timer_off("Kernel", rank);
 
         parallel_timer_on("V_xc gradient", rank);
 
         // => LSDA and GGA gradient contributions <= //
-        // VV10 only contributes to V_RHO_A and V_GAMMA_AA (GGA-level).
-        // Zero V_TAU_A to prevent stale values from the main gradient loop
-        // from contaminating the meta-GGA contribution in rks_gradient_integrator.
+        // Clear stale host tau: VV10 is GGA-only.
         if (fworker->is_meta()) {
             fworker->value("V_TAU_A")->zero();
         }

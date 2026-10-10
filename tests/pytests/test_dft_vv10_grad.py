@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 import psi4
@@ -27,8 +26,7 @@ _NH2 = """
 @pytest.mark.parametrize("func,ref_key,geom,nl_grid,digits", [
     pytest.param("BLYP-NL", "rks", _HCN, (50, 194), 4, id="BLYP-NL RKS"),
     pytest.param("BLYP-NL", "uks", _NH2, (50, 194), 4, id="BLYP-NL UKS doublet"),
-    # Meta-GGA host functional: exercises the V_TAU_A handling in the VV10
-    # gradient path on top of the GGA-level VV10 terms.
+    # Meta-GGA host: regression for stale V_TAU_A in the VV10 gradient path.
     pytest.param("wB97M-V", "rks", _HCN, (50, 194), 4, id="wB97M-V RKS"),
 ])
 def test_vv10_gradient(func, ref_key, geom, nl_grid, digits):
