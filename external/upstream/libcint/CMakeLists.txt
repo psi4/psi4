@@ -21,9 +21,6 @@ set(PACKAGE_VERSION_EXACT TRUE)
 endfunction()
 
 if(${ENABLE_libcint})
-    # libcint (Sun, J. Comput. Chem. 36, 1664, 2015) provides an optional
-    # alternative two-electron integral engine, selected at runtime with
-    # INTEGRAL_PACKAGE LIBCINT.
     find_package(libcint CONFIG QUIET)
 
     if(TARGET libcint::libcint)
@@ -37,7 +34,7 @@ if(${ENABLE_libcint})
     else()
         # No libcintConfig.cmake -- the norm, as libcint doesn't install one
         # (conda-forge, distros). Locate the library and header instead.
-        find_library(LIBCINT_LIBRARY NAMES cint)
+        find_library(LIBCINT_LIBRARY NAMES cint libcint.dll.a)
         find_path(LIBCINT_INCLUDE_DIR NAMES cint_funcs.h)
 
         if(LIBCINT_LIBRARY AND LIBCINT_INCLUDE_DIR)

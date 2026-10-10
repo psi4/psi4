@@ -845,33 +845,6 @@ data:
       #  //CMAKE_INSIST_FIND_PACKAGE_simint: true
       #  //CMAKE_DISABLE_FIND_PACKAGE_simint: true
 
-  - project: libcint
-    use:
-      added: 1.11
-      required: false
-      required_note: "Allows using the libcint two-electron integral library (experimental). INTEGRAL_PACKAGE LIBCINT."
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: sunqm
-      name: libcint
-      commit: v6.1.2
-    cmake:
-      name: libcint
-      constraint: null
-      constraint_note: "libcint installs no CMake config; external/upstream/libcint synthesizes one."
-      target: libcint::libcint
-    conda:
-      channel: conda-forge
-      name: libcint
-      constraint: ">=6"
-      cmake:
-        ENABLE_libcint: true
-        //CMAKE_INSIST_FIND_PACKAGE_libcint: true
-        //CMAKE_DISABLE_FIND_PACKAGE_libcint: true
-
   - project: ambit
     use:
       added: 1.2  # ambit appears in repo by 1.0, but the table in v1.4 paper says v1.2
@@ -1628,3 +1601,33 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
+
+  - project: libcint
+    use:
+      added: 1.12
+      required: false
+      required_note: "Allows using the libcint two-electron integral library."
+      buildable: true
+      buildtime: true
+      cms: true
+      doi: "10.1002/jcc.23981"
+    repository:
+      host: github
+      account: sunqm
+      name: libcint
+      commit: v6.1.3
+    cmake:
+      name: libcint
+      constraint: null
+      constraint_note: "libcint installs no CMake config so we synthesize one."
+      target: libcint::libcint
+    conda:
+      channel: conda-forge
+      name: libcint
+      constraint: ">=6"
+      cmake:
+        ENABLE_libcint: true
+        //LIBCINT_LIBRARY: null
+        //LIBCINT_INCLUDE_DIR: null
+        //CMAKE_INSIST_FIND_PACKAGE_libcint: true
+        //CMAKE_DISABLE_FIND_PACKAGE_libcint: true

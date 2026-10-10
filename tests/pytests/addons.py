@@ -84,7 +84,6 @@ _programs = {
     "psixas": which_import("psixas", return_bool=True),
     "resp": which_import("resp", return_bool=True),
     "simint": psi4.addons("simint"),
-    "libcint": psi4.addons("libcint"),
     "snsmp2": which_import("snsmp2", return_bool=True),
     "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
     "qcdb": False,  # capabilities of in-psi and out-of-psi qcdb not aligned
@@ -98,6 +97,7 @@ _programs = {
     "gauxc": psi4.addons("gauxc"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
+    "libcint": psi4.addons("libcint"),
 }
 
 
