@@ -710,6 +710,14 @@ def test_simint():
     _test_scf5()
 
 
+@uusing("libcint")
+def test_libcint():
+    """libcint/scf5"""
+
+    psi4.set_options({'integral_package': 'libcint'})
+    _test_scf5()
+
+
 @uusing("ooo")
 def test_openorbitaloptimizer():
     """scf5"""

@@ -26,6 +26,14 @@
  * @END LICENSE
  */
 #include "psi4/libmints/integral.h"
+
+#include <functional>
+#include <map>
+#include <mutex>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "psi4/libmints/shellrotation.h"
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/rel_potential.h"
@@ -56,7 +64,101 @@
 #include "psi4/libmints/siminteri.h"
 #endif
 
+#ifdef USING_libcint
+#include "psi4/libmints/libcinteri.h"
+#endif
+
 using namespace psi;
+
+namespace {
+
+std::mutex engine_notes_mutex;
+std::set<std::string> engine_notes;
+
+/// Name a class of two-electron integrals, e.g., "ERI" or "erf ERI 1st deriv".
+std::string eri_kind(const std::string &base, int deriv) {
+    if (deriv == 0) return base;
+    return base + (deriv == 1 ? " 1st deriv" : (deriv == 2 ? " 2nd deriv" : " deriv" + std::to_string(deriv)));
+}
+
+/// Report to the output file which library computes a class of two-electron integrals.
+/// Printed once per class and engine (until IntegralFactory::reset_engine_notes, i.e.,
+/// psi4.core.clean()), from the factory, once the object is built.
+void note_engine(const std::string &kind, const std::string &engine) {
+    std::lock_guard<std::mutex> lock(engine_notes_mutex);
+    if (engine_notes.insert(kind + "|" + engine).second)
+        outfile->Printf("  Two-electron integrals (%s) from %s.\n", kind.c_str(), engine.c_str());
+}
+
+/// The libraries that compute two-electron integrals.
+enum class EriEngine { Libint2, Libcint, Simint };
+
+/// How each engine constructs one class of two-electron integral; absent or empty where
+/// the engine can't compute that class.
+using EriMakers = std::map<EriEngine, std::function<std::unique_ptr<TwoBodyAOInt>()>>;
+
+std::string engine_name(EriEngine engine) {
+    switch (engine) {
+        case EriEngine::Libint2:
+            return "Libint2";
+        case EriEngine::Libcint:
+            return "libcint";
+        case EriEngine::Simint:
+            return "Simint";
+    }
+    return "";
+}
+
+/// Why Psi4 can't use the engine at all, or empty if it was built with it.
+std::string engine_missing(EriEngine engine) {
+#ifndef USING_libcint
+    if (engine == EriEngine::Libcint) return "Psi4 wasn't built with libcint (`-D ENABLE_libcint=ON`)";
+#endif
+#ifndef USING_simint
+    if (engine == EriEngine::Simint) return "Psi4 wasn't built with Simint (`-D ENABLE_simint=ON`)";
+#endif
+    return "";
+}
+
+/// The engines INTEGRAL_PACKAGE tries, in order. The first that can compute a class of
+/// two-electron integrals supplies it; the _ONLY packages never fall back.
+std::vector<EriEngine> eri_engine_chain(const std::string &integral_package) {
+    if (integral_package == "LIBINT2") return {EriEngine::Libint2};
+    if (integral_package == "LIBCINT") return {EriEngine::Libcint, EriEngine::Libint2};
+    if (integral_package == "LIBCINT_ONLY") return {EriEngine::Libcint};
+    if (integral_package == "SIMINT") return {EriEngine::Simint};
+    throw PSIEXCEPTION("INTEGRAL_PACKAGE " + integral_package + " has no two-electron integral engines.");
+}
+
+/// Construct `kind` integrals from the first engine in INTEGRAL_PACKAGE's chain that can
+/// compute them, and report to the output file which engine that is and why any earlier
+/// ones were passed over. Throws if the package's own library is missing or no engine can.
+std::unique_ptr<TwoBodyAOInt> build_from_chain(const std::string &kind, const EriMakers &makers) {
+    const auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    const auto chain = eri_engine_chain(integral_package);
+    std::string passed;  // why earlier engines couldn't
+    for (const auto engine : chain) {
+        std::string why = engine_missing(engine);
+        if (!why.empty() && engine == chain.front())
+            throw PSIEXCEPTION("INTEGRAL_PACKAGE " + integral_package + " unavailable: " + why + ".");
+        const auto maker = makers.find(engine);
+        if (why.empty() && (maker == makers.end() || !maker->second))
+            why = engine_name(engine) + " doesn't compute them";
+        if (why.empty()) {
+            auto ints = maker->second();
+            note_engine(kind, engine_name(engine) + (passed.empty() ? "" : " (fallback: " + passed + ")"));
+            return ints;
+        }
+        passed += (passed.empty() ? "" : "; ") + why;
+    }
+    std::string hint;
+    if (const auto only = integral_package.rfind("_ONLY"); only != std::string::npos)
+        hint = " INTEGRAL_PACKAGE " + integral_package.substr(0, only) + " falls back to other libraries.";
+    throw PSIEXCEPTION("INTEGRAL_PACKAGE " + integral_package + " can't supply " + kind + " integrals: " + passed +
+                       "." + hint);
+}
+
+}  // namespace
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                                  std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
@@ -209,36 +311,61 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::electric_field(int deriv) {
     return  std::make_unique<ElectricFieldInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
-    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+void IntegralFactory::reset_engine_notes() {
+    std::lock_guard<std::mutex> lock(engine_notes_mutex);
+    engine_notes.clear();
+}
 
-#ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return  std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    EriMakers makers;
+    makers[EriEngine::Libint2] = [&] {
+        return std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
+    };
+#ifdef USING_libcint
+    if (deriv == 0)
+        makers[EriEngine::Libcint] = [&] {
+            return std::make_unique<LibcintERI>(this, deriv, use_shell_pairs, needs_exchange);
+        };
 #endif
-    if (integral_package == "LIBINT2") return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
-    if (deriv > 0 && integral_package != "LIBINT2")
-        outfile->Printf("ERI derivative integrals only available using Libint");
-    if (integral_package == "SIMINT")
-        outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable.\nRecompile with `-D ENABLE_simint=ON`.\nFalling back to Libint");
-    throw PSIEXCEPTION("No ERI object to return.");
+#ifdef USING_simint
+    if (deriv == 0)
+        makers[EriEngine::Simint] = [&] {
+            return std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
+        };
+#endif
+    return build_from_chain(eri_kind("ERI", deriv), makers);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2")
+    EriMakers makers;
+    makers[EriEngine::Libint2] = [&] {
         return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
-    throw PSIEXCEPTION("No ERI object to return.");
+    };
+#ifdef USING_libcint
+    if (deriv == 0)
+        makers[EriEngine::Libcint] = [&] {
+            return std::make_unique<LibcintErfERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+        };
+#endif
+    return build_from_chain(eri_kind("erf ERI", deriv), makers);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2")
-        return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
-    throw PSIEXCEPTION("No ERI object to return.");
+    EriMakers makers;
+    makers[EriEngine::Libint2] = [&] {
+        return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs,
+                                                         needs_exchange);
+    };
+#ifdef USING_libcint
+    if (deriv == 0)
+        makers[EriEngine::Libcint] = [&] {
+            return std::make_unique<LibcintErfComplementERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+        };
+#endif
+    return build_from_chain(eri_kind("erfc ERI", deriv), makers);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
