@@ -188,7 +188,6 @@ void LibcintTwoElectronInt::common_init() {
     target_store_.assign(blk, 0.0);
     cint_buf_.assign(blk, 0.0);
     if (mixed_) {
-        mixed_buf_.assign(blk, 0.0);
         sph_trans_.clear();
         for (int l = 0; l <= maxam; ++l) sph_trans_.emplace_back(l);
     }
@@ -389,16 +388,18 @@ size_t LibcintTwoElectronInt::transform_mixed(const int *g, const int *l) {
     // time, each shell psi4 wants spherical, using psi4's solid harmonics (the
     // same cartesian -> Gaussian-ordered spherical transform the Libint2 path
     // effectively applies, given libcint cartesians normalized like libint2's).
+    // Alternate between target_full_ and cint_buf_, whose libcint output has already
+    // been repacked into target_full_ and which is as large.
     size_t d[4];
     for (int k = 0; k < 4; ++k) d[k] = ncart(l[k]);
     double *data = target_full_;
+    double *out = cint_buf_.data();
     for (int k = 0; k < 4; ++k) {
         if (!bas_pure_[g[k]] || l[k] == 0) continue;
         const size_t np = 2 * l[k] + 1;
         size_t pre = 1, post = 1;
         for (int j = 0; j < k; ++j) pre *= d[j];
         for (int j = k + 1; j < 4; ++j) post *= d[j];
-        double *out = mixed_buf_.data();
         std::fill(out, out + pre * np * post, 0.0);
         const SphericalTransform &st = sph_trans_[l[k]];
         for (int c = 0; c < st.n(); ++c) {
@@ -411,9 +412,11 @@ size_t LibcintTwoElectronInt::transform_mixed(const int *g, const int *l) {
             }
         }
         d[k] = np;
-        std::copy(out, out + pre * np * post, data);
+        std::swap(data, out);
     }
-    return d[0] * d[1] * d[2] * d[3];
+    const size_t n = d[0] * d[1] * d[2] * d[3];
+    if (data != target_full_) std::copy(data, data + n, target_full_);
+    return n;
 }
 
 size_t LibcintTwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {

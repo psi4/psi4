@@ -107,10 +107,10 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     bool mixed_;
     /// Per libcint bas index, whether psi4 wants the shell spherical (used when mixed_).
     std::vector<char> bas_pure_;
-    /// psi4 cartesian -> spherical transforms by angular momentum (used when mixed_).
+    /// psi4 cartesian -> spherical transforms by angular momentum (used when mixed_). Our
+    /// own, rather than TwoBodyAOInt::pure_transform's from the IntegralFactory, since the
+    /// sieve's quartets come from one basis, not bs1_..bs4_, and the factory's stop at l=8.
     std::vector<SphericalTransform> sph_trans_;
-    /// Scratch for the mixed_ transformation.
-    std::vector<double> mixed_buf_;
 
     /// Set up the libcint optimizer and buffers (fresh objects and clones alike).
     void common_init();
