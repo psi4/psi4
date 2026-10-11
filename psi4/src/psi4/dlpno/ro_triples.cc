@@ -1021,14 +1021,16 @@ double RO_DLPNOCCSD_T::compute_ro_lccsd_t0(bool save_memory) {
             const auto exchanged = mixed_v_pij_block(q, p, like, opposite);
             const auto F_r = project_fia(occupied[r], opposite);
             const auto T_pq = project_pair(occupied[p], occupied[q], like, like);
-            const auto T_p = project_single(occupied[p], like);
             auto V = std::make_shared<Matrix>(ntno, ntno * ntno);
+            // The direct-minus-exchanged blocks already contain all four
+            // P(ij)P(ab) [t_i^a (jb|kc)] terms. Adding an unpermuted copy
+            // would double count one term and break occupied-orbital invariance.
             for (int a = 0; a < ntno; ++a) {
                 for (int b = 0; b < ntno; ++b) {
                     for (int c = 0; c < ntno; ++c) {
                         cube_set(V, ntno, a, b, c,
                                  cube_get(direct, ntno, a, b, c) - cube_get(exchanged, ntno, a, b, c) +
-                                     F_r->get(c, 0) * T_pq->get(a, b) + K_ovov[q][r]->get(b, c) * T_p->get(a, 0));
+                                     F_r->get(c, 0) * T_pq->get(a, b));
                     }
                 }
             }
