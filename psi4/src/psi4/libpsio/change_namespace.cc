@@ -32,8 +32,7 @@
  */
 
 #include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <string>
 #include "psi4/pragma.h"
 #include <memory>
 #include "psi4/libpsio/psio.h"
@@ -42,34 +41,16 @@
 namespace psi {
 
 void PSIO::change_file_namespace(size_t unit, const std::string& ns1, const std::string& ns2) {
-    char *old_name, *new_name, *old_fullpath, *new_fullpath;
-    _default_psio_lib_->get_filename(unit, &old_name, true);
-    _default_psio_lib_->get_filename(unit, &new_name, true);
-    std::string tpath = PSIOManager::shared_object()->get_file_path(unit);
-    const char* path = tpath.c_str();
+    // The bare file name (prefix plus PID), without any namespace suffix.
+    const std::string name = _default_psio_lib_->get_filename(unit, true);
+    const std::string path = PSIOManager::shared_object()->get_file_path(unit);
+    const std::string unit_suffix = "." + std::to_string(unit);
 
-    old_fullpath = (char*)malloc((strlen(path) + strlen(old_name) + 80) * sizeof(char));
-    new_fullpath = (char*)malloc((strlen(path) + strlen(new_name) + 80) * sizeof(char));
+    const std::string old_fullpath = path + name + (ns1.empty() ? "" : "." + ns1) + unit_suffix;
+    const std::string new_fullpath = path + name + (ns2.empty() ? "" : "." + ns2) + unit_suffix;
 
-    if (ns1 == "") {
-        sprintf(old_fullpath, "%s%s.%zu", path, old_name, unit);
-    } else {
-        sprintf(old_fullpath, "%s%s.%s.%zu", path, old_name, ns1.c_str(), unit);
-    }
-    if (ns2 == "") {
-        sprintf(new_fullpath, "%s%s.%zu", path, new_name, unit);
-    } else {
-        sprintf(new_fullpath, "%s%s.%s.%zu", path, new_name, ns2.c_str(), unit);
-    }
-
-    // printf("%s\n",old_fullpath);
-    // printf("%s\n",new_fullpath);
-
-    PSIOManager::shared_object()->move_file(std::string(old_fullpath), std::string(new_fullpath));
-    ::rename(old_fullpath, new_fullpath);
-
-    free(old_fullpath);
-    free(new_fullpath);
+    PSIOManager::shared_object()->move_file(old_fullpath, new_fullpath);
+    ::rename(old_fullpath.c_str(), new_fullpath.c_str());
 }
 
 }  // namespace psi
