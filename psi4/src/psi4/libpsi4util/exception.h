@@ -32,6 +32,7 @@
 #include <cstring>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 #if defined(__GNUC__) || (defined(__ICC) && (__ICC >= 600))
 #define PSI4_CURRENT_FUNCTION __PRETTY_FUNCTION__
@@ -54,7 +55,7 @@ namespace psi {
 class PSI_API PsiException : public std::runtime_error {
    private:
     std::string msg_;
-    const char *file_;
+    std::string file_;
     int line_;
 
    protected:
@@ -80,7 +81,7 @@ class PSI_API PsiException : public std::runtime_error {
     PsiException &operator=(const PsiException &other) {
         if (this != &other) {
             msg_ = other.msg_;
-            file_ = strdup(other.file_);
+            file_ = other.file_;
             line_ = other.line_;
         }
         return *this;
