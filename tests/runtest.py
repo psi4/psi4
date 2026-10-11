@@ -32,6 +32,8 @@ import sys
 import time
 import subprocess
 
+from output_parser import write_scf_iterations_json
+
 if len(sys.argv) not in {4, 5, 6, 7, 8}:
     print("""Usage: %s input_file logfile top_srcdir alt_output_file alt_psi4_exe alt_psi4datadir""" % (sys.argv[0]))
     sys.exit(1)
@@ -119,6 +121,14 @@ elif os.path.isfile(infile.replace(".dat", ".py")):
     pyexitcode = backtick([sys.executable, infile, " > ", outfile])
 else:
     raise Exception("\n\nError: Input file %s not found\n" % infile)
+
+if os.path.isfile(outfile):
+    try:
+        json_file = write_scf_iterations_json(outfile)
+    except Exception as e:
+        sys.stderr.write("Warning: could not write SCF iteration metadata for %s: %s\n" % (outfile, e))
+    else:
+        print("SCF iteration metadata: %s" % json_file)
 
 # combine, print, and return (0/1) testing status
 exitcode = 0 if (pyexitcode == 0) else 1

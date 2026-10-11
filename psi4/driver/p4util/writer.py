@@ -30,8 +30,9 @@ Only contains extensions to the :py:class:`psi4.core.Wavefunction` class.
 
 """
 
-__all__ = []
+__all__ = ["write_timer_json"]
 
+import json
 from typing import Optional
 
 from psi4 import core
@@ -434,3 +435,44 @@ def _write_molden(
         fn.write(mol_string)
 
 core.Wavefunction.write_molden = _write_molden
+
+def write_timer_json(filename: Optional[str] = None):
+    """Write timing information from Psi4 timers to a JSON file.
+
+    Parameters
+    ----------
+    filename : Optional[str]
+        Destination file name for JSON file. If unspecified (None), 
+        defaults to "timer.json".
+    Returns
+    -------
+    data : dict
+        Dictionary containing timer information.
+
+    Examples
+    --------
+    >>> energy('scf')
+    >>> write_timer_json('my_timing.json')
+
+    """
+    if filename is None:
+        filename = "timer.json"
+
+    import psi4
+
+    # Get timer dictionaries keyed by their hierarchical timer IDs from core
+    timer_records = core.get_timer_records()
+
+    data = {
+        "timers": timer_records,
+        "psi4_version": psi4.version_formatter("{version}"),
+        "psi4_commit_hash": psi4.version_formatter("{githash}"),
+    }
+
+    # Write to json file
+    with open(filename, "w") as jsonfile:
+        json.dump(data, jsonfile, indent=2)
+
+    core.print_out(f"\nTimer data written to {filename}\n")
+
+    return data
