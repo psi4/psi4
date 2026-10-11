@@ -1,0 +1,83 @@
+#! Full-space iterative ROHF DLPNO-CCSD(T) on triplet CH2.
+#! References use canonical ROHF-CCSD amplitudes from the roccsd.py equations,
+#! DIRECT J/K, and the same aug-cc-pVDZ-RI correlation integrals as this test.
+#! The triples oracle separately semicanonicalizes the alpha/beta occupied and
+#! virtual spaces, retains the pilot's connected W sign convention, and omits
+#! the duplicate unpermuted t_i^a (jb|kc) in the AAB/ABB disconnected V blocks.
+#! Its total agrees with an independent PySCF UCCSD(T) contraction for the same
+#! amplitudes, Fock matrices, and integrals. No Brueckner optimization is used.
+
+memory 2 GB
+
+molecule ch2 {
+0 3
+C
+H 1 1.0756
+H 1 1.0756 2 133.94
+units angstrom
+symmetry c1
+}
+
+set {
+    basis aug-cc-pvdz
+    reference rohf
+    freeze_core false
+    scf_type direct
+    df_basis_cc aug-cc-pvdz-ri
+    e_convergence 1.0e-10
+    d_convergence 1.0e-10
+    r_convergence 1.0e-9
+    dlpno_maxiter 100
+    dlpno_toggle_memory false
+
+    t_cut_pno 0.0
+    t_cut_pno_mp2 0.0
+    t_cut_pairs 0.0
+    t_cut_pairs_mp2 0.0
+    t_cut_pre 0.0
+    t_cut_do 0.0
+    t_cut_do_pre 0.0
+    t_cut_do_ij 0.0
+    t_cut_do_uv 0.0
+    t_cut_mkn 0.0
+    t_cut_clmo 0.0
+    t_cut_cpao 0.0
+    f_cut 0.0
+
+    t0_approximation false
+    t_cut_tno 0.0
+    t_cut_tno_pre 0.0
+    t_cut_triples_weak 0.0
+    triples_max_weak_pairs 3
+    t_cut_do_triples 0.0
+    t_cut_do_triples_pre 0.0
+    t_cut_mkn_triples 0.0
+    t_cut_mkn_triples_pre 0.0
+    f_cut_t 0.0
+    t_cut_iter 0.0
+}
+
+val = energy('dlpno-ccsd(t)')
+
+e_aaa = variable('AAA (T) CORRECTION ENERGY')
+e_aab = variable('AAB (T) CORRECTION ENERGY')
+e_abb = variable('ABB (T) CORRECTION ENERGY')
+e_bbb = variable('BBB (T) CORRECTION ENERGY')
+e_t = variable('(T) CORRECTION ENERGY')
+
+compare_values(-38.922876077213, variable('SCF TOTAL ENERGY'), 1.0e-8,
+               'ROHF reference energy')  #TEST
+compare_values(-0.124820906552, variable('CCSD CORRELATION ENERGY'), 1.0e-7,
+               'canonical ROHF CCSD correlation')  #TEST
+compare_values(-0.000125254724, e_aaa, 1.0e-8, 'AAA triples contribution')  #TEST
+compare_values(-0.001770360368, e_aab, 1.0e-8, 'AAB triples contribution')  #TEST
+compare_values(-0.000434651303, e_abb, 1.0e-8, 'ABB triples contribution')  #TEST
+compare_values(-0.000000107870, e_bbb, 1.0e-8, 'BBB triples contribution')  #TEST
+compare_values(-0.002330374265, e_t, 1.0e-8, 'canonical ROHF triples correction')  #TEST
+compare_values(e_t, e_aaa + e_aab + e_abb + e_bbb, 1.0e-10, 'spin-component sum')  #TEST
+compare_values(-39.050027358030, variable('CCSD(T) TOTAL ENERGY'), 1.0e-7,
+               'canonical ROHF CCSD(T) total')  #TEST
+compare_values(-39.050027358030, variable('CURRENT ENERGY'), 1.0e-7,
+               'current ROHF CCSD(T) total')  #TEST
+compare_values(-39.050027358030, val, 1.0e-7, 'ROHF DLPNO-CCSD(T) return')  #TEST
+clean()

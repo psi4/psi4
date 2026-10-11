@@ -1,0 +1,43 @@
+#! Full-space ROHF DLPNO-CCSD regression for triplet methylene
+#! Geometry from Allen, Sargent, and Schaefer
+#! Zero pair and PNO cutoffs recover the canonical DF-CCSD limit
+
+ref_scf                  =    -38.92287607721545             #TEST
+ref_roccsd_corl          =     -0.12482089891700             #TEST
+ref_roccsd_tot           =    -39.04769697613245             #TEST
+
+molecule ch2 {
+0 3
+C
+H 1 1.0756
+H 1 1.0756 2 133.94
+symmetry c1
+}
+
+set basis aug-cc-pvdz
+set freeze_core false
+set scf_type direct
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+set t_cut_pno 0.0
+set t_cut_pno_mp2 0.0
+set t_cut_pairs 0.0
+set t_cut_do 0.0
+set t_cut_mkn 0.0
+set t_cut_tno 0.0
+set t_cut_do_triples 0.0
+set t_cut_mkn_triples 0.0
+set dlpno_toggle_memory false
+set reference rohf
+
+print('   Testing ROHF DLPNO-CCSD on triplet CH2 ...')
+val = energy('dlpno-ccsd')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                       #TEST
+compare_values(ref_roccsd_corl, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')     #TEST
+compare_values(ref_roccsd_tot, variable('CCSD TOTAL ENERGY'), 7, 'ccsd total')           #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'current ref')          #TEST
+compare_values(ref_roccsd_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'current corl') #TEST
+compare_values(ref_roccsd_tot, variable('CURRENT ENERGY'), 7, 'current total')           #TEST
+compare_values(ref_roccsd_tot, val, 7, 'dlpno-ccsd return')                              #TEST
+clean()

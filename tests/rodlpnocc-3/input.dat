@@ -1,0 +1,45 @@
+#! Full-space ROHF DLPNO-CCSD regression for the methyl radical
+#! Zero pair and PNO cutoffs recover the canonical DF-CCSD limit
+#! Cartesian coordinates are in bohr
+
+ref_scf                  =    -39.56165780069830             #TEST
+ref_roccsd_corl          =     -0.16196608056500             #TEST
+ref_roccsd_tot           =    -39.72362388126330             #TEST
+
+molecule ch3 {
+0 2
+C    0.00000000000000      0.00000000000000      0.00000000000000
+H    1.02022495761968     -1.76708146174709      0.00000000000000
+H    1.02022495761968      1.76708146174709      0.00000000000000
+H   -2.04044991523936      0.00000000000000      0.00000000000000
+units bohr
+symmetry c1
+}
+
+set basis aug-cc-pvdz
+set freeze_core false
+set scf_type direct
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+set t_cut_pno 0.0
+set t_cut_pno_mp2 0.0
+set t_cut_pairs 0.0
+set t_cut_do 0.0
+set t_cut_mkn 0.0
+set t_cut_tno 0.0
+set t_cut_do_triples 0.0
+set t_cut_mkn_triples 0.0
+set dlpno_toggle_memory false
+set reference rohf
+
+print('   Testing ROHF DLPNO-CCSD on the methyl radical ...')
+val = energy('dlpno-ccsd')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                       #TEST
+compare_values(ref_roccsd_corl, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')     #TEST
+compare_values(ref_roccsd_tot, variable('CCSD TOTAL ENERGY'), 7, 'ccsd total')           #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'current ref')          #TEST
+compare_values(ref_roccsd_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'current corl') #TEST
+compare_values(ref_roccsd_tot, variable('CURRENT ENERGY'), 7, 'current total')           #TEST
+compare_values(ref_roccsd_tot, val, 7, 'dlpno-ccsd return')                              #TEST
+clean()
