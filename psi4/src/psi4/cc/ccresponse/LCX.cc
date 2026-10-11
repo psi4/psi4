@@ -88,6 +88,9 @@ double LCX(const char *pert_c, int irrep_c, const char *pert_x, int irrep_x, dou
     polar += 2.0 * global_dpd_->file2_dot(&z1, &l1);
     global_dpd_->file2_close(&l1);
 
+    outfile->Printf("\n\tNorm of the polar.... %20.15f\n", polar);
+
+
     global_dpd_->file2_close(&z1);
 
     /*** L2 * MuBAR * X1 + L2 * MuBAR * X2 ***/
@@ -165,6 +168,9 @@ double LCX(const char *pert_c, int irrep_c, const char *pert_x, int irrep_x, dou
     global_dpd_->buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
     polar += global_dpd_->buf4_dot(&l2, &z2);
     global_dpd_->buf4_close(&l2);
+
+
+   //outfile->Printf("\n\tNorm of the polar2.... %20.15f\n", polar); 
 
     global_dpd_->buf4_close(&z2);
 
