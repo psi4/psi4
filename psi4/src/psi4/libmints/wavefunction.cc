@@ -83,25 +83,16 @@ double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options &options)
-    : options_(options),
-      basisset_(basis),
-      molecule_(molecule),
-      dipole_field_strength_{{0.0, 0.0, 0.0}},
-      PCM_enabled_(false) {
+    : BaseWavefunction(molecule, basis, options) {
     common_init();
 }
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options),
-      basisset_(basis),
-      molecule_(molecule),
-      dipole_field_strength_{{0.0, 0.0, 0.0}},
-      PCM_enabled_(false) {
+    : BaseWavefunction(molecule, basis) {
     common_init();
 }
 
-Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &options)
-    : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {
+Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &options) : BaseWavefunction(options) {
     // Copy the wavefuntion then update
     shallow_copy(reference_wavefunction);
     set_reference_wavefunction(reference_wavefunction);
@@ -114,7 +105,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
                            std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints,
                            std::map<std::string, std::string> strings, std::map<std::string, bool> booleans,
                            std::map<std::string, double> floats)
-    : options_(Process::environment.options), basisset_(basisset), molecule_(molecule) {
+    : BaseWavefunction(molecule, basisset, Process::environment.options) {
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
         molecule_->set_point_group(molecule_->find_point_group());
@@ -177,8 +168,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     dipole_field_strength_[2] = floats["dipole_field_z"];
 }
 
-Wavefunction::Wavefunction(Options &options)
-    : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
+Wavefunction::Wavefunction(Options &options) : BaseWavefunction(options) {}
 
 Wavefunction::~Wavefunction() {}
 
@@ -449,137 +439,32 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
 }
 
 void Wavefunction::common_init() {
+    BaseWavefunction::common_init();
+
     Wavefunction::initialize_singletons();
-    if (!basisset_) {
-        throw PSIEXCEPTION(
-            "You can't initialize a Wavefunction that doesn't "
-            "have a basis set");
-    }
-
-    // Check the point group of the molecule. If it is not set, set it.
-    if (!molecule_->point_group()) {
-        molecule_->set_point_group(molecule_->find_point_group());
-    }
-
-    // Create an SO basis...we need the point group for this part.
-    integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
-    mintshelper_ = std::make_shared<MintsHelper>(basisset_, options_);
-    sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
 
     auto pet = std::make_shared<PetiteList>(basisset_, integral_);
     AO2SO_ = pet->aotoso();
 
-    // Obtain the dimension object to initialize the factory.
-    nsopi_ = sobasisset_->dimension();
-    nsopi_.set_name("SOs per irrep");
-
     factory_ = std::make_shared<MatrixFactory>();
     factory_->init_with(nsopi_, nsopi_);
-
-    nirrep_ = nsopi_.n();
 
     S_ = factory_->create_shared_matrix("S");
     std::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
     Sint->compute(S_);
 
-    // Initialize array that hold dimensionality information
-    nmopi_ = Dimension(nirrep_, "MOs per irrep");
     nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
     nbetapi_ = Dimension(nirrep_, "Beta electrons per irrep");
-    frzcpi_ = Dimension(nirrep_, "Frozen core orbitals per irrep");
-    frzvpi_ = Dimension(nirrep_, "Frozen virtual orbitals per irrep");
-
-    // Obtain memory amount from the environment
-    memory_ = Process::environment.get_memory();
-
-    nso_ = basisset_->nbf();
-    nmo_ = basisset_->nbf();
     for (int k = 0; k < nirrep_; k++) {
-        nmopi_[k] = 0;
         nalphapi_[k] = 0;
         nbetapi_[k] = 0;
     }
 
-    energy_ = 0.0;
-    efzc_ = 0.0;
     same_a_b_dens_ = true;
     same_a_b_orbs_ = false;
 
-    // Read in the debug flag
-    debug_ = options_.get_int("DEBUG");
-    print_ = options_.get_int("PRINT");
-
-    // Determine the number of electrons in the system
-    int nelectron = 0;
-    for (int i = 0; i < molecule_->natom(); ++i) {
-        nelectron += (int)molecule_->Z(i);
-    }
-    nelectron -= molecule_->molecular_charge();
-
-    // Make sure that the multiplicity is reasonable
-    int multiplicity = molecule_->multiplicity();
-    if (multiplicity - 1 > nelectron) {
-        std::ostringstream oss;
-        oss << "There are not enough electrons for multiplicity = " << multiplicity << ".\n";
-        oss << "Please check your input";
-        throw SanityCheckError(oss.str(), __FILE__, __LINE__);
-    }
-    if (multiplicity % 2 == nelectron % 2) {
-        std::ostringstream oss;
-        oss << "A multiplicity of " << multiplicity << " with " << nelectron << " electrons is impossible.\n";
-        oss << "Please check your input";
-        throw SanityCheckError(oss.str(), __FILE__, __LINE__);
-    }
-
-    nbeta_ = (nelectron - multiplicity + 1) / 2;
-    nalpha_ = nbeta_ + multiplicity - 1;
-
-    // Setup dipole field perturbation information
-    perturb_h_ = options_.get_bool("PERTURB_H");
-    dipole_field_type_ = nothing;
-    std::fill(dipole_field_strength_.begin(), dipole_field_strength_.end(), 0.0);
-    if (perturb_h_) {
-        std::string perturb_with;
-        if (options_["PERTURB_WITH"].has_changed()) {
-            perturb_with = options_.get_str("PERTURB_WITH");
-            // Do checks to see what perturb_with is.
-            if (perturb_with == "DIPOLE_X") {
-                dipole_field_type_ = dipole_x;
-                dipole_field_strength_[0] = options_.get_double("PERTURB_MAGNITUDE");
-                outfile->Printf(
-                    " WARNING: the DIPOLE_X and PERTURB_MAGNITUDE keywords are deprecated."
-                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
-            } else if (perturb_with == "DIPOLE_Y") {
-                dipole_field_type_ = dipole_y;
-                dipole_field_strength_[1] = options_.get_double("PERTURB_MAGNITUDE");
-                outfile->Printf(
-                    " WARNING: the DIPOLE_Y and PERTURB_MAGNITUDE keywords are deprecated."
-                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
-            } else if (perturb_with == "DIPOLE_Z") {
-                dipole_field_type_ = dipole_z;
-                dipole_field_strength_[2] = options_.get_double("PERTURB_MAGNITUDE");
-                outfile->Printf(
-                    " WARNING: the DIPOLE_Z and PERTURB_MAGNITUDE keywords are deprecated."
-                    "  Use DIPOLE and the PERTURB_DIPOLE array instead.");
-            } else if (perturb_with == "DIPOLE") {
-                dipole_field_type_ = dipole;
-                if (options_["PERTURB_DIPOLE"].size() != 3)
-                    throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
-                for (int n = 0; n < 3; ++n) dipole_field_strength_[n] = options_["PERTURB_DIPOLE"][n].to_double();
-            } else if (perturb_with == "EMBPOT") {
-                dipole_field_type_ = embpot;
-            } else if (perturb_with == "DX") {
-                dipole_field_type_ = dx;
-            } else if (perturb_with == "SPHERE") {
-                outfile->Printf("  WARNING: Option PERTURB_WITH=SPHERE is deprecated and may be removed as soon as v1.13.\n");
-                dipole_field_type_ = sphere;
-            } else {
-                outfile->Printf("Unknown PERTURB_WITH. Applying no perturbation.\n");
-            }
-        } else {
-            outfile->Printf("PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
-        }
-    }
+    nbeta_ = (nelectron_ - multiplicity_ + 1) / 2;
+    nalpha_ = nbeta_ + multiplicity_ - 1;
 
 #ifdef USING_BrianQC
     if (brianEnable) {
@@ -590,7 +475,7 @@ void Wavefunction::common_init() {
         brianInt atomCount = molecule_->nallatom();
 
         brianInt totalCharge = (brianInt)round(molecule_->molecular_charge());
-        brianInt spinMultiplicity = multiplicity;
+        brianInt spinMultiplicity = multiplicity_;
 
         std::vector<brianInt> atomicNumbers;
         std::vector<double> atomCoordinates;
@@ -676,10 +561,6 @@ void Wavefunction::common_init() {
 #endif
 }
 
-std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return dipole_field_strength_; }
-
-Wavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const { return dipole_field_type_; }
-
 Dimension Wavefunction::map_irreps(const Dimension &dimpi) {
     auto ps = options_.get_str("PARENT_SYMMETRY");
 
@@ -734,6 +615,12 @@ void Wavefunction::initialize_singletons() {
     done = true;
 }
 
+std::shared_ptr<Wavefunction> Wavefunction::reference_wavefunction() const { return reference_wavefunction_; }
+
+void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn) {
+    reference_wavefunction_ = wfn;
+}
+
 const Dimension Wavefunction::doccpi(bool warn_on_beta_socc) const {
     std::vector<int> docc_vec;
     for (int h = 0; h < nalphapi_.n(); h++) {
@@ -756,49 +643,11 @@ const Dimension Wavefunction::soccpi(bool warn_on_beta_socc) const {
     return socc_vec;
 }
 
-std::shared_ptr<Molecule> Wavefunction::molecule() const { return molecule_; }
-
-std::shared_ptr<PSIO> Wavefunction::psio() const { return psio_; }
-
-Options &Wavefunction::options() const { return options_; }
-
-std::shared_ptr<IntegralFactory> Wavefunction::integral() const { return integral_; }
-
-std::shared_ptr<MintsHelper> Wavefunction::mintshelper() const { return mintshelper_; }
-
-std::shared_ptr<BasisSet> Wavefunction::basisset() const { return basisset_; }
-
-std::map<std::string, std::shared_ptr<BasisSet>> Wavefunction::basissets() const { return mintshelper_->basissets(); }
-
-std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) { return mintshelper_->get_basisset(label); }
-
-void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) {
-    return mintshelper_->set_basisset(label, basis);
-}
-
-bool Wavefunction::basisset_exists(std::string label) { return mintshelper_->basisset_exists(label); }
-
-std::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const { return sobasisset_; }
-
-std::shared_ptr<MatrixFactory> Wavefunction::matrix_factory() const { return factory_; }
-
-std::shared_ptr<Wavefunction> Wavefunction::reference_wavefunction() const { return reference_wavefunction_; }
-
-void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn) {
-    reference_wavefunction_ = wfn;
-}
-
 void Wavefunction::force_occpi(const Dimension &input_doccpi, const Dimension &input_soccpi) {
     nalphapi_ = input_doccpi + input_soccpi;
     nbetapi_ = input_doccpi;
     nalpha_ = nalphapi_.sum();
     nbeta_ = nbetapi_.sum();
-}
-
-void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
-    for (int h = 0; h < nirrep_; h++) {
-        frzvpi_[h] = frzvpi[h];
-    }
 }
 
 SharedMatrix Wavefunction::Ca() const {
@@ -1228,8 +1077,6 @@ SharedMatrix Wavefunction::lagrangian() const { return Lagrangian_; }
 
 void Wavefunction::set_lagrangian(SharedMatrix X) { Lagrangian_ = X; }
 
-void Wavefunction::set_energy(double ene) { set_scalar_variable("CURRENT ENERGY", ene); }
-
 SharedMatrix Wavefunction::gradient() const { return gradient_; }
 
 void Wavefunction::set_gradient(SharedMatrix grad) { set_array_variable("CURRENT GRADIENT", grad); }
@@ -1239,8 +1086,6 @@ SharedMatrix Wavefunction::hessian() const { return hessian_; }
 void Wavefunction::set_hessian(SharedMatrix hess) { set_array_variable("CURRENT HESSIAN", hess); }
 
 void Wavefunction::save() const {}
-
-std::shared_ptr<ExternalPotential> Wavefunction::external_pot() const { return external_pot_; }
 
 std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {
     std::shared_ptr<std::vector<double>> v = esp_at_nuclei();
@@ -1296,22 +1141,7 @@ std::vector<std::vector<std::tuple<double, int, int>>> Wavefunction::get_no_occu
     return no_occs;
 }
 
-bool Wavefunction::has_scalar_variable(const std::string &key) { return variables_.count(to_upper_copy(key)); }
-
 bool Wavefunction::has_array_variable(const std::string &key) { return arrays_.count(to_upper_copy(key)); }
-
-bool Wavefunction::has_potential_variable(const std::string &key) { return potentials_.count(to_upper_copy(key)); }
-
-double Wavefunction::scalar_variable(const std::string &key) {
-    std::string uc_key = to_upper_copy(key);
-
-    auto search = variables_.find(uc_key);
-    if (search != variables_.end()) {
-        return search->second;
-    } else {
-        throw PSIEXCEPTION("Wavefunction::scalar_variable: Requested variable " + uc_key + " was not set!\n");
-    }
-}
 
 SharedMatrix Wavefunction::array_variable(const std::string &key) {
     std::string uc_key = to_upper_copy(key);
@@ -1324,23 +1154,6 @@ SharedMatrix Wavefunction::array_variable(const std::string &key) {
     }
 }
 
-std::shared_ptr<ExternalPotential> Wavefunction::potential_variable(const std::string &key) {
-    std::string uc_key = to_upper_copy(key);
-
-    auto search = potentials_.find(uc_key);
-    if (search != potentials_.end()) {
-        return search->second;
-    } else {
-        throw PSIEXCEPTION("Wavefunction::potential_variable: Requested variable " + uc_key + " was not set!\n");
-    }
-}
-
-void Wavefunction::set_scalar_variable(const std::string &key, double val) {
-    variables_[to_upper_copy(key)] = val;
-
-    if (to_upper_copy(key) == "CURRENT ENERGY") energy_ = val;
-}
-
 void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) {
     arrays_[to_upper_copy(key)] = val->clone();
 
@@ -1348,25 +1161,6 @@ void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) 
     if (to_upper_copy(key) == "CURRENT HESSIAN") hessian_ = val->clone();
 }
 
-void Wavefunction::set_potential_variable(const std::string &key, std::shared_ptr<ExternalPotential> val) {
-    potentials_[to_upper_copy(key)] = val;
-}
-
-int Wavefunction::del_scalar_variable(const std::string &key) { return variables_.erase(to_upper_copy(key)); }
-
 int Wavefunction::del_array_variable(const std::string &key) { return arrays_.erase(to_upper_copy(key)); }
 
-int Wavefunction::del_potential_variable(const std::string &key) { return potentials_.erase(to_upper_copy(key)); }
-
-std::map<std::string, double> Wavefunction::scalar_variables() { return variables_; }
-
 std::map<std::string, SharedMatrix> Wavefunction::array_variables() { return arrays_; }
-
-std::map<std::string, std::shared_ptr<ExternalPotential>> Wavefunction::potential_variables() { return potentials_; }
-
-void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
-    PCM_ = pcm;
-    PCM_enabled_ = true;
-}
-
-std::shared_ptr<PCM> Wavefunction::get_PCM() const { return PCM_; }
