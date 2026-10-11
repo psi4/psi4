@@ -86,6 +86,7 @@ void DirectJK::common_init() {
 #endif
 
     incfock_ = options_.get_bool("INCFOCK");
+    fixed_reference_ = options_.get_bool("INCFOCK_FIXED_REFERENCE");
     incfock_count_ = 0;
     do_incfock_iter_ = false;
     if (options_.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
@@ -121,6 +122,7 @@ void DirectJK::print_header() const {
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
         outfile->Printf("    Screening Cutoff:  %11.0E\n", cutoff_);
         outfile->Printf("    Incremental Fock:  %11s\n", incfock_ ? "Yes" : "No");
+        if (incfock_) outfile->Printf("    Fixed reference:   %11s\n", fixed_reference_ ? "Yes" : "No");
         outfile->Printf("\n");
     }
 }
@@ -136,9 +138,27 @@ void DirectJK::preiterations() {
 }
 
 void DirectJK::incfock_setup() {
-    if (do_incfock_iter_) {
-        size_t njk = D_ao_.size();
+    size_t njk = D_ao_.size();
 
+    if (fixed_reference_) {
+        // A valid, correctly-sized reference is required to build incrementally
+        if (D_fixed_ref_.size() != njk) do_incfock_iter_ = false;
+
+        if (do_incfock_iter_) {
+            // Incremental formation: build from the difference against the fixed reference
+            for (size_t jki = 0; jki < njk; jki++) {
+                D_ref_[jki] = D_ao_[jki]->clone();
+                D_ref_[jki]->subtract(D_fixed_ref_[jki]);
+            }
+        } else {
+            // Full formation
+            D_ref_ = D_ao_;
+            zero();
+        }
+        return;
+    }
+
+    if (do_incfock_iter_) {
         // If there is no previous pseudo-density, this iteration is normal
         if (initial_iteration_ || D_prev_.size() != njk) {
 	        initial_iteration_ = true;
@@ -158,6 +178,29 @@ void DirectJK::incfock_setup() {
 }
 
 void DirectJK::incfock_postiter() {
+    if (fixed_reference_) {
+        size_t njk = D_ao_.size();
+        if (do_incfock_iter_) {
+            // Incremental build: add back the J, K, and wK from the fixed reference
+            for (size_t jki = 0; jki < njk; jki++) {
+                if (do_J_) J_ao_[jki]->add(J_fixed_ref_[jki]);
+                if (do_K_) K_ao_[jki]->add(K_fixed_ref_[jki]);
+                if (do_wK_) wK_ao_[jki]->add(wK_fixed_ref_[jki]);
+            }
+        } else {
+            // Full build: capture the fixed reference density and its J, K, and wK
+            D_fixed_ref_.clear();
+            for (auto const& Di : D_ao_) D_fixed_ref_.push_back(Di->clone());
+            J_fixed_ref_.clear();
+            if (do_J_) for (auto const& Ji : J_ao_) J_fixed_ref_.push_back(Ji->clone());
+            K_fixed_ref_.clear();
+            if (do_K_) for (auto const& Ki : K_ao_) K_fixed_ref_.push_back(Ki->clone());
+            wK_fixed_ref_.clear();
+            if (do_wK_) for (auto const& wKi : wK_ao_) wK_fixed_ref_.push_back(wKi->clone());
+        }
+        return;
+    }
+
     // Save a copy of the density for the next iteration
     D_prev_.clear();
     for(auto const &Di : D_ao_) {
@@ -336,10 +379,16 @@ void DirectJK::compute_JK() {
         double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         double Dnorm = Process::environment.globals["SCF D NORM"];
         // Do IFB on this iteration?
-        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
-        
-        if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
-        
+        if (fixed_reference_) {
+            // A fixed-reference incremental build is exact, so it can be used on
+            // every iteration once a reference has been captured (see incfock_setup).
+            do_incfock_iter_ = !initial_iteration_;
+        } else {
+            do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+
+            if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
+        }
+
         incfock_setup();
 	
         timer_off("DirectJK: INCFOCK Preprocessing");
@@ -404,16 +453,18 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     timer_on("build_JK_matrices()");
 
     // => Zeroing... <= //
-    
+
     // Ideally, this wouldnt be here at all
     // It would be better covered in incfock_setup()
     // But removing this causes a couple of tests to fail for some reason
-    
-    if (!do_incfock_iter_) {
+
+    // The fixed-reference incremental build always computes a fresh delta and adds
+    // the reference contribution back in incfock_postiter(), so it must always zero.
+    if (fixed_reference_ || !do_incfock_iter_) {
         for (auto& Jmat : J) {
             Jmat->zero();
         }
-    
+
         for (auto& Kmat : K) {
             Kmat->zero();
         }

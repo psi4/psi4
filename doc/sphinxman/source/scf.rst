@@ -685,7 +685,7 @@ DIRECT
     up to 1500 basis functions, uses zero disk (if DF pre-iterations are
     turned off), and can obtain significant
     speedups with negligible error loss if |scf__ints_tolerance|
-    is set to 1.0E-8 or so.
+    is set to 1.0E-8 or so. See the :ref:`sec:directscf` section for more information.
 DF [:ref:`Default <table:conv_scf>`]
     A density-fitted algorithm designed for computations with thousands of
     basis functions. This algorithm is highly optimized, and is threaded
@@ -827,6 +827,55 @@ resort will be used.
 To avoid this, either set |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
+
+.. _`sec:directscf`:
+
+Integral-Direct Self-Consistent Field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The integral-direct SCF algorithm [Almloef:1982:385]_ computes the
+exact Fock matrix by recomputing integrals on the fly at every
+iteration and contracting them with the density matrix. As the
+electron density changes very little in later iterations, the direct
+SCF method often employs incremental formation for the Fock matrix:
+since the Fock matrix is linear in the density, one does not have to
+compute the full matrix at every iteration, only the change from a
+previously computed Fock matrix.  This behavior is toggled by the
+|scf__incfock| keyword. Because the elements in the difference density
+matrix are much smaller than the elements in the density matrix, this
+makes the screening of the integrals much tighter when density-based screening is used, reducing the number
+of integrals that need to be calculated.
+
+The typical implementation of incremental Fock matrix formation
+updates the reference at every iteration. This makes the screening
+better and better as the wave function converges, because the density
+changes between SCF iterations go to zero as convergence is approached. But, since small changes can accumulate to a
+non-negligible outcome over many iterations, this procedure is
+susceptible to creeping numerical error. For this reason, a fresh Fock
+matrix needs to be rebuilt every ``N`` iterations
+(|scf__incfock_full_fock_every|, defaults to 5). In addition, due to the
+danger of the creepup of small errors, the iterative formation is
+turned off when a sufficiently tight convergence
+(|scf__incfock_convergence|, defaults to ``1e-5``) has been reached,
+so that the final iterations are performed without deleterious
+screening.
+
+Psi4 also implements a different type of algorithm, where a fixed
+reference density and Fock matrix is employed (see
+[Parrish:2016:131101]_ for inspiration). Because the reference is
+fixed, there is no danger of incremental creepup of numerical noise;
+however, the flip side is that roughly the same number of integrals
+need to be computed for every incremental step. This algorithm is used
+instead of the typical algorithm discussed above, if
+|scf__incfock_fixed_reference| is ``true``.
+
+
+It has the following options
+
+.. include:: autodir_options_c/scf__incfock.rst
+.. include:: autodir_options_c/scf__incfock_fixed_reference.rst
+.. include:: autodir_options_c/scf__incfock_full_fock_every.rst
+.. include:: autodir_options_c/scf__incfock_convergence.rst
 
 .. _`sec:scfddfj`:
 
