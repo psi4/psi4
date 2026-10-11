@@ -316,9 +316,6 @@ class PSI_API PSIO {
     bool tocdel(size_t unit, const char *key);
 
    private:
-    /// vector of units
-    psio_ud *psio_unit;
-
     /// Process ID
     std::string pid_;
 

@@ -72,13 +72,10 @@ struct psio_address {
     size_t offset;
 };
 
-struct psio_vol {
-    char *path;
-    int stream;
-};
-
-// Historically a PSIO unit could be striped across several files ("volumes").
-// That feature was removed: each unit is now backed by a single file.
+// psio_vol and psio_ud -- the per-unit file descriptor and path, and the
+// striping that once sat above them -- are gone with the I/O core that used
+// them. libspill owns the handle and the layout now, so there is nothing left
+// for Psi4 to describe. psio_tocentry stays: psio_tocscan still hands one back.
 
 typedef struct psio_entry {
     char key[PSIO_KEYLEN];
@@ -87,12 +84,6 @@ typedef struct psio_entry {
     struct psio_entry *next;
     struct psio_entry *last;
 } psio_tocentry;
-
-struct psio_ud {
-    psio_vol vol;
-    size_t toclen;
-    psio_tocentry *toc;
-};
 
 /** A convenient address initialization struct */
 extern PSI_API psio_address PSIO_ZERO;
