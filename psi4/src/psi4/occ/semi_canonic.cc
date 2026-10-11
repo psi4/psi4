@@ -40,10 +40,10 @@ void OCCWave::semi_canonic() {
     // tell other functions that orbitals are already semi canonical.
     orbs_already_sc = 1;
 
-    auto UooA = std::make_shared<Matrix>(nirrep_, occpiA, occpiA);
-    auto UvvA = std::make_shared<Matrix>(nirrep_, virtpiA, virtpiA);
-    auto FockooA = std::make_shared<Matrix>(nirrep_, occpiA, occpiA);
-    auto FockvvA = std::make_shared<Matrix>(nirrep_, virtpiA, virtpiA);
+    auto UooA = std::make_shared<Matrix>(occpiA, occpiA);
+    auto UvvA = std::make_shared<Matrix>(virtpiA, virtpiA);
+    auto FockooA = std::make_shared<Matrix>(occpiA, occpiA);
+    auto FockvvA = std::make_shared<Matrix>(virtpiA, virtpiA);
     Vector eigooA(occpiA);
     Vector eigvvA(virtpiA);
 
@@ -154,7 +154,7 @@ void OCCWave::semi_canonic() {
     }
 
     // Get new MOs
-    Ca_new = std::make_shared<Matrix>("New alpha MO coefficients", nirrep_, nsopi_, nmopi_);
+    Ca_new = std::make_shared<Matrix>("New alpha MO coefficients", nsopi_, nmopi_);
     Ca_new->zero();
     Ca_new->gemm(false, false, 1.0, Ca_, UorbA, 0.0);
     Ca_->zero();
@@ -173,10 +173,10 @@ void OCCWave::semi_canonic() {
 
     // UHF REFERENCE
     if (reference_ == "UNRESTRICTED") {
-        auto UooB = std::make_shared<Matrix>(nirrep_, occpiB, occpiB);
-        auto UvvB = std::make_shared<Matrix>(nirrep_, virtpiB, virtpiB);
-        auto FockooB = std::make_shared<Matrix>(nirrep_, occpiB, occpiB);
-        auto FockvvB = std::make_shared<Matrix>(nirrep_, virtpiB, virtpiB);
+        auto UooB = std::make_shared<Matrix>(occpiB, occpiB);
+        auto UvvB = std::make_shared<Matrix>(virtpiB, virtpiB);
+        auto FockooB = std::make_shared<Matrix>(occpiB, occpiB);
+        auto FockvvB = std::make_shared<Matrix>(virtpiB, virtpiB);
         Vector eigooB(occpiB);
         Vector eigvvB(virtpiB);
 
@@ -285,7 +285,7 @@ void OCCWave::semi_canonic() {
         }
 
         // Get new MOs
-        Cb_new = std::make_shared<Matrix>("New beta MO coefficients", nirrep_, nsopi_, nmopi_);
+        Cb_new = std::make_shared<Matrix>("New beta MO coefficients", nsopi_, nmopi_);
         Cb_new->zero();
         Cb_new->gemm(false, false, 1.0, Cb_, UorbB, 0.0);
         Cb_->zero();

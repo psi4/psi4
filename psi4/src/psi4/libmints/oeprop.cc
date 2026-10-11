@@ -416,7 +416,7 @@ SharedMatrix Prop::Dt_mo(bool total) {
 }
 std::pair<SharedMatrix, SharedVector> Prop::Na_mo() {
     SharedMatrix D = Da_mo();
-    auto C = std::make_shared<Matrix>("Na_mo", D->nirrep(), D->rowspi(), D->rowspi());
+    auto C = std::make_shared<Matrix>("Na_mo", D->rowspi(), D->rowspi());
     auto O = std::make_shared<Vector>("Alpha Occupation", D->rowspi());
 
     D->diagonalize(C, O, descending);
@@ -427,7 +427,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_mo() {
     if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
 
     SharedMatrix D = Db_mo();
-    auto C = std::make_shared<Matrix>("Nb_mo", D->nirrep(), D->rowspi(), D->rowspi());
+    auto C = std::make_shared<Matrix>("Nb_mo", D->rowspi(), D->rowspi());
     auto O = std::make_shared<Vector>("Beta Occupation", D->rowspi());
 
     D->diagonalize(C, O, descending);
@@ -439,7 +439,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_so() {
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
-    auto N2 = std::make_shared<Matrix>("Na_so", Ca_so_->nirrep(), Ca_so_->rowspi(), Ca_so_->colspi());
+    auto N2 = std::make_shared<Matrix>("Na_so", Ca_so_->rowspi(), Ca_so_->colspi());
 
     for (int h = 0; h < N->nirrep(); h++) {
         int nmo = Ca_so_->colspi()[h];
@@ -462,7 +462,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_so() {
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
-    auto N2 = std::make_shared<Matrix>("Nb_so", Cb_so_->nirrep(), Cb_so_->rowspi(), Cb_so_->colspi());
+    auto N2 = std::make_shared<Matrix>("Nb_so", Cb_so_->rowspi(), Cb_so_->colspi());
 
     for (int h = 0; h < N->nirrep(); h++) {
         int nmo = Cb_so_->colspi()[h];
@@ -576,7 +576,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_ao() {
 }
 std::pair<SharedMatrix, SharedVector> Prop::Nt_mo() {
     SharedMatrix D = Dt_mo();
-    auto C = std::make_shared<Matrix>("Nt_mo", D->nirrep(), D->rowspi(), D->rowspi());
+    auto C = std::make_shared<Matrix>("Nt_mo", D->rowspi(), D->rowspi());
     auto O = std::make_shared<Vector>("Total Occupation", D->rowspi());
 
     D->diagonalize(C, O, descending);
@@ -588,7 +588,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_so() {
     SharedMatrix N = pair.first;
     std::shared_ptr<Vector> O = pair.second;
 
-    auto N2 = std::make_shared<Matrix>("Nt_so", Cb_so_->nirrep(), Cb_so_->rowspi(), Cb_so_->colspi());
+    auto N2 = std::make_shared<Matrix>("Nt_so", Cb_so_->rowspi(), Cb_so_->colspi());
 
     for (int h = 0; h < N->nirrep(); h++) {
         int nmo = Cb_so_->colspi()[h];
