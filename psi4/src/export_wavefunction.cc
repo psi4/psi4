@@ -361,6 +361,8 @@ void export_wavefunction(py::module& m) {
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
         .def("reset_occupation", &scf::HF::reset_occupation, "docstring")
         .def("compute_E", &scf::HF::compute_E, "docstring")
+        .def("evaluate_fixed_density_dft_energy", &scf::HF::evaluate_fixed_density_dft_energy,
+             "Evaluate DFT energy components on the current density for a target SuperFunctional.")
         .def("compute_initial_E", &scf::HF::compute_initial_E, "docstring")
         .def("rotate_orbitals", &scf::HF::rotate_orbitals, "docstring")
         .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
