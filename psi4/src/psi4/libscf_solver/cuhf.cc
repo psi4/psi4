@@ -138,8 +138,8 @@ void CUHF::finalize() {
 }
 
 void CUHF::save_density_and_energy() {
-    Da_old_->copy(Dt_);
-    Db_old_->copy(Dt_);
+    Da_old_->copy(Da_);
+    Db_old_->copy(Db_);
     Dt_old_->copy(Dt_);
 }
 

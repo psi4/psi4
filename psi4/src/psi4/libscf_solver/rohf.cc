@@ -1271,7 +1271,12 @@ bool ROHF::stability_analysis() {
             global_dpd_->buf4_mat_irrep_close(&A, h);
             int mindim = rank < 15 ? rank : 15;
             for (int i = 0; i < mindim; i++) eval_sym.push_back(std::make_pair(evals[i], h));
-            for (int i = 0; i < nsave; ++i) pEvals[i][0] = evals[i];
+            // `evals` has only `rank` entries; if the user asked for more
+            // SOLVER_N_ROOT eigenvalues than the algorithm produced, copy
+            // what we have and zero-pad the rest.
+            int nsave_h = std::min(nsave, rank);
+            for (int i = 0; i < nsave_h; ++i) pEvals[i][0] = evals[i];
+            for (int i = nsave_h; i < nsave; ++i) pEvals[i][0] = 0.0;
 
             free_block(evecs);
             delete[] evals;
