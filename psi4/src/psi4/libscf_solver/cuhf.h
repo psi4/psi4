@@ -94,7 +94,7 @@ class CUHF final : public HF {
          std::shared_ptr<PSIO> psio);
     ~CUHF() override;
 
-    void save_density_and_energy() override;
+    void save_density() override;
 
     void form_C(double shift = 0.0) override;
     void form_D() override;
