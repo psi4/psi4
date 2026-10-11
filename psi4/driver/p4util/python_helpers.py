@@ -202,14 +202,20 @@ core.BasisSet.build = _pybuild_basis
 ## Python wavefunction helps
 
 
-@staticmethod
+@classmethod
 def _core_wavefunction_build(
+        cls,
         mol: core.Molecule,
         basis: Union[None, str, core.BasisSet] = None,
         *,
+        reference: Optional[str] = None,
         quiet: bool = False,
-    ) -> core.Wavefunction:
-    """Build a wavefunction from minimal inputs, molecule and basis set.
+    ) -> core.BaseWavefunction:
+    """Build a Wavefunction or ComplexWavefunction from minimal inputs.
+
+    Shared by :class:`~psi4.core.Wavefunction` and
+    :class:`~psi4.core.ComplexWavefunction` via
+    :class:`~psi4.core.BaseWavefunction`.
 
     Parameters
     ----------
@@ -219,32 +225,49 @@ def _core_wavefunction_build(
         Basis set for which to build the wavefunction instance. If a
         :class:`BasisSet`, taken as-is. If a string, taken as a name for the
         primary basis. If None, name taken from :term:`BASIS <BASIS (MINTS)>`.
+    reference
+        Optional SCF reference string (e.g. ``"RHF"``, ``"CGHF"``).
+        When provided, selects the wavefunction class automatically:
+        ``"CGHF"`` builds :class:`~psi4.core.ComplexWavefunction`,
+        anything else builds :class:`~psi4.core.Wavefunction`.
+        When ``None`` (default), ``cls`` must be a concrete subclass
+        (calling ``BaseWavefunction.build()`` directly raises).
     quiet
         When True, do not print to the output file.
 
     """
+    if reference is not None:
+        if reference == "CGHF":
+            cls = core.ComplexWavefunction
+        else:
+            cls = core.Wavefunction
+    elif cls is core.BaseWavefunction:
+        raise TypeError("Cannot build BaseWavefunction directly; "
+                        "use Wavefunction or ComplexWavefunction, "
+                        "or pass reference= to auto-select.")
+
     if basis is None:
         basis = core.BasisSet.build(mol, quiet=quiet)
     elif isinstance(basis, str):
         basis = core.BasisSet.build(mol, "ORBITAL", basis, quiet=quiet)
 
-    wfn = core.Wavefunction(mol, basis)
+    wfn = cls(mol, basis)
     # Set basis for density-fitted calculations to the zero basis...
     # ...until the user explicitly provides a DF basis.
     wfn.set_basisset("DF_BASIS_SCF", core.BasisSet.zero_ao_basis_set())
     return wfn
 
 
-core.Wavefunction.build = _core_wavefunction_build
+core.BaseWavefunction.build = _core_wavefunction_build
 
 
-def _core_wavefunction_get_scratch_filename(self: core.Wavefunction, filenumber: int) -> str:
+def _core_wavefunction_get_scratch_filename(self: core.BaseWavefunction, filenumber: int) -> str:
     """Return canonical path to scratch file `filenumber` based on molecule on `self`.
 
     Parameters
     ----------
     self
-        Wavefunction instance.
+        Wavefunction or ComplexWavefunction instance.
     filenumber
         Scratch file number from :source:`psi4/include/psi4/psifiles.h`.
 
@@ -254,7 +277,7 @@ def _core_wavefunction_get_scratch_filename(self: core.Wavefunction, filenumber:
     return os.path.join(psi_scratch, fname + '.' + str(filenumber))
 
 
-core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
+core.BaseWavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
 
 
 @staticmethod
@@ -1245,13 +1268,13 @@ def _core_has_variable(key: str) -> bool:
     return core.has_scalar_variable(key) or core.has_array_variable(key)
 
 
-def _core_wavefunction_has_variable(self: core.Wavefunction, key: str) -> bool:
+def _core_wavefunction_has_variable(self: core.BaseWavefunction, key: str) -> bool:
     """Whether scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* has been set on *self*.
 
     Parameters
     ----------
     self
-        Wavefunction instance.
+        BaseWavefunction instance.
     key
         Case-insensitive key to instance's double or
         :py:class:`~psi4.core.Matrix` storage maps.
@@ -1310,14 +1333,14 @@ def _core_variable(key: str) -> Union[float, core.Matrix, np.ndarray]:
         raise KeyError(f"psi4.core.variable: Requested variable '{key}' was not set!\n")
 
 
-def _core_wavefunction_variable(self: core.Wavefunction, key: str) -> Union[float, core.Matrix, np.ndarray]:
+def _core_wavefunction_variable(self: core.BaseWavefunction, key: str) -> Union[float, core.Matrix, np.ndarray]:
     """Return copy of scalar or array :ref:`QCVariable <sec:appendices:qcvars>`
     *key* from *self*.
 
     Parameters
     ----------
     self
-        Wavefunction instance.
+        BaseWavefunction instance.
     key
         Case-insensitive key to instance's double or :py:class:`~psi4.core.Matrix`
         storage maps.
@@ -1359,7 +1382,7 @@ def _core_wavefunction_variable(self: core.Wavefunction, key: str) -> Union[floa
     elif self.has_array_variable(key):
         return _qcvar_reshape_get(key, self.array_variable(key))
     else:
-        raise KeyError(f"psi4.core.Wavefunction.variable: Requested variable '{key}' was not set!\n")
+        raise KeyError(f"psi4.core.BaseWavefunction.variable: Requested variable '{key}' was not set!\n")
 
 
 def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
@@ -1431,17 +1454,17 @@ def _core_wavefunction_set_variable(self: core.Wavefunction, key: str, val: Unio
     """
     if isinstance(val, core.Matrix):
         if self.has_scalar_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already a scalar variable!")
+            raise ValidationError("psi4.core.BaseWavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
             self.set_array_variable(key, val)
     elif isinstance(val, np.ndarray):
         if self.has_scalar_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already a scalar variable!")
+            raise ValidationError("psi4.core.BaseWavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
             self.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
         if self.has_array_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already an array variable!")
+            raise ValidationError("psi4.core.BaseWavefunction.set_variable: Target variable '{key}' already an array variable!")
         else:
             self.set_scalar_variable(key, val)
 
@@ -1520,7 +1543,7 @@ def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) ->
     Parameters
     ----------
     self
-        Wavefunction instance.
+        BaseWavefunction instance.
     include_deprecated_keys
         Also return duplicate entries with keys that have been deprecated.
 
@@ -1532,11 +1555,15 @@ def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) ->
         - Scalar variables are returned as floats.
         - Array variables not naturally 2D (like multipoles or per-atom charges)
           are returned as :class:`~numpy.ndarray` of natural dimensionality.
-        - Other array variables are returned as :py:class:`~psi4.core.Matrix` and
+        - Other real array variables are returned as :py:class:`~psi4.core.Matrix` and
           may have an extra dimension with symmetry information.
-
     """
-    dicary = {**self.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in self.array_variables().items()}}
+    dicary: Dict[str, Union[float, core.Matrix, np.ndarray]] = dict(self.scalar_variables())
+    array_vars = getattr(self, "array_variables", None)
+    if array_vars is not None:
+        for k, v in array_vars().items():
+            if isinstance(v, core.Matrix):
+                dicary[k] = _qcvar_reshape_get(k, v)
 
     if include_deprecated_keys:
         for old_key, (current_key, version) in _qcvar_transitions.items():
@@ -1552,11 +1579,12 @@ core.set_variable = _core_set_variable
 core.del_variable = _core_del_variable
 core.variables = _core_variables
 
-core.Wavefunction.has_variable = _core_wavefunction_has_variable
-core.Wavefunction.variable = _core_wavefunction_variable
-core.Wavefunction.set_variable = _core_wavefunction_set_variable
-core.Wavefunction.del_variable = _core_wavefunction_del_variable
-core.Wavefunction.variables = _core_wavefunction_variables
+
+core.BaseWavefunction.has_variable = _core_wavefunction_has_variable
+core.BaseWavefunction.variable = _core_wavefunction_variable
+core.BaseWavefunction.variables = _core_wavefunction_variables
+core.BaseWavefunction.set_variable = _core_wavefunction_set_variable
+core.BaseWavefunction.del_variable = _core_wavefunction_del_variable
 
 # removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
 # core.get_variable
