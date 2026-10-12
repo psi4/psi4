@@ -54,8 +54,11 @@ These are the vectorized implementation of the Obara-Saika (OS) method of
 calculating electron repulsion integrals developed by B. Pritchard and
 interfaced into libmints. Enabling simint and adding ``set
 integral_package simint`` (do this in ``~/.psi4rc`` for universal effect)
-runs libderiv from Libint for derivative integrals and simint for
-non-derivative integrals. Note that present AM maximum is ``$$(gg|gg)$$``
+runs simint for non-derivative Coulomb integrals and Libint2 for everything
+simint does not provide: derivative integrals (gradients and Hessians) and
+range-separated (erf/erfc) integrals. Each such substitution is noted once in
+the output. If |PSIfour| was built without simint, all integrals come from
+Libint2. Note that present AM maximum is ``$$(gg|gg)$$``
 
 .. warning:: simint seems to be having some problems with Intel 2018 compilers. presently disabled in conda package.
 

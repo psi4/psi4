@@ -26,6 +26,12 @@
  * @END LICENSE
  */
 #include "psi4/libmints/integral.h"
+
+#include <algorithm>
+#include <cctype>
+#include <mutex>
+#include <set>
+#include <string>
 #include "psi4/libmints/shellrotation.h"
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/rel_potential.h"
@@ -209,6 +215,41 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::electric_field(int deriv) {
     return  std::make_unique<ElectricFieldInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
+namespace {
+
+/// INTEGRAL_PACKAGE picks the engine for the two-electron integrals it implements; anything an optional engine does
+/// not provide (derivatives, range-separated operators, or the engine itself when it is not compiled in) comes from
+/// Libint2. Announce each such substitution once per process, not once per (per-thread) integral object.
+void note_libint2_fallback(const std::string &package, const std::string &reason) {
+    static std::mutex lock;
+    static std::set<std::string> announced;
+    std::lock_guard<std::mutex> guard(lock);
+    if (!announced.insert(package + reason).second) return;
+    outfile->Printf("  INTEGRAL_PACKAGE %s: %s; using Libint2 instead.\n", package.c_str(), reason.c_str());
+}
+
+/// Whether integral_package names an optional engine compiled into this build.
+bool package_available(const std::string &integral_package) {
+#ifdef USING_simint
+    if (integral_package == "SIMINT") return true;
+#endif
+    return false;
+}
+
+/// Announce why a non-Libint2 INTEGRAL_PACKAGE request is being served by Libint2.
+void fall_back_to_libint2(const std::string &integral_package, const std::string &missing) {
+    if (integral_package == "LIBINT2") return;
+    if (package_available(integral_package)) {
+        note_libint2_fallback(integral_package, "provides no " + missing);
+    } else {
+        std::string option = integral_package;
+        std::transform(option.begin(), option.end(), option.begin(), ::tolower);
+        note_libint2_fallback(integral_package, "not compiled in (rebuild with -D ENABLE_" + option + "=ON)");
+    }
+}
+
+}  // namespace
+
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
@@ -216,29 +257,22 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
 #ifdef USING_simint
     if (deriv == 0 && integral_package == "SIMINT") return  std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
 #endif
-    if (integral_package == "LIBINT2") return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
-    if (deriv > 0 && integral_package != "LIBINT2")
-        outfile->Printf("ERI derivative integrals only available using Libint");
-    if (integral_package == "SIMINT")
-        outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable.\nRecompile with `-D ENABLE_simint=ON`.\nFalling back to Libint");
-    throw PSIEXCEPTION("No ERI object to return.");
+    fall_back_to_libint2(integral_package, "derivative integrals");
+    return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2")
-        return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
-    throw PSIEXCEPTION("No ERI object to return.");
+    fall_back_to_libint2(integral_package, "range-separated (erf) integrals");
+    return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2")
-        return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
-    throw PSIEXCEPTION("No ERI object to return.");
+    fall_back_to_libint2(integral_package, "range-separated (erfc) integrals");
+    return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
