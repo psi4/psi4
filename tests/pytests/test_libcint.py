@@ -10,7 +10,7 @@ cartesian bases.
 import numpy as np
 import pytest
 
-from addons import uusing
+from addons import has_program, uusing
 from utils import compare_values
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
@@ -252,3 +252,14 @@ def test_libcint_hessian(options):
     ref = _property("libint2", psi4.hessian, "scf", options)
     tst = _property("libcint", psi4.hessian, "scf", options)
     assert compare_values(ref, tst, 8, f"RHF Hessian {options}")
+
+
+@pytest.mark.skipif(has_program("libcint"), reason="libcint is compiled in")
+@pytest.mark.parametrize("method", ["hf", "wb97x"])
+def test_libcint_not_compiled_in(method):
+    import psi4
+
+    _water()
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "integral_package": "libcint"})
+    with pytest.raises(RuntimeError, match="built without libcint"):
+        psi4.energy(method)
