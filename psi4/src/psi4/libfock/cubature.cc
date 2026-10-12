@@ -3849,6 +3849,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, bool i
                     break;
             }
             uint64_t nradial = rvalues.size();
+            // Record the nominal quadrature size for reporting; see cuest_npoints_.
+            for (uint64_t i = 0; i < nradial; i++) cuest_npoints_ += nangpts[i];
             CHECK_CUEST(cuestAtomGridCreate(
                 cuest_handle,
                 nradial,
@@ -4662,14 +4664,30 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     printer->Printf("    Pruning alpha          = %14g\n", options_.pruning_alpha);
     printer->Printf("    Radial Points          = %14d\n", options_.nradpts);
     printer->Printf("    Spherical Points       = %14d\n", options_.nangpts);
-    printer->Printf("    Total Points           = %14d\n", npoints_);
-    printer->Printf("    Total Blocks           = %14zu\n", blocks_.size());
-    printer->Printf("    Max Points             = %14d\n", max_points_);
-    printer->Printf("    Max Functions          = %14d\n", max_functions_);
+    long int reported_npoints = npoints_;
+#ifdef USING_cuEST
+    if (is_cuest_grid()) {
+        // A cuEST grid lives on the device: it has no host points and no host blocks,
+        // so npoints_/blocks_/max_points_/max_functions_ are all legitimately 0 and
+        // printing them as such reads like a broken grid.  Report the nominal size
+        // handed to cuEST instead, flagged so nobody compares it against a host count
+        // (it is pre-screening; cuEST prunes on the device).
+        reported_npoints = cuest_npoints_;
+        printer->Printf("    Total Points           = %14ld  (GPU-resident, pre-screening)\n", cuest_npoints_);
+        printer->Printf("    Grid Residency         = %14s\n", "cuEST / device");
+    } else {
+#endif
+        printer->Printf("    Total Points           = %14d\n", npoints_);
+        printer->Printf("    Total Blocks           = %14zu\n", blocks_.size());
+        printer->Printf("    Max Points             = %14d\n", max_points_);
+        printer->Printf("    Max Functions          = %14d\n", max_functions_);
+#ifdef USING_cuEST
+    }
+#endif
     printer->Printf("    Weights Tolerance      = %14.2E\n", options_.weights_cutoff);
     // printer->Printf("    Collocation Size [MiB] = %14d\n", (int)((8.0 * collocation_size_) / (1024.0 * 1024.0)));
     printer->Printf("\n");
-    Process::environment.globals["XC GRID TOTAL POINTS"] = npoints_;
+    Process::environment.globals["XC GRID TOTAL POINTS"] = reported_npoints;
     Process::environment.globals["XC GRID SPHERICAL POINTS"] = options_.nangpts;
     Process::environment.globals["XC GRID RADIAL POINTS"] = options_.nradpts;
 }

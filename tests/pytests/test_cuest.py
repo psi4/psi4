@@ -756,3 +756,106 @@ def test_cuest_unsupported_route(route, expected, tmp_path):
         f"cuEST '{route}' raised, but not from the expected guard "
         f"(wanted {expected!r}).\nstdout:\n{proc.stdout}"
     )
+
+
+# ===========================================================================
+# USE_CUEST must not rescale exact exchange unless the JK really is cuESTJK
+# ===========================================================================
+#
+# cuESTJK is built only for SCF_TYPE MEM_DF/DISK_DF (see JK::build_JK).  With
+# any other SCF_TYPE, USE_CUEST accelerates only the XC quadrature while J and
+# K come from an ordinary CPU JK.  RHF/UHF form_G and compute_E nonetheless
+# forced the exact-exchange coefficients alpha and beta to 1.0 whenever the
+# USE_CUEST *option* was set, because cuESTJK folds them into the K it returns.
+# Applied to a CPU JK's unscaled K that silently replaced B3LYP's 20% exact
+# exchange with 100%:
+#
+#   b3lyp/cc-pvdz water, scf_type direct, use_cuest true  ->  -83.7803465  (!)
+#                                         use_cuest false ->  -76.4203903
+#
+# and dropped the long-range term entirely for range-separated functionals.
+# Reproducible to 14 digits, so it looked like a converged answer.  The
+# decision is now keyed on JK::exchange_is_prescaled(), a property of the JK
+# object, rather than on the option.
+#
+# Reference energies from regular (non-cuEST) Psi4, same options as the test.
+
+__alpha_geoms = {
+    "rhf": """
+    0 1
+    symmetry c1
+    no_reorient
+    no_com
+    O
+    H  1  0.9584
+    H  1  0.9584  2  104.5
+    """,
+    "uhf": """
+    0 2
+    symmetry c1
+    no_reorient
+    no_com
+    O
+    H 1 0.97
+    """,
+}
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize("scf_type", ["direct", "pk"])
+@pytest.mark.parametrize("reference,methodname,ref_energy", [
+    pytest.param("rhf", "b3lyp", -76.42039031091404, id="rhf_b3lyp"),
+    pytest.param("rhf", "wb97x", -76.40038403602661, id="rhf_wb97x"),
+    pytest.param("uhf", "b3lyp", -75.73193367482514, id="uhf_b3lyp"),
+    pytest.param("uhf", "wb97x", -75.71135638745669, id="uhf_wb97x"),
+])
+def test_cuest_non_df_scf_type_keeps_hybrid_alpha(reference, methodname, ref_energy, scf_type):
+    """A hybrid/RSH under USE_CUEST with a non-DF SCF_TYPE must keep its own alpha/beta."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.set_options({
+        'basis': 'cc-pvdz',
+        'scf_type': scf_type,
+        'reference': reference,
+        'e_convergence': 10,
+        'd_convergence': 8,
+        'maxiter': 200,
+        'use_cuest': True,
+    })
+
+    mol = psi4.geometry(__alpha_geoms[reference])
+    energy = psi4.energy(methodname, molecule=mol)
+
+    # 1e-5 covers the GPU XC quadrature difference (~1e-6 here); the bug this
+    # guards against was off by ~7 Eh, so the tolerance is not load-bearing.
+    assert compare_values(ref_energy, energy, 1e-5,
+                          f'{methodname} {reference} scf_type={scf_type} under cuEST')
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+def test_cuest_grid_reports_its_size():
+    """A GPU-resident grid must report a real point count, not a bare zero."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.set_options({
+        'basis': 'cc-pvdz',
+        'scf_type': 'df',
+        'df_basis_scf': 'def2-universal-JKFIT',
+        'dft_radial_points': 75,
+        'dft_spherical_points': 302,
+        'use_cuest': True,
+    })
+
+    mol = psi4.geometry(__alpha_geoms["rhf"])
+    psi4.energy('pbe', molecule=mol)
+
+    # 3 atoms * 75 radial * 302 angular, pre-screening.  The host grid prunes
+    # this down, so only a lower bound and the nominal value are checked.
+    npoints = psi4.variable('XC GRID TOTAL POINTS')
+    assert npoints == 3 * 75 * 302, (
+        f"cuEST grid reported {npoints} points; a GPU-resident grid used to "
+        f"report 0 here, which reads like a broken grid.")

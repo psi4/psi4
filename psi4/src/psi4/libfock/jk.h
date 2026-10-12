@@ -487,6 +487,25 @@ class PSI_API JK {
     virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
     double get_omega_beta() { return omega_beta_; }
 
+    /**
+    * Does this JK fold the functional's exact-exchange coefficients into the
+    * K it returns?
+    *
+    * Most implementations hand back a bare exchange matrix and leave the
+    * caller to scale it by alpha, and to add a separately built wK scaled by
+    * beta.  cuESTJK instead passes alpha, beta and omega to cuEST when it
+    * builds its DF integral plan, so the K it returns already carries both
+    * coefficients and the long-range term.  Callers must not scale that K a
+    * second time, and must not add wK on top of it.
+    *
+    * This is a property of the JK object, not of the USE_CUEST option.  With
+    * a non-DF SCF_TYPE, USE_CUEST accelerates only the DFT quadrature while
+    * J and K still come from an ordinary CPU JK that does need the scaling,
+    * so keying the decision on the option silently replaced the functional's
+    * alpha with 1.0 and returned a badly wrong hybrid-DFT energy.
+    */
+    virtual bool exchange_is_prescaled() const { return false; }
+
     // => Computers <= //
 
     /**
