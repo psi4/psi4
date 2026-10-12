@@ -165,7 +165,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
        Psi4 compiled with that library. SIMINT and LIBCINT_ONLY stop at integrals their library can't supply (e.g.,
        derivatives), while LIBCINT falls back to LIBINT2 for them. libcint is experimental and covers 4-center,
        range-separated erf/erfc, and density-fitted (2-/3-center) integrals for spherical, cartesian, and mixed basis
-       sets (no derivatives). -*/
+       sets (no derivatives). Names for choices are experimental and likely to change. -*/
     options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "LIBINT2 SIMINT LIBCINT LIBCINT_ONLY");
 #ifdef USING_BrianQC
     /*- Whether to enable using the BrianQC GPU module -*/

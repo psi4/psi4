@@ -104,7 +104,7 @@ std::string engine_name(EriEngine engine) {
         case EriEngine::Libcint:
             return "libcint";
         case EriEngine::Simint:
-            return "Simint";
+            return "simint";
     }
     return "";
 }
@@ -115,7 +115,7 @@ std::string engine_missing(EriEngine engine) {
     if (engine == EriEngine::Libcint) return "Psi4 wasn't built with libcint (`-D ENABLE_libcint=ON`)";
 #endif
 #ifndef USING_simint
-    if (engine == EriEngine::Simint) return "Psi4 wasn't built with Simint (`-D ENABLE_simint=ON`)";
+    if (engine == EriEngine::Simint) return "Psi4 wasn't built with simint (`-D ENABLE_simint=ON`)";
 #endif
     return "";
 }

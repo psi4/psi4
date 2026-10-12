@@ -240,7 +240,7 @@ else()
 endif()
 
 if(${ENABLE_libcint})
-    find_package(libcint CONFIG REQUIRED)
+    find_package(libcint 6.1.2 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET libcint::libcint PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using libcint${ColourReset}: ${_loc} (version ${libcint_VERSION})")

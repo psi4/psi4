@@ -1618,7 +1618,7 @@ data:
       commit: v6.1.3
     cmake:
       name: libcint
-      constraint: null
+      constraint: "6.1.2"
       constraint_note: "libcint installs no CMake config so we synthesize one."
       target: libcint::libcint
     conda:
