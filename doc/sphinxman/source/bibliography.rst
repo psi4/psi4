@@ -504,7 +504,7 @@ Bibliography
    https://doi.org/10.1103/physrev.78.29
 
 .. [Kutzelnigg:1984]
-   "Basis set expansion of the dirac operator without variational collapse",
+   "Basis set expansion of the Dirac operator without variational collapse",
    W. Kutzelnigg,
    *Int. J. Quantum Chem.* **25**, 107 (1984).
    https://doi.org/10.1002/qua.560250112
