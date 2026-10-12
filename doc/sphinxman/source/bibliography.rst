@@ -315,7 +315,7 @@ Bibliography
    https://doi.org/10.1007/s002140050241
 
 .. [Pulay:1980]
-   "Convergence acceleration of iterative sequences. the case of scf iteration",
+   "Convergence acceleration of iterative sequences. The case of SCF iteration",
    P. Pulay,
    *Chem. Phys. Lett.* **73**, 393 (1980).
    https://doi.org/10.1016/0009-2614(80)80396-4
