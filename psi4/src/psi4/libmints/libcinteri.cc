@@ -39,17 +39,7 @@
 #include <cmath>
 
 extern "C" {
-#include <cint.h>
-int int2e_sph(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env, CINTOpt *opt,
-              double *cache);
-int int2e_cart(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env, CINTOpt *opt,
-               double *cache);
-void int2e_optimizer(CINTOpt **opt, int *atm, int natm, int *bas, int nbas, double *env);
-int int1e_ovlp_sph(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env,
-                   CINTOpt *opt, double *cache);
-int int1e_ovlp_cart(double *out, int *dims, int *shls, int *atm, int natm, int *bas, int nbas, double *env,
-                    CINTOpt *opt, double *cache);
-double CINTgto_norm(int n, double a);
+#include <cint_funcs.h>
 }
 
 namespace psi {
@@ -81,9 +71,15 @@ inline int ncart(int l) { return (l + 1) * (l + 2) / 2; }
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, int deriv, double omega,
                                              bool use_shell_pairs, bool needs_exchange)
-    : TwoBodyAOInt(integral, deriv), opt_(nullptr), omega_(omega) {
-    if (deriv_ != 0)
-        throw PSIEXCEPTION("LIBCINT backend: integral derivatives are not implemented (use INTEGRAL_PACKAGE LIBINT2).");
+    : TwoBodyAOInt(integral, deriv),
+      opt_(nullptr),
+      opt_ip1_(nullptr),
+      opt_ipip1_(nullptr),
+      opt_ipvip1_(nullptr),
+      opt_ip1ip2_(nullptr),
+      omega_(omega) {
+    if (deriv_ < 0 || deriv_ > 2)
+        throw PSIEXCEPTION("LIBCINT backend: only first and second integral derivatives are implemented.");
 
     // Determine whether the (non-dummy) bases are cartesian or spherical. psi4
     // uses one convention per calculation (the PUREAM option), so a single flag
@@ -97,6 +93,12 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
             if (bs->shell(s).is_cartesian() && bs->shell(s).am() > 0) cart_ = true;
     }
 
+    // Derivatives are taken with respect to the real centers only, as in
+    // Libint2's xs_xx / xx_xs / xs_xs brakets.
+    const BasisSet *bs[4] = {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()};
+    for (int c = 0; c < 4; ++c)
+        if (!is_dummy_basis(*bs[c])) active_.push_back(c);
+
     build_environment();
     common_init();
 }
@@ -107,8 +109,14 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
       bas_(rhs.bas_),
       env_(rhs.env_),
       opt_(nullptr),
+      opt_ip1_(nullptr),
+      opt_ipip1_(nullptr),
+      opt_ipvip1_(nullptr),
+      opt_ip1ip2_(nullptr),
       basis_starts_(rhs.basis_starts_),
-      omega_(rhs.omega_) {
+      active_(rhs.active_),
+      omega_(rhs.omega_),
+      cart_(rhs.cart_) {
     bas_start_[0] = rhs.bas_start_[0];
     bas_start_[1] = rhs.bas_start_[1];
     bas_start_[2] = rhs.bas_start_[2];
@@ -117,8 +125,9 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
 }
 
 LibcintTwoElectronInt::~LibcintTwoElectronInt() {
-    if (opt_) {
-        CINTOpt *o = static_cast<CINTOpt *>(opt_);
+    for (void *opt : {opt_, opt_ip1_, opt_ipip1_, opt_ipvip1_, opt_ip1ip2_}) {
+        if (!opt) continue;
+        CINTOpt *o = static_cast<CINTOpt *>(opt);
         CINTdel_optimizer(&o);
     }
 }
@@ -129,9 +138,18 @@ void LibcintTwoElectronInt::common_init() {
 
     const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
     const int natm = static_cast<int>(atm_.size() / ATM_SLOTS);
-    CINTOpt *o = nullptr;
-    int2e_optimizer(&o, atm_.data(), natm, bas_.data(), nbas, env_.data());
-    opt_ = o;
+    auto make_opt = [&](CINTOptimizerFunction *f) {
+        CINTOpt *o = nullptr;
+        f(&o, atm_.data(), natm, bas_.data(), nbas, env_.data());
+        return static_cast<void *>(o);
+    };
+    opt_ = make_opt(int2e_optimizer);
+    if (deriv_ >= 1) opt_ip1_ = make_opt(int2e_ip1_optimizer);
+    if (deriv_ >= 2) {
+        opt_ipip1_ = make_opt(int2e_ipip1_optimizer);
+        opt_ipvip1_ = make_opt(int2e_ipvip1_optimizer);
+        opt_ip1ip2_ = make_opt(int2e_ip1ip2_optimizer);
+    }
 
     // Size scratch for the largest quartet block we may compute. This must
     // cover not only the factory's (bs1,bs2,bs3,bs4) block but also the Schwarz
@@ -142,12 +160,23 @@ void LibcintTwoElectronInt::common_init() {
     for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()})
         maxam = std::max(maxam, bs->max_am());
     const size_t nmax = static_cast<size_t>(cart_ ? ncart(maxam) : 2 * maxam + 1);
-    const size_t blk = nmax * nmax * nmax * nmax;
-    target_store_.assign(blk, 0.0);
-    cint_buf_.assign(blk, 0.0);
+    const size_t sieve_blk = nmax * nmax * nmax * nmax;
+    quartet_size_ = 1;
+    for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()})
+        quartet_size_ *= static_cast<size_t>(cart_ ? ncart(bs->max_am()) : 2 * bs->max_am() + 1);
+    // Derivative kernels return 3 (first) or 9 (second) components per call.
+    const size_t ncomp = deriv_ >= 2 ? 9 : (deriv_ == 1 ? 3 : 1);
+    const size_t nbuf = deriv_ >= 2 ? 78 : (deriv_ == 1 ? 12 : 1);
+    target_store_.assign(std::max(sieve_blk, quartet_size_), 0.0);
+    cint_buf_.assign(std::max(sieve_blk, ncomp * quartet_size_), 0.0);
+    if (deriv_ > 0) {
+        deriv_store_.assign(nbuf * quartet_size_, 0.0);
+        zeros_.assign(quartet_size_, 0.0);
+        discard_.assign(quartet_size_, 0.0);
+    }
     target_full_ = target_store_.data();
     source_full_ = nullptr;
-    buffers_.resize(1, target_full_);
+    buffers_.assign(nbuf, target_full_);
 
     setup_sieve();
     create_blocks();
@@ -274,49 +303,102 @@ void LibcintTwoElectronInt::normalize_shells() {
     }
 }
 
-size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, int l1, int l2, int l3, int l4) {
-    const int n1 = cart_ ? ncart(l1) : 2 * l1 + 1;
-    const int n2 = cart_ ? ncart(l2) : 2 * l2 + 1;
-    const int n3 = cart_ ? ncart(l3) : 2 * l3 + 1;
-    const int n4 = cart_ ? ncart(l4) : 2 * l4 + 1;
-    const size_t n = static_cast<size_t>(n1) * n2 * n3 * n4;
-    if (cint_buf_.size() < n) cint_buf_.assign(n, 0.0);
-
-    int shls[4] = {g1, g2, g3, g4};
-    const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
-    const int natm = static_cast<int>(atm_.size() / ATM_SLOTS);
-    int ok = cart_ ? int2e_cart(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
-                                static_cast<CINTOpt *>(opt_), nullptr)
-                   : int2e_sph(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
-                               static_cast<CINTOpt *>(opt_), nullptr);
-    double *tgt = target_full_;
-    if (!ok) {
-        std::fill(tgt, tgt + n, 0.0);
-        return 0;
+bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int l[4], const int perm[4], double sign,
+                                       double *const *out) {
+    CINTIntegralFunction *f = nullptr;
+    void *opt = nullptr;
+    int ncomp = 1;
+    switch (kernel) {
+        case Kernel::ERI:
+            f = cart_ ? int2e_cart : int2e_sph;
+            opt = opt_;
+            break;
+        case Kernel::IP1:
+            f = cart_ ? int2e_ip1_cart : int2e_ip1_sph;
+            opt = opt_ip1_;
+            ncomp = 3;
+            break;
+        case Kernel::IPIP1:
+            f = cart_ ? int2e_ipip1_cart : int2e_ipip1_sph;
+            opt = opt_ipip1_;
+            ncomp = 9;
+            break;
+        case Kernel::IPVIP1:
+            f = cart_ ? int2e_ipvip1_cart : int2e_ipvip1_sph;
+            opt = opt_ipvip1_;
+            ncomp = 9;
+            break;
+        case Kernel::IP1IP2:
+            f = cart_ ? int2e_ip1ip2_cart : int2e_ip1ip2_sph;
+            opt = opt_ip1ip2_;
+            ncomp = 9;
+            break;
     }
 
-    // Repack libcint (col-major, index 1 fastest) into psi4 (row-major, index 1
-    // slowest), mapping each shell's components. Spherical: libcint m-order ->
-    // psi4 Gaussian-m order (all +1 signs). Cartesian: identity (libcint's
-    // cartesian order already equals psi4's CartesianIter order).
-    auto slot = [&](int i, int l) { return cart_ ? i : psi4_slot(libcint_m(i, l)); };
-    for (int a = 0; a < n1; ++a) {
-        const int pa = slot(a, l1);
-        for (int b = 0; b < n2; ++b) {
-            const int pb = slot(b, l2);
-            for (int c = 0; c < n3; ++c) {
-                const int pc = slot(c, l3);
-                for (int d = 0; d < n4; ++d) {
-                    const int pd = slot(d, l4);
-                    const size_t iC =
-                        static_cast<size_t>(a) + n1 * (static_cast<size_t>(b) + n2 * (static_cast<size_t>(c) + static_cast<size_t>(n3) * d));
-                    const size_t iP = (((static_cast<size_t>(pa) * n2 + pb) * n3 + pc) * n4 + pd);
-                    tgt[iP] = cint_buf_[iC];
+    // Function counts in psi4 center order (N) and in libcint slot order (n).
+    int N[4], n[4], shls[4];
+    for (int c = 0; c < 4; ++c) N[c] = cart_ ? ncart(l[c]) : 2 * l[c] + 1;
+    for (int t = 0; t < 4; ++t) {
+        n[t] = N[perm[t]];
+        shls[t] = g[perm[t]];
+    }
+    const size_t nint = static_cast<size_t>(N[0]) * N[1] * N[2] * N[3];
+    if (cint_buf_.size() < ncomp * nint) cint_buf_.assign(ncomp * nint, 0.0);
+
+    const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
+    const int natm = static_cast<int>(atm_.size() / ATM_SLOTS);
+    const bool nonzero = f(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
+                           static_cast<CINTOpt *>(opt), nullptr);
+    if (!nonzero) {
+        for (int c = 0; c < ncomp; ++c) std::fill(out[c], out[c] + nint, 0.0);
+        return false;
+    }
+
+    // Repack libcint (col-major, slot 0 fastest; component slowest) into psi4
+    // (row-major, center 0 slowest), undoing the permutation and mapping each
+    // shell's components. Spherical: libcint m-order -> psi4 Gaussian-m order
+    // (all +1 signs). Cartesian: identity (libcint's cartesian order already
+    // equals psi4's CartesianIter order).
+    auto slot = [&](int i, int lc) { return cart_ ? i : psi4_slot(libcint_m(i, lc)); };
+    const size_t stride[4] = {static_cast<size_t>(N[1]) * N[2] * N[3], static_cast<size_t>(N[2]) * N[3],
+                              static_cast<size_t>(N[3]), 1};
+    for (int c = 0; c < ncomp; ++c) {
+        const double *src = cint_buf_.data() + c * nint;
+        double *dst = out[c];
+        size_t iC = 0;
+        for (int i3 = 0; i3 < n[3]; ++i3) {
+            const size_t o3 = slot(i3, l[perm[3]]) * stride[perm[3]];
+            for (int i2 = 0; i2 < n[2]; ++i2) {
+                const size_t o2 = o3 + slot(i2, l[perm[2]]) * stride[perm[2]];
+                for (int i1 = 0; i1 < n[1]; ++i1) {
+                    const size_t o1 = o2 + slot(i1, l[perm[1]]) * stride[perm[1]];
+                    for (int i0 = 0; i0 < n[0]; ++i0, ++iC)
+                        dst[o1 + slot(i0, l[perm[0]]) * stride[perm[0]]] = sign * src[iC];
                 }
             }
         }
     }
+    return true;
+}
+
+size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, int l1, int l2, int l3, int l4) {
+    const int g[4] = {g1, g2, g3, g4};
+    const int l[4] = {l1, l2, l3, l4};
+    const int identity[4] = {0, 1, 2, 3};
+    double *out[1] = {target_full_};
+    if (!run_kernel(Kernel::ERI, g, l, identity, 1.0, out)) return 0;
+    size_t n = 1;
+    for (int c = 0; c < 4; ++c) n *= cart_ ? ncart(l[c]) : 2 * l[c] + 1;
     return n;
+}
+
+void LibcintTwoElectronInt::quartet(int s1, int s2, int s3, int s4, int g[4], int l[4]) const {
+    const int s[4] = {s1, s2, s3, s4};
+    const BasisSet *bs[4] = {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()};
+    for (int c = 0; c < 4; ++c) {
+        g[c] = bas_start_[c] + s[c];
+        l[c] = bs[c]->shell(s[c]).am();
+    }
 }
 
 size_t LibcintTwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
@@ -324,13 +406,12 @@ size_t LibcintTwoElectronInt::compute_shell(const AOShellCombinationsIterator &s
 }
 
 size_t LibcintTwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
-    const int l1 = original_bs1_->shell(s1).am(), l2 = original_bs2_->shell(s2).am();
-    const int l3 = original_bs3_->shell(s3).am(), l4 = original_bs4_->shell(s4).am();
+    int g[4], l[4];
+    quartet(s1, s2, s3, s4, g, l);
     curr_buff_size_ = original_bs1_->shell(s1).nfunction() * original_bs2_->shell(s2).nfunction() *
                       original_bs3_->shell(s3).nfunction() * original_bs4_->shell(s4).nfunction();
 
-    const size_t ret = compute_quartet(bas_start_[0] + s1, bas_start_[1] + s2, bas_start_[2] + s3, bas_start_[3] + s4,
-                                       l1, l2, l3, l4);
+    const size_t ret = compute_quartet(g[0], g[1], g[2], g[3], l[0], l[1], l[2], l[3]);
     buffers_[0] = target_full_;
     return ret;
 }
@@ -360,12 +441,87 @@ void LibcintTwoElectronInt::compute_shell_blocks(int shellpair12, int shellpair3
     compute_shell(s1, s2, s3, s4);
 }
 
-size_t LibcintTwoElectronInt::compute_shell_deriv1(int, int, int, int) {
-    throw PSIEXCEPTION("LIBCINT backend: gradients are not implemented (use INTEGRAL_PACKAGE LIBINT2).");
+namespace {
+
+/// Slot orders placing center c (0-3) in libcint's first slot while keeping it
+/// a valid ERI permutation: (ab|cd) = (ba|cd) = (cd|ab) = (dc|ab).
+constexpr int first_slot_perm[4][4] = {{0, 1, 2, 3}, {1, 0, 2, 3}, {2, 3, 0, 1}, {3, 2, 0, 1}};
+
+/// Position of the coordinate pair (u, v), u <= v, in the row-major upper
+/// triangle of an n x n matrix (Libint2's second-derivative order).
+inline int upper_triangle(int u, int v, int n) { return u * n - u * (u - 1) / 2 + (v - u); }
+
+}  // namespace
+
+size_t LibcintTwoElectronInt::compute_shell_deriv1(int s1, int s2, int s3, int s4) {
+    if (deriv_ < 1) throw PSIEXCEPTION("LIBCINT backend: integral object was not created for first derivatives.");
+    int g[4], l[4];
+    quartet(s1, s2, s3, s4, g, l);
+    size_t nint = 1;
+    for (int c = 0; c < 4; ++c) nint *= cart_ ? ncart(l[c]) : 2 * l[c] + 1;
+    curr_buff_size_ = nint;
+
+    // d/dX (ab|cd) = -(nabla x ...|...) with center X permuted into slot 0.
+    bool nonzero = false;
+    for (size_t k = 0; k < active_.size(); ++k) {
+        double *out[3];
+        for (int a = 0; a < 3; ++a) out[a] = deriv_store_.data() + (3 * k + a) * quartet_size_;
+        nonzero |= run_kernel(Kernel::IP1, g, l, first_slot_perm[active_[k]], -1.0, out);
+    }
+    for (size_t i = 0; i < 12; ++i)
+        buffers_[i] = i < 3 * active_.size() ? deriv_store_.data() + i * quartet_size_ : zeros_.data();
+    return nonzero ? 12 * nint : 0;
 }
 
-size_t LibcintTwoElectronInt::compute_shell_deriv2(int, int, int, int) {
-    throw PSIEXCEPTION("LIBCINT backend: Hessians are not implemented (use INTEGRAL_PACKAGE LIBINT2).");
+size_t LibcintTwoElectronInt::compute_shell_deriv2(int s1, int s2, int s3, int s4) {
+    if (deriv_ < 2) throw PSIEXCEPTION("LIBCINT backend: integral object was not created for second derivatives.");
+    int g[4], l[4];
+    quartet(s1, s2, s3, s4, g, l);
+    size_t nint = 1;
+    for (int c = 0; c < 4; ++c) nint *= cart_ ? ncart(l[c]) : 2 * l[c] + 1;
+    curr_buff_size_ = nint;
+
+    const int ncoord = 3 * static_cast<int>(active_.size());
+    auto block = [&](int u, int v) { return deriv_store_.data() + upper_triangle(u, v, ncoord) * quartet_size_; };
+
+    // Second nuclear derivatives equal the electronic ones (two sign flips).
+    // Component 3a+b of each kernel is d/dX_a d/dY_b, with X the center in
+    // libcint slot 0 and Y the other differentiated one.
+    bool nonzero = false;
+    for (size_t kx = 0; kx < active_.size(); ++kx) {
+        const int X = active_[kx];
+        for (size_t ky = kx; ky < active_.size(); ++ky) {
+            const int Y = active_[ky];
+            Kernel kernel;
+            int perm[4];
+            if (X == Y) {
+                // (nabla nabla x ...|...): symmetric in a, b; keep a <= b.
+                kernel = Kernel::IPIP1;
+                std::copy(first_slot_perm[X], first_slot_perm[X] + 4, perm);
+            } else if ((X < 2) == (Y < 2)) {
+                // X, Y on the same electron: (nabla x nabla y|...), i.e. (ab| or |cd).
+                kernel = Kernel::IPVIP1;
+                std::copy(first_slot_perm[X], first_slot_perm[X] + 4, perm);
+            } else {
+                // X in the bra, Y in the ket: (nabla x ..|nabla y ..).
+                kernel = Kernel::IP1IP2;
+                const int x_partner = 1 - X, y_partner = 5 - Y;  // the undifferentiated center beside each
+                const int order[4] = {X, x_partner, Y, y_partner};
+                std::copy(order, order + 4, perm);
+            }
+            double *out[9];
+            for (int a = 0; a < 3; ++a)
+                for (int b = 0; b < 3; ++b) {
+                    const int u = 3 * static_cast<int>(kx) + a, v = 3 * static_cast<int>(ky) + b;
+                    out[3 * a + b] = (X == Y && a > b) ? discard_.data() : block(u, v);
+                }
+            nonzero |= run_kernel(kernel, g, l, perm, 1.0, out);
+        }
+    }
+    const size_t nfilled = static_cast<size_t>(ncoord) * (ncoord + 1) / 2;
+    for (size_t i = 0; i < 78; ++i)
+        buffers_[i] = i < nfilled ? deriv_store_.data() + i * quartet_size_ : zeros_.data();
+    return nonzero ? 78 * nint : 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
