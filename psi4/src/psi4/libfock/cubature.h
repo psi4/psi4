@@ -98,6 +98,15 @@ class MolecularGrid {
 #if USING_cuEST
     cuestMolecularGrid_t cuest_molecular_grid_ = nullptr;
     cuestWorkspace_t *cuest_molecular_grid_ws_ptr_ = nullptr;
+    /// Nominal quadrature size of a GPU-resident grid, summed over atoms and radial
+    /// shells as they were handed to cuEST.  A cuEST grid has no host points, so
+    /// `npoints_` is legitimately 0 for it and must stay 0 -- it is what every host
+    /// consumer loops over.  This is kept separately, purely so the grid can report
+    /// a meaningful size instead of printing "Total Points = 0".  It is a pre-
+    /// screening count: cuEST prunes on the device, so it is an upper bound on the
+    /// points actually integrated, where the host `npoints_` is a post-screening
+    /// count.  The two are therefore not directly comparable.
+    long int cuest_npoints_ = 0;
 #endif
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation_;
@@ -170,6 +179,10 @@ class MolecularGrid {
 
 #if USING_cuEST
     cuestMolecularGrid_t cuest_grid() const { return cuest_molecular_grid_; }
+    /// Is this grid GPU-resident (built for cuEST) rather than host-resident?
+    bool is_cuest_grid() const { return cuest_molecular_grid_ != nullptr; }
+    /// Nominal, pre-screening quadrature size of a GPU-resident grid; see cuest_npoints_.
+    long int cuest_npoints() const { return cuest_npoints_; }
 #endif
     /// Number of grid points
     int npoints() const { return npoints_; }

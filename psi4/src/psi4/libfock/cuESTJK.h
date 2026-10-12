@@ -94,6 +94,11 @@ class PSI_API cuESTJK : public JK {
     }
     void print_header() const override;
 
+    /// cuEST receives alpha, beta and omega with the DF integral plan, so the K
+    /// it returns already carries the functional's exchange coefficients and
+    /// the long-range term.  See JK::exchange_is_prescaled().
+    bool exchange_is_prescaled() const override { return true; }
+
     cuestDFIntPlan_t cuest_df_plan() { return cuest_df_plan_; }
 };
 

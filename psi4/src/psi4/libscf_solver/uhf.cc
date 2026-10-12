@@ -205,12 +205,12 @@ void UHF::form_G() {
     const std::vector<SharedMatrix>& wK = jk_->wK();
     J_->copy(J[0]);
     J_->add(J[1]);
-#ifdef USING_cuEST
-    const bool use_cuest = options_.get_bool("USE_CUEST");
-#else
-    const bool use_cuest = false;
-#endif
-    if (functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) {
+    // cuESTJK returns a K that already carries the functional's alpha and beta
+    // (and the long-range term).  Keyed on the JK object, not on the USE_CUEST
+    // option: with a non-DF SCF_TYPE, USE_CUEST accelerates only the DFT
+    // quadrature and J/K come from an ordinary CPU JK that does need scaling.
+    const bool prescaled_K = jk_->exchange_is_prescaled();
+    if (functional_->is_x_hybrid() || (prescaled_K && functional_->is_x_lrc())) {
         Ka_ = K[0];
         Kb_ = K[1];
     }
@@ -232,14 +232,13 @@ void UHF::form_G() {
     }
 #endif
 
-#ifdef USING_cuEST
-    if (use_cuest) {
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
+    if (prescaled_K) {
         alpha = 1.0;
         beta = 1.0;
     }
-#endif
 
-    if ((functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) &&
+    if ((functional_->is_x_hybrid() || (prescaled_K && functional_->is_x_lrc())) &&
         !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
@@ -248,7 +247,7 @@ void UHF::form_G() {
         Kb_->zero();
     }
 
-    if (functional_->is_x_lrc() && !use_cuest) { // if using cuEST, wK is encapsulated in K
+    if (functional_->is_x_lrc() && !prescaled_K) { // if using cuEST, wK is encapsulated in K
         if (jk_->get_wcombine()) {
             Ga_->axpy(-1.0, wKa_);
             Gb_->axpy(-1.0, wKb_);
@@ -393,11 +392,11 @@ double UHF::compute_E() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
-#ifdef USING_cuEST
-    const bool use_cuest = options_.get_bool("USE_CUEST");
-#else
-    const bool use_cuest = false;
-#endif
+    // cuESTJK returns a K that already carries the functional's alpha and beta
+    // (and the long-range term).  Keyed on the JK object, not on the USE_CUEST
+    // option: with a non-DF SCF_TYPE, USE_CUEST accelerates only the DFT
+    // quadrature and J/K come from an ordinary CPU JK that does need scaling.
+    const bool prescaled_K = jk_->exchange_is_prescaled();
 
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
@@ -407,20 +406,18 @@ double UHF::compute_E() {
     }
 #endif
 
-#ifdef USING_cuEST
     // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
-    if (use_cuest) {
+    if (prescaled_K) {
         alpha = 1.0;
         beta = 1.0;
     }
-#endif
 
     double exchange_E = 0.0;
-    if (functional_->is_x_hybrid() || (use_cuest && functional_->is_x_lrc())) {
+    if (functional_->is_x_hybrid() || (prescaled_K && functional_->is_x_lrc())) {
         exchange_E -= alpha * Da_->vector_dot(Ka_);
         exchange_E -= alpha * Db_->vector_dot(Kb_);
     }
-    if (functional_->is_x_lrc() && !use_cuest) {
+    if (functional_->is_x_lrc() && !prescaled_K) {
         if (jk_->get_do_wK() && jk_->get_wcombine()) {
             exchange_E -= Da_->vector_dot(wKa_);
             exchange_E -= Db_->vector_dot(wKb_);
@@ -676,13 +673,14 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
 #endif
 
-#ifdef USING_cuEST
-    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
-    if (options_.get_bool("USE_CUEST")) {
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here
+    // as well.  Keyed on the JK object, not on the USE_CUEST option: with a
+    // non-DF SCF_TYPE, USE_CUEST accelerates only the DFT quadrature and J/K
+    // come from an ordinary CPU JK that does need scaling.
+    if (jk_->exchange_is_prescaled()) {
         alpha = 1.0;
         beta = 1.0;
     }
-#endif
 
     std::vector<SharedMatrix> ret;
     if (combine) {
@@ -1366,13 +1364,14 @@ void UHF::openorbital_scf() {
     }
 #endif
 
-#ifdef USING_cuEST
-    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here as well
-    if (options_.get_bool("USE_CUEST")) {
+    // cuEST constructs K & wK at the same time, so we must set them to 1.0 here
+    // as well.  Keyed on the JK object, not on the USE_CUEST option: with a
+    // non-DF SCF_TYPE, USE_CUEST accelerates only the DFT quadrature and J/K
+    // come from an ordinary CPU JK that does need scaling.
+    if (jk_->exchange_is_prescaled()) {
         alpha = 1.0;
         beta = 1.0;
     }
-#endif
 
     std::vector<arma::mat> Vxca(nirrep_), Vxcb(nirrep_);
     if (functional_->needs_xc()) {
