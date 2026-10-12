@@ -1287,8 +1287,8 @@ data:
       host: github
       account: MolSSI
       name: QCFractal
-      commit: v0.52
-      commit_note: "Includes snowflake fix at v0.52."
+      commit: v0.71
+      commit_note: "Includes QCSchema v2 handling and postgres update at v0.71."
     cmake: null
     conda:
       channel: conda-forge
