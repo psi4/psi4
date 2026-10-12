@@ -1362,6 +1362,9 @@ void export_mints(py::module& m) {
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                       std::shared_ptr<BasisSet>>())
         .def(py::init<std::shared_ptr<BasisSet>>())
+        .def_static("reset_engine_notes", &IntegralFactory::reset_engine_notes,
+                    "Forget which two-electron integral engines have been reported to the output file, so the next "
+                    "request for each class of integral reports its engine again")
         // def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
         // py::return_value_policy<manage_new_object>(), "docstring").
         .def("shells_iterator", &IntegralFactory::shells_iterator_ptr,

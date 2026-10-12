@@ -451,6 +451,7 @@ def energy(name, **kwargs):
     lowername = driver_util.upgrade_interventions(name)
 
     _filter_renamed_methods("energy", lowername)
+    core.IntegralFactory.reset_engine_notes()  # each calculation reports all its two-electron engines
 
     # * Avert pydantic anger at incomplete modelchem spec
     userbas = core.get_global_option('BASIS') or kwargs.get('basis')
@@ -596,6 +597,7 @@ def gradient(name, **kwargs):
     # * Trip on function or alias as name
     lowername = driver_util.upgrade_interventions(name)
     _filter_renamed_methods("gradient", lowername)
+    core.IntegralFactory.reset_engine_notes()  # each calculation reports all its two-electron engines
 
     # * Prevent methods that do not have associated derivatives
     if lowername in energy_only_methods:
@@ -754,6 +756,7 @@ def properties(*args, **kwargs):
     lowername = driver_util.upgrade_interventions(args[0])
 
     _filter_renamed_methods("properties", lowername)
+    core.IntegralFactory.reset_engine_notes()  # each calculation reports all its two-electron engines
 
     props = kwargs.get('properties', ['dipole', 'quadrupole'])
     if len(args) > 1:
@@ -1422,6 +1425,7 @@ def hessian(name, **kwargs):
     # * Trip on function or alias as name
     lowername = driver_util.upgrade_interventions(name)
     _filter_renamed_methods("hessian", lowername)
+    core.IntegralFactory.reset_engine_notes()  # each calculation reports all its two-electron engines
 
     # * Prevent methods that do not have associated derivatives
     if lowername in energy_only_methods:

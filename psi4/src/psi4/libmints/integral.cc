@@ -82,8 +82,9 @@ std::string eri_kind(const std::string &base, int deriv) {
 }
 
 /// Report to the output file which library computes a class of two-electron integrals.
-/// Printed once per class and engine (until IntegralFactory::reset_engine_notes, i.e.,
-/// psi4.core.clean()), from the factory, once the object is built.
+/// Printed once per class and engine (until IntegralFactory::reset_engine_notes, which the
+/// driver calls at the start of each calculation, as does psi4.core.clean()), from the
+/// factory, once the object is built.
 void note_engine(const std::string &kind, const std::string &engine) {
     std::lock_guard<std::mutex> lock(engine_notes_mutex);
     if (engine_notes.insert(kind + "|" + engine).second)

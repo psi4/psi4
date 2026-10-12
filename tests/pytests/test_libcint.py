@@ -290,6 +290,24 @@ def test_engine_gradient_fallback(engine, tmp_path):
         psi4.gradient("scf")
 
 
+@pytest.mark.parametrize("engine,name", [("libint2", "Libint2"), pytest.param("libcint", "libcint", marks=using("libcint"))])
+def test_engine_notes_per_calculation(engine, name, tmp_path):
+    """Each calculation reports its ERI engine, even one already reported by an earlier calculation."""
+    import psi4
+
+    psi4.core.clean()
+    _water()
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "integral_package": engine})
+    out = tmp_path / "notes.out"
+    psi4.set_output_file(str(out), False)
+    try:
+        psi4.energy("scf")
+        psi4.gradient("scf")
+    finally:
+        psi4.set_output_file("output.dat", True)
+    assert out.read_text().count(f"Two-electron integrals (ERI) from {name}.") == 2
+
+
 @pytest.mark.parametrize("engine", ENGINES)
 def test_engine_sapgau_guess(engine):
     """The SAPGAU guess's 3-center integrals use deliberately non-normalized s shells.
