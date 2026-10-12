@@ -1071,6 +1071,60 @@ no_com"""
             shutil.rmtree(fsapt_dirname)
 
 
+@pytest.mark.fsapt
+@pytest.mark.parametrize("freeze_core", [False, True])
+def test_fsapt_fdisp_blocked_matches_pair(freeze_core):
+    """
+    The BLOCKED F-SAPT dispersion kernel reproduces the original PAIR loop,
+    pair partition and scalars alike. A block edge of 5 forces several
+    compute blocks, including short trailing ones.
+    """
+    mol = psi4.geometry(
+        """
+0 1
+C   0.000  0.000  0.000
+H   1.090  0.000  0.000
+C  -0.770  1.330  0.000
+H  -1.860  1.330  0.000
+H  -0.390  1.870  0.890
+H  -0.390  1.870 -0.890
+H  -0.390 -0.540  0.890
+H  -0.390 -0.540 -0.890
+--
+0 1
+O   0.200 -0.300  3.400
+H   0.900 -0.100  4.000
+H  -0.500 -0.700  3.950
+units angstrom
+symmetry c1
+no_reorient
+no_com
+"""
+    )
+    results = {}
+    for alg in ("PAIR", "BLOCKED"):
+        psi4.core.clean()
+        psi4.core.clean_variables()
+        psi4.set_options(
+            {
+                "basis": "cc-pvdz",
+                "scf_type": "df",
+                "guess": "sad",
+                "freeze_core": freeze_core,
+                "FISAPT_FSAPT_FILEPATH": "none",
+                "FISAPT_FDISP_ALGORITHM": alg,
+                "FISAPT_FDISP_BLOCK": 5,
+            }
+        )
+        psi4.energy("fisapt0", molecule=mol)
+        results[alg] = (
+            variable("SAPT DISP ENERGY"),
+            np.asarray(variable("FSAPT_DISP_AB")),
+        )
+    assert compare_values(results["PAIR"][0], results["BLOCKED"][0], 12, "Disp energy")
+    assert compare_values(results["PAIR"][1], results["BLOCKED"][1], 12, "Disp_AB")
+
+
 if __name__ == "__main__":
     test_fsapt_d4()
     # test_fsapt_psivars_dict()

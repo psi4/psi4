@@ -6728,6 +6728,13 @@ void FISAPT::fdisp() {
 
     bool parperp = options_.get_bool("FISAPT_EXCH_PARPERP");
 
+    // The blocked kernel covers everything but the extra parallel/perpendicular
+    // link-orbital term, which stays on the pair loop.
+    bool blocked = options_.get_str("FISAPT_FDISP_ALGORITHM") == "BLOCKED" &&
+                   !(na1 != na && parperp);
+
+    timer_on("F-SAPT Disp Setup");
+
     std::shared_ptr<Matrix> Caocc_A = matrices_["Caocc0A"];
     std::shared_ptr<Matrix> Caocc_B = matrices_["Caocc0B"];
     std::shared_ptr<Matrix> Cavir_A = matrices_["Cvir0A"];
@@ -7017,25 +7024,45 @@ void FISAPT::fdisp() {
     // => Blocking ... figure out how big a tensor slice to handle at a time <= //
 
     long int overhead = 0L;
-    overhead += 5L * nT * na * nb; // Tab, Vab, T2ab, V2ab, and Iab work arrays below
     if ((link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") && parperp) {
         overhead += 4L * na * ns + 4L * nb * nr + 4L * na * nr + 4L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
     }
     else {
         overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
     }
-    // the next few matrices allocated here don't take too much room (but might if large numbers of threads)
-    overhead += 2L * na * nb * (nT + 1); // E_disp20 and E_exch_disp20 thread work and final matrices
-    overhead += 1L * sna * snb * (nT + 1); // sE_exch_disp20 thread work and final matrices
     overhead += 1L * (nA + nfa + na) * (nB + nfb + nb); // Disp_AB
     overhead += 1L * (snA + snfa + sna) * (snB + snfb + snb); // sDisp_AB
     // account for a few of the smaller matrices already defined, but not exhaustively
     overhead += 12L * nn * nn; // D, V, J, K, P, and C matrices for A and B (neglecting C)
+
+    // Edge, in virtual orbitals, of the blocked kernel's (r,s) compute block.  Its
+    // five work arrays are halved until they take at most a quarter of what is left,
+    // so a small memory budget shrinks the block rather than the DF blocking.
+    int blk_r = 1;
+    int blk_s = 1;
+    if (blocked) {
+        int edge = std::max(1, options_.get_int("FISAPT_FDISP_BLOCK"));
+        blk_r = std::min(edge, nr);
+        blk_s = std::min(edge, ns);
+        while ((blk_r > 1 || blk_s > 1) && 4L * 5L * blk_r * blk_s * na * nb > doubles_ - overhead) {
+            blk_r = std::max(1, blk_r / 2);
+            blk_s = std::max(1, blk_s / 2);
+        }
+        overhead += 5L * blk_r * blk_s * na * nb; // V, T, I, T2, V2 block work arrays below
+        overhead += 2L * na * nb + 1L * sna * snb; // E_disp20, E_exch_disp20, sE_exch_disp20
+        overhead += 2L * na * nr + 2L * nb * ns; // Qbr, Sbr, SAbs, Qbs transposed for the kernel
+    } else {
+        overhead += 5L * nT * na * nb; // Tab, Vab, T2ab, V2ab, and Iab work arrays below
+        // the next few matrices allocated here don't take too much room (but might if large numbers of threads)
+        overhead += 2L * na * nb * (nT + 1); // E_disp20 and E_exch_disp20 thread work and final matrices
+        overhead += 1L * sna * snb * (nT + 1); // sE_exch_disp20 thread work and final matrices
+    }
     long int rem = doubles_ - overhead;
 
     outfile->Printf("    %ld doubles - %ld overhead leaves %ld for dispersion\n", doubles_, overhead, rem);
     
     if (rem < 0L) {
+        timer_off("F-SAPT Disp Setup");
         throw PSIEXCEPTION("Too little static memory for DFTSAPT::mp2_terms");
     }
 
@@ -7053,6 +7080,7 @@ void FISAPT::fdisp() {
     int max_r = (max_r_l > nr ? nr : (int) max_r_l);
     int max_s = (max_s_l > ns ? ns : (int) max_s_l);
     if (max_r < 1 || max_s < 1) {
+        timer_off("F-SAPT Disp Setup");
         throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
     }
     int nrblocks = (nr / max_r);
@@ -7061,7 +7089,14 @@ void FISAPT::fdisp() {
     if (ns % max_s) nsblocks++;
     outfile->Printf("    Processing a single (r,s) pair requires %ld doubles\n", cost_r * 2L);
     outfile->Printf("    %d values of r processed in %d blocks of %d\n", nr, nrblocks, max_r);
-    outfile->Printf("    %d values of s processed in %d blocks of %d\n\n", ns, nsblocks, max_s);
+    outfile->Printf("    %d values of s processed in %d blocks of %d\n", ns, nsblocks, max_s);
+    if (blocked) {
+        // The compute block never exceeds the DF block that feeds it.
+        blk_r = std::min(blk_r, max_r);
+        blk_s = std::min(blk_s, max_s);
+        outfile->Printf("    (r,s) contracted in compute blocks of %d x %d\n", blk_r, blk_s);
+    }
+    outfile->Printf("\n");
 
     // => Tensor Slices <= //
 
@@ -7081,7 +7116,7 @@ void FISAPT::fdisp() {
     std::vector<std::shared_ptr<Matrix> > T2ab;
     std::vector<std::shared_ptr<Matrix> > V2ab;
     std::vector<std::shared_ptr<Matrix> > Iab;
-    for (int t = 0; t < nT; t++) {
+    for (int t = 0; t < (blocked ? 0 : nT); t++) {
         Tab.push_back(std::make_shared<Matrix>("Tab", na, nb));
         Vab.push_back(std::make_shared<Matrix>("Vab", na, nb));
         T2ab.push_back(std::make_shared<Matrix>("T2ab", na, nb));
@@ -7162,7 +7197,7 @@ void FISAPT::fdisp() {
     std::vector<std::shared_ptr<Matrix> > E_exch_disp20_threads;
     std::vector<std::shared_ptr<Matrix> > sE_exch_disp20_threads;
     std::vector<std::shared_ptr<Matrix> > par_E_exch_disp20_threads;
-    for (int t = 0; t < nT; t++) {
+    for (int t = 0; t < (blocked ? 0 : nT); t++) {
         E_disp20_threads.push_back(std::make_shared<Matrix>("E_disp20", na, nb));
         E_exch_disp20_threads.push_back(std::make_shared<Matrix>("E_exch_disp20", na, nb));
         sE_exch_disp20_threads.push_back(std::make_shared<Matrix>("sE_exch_disp20", sna, snb));
@@ -7178,6 +7213,14 @@ void FISAPT::fdisp() {
     if (options_.get_bool("SSAPT0_SCALE")) {
         scale = sSAPT0_scale_;
     }
+
+    // Energy targets of the blocked kernel; the pair loop accumulates into the per-thread
+    // matrices above instead.
+    auto E_disp20_blk = std::make_shared<Matrix>("E_disp20", blocked ? na : 0, blocked ? nb : 0);
+    auto E_exch_disp20_blk = std::make_shared<Matrix>("E_exch_disp20", blocked ? na : 0, blocked ? nb : 0);
+
+    timer_off("F-SAPT Disp Setup");
+    timer_on("F-SAPT Disp Compute");
 
     // ==> Master Loop <== //
 
@@ -7354,6 +7397,173 @@ void FISAPT::fdisp() {
             }
         }
     }
+    else if (blocked) {
+        // => Blocked (r,s) kernel <= //
+        //
+        // A single (r,s) pair does O(na nb nQ) work with na and nb in the tens, so the pair
+        // loop below spends most of its time in a dozen tiny single-threaded BLAS calls per
+        // pair.  Here a blk_r x blk_s block of pairs is held as one row-major matrix,
+        //
+        //     V[(r,a),(s,b)] = sum_Q Aar[(r,a),Q] Abs[(s,b),Q] ,
+        //
+        // which is how the DF slices already sit in memory, so each DF contraction becomes
+        // one large threaded GEMM over the block.  The (s,a) x (r,b) half of the
+        // exchange-dispersion kernel comes out of its GEMMs in that layout; it is permuted
+        // into the (r,a) x (s,b) one together with the rank-one V,J,K terms, so a block
+        // takes three MO -> LO transforms (T, V of Disp20, V of Exch-Disp20) where the
+        // pair loop takes four per pair.
+        const size_t blk_size = (size_t)blk_r * blk_s * na * nb;
+        // Uninitialized: every array is written in full before it is read, and leaving
+        // first touch to the threaded kernels spreads the pages over the sockets.
+        std::unique_ptr<double[]> Vw(new double[blk_size]);
+        std::unique_ptr<double[]> Tw(new double[blk_size]);
+        std::unique_ptr<double[]> Iw(new double[blk_size]);
+        std::unique_ptr<double[]> T2w(new double[blk_size]);
+        std::unique_ptr<double[]> V2w(new double[blk_size]);
+        double* V = Vw.get();
+        double* T = Tw.get();
+        double* I = Iw.get();
+        double* T2 = T2w.get();
+        double* V2 = V2w.get();
+
+        // The rank-one terms read Qbr, Sbr, SAbs and Qbs along b; transposed once here so
+        // those reads are contiguous.
+        SharedMatrix QbrT = Qbr->transpose();
+        SharedMatrix SbrT = Sbr->transpose();
+        SharedMatrix SAbsT = SAbs->transpose();
+        SharedMatrix QbsT = Qbs->transpose();
+        double** QbrTp = QbrT->pointer();
+        double** SbrTp = SbrT->pointer();
+        double** SAbsTp = SAbsT->pointer();
+        double** QbsTp = QbsT->pointer();
+
+        double** E_dispp = E_disp20_blk->pointer();
+        double** E_exchp = E_exch_disp20_blk->pointer();
+
+        // Y[(r,a),(s,b)] = sum_a'b' UA[a',a] X[(r,a'),(s,b')] UB[b',b], through I.  With b
+        // the fastest index, X is a (nrb na nsb) x nb matrix, so the b' contraction is a
+        // single GEMM; the a' contraction is one GEMM per r.
+        auto to_lo = [&](double* X, double* Y, int nrb, int nsb) {
+            int N = nsb * nb;
+            C_DGEMM('N', 'N', nrb * na * nsb, nb, nb, 1.0, X, nb, UBp[0], nb, 0.0, I, nb);
+            for (int r = 0; r < nrb; r++) {
+                C_DGEMM('T', 'N', na, N, na, 1.0, UAp[0], na, I + (size_t)r * na * N, N, 0.0, Y + (size_t)r * na * N,
+                        N);
+            }
+        };
+
+        // E[a][b] += c sum_rs T2[(r,a),(s,b)] V2[(r,a),(s,b)]; each thread owns rows of E.
+        auto accumulate = [&](double** E, double c, int nrb, int nsb) {
+            size_t N = (size_t)nsb * nb;
+#pragma omp parallel for schedule(static)
+            for (int a = 0; a < na; a++) {
+                double* Ea = E[a];
+                for (int r = 0; r < nrb; r++) {
+                    const double* t = T2 + ((size_t)r * na + a) * N;
+                    const double* v = V2 + ((size_t)r * na + a) * N;
+                    for (int s = 0; s < nsb; s++) {
+                        for (int b = 0; b < nb; b++) {
+                            Ea[b] += c * t[s * nb + b] * v[s * nb + b];
+                        }
+                    }
+                }
+            }
+        };
+
+        for (size_t rstart = 0; rstart < nr; rstart += max_r) {
+            size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
+
+            dfh->fill_tensor("Aar", Aar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Far", Dar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Bbr", Bbr, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Cbr", Cbr, {rstart, rstart + nrblock});
+
+            for (size_t sstart = 0; sstart < ns; sstart += max_s) {
+                size_t nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
+
+                dfh->fill_tensor("Abs", Abs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Fbs", Dbs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Bas", Bas, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Cas", Cas, {sstart, sstart + nsblock});
+
+                for (int r0 = 0; r0 < (int)nrblock; r0 += blk_r) {
+                    int nrb = std::min(blk_r, (int)nrblock - r0);
+                    for (int s0 = 0; s0 < (int)nsblock; s0 += blk_s) {
+                        int nsb = std::min(blk_s, (int)nsblock - s0);
+                        int M = nrb * na;
+                        int N = nsb * nb;
+                        int Ms = nsb * na;
+                        int Nr = nrb * nb;
+                        // First (global) r and s of this compute block.
+                        int rg0 = (int)rstart + r0;
+                        int sg0 = (int)sstart + s0;
+
+                        // => Amplitudes, Disp20 <= //
+
+                        C_DGEMM('N', 'T', M, N, nQ, 1.0, Aarp[r0 * na], nQ, Absp[s0 * nb], nQ, 0.0, V, N);
+
+#pragma omp parallel for collapse(2) schedule(static)
+                        for (int r = 0; r < nrb; r++) {
+                            for (int a = 0; a < na; a++) {
+                                const double* v = V + ((size_t)r * na + a) * N;
+                                double* t = T + ((size_t)r * na + a) * N;
+                                double ear = eap[a] - erp[rg0 + r];
+                                for (int s = 0; s < nsb; s++) {
+                                    double ears = ear - esp[sg0 + s];
+                                    for (int b = 0; b < nb; b++) {
+                                        t[s * nb + b] = v[s * nb + b] / (ears + ebp[b]);
+                                    }
+                                }
+                            }
+                        }
+
+                        to_lo(T, T2, nrb, nsb);
+                        to_lo(V, V2, nrb, nsb);
+                        accumulate(E_dispp, 4.0, nrb, nsb);
+
+                        // => Exch-Disp20 <= //
+
+                        // (r,a) x (s,b) half: Aar.Fbs + Far.Abs
+                        C_DGEMM('N', 'T', M, N, nQ, 1.0, Aarp[r0 * na], nQ, Dbsp[s0 * nb], nQ, 0.0, V, N);
+                        C_DGEMM('N', 'T', M, N, nQ, 1.0, Darp[r0 * na], nQ, Absp[s0 * nb], nQ, 1.0, V, N);
+
+                        // (s,a) x (r,b) half: Bas.Bbr + Cas.Cbr, into T (spent once T2 is formed)
+                        double* W = T;
+                        C_DGEMM('N', 'T', Ms, Nr, nQ, 1.0, Basp[s0 * na], nQ, Bbrp[r0 * nb], nQ, 0.0, W, Nr);
+                        C_DGEMM('N', 'T', Ms, Nr, nQ, 1.0, Casp[s0 * na], nQ, Cbrp[r0 * nb], nQ, 1.0, W, Nr);
+
+                        // V += W permuted to (r,a) x (s,b), plus the rank-one V,J,K terms
+#pragma omp parallel for collapse(2) schedule(static)
+                        for (int r = 0; r < nrb; r++) {
+                            for (int a = 0; a < na; a++) {
+                                int rg = rg0 + r;
+                                double* v = V + ((size_t)r * na + a) * N;
+                                double qar = Qarp[a][rg];
+                                double sbar = SBarp[a][rg];
+                                const double* qbr = QbrTp[rg];
+                                const double* sbr = SbrTp[rg];
+                                for (int s = 0; s < nsb; s++) {
+                                    int sg = sg0 + s;
+                                    const double* w = W + ((size_t)s * na + a) * Nr + (size_t)r * nb;
+                                    double sas = Sasp[a][sg];
+                                    double qas = Qasp[a][sg];
+                                    const double* sabs = SAbsTp[sg];
+                                    const double* qbs = QbsTp[sg];
+                                    double* vs = v + (size_t)s * nb;
+                                    for (int b = 0; b < nb; b++) {
+                                        vs[b] += w[b] + sas * qbr[b] + qas * sbr[b] + qar * sabs[b] + sbar * qbs[b];
+                                    }
+                                }
+                            }
+                        }
+
+                        to_lo(V, V2, nrb, nsb);
+                        accumulate(E_exchp, -2.0, nrb, nsb);
+                    }
+                }
+            }
+        }
+    }
     else {
         for (size_t rstart = 0; rstart < nr; rstart += max_r) {
             size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
@@ -7448,12 +7658,27 @@ void FISAPT::fdisp() {
         }
     }
 
+    timer_off("F-SAPT Disp Compute");
+
     auto E_disp20 = std::make_shared<Matrix>("E_disp20", na, nb);
     auto E_exch_disp20 = std::make_shared<Matrix>("E_exch_disp20", na, nb);
     double** E_disp20p = E_disp20->pointer();
     double** E_exch_disp20p = E_exch_disp20->pointer();
 
-    for (int t = 0; t < nT; t++) {
+    if (blocked) {
+        E_disp20->add(E_disp20_blk);
+        E_exch_disp20->add(E_exch_disp20_blk);
+        Disp20 = 0.0;
+        ExchDisp20 = 0.0;
+        for (int a = 0; a < na; a++) {
+            for (int b = 0; b < nb; b++) {
+                Disp20 += E_disp20p[a][b];
+                ExchDisp20 += E_exch_disp20p[a][b];
+            }
+        }
+        sExchDisp20 = scale * ExchDisp20;
+    }
+    for (int t = 0; t < (blocked ? 0 : nT); t++) {
         E_disp20->add(E_disp20_threads[t]);
         E_exch_disp20->add(E_exch_disp20_threads[t]);
     }

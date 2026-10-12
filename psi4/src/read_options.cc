@@ -1323,6 +1323,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("FISAPT_DO_FSAPT", true);
         /*- Do F-SAPT Dispersion? -*/
         options.add_bool("FISAPT_DO_FSAPT_DISP", true);
+        /*- Algorithm for the F-SAPT dispersion partition. BLOCKED contracts blocks of
+            (r,s) virtual-orbital pairs as single large matrix products; PAIR is the
+            original one-pair-at-a-time loop. The parallel/perpendicular link-orbital
+            term (|fisapt__fisapt_exch_parperp| with SAOn/SIAOn links) always uses PAIR. !expert -*/
+        options.add_str("FISAPT_FDISP_ALGORITHM", "BLOCKED", "BLOCKED PAIR");
+        /*- Edge, in virtual orbitals, of the (r,s) block the BLOCKED F-SAPT dispersion
+            contracts at once. Its five work arrays take 5 * edge^2 * na * nb doubles;
+            the edge is halved as needed to fit in the memory budget. !expert -*/
+        options.add_int("FISAPT_FDISP_BLOCK", 48);
         /*- Filepath (case sensitive) to drop F-SAPT data within input file directory. To avoid files being written, set to 'none'. -*/
         options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/"); 
         /*- Do F-SAPT exchange scaling? (ratio of S^\infty to S^2) -*/
