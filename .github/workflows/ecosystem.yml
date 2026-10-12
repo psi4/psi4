@@ -76,7 +76,7 @@ jobs:
 
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
-            python-version: "3.14"
+            python-version: "3.15"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
@@ -338,8 +338,9 @@ jobs:
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
 
+      # Mac tests latest-release and Linux tests upstream main for QCFractal
     - name: Special Config - Download MolSSI/QCFractal Repo
-      if: runner.os != 'Windows'
+      if: runner.os == 'Linux'
       uses: actions/checkout@v6
       with:
         repository: MolSSI/QCFractal
@@ -348,7 +349,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install All QCArchive packages
-      if: runner.os != 'Windows'
+      if: runner.os == 'Linux'
       working-directory: ./qca
       run: |
           pip install -e ./qcportal -e ./qcfractalcompute -e ./qcfractal[services,geoip,snowflake]
