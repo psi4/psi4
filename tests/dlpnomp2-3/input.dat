@@ -9,8 +9,12 @@ ref_dfmp2_tot            =    -76.209332990              #TEST
                                                
 ref_dlpnomp2_corl        =     -0.191878431              #TEST
 ref_dlpnomp2_os_corl     =     -0.142441355              #TEST
-ref_dlpnomp2_ss_corl     =     -0.049437017              #TEST
+ref_dlpnomp2_ss_corl     =     -0.049437076              #TEST
 ref_dlpnomp2_tot         =    -76.209330345              #TEST
+
+# SCS-MP2 scales the spin components by 6/5 (opposite-spin) and 1/3 (same-spin)             #TEST
+ref_dlpnomp2_scs_corl    = 6.0/5.0 * ref_dlpnomp2_os_corl + 1.0/3.0 * ref_dlpnomp2_ss_corl  #TEST
+ref_dlpnomp2_scs_tot     = ref_scf + ref_dlpnomp2_scs_corl                                  #TEST
 
 molecule h2o {
 O
@@ -48,6 +52,10 @@ compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 co
 compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')               #TEST
 compare_values(ref_dlpnomp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')    #TEST
 compare_values(ref_dlpnomp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
+os_plus_ss = variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY') + variable('MP2 SAME-SPIN CORRELATION ENERGY')  #TEST
+compare_values(variable('MP2 CORRELATION ENERGY'), os_plus_ss, 8, 'mp2 os+ss sums to corl')                   #TEST
+compare_values(ref_dlpnomp2_scs_corl, variable('SCS-MP2 CORRELATION ENERGY'), 7, 'mp2 scs-corl')              #TEST
+compare_values(ref_dlpnomp2_scs_tot, variable('SCS-MP2 TOTAL ENERGY'), 7, 'mp2 scs-tot')                      #TEST
 compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
 compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')   #TEST
 compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                 #TEST
