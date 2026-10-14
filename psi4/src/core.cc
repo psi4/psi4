@@ -44,6 +44,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/integral.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
@@ -536,7 +537,10 @@ double py_psi_dummy_integratorxx(SharedWavefunction ref_wfn) {
 }
 #endif
 
-void py_psi_clean() { PSIOManager::shared_object()->psiclean(); }
+void py_psi_clean() {
+    PSIOManager::shared_object()->psiclean();
+    IntegralFactory::reset_engine_notes();
+}
 
 void py_psi_print_options() { Process::environment.options.print(); }
 
