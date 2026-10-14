@@ -58,7 +58,8 @@ from ..p4util.exceptions import (
 
 #from psi4.driver.molutil import *
 from ..qcdb.basislist import corresponding_basis
-from . import dft, empirical_dispersion, mcscf, proc_util, response, solvent
+from . import dft, mcscf, proc_util, response, solvent
+from .empirical_disp import empirical_dispersion
 from .proc_data import method_algorithm_type
 from .roa import run_roa
 

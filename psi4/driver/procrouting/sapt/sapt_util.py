@@ -43,7 +43,24 @@ def print_sapt_var(name, value, short=False, start_spacer="    "):
         return start_spacer + "%-28s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]" % vals
 
 
-def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
+def print_sapt_hf_induction_summary(data, name):
+
+    ind = data["Ind20,r"] + data["Exch-Ind20,r"]
+    ind_ab = data["Ind20,r (A<-B)"] + data["Exch-Ind20,r (A<-B)"]
+    ind_ba = data["Ind20,r (A->B)"] + data["Exch-Ind20,r (A->B)"]
+
+    ret = "   Partial %s Results, SAPT0 induction only (no dHF)\n" % name
+    ret += "  " + "-" * 105 + "\n"
+    ret += print_sapt_var("Induction (no dHF)", ind) + "\n"
+    ret += print_sapt_var("  Ind20,r", data["Ind20,r"]) + "\n"
+    ret += print_sapt_var("  Exch-Ind20,r", data["Exch-Ind20,r"]) + "\n"
+    ret += print_sapt_var("  Induction (A<-B) (no dHF)", ind_ab) + "\n"
+    ret += print_sapt_var("  Induction (A->B) (no dHF)", ind_ba) + "\n"
+    ret += "  " + "-" * 105 + "\n"
+    return ret
+
+
+def print_sapt_hf_summary(data, name, dimer_wfn, short=False, delta_hf=False):
 
     ret = "   Partial %s Results, to compute Delta HF (dHF)\n" % name
     ret += "  " + "-" * 105 + "\n"
@@ -110,6 +127,7 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
         ret += print_sapt_var("  Exch-Disp20", data["Exch-Disp20,u"]) + "\n"
         ret += "\n"
         core.set_variable("SAPT DISP ENERGY", disp)
+        dimer_wfn.set_variable("SAPT DISP ENERGY", disp)
 
         # Total energy
         total = data["Elst10,r"] + data["Exch10"] + ind + disp
@@ -117,21 +135,37 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
         core.set_variable("SAPT0 TOTAL ENERGY", total)
         core.set_variable("SAPT TOTAL ENERGY", total)
         core.set_variable("CURRENT ENERGY", total)
+        dimer_wfn.set_variable("SAPT0 TOTAL ENERGY", total)
+        dimer_wfn.set_variable("SAPT TOTAL ENERGY", total)
+        dimer_wfn.set_variable("CURRENT ENERGY", total)
 
         ret += "  " + "-" * 105 + "\n"
         return ret
 
 
-def print_sapt_dft_summary(data, name, dimer_wfn, do_dft=True, short=False):
+def print_sapt_dft_summary(
+    data,
+    name,
+    dimer_wfn,
+    do_dft=True,
+    short=False,
+    do_disp=True,
+    do_delta_dft=False,
+    induction_type="CPKS",
+):
     ret = "   %s Results\n" % name
     ret += "  " + "-" * 105 + "\n"
 
     # Elst
-    ret += print_sapt_var("Electrostatics", data["Elst10,r"]) + "\n"
+    extern_extern_IE = data.get('extern_extern_IE', 0)
+    ret += print_sapt_var("Electrostatics", data["Elst10,r"] + extern_extern_IE) + "\n"
     ret += print_sapt_var("  Elst1,r", data["Elst10,r"]) + "\n"
+    if extern_extern_IE != 0:
+        ret += print_sapt_var("  Elst (extern-extern)", data["extern_extern_IE"]) + "\n"
     ret += "\n"
-    core.set_variable("SAPT ELST ENERGY", data["Elst10,r"])
-    dimer_wfn.set_variable("SAPT ELST ENERGY", data["Elst10,r"])
+    elst = data["Elst10,r"] + extern_extern_IE
+    core.set_variable("SAPT ELST ENERGY", elst)
+    dimer_wfn.set_variable("SAPT ELST ENERGY", elst)
 
     # Exchange
     ret += print_sapt_var("Exchange", data["Exch10"]) + "\n"
@@ -142,49 +176,85 @@ def print_sapt_dft_summary(data, name, dimer_wfn, do_dft=True, short=False):
     dimer_wfn.set_variable("SAPT EXCH ENERGY", data["Exch10"])
 
     # Induction
-    ind = data["Ind20,r"] + data["Exch-Ind20,r"]
-    ind_ab = data["Ind20,r (A<-B)"] + data["Exch-Ind20,r (A<-B)"]
-    ind_ba = data["Ind20,r (A->B)"] + data["Exch-Ind20,r (A->B)"]
+    if induction_type == "NONE":
+        has_delta_hf = "Delta HF Correction" in data
+        ind = data["Delta HF Correction"] if has_delta_hf else 0.0
+        label = "Induction (delta HF)" if has_delta_hf else "Induction (omitted)"
+        ret += print_sapt_var(label, ind) + "\n"
+        ret += "      No second-order induction breakdown is available.\n"
+    else:
+        ind = data["Ind20,r"] + data["Exch-Ind20,r"]
+        ind_ab = data["Ind20,r (A<-B)"] + data["Exch-Ind20,r (A<-B)"]
+        ind_ba = data["Ind20,r (A->B)"] + data["Exch-Ind20,r (A->B)"]
+        if "Delta HF Correction" in data:
+            ind += data["Delta HF Correction"]
 
-    if "Delta HF Correction" in list(data):
-        ind += data["Delta HF Correction"]
-
-    ret += print_sapt_var("Induction", ind) + "\n"
-
-    ret += print_sapt_var("  Ind2,r", data["Ind20,r"]) + "\n"
-    ret += print_sapt_var("  Exch-Ind2,r", data["Exch-Ind20,r"]) + "\n"
-    ret += print_sapt_var("  Induction (A<-B)", ind_ab) + "\n"
-    ret += print_sapt_var("  Induction (A->B)", ind_ba) + "\n"
-
-    if "Delta HF Correction" in list(data):
-        ret += print_sapt_var("  delta HF,r (2)", data["Delta HF Correction"]) + "\n"
+        source = " (SAPT0)" if induction_type == "CPHF" and do_dft else ""
+        ret += print_sapt_var("Induction" + source, ind) + "\n"
+        ret += print_sapt_var("  Ind2,r" + source, data["Ind20,r"]) + "\n"
+        ret += print_sapt_var("  Exch-Ind2,r" + source, data["Exch-Ind20,r"]) + "\n"
+        ret += print_sapt_var("  Induction (A<-B)" + source, ind_ab) + "\n"
+        ret += print_sapt_var("  Induction (A->B)" + source, ind_ba) + "\n"
+        if "Delta HF Correction" in data:
+            ret += print_sapt_var("  delta HF,r (2)", data["Delta HF Correction"]) + "\n"
 
     ret += "\n"
     core.set_variable("SAPT IND ENERGY", ind)
+    dimer_wfn.set_variable("SAPT IND ENERGY", ind)
 
     # Dispersion
-    if do_dft:
-        disp = data["Disp20"] + data["Exch-Disp20,r"]
+    disp = 0.0
+    if do_disp:
+        if do_dft:
+            disp = data["Disp20"] + data["Exch-Disp20,r"]
+            ret += print_sapt_var("Dispersion", disp) + "\n"
+            ret += print_sapt_var("  Disp2,r", data["Disp20"]) + "\n"
+            ret += print_sapt_var("  Disp2,u", data["Disp20,u"]) + "\n"
+            if core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_SCALE_SCHEME") != "NONE":
+                ret += print_sapt_var("  Est. Exch-Disp2,r", data["Exch-Disp20,r"]) + "\n"
+            ret += print_sapt_var("  Exch-Disp2,u", data["Exch-Disp20,u"]) + "\n"
+        else:
+            disp = data["Disp20,u"] + data["Exch-Disp20,u"]
+            ret += print_sapt_var("Dispersion", disp) + "\n"
+            ret += print_sapt_var("  Disp20", data["Disp20,u"]) + "\n"
+            ret += print_sapt_var("  Exch-Disp20", data["Exch-Disp20,u"]) + "\n"
+
+    empirical_disp_key = None
+    if "D4 IE" in data:
+        empirical_disp_key = "D4 IE"
+    elif "D3 IE" in data:
+        empirical_disp_key = "D3 IE"
+
+    if empirical_disp_key and not do_disp and do_delta_dft:
+        disp = (
+            data[empirical_disp_key]
+            + data["Delta DFT Correction"]
+            - data.get("Delta HF Correction", 0.0)
+        )
         ret += print_sapt_var("Dispersion", disp) + "\n"
-        ret += print_sapt_var("  Disp2,r", data["Disp20"]) + "\n"
-        ret += print_sapt_var("  Disp2,u", data["Disp20,u"]) + "\n"
-        if core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_SCALE_SCHEME") != "NONE":
-            ret += print_sapt_var("  Est. Exch-Disp2,r", data["Exch-Disp20,r"]) + "\n"
-        ret += print_sapt_var("  Exch-Disp2,u", data["Exch-Disp20,u"]) + "\n"
-        ret += "\n"
-        core.set_variable("SAPT DISP ENERGY", disp)
-        dimer_wfn.set_variable("SAPT DISP ENERGY", disp)
-    else:
-        disp = data["Disp20,u"] + data["Exch-Disp20,u"]
+        ret += print_sapt_var("  delta DFT,r (2)", data["Delta DFT Correction"]) + "\n"
+        subtract_delta_hf_for_total_dispersion = -data.get("Delta HF Correction", 0.0)
+        ret += print_sapt_var("  -delta HF,r (2)", subtract_delta_hf_for_total_dispersion) + "\n"
+        ret += print_sapt_var(f"  G{empirical_disp_key}", data[empirical_disp_key]) + "\n"
+    elif empirical_disp_key and not do_disp:
+        disp = data[empirical_disp_key]
         ret += print_sapt_var("Dispersion", disp) + "\n"
-        ret += print_sapt_var("  Disp20", data["Disp20,u"]) + "\n"
-        ret += print_sapt_var("  Exch-Disp20", data["Exch-Disp20,u"]) + "\n"
-        ret += "\n"
-        core.set_variable("SAPT DISP ENERGY", disp)
-        dimer_wfn.set_variable("SAPT DISP ENERGY", disp)
-    
+        ret += print_sapt_var(f"  G{empirical_disp_key}", data[empirical_disp_key]) + "\n"
+    if "Delta DFT Correction" in list(data):
+        ret += "      ---------------" + "\n"
+        ret += print_sapt_var("  delta DFT,r (2)", data["Delta DFT Correction"]) + "\n"
+
+    if empirical_disp_key and do_disp:
+        ret += "      ---------------" + "\n"
+        ret += print_sapt_var(f"  {empirical_disp_key}", data[empirical_disp_key]) + "\n"
+
+
+    ret += "\n"
+    core.set_variable("SAPT DISP ENERGY", disp)
+    dimer_wfn.set_variable("SAPT DISP ENERGY", disp)
+
     # Total energy
-    total = data["Elst10,r"] + data["Exch10"] + ind + disp
+    total = data["Elst10,r"] + extern_extern_IE + data["Exch10"] + ind + disp
     ret += print_sapt_var("Total %-17s" % name, total, start_spacer="    ") + "\n"
     core.set_variable("SAPT(DFT) TOTAL ENERGY", total)
     core.set_variable("SAPT TOTAL ENERGY", total)

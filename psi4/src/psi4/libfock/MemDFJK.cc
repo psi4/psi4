@@ -67,6 +67,10 @@ size_t MemDFJK::memory_estimate() {
     dfh_->set_schwarz_cutoff(cutoff_);
     return dfh_->get_core_size();
 }
+size_t MemDFJK::memory_held() const {
+    // The integrals live in DFHelper, which reports them to the ledger itself.
+    return dfh_->get_AO_held();
+}
 
 void MemDFJK::preiterations() {
     // Initialize calls your derived class's preiterations member
@@ -109,7 +113,16 @@ void MemDFJK::compute_JK() {
         }
     }
 }
-void MemDFJK::postiterations() {}
+void MemDFJK::postiterations() {
+    // JK::finalize() has to actually release the integral store, the way
+    // DiskDFJK::postiterations() releases Qmn_: callers finalize a JK object
+    // precisely to get its memory back, and the (Q|mn) block stays resident for
+    // as long as *any* reference to this object survives -- a wavefunction held
+    // under SAVE_JK, for instance.  Dropping the DFHelper frees it; a fresh one
+    // takes its place so every other dfh_ user here, and a later initialize(),
+    // still see a valid object.
+    dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
+}
 void MemDFJK::print_header() const {
     // dfh_->print_header();
     if (print_) {
