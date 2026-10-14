@@ -1944,6 +1944,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DFT_GRAC_X_FUNC", "XC_GGA_X_LB");
         /*- The gradient regularized asymptotic correction functional corr form. !expert -*/
         options.add_str("DFT_GRAC_C_FUNC", "XC_LDA_C_VWN");
+        /*- The array of DFT integrators to try, falling back to the next if the other has an
+        error (usually not supporting the desired feature). Available integrators depend on
+        your local Psi configuration. At most, they are INTERNAL, GAUXC, and BRIANQC. -*/
+        auto tmp = new ArrayType();
+        tmp->add(std::string("INTERNAL"));
+        options.add("DFT_XC_INTEGRATORS", tmp);
         /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
         options.add_int("DFT_SPHERICAL_POINTS", 302);
         /*- Number of radial points. -*/
@@ -2002,8 +2008,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DFT_VV10_C", 0.0);
         /*- post-scf VV10 correction -*/
         options.add_bool("DFT_VV10_POSTSCF", false);
-        /*- Enable Psi's internal integration? Disable only if using an external integrator. !expert -*/
-        options.add_bool("DFT_ENABLE_PSI", true);
         /*- The convergence on the orbital localization procedure -*/
         options.add_double("LOCAL_CONVERGENCE", 1E-12);
         /*- The maxiter on the orbital localization procedure -*/
@@ -2015,8 +2019,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION GAUXCDFT -*/
 #ifdef USING_gauxc
-        /*- Outsource all Kohn-Sham numerical integration to the GauXC library? -*/
-        options.add_bool("GAUXC_DFT_ENABLE", true);
         /*- Load Balancer kernel for KS !expert -*/
         options.add_str("GAUXC_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
         /*- Pruning scheme for KS grids !expert -*/

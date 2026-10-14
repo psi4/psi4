@@ -17,6 +17,7 @@ def assert_gauxc_execution_space(gauxc_exec):
     if hasattr(psi4.core, "flush_outfile"):
         psi4.core.flush_outfile()
     output = Path("pytest_output.dat").read_text(errors="replace")
+    print(output)
     assert f"Execution Space        = {gauxc_exec['label']:>14}" in output
 
 
@@ -46,7 +47,6 @@ def test_rks_energy(inp, symmetry, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -56,11 +56,10 @@ def test_rks_energy(inp, symmetry, basis, gauxc_exec):
     enPsi = psi4.energy(inp["name"])
 
     psi4.set_options({
-        "gauxc_dft_enable": True,
+        "dft_xc_integrators": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
-        "dft_enable_psi": False,
     })
 
     enGau = psi4.energy(inp["name"])
@@ -95,7 +94,6 @@ def test_rks_grad(inp, symmetry, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -103,11 +101,10 @@ def test_rks_grad(inp, symmetry, basis, gauxc_exec):
     })
 
     psi4.set_options({
-        "gauxc_dft_enable": True,
+        "dft_xc_integrators": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
-        "dft_enable_psi": False,
     })
 
     findif_gradient = psi4.gradient(inp["name"], dertype=0)
@@ -147,7 +144,6 @@ def test_rks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -163,11 +159,10 @@ def test_rks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
     psi4.tdscf(psi_wfn)
 
     psi4.set_options({
-        "gauxc_dft_enable": True,
+        "dft_xc_integrators": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
-        "dft_enable_psi": False,
     })
 
     gau_wfn = psi4.energy(inp["name"], return_wfn=True)[1]
@@ -206,7 +201,6 @@ def test_uks_energy(inp, symmetry, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -217,11 +211,10 @@ def test_uks_energy(inp, symmetry, basis, gauxc_exec):
     enPsi = psi4.energy(inp["name"])
 
     psi4.set_options({
-        "gauxc_dft_enable": True,
+        "dft_xc_integrators": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
-        "dft_enable_psi": False,
     })
 
     enGau = psi4.energy(inp["name"])
@@ -257,7 +250,6 @@ def test_uks_gradient(inp, symmetry, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 80,
@@ -266,11 +258,10 @@ def test_uks_gradient(inp, symmetry, basis, gauxc_exec):
     })
 
     psi4.set_options({
-        "gauxc_dft_enable": True,
+        "dft_xc_integrators": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
-        "dft_enable_psi": False,
     })
 
     findif_gradient = psi4.gradient(inp["name"], dertype=0)
@@ -311,7 +302,6 @@ def test_uks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
     if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
-        "gauxc_dft_enable": False,
         "basis": basis["name"],
         "d_convergence": 10,
         "dft_radial_points": 100,
@@ -328,11 +318,10 @@ def test_uks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
     psi4.tdscf(psi_wfn)
 
     psi4.set_options({
-        "gauxc_dft_enable": True,
+        "dft_xc_integrators": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
-        "dft_enable_psi": False,
     })
 
     gau_wfn = psi4.energy(inp["name"], return_wfn=True)[1]

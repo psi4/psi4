@@ -1237,21 +1237,29 @@ std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void UHF::setup_potential() {
     if (functional_->needs_xc()) {
-	std::vector<std::shared_ptr<IntegratorManager>> managers;
+        std::vector<std::shared_ptr<IntegratorManager>> managers;
+        for (auto integrator: options_.get_string_vector("DFT_XC_INTEGRATORS")) {
+            std::ranges::transform(integrator, integrator.begin(), [](unsigned char c){
+                return std::toupper(c);
+            });
+            if (integrator == "INTERNAL") {
+                managers.push_back(std::make_shared<UV>(functional_, basisset_, options_));
+            }
 #ifdef USING_BrianQC
-        if (options_.get_bool("BRIANQC_INTEGRATE")) {
-            managers.push_back(std::make_shared<BrianUV>(functional_, basisset_, options_));
-        }
+            else if (integrator == "BRIANQC") {
+                    managers.push_back(std::make_shared<BrianUV>(functional_, basisset_, options_));
+            }
 #endif
 #ifdef USING_gauxc
-        if (options_.get_bool("GAUXC_DFT_ENABLE")) {
-            managers.push_back(std::make_shared<GauUV>(functional_, basisset_, options_));
-        }
+            else if (integrator == "GAUXC") {
+                    managers.push_back(std::make_shared<GauUV>(functional_, basisset_, options_));
+            }
 #endif
-        if (options_.get_bool("DFT_ENABLE_PSI")) {
-	    managers.push_back(std::make_shared<UV>(functional_, basisset_, options_));
-	}
-	if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but requested DFT.");
+            else {
+                    throw PSIEXCEPTION(std::format("Integrator name {} didn't match any registered integrator.", integrator));
+            }
+        }
+        if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but requested DFT.");
         potential_ = std::make_shared<IntegratorDispatcher>(managers);
         potential_->initialize();
     } else {
