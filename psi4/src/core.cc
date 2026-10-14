@@ -376,7 +376,7 @@ SharedWavefunction py_psi_f12(SharedWavefunction ref_wfn) {
 }
 #else
 double py_psi_f12(SharedWavefunction ref_wfn) {
-    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums or -DENABLE_Einsums2");
 }
 #endif
 
@@ -521,7 +521,7 @@ SharedWavefunction py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
 }
 #else
 double py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
-    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums or -DENABLE_Einsums2");
 }
 #endif
 

@@ -9,6 +9,7 @@ foreach(dir
   ecpint
   libefp
   einsums
+  einsums2
   gau2grid
   gdma
   libint2
