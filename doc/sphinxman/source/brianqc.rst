@@ -114,6 +114,10 @@ There are two ways to enable BrianQC for a specific calculation:
 If both the input option and the environment variable are specified,
 then the environment variable takes precedence.
 
+However, for DFT computations, the variable |scf__dft_xc_integrators| must be set.
+This variable expects a list of strings, the names of integrators to try.
+To force BrianQC for all DFT computations, set it to `["brianqc"]`. See :ref:`notes <sec:ks-integrators>` on how to enable and disable other integrators.
+
 When to enable BrianQC
 """"""""""""""""""""""
 

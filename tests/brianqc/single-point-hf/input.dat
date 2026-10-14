@@ -15,7 +15,7 @@ set = {
     reference rhf
     scf_type direct
     df_scf_guess False
-    brianqc_enable True
+    dft_xc_integrators ["brianqc"]
     d_convergence 9
 }
 
