@@ -452,7 +452,7 @@ jobs:
         git diff --color-words
 
     - name: Analyze Conda dependencies
-      if: runner.os != 'Windows'
+      if: runner.os != 'Windows' && matrix.cfg.python-version != '3.15'
       run: |
         conda install conda-tree -c conda-forge
         conda-tree deptree
