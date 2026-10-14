@@ -1293,7 +1293,7 @@ data:
     conda:
       channel: conda-forge
       name: qcfractal
-      constraint: ">=0.71"
+      constraint: ">=0.70"
       constraint_note: "v0.70 starts handling QCSchema v2."
       aux_run_names:
         - postgresql
