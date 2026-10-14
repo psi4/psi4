@@ -141,6 +141,67 @@ def test_libcint_df_energies(method):
     assert compare_values(energy("libint2"), energy("libcint"), 8, f"DF-{method.upper()}")
 
 
+def _diffuse_basis(shell, exp_o, exp_h, puream):
+    return f"""
+    assign diffuse
+    [diffuse]
+    {"spherical" if puream else "cartesian"}
+    ****
+    O 0
+    S 1 1.00
+      10.0 1.0
+    P 1 1.00
+      1.0 1.0
+    {shell} 1 1.00
+      {exp_o} 1.0
+    ****
+    H 0
+    S 1 1.00
+      1.0 1.0
+    {shell} 1 1.00
+      {exp_h} 1.0
+    ****
+"""
+
+
+@uusing("libcint")
+@pytest.mark.parametrize("puream", [True, False])
+@pytest.mark.parametrize("shell,exp_o,exp_h,max_deriv", [
+    ("G", "1.0e-4", "3.0e-4", 1),  # Libint2 here has no second derivatives of g functions
+    ("F", "1.0e-5", "3.0e-5", 2),
+])
+def test_libcint_diffuse_high_l(shell, exp_o, exp_h, max_deriv, puream):
+    """Diffuse high-l functions match Libint2 in the ERIs and their derivatives.
+
+    libcint's screening of primitive pairs leaves out a factor that is large for
+    diffuse primitives of high angular momentum. Without the raised cutoff, the
+    one-center integrals of these shells come out exactly zero.
+    """
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    psi4.basis_helper(_diffuse_basis(shell, exp_o, exp_h, puream), name="diffuse")
+    psi4.set_options({"puream": puream})
+
+    # INTEGRAL_PACKAGE is read when the integrals are computed, so compute each
+    # one right after building its MintsHelper.
+    def both(op):
+        return [[np.asarray(m) for m in op(_mints(pkg, mol))] for pkg in ("libint2", "libcint")]
+
+    label = f"diffuse {shell} puream={puream}"
+    ref, tst = both(lambda m: [m.ao_eri()])
+    assert compare_values(ref[0], tst[0], 10, f"{label} ERI")
+    for atom in range(mol.natom()):
+        ref, tst = both(lambda m: m.ao_tei_deriv1(atom))
+        for xyz, (r, t) in enumerate(zip(ref, tst)):
+            assert compare_values(r, t, 10, f"{label} d/d{'xyz'[xyz]}{atom}")
+    if max_deriv >= 2:
+        ref, tst = both(lambda m: m.ao_tei_deriv2(0, 0))
+        for k, (r, t) in enumerate(zip(ref, tst)):
+            assert compare_values(r, t, 10, f"{label} d2/d0d0 [{k}]")
+
+
 def _deriv_setup(basis, puream):
     import psi4
 
