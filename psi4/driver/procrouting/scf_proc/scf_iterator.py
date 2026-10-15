@@ -631,7 +631,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         status = []
 
         # Check if we are doing SOSCF
-        if (soscf_enabled and (self.iteration_ >= 3) and (Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
+        if (soscf_enabled and (self.iteration_ >= core.get_option('SCF', 'SOSCF_START'))
+                and (Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
             Dnorm = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
             diis_performed = False
             if self.functional().needs_xc():
@@ -1243,7 +1244,7 @@ def _validate_soscf():
     Raises
     ------
     ValidationError
-        If any of |scf__soscf|, |scf__soscf_start_convergence|,
+        If any of |scf__soscf|, |scf__soscf_start|, |scf__soscf_start_convergence|,
         |scf__soscf_min_iter|, |scf__soscf_max_iter| don't play well together.
 
     Returns
@@ -1254,6 +1255,10 @@ def _validate_soscf():
     """
     enabled = core.get_option('SCF', 'SOSCF')
     if enabled:
+        start_iter = core.get_option('SCF', 'SOSCF_START')
+        if start_iter < 1:
+            raise ValidationError('SCF SOSCF_START ({}) must be at least 1'.format(start_iter))
+
         start = core.get_option('SCF', 'SOSCF_START_CONVERGENCE')
         if start < 0.0:
             raise ValidationError('SCF SOSCF_START_CONVERGENCE ({}) must be positive'.format(start))
