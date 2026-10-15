@@ -90,6 +90,9 @@ def scf_compute_energy(self):
             # energy = 0.0
             # A P::e fn to either throw or protest upon nonconvergence
             # die_if_not_converged()
+            # Release the DIIS scratch file, which otherwise outlives this wavefunction and
+            # collides with the next SCF in the process if that one needs larger entries.
+            self.finalize()
             raise e
         else:
             core.print_out("  Energy and/or wave function did not converge, but proceeding anyway.\n\n")
