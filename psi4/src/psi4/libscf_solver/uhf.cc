@@ -33,7 +33,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
-#include <format>
 #include <functional>
 #include <tuple>
 #include <utility>
@@ -1257,7 +1256,7 @@ void UHF::setup_potential() {
             }
 #endif
             else {
-                    throw PSIEXCEPTION(std::format("Integrator name {} didn't match any registered integrator.", integrator));
+                    throw PSIEXCEPTION("Integrator name " + integrator + " didn't match any registered integrator.");
             }
         }
         if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but requested DFT.");
