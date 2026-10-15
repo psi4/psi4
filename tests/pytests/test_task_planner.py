@@ -20,6 +20,21 @@ from psi4.driver.driver_findif import FiniteDifferenceComputer
 pytestmark = [pytest.mark.quick, pytest.mark.psi, pytest.mark.api]
 
 
+def _planned_dconv(dconv):
+    """Driver-set D_CONVERGENCE as the planner will emit it.
+
+    OpenTrustRegion cannot reliably reach psi4's tightest derivative thresholds, so a
+    driver-set value below 1.e-9 is relaxed when second-order SCF runs through it.
+    """
+    if dconv >= 1.0e-9:
+        return dconv
+    if not psi4.core.get_option("SCF", "SOSCF"):
+        return dconv
+    if psi4.core.get_option("SCF", "SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE") not in ["OTR", "OPENTRUSTREGION"]:
+        return dconv
+    return 1.0e-9
+
+
 def test_single_result():
     mol = psi4.geometry("He")
     plan = task_planner("energy", "HF", mol, basis="sto-3G")
@@ -405,7 +420,7 @@ def test_findif_1_0(mtd, kw):
         assert plan2.driver == "energy"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
         assert psi4.compare_values(1.0e-10, plan2.keywords["SCF__E_CONVERGENCE"], atol=1.0e-14)
-        assert psi4.compare_values(1.0e-10, plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
+        assert psi4.compare_values(_planned_dconv(1.0e-10), plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
         assert psi4.compare_values(1.0e-8, plan2.keywords["E_CONVERGENCE"], atol=1.e-14)
 
 
@@ -441,7 +456,7 @@ def test_findif_2_1(kw, pts):
         assert plan2.method == "mp2"
         assert plan2.driver == "gradient"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
-        assert psi4.compare_values(1.0e-10, plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
+        assert psi4.compare_values(_planned_dconv(1.0e-10), plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
         assert psi4.compare_values(1.0e-6, plan2.keywords["E_CONVERGENCE"], atol=1.e-14)
 
 
@@ -482,5 +497,5 @@ def test_findif_2_0(kw, pts):
         assert plan2.driver == "energy"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
         assert psi4.compare_values(1.0e-6, plan2.keywords["SCF__E_CONVERGENCE"], atol=1.e-14)
-        assert psi4.compare_values(1.0e-11, plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
+        assert psi4.compare_values(_planned_dconv(1.0e-11), plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
         assert psi4.compare_values(1.0e-10, plan2.keywords["E_CONVERGENCE"], atol=1.e-14)
