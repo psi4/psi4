@@ -1620,12 +1620,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add("SOLVER_ROOTS_PER_IRREP", new ArrayType());
         /*- Do use second-order SCF convergence methods? -*/
         options.add_bool("SOSCF", false);
-        /*- When to start second-order SCF iterations based on gradient RMS. -*/
+        /*- When to start second-order SCF iterations based on gradient RMS. Both this and
+            |scf__soscf_start| must be satisfied. -*/
         options.add_double("SOSCF_START_CONVERGENCE", 1.0E-2);
-        /*- The earliest iteration second-order SCF may start on. Both this and
+        /*- The earliest iteration on which second-order SCF may start. Both this and
             |scf__soscf_start_convergence| must be satisfied. Starting earlier than the
             default gives the first-order iterations less room to settle the occupation,
-            which a second-order step then holds fixed. -*/
+            which a second-order step may (true for OTR) hold fixed. -*/
         options.add_int("SOSCF_START", 3);
         /*- Minimum number of second-order microiterations to perform. -*/
         options.add_int("SOSCF_MIN_ITER", 1);
