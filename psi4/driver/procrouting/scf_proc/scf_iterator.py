@@ -310,15 +310,15 @@ def _aufbau_occupation(wfn):
 def _run_opentrustregion(self, e_conv, d_conv):
     """Hand the orbitals to OpenTrustRegion and finish the SCF with them.
 
-    Called at the second-order handoff point, after the first-order package has brought
-    the orbital gradient inside |scf__soscf_start_convergence|. Leaves the wavefunction
-    canonical and the iteration bookkeeping consistent with the internal optimizer.
+    Called at the second-order handoff point, once the first-order package has brought the
+    orbital gradient inside |scf__soscf_start_convergence| at or past iteration
+    |scf__soscf_start|. Leaves the wavefunction canonical and the iteration bookkeeping
+    consistent with the internal optimizer.
     """
-    # OpenTrustRegion optimizes orbitals at fixed occupation, while the internal solver
-    # re-runs find_occupation at every iteration. Arriving after the first-order handoff
-    # the occupation is usually settled, so this is a backstop rather than the common case,
-    # but a near-degeneracy can still have it move once the solution is canonicalized, so reconverge.
-    # Keep counting from where the first-order iterations left off rather than resetting.
+    # OpenTrustRegion optimizes at fixed occupation, where the internal solver re-runs
+    # find_occupation every iteration. So canonicalizing what OpenTrustRegion converged can
+    # turn up a different aufbau assignment, and this loop reconverges at that one. The default
+    # |scf__soscf_start| usually leaves nothing to move, but earlier soscf can reac the branch.
     SCFE_prev_attempt = None
     otr_e_conv = e_conv if e_conv is not None else core.get_option("SCF", "E_CONVERGENCE")
     for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
