@@ -1003,6 +1003,8 @@ follows:
 
     |scf__soscf_start_convergence|: when to start SOSCF based on the current density RMS
 
+    |scf__soscf_start|: the earliest iteration SOSCF may start on, both conditions required
+
     |scf__soscf_max_iter|: the maximum number of SOSCF microiterations per macroiteration
 
     |scf__soscf_conv|: the relative convergence tolerance of the SOSCF microiterations
@@ -1015,8 +1017,15 @@ above or by the OpenTrustRegion library, selected with
 |globals__orbital_optimizer_package|, which chooses what drives the *first-order*
 iterations, so the two combine freely. In either case the division of work is
 the same: DIIS (or OpenOrbitalOptimizer) runs until the orbital gradient falls
-below |scf__soscf_start_convergence|, then hands the orbitals to the second-order
-package, which carries the calculation to convergence.
+below |scf__soscf_start_convergence| and iteration |scf__soscf_start| is reached,
+then hands the orbitals to the second-order package, which carries the calculation
+to convergence.
+
+Lowering |scf__soscf_start| hands over sooner. The default of 3 lets the first-order
+iterations settle the aufbau assignment first; start at 1 and the occupation may still
+be moving, so a second-order package, which optimizes at fixed occupation, can converge
+against one assignment and find the aufbau rule disagrees. |PSIfour| says so in the
+output and reconverges.
 
 The two second-order codes differ in what they are trying to do. The internal
 SOSCF code takes a Newton step toward the nearest stationary point, so it stays
