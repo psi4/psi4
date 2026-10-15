@@ -1515,8 +1515,15 @@ void UHF::openorbital_scf() {
         // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
         double d_rms = ao_basis_diis_error;
         // When second-order iterations are to take over, OpenOrbitalOptimizer's job is only
-        // to reach SOSCF_START_CONVERGENCE; stop there and let the driver hand off.
-        if (options_.get_bool("SOSCF") && d_rms < options_.get_double("SOSCF_START_CONVERGENCE")) return true;
+        // to reach the handoff point; stop there and let the driver hand off. Both of the
+        // driver's conditions have to hold, or it keeps iterating with the internal code
+        // and the package the user asked for stops being the one doing the work. The
+        // iteration the driver will test is two beyond iteration_: this one is not counted
+        // until the printing callback runs, and the driver takes one more first-order step
+        // before it looks.
+        if (options_.get_bool("SOSCF") && iteration_ + 2 >= options_.get_int("SOSCF_START") &&
+            d_rms < options_.get_double("SOSCF_START_CONVERGENCE"))
+            return true;
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
         if (iteration_ == options_.get_int("MAXITER"))
