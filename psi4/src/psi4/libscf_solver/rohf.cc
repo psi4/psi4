@@ -373,7 +373,7 @@ void ROHF::form_F() {
     }
 }
 
-void ROHF::canonicalize_orbitals(double shift) {
+void ROHF::diagonalize_orbitals(double shift) {
     if (shift == 0.0) {
         soFeff_->diagonalize(Ct_, epsilon_a_);
     } else {

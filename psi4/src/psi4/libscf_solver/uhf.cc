@@ -267,7 +267,7 @@ void UHF::form_F() {
     }
 }
 
-void UHF::canonicalize_orbitals(double shift) {
+void UHF::diagonalize_orbitals(double shift) {
     if (shift == 0.0) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
         diagonalize_F(Fb_, Cb_, epsilon_b_);

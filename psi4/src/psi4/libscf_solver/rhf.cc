@@ -260,7 +260,7 @@ void RHF::form_F() {
     }
 }
 
-void RHF::canonicalize_orbitals(double shift) {
+void RHF::diagonalize_orbitals(double shift) {
     if (shift == 0.0) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
     } else {

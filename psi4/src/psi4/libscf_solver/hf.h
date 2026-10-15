@@ -372,10 +372,10 @@ class HF : public Wavefunction {
     /// Compute the MO coefficients (C_) using level shift, then assign the occupation
     virtual void form_C(double shift = 0.0);
     /** Compute the MO coefficients (C_) using level shift, leaving the occupation alone.
-        form_C is this followed by find_occupation. They are separable because a caller that
-        has already optimized against a particular occupation wants the orbitals canonical
-        without having the aufbau rule reassign underneath it. */
-    virtual void canonicalize_orbitals(double shift = 0.0);
+        form_C is this followed by find_occupation. Generally, use form_C, but this can
+        be useful when having already optimized against a particular occupation, one wants
+        the orbitals canonical without having the aufbau rule reassign underneath it. */
+    virtual void diagonalize_orbitals(double shift = 0.0);
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
 

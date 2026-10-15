@@ -300,10 +300,10 @@ int HF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, 
 
 void HF::form_V() { throw PSIEXCEPTION("Sorry, DFT functionals are not supported for this type of SCF wavefunction."); }
 void HF::form_C(double shift) {
-    canonicalize_orbitals(shift);
+    diagonalize_orbitals(shift);
     find_occupation();
 }
-void HF::canonicalize_orbitals(double shift) {
+void HF::diagonalize_orbitals(double shift) {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals.");
 }
 void HF::form_D() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities."); }
