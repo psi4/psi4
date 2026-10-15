@@ -89,7 +89,7 @@ OpenTrustRegion Options
 OpenTrustRegion is ready to use for RHF, UHF, ROHF and the corresponding KS
 references. It is an external second-order optimizer, so it engages only once
 |scf__soscf| turns second-order iterations on, taking over from the first-order
-package at |scf__soscf_start_convergence|. See :ref:`sec:soscf` for how it
+package once both |scf__soscf_start_convergence| and |scf__soscf_start| are met. See :ref:`sec:soscf` for how it
 contrasts with the internal second-order code, which computations fall back on
 that code, and how the first- and second-order packages combine.
 
@@ -100,6 +100,7 @@ exposed as ``OTR_*`` keywords, each defaulting to OpenTrustRegion's own default.
 .. include:: autodir_options_c/globals__orbital_optimizer_package.rst
 .. include:: autodir_options_c/scf__soscf.rst
 .. include:: autodir_options_c/scf__soscf_start_convergence.rst
+.. include:: autodir_options_c/scf__soscf_start.rst
 .. include:: autodir_options_c/scf__e_convergence.rst
 .. include:: autodir_options_c/scf__d_convergence.rst
 .. include:: autodir_options_c/scf__maxiter.rst
