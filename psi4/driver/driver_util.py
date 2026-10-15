@@ -80,7 +80,7 @@ def negotiate_convergence_criterion(dermode: Union[Tuple[str, str], Tuple[int, i
         if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
             cc['SCF__E_CONVERGENCE'] = math.pow(10, -pscf_Ec)
         if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
-            cc['SCF__D_CONVERGENCE'] = math.pow(10, -pscf_Dc)
+            cc['SCF__D_CONVERGENCE'] = _soscf_attainable_dconv(math.pow(10, -pscf_Dc))
         if not core.has_global_option_changed('E_CONVERGENCE'):
             cc['E_CONVERGENCE'] = math.pow(10, -gen_Ec)
 
@@ -91,6 +91,32 @@ def negotiate_convergence_criterion(dermode: Union[Tuple[str, str], Tuple[int, i
 
     else:
         return cc
+
+
+#: Loosest D_CONVERGENCE OpenTrustRegion is asked to reach when psi4, rather than the user,
+#: is choosing. Its attainable orbital gradient floors near 1e-10 on ordinary systems, and
+#: asked for more it grinds until its trial subspace degenerates rather than reporting that
+#: it cannot get there.
+_OTR_ATTAINABLE_D_CONVERGENCE = 1.0e-9
+
+
+def _soscf_attainable_dconv(dconv):
+    """Relax a psi4-chosen D_CONVERGENCE to something OpenTrustRegion can actually reach.
+
+    Only applied where psi4 picked the threshold itself: a user who asks for a tighter one
+    gets it, and finds out from the solver whether it was attainable.
+    """
+    if dconv >= _OTR_ATTAINABLE_D_CONVERGENCE:
+        return dconv
+    if not core.get_option('SCF', 'SOSCF'):
+        return dconv
+    if core.get_option('SCF', 'SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE') not in ['OTR', 'OPENTRUSTREGION']:
+        return dconv
+    core.print_out(f"  SCF D_CONVERGENCE relaxed from {dconv:.0e} to "
+                   f"{_OTR_ATTAINABLE_D_CONVERGENCE:.0e} for OpenTrustRegion, which cannot\n"
+                   f"  reliably reach the tighter threshold psi4 would otherwise choose here.\n"
+                   f"  Set D_CONVERGENCE explicitly to override.\n\n")
+    return _OTR_ATTAINABLE_D_CONVERGENCE
 
 
 def upgrade_interventions(method):
