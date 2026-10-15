@@ -93,10 +93,8 @@ def negotiate_convergence_criterion(dermode: Union[Tuple[str, str], Tuple[int, i
         return cc
 
 
-#: Loosest D_CONVERGENCE OpenTrustRegion is asked to reach when psi4, rather than the user,
-#: is choosing. Its attainable orbital gradient floors near 1e-10 on ordinary systems, and
-#: asked for more it grinds until its trial subspace degenerates rather than reporting that
-#: it cannot get there.
+#: Tightest D_CONVERGENCE OpenTrustRegion is asked to reach w/o user direction.
+#: Its attainable orbital gradient floors near 1e-10 and trial subspace degenerates.
 _OTR_ATTAINABLE_D_CONVERGENCE = 1.0e-9
 
 
@@ -106,17 +104,15 @@ def _soscf_attainable_dconv(dconv):
     Only applied where psi4 picked the threshold itself: a user who asks for a tighter one
     gets it, and finds out from the solver whether it was attainable.
     """
-    if dconv >= _OTR_ATTAINABLE_D_CONVERGENCE:
-        return dconv
-    if not core.get_option('SCF', 'SOSCF'):
-        return dconv
-    if core.get_option('SCF', 'SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE') not in ['OTR', 'OPENTRUSTREGION']:
-        return dconv
-    core.print_out(f"  SCF D_CONVERGENCE relaxed from {dconv:.0e} to "
-                   f"{_OTR_ATTAINABLE_D_CONVERGENCE:.0e} for OpenTrustRegion, which cannot\n"
-                   f"  reliably reach the tighter threshold psi4 would otherwise choose here.\n"
-                   f"  Set D_CONVERGENCE explicitly to override.\n\n")
-    return _OTR_ATTAINABLE_D_CONVERGENCE
+    if (core.get_option('SCF', 'SOSCF')
+        and core.get_option('SCF', 'SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE') in ['OTR', 'OPENTRUSTREGION']
+        and dconv < _OTR_ATTAINABLE_D_CONVERGENCE):
+        core.print_out(f"  SCF D_CONVERGENCE relaxed from {dconv:.0e} to "
+                       f"{_OTR_ATTAINABLE_D_CONVERGENCE:.0e} for OpenTrustRegion, which cannot\n"
+                       f"  reliably reach the tighter threshold Psi4 would impose here.\n"
+                       f"  Set D_CONVERGENCE explicitly to override.\n\n")
+        return _OTR_ATTAINABLE_D_CONVERGENCE
+    return dconv
 
 
 def upgrade_interventions(method):
