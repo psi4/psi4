@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <format>
 #include <vector>
 #include <utility>
 #ifdef _OPENMP
