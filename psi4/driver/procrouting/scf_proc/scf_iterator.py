@@ -262,7 +262,13 @@ def scf_initialize(self):
 #: machinery failed", for the solver and for its stability check respectively. Anything else
 #: coming back nonzero is a genuine failure. See error_solver_max_iter and
 #: error_stability_check_max_iter in opentrustregion.f90.
-_OTR_MAX_ITER_ERRORS = (102, 202)
+#: OpenTrustRegion numbers its solver and stability-check failures below 1000 and its
+#: callback failures above. The former all mean the orbitals are not converged -- the
+#: macro-iterations ran out, a line search could not descend along an unstable mode, or the
+#: solver reached the limit of the precision it can deliver and ground to a halt there -- so
+#: they are ordinary non-convergence and subject to FAIL_ON_MAXITER. The latter mean a
+#: callback into psi4 failed, which is a genuine error and must not be swallowed.
+_OTR_CALLBACK_ERROR_FLOOR = 1000
 
 
 #: How many times to restart OpenTrustRegion when canonicalizing its solution changes the
@@ -366,13 +372,12 @@ def _run_opentrustregion(self, e_conv, d_conv):
 
     if otr_error:
         core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
-        if otr_error in _OTR_MAX_ITER_ERRORS:
+        if otr_error < _OTR_CALLBACK_ERROR_FLOOR:
             # Ordinary non-convergence, so subject to FAIL_ON_MAXITER like any other.
             raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
-        # Anything else is the step machinery giving up -- a line search that could not
-        # descend along an unstable mode, say. That must not be swallowed by
-        # FAIL_ON_MAXITER, which callers such as run_qchf set False to tolerate a
-        # deliberately truncated SCF.
+        # A callback into psi4 failed. That is a real error, not a converged-or-not question,
+        # so it must not be swallowed by FAIL_ON_MAXITER, which callers such as run_qchf set
+        # False to tolerate a deliberately truncated SCF.
         raise PsiException(
             f"OpenTrustRegion solver failed with error {otr_error}. See the output file for "
             f"the solver's own message.")
