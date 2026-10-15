@@ -1863,12 +1863,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DFT_GRAC_X_FUNC", "XC_GGA_X_LB");
         /*- The gradient regularized asymptotic correction functional corr form. !expert -*/
         options.add_str("DFT_GRAC_C_FUNC", "XC_LDA_C_VWN");
-        auto tmp = new ArrayType();
-        tmp->add(std::string("INTERNAL"));
         /*- The array of DFT integrators to try, falling back to the next if the other has an
         error (usually not supporting the desired feature). Available integrators depend on
         your local Psi configuration. At most, they are INTERNAL, GAUXC, and BRIANQC. -*/
-        options.add("DFT_XC_INTEGRATORS", tmp);
+        options.add("DFT_XC_INTEGRATORS", new ArrayType());
+	options["DFT_XC_INTEGRATORS"].add(std::string("INTERNAL"), std::string());
         /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
         options.add_int("DFT_SPHERICAL_POINTS", 302);
         /*- Number of radial points. -*/
