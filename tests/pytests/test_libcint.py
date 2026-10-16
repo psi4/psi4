@@ -16,6 +16,17 @@ from utils import compare_values
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
+def _skip_without_libint2_hessian_ints():
+    """Second derivatives are cross-checked against Libint2, whose Windows builds lack them.
+
+    There the driver also computes every Hessian, libcint's included, by finite differences.
+    """
+    import psi4
+
+    if psi4.driver.p4util.libint2_configuration()["eri"][2] is None:
+        pytest.skip("Libint2 built without second-derivative integrals")
+
+
 def _water():
     import psi4
 
@@ -351,6 +362,7 @@ def test_libcint_diffuse_high_l(shell, exp_o, exp_h, max_deriv, puream):
         for xyz, (r, t) in enumerate(zip(ref, tst)):
             assert compare_values(r, t, 10, f"{label} d/d{'xyz'[xyz]}{atom}")
     if max_deriv >= 2:
+        _skip_without_libint2_hessian_ints()
         ref, tst = both(lambda m: m.ao_tei_deriv2(0, 0))
         for k, (r, t) in enumerate(zip(ref, tst)):
             assert compare_values(r, t, 10, f"{label} d2/d0d0 [{k}]")
@@ -394,6 +406,7 @@ def test_libcint_eri_deriv1(basis, puream, omega):
 @pytest.mark.parametrize("puream", [True, False])
 def test_libcint_eri_deriv2(puream):
     """Second nuclear derivatives of the 4-center ERIs match Libint2 for every atom pair."""
+    _skip_without_libint2_hessian_ints()
     mol = _deriv_setup("6-31G*", puream)
     for a1 in range(mol.natom()):
         for a2 in range(mol.natom()):
@@ -473,6 +486,8 @@ def test_libcint_gradient(method, options):
 def test_libcint_hessian(options):
     """Analytic RHF Hessians computed with libcint second-derivative integrals match Libint2."""
     import psi4
+
+    _skip_without_libint2_hessian_ints()
 
     ref = _property("libint2", psi4.hessian, "scf", options)
     tst = _property("libcint", psi4.hessian, "scf", options)
