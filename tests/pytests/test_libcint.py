@@ -295,6 +295,8 @@ def test_libcint_gradient(method, options):
     """Analytic gradients computed with libcint derivative integrals match Libint2."""
     import psi4
 
+    # gradients carry the SCF convergence error linearly, so converge well past the 1e-9 check
+    options = dict(options, e_convergence=1e-12, d_convergence=1e-12)
     ref = _property("libint2", psi4.gradient, method, options)
     tst = _property("libcint", psi4.gradient, method, options)
     assert compare_values(ref, tst, 9, f"{method} gradient {options}")
