@@ -499,11 +499,17 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.find_occupation()
             ene_sad = self.compute_E()
 
+        reached_handoff = False
         try:
-            self.openorbital_scf()
+            reached_handoff = self.openorbital_scf()
         except RuntimeError as ex:
             if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
                 core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
+            elif "FAIL_ON_MAXITER" in str(ex):
+                # OpenOrbitalOptimizer ran its own loop to MAXITER without converging. That is
+                # ordinary non-convergence, so raise what the rest of the driver raises for it
+                # rather than letting a bare RuntimeError past the FAIL_ON_MAXITER handling.
+                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
             else:
                 raise ex
         else:
@@ -517,11 +523,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.form_C()
             self.form_D()
 
-            if not soscf_enabled:
+            if not soscf_enabled or not reached_handoff:
+                # OpenOrbitalOptimizer finished the SCF itself, either by converging or by
+                # running out of iterations. Falling through would spend another J/K build
+                # just to find that out, and would put the SCF one iteration over MAXITER
+                # when OpenOrbitalOptimizer had already used the whole budget.
                 return
-            # With SOSCF on, OpenOrbitalOptimizer was asked only to reach
-            # SOSCF_START_CONVERGENCE (see its convergence callback in rhf.cc/uhf.cc), so
-            # fall through to the loop below and let the second-order package finish.
+            # Asked only to reach the handoff point (see its convergence callback in
+            # rhf.cc/uhf.cc), so fall through and let the second-order package finish.
             core.print_out("    OpenOrbitalOptimizer reached the second-order handoff point.\n")
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?

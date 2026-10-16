@@ -255,7 +255,9 @@ class HF : public Wavefunction {
     void set_frac_performed(bool tf) { frac_performed_ = tf; }
 
     /// Runs the SCF using OpenOrbitalOptimizer
-    virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
+    /// Run the SCF through OpenOrbitalOptimizer. Returns whether it stopped at the
+    /// second-order handoff point rather than finishing the SCF itself.
+    virtual bool openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
 
     /// Runs the SCF using OpenTrustRegion. Returns the solver's error code (0 on success)
     /// rather than throwing, so the driver can honour FAIL_ON_MAXITER.

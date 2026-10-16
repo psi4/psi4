@@ -1242,7 +1242,7 @@ void UHF::setup_potential() {
     }
 }
 
-void UHF::openorbital_scf() {
+bool UHF::openorbital_scf() {
 #ifndef USING_OpenOrbitalOptimizer
   throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build!\n");
 #else
@@ -1507,6 +1507,9 @@ void UHF::openorbital_scf() {
     }
   };
 
+  // Set when the loop below stops for the handoff rather than for convergence, so the
+  // driver knows whether a second-order package still has work to do.
+  bool reached_handoff = false;
   std::function<bool(const std::map<std::string,std::any> &)> callback_convergence_function = [&](const std::map<std::string,std::any> & data) -> bool {
 
         double e_conv = options_.get_double("E_CONVERGENCE");
@@ -1515,15 +1518,18 @@ void UHF::openorbital_scf() {
         // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
         double d_rms = ao_basis_diis_error;
         // When second-order iterations are to take over, OpenOrbitalOptimizer's job is only
-        // to reach the handoff point; stop there and let the driver hand off. Both of the
-        // driver's conditions have to hold, or it keeps iterating with the internal code
-        // and the package the user asked for stops being the one doing the work. The
-        // iteration the driver will test is two beyond iteration_: this one is not counted
-        // until the printing callback runs, and the driver takes one more first-order step
-        // before it looks.
-        if (options_.get_bool("SOSCF") && iteration_ + 2 >= options_.get_int("SOSCF_START") &&
-            d_rms < options_.get_double("SOSCF_START_CONVERGENCE"))
+        // to reach the handoff point; stop there and let the driver hand off. The iteration
+        // the driver will run is two beyond iteration_: this one is not counted until the
+        // printing callback runs, and the driver takes one more first-order step before it
+        // looks. It has to fit inside MAXITER, or handing off would spend a J/K build the
+        // budget cannot pay for; carry on here instead and fail as an ordinary SCF would.
+        int handoff_iteration = iteration_ + 2;
+        if (options_.get_bool("SOSCF") && handoff_iteration >= options_.get_int("SOSCF_START") &&
+            handoff_iteration <= options_.get_int("MAXITER") &&
+            d_rms < options_.get_double("SOSCF_START_CONVERGENCE")) {
+            reached_handoff = true;
             return true;
+        }
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
         if (iteration_ == options_.get_int("MAXITER"))
@@ -1560,8 +1566,16 @@ void UHF::openorbital_scf() {
   scfsolver.optimal_damping_threshold(options_.get_double("OOO_OPTIMAL_DAMPING_THRESHOLD"));
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
-  if(fail_on_maxiter and not scfsolver.converged())
-    throw PSIEXCEPTION("SCF did not converge and FAIL_ON_MAXITER is set to true.\n");
+  // converged() re-runs the convergence callback, and the handoff arm of that callback
+  // depends on iteration_, which the printing callback has since advanced. So ask the
+  // flag, not the solver, whether we stopped for the handoff. Report a real failure
+  // either way: the driver no longer runs an iteration of its own afterwards, so
+  // nothing downstream would otherwise notice.
+  if(not reached_handoff and not scfsolver.converged()) {
+    if(fail_on_maxiter)
+      throw PSIEXCEPTION("SCF did not converge and FAIL_ON_MAXITER is set to true.\n");
+    outfile->Printf("    OpenOrbitalOptimizer did not converge, but FAIL_ON_MAXITER is false.\n");
+  }
 
   // Update the orbitals with OOO's solution
   auto solution = scfsolver.get_solution();
@@ -1600,6 +1614,8 @@ void UHF::openorbital_scf() {
   form_G();
   // Compute the energy
   compute_E();
+
+  return reached_handoff;
 #endif
 }
 
