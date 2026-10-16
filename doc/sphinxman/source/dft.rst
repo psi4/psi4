@@ -335,9 +335,9 @@ Integrators
 ~~~~~~~~~~~
 |PSIfour| supports the use of three different engines to perform the numerical integrations necessary for KS-DFT. |PSIfour| has its own integrator, and it also has interfaces to the GauXC and :ref:`BrianQC <sec:brianqc>` modules, both of which provide GPU support. More information about these modules is provided on their respective webpages.
 
-|PSIfour| allows multiple integrators to be initialized. |PSIfour| will attempt the computation with each initialized integrator and fall back to the next if none are set. Integrators are set in the order of: BrianQC, GauXC, and lastly the |PSIfour| built-in integrator.
+|PSIfour| allows multiple integrators to be initialized. |PSIfour| will attempt the computation with each initialized integrator and fall back to the next integrator if the current one cannot perform the desired computation.
 
-By default, only |PSIfour| is enabled, for backwards compatability. The default may be changed by setting |scf__dft_xc_integrators|. This expects an array of the integrators to be tried, in order. Acceptable options are "internal", "brianqc", and "gauxc".
+By default, only |PSIfour| is enabled, for backwards compatability. The default may be changed by setting |scf__dft_xc_integrator_packages|. This expects an array of the integrators to be tried, in order. Acceptable options are "internal", "brianqc", and "gauxc".
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -350,7 +350,7 @@ Restricted Kohn--Sham (RKS) [Default]
   identical.
 Unrestricted Kohn--Sham (UKS)
   Appropriate for most open-shell systems and fairly easy to converge.
-  The spatial parts of the alpha and beta orbitals are fully independent 
+  The spatial parts of the alpha and beta orbitals are fully independent of each
   other, which allows a considerable amount of flexibility in the wavefunction.
   However, this flexibility comes at the cost of spin symmetry; the resultant
   wavefunction may not be an eigenfunction of the :math:`\hat S^2` operator.

@@ -1872,7 +1872,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The array of DFT integrators to try, falling back to the next if the other has an
         error (usually not supporting the desired feature). Available integrators depend on
         your local Psi configuration. At most, they are INTERNAL, GAUXC, and BRIANQC. -*/
-        options.add("DFT_XC_INTEGRATORS", new ArrayType(tmp));
+        options.add("DFT_XC_INTEGRATOR_PACKAGES", new ArrayType(tmp));
         /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
         options.add_int("DFT_SPHERICAL_POINTS", 302);
         /*- Number of radial points. -*/

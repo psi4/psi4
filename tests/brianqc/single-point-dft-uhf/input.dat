@@ -15,7 +15,7 @@ set = {
     dft_grid_name sg1
     scf_type direct
     df_scf_guess False
-    dft_xc_integrators ["brianqc"]
+    dft_xc_integrator_packages ["brianqc"]
     d_convergence 9
 }
 
