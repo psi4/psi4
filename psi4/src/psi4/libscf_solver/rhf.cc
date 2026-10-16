@@ -260,7 +260,7 @@ void RHF::form_F() {
     }
 }
 
-void RHF::form_C(double shift) {
+void RHF::diagonalize_orbitals(double shift) {
     if (shift == 0.0) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
     } else {
@@ -270,7 +270,6 @@ void RHF::form_C(double shift) {
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
     }
-    find_occupation();
 }
 
 void RHF::form_D() {
