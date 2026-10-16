@@ -36,6 +36,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 
 #include <cmath>
@@ -182,8 +183,10 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
     for (int c = 0; c < 4; ++c)
         if (!is_dummy_basis(*bs[c])) active_.push_back(c);
 
+    timer_on("LibcintTwoElectronInt::LibcintTwoElectronInt");
     build_environment();
     common_init();
+    timer_off("LibcintTwoElectronInt::LibcintTwoElectronInt");
 }
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
