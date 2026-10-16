@@ -99,6 +99,35 @@ def test_libcint_df_integrals(puream):
 
 
 @uusing("libcint")
+def test_libcint_bases_on_different_molecules():
+    """Each basis keeps its own molecule's centers: (Q|mn) with Q on a different molecule than m and n."""
+    import psi4
+
+    psi4.core.clean()
+    mol1 = _water()
+    mol2 = psi4.geometry("""
+        Ne 0.3 0.2 3.0
+        units angstrom
+        symmetry c1
+        no_com
+        no_reorient
+        """)
+    mol1.update_geometry()
+    mol2.update_geometry()
+    bs1 = psi4.core.BasisSet.build(mol1, "ORBITAL", "cc-pvdz")
+    bs2 = psi4.core.BasisSet.build(mol2, "ORBITAL", "cc-pvdz")
+    zero = psi4.core.BasisSet.zero_ao_basis_set()
+
+    def eri(pkg):
+        psi4.set_options({"integral_package": pkg})
+        return np.asarray(psi4.core.MintsHelper(bs1).ao_eri(bs2, zero, bs1, bs1))
+
+    ref = eri("libint2")
+    assert np.abs(ref).max() > 1.e-2
+    assert compare_values(ref, eri("libcint"), 10, "(Q|mn) with Q on another molecule")
+
+
+@uusing("libcint")
 @pytest.mark.parametrize("puream", [True, False])
 def test_libcint_scf_conventional(puream):
     """Conventional (PK, 4-center) RHF energy matches Libint2."""
