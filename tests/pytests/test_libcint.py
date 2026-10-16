@@ -148,6 +148,26 @@ def test_libcint_threaded_df_mp2(basis):
 
 
 @uusing("libcint")
+def test_libcint_screening_none():
+    """DF codes initialize the ERI sieve manually under SCREENING NONE, which the engine must support."""
+    import psi4
+
+    psi4.core.clean()
+    _water()
+    psi4.set_options({
+        "basis": "cc-pvdz", "scf_type": "df", "mp2_type": "df", "screening": "none",
+        "e_convergence": 1e-9, "d_convergence": 1e-9,
+    })
+
+    def energy(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return psi4.energy("mp2")
+
+    assert compare_values(energy("libint2"), energy("libcint"), 8, "DF-MP2 screening=none")
+
+
+@uusing("libcint")
 def test_libcint_bases_on_different_molecules():
     """Each basis keeps its own molecule's centers: (Q|mn) with Q on a different molecule than m and n."""
     import psi4
@@ -411,6 +431,7 @@ def _property(pkg, driver, method, options):
     # a cartesian primary with spherical fitting bases
     pytest.param("scf", {"basis": "6-31G*", "scf_type": "df"}, id="df-rhf-631gs"),
     pytest.param("mp2", {"basis": "6-31G*", "scf_type": "df", "mp2_type": "df"}, id="df-mp2-631gs"),
+    pytest.param("scf", {"scf_type": "df", "screening": "none"}, id="df-rhf-screening-none"),
     pytest.param("wb97x", {"scf_type": "pk", "dft_radial_points": 75, "dft_spherical_points": 302}, id="pk-wb97x"),
     pytest.param("wb97x", {"scf_type": "df", "dft_radial_points": 75, "dft_spherical_points": 302}, id="df-wb97x"),
 ])
