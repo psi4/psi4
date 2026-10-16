@@ -1816,9 +1816,10 @@ def scf_helper(name, post_scf=True, **kwargs):
     if do_timer:
         core.tstart()
 
-    # Second-order SCF requires non-symmetric density matrix support
+    # Second-order SCF requires non-symmetric density matrix support and full Fock builds
     if core.get_option('SCF', 'SOSCF'):
         proc_util.check_non_symmetric_jk_density("Second-order SCF")
+        proc_util.check_incremental_fock("Second-order SCF")
 
     # sort out cast_up settings. no need to stash these since only read, never reset
     cast = False
