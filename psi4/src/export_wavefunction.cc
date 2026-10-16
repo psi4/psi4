@@ -413,7 +413,9 @@ void export_wavefunction(py::module& m) {
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.")
         .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring")
-        .def("openorbital_scf", &scf::HF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer")
+        .def("openorbital_scf", &scf::HF::openorbital_scf,
+             "Runs the SCF with OpenOrbitalOptimizer. Returns whether it stopped at the "
+             "second-order handoff point rather than finishing the SCF itself.")
         .def("opentrustregion_scf", &scf::HF::opentrustregion_scf, "Runs SCF with OpenTrustRegion")
         .def("otr_iteration_energies", &scf::HF::otr_iteration_energies,
              "Total energy at each OpenTrustRegion macro-iteration");
