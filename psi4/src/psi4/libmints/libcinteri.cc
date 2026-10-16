@@ -227,6 +227,23 @@ void LibcintTwoElectronInt::common_init() {
 }
 
 int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
+    // Atoms: each basis contributes its own molecule's centers, so bases on
+    // different molecules (or a dummy basis) never index the wrong coordinates.
+    const int atom_start = static_cast<int>(atm_.size() / ATM_SLOTS);
+    auto mol = bs.molecule();
+    for (int a = 0; a < mol->natom(); ++a) {
+        const int coord_off = static_cast<int>(env_.size());
+        env_.push_back(mol->x(a));
+        env_.push_back(mol->y(a));
+        env_.push_back(mol->z(a));
+        atm_.push_back(static_cast<int>(mol->true_atomic_number(a)));  // CHARGE_OF
+        atm_.push_back(coord_off);                                     // PTR_COORD
+        atm_.push_back(0);                                             // NUC_MOD_OF
+        atm_.push_back(0);                                             // PTR_ZETA
+        atm_.push_back(0);
+        atm_.push_back(0);
+    }
+
     const int start = static_cast<int>(bas_.size() / BAS_SLOTS);
     for (int s = 0; s < bs.nshell(); ++s) {
         const GaussianShell &sh = bs.shell(s);
@@ -262,7 +279,7 @@ int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
             for (int p = 0; p < nprim; ++p) env_.push_back(sh.original_coef(p) * CINTgto_norm(l, sh.exp(p)));
         }
 
-        bas_.push_back(bs.shell_to_center(s));  // ATOM_OF
+        bas_.push_back(atom_start + bs.shell_to_center(s));  // ATOM_OF
         bas_.push_back(sh.am());                // ANG_OF
         bas_.push_back(nprim);                  // NPRIM_OF
         bas_.push_back(1);                      // NCTR_OF
@@ -276,23 +293,6 @@ int LibcintTwoElectronInt::append_basis(const BasisSet &bs) {
 
 void LibcintTwoElectronInt::build_environment() {
     env_.assign(PTR_ENV_START, 0.0);
-
-    // Atoms: all four bases share one molecule (primary/auxiliary on the same
-    // nuclei), so one atm/coord table indexed by shell_to_center() suffices.
-    auto mol = original_bs1_->molecule();
-    const int natom = mol->natom();
-    for (int a = 0; a < natom; ++a) {
-        const int coord_off = static_cast<int>(env_.size());
-        env_.push_back(mol->x(a));
-        env_.push_back(mol->y(a));
-        env_.push_back(mol->z(a));
-        atm_.push_back(static_cast<int>(mol->true_atomic_number(a)));  // CHARGE_OF
-        atm_.push_back(coord_off);                                     // PTR_COORD
-        atm_.push_back(0);                                             // NUC_MOD_OF
-        atm_.push_back(0);                                             // PTR_ZETA
-        atm_.push_back(0);
-        atm_.push_back(0);
-    }
 
     const BasisSet *bs[4] = {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()};
     for (int i = 0; i < 4; ++i) {

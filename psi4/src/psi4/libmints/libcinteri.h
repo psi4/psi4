@@ -132,7 +132,7 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// Build the libcint atm/bas/env arrays from the four psi4 basis sets.
     void build_environment();
 
-    /// Append one psi4 basis set's shells to bas_/env_, return its bas start.
+    /// Append one psi4 basis set's atoms and shells to atm_/bas_/env_, return its bas start.
     int append_basis(const BasisSet &bs);
 
     /// Rescale each shell's contraction to unit self-overlap (matches libint2).
