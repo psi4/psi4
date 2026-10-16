@@ -457,7 +457,10 @@ def test_libcint_gradient(method, options):
     options = dict(options, e_convergence=1e-12, d_convergence=1e-12)
     ref = _property("libint2", psi4.gradient, method, options)
     tst = _property("libcint", psi4.gradient, method, options)
-    assert compare_values(ref, tst, 9, f"{method} gradient {options}")
+    # The integrals agree to 1e-13 on every platform, but DF gradients amplify that through the
+    # sieve's screening decisions and the fitting metric, by up to 2e-9 on Apple silicon.
+    decimal = 7 if options["scf_type"] == "df" else 9
+    assert compare_values(ref, tst, decimal, f"{method} gradient {options}")
 
 
 @uusing("libcint")
@@ -473,7 +476,9 @@ def test_libcint_hessian(options):
 
     ref = _property("libint2", psi4.hessian, "scf", options)
     tst = _property("libcint", psi4.hessian, "scf", options)
-    assert compare_values(ref, tst, 8, f"RHF Hessian {options}")
+    # DF Hessians amplify integral differences as DF gradients do (see test_libcint_gradient), up to 4e-8.
+    decimal = 6 if options["scf_type"] == "df" else 8
+    assert compare_values(ref, tst, decimal, f"RHF Hessian {options}")
 
 
 @pytest.mark.skipif(has_program("libcint"), reason="libcint is compiled in")
