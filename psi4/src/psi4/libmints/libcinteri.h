@@ -49,19 +49,19 @@ class IntegralFactory;
  *  Design (validated against libint2 to ~1e-14 in-tree; ERIs, erf-ERIs and SCF
  *  energies for s..f, cc-pVDZ/TZ and def2-SVP):
  *   - Requests spherical integrals from libcint (int2e_sph).
- *   - Basis functions are reproduced exactly by feeding libcint the *original*
- *     coefficients scaled by CINTgto_norm, then rescaling each contraction to
- *     unit self-overlap via libcint's own int1e_ovlp (normalize_shells) --
- *     matching libint2's embed_normalization, including split general
- *     contractions.
+ *   - Basis functions are exactly those of the Libint2 path: each shell's Libint2
+ *     contraction coefficients (BasisSet::l2_shell) times a per-l factor between
+ *     the two conventions (libint2_to_libcint, measured with libcint's own
+ *     overlap). Bases with deliberately non-normalized coefficients (diffuse
+ *     external charges, SAP potentials) thus carry over unchanged.
  *   - Component ordering: for spherical shells libcint uses m = -l..+l for
  *     l != 1 and the cartesian order (px,py,pz) for l == 1, while psi4 (libint2,
  *     Gaussian solid-harmonic ordering) uses m = 0,+1,-1,+2,-2,...; for
  *     cartesian shells (int2e_cart) libcint's order already equals psi4's
  *     CartesianIter order, so the map is the identity. All relative signs +1.
  *   - Cartesian normalization: libcint's cartesian shell differs from psi4's by
- *     a single per-shell scale; normalizing the axial (l,0,0) self-overlap to 1
- *     via int1e_ovlp_cart (see normalize_shells) cancels it.
+ *     a single per-l scale, which libint2_to_libcint measures on the axial
+ *     (l,0,0) component, as Libint2 normalizes.
  *   - libcint writes col-major (first index fastest); psi4 wants row-major
  *     (first index slowest). Both are handled in the same repack.
  *
@@ -133,10 +133,8 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     void build_environment();
 
     /// Append one psi4 basis set's atoms and shells to atm_/bas_/env_, return its bas start.
-    int append_basis(const BasisSet &bs);
-
-    /// Rescale each shell's contraction to unit self-overlap (matches libint2).
-    void normalize_shells();
+    /// coef_ratio[l] converts Libint2 contraction coefficients to libcint's convention.
+    int append_basis(const BasisSet &bs, const std::vector<double> &coef_ratio);
     /// Raise env_[PTR_EXPCUTOFF] if libcint's pair screening would drop the
     /// integrals of this basis's diffuse high-l primitives.
     void set_expcutoff();

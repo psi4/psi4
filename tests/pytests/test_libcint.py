@@ -128,6 +128,48 @@ def test_libcint_bases_on_different_molecules():
 
 
 @uusing("libcint")
+def test_libcint_sapgau_guess():
+    """The SAPGAU guess's 3-center integrals use deliberately non-normalized s shells.
+
+    Stop at the first iteration, whose energy reflects the guess, since a converged
+    energy hides a wrong guess.
+    """
+    import psi4
+
+    psi4.core.clean()
+    _water()
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "guess": "sapgau", "maxiter": 1,
+                      "fail_on_maxiter": False})
+
+    def energy(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return psi4.energy("scf")
+
+    assert compare_values(energy("libint2"), energy("libcint"), 10, "SCF energy at first iteration from SAPGAU guess")
+
+
+@uusing("libcint")
+def test_libcint_diffuse_external_charge():
+    """Diffuse external charges use deliberately non-normalized s shells (as do SAPGAU guesses)."""
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    mol.fix_com(True)
+    mol.fix_orientation(True)
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "df", "e_convergence": 1e-10, "d_convergence": 1e-10})
+    external = [None, [[0.5, [1.5, 0.5, 0.0], 0.8], [-0.5, [-1.0, 1.0, 1.0], 2.0]]]
+
+    def energy(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return psi4.energy("scf", external_potentials=external)
+
+    assert compare_values(energy("libint2"), energy("libcint"), 9, "SCF with diffuse external charges")
+
+
+@uusing("libcint")
 @pytest.mark.parametrize("puream", [True, False])
 def test_libcint_scf_conventional(puream):
     """Conventional (PK, 4-center) RHF energy matches Libint2."""
