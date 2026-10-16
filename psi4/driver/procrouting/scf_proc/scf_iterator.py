@@ -648,10 +648,22 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             else:
                 base_name = "SOSCF, nmicro="
 
+            # This iteration cost a J/K build like any other, so it counts against MAXITER.
+            # The loop's own check is at the bottom and the handoff returns before reaching
+            # it, which let a first-order package that used the whole budget hand off anyway.
+            if self.iteration_ > core.get_option('SCF', 'MAXITER'):
+                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
+
             if otr_soscf:
                 # Hand the rest of the SCF to OpenTrustRegion. It owns the remaining
                 # iterations, so this returns rather than continuing the first-order loop.
-                # This iteration's energy is already recorded above.
+                # Print this iteration before handing over: OpenTrustRegion restarts the
+                # numbering in its own table, so the row would otherwise go missing from
+                # this one while still counting in SCF ITERATIONS.
+                core.print_out(
+                    "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+                    ("DF-" if is_dfjk else "", reference, self.iteration_, SCFE, Ediff, Dnorm,
+                     "Handoff"))
                 return _run_opentrustregion(self, e_conv, d_conv)
 
             if not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
