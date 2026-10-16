@@ -188,6 +188,8 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs);
     ~LibcintTwoElectronInt() override;
 
+    void initialize_sieve() override;
+
     size_t compute_shell(const AOShellCombinationsIterator &) override;
     size_t compute_shell(int s1, int s2, int s3, int s4) override;
 
