@@ -343,10 +343,10 @@ def _run_opentrustregion(self, e_conv, d_conv):
         self.iteration_energies.extend(otr_energies)
         self.iteration_ += len(otr_energies)
 
-        # Canonicalize for post-SCF methods, leaving the occupation where OTR used it.
+        # Leave the orbitals canonical for post-SCF methods, with the occupation where OTR used it.
         # Ask what the aufbau rule would do, and commit to that answer only when another attempt is going to use it.
-        self.canonicalize_orbitals()
-        # Canonicalization is only block diagonal to w/i convergence, so rebuild the density.
+        self.diagonalize_orbitals()
+        # That diagonalization is only block diagonal to w/i convergence, so rebuild the density.
         self.form_D()
 
         if otr_error:
