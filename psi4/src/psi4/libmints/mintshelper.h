@@ -81,11 +81,11 @@ class PSI_API MintsHelper {
     /// In-core builds spin eri's
     SharedMatrix mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2);
 
-    SharedMatrix ao_helper(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints);
+    SharedMatrix ao_helper(const std::string& label, std::vector<std::shared_ptr<TwoBodyAOInt>> ints);
     SharedMatrix ao_shell_getter(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P,
                                  int Q);
 
-    SharedMatrix ao_3coverlap_helper(const std::string& label, std::shared_ptr<ThreeCenterOverlapInt> ints);
+    SharedMatrix ao_3coverlap_helper(const std::string& label, std::vector<std::shared_ptr<ThreeCenterOverlapInt>> ints);
 
     void common_init();
 
