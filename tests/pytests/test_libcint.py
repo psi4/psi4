@@ -99,6 +99,55 @@ def test_libcint_df_integrals(puream):
 
 
 @uusing("libcint")
+@pytest.mark.parametrize("prim_puream,aux_puream", [(False, True), (True, False)])
+def test_libcint_df_integrals_mixed(prim_puream, aux_puream):
+    """DF integrals match Libint2 when primary and auxiliary disagree on cartesian/spherical."""
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    zero = psi4.core.BasisSet.zero_ao_basis_set()
+    prim = psi4.core.BasisSet.build(mol, "ORBITAL", "6-31G*", puream=prim_puream)
+    aux = psi4.core.BasisSet.build(mol, "DF_BASIS_MP2", "cc-pvdz-ri", puream=aux_puream)
+
+    def tensors(pkg):
+        psi4.set_options({"integral_package": pkg})
+        m = psi4.core.MintsHelper(prim)
+        return np.asarray(m.ao_eri(aux, zero, aux, zero)), np.asarray(m.ao_eri(aux, zero, prim, prim))
+
+    m2, t2 = tensors("libint2")
+    mc, tc = tensors("libcint")
+    assert compare_values(m2, mc, 10, f"DF metric (Q|P) prim/aux puream={prim_puream}/{aux_puream}")
+    assert compare_values(t2, tc, 10, f"DF 3-center (Q|mn) prim/aux puream={prim_puream}/{aux_puream}")
+
+
+@uusing("libcint")
+@pytest.mark.parametrize("basis", ["cc-pvdz", "6-31G*"])
+def test_libcint_threaded_df_mp2(basis):
+    """Threaded DF-MP2 (cloned integral objects; 6-31G* mixes a cartesian primary with a spherical RI aux)."""
+    import psi4
+
+    psi4.core.clean()
+    _water()
+    psi4.set_options({
+        "basis": basis, "scf_type": "df", "mp2_type": "df",
+        "e_convergence": 1e-9, "d_convergence": 1e-9,
+    })
+
+    def energy(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return psi4.energy("mp2")
+
+    nthreads = psi4.core.get_num_threads()
+    psi4.set_num_threads(4)
+    try:
+        assert compare_values(energy("libint2"), energy("libcint"), 8, f"threaded DF-MP2 {basis}")
+    finally:
+        psi4.set_num_threads(nthreads)
+
+
+@uusing("libcint")
 def test_libcint_bases_on_different_molecules():
     """Each basis keeps its own molecule's centers: (Q|mn) with Q on a different molecule than m and n."""
     import psi4
@@ -359,6 +408,9 @@ def _property(pkg, driver, method, options):
     pytest.param("scf", {"scf_type": "df"}, id="df-rhf"),
     pytest.param("scf", {"scf_type": "pk", "reference": "uhf"}, id="pk-uhf"),
     pytest.param("mp2", {"scf_type": "df", "mp2_type": "df"}, id="df-mp2"),
+    # a cartesian primary with spherical fitting bases
+    pytest.param("scf", {"basis": "6-31G*", "scf_type": "df"}, id="df-rhf-631gs"),
+    pytest.param("mp2", {"basis": "6-31G*", "scf_type": "df", "mp2_type": "df"}, id="df-mp2-631gs"),
     pytest.param("wb97x", {"scf_type": "pk", "dft_radial_points": 75, "dft_spherical_points": 302}, id="pk-wb97x"),
     pytest.param("wb97x", {"scf_type": "df", "dft_radial_points": 75, "dft_spherical_points": 302}, id="df-wb97x"),
 ])
@@ -378,6 +430,7 @@ def test_libcint_gradient(method, options):
     pytest.param({"scf_type": "pk"}, id="pk-rhf"),
     pytest.param({"scf_type": "pk", "puream": False}, id="pk-rhf-cartesian"),
     pytest.param({"scf_type": "df"}, id="df-rhf"),
+    pytest.param({"basis": "6-31G*", "scf_type": "df"}, id="df-rhf-631gs"),
 ])
 def test_libcint_hessian(options):
     """Analytic RHF Hessians computed with libcint second-derivative integrals match Libint2."""

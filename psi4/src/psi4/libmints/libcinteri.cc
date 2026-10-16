@@ -152,17 +152,26 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
     if (deriv_ < 0 || deriv_ > 2)
         throw PSIEXCEPTION("LIBCINT backend: only first and second integral derivatives are implemented.");
 
-    // Determine whether the (non-dummy) bases are cartesian or spherical. psi4
-    // uses one convention per calculation (the PUREAM option), so a single flag
-    // suffices; the l=0 dummy shell is identical either way. Density fitting is
-    // handled by the dummy s-shell (l=0, exp=0) that psi4 places in the absent
-    // center's slot -- see append_basis.
-    cart_ = false;
+    // Determine whether the (non-dummy) bases are cartesian, spherical, or a mix.
+    // Bases can differ (e.g., a cartesian 6-31G* primary with a spherical RI
+    // auxiliary in DF-MP2), but libcint picks int2e_cart or int2e_sph per call, not
+    // per shell. A mix is computed cartesian and the spherical shells transformed
+    // here (transform_mixed). The l=0 dummy shell is identical either way. Density
+    // fitting is handled by the dummy s-shell (l=0, exp=0) that psi4 places in the
+    // absent center's slot -- see append_basis.
+    bool any_cart = false, any_pure = false;
     for (const auto *bs : {original_bs1_.get(), original_bs2_.get(), original_bs3_.get(), original_bs4_.get()}) {
         if (is_dummy_basis(*bs)) continue;
-        for (int s = 0; s < bs->nshell(); ++s)
-            if (bs->shell(s).is_cartesian() && bs->shell(s).am() > 0) cart_ = true;
+        for (int s = 0; s < bs->nshell(); ++s) {
+            if (bs->shell(s).am() == 0) continue;
+            if (bs->shell(s).is_cartesian())
+                any_cart = true;
+            else
+                any_pure = true;
+        }
     }
+    cart_ = any_cart;
+    mixed_ = any_cart && any_pure;
 
     // Derivatives are taken with respect to the real centers only, as in
     // Libint2's xs_xx / xx_xs / xs_xs brakets.
@@ -187,7 +196,9 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
       basis_starts_(rhs.basis_starts_),
       active_(rhs.active_),
       omega_(rhs.omega_),
-      cart_(rhs.cart_) {
+      cart_(rhs.cart_),
+      mixed_(rhs.mixed_),
+      bas_pure_(rhs.bas_pure_) {
     bas_start_[0] = rhs.bas_start_[0];
     bas_start_[1] = rhs.bas_start_[1];
     bas_start_[2] = rhs.bas_start_[2];
@@ -239,6 +250,11 @@ void LibcintTwoElectronInt::common_init() {
     const size_t ncomp = deriv_ >= 2 ? 9 : (deriv_ == 1 ? 3 : 1);
     const size_t nbuf = deriv_ >= 2 ? 78 : (deriv_ == 1 ? 12 : 1);
     target_store_.assign(std::max(sieve_blk, quartet_size_), 0.0);
+    if (mixed_) {
+        mixed_scratch_.assign(std::max(sieve_blk, quartet_size_), 0.0);
+        sph_trans_.clear();
+        for (int l = 0; l <= maxam; ++l) sph_trans_.emplace_back(l);
+    }
     cint_buf_.assign(std::max(sieve_blk, ncomp * quartet_size_), 0.0);
     if (deriv_ > 0) {
         deriv_store_.assign(nbuf * quartet_size_, 0.0);
@@ -304,6 +320,7 @@ int LibcintTwoElectronInt::append_basis(const BasisSet &bs, const std::vector<do
             for (int p = 0; p < nprim; ++p) env_.push_back(l2coef[p] * coef_ratio[l]);
         }
 
+        bas_pure_.push_back(sh.is_pure() ? 1 : 0);
         bas_.push_back(atom_start + bs.shell_to_center(s));  // ATOM_OF
         bas_.push_back(sh.am());                // ANG_OF
         bas_.push_back(nprim);                  // NPRIM_OF
@@ -447,8 +464,46 @@ bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int 
                 }
             }
         }
+        if (mixed_) transform_mixed(dst, g, l);
     }
     return true;
+}
+
+void LibcintTwoElectronInt::transform_mixed(double *data, const int g[4], const int l[4]) {
+    // data holds a row-major cartesian quartet in psi4 center order. Transform, one
+    // index at a time, each shell psi4 wants spherical, using psi4's solid harmonics
+    // (the same cartesian -> Gaussian-ordered spherical transform the Libint2 path
+    // effectively applies, given libcint cartesians normalized like libint2's).
+    // Alternate between data and mixed_scratch_, which is as large.
+    size_t d[4];
+    for (int k = 0; k < 4; ++k) d[k] = ncart(l[k]);
+    double *in = data;
+    double *out = mixed_scratch_.data();
+    for (int k = 0; k < 4; ++k) {
+        if (!bas_pure_[g[k]] || l[k] == 0) continue;
+        const size_t np = 2 * l[k] + 1;
+        size_t pre = 1, post = 1;
+        for (int j = 0; j < k; ++j) pre *= d[j];
+        for (int j = k + 1; j < 4; ++j) post *= d[j];
+        std::fill(out, out + pre * np * post, 0.0);
+        const SphericalTransform &st = sph_trans_[l[k]];
+        for (int c = 0; c < st.n(); ++c) {
+            const size_t ci = st.cartindex(c), pi = st.pureindex(c);
+            const double coef = st.coef(c);
+            for (size_t i = 0; i < pre; ++i) {
+                const double *src = in + (i * d[k] + ci) * post;
+                double *dst = out + (i * np + pi) * post;
+                for (size_t j = 0; j < post; ++j) dst[j] += coef * src[j];
+            }
+        }
+        d[k] = np;
+        std::swap(in, out);
+    }
+    if (in != data) std::copy(in, in + d[0] * d[1] * d[2] * d[3], data);
+}
+
+int LibcintTwoElectronInt::nfunction(int g, int l) const {
+    return cart_ && !(mixed_ && bas_pure_[g]) ? ncart(l) : 2 * l + 1;
 }
 
 size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, int l1, int l2, int l3, int l4) {
@@ -458,7 +513,7 @@ size_t LibcintTwoElectronInt::compute_quartet(int g1, int g2, int g3, int g4, in
     double *out[1] = {target_full_};
     if (!run_kernel(Kernel::ERI, g, l, identity, 1.0, out)) return 0;
     size_t n = 1;
-    for (int c = 0; c < 4; ++c) n *= cart_ ? ncart(l[c]) : 2 * l[c] + 1;
+    for (int c = 0; c < 4; ++c) n *= nfunction(g[c], l[c]);
     return n;
 }
 
@@ -528,7 +583,7 @@ size_t LibcintTwoElectronInt::compute_shell_deriv1(int s1, int s2, int s3, int s
     int g[4], l[4];
     quartet(s1, s2, s3, s4, g, l);
     size_t nint = 1;
-    for (int c = 0; c < 4; ++c) nint *= cart_ ? ncart(l[c]) : 2 * l[c] + 1;
+    for (int c = 0; c < 4; ++c) nint *= nfunction(g[c], l[c]);
     curr_buff_size_ = nint;
 
     // d/dX (ab|cd) = -(nabla x ...|...) with center X permuted into slot 0.
@@ -548,7 +603,7 @@ size_t LibcintTwoElectronInt::compute_shell_deriv2(int s1, int s2, int s3, int s
     int g[4], l[4];
     quartet(s1, s2, s3, s4, g, l);
     size_t nint = 1;
-    for (int c = 0; c < 4; ++c) nint *= cart_ ? ncart(l[c]) : 2 * l[c] + 1;
+    for (int c = 0; c < 4; ++c) nint *= nfunction(g[c], l[c]);
     curr_buff_size_ = nint;
 
     const int ncoord = 3 * static_cast<int>(active_.size());
