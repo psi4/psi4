@@ -168,6 +168,20 @@ def test_libcint_screening_none():
 
 
 @uusing("libcint")
+def test_libcint_python_factory_eri():
+    """A factory-built ERI object is usable from Python (as in test_erisieve)."""
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    psi4.set_options({"basis": "cc-pvdz", "integral_package": "libcint"})
+    bas = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pvdz")
+    eri = psi4.core.IntegralFactory(bas).eri(0)
+    assert eri.shell_significant(0, 0, 0, 0)
+    eri.compute_shell(0, 0, 0, 0)
+
+
+@uusing("libcint")
 def test_libcint_bases_on_different_molecules():
     """Each basis keeps its own molecule's centers: (Q|mn) with Q on a different molecule than m and n."""
     import psi4
