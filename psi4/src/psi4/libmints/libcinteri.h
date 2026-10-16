@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "psi4/libmints/twobody.h"
+#include "psi4/libmints/integral.h"
 
 namespace psi {
 
@@ -48,7 +49,10 @@ class IntegralFactory;
  *
  *  Design (validated against libint2 to ~1e-14 in-tree; ERIs, erf-ERIs and SCF
  *  energies for s..f, cc-pVDZ/TZ and def2-SVP):
- *   - Requests spherical integrals from libcint (int2e_sph).
+ *   - Requests spherical (int2e_sph) or cartesian (int2e_cart) integrals to match
+ *     the bases. When they mix (e.g., cartesian primary, spherical auxiliary), all
+ *     are requested cartesian and the spherical shells transformed with psi4's
+ *     solid harmonics (transform_mixed).
  *   - Basis functions are exactly those of the Libint2 path: each shell's Libint2
  *     contraction coefficients (BasisSet::l2_shell) times a per-l factor between
  *     the two conventions (libint2_to_libcint, measured with libcint's own
@@ -65,7 +69,7 @@ class IntegralFactory;
  *   - libcint writes col-major (first index fastest); psi4 wants row-major
  *     (first index slowest). Both are handled in the same repack.
  *
- *  Current scope: 4-center (ab|cd), spherical and cartesian basis sets, with
+ *  Current scope: 4-center (ab|cd), spherical, cartesian, and mixed basis sets, with
  *  first and second nuclear derivatives, plus the range-separated erf/erfc
  *  variants (env[PTR_RANGE_OMEGA]).
  *   - Derivatives: libcint differentiates the function in its first slot
@@ -124,8 +128,20 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// (0 = full Coulomb, >0 = erf/long-range, <0 = erfc/short-range).
     double omega_;
 
-    /// Whether the (non-dummy) bases are cartesian (int2e_cart) or spherical.
+    /// Whether libcint is asked for cartesian (int2e_cart) or spherical (int2e_sph) integrals.
     bool cart_;
+    /// Whether the bases mix cartesian and spherical shells (e.g., a cartesian primary
+    /// with a spherical auxiliary). Then cart_ is true and the spherical shells are
+    /// transformed here, shell by shell, with psi4's own solid harmonics.
+    bool mixed_;
+    /// Per libcint bas index, whether psi4 wants the shell spherical (used when mixed_).
+    std::vector<char> bas_pure_;
+    /// psi4 cartesian -> spherical transforms by angular momentum (used when mixed_). Our
+    /// own, rather than TwoBodyAOInt::pure_transform's from the IntegralFactory, since the
+    /// sieve's quartets come from one basis, not bs1_..bs4_, and the factory's stop at l=8.
+    std::vector<SphericalTransform> sph_trans_;
+    /// Scratch for transform_mixed, as large as a cartesian quartet block.
+    std::vector<double> mixed_scratch_;
 
     void common_init();
 
@@ -149,6 +165,12 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// integral (the blocks are zeroed otherwise).
     bool run_kernel(Kernel kernel, const int g[4], const int l[4], const int perm[4], double sign,
                     double *const *out);
+
+    /// Transform a row-major cartesian quartet in psi4 center order, in place, for the
+    /// spherical shells among the libcint bas indices g (mixed_ only).
+    void transform_mixed(double *data, const int g[4], const int l[4]);
+    /// Number of psi4 functions of the shell at libcint bas index g, of angular momentum l.
+    int nfunction(int g, int l) const;
 
     /// Compute one shell quartet (given libcint bas indices and angular momenta)
     /// into target_full_ in psi4 order. Returns the number of integrals computed.
