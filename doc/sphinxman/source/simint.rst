@@ -57,8 +57,8 @@ integral_package simint`` (do this in ``~/.psi4rc`` for universal effect)
 runs simint for non-derivative Coulomb integrals and Libint2 for everything
 simint does not provide: derivative integrals (gradients and Hessians) and
 range-separated (erf/erfc) integrals. Each such substitution is noted once in
-the output. If |PSIfour| was built without simint, all integrals come from
-Libint2. Note that present AM maximum is ``$$(gg|gg)$$``
+the output. Requesting simint when |PSIfour| was built without it is an error.
+Note that present AM maximum is ``$$(gg|gg)$$``
 
 .. warning:: simint seems to be having some problems with Intel 2018 compilers. presently disabled in conda package.
 
@@ -152,4 +152,3 @@ D. Build bundled despite pre-built being detectable
   .. code-block:: bash
 
     >>> cmake -DENABLE_simint=ON -DCMAKE_PREFIX_PATH=/path/to/unwanted/simint/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_simint=ON
-

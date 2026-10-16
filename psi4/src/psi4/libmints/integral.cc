@@ -217,9 +217,8 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::electric_field(int deriv) {
 
 namespace {
 
-/// INTEGRAL_PACKAGE picks the engine for the two-electron integrals it implements; anything an optional engine does
-/// not provide (derivatives, range-separated operators, or the engine itself when it is not compiled in) comes from
-/// Libint2. Announce each such substitution once per process, not once per (per-thread) integral object.
+/// INTEGRAL_PACKAGE picks the engine for the two-electron integrals it implements; unsupported integral types come
+/// from Libint2. Announce each such substitution once per process, not once per (per-thread) integral object.
 void note_libint2_fallback(const std::string &package, const std::string &reason) {
     static std::mutex lock;
     static std::set<std::string> announced;
@@ -239,13 +238,15 @@ bool package_available(const std::string &integral_package) {
 /// Announce why a non-Libint2 INTEGRAL_PACKAGE request is being served by Libint2.
 void fall_back_to_libint2(const std::string &integral_package, const std::string &missing) {
     if (integral_package == "LIBINT2") return;
-    if (package_available(integral_package)) {
-        note_libint2_fallback(integral_package, "provides no " + missing);
-    } else {
+    if (!package_available(integral_package)) {
         std::string option = integral_package;
         std::transform(option.begin(), option.end(), option.begin(), ::tolower);
-        note_libint2_fallback(integral_package, "not compiled in (rebuild with -D ENABLE_" + option + "=ON)");
+        // revise if new <pkg> option for `ENABLE_<pkg>` isn't lowercase
+        throw PSIEXCEPTION("INTEGRAL_PACKAGE " + integral_package +
+                           " was requested, but Psi4 was built without it. Rebuild with `-D ENABLE_" + option +
+                           "=ON`.");
     }
+    note_libint2_fallback(integral_package, "provides no " + missing);
 }
 
 }  // namespace

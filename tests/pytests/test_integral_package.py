@@ -1,6 +1,7 @@
-"""INTEGRAL_PACKAGE falls back to Libint2 for whatever the chosen engine does not provide."""
+"""INTEGRAL_PACKAGE validates the selected engine and falls back for unsupported integral types."""
 
 import pytest
+from addons import uusing
 
 import psi4
 
@@ -26,6 +27,12 @@ def _run(package, method, driver, options):
     return driver(method)
 
 
+@pytest.mark.skipif(psi4.addons("simint"), reason="requires a build without SIMINT")
+def test_unavailable_simint_fails():
+    with pytest.raises(RuntimeError, match=r"INTEGRAL_PACKAGE SIMINT.*built without it.*ENABLE_simint=ON"):
+        _run("simint", "hf", psi4.energy, {"scf_type": "pk"})
+
+
 @pytest.mark.parametrize(
     "method,driver,options",
     [
@@ -36,9 +43,9 @@ def _run(package, method, driver, options):
                      id="pk-wb97x-energy"),
     ],
 )
+@uusing("simint")
 def test_simint_falls_back_to_libint2(method, driver, options):
-    """SIMINT has no derivative or range-separated integrals (and may not be compiled in at all); those must come
-    from Libint2 instead of aborting, and agree with an all-Libint2 calculation."""
+    """Integral types SIMINT does not provide must come from Libint2 and agree with an all-Libint2 calculation."""
     ref = _run("libint2", method, driver, options)
     res = _run("simint", method, driver, options)
     if driver is psi4.energy:
