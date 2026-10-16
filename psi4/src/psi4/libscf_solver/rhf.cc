@@ -1248,6 +1248,15 @@ bool RHF::openorbital_scf() {
         double e_delta = std::any_cast<double>(data.at("dE"));
         // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
         double d_rms = 0.5 * ao_basis_diis_error;
+        // A converged SCF has nothing left to hand off, so settle that first. D_CONVERGENCE is
+        // tighter than SOSCF_START_CONVERGENCE, which means convergence always satisfies the
+        // handoff test below; checking the handoff first would shadow convergence entirely and
+        // spend two more J/K builds rediscovering it.
+        bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
+        if (iteration_ == options_.get_int("MAXITER"))
+            printf("%d = |%e| < %e && %e < %e\n", converged, e_delta, e_conv, d_rms, d_conv);
+        if (converged) return true;
+
         // When second-order iterations are to take over, OpenOrbitalOptimizer's job is only
         // to reach the handoff point; stop there and let the driver hand off. The iteration
         // the driver will run is two beyond iteration_: this one is not counted until the
@@ -1261,12 +1270,7 @@ bool RHF::openorbital_scf() {
             reached_handoff = true;
             return true;
         }
-        // scale density norm to match internal algorithm
-
-        bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
-        if (iteration_ == options_.get_int("MAXITER"))
-            printf("%d = |%e| < %e && %e < %e\n", converged, e_delta, e_conv, d_rms, d_conv);
-        return converged;
+        return false;
   };
 
   std::function<void(const std::map<std::string,std::any> &)> callback_function = [&](const std::map<std::string,std::any> & data) {
