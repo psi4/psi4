@@ -14,7 +14,7 @@ set = {
     reference rohf
     df_scf_guess False
     scf_type direct
-    dft_xc_integrators ["brianqc"]
+    dft_xc_integrator_packages ["brianqc"]
     d_convergence 9
     g_convergence gau_tight
 }

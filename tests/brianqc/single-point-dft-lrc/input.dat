@@ -18,7 +18,7 @@ set = {
     dft_omega 0.25
     scf_type direct
     df_scf_guess False
-    dft_xc_integrators ["brianqc"]
+    dft_xc_integrator_packages ["brianqc"]
     d_convergence 9
 }
 

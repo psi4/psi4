@@ -1145,3 +1145,27 @@ Bibliography
    J. H. Van Lenthe, R. Zwaans, H. J. J. Van Dam, and M. F. Guest,
    *J. Comput. Chem.* **27**, 926 (2006).
    https://doi.org/10.1002/jcc.20393
+
+.. [Williams-Young:2021:102829]
+   "Achieving performance portability in Gaussian basis set density functional theory on accelerator based architectures in NWChemEx",
+   D. B. Williams-Young, A. Bagusetty, W. A. de Jong, D. Doerfler, H. J. J. van Dam, Á. Vázquez-Mayagoitia, T. L. Windus, and C. Yang,
+   *Parallel Comput.* **108**, 102829 (2021).
+   https://doi.org/10.1016/j.parco.2021.102829
+
+.. [Williams-Young:2020:581058]
+   "On the Efficient Evaluation of the Exchange Correlation Potential on Graphics Processing Unit Clusters",
+   D. B. Williams-Young, W. A. de Jong, H. J. J. van Dam, and C. Yang,
+   *Front. Chem.* **8**, 581058 (2020).
+   https://doi.org/10.3389/fchem.2020.581058
+
+.. [Petrone:2018:169]
+   "An Efficient Implementation of Two-Component Relativistic Density Functional Theory with Torque-Free Auxiliary Variables",
+   A. Petrone, D. B. Williams-Young, S. Sun, T. F. Stetina, and X. Li
+   *Eur. Phys. J. B* **91**, 169 (2018).
+   https://doi.org/10.1140/epjb/e2018-90170-1
+
+.. [Lehtola:2018:1]
+   "Recent Developments in LibXC-a comprehensive library of functionals for density functional theory",
+   S. Lehtola, C. Steigemann, M. J. T. Oliveria, and M. A. L. Marques
+   *SoftwareX* **7** 1-5 (2018).
+   https://10.1016/j.softx.2017.11.002 

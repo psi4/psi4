@@ -56,7 +56,7 @@ def test_rks_energy(inp, symmetry, basis, gauxc_exec):
     enPsi = psi4.energy(inp["name"])
 
     psi4.set_options({
-        "dft_xc_integrators": ["gauxc"],
+        "dft_xc_integrator_packages": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
@@ -101,7 +101,7 @@ def test_rks_grad(inp, symmetry, basis, gauxc_exec):
     })
 
     psi4.set_options({
-        "dft_xc_integrators": ["gauxc"],
+        "dft_xc_integrator_packages": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
@@ -159,7 +159,7 @@ def test_rks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
     psi4.tdscf(psi_wfn)
 
     psi4.set_options({
-        "dft_xc_integrators": ["gauxc"],
+        "dft_xc_integrator_packages": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
@@ -211,7 +211,7 @@ def test_uks_energy(inp, symmetry, basis, gauxc_exec):
     enPsi = psi4.energy(inp["name"])
 
     psi4.set_options({
-        "dft_xc_integrators": ["gauxc"],
+        "dft_xc_integrator_packages": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
@@ -258,7 +258,7 @@ def test_uks_gradient(inp, symmetry, basis, gauxc_exec):
     })
 
     psi4.set_options({
-        "dft_xc_integrators": ["gauxc"],
+        "dft_xc_integrator_packages": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,
@@ -318,7 +318,7 @@ def test_uks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
     psi4.tdscf(psi_wfn)
 
     psi4.set_options({
-        "dft_xc_integrators": ["gauxc"],
+        "dft_xc_integrator_packages": ["gauxc"],
         "gauxc_use_gpu": gauxc_exec["use_gpu"],
         "gauxc_radial_points": 80,
         "gauxc_spherical_points": 590,

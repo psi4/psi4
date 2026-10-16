@@ -1036,7 +1036,7 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 void RHF::setup_potential() {
     if (functional_->needs_xc()) {
         std::vector<std::shared_ptr<IntegratorManager>> managers;
-        for (auto integrator: options_.get_string_vector("DFT_XC_INTEGRATORS")) {
+        for (auto integrator: options_.get_string_vector("DFT_XC_INTEGRATOR_PACKAGES")) {
             std::ranges::transform(integrator, integrator.begin(), [](unsigned char c){
                 return std::toupper(c);
             });

@@ -37,9 +37,7 @@ Interface to GauXC
 .. codeauthor:: Jonathon Misiewicz
 .. sectionauthor:: Jonathon Misiewicz1
 
-|PSIfour| contains code to interface to the open-source GauXC GPU module developed
-by the `BrianQC team <https://www.brianqc.com/team>`_, which is available after a license agreement from
-`https://brianqc.com/ <https://brianqc.com/>`_.
+|PSIfour| contains code to interface to the open-source GauXC numerical integration module developed by Microsoft, which is available on conda.
 
 Installing GauXC
 ~~~~~~~~~~~~~~~~~~
@@ -63,6 +61,8 @@ GauXC can be used to compute exchange terms in an exact exchange self-consistent
 Kohn-Sham DFT
 ~~~~~~~~~~~~~
 
-GauXC may be used as a replacement for |PSIfour|'s own KS-DFT engine. At present, we support outsourcing to GauXC for energies and analytic gradients and electronic hessians, as needed in stability analysis and TDDFT. GauXC does not provide support for analytic hessians. GauXC may be enabled by setting |scf__dft_xc_integrators|, which expects an array of the available integrators, to be tried in order.GauXC may be sent by including "gauxc" in that list. See :ref:`notes <sec:ks-integrators>` on how to enable and disable other integrators.
+GauXC may be used as a replacement for |PSIfour|'s own KS-DFT engine. At present, we support outsourcing to GauXC for energies and analytic gradients and electronic hessians, as needed in stability analysis and TDDFT. GauXC does not provide support for analytic hessians. GauXC may be enabled by setting |scf__dft_xc_integrator_packages|, which expects an array of the available integrators, to be tried in order. GauXC may be sent by including "gauxc" in that list. See :ref:`notes <sec:ks-integrators>` on how to enable and disable other integrators.
 
 The :ref:`keywords <apdx:scftgauxcdft>` are provided here. The most common keywords that will need editing are the number of radial integration grid points |scf__GAUXC_RADIAL_POINTS|, the number of angular integration grid points |scf__GAUXC_SPHERICAL_POINTS|, and whether or not to use GPUs |scf__GAUXC_USE_GPU|.
+
+Programs using GauXC to compute DFT on KS-CPUs should cite [Petrone:2018:169]_, and programs using GauXC to compute KS-DFT shoudl cite [Williams-Young:2020:581058]_ (CUDA and distributed memory) and [Williams-Young:2021:102829]_ (HIP/SYCL). All programs should cite [Lehtola:2018:1]_.
