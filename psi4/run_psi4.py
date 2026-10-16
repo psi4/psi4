@@ -124,7 +124,7 @@ args = args.__dict__  # Namespace object seems silly
 # Figure out paths
 # * some full paths are computed here using the prefix, but all outputs are relative to __file__, so relocatability preserved
 # * note that all path entities are directories except for "executable" that is a file
-executable = Path(__file__).resolve()
+executable = Path(__file__).absolute()
 psi4_exe_loc = executable.parent
 
 prefix = Path(r"@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
@@ -151,6 +151,17 @@ share_cmake_dir = str(cmake_dir)
 
 if args["inplace"]:
     # not tested after pathlib adjustments
+
+    warnings.warn(
+        "--inplace is deprecated and will be removed in a future version of Psi4. "
+        "For a development edit-and-run workflow, set CMAKE_INSTALL_MODE=ABS_SYMLINK "
+        "when installing instead:\n"
+        "  CMAKE_INSTALL_MODE=ABS_SYMLINK cmake --build <build-dir> --target install\n"
+        "This creates symlinks from the staged install tree back to the source files, "
+        "removing the need for --inplace.",
+        FutureWarning,
+    )
+
     if "CMAKE_INSTALL_LIBDIR" not in lib_dir:
         raise ImportError("Cannot run inplace from an installed directory.")
 
