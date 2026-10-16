@@ -46,6 +46,9 @@ extern "C" {
 #include <cint_funcs.h>
 }
 
+// The atm/bas/shls arrays here are plain int, as is libcint's FINT unless it was built with -DI8.
+static_assert(sizeof(FINT) == sizeof(int), "LIBCINT backend requires libcint built without I8 (32-bit FINT).");
+
 namespace psi {
 
 namespace {
