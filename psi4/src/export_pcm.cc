@@ -25,12 +25,19 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #include "psi4/pybind11.h"
 
-#include "psi4/libmints/basisset.h"
+
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/libpsipcm/psipcm.h"
+#include "psi4/libpsipcm/cuestpcm.h"
 
 using namespace psi;
 namespace py = pybind11;
@@ -50,5 +57,14 @@ void export_pcm(py::module& m) {
         .def("compute_PCM_terms", &PCM::compute_PCM_terms, "Compute PCM contributions to energy and Fock matrix", "D"_a,
              "type"_a)
         .def("compute_V", &PCM::compute_V, "Computes electronic PCM contributions due to first-order perturbed densities", "D"_a);
+}
+#endif
+
+#ifdef USING_cuEST
+void export_cuestpcm(py::module& m) {
+    py::class_<cuestPCM, std::shared_ptr<cuestPCM>> cuestpcm(m, "cuestPCM", "Class interfacing with cuEST PCM");
+    cuestpcm.def(py::init<const Options&, std::shared_ptr<MintsHelper>>())
+        .def("compute_PCM_terms", &cuestPCM::compute_PCM_terms, "Compute PCM contributions to energy and Fock matrix", "D"_a)
+        .def("compute_V", &cuestPCM::compute_V, "Computes electronic PCM contributions due to first-order perturbed densities", "D"_a);
 }
 #endif
