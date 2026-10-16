@@ -269,6 +269,13 @@ void LibcintTwoElectronInt::common_init() {
     create_blocks();
 }
 
+void LibcintTwoElectronInt::initialize_sieve() {
+    // Manual initialization, for objects built with SCREENING NONE. Unlike
+    // Libint2, there are no engine-side shell-pair data to rebuild.
+    create_sieve_pair_info_manager();
+    create_blocks();
+}
+
 int LibcintTwoElectronInt::append_basis(const BasisSet &bs, const std::vector<double> &coef_ratio) {
     // Atoms: each basis contributes its own molecule's centers, so bases on
     // different molecules (or a dummy basis) never index the wrong coordinates.
