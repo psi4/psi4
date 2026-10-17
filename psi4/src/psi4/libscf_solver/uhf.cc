@@ -64,6 +64,9 @@
 #include <openorbitaloptimizer/scfsolver.hpp>
 #endif
 
+#ifdef USING_gauxc
+#include "psi4/libfock/gauxc_int.h"
+#endif
 #ifdef USING_BrianQC
 
 #include <use_brian_wrapper.h>
@@ -73,7 +76,6 @@
 extern void checkBrian();
 extern BrianCookie brianCookie;
 extern bool brianEnable;
-extern bool brianEnableDFT;
 
 #endif
 
@@ -219,7 +221,7 @@ void UHF::form_G() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -379,7 +381,7 @@ double UHF::compute_E() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -640,7 +642,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -1235,7 +1237,30 @@ std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void UHF::setup_potential() {
     if (functional_->needs_xc()) {
-        potential_ = std::make_shared<UV>(functional_, basisset_, options_);
+        std::vector<std::shared_ptr<IntegratorManager>> managers;
+        for (auto integrator: options_.get_string_vector("DFT_XC_INTEGRATOR_PACKAGES")) {
+            std::ranges::transform(integrator, integrator.begin(), [](unsigned char c){
+                return std::toupper(c);
+            });
+            if (integrator == "INTERNAL") {
+                managers.push_back(std::make_shared<UV>(functional_, basisset_, options_));
+            }
+#ifdef USING_BrianQC
+            else if (integrator == "BRIANQC") {
+                    managers.push_back(std::make_shared<BrianUV>(functional_, basisset_, options_));
+            }
+#endif
+#ifdef USING_gauxc
+            else if (integrator == "GAUXC") {
+                    managers.push_back(std::make_shared<GauUV>(functional_, basisset_, options_));
+            }
+#endif
+            else {
+                    throw PSIEXCEPTION("Integrator name " + integrator + " didn't match any registered integrator.");
+            }
+        }
+        if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but requested DFT.");
+        potential_ = std::make_shared<IntegratorDispatcher>(managers);
         potential_->initialize();
     } else {
         potential_ = nullptr;
@@ -1322,7 +1347,7 @@ void UHF::openorbital_scf() {
     double beta = functional_->x_beta();
 
 #ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
+    if (brianEnable) {
       // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
       alpha = 1.0;
       beta = 1.0;

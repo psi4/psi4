@@ -1,0 +1,203 @@
+ tid: 0x0 [2026.04.07-10:49:46.603] [INFO] Begin brianAPIInit
+ tid: 0x0 [2026.04.07-10:49:46.603] [INFO] Detected compatible BrianQC interface version 5
+ tid: 0x0 [2026.04.07-10:49:46.603] [INFO] Reading config from /home/jpmisiewicz/brian_files/1.5.0/config.json
+ tid: 0x0 [2026.04.07-10:49:46.604] [INFO] Setting Brian root dir to /home/jpmisiewicz/brian_files/1.5.0
+ tid: 0x0 [2026.04.07-10:49:46.606] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/10603610112-1715011099_kernel_g_v1_5_0_125b6af99d_CUDA_Tesla_V100.db
+ tid: 0x0 [2026.04.07-10:49:46.606] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/6953332736-1715010260_kernel_g_v1_5_0_125b6af99d_CUDA_GeForce_RTX_2080_Ti.db
+ tid: 0x0 [2026.04.07-10:49:46.607] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/13035212800-1715010745_kernel_g_v1_5_0_125b6af99d_CUDA_Tesla_A100.db
+ tid: 0x0 [2026.04.07-10:49:46.607] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/467988480-1715023474_kernel_g_v1_5_0_14e7bbc887_CUDA_GeForce_RTX_4090.db
+ tid: 0x0 [2026.04.07-10:49:46.608] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18874368-1715009708_dft_kernel_v1_5_0_125b6af99d_CUDA_Tesla_V100.db
+ tid: 0x0 [2026.04.07-10:49:46.608] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18759680-1715009628_dft_kernel_v1_5_0_125b6af99d_CUDA_GeForce_RTX_2080_Ti.db
+ tid: 0x0 [2026.04.07-10:49:46.609] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18714624-1715009665_dft_kernel_v1_5_0_125b6af99d_CUDA_Tesla_A100.db
+ tid: 0x0 [2026.04.07-10:49:46.609] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/12394496-1716812243_dft_kernel_v1_5_0_c0ea4e0e4a_CUDA_GeForce_RTX_4090.db
+ tid: 0x0 [2026.04.07-10:49:46.609] [INFO] No MM DBs specified in config, using the default: /home/jpmisiewicz/brian_files/1.5.0/integrators/mm.db
+ tid: 0x0 [2026.04.07-10:49:46.609] [WARNING] MM features will not be available, because the MM DB does not exist: /home/jpmisiewicz/brian_files/1.5.0/integrators/mm.db
+ tid: 0x0 [2026.04.07-10:49:46.609] [INFO] Start BrianQC module initialization
+ tid: 0x0 [2026.04.07-10:49:46.621] [INFO] GPU 0# NVIDIA_A30_GPU-6b5790ec-6a2a-23b7-e0ce-c0c22e8aa50c
+ tid: 0x0 [2026.04.07-10:49:46.623] [SYSTEM] BrianQC version: v1_5_1_7f6b4fa0eb licensed to: Trial User
+ tid: 0x0 [2026.04.07-10:49:46.633] [SYSTEM] Visit us at: https://brianqc.com
+ tid: 0x0 [2026.04.07-10:49:46.643] [SYSTEM] BrianQC copyright Streamnovation Ltd. 2013-2022
+ tid: 0x0 [2026.04.07-10:49:46.653] [SYSTEM] Contributors: Gy. Cserey, B. Czetenyi, A. Jasz, G. Kis, I. Ladjanszki, A. Rak, G. J. Tornai, A. Vas
+ tid: 0x0 [2026.04.07-10:49:46.863] [INFO] Signing in to license server: license.brainqc.com 443
+ tid: 0x0 [2026.04.07-10:49:46.884] [INFO] Scratch dir is disabled, storing everything in memory
+ tid: 0x0 [2026.04.07-10:49:47.085] [INFO] Detected device: CPU
+ tid: 0x0 [2026.04.07-10:49:47.085] [INFO] Detected device: CUDA NVIDIA A30#0000:CA:00.0
+ tid: 0x0 [2026.04.07-10:49:47.154] [INFO] Allocating 3 threads for GPU: CUDA NVIDIA A30#0000:CA:00.0 on node 0
+ tid: 0x0 [2026.04.07-10:49:50.087] [INFO] Used GPU count: 1
+ tid: 0x0 [2026.04.07-10:49:50.242] [INFO] End BBrianQC initialization succes tid: 0x0 [2026.04.07-10:49:50.   => Libint2 <=
+
+    Primary tid: 0x0 [2026.04.07-10:49:50.306] [INFO] Re-init GPU for small molecule mode
+ tid: 0x0 [2026.04.07-10:49:50.418] [INFO] Detected device: CPU
+ tid: 0x0 [2026.04.07-10:49:50.418] [INFO] Detected device: CUDA NVIDIA A30#0000:CA:00.0
+ tid: 0x0 [2026.04.07-10:49:50.475] [INFO] Allocating 1 threads for GPU: CUDA NVIDIA A30#0000:CA:00.0 on node 0
+ tid: 0x0 [2026.04.07-10:49:50.475] [INFO] Used GPU count: 1
+    Reference energy......................................................................PASSED
+ tid: 0x0 [2026.04.07-10:49:51.636] [INFO] Begin brianAPIRelease
+ tid: 0x0 [2026.04.07-10:49:51.755] [INFO] End brianAPIRelease
+--
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             ROHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     0.057496049252    15.994914619570
+         H            0.000000000000     0.000000000000    -0.912504025348     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =     18.89752  C =     18.89752 [cm^-1]
+  Rotational constants: A = ************  B = 566533.37758  C = 566533.37758 [MHz]
+  Nuclear repulsion =    4.364347793587273
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-09
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 4
+    Number of basis functions: 6
+    Number of Cartesian functions: 6
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Screening Type:           CSAM
+    Screening Cutoff:        1E-12
+    Incremental Fock:           No
+
+  BrianQC enabled, using Canonical Orthogonalization with cutoff of 1.0000000000E-07.
+  Overall, 0 of 6 possible MOs eliminated.
+
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A          6       6 
+   -------------------------
+    Total       6       6
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @ROHF iter SAD:   -73.67690217168280   -7.36769e+01   0.00000e+00 
+   @ROHF iter   1:   -74.34708695543837   -6.70185e-01   1.73540e-02 DIIS
+   @ROHF iter   2:   -74.36088002663489   -1.37931e-02   3.53716e-03 DIIS
+   @ROHF iter   3:   -74.36155741236016   -6.77386e-04   2.76336e-04 DIIS
+   @ROHF iter   4:   -74.36156196446389   -4.55210e-06   4.15631e-06 DIIS
+   @ROHF iter   5:   -74.36156196571606   -1.25218e-09   7.03759e-08 DIIS
+   @ROHF iter   6:   -74.36156196571629   -2.27374e-13   4.40174e-10 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.271296     2A     -1.208850     3A     -0.527209  
+       4A     -0.403646  
+
+    Singly Occupied:                                                      
+
+       5A     -0.082177  
+
+    Virtual:                                                              
+
+       6A      0.637159  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     1 ]
+    NA   [     5 ]
+    NB   [     4 ]
+
+  @ROHF Final Energy:   -74.36156196571629
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              4.3643477935872728
+    One-Electron Energy =                -112.1075602087205993
+    Two-Electron Energy =                  33.3816504494170303
+    Total Energy =                        -74.3615619657163052
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.3530205           -0.8551684           -0.5021479
+ Magnitude           :                                                    0.5021479
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on fal031 at Tue Apr  7 10:49:51 2026
+Module time:
+	user time   =       1.14 seconds =       0.02 minutes
+	system time =       1.14 seconds =       0.02 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.14 seconds =       0.02 minutes
+	system time =       1.14 seconds =       0.02 minutes
+	total time  =          1 seconds =       0.02 minutes
+    Reference energy......................................................................PASSED
+
+    Psi4 stopped on: Tuesday, 07 April 2026 10:49AM
+    Psi4 wall time for execution: 0:00:05.05
+
+*** Psi4 exiting successfully. Buy a developer a beer!
+Releasing the BrianQC module

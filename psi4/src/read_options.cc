@@ -1785,7 +1785,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Use GPU for GauXC? -*/
         options.add_bool("SNLINK_USE_GPU", false);
         /*- Proportion (in %) of available GPU memory to allocate to snLinK. !expert-*/
-        options.add_bool("SNLINK_GPU_MEM", 90);
+        options.add_int("SNLINK_GPU_MEM", 90);
         /*- Screening criteria for integrals and intermediates in snLinK -*/
         options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
         /*- Screening criteria for shell-pair densities in snLinK !expert -*/
@@ -1867,6 +1867,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DFT_GRAC_X_FUNC", "XC_GGA_X_LB");
         /*- The gradient regularized asymptotic correction functional corr form. !expert -*/
         options.add_str("DFT_GRAC_C_FUNC", "XC_LDA_C_VWN");
+        auto tmp = ArrayType();
+        tmp.add(std::string("INTERNAL"));
+        /*- The array of DFT integrators to try, falling back to the next if the other has an
+        error (usually not supporting the desired feature). Available integrators depend on
+        your local Psi configuration. At most, they are INTERNAL, GAUXC, and BRIANQC. -*/
+        options.add("DFT_XC_INTEGRATOR_PACKAGES", new ArrayType(tmp));
         /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
         options.add_int("DFT_SPHERICAL_POINTS", 302);
         /*- Number of radial points. -*/
@@ -1933,6 +1939,33 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("UHF_NOONS", "3");
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
+
+        /*- SUBSECTION GAUXCDFT -*/
+#ifdef USING_gauxc
+        /*- Load Balancer kernel for KS !expert -*/
+        options.add_str("GAUXC_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
+        /*- Pruning scheme for KS grids !expert -*/
+        options.add_str("GAUXC_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
+        /*- Radial Scheme for KS grid. 
+        MURA is default here as it matches the GauXC default option -*/
+        options.add_str("GAUXC_RADIAL_SCHEME", "MURA", "MURA TREUTLER EM");
+        /*- Maximum number of grid points per grid block for GauXC !expert -*/ 
+        options.add_int("GAUXC_GRID_BATCH_SIZE", 512);
+        /*- Number of spherical points in GauXC grid. -*/
+        options.add_int("GAUXC_SPHERICAL_POINTS", 302);
+        /*- Number of radial points in GauXC grid. -*/
+        options.add_int("GAUXC_RADIAL_POINTS", 70);
+        /*- Use GPU for GauXC? -*/
+        options.add_bool("GAUXC_USE_GPU", false);
+        /*- Proportion (in %) of available GPU memory to allocate to GauXC. !expert-*/
+        options.add_int("GAUXC_GPU_MEM", 90);
+#endif
+
+        /*- SUBSECTION BRIANINT -*/
+#ifdef USING_BrianQC
+    /*- Whether to enable using the BrianQC GPU module -*/
+    options.add_bool("BRIANQC_INTEGRATE", true);
+#endif
 
         /*- SUBSECTION TDSCF -*/
         /*- Number of roots (excited states) we should seek to converge. This
