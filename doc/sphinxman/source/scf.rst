@@ -483,7 +483,7 @@ SAD [:term:`Default <GUESS (SCF)>`]
     performed. If orbitals are needed (*e.g.*, in density fitting), a partial
     Cholesky factorization of the density matrices is used. Often extremely
     accurate, particularly for closed-shell systems. This is the default for
-    systems of more than one atom.
+    systems of more than one atom, see [Almlof:1982:385]_ and [VanLenthe:2006:926]_.
 SADNO
     Natural orbitals from Superposition of Atomic Densities. Similar
     to the above, but it forms natural orbitals from the SAD density
@@ -786,6 +786,9 @@ and recommended option. However, the in-memory or on-disk algorithms for MEM_DF 
 Note that an exception will be thrown if 
 ``SCF_SUBTYPE = INCORE`` is used without allocating sufficient memory to 
 |PSIfour|.
+The Cholesky-decomposition algorithm, ``SCF_TYPE = CD``, has no on-disk counterpart, so it accepts only
+``SCF_SUBTYPE = AUTO`` and ``SCF_SUBTYPE = INCORE``, while ``SCF_SUBTYPE = OUT_OF_CORE`` (and any other
+``SCF_SUBTYPE``) throws an exception. Use ``SCF_TYPE = DISK_DF`` if an out-of-core algorithm is needed.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate

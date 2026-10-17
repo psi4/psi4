@@ -348,7 +348,6 @@ double CCLambdaWavefunction::compute_energy() {
 // must be fixed with options later for excited states
 void CCLambdaWavefunction::init_io() {
     int i, num_unparsed;
-    char *lbl, *argv_unparsed[100];
 
     params.all = 0;  /* do all Ls including ground state */
     params.zeta = 0; /* only do ground-state L */
@@ -515,7 +514,6 @@ void L_clean(const struct L_Params& L_params) {
     int L_irr, i;
     dpdfile2 LIA, Lia;
     dpdbuf4 LIJAB, Lijab, LIjAb;
-    char lbl[80];
 
     L_irr = L_params.irrep;
 

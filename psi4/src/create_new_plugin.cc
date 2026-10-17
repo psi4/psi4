@@ -36,7 +36,7 @@
 
 #include "psi4/psi4-dec.h"
 
-#include "psi4/libfilesystem/path.h"
+#include <filesystem>
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/process.h"
 
@@ -89,16 +89,16 @@ class PluginFileManager {
         else
             files_.push_back(std::make_pair(source_name, target_name));
 
-        std::string ext(filesystem::path(target_name).extension());
-        if (ext == "h" || ext == "cc") source_files_.push_back(target_name);
+        std::string ext(std::filesystem::path(target_name).extension().string());
+        if (ext == ".h" || ext == ".cc") source_files_.push_back(target_name);
     }
 
     void process() {
         // The location of the plugin templates, in the Psi4 source
         std::string psiDataDirName = Process::environment.get_datadir();
-        std::string psiDataDirWithPlugin = (filesystem::path(psiDataDirName) / filesystem::path("plugin")).str();
+        std::string psiDataDirWithPlugin = (std::filesystem::path(psiDataDirName) / std::filesystem::path("plugin")).string();
 
-        if (!filesystem::path(psiDataDirWithPlugin).is_directory()) {
+        if (!std::filesystem::is_directory(std::filesystem::path(psiDataDirWithPlugin))) {
             throw std::runtime_error("Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable!\nCurrent value of PSIDATADIR is " + psiDataDirName + "\n");
         }
 
@@ -169,7 +169,7 @@ void create_new_plugin(std::string name, const std::string &template_name) {
     if (template_name_lower.empty()) template_name_lower = "plugin";
 
     // Make a directory with the name plugin_name
-    if (!filesystem::create_directory(plugin_name)) {
+    if (!std::filesystem::create_directory(plugin_name)) {
         throw std::runtime_error("Plugin directory " + plugin_name + " already exists.\n");
     }
     printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),
@@ -199,8 +199,8 @@ void create_new_plugin(std::string name, const std::string &template_name) {
 void create_new_plugin_makefile() {
     printf("Creating new plugin Makefile in the current directory.\n");
 
-    filesystem::path cwd = filesystem::path::getcwd();
-    std::string name = make_filename(cwd.stem());
+    std::filesystem::path cwd = std::filesystem::current_path();
+    std::string name = make_filename(cwd.stem().string());
     PluginFileManager file_manager(name, false);
     file_manager.add_file("CMakeLists.txt.template", "CMakeLists.txt");
     file_manager.process();

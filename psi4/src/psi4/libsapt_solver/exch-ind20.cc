@@ -679,7 +679,6 @@ void SAPT2::exch_ind20r() {
 }
 
 void SAPT2::exch_ind20rA_B() {
-    double energy;
 
     double **uAR = block_matrix(noccA_, nvirA_);
     double **vAR = block_matrix(noccA_, nvirA_);
@@ -911,7 +910,6 @@ void SAPT2::exch_ind20rA_B() {
 }
 
 void SAPT2::exch_ind20rB_A() {
-    double energy;
 
     double **uBS = block_matrix(noccB_, nvirB_);
     double **vBS = block_matrix(noccB_, nvirB_);

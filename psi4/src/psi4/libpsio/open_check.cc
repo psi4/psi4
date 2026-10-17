@@ -38,12 +38,12 @@
 
 namespace psi {
 
-int PSIO::open_check(size_t unit) {
+int PSIO::open_check(size_t unit) const {
     psio_ud *this_unit;
 
     this_unit = &(psio_unit[unit]);
 
-    if (this_unit->vol[0].stream != -1)
+    if (this_unit->vol.stream != -1)
         return 1;
     else
         return 0;

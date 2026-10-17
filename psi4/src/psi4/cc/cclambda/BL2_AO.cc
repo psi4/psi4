@@ -60,7 +60,6 @@ void BL2_AO(int L_irr) {
     Dimension orbspi, virtpi;
     int **T2_cd_row_start, **T2_pq_row_start, offset, cd, pq;
     dpdbuf4 tau, t2, tau1_AO, tau2_AO;
-    psio_address next;
     struct iwlbuf InBuf;
     int idx, p, q, r, s, filenum;
     int lastbuf;

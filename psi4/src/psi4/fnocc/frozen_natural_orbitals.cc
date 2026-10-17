@@ -237,7 +237,6 @@ void FrozenNO::ComputeNaturalOrbitals() {
             for (int ab = 0; ab < amps1.params->coltot[h]; ++ab) {
                 int a = amps1.params->colorb[h][ab][0];
                 int b = amps1.params->colorb[h][ab][1];
-                double denom = aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b];
                 amps1.matrix[h][ij][ab] /= (aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
                 amps2.matrix[h][ij][ab] /= (aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
             }
@@ -490,8 +489,6 @@ void DFFrozenNO::ThreeIndexIntegrals() {
     outfile->Printf("  ==> 3-index integrals <==\n");
     outfile->Printf("\n");
 
-    long int o = ndoccact;
-    long int v = nvirt;
     long int nQ;
 
     // 1.  read scf 3-index integrals from disk
@@ -629,8 +626,6 @@ void DFFrozenNO::FourIndexIntegrals() {
     outfile->Printf("  ==> Build 4-index ERI's from 3-index integrals <==\n");
     outfile->Printf("\n");
 
-    long int o = ndoccact;
-    long int v = nvirt;
     long int nQ = Process::environment.globals["NAUX (CC)"];
 
     double** Cap = Ca()->pointer();

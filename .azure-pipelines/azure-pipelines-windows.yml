@@ -99,9 +99,9 @@ jobs:
       - script: |
           choco install miniforge3 --yes
           set PATH=C:\tools\miniforge3\Scripts;C:\tools\miniforge3;C:\tools\miniforge3\Library\bin;C:\tools\miniforge3\Library\mingw-w64\bin;%PATH%
-          echo '##vso[task.setvariable variable=PATH]%PATH%'
+          echo ##vso[task.setvariable variable=PATH]%PATH%
           set LIB=C:\tools\miniforge3\Library\lib;%LIB%
-          echo '##vso[task.setvariable variable=LIB]%LIB%'
+          echo ##vso[task.setvariable variable=LIB]%LIB%
           conda --version
         displayName: "Install Miniconda"
 
@@ -124,19 +124,10 @@ jobs:
       # pydantic=1.10.17 ensures v1 pydantic still working
       - script: |
           conda install cmake ^
-                        anaconda-project ^
-                        anaconda-client ^
                         conda-build ^
                         m2-sed ^
-                        libwinpthread=12.0.0.r4.gg4f2fc60ca=h57928b3_10 ^
-                        libgcc=16.1.0=h110b43a_1 ^
-                        libgfortran=16.1.0=h719f0c7_1 ^
-                        libgfortran5=16.1.0=h94075d5_1 ^
-                        libgomp=16.1.0=h8ee18e1_1 ^
-                        libstdcxx=16.1.0=hae5796f_1 ^
                         eigen ^
                         libboost-headers ^
-                        conda-verify ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^
                         msgpack-python ^
@@ -159,7 +150,8 @@ jobs:
                         pydantic ^
                         optking ^
                         scipy
-          which anaconda
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          which conda
           conda list
         displayName: "Install conda packages"
           #conda install --only-deps anaconda-client
@@ -180,6 +172,9 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+          where python
+          C:\tools\miniforge3\python.exe --version
+          C:\tools\miniforge3\python.exe -c "import numpy; print(numpy.__version__, numpy.__file__)"
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5

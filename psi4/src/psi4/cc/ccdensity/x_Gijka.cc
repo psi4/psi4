@@ -59,9 +59,7 @@ void x_Gijka() {
 
 void x_Gijka_rohf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
-    int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
-    double value;
     dpdfile2 L1A, T1A, L1B, T1B, R1A, R1B, I1A, I1B;
     dpdbuf4 G, V, T, L, Z, Z1, Z2, Tau;
 
@@ -658,9 +656,7 @@ void x_Gijka_7_rohf() {
 
 void x_Gijka_8_rohf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
-    int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
-    double value;
     dpdfile2 L1A, T1A, L1B, T1B, R1A, R1B, I1A, I1B;
     dpdbuf4 G, V, T, L, Z, Z1, Z2, Tau;
 

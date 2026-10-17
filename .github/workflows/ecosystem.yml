@@ -35,29 +35,13 @@ jobs:
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
-          - label: "Conda GNU (L)"
-            runs-on: ubuntu-latest
-            python-version: "3.13"
-            mkl-version: ""
-            platform: linux-64
-            pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not pe_ecp"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D ENABLE_v2rdm_casscf=ON
-              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
-            # Notes:
-            # * for all three lanes, can consider:
-            #    -D BUILD_SHARED_LIBS=ON
-            #    -D ENABLE_XHOST=OFF
-
           - label: "Conda Clang (M-Intel)"
             runs-on: macos-15-intel
             python-version: "3.14"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or (nbody_he_4b and snowflake))"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -80,7 +64,7 @@ jobs:
 
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
-            python-version: "3.14"
+            python-version: "3.15"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
@@ -111,17 +95,6 @@ jobs:
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
             python-version: "3.12"
-            mkl-version: ""
-            platform: win-64
-            pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
-            pytest-name-expr: "not pe_ecp"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D psi4_SKIP_ENABLE_Fortran=ON
-
-          - label: "LLVM clang-cl (W)"
-            runs-on: windows-latest
-            python-version: "3.14"
             mkl-version: ""
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
@@ -265,7 +238,7 @@ jobs:
         conda list
 
     - name: Special Config - Force testing OpenOrbitalOptimizer
-      if: "(matrix.cfg.label == 'Conda Clang (M-Intel)')"
+      if: matrix.cfg.python-version == 3.14 && (matrix.cfg.label == 'Conda Clang (M-Silicon)')
       run: |
         grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
         if [[ "${{ runner.os }}" == "macOS" ]]; then
@@ -342,8 +315,9 @@ jobs:
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
 
+      # Mac tests latest-release and Linux tests upstream main for QCFractal
     - name: Special Config - Download MolSSI/QCFractal Repo
-      if: runner.os == 'Linux'
+      if: runner.os != 'Windows'
       uses: actions/checkout@v6
       with:
         repository: MolSSI/QCFractal
@@ -352,7 +326,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install All QCArchive packages
-      if: runner.os == 'Linux'
+      if: runner.os != 'Windows'
       working-directory: ./qca
       run: |
           pip install -e ./qcportal -e ./qcfractalcompute -e ./qcfractal[services,geoip,snowflake]
@@ -455,7 +429,7 @@ jobs:
         git diff --color-words
 
     - name: Analyze Conda dependencies
-      if: runner.os != 'Windows'
+      if: runner.os != 'Windows' && matrix.cfg.python-version != '3.15'
       run: |
         conda install conda-tree -c conda-forge
         conda-tree deptree

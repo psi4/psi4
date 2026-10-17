@@ -41,6 +41,8 @@
 #include "psi4/libqt/blas_intfc23_mangle.h"
 #include "psi4/libqt/qt.h"
 
+// Fortran BLAS entry points, visible to this translation unit only.
+namespace {
 extern "C" {
 extern void F_DGBMV(char*, int*, int*, int*, int*, double*, double*, int*, double*, int*, double*, double*, int*);
 extern void F_DGEMM(char*, char*, int*, int*, int*, double*, double*, int*, double*, int*, double*, double*, int*);
@@ -65,6 +67,7 @@ extern void F_DTRMV(char*, char*, char*, int*, double*, int*, double*, int*);
 extern void F_DTRSM(char*, char*, char*, char*, int*, int*, double*, double*, int*, double*, int*);
 extern void F_DTRSV(char*, char*, char*, int*, double*, int*, double*, int*);
 }
+}  // namespace
 
 namespace psi {
 /**

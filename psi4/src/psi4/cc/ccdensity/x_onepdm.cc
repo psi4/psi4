@@ -75,8 +75,6 @@ void x_onepdm_rohf(const struct RHO_Params& rho_params) {
     dpdfile2 LIA, Lia, RIA, Ria, I, XIJ, Xij;
     dpdbuf4 T2, L2, R2, I2;
     int L_irr, R_irr, G_irr;
-    double dot_IA, dot_ia, dot_AI, dot_ai;
-    double dot_IJ;
     L_irr = rho_params.L_irr;
     R_irr = rho_params.R_irr;
     G_irr = rho_params.G_irr;

@@ -44,7 +44,6 @@ namespace psi {
 namespace cctriples {
 
 double ET_UHF_AAB() {
-    int cnt;
     int h, nirreps;
     int Gi, Gj, Gk, Ga, Gb, Gc, Gd, Gl;
     int Gji, Gij, Gjk, Gkj, Gik, Gki, Gijk;

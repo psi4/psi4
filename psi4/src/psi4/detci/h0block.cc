@@ -654,7 +654,6 @@ void CIWavefunction::H0block_fill() {
     int Ia, Ib, Ja, Jb;
     int Ialist, Iblist;
     SlaterDeterminant I, J;
-    double *evals, **evecs;
 
     /* fill lower triangle */
     for (i = 0; i < H0block_->size; i++) {

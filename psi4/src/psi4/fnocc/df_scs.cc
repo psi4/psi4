@@ -51,7 +51,6 @@ namespace fnocc {
 std::tuple<double, double, SharedMatrix, SharedMatrix> DFCoupledCluster::ComputePair(const std::string& name) {
     long int v = nvirt;
     long int o = ndoccact;
-    long int rs = nmo;
 
     double ssenergy = 0.0;
     double osenergy = 0.0;

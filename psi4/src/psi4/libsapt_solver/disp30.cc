@@ -86,7 +86,6 @@ double SAPT2p3::disp30_1(int ampfile, const char *amplabel, int AAintfile, const
                 for (int s = 0; s < nvirB; s++, bs++) {
                     int ab = a * aoccB + b;
                     int rs = r * nvirB + s;
-                    int sr = s * nvirA + r;
                     tRSAB[rs][ab] = tARBS[ar][bs];
                 }
             }

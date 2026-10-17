@@ -585,6 +585,8 @@ void export_mints(py::module& m) {
         .def("absmax", &Matrix::absmax, "Returns the absolute maximum value")
         .def("scale_row", &Matrix::scale_row, "Scales row m of irrep h by a", "h"_a, "m"_a, "a"_a)
         .def("scale_column", &Matrix::scale_column, "Scales column n of irrep h by a", "h"_a, "n"_a, "a"_a)
+        .def("swap_columns", &Matrix::swap_columns, "Swaps columns i and j in irrep h", "h"_a, "i"_a, "j"_a)
+        .def("sort_cols", &Matrix::sort_cols, "Permutes the columns of each irrep by sortvec", "sortvec"_a)
         .def("transform", matrix_one(&Matrix::transform), "Transform this matrix with transformer", "transformer"_a)
         .def("transform", matrix_two(&Matrix::transform), "Transform A with transformer", "a"_a, "transformer"_a)
         .def("back_transform", matrix_one(&Matrix::back_transform), "Backtransform this with transformer",
@@ -1642,8 +1644,10 @@ void export_mints(py::module& m) {
                     "Given combined basis sets, it constructs an orthogonalized \
                     space with the same span. Linearly dependent orbitals are thrown out. \
                     The first argument, combined, is the two basis sets together but unorthogonalized \
-                    The second argument, lindep_tol, is the tolerance for linear dependencies",
-                    "combined"_a, "lindep_tol"_a = 1.e-6);
+                    The second argument, lindep_tol, is the tolerance for linear dependencies \
+                    The third argument, cholesky_tol, is the tolerance for the partial Cholesky decomposition \
+                    used when the overlap is too ill conditioned for canonical orthogonalization",
+                    "combined"_a, "lindep_tol"_a = 1.e-6, "cholesky_tol"_a = 1.e-8);
 
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")

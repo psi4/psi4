@@ -389,7 +389,6 @@ void WmnijT2() {
 }
 
 void BT2() {
-    int h;
     dpdbuf4 newtIJAB, newtijab, newtIjAb;
     dpdbuf4 B_anti, B;
     dpdbuf4 tauIJAB, tauijab, tauIjAb;

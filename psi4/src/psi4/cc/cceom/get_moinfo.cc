@@ -87,11 +87,10 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
 
     nirreps = moinfo.nirreps;
 
-    moinfo.irr_labs_lowercase = (char **)malloc(sizeof(char *) * nirreps);
+    moinfo.irr_labs_lowercase.resize(nirreps);
     for (i = 0; i < nirreps; i++) {
-        moinfo.irr_labs_lowercase[i] = ::strdup(moinfo.irr_labs[i].c_str());
-        for (j = 0; j < ::strlen(moinfo.irr_labs_lowercase[i]); ++j)
-            moinfo.irr_labs_lowercase[i][j] = std::tolower(moinfo.irr_labs_lowercase[i][j]);
+        moinfo.irr_labs_lowercase[i] = moinfo.irr_labs[i];
+        for (auto &c : moinfo.irr_labs_lowercase[i]) c = std::tolower(static_cast<unsigned char>(c));
     }
 
     psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *)&(params.ref), sizeof(int));
@@ -217,8 +216,7 @@ void cleanup() {
         free(moinfo.Cb);
     }
 
-    for (i = 0; i < moinfo.nirreps; i++) free(moinfo.irr_labs_lowercase[i]);
-    free(moinfo.irr_labs_lowercase);
+    moinfo.irr_labs_lowercase.clear();
     if (params.ref == 2) {
         free(moinfo.aocc_sym);
         free(moinfo.bocc_sym);

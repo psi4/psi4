@@ -84,11 +84,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 Aorb->set(ai, bj, 8.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -102,11 +98,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 Aorb->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -120,11 +112,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 Aorb->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -241,11 +229,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 AorbAA->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -259,11 +243,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 AorbAA->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -277,11 +257,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 AorbAA->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -319,11 +295,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 AorbBB->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -337,11 +309,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 AorbBB->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -355,11 +323,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 AorbBB->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
@@ -395,11 +359,7 @@ void OCCWave::z_vector() {
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for (int ai = 0; ai < K.params->rowtot[h]; ++ai) {
-            int a = K.params->roworb[h][ai][0];
-            int i = K.params->roworb[h][ai][1];
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
-                int b = K.params->colorb[h][bj][0];
-                int j = K.params->colorb[h][bj][1];
                 AorbAB->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }

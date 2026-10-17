@@ -789,18 +789,29 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     if keep_wfn:
         result_data["wavefunction"] = _convert_wavefunction(wfn)
 
+    writer_prefix = core.get_writer_file_prefix(wfn.molecule().name())
     files = {
         # Path(...).with_suffix("grad") overwrites PID
-        "psi4.grad": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"),
-        "psi4.hess": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"),
-        "psi4.vibrec": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".vibrec"),
-        "psi4.molden_normal_modes": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".molden_normal_modes"),
+        "psi4.grad": Path(p4util.safe_writer_file_path(writer_prefix, ".grad")),
+        "psi4.hess": Path(p4util.safe_writer_file_path(writer_prefix, ".hess")),
+        "psi4.vibrec": Path(p4util.safe_writer_file_path(writer_prefix, ".vibrec")),
+        "psi4.molden_normal_modes": Path(p4util.safe_writer_file_path(writer_prefix, ".molden_normal_modes")),
         # binary "psi4.180.npy": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".180.npy"),
         # "timer.dat": Path("timer.dat"),  # ok for `psi4 --qcschema` but no file collected for `qcengine.run_program(..., "psi4")`
         "grid_esp.dat": Path("grid_esp.dat"),
         "grid_field.dat": Path("grid_field.dat"),
     }
-    result_data["native_files"] = {fl: flpath.read_text() for fl, flpath in files.items() if flpath.exists()}
+    result_data["native_files"] = {}
+    for fl, flpath in files.items():
+        try:
+            if flpath.exists():
+                result_data["native_files"][fl] = flpath.read_text()
+        except OSError as exc:
+            warnings.warn(
+                f"Skipping native file '{flpath}' due to filesystem error while checking output: {exc}",
+                RuntimeWarning,
+                stacklevel=2,
+            )
     # in-memory "files"
     result_data["native_files"]["timer.json"] = core.get_timer_records(compact=True)
 
