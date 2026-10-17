@@ -48,9 +48,12 @@ import json
 hessfile = Path(core.get_writer_file_prefix(wwfn.molecule().name()) + ".hess")
 compare(13, len(hessfile.read_text().splitlines()), "hessian der=2 file length")
 vibrec = json.loads(hessfile.with_suffix(".vibrec").read_text())
-# The mu array ordering can be non-deterministic with multi-threaded LAPACK, so check max value
+# Read the mass from the stored molecule, and check the reduced mass (mu) of the vibration only. Those of
+#   the zero-frequency translations and rotations depend on how their degenerate modes happen to mix.
+compare_values(1000., vibrec["molecule"]["mass"][1], "weird H mass from file", atol=1.e-6)
 mu_data = json.loads(vibrec["mu"])["data"]
-compare_values(1000., max(mu_data), "weird H mass from file", atol=1.e-6)
+trv = json.loads(vibrec["TRV"])["data"]
+compare_values(16.2465954, mu_data[trv.index("V")], "weird H vibrational reduced mass from file", atol=1.e-6)
 
 clean()
 clean_variables()
