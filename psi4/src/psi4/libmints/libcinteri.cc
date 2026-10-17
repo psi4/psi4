@@ -98,6 +98,44 @@ double libint2_to_libcint(int l, bool cart) {
     return libcint_unit / libint2_unit;
 }
 
+/// Stop if the libcint loaded at run time predates v6.2.0. Its screening of primitive pairs
+/// left out a factor large for diffuse primitives of high angular momentum and silently
+/// dropped their integrals (fixed in sunqm/libcint#133). libcint has no run-time version
+/// query, and an older library with the same soname can be loaded in place of the one psi4
+/// was built against, so test the behavior: one-center (gg|gg) integrals of normalized
+/// primitives of a common exponent a scale exactly as sqrt(a), and before v6.2.0 those at
+/// a = 1e-4 come out zero. Checked once per process.
+void require_libcint_6_2() {
+    static const bool ok = []() {
+        const int l = 4;
+        auto gggg = [](double a) {
+            int atm[ATM_SLOTS] = {0};
+            atm[PTR_COORD] = PTR_ENV_START;
+            int bas[BAS_SLOTS] = {0};
+            bas[ANG_OF] = l;
+            bas[NPRIM_OF] = 1;
+            bas[NCTR_OF] = 1;
+            bas[PTR_EXP] = PTR_ENV_START + 3;
+            bas[PTR_COEFF] = PTR_ENV_START + 4;
+            std::vector<double> env(PTR_ENV_START + 5, 0.0);
+            env[PTR_ENV_START + 3] = a;
+            env[PTR_ENV_START + 4] = CINTgto_norm(l, a);
+            int shls[4] = {0, 0, 0, 0};
+            const int n = 2 * l + 1;
+            std::vector<double> buf(static_cast<size_t>(n) * n * n * n);
+            int2e_sph(buf.data(), nullptr, shls, atm, 1, bas, 1, env.data(), nullptr, nullptr);
+            return buf[0];  // (00|00) of the m = -l function
+        };
+        const double a = 1e-4;
+        const double expected = std::sqrt(a) * gggg(1.0);
+        return std::fabs(gggg(a) - expected) <= 1e-6 * expected;
+    }();
+    if (!ok)
+        throw PSIEXCEPTION("LIBCINT backend: the libcint loaded at run time is older than v6.2.0 (built against " +
+                           std::string(CINT_VERSION) +
+                           ") and drops integrals of diffuse high-l functions. Load libcint >= 6.2.0.");
+}
+
 }  // namespace
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, int deriv, double omega,
@@ -109,6 +147,7 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
       opt_ipvip1_(nullptr),
       opt_ip1ip2_(nullptr),
       omega_(omega) {
+    require_libcint_6_2();
     if (deriv_ < 0 || deriv_ > 2)
         throw PSIEXCEPTION("LIBCINT backend: only first and second integral derivatives are implemented.");
 
