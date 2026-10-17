@@ -48,9 +48,9 @@ if(TARGET simint::simint)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_simint)
 endif()
 
-if(TARGET libcint::libcint)
-  target_link_libraries(psi4_optional_deps INTERFACE libcint::libcint)
-  target_compile_definitions(psi4_optional_deps INTERFACE USING_libcint)
+if(TARGET cint::cint)
+  target_link_libraries(psi4_optional_deps INTERFACE cint::cint)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_cint)
 endif()
 
 if(TARGET dkh::dkh)

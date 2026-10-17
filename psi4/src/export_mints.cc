@@ -54,7 +54,7 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/multipolesymmetry.h"
 #include "psi4/libmints/eri.h"
-#ifdef USING_libcint
+#ifdef USING_cint
 #include "psi4/libmints/libcinteri.h"
 #endif
 #include "psi4/libmints/molecule.h"
@@ -1335,7 +1335,7 @@ void export_mints(py::module& m) {
 
     py::class_<Libint2ERI, std::unique_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
                                                         "Computes normal two electron repulsion integrals");
-#ifdef USING_libcint
+#ifdef USING_cint
     // IntegralFactory returns these as std::unique_ptr<TwoBodyAOInt>; pybind11 needs the concrete types
     // registered with a matching unique_ptr holder (TwoBodyAOInt's is shared_ptr).
     py::class_<LibcintERI, std::unique_ptr<LibcintERI>>(m, "LibcintERI", pyTwoBodyAOInt,

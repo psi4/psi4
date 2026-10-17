@@ -62,7 +62,7 @@
 #include "psi4/libmints/siminteri.h"
 #endif
 
-#ifdef USING_libcint
+#ifdef USING_cint
 #include "psi4/libmints/libcinteri.h"
 #endif
 
@@ -71,9 +71,9 @@ using namespace psi;
 namespace {
 // INTEGRAL_PACKAGE LIBCINT is honored only when libcint is compiled in; otherwise it is an error.
 void require_libcint() {
-#ifndef USING_libcint
+#ifndef USING_cint
     throw PSIEXCEPTION("INTEGRAL_PACKAGE LIBCINT requested, but Psi4 was built without libcint. "
-                       "Rebuild with `-D ENABLE_libcint=ON`.");
+                       "Rebuild with `-D ENABLE_cint=ON`.");
 #endif
 }
 }  // namespace
@@ -274,7 +274,7 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
 #endif
     if (integral_package == "LIBCINT") {
         require_libcint();
-#ifdef USING_libcint
+#ifdef USING_cint
         return std::make_unique<LibcintERI>(this, deriv, use_shell_pairs, needs_exchange);
 #endif
     }
@@ -287,7 +287,7 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, 
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
     if (integral_package == "LIBCINT") {
         require_libcint();
-#ifdef USING_libcint
+#ifdef USING_cint
         return std::make_unique<LibcintErfERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
 #endif
     }
@@ -300,7 +300,7 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, 
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
     if (integral_package == "LIBCINT") {
         require_libcint();
-#ifdef USING_libcint
+#ifdef USING_cint
         return std::make_unique<LibcintErfComplementERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
 #endif
     }
