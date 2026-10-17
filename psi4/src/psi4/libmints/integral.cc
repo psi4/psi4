@@ -257,8 +257,8 @@ void fall_back_to_libint2(const std::string &integral_package, const std::string
     if (integral_package == "LIBINT2") return;
     if (!package_available(integral_package)) {
         std::string option = integral_package;
-        if (integral_package == "SIMINT") return option = "simint";
-        if (integral_package == "LIBCINT") return option = "cint";
+        if (integral_package == "SIMINT") option = "simint";
+        if (integral_package == "LIBCINT") option = "cint";
         throw PSIEXCEPTION("INTEGRAL_PACKAGE " + integral_package +
                            " was requested, but Psi4 was built without it. Rebuild with `-D ENABLE_" + option +
                            "=ON`.");
