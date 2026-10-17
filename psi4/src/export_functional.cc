@@ -255,17 +255,7 @@ void export_functional(py::module &m) {
             return std::make_shared<DFTGrid>(mol, basis, int_opts, string_opts, Process::environment.options);
         });
 
-    py::class_<IntegratorDispatcher, std::shared_ptr<IntegratorDispatcher>>(m, "IntegratorDispatcher",
-      "A list of integrators. If one fails, fallback to the next.")
-        .def("functional", &IntegratorDispatcher::functional, "Returns the interal superfunctional.")
-        .def("collocation_size", &IntegratorDispatcher::collocation_size, "Returns the maximum number of doubles stored as basis functions and their derivatives evaluated on the grid.")
-        .def("quadrature_values", &IntegratorDispatcher::quadrature_values, "Returns the quadrature values.")
-        .def("build_collocation_cache", &IntegratorDispatcher::build_collocation_cache,
-             "Constructs collocation caches to prevent recomputation.")
-        .def("clear_collocation_cache", &IntegratorDispatcher::clear_collocation_cache, "Clears the collocation cache.")
-        .def("psi_manager", &IntegratorDispatcher::psi_manager, "Return the first Psi4-native IntegrationManager (VBase), if any.");
-
-    py::class_<VBase, std::shared_ptr<VBase>>(m, "VBase", "docstring")
+    py::class_<VBase, std::shared_ptr<VBase>>(m, "VBase", "Psi4's internal Kohn-Sham integrator.")
         .def_static("build",
                     [](std::shared_ptr<BasisSet> &basis, std::shared_ptr<SuperFunctional> &func, std::string type) {
                         return VBase::build_V(basis, func, Process::environment.options, type);
@@ -295,6 +285,16 @@ void export_functional(py::module &m) {
         .def("initialize", &VBase::initialize, "Initializes the V object.")
         .def("finalize", &VBase::finalize, "Finalizes the V object.")
         .def("print_header", &VBase::print_header, "Prints the objects header.");
+
+    py::class_<IntegratorDispatcher, std::shared_ptr<IntegratorDispatcher>>(m, "IntegratorDispatcher",
+      "A list of integrators. If one fails, fallback to the next.")
+        .def("functional", &IntegratorDispatcher::functional, "Returns the interal superfunctional.")
+        .def("collocation_size", &IntegratorDispatcher::collocation_size, "Returns the maximum number of doubles stored as basis functions and their derivatives evaluated on the grid.")
+        .def("quadrature_values", &IntegratorDispatcher::quadrature_values, "Returns the quadrature values.")
+        .def("build_collocation_cache", &IntegratorDispatcher::build_collocation_cache,
+             "Constructs collocation caches to prevent recomputation.")
+        .def("clear_collocation_cache", &IntegratorDispatcher::clear_collocation_cache, "Clears the collocation cache.")
+        .def("psi_manager", &IntegratorDispatcher::psi_manager, "Return the first Psi4-native IntegrationManager (VBase), if any.");
 
     py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(m, "RKSFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>());
