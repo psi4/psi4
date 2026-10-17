@@ -442,7 +442,10 @@ def _property(pkg, driver, method, options):
     psi4.core.clean()
     psi4.core.clean_options()
     _water()
-    psi4.set_options({"basis": "cc-pvdz", "e_convergence": 1e-10, "d_convergence": 1e-10})
+    # The internal optimizer converges to d_convergence; OOO (the default on some CI lanes) stops short of
+    # it, by enough to move wB97X gradients 4e-9, and not always at the same point for both packages.
+    psi4.set_options({"basis": "cc-pvdz", "e_convergence": 1e-10, "d_convergence": 1e-10,
+                      "orbital_optimizer_package": "internal"})
     psi4.set_options(options)
     psi4.set_options({"integral_package": pkg})
     return np.asarray(driver(method))
