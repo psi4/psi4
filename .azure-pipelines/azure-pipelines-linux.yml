@@ -200,7 +200,7 @@ jobs:
       echo "  - zlib" >> env_p4env.yaml
       echo "  - armadillo" >> env_p4env.yaml
       echo "  - openorbitaloptimizer" >> env_p4env.yaml
-      echo "  - libcint" >> env_p4env.yaml
+      echo "  - libcint>=6.2" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
@@ -233,7 +233,7 @@ jobs:
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc="${ENABLE_GAUXC}" \
         -D ENABLE_OpenOrbitalOptimizer=ON \
-        -D ENABLE_libcint=ON \
+        -D ENABLE_cint=ON \
         -D FORCE_PEDANTIC=ON \
         $(CMARGS) \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install

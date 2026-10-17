@@ -41,7 +41,7 @@ def _water():
     )
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("basis,puream", [
     ("cc-pvdz", True),
     ("cc-pvtz", True),
@@ -66,7 +66,7 @@ def test_libcint_ao_eri(basis, puream):
     assert compare_values(ref, tst, 11, f"AO ERI {basis} puream={puream}")
 
 
-@uusing("libcint")
+@uusing("cint")
 def test_libcint_erf_eri():
     """Range-separated erf AO ERIs match Libint2."""
     import psi4
@@ -83,7 +83,7 @@ def test_libcint_erf_eri():
     assert compare_values(erf("libint2"), erf("libcint"), 11, "AO erf-ERI omega=0.3")
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("puream", [True, False])
 def test_libcint_df_integrals(puream):
     """Density-fitting 2-center (Q|P) and 3-center (Q|mn) match Libint2."""
@@ -109,7 +109,7 @@ def test_libcint_df_integrals(puream):
     assert compare_values(t2, tc, 10, f"DF 3-center (Q|mn) puream={puream}")
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("prim_puream,aux_puream", [(False, True), (True, False)])
 def test_libcint_df_integrals_mixed(prim_puream, aux_puream):
     """DF integrals match Libint2 when primary and auxiliary disagree on cartesian/spherical."""
@@ -132,7 +132,7 @@ def test_libcint_df_integrals_mixed(prim_puream, aux_puream):
     assert compare_values(t2, tc, 10, f"DF 3-center (Q|mn) prim/aux puream={prim_puream}/{aux_puream}")
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("basis", ["cc-pvdz", "6-31G*"])
 def test_libcint_threaded_df_mp2(basis):
     """Threaded DF-MP2 (cloned integral objects; 6-31G* mixes a cartesian primary with a spherical RI aux)."""
@@ -158,7 +158,7 @@ def test_libcint_threaded_df_mp2(basis):
         psi4.set_num_threads(nthreads)
 
 
-@uusing("libcint")
+@uusing("cint")
 def test_libcint_screening_none():
     """DF codes initialize the ERI sieve manually under SCREENING NONE, which the engine must support."""
     import psi4
@@ -178,7 +178,7 @@ def test_libcint_screening_none():
     assert compare_values(energy("libint2"), energy("libcint"), 8, "DF-MP2 screening=none")
 
 
-@uusing("libcint")
+@uusing("cint")
 def test_libcint_python_factory_eri():
     """A factory-built ERI object is usable from Python (as in test_erisieve)."""
     import psi4
@@ -192,7 +192,7 @@ def test_libcint_python_factory_eri():
     eri.compute_shell(0, 0, 0, 0)
 
 
-@uusing("libcint")
+@uusing("cint")
 def test_libcint_bases_on_different_molecules():
     """Each basis keeps its own molecule's centers: (Q|mn) with Q on a different molecule than m and n."""
     import psi4
@@ -221,7 +221,7 @@ def test_libcint_bases_on_different_molecules():
     assert compare_values(ref, eri("libcint"), 10, "(Q|mn) with Q on another molecule")
 
 
-@uusing("libcint")
+@uusing("cint")
 def test_libcint_sapgau_guess():
     """The SAPGAU guess's 3-center integrals use deliberately non-normalized s shells.
 
@@ -243,7 +243,7 @@ def test_libcint_sapgau_guess():
     assert compare_values(energy("libint2"), energy("libcint"), 10, "SCF energy at first iteration from SAPGAU guess")
 
 
-@uusing("libcint")
+@uusing("cint")
 def test_libcint_diffuse_external_charge():
     """Diffuse external charges use deliberately non-normalized s shells (as do SAPGAU guesses)."""
     import psi4
@@ -263,7 +263,7 @@ def test_libcint_diffuse_external_charge():
     assert compare_values(energy("libint2"), energy("libcint"), 9, "SCF with diffuse external charges")
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("puream", [True, False])
 def test_libcint_scf_conventional(puream):
     """Conventional (PK, 4-center) RHF energy matches Libint2."""
@@ -285,7 +285,7 @@ def test_libcint_scf_conventional(puream):
     assert compare_values(scf("libint2"), scf("libcint"), 9, f"PK-SCF puream={puream}")
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("method", ["scf", "mp2"])
 def test_libcint_df_energies(method):
     """Density-fitted RHF and MP2 energies match Libint2."""
@@ -329,7 +329,7 @@ def _diffuse_basis(shell, exp_o, exp_h, puream):
 """
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("puream", [True, False])
 @pytest.mark.parametrize("shell,exp_o,exp_h,max_deriv", [
     ("G", "1.0e-4", "3.0e-4", 1),  # Libint2 here has no second derivatives of g functions
@@ -385,7 +385,7 @@ def _mints(pkg, mol):
     return psi4.core.MintsHelper(wfn.basisset())
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("basis,puream,omega", [
     ("cc-pvdz", True, 0.0),
     ("cc-pvdz", False, 0.0),   # cartesian
@@ -402,7 +402,7 @@ def test_libcint_eri_deriv1(basis, puream, omega):
             assert compare_values(r, t, 10, f"d(ab|cd)/d{'xyz'[xyz]}{atom} {basis} puream={puream} omega={omega}")
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("puream", [True, False])
 def test_libcint_eri_deriv2(puream):
     """Second nuclear derivatives of the 4-center ERIs match Libint2 for every atom pair."""
@@ -416,7 +416,7 @@ def test_libcint_eri_deriv2(puream):
                 assert compare_values(r, t, 10, f"d2(ab|cd)/d{a1}d{a2} [{k}] puream={puream}")
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("puream", [True, False])
 def test_libcint_df_deriv1(puream):
     """First derivatives of the DF metric (P|Q) and 3-center (P|mn) match Libint2."""
@@ -451,7 +451,7 @@ def _property(pkg, driver, method, options):
     return np.asarray(driver(method))
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("method,options", [
     pytest.param("scf", {"scf_type": "pk"}, id="pk-rhf"),
     pytest.param("scf", {"scf_type": "pk", "puream": False}, id="pk-rhf-cartesian"),
@@ -479,7 +479,7 @@ def test_libcint_gradient(method, options):
     assert compare_values(ref, tst, decimal, f"{method} gradient {options}")
 
 
-@uusing("libcint")
+@uusing("cint")
 @pytest.mark.parametrize("options", [
     pytest.param({"scf_type": "pk"}, id="pk-rhf"),
     pytest.param({"scf_type": "pk", "puream": False}, id="pk-rhf-cartesian"),
@@ -499,7 +499,7 @@ def test_libcint_hessian(options):
     assert compare_values(ref, tst, decimal, f"RHF Hessian {options}")
 
 
-@pytest.mark.skipif(has_program("libcint"), reason="libcint is compiled in")
+@pytest.mark.skipif(has_program("cint"), reason="libcint is compiled in")
 @pytest.mark.parametrize("method", ["hf", "wb97x"])
 def test_libcint_not_compiled_in(method):
     import psi4

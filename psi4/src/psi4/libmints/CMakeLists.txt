@@ -131,7 +131,7 @@ if(TARGET simint::simint)
     )
 endif()
 
-if(TARGET libcint::libcint)
+if(TARGET cint::cint)
   target_sources(mints
     PRIVATE
       libcinteri.cc

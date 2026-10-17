@@ -97,7 +97,7 @@ _programs = {
     "gauxc": psi4.addons("gauxc"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
-    "libcint": psi4.addons("libcint"),
+    "cint": psi4.addons("cint"),
 }
 
 
