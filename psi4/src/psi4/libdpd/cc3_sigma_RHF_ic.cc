@@ -74,20 +74,10 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int d
     int h, nirreps, thread, nijk, *ijk_part;
     int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
     int i, j, k, l, a, b, c, d, row, col;
-    int I, J, K, L, A, B, C, D;
-    int kj, jk, ji, ij, ik, ki;
     int Gkj, Gjk, Gji, Gij, Gik, Gki, Gkd;
     int Gijk, GS, GC, GWX3, GW, GX3, nrows, ncols, nlinks;
-    int ab, ba, ac, ca, bc, cb;
-    int Gab, Gba, Gac, Gca, Gbc, Gcb, Gid, Gjd;
-    int id, jd, kd, ad, bd, cd;
-    int il, jl, kl, la, lb, lc, li, lk;
-    int da, di, dj, dk, thr_id;
     int Gad, Gdi, Gdj, Gdk, Glc, Gli, Glk, cnt, cnt2;
     long int length;
-    double value, F_val, t_val, E_val;
-    double dijk, denom, *tvect, **Z;
-    double value_ia, value_ka, denom_ia, denom_ka;
     dpdfile2 fIJ, fAB, *SIA_local;
     dpdbuf4 buf4_tmp, *SIjAb_local;
     char lbl[32];
@@ -315,7 +305,6 @@ void cc3_sigma_RHF_ic_thread(thread_data &data) {
     double **Z, *tvect, ***W3, ***W3a, ***W, ***V, ***Wa, ***Va;
     dpdbuf4 *SIjAb, SIjAb_local;
     dpdfile2 *SIA, SIA_local;
-    char lbl[32];
 
     int do_singles, do_doubles, *occ_off, *vir_off;
     int Gi, Gj, Gk, thr_id, first_ijk, last_ijk;

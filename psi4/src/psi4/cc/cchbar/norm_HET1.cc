@@ -41,9 +41,7 @@ namespace psi {
 namespace cchbar {
 
 void norm_HET1() {
-    int i;
     double dot;
-    dpdfile2 F;
     dpdbuf4 W;
 
     outfile->Printf("Dots of (HeT1)c in names \"CC3 Wxxx\" in CC3_HET1 \n");

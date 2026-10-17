@@ -64,8 +64,6 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
     double **delta;
     double x, y, z;
     double xmin, xmax, ymin, ymax, zmin, zmax;
-    double xstep, ystep, zstep;
-    int *order;
     molecule = wfn->molecule();
     basis = wfn->basisset();
     nao = basis->nao();

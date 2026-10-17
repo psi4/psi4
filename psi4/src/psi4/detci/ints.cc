@@ -436,7 +436,6 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only) {
         SharedMatrix Cso_rot = get_orbitals("ROT");
         int nao = AO2SO_->rowspi()[0];
 
-        int offset = 0;
         double** Crotp = Crot->pointer();
         for (int h = 0, offset = 0, offset_act = 0; h < nirrep_; h++) {
             int hnso = AO2SO_->colspi()[h];
@@ -698,7 +697,6 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact, SharedVector t
     size_t nQ = dfh_->get_naux();
     int nrot = CalcInfo_->num_rot_orbs;
     int nact = CalcInfo_->num_ci_orbs;
-    int nav = nact + CalcInfo_->num_rsv_orbs;
 
     // Read RaQ
     auto RaQ = std::make_shared<Matrix>("RaQ", nrot, nact * nQ);
@@ -759,7 +757,6 @@ void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix Uact, SharedVector two
 
     int nrot = CalcInfo_->num_rot_orbs;
     int nact = CalcInfo_->num_ci_orbs;
-    int nav = nact + CalcInfo_->num_rsv_orbs;
 
     auto aaar = std::make_shared<Matrix>("Tmp (aa|ar) Matrix", nact * nact * nact, nrot);
 
@@ -775,7 +772,6 @@ void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix Uact, SharedVector two
 
             for (size_t r = 0; r < nact; r++) {
                 size_t r_sym = I.params->rsym[r];
-                size_t pqr_sym = p_sym ^ q_sym ^ r_sym;
 
                 for (size_t s = 0; s < nrot; s++) {
                     size_t s_sym = I.params->ssym[s];

@@ -79,13 +79,11 @@ double EaT_RHF() {
     double ET, *ET_array;
     dpdfile2 fIJ, fAB, fIA, L1;
     dpdbuf4 T2, L2, Eints, Dints, *Fints_array;
-    FILE *ijkfile;
 
     timer_on("ET_RHF");
 
     nirreps = moinfo.nirreps;
     const auto& occpi = moinfo.occpi;
-    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
@@ -267,7 +265,6 @@ double EaT_RHF() {
 
 void EaT_RHF_thread(EaT_RHF_thread_data *data) {
     int h, nirreps, cnt_ijk;
-    int Gp, p, nump;
     int nrows, ncols, nlinks;
     int Gijk, Gid, Gkd, Gjd, Gil, Gkl, Gjl;
     int Gab, Gba, Gbc, Gcb, Gac, Gca;

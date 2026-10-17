@@ -48,7 +48,6 @@ void cc3_t3x() {
         int Gi, Gj, Gk, Gijk;
         int Ga, Gb, Gc, Gab;
         int i, j, k, I, J, K;
-        int a, b, c, A, B, C;
         int ab;
         double ***W1;
         dpdbuf4 T2, E, F, T2AA, T2AB, T2BA, EAA, EAB, EBA, FAA, FAB, FBA;

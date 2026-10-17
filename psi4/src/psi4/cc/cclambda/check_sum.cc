@@ -50,8 +50,6 @@ void check_sum(char *term_lbl, int irrep) {
     dpdbuf4 LIJAB, Lijab, LIjAb, LIjbA;
     static double old_norm = 0;
     double norm = 0;
-    double dotval;
-    char lbl[80];
 
     if (!strcmp(term_lbl, "reset")) {
         outfile->Printf("resetting norm\n");

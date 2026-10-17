@@ -131,7 +131,6 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSa
             const SOTransform &t2 = b2_->sotrans(jsh);
             int nao2 = b2_->naofunction(jsh);
 
-            int nao12 = nao1 * nao2;
 
             // loop through the AO shells that make up this SO shell
             for (int i = 0; i < t1.naoshell; ++i) {

@@ -495,11 +495,12 @@ void JK::USO2AO() {
             int nso = AO2USO_->colspi()[h];
             int ncol = C_left_ao_[N]->colspi()[0];
             int ncolspi = C_left_[N]->colspi()[h];
-            if (nso == 0 || ncolspi == 0) continue;
-            double** Up = AO2USO_->pointer(h);
-            double** CAOp = C_left_ao_[N]->pointer();
-            double** CSOp = C_left_[N]->pointer(h);
-            C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
+            if (nso && ncolspi) {
+                auto Up = AO2USO_->pointer(h);
+                auto CAOp = C_left_ao_[N]->pointer();
+                auto CSOp = C_left_[N]->pointer(h);
+                C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
+            }
             offset += ncolspi;
         }
     }
@@ -515,18 +516,19 @@ void JK::USO2AO() {
         int offset = 0;
         int symm = D_[N]->symmetry();
         for (int h = 0; h < AO2USO_->nirrep(); ++h) {
-            // We MUST pack columns in the order in which they appear for totally symmetric C_left.
-            // This means we transform in order of h ^ symm, not in order of h.
+            // irrep h describes irrep h ^ symm orbitals.
+            // We need our orbital ordering to match that of the totally symmetric C_left.
+            // So therefore, we first pack the irrep h ^ symm elts to get irrep h orbitals
             int nao = AO2USO_->rowspi()[0];
             int nso = AO2USO_->colspi()[h ^ symm];
             int ncol = C_right_ao_[N]->colspi()[0];
-            // Remember: colspi_[h] describes not the orbitals of block h, but the orbitals that transform as h.
             int ncolspi = C_right_[N]->colspi()[h];
-            if (nso == 0 || ncolspi == 0) continue;
-            double** Up = AO2USO_->pointer(h ^ symm);
-            double** CAOp = C_right_ao_[N]->pointer();
-            double** CSOp = C_right_[N]->pointer(h ^ symm);
-            C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
+            if (nso && ncolspi) {
+                auto Up = AO2USO_->pointer(h ^ symm);
+                auto CAOp = C_right_ao_[N]->pointer();
+                auto CSOp = C_right_[N]->pointer(h ^ symm);
+                C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
+            }
             offset += ncolspi;
         }
     }

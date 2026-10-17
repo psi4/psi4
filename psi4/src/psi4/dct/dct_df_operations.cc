@@ -210,7 +210,6 @@ Matrix DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Ba
 
         int pstart = auxiliary->shell(Pstart).function_index();
         int pstop = (Pstop == auxiliary->nshell() ? nQ : auxiliary->shell(Pstop).function_index());
-        int np = pstop - pstart;
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)

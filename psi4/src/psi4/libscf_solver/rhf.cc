@@ -260,7 +260,7 @@ void RHF::form_F() {
     }
 }
 
-void RHF::form_C(double shift) {
+void RHF::diagonalize_orbitals(double shift) {
     if (shift == 0.0) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
     } else {
@@ -270,7 +270,6 @@ void RHF::form_C(double shift) {
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
     }
-    find_occupation();
 }
 
 void RHF::form_D() {
@@ -855,7 +854,6 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 }
 
 int RHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) {
-    int fock_builds;
     std::time_t start, stop;
     start = std::time(nullptr);
 

@@ -80,7 +80,6 @@ void Wabei_UHF() {
     global_dpd_->file2_mat_rd(&Fme);
     for (int Gei = 0; Gei < moinfo.nirreps; Gei++) {
         int Gmi = Gei;
-        int Gab = Gei;
         global_dpd_->buf4_mat_irrep_init(&T2, Gmi);
         global_dpd_->buf4_mat_irrep_rd(&T2, Gmi);
         int row = 0;
@@ -116,7 +115,6 @@ void Wabei_UHF() {
     global_dpd_->file2_mat_rd(&T1);
     for (int Gef = 0; Gef < moinfo.nirreps; Gef++) {
         int Gei = Gef;
-        int Gab = Gef; /* W and B are totally symmetric */
         for (int Ge = 0; Ge < moinfo.nirreps; Ge++) {
             int Gf = Ge ^ Gef;
             int Gi = Gf;

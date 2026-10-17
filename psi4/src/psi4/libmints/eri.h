@@ -50,7 +50,6 @@ namespace psi {
 
 class TwoBodyAOInt;
 class IntegralFactory;
-class Fjt;
 class AOShellCombinationsIterator;
 class CorrelationFactor;
 

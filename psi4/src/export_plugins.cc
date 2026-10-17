@@ -31,7 +31,7 @@
 
 #include "psi4/pybind11.h"
 
-#include "psi4/libfilesystem/path.h"
+#include <filesystem>
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libplugin/plugin.h"
@@ -62,8 +62,8 @@ std::map<std::string, plugin_info> plugins;
 int py_psi_plugin_load(std::string fullpathname) {
     int ret = 0;
 
-    filesystem::path pluginPath(fullpathname);
-    std::string uc = to_upper_copy(pluginPath.stem());
+    std::filesystem::path pluginPath(fullpathname);
+    std::string uc = to_upper_copy(pluginPath.stem().string());
 
     // Make sure the plugin isn't already loaded.
     if (plugins.count(uc) == 0) {
@@ -86,8 +86,8 @@ int py_psi_plugin_load(std::string fullpathname) {
     @returns The result from the plugin.
 */
 SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction ref_wfn) {
-    filesystem::path pluginPath(fullpathname);
-    std::string uc = to_upper_copy(pluginPath.stem());
+    std::filesystem::path pluginPath(fullpathname);
+    std::string uc = to_upper_copy(pluginPath.stem().string());
     if (plugins.count(uc) == 0) {
         plugins[uc] = plugin_load(fullpathname);
     }
@@ -124,8 +124,8 @@ SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction re
     @param fullpathname Used to identity loaded plugin.
 */
 void py_psi_plugin_close(std::string fullpathname) {
-    filesystem::path pluginPath(fullpathname);
-    std::string uc = to_upper_copy(pluginPath.stem());
+    std::filesystem::path pluginPath(fullpathname);
+    std::string uc = to_upper_copy(pluginPath.stem().string());
     if (plugins.count(uc) > 0) {
         plugin_info &info = plugins[uc];
         plugin_close(info);
