@@ -9,7 +9,8 @@ ref_dfmp2_tot            =    -76.2283664022745              #TEST
                                                
 ref_dlpnomp2_corl        =     -0.2015778022639              #TEST
 ref_dlpnomp2_os_corl     =     -0.1508217508886              #TEST
-ref_dlpnomp2_ss_corl     =     -0.0507562450644              #TEST
+# The same-spin reference is the total correlation minus its opposite-spin component.
+ref_dlpnomp2_ss_corl     =     -0.0507560513753              #TEST
 ref_dlpnomp2_tot         =    -76.2283650778585              #TEST
 
 molecule h2o {
@@ -68,6 +69,11 @@ compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 co
 compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')               #TEST
 compare_values(ref_dlpnomp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')    #TEST
 compare_values(ref_dlpnomp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
+# Default thresholds retain a nonzero PNO truncation correction. Its spin components
+# must sum to the total, including the symmetry-related off-diagonal pairs.
+compare_values(variable('MP2 CORRELATION ENERGY'),
+               variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY') + variable('MP2 SAME-SPIN CORRELATION ENERGY'),
+               10, 'DLPNO-MP2 spin components sum to total with PNO truncation')         #TEST
 compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
 compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')   #TEST
 compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                 #TEST

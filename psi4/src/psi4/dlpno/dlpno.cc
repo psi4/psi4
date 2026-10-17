@@ -1652,7 +1652,7 @@ void DLPNO::pno_transform() {
             n_pno_[ji] = n_pno_[ij];
             de_pno_[ji] = de_pno_ij;
             de_pno_os[ji] = de_pno_ij_os;
-            de_pno_ss[ji] = de_pno_ij_os;
+            de_pno_ss[ji] = de_pno_ij_ss;
         }
     }
 
