@@ -62,7 +62,21 @@
 #include "psi4/libmints/siminteri.h"
 #endif
 
+#ifdef USING_libcint
+#include "psi4/libmints/libcinteri.h"
+#endif
+
 using namespace psi;
+
+namespace {
+// INTEGRAL_PACKAGE LIBCINT is honored only when libcint is compiled in; otherwise it is an error.
+void require_libcint() {
+#ifndef USING_libcint
+    throw PSIEXCEPTION("INTEGRAL_PACKAGE LIBCINT requested, but Psi4 was built without libcint. "
+                       "Rebuild with `-D ENABLE_libcint=ON`.");
+#endif
+}
+}  // namespace
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                                  std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
@@ -258,6 +272,12 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
 #ifdef USING_simint
     if (deriv == 0 && integral_package == "SIMINT") return  std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
 #endif
+    if (integral_package == "LIBCINT") {
+        require_libcint();
+#ifdef USING_libcint
+        return std::make_unique<LibcintERI>(this, deriv, use_shell_pairs, needs_exchange);
+#endif
+    }
     fall_back_to_libint2(integral_package, "derivative integrals");
     return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
@@ -265,6 +285,12 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    if (integral_package == "LIBCINT") {
+        require_libcint();
+#ifdef USING_libcint
+        return std::make_unique<LibcintErfERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+#endif
+    }
     fall_back_to_libint2(integral_package, "range-separated (erf) integrals");
     return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
@@ -272,6 +298,12 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    if (integral_package == "LIBCINT") {
+        require_libcint();
+#ifdef USING_libcint
+        return std::make_unique<LibcintErfComplementERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+#endif
+    }
     fall_back_to_libint2(integral_package, "range-separated (erfc) integrals");
     return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
