@@ -169,9 +169,7 @@ jobs:
 
   - bash: |
       grep '"INTEGRAL_PACKAGE"' psi4/src/read_options.cc
-      if [[ "$(Agent.JobName)" == "Linux Builds gcc_11" ]]; then
-        sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 SIMINT LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
-      fi
+      sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 SIMINT LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
       grep '"INTEGRAL_PACKAGE"' psi4/src/read_options.cc
     displayName: "Special Operation: test libcint as default integral package"
 
@@ -200,7 +198,7 @@ jobs:
       echo "  - zlib" >> env_p4env.yaml
       echo "  - armadillo" >> env_p4env.yaml
       echo "  - openorbitaloptimizer" >> env_p4env.yaml
-      echo "  - libcint>=6.2" >> env_p4env.yaml
+      #echo "  - libcint" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
