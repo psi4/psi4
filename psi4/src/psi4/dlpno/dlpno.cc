@@ -963,7 +963,6 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
         // which basis functions (on which atoms) contribute to each local MO?
         lmo_to_bfs_.resize(naocc);
-        lmo_to_atoms_.resize(naocc);
 
         for (int i = 0; i < naocc; ++i) {
             for (int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
@@ -971,12 +970,10 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
                     lmo_to_bfs_[i].push_back(bf_ind);
                 }
             }
-            lmo_to_atoms_[i] = block_list(lmo_to_bfs_[i], bf_to_atom);
         }
 
         // which basis functions (on which atoms) contribute to each projected AO?
         pao_to_bfs_.resize(nbf);
-        pao_to_atoms_.resize(nbf);
 
         for (int u = 0; u < nbf; ++u) {
             for (int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
@@ -984,29 +981,39 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
                     pao_to_bfs_[u].push_back(bf_ind);
                 }
             }
-            pao_to_atoms_[u] = block_list(pao_to_bfs_[u], bf_to_atom);
         }
     } // end if
 
     if (!final) {
+        // Rebuild atom maps from the retained coefficient-sparsity maps on both
+        // the initial and refined passes; the latter has initial == false.
+        SparseMap lmo_to_atoms(naocc);
+        for (int i = 0; i < naocc; ++i) {
+            lmo_to_atoms[i] = block_list(lmo_to_bfs_[i], bf_to_atom);
+        }
+        SparseMap pao_to_atoms(nbf);
+        for (int u = 0; u < nbf; ++u) {
+            pao_to_atoms[u] = block_list(pao_to_bfs_[u], bf_to_atom);
+        }
+
         // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
         //   of all interacting LMOs
 
-        lmo_to_riatoms_ext_ = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
-        riatom_to_lmos_ext_ = invert_map(lmo_to_riatoms_ext_, natom);
+        const auto lmo_to_riatoms_ext = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
+        riatom_to_lmos_ext_ = invert_map(lmo_to_riatoms_ext, natom);
         riatom_to_paos_ext_ = chain_maps(riatom_to_lmos_ext_, lmo_to_paos_);
 
         // We'll use these maps to screen the the local MO transform (first index):
         //   (mn|Q) * C_mi -> (in|Q)
-        riatom_to_atoms1_ = chain_maps(riatom_to_lmos_ext_, lmo_to_atoms_);
-        riatom_to_shells1_ = chain_maps(riatom_to_atoms1_, atom_to_shell_);
-        riatom_to_bfs1_ = chain_maps(riatom_to_atoms1_, atom_to_bf_);
+        const auto riatom_to_atoms1 = chain_maps(riatom_to_lmos_ext_, lmo_to_atoms);
+        riatom_to_shells1_ = chain_maps(riatom_to_atoms1, atom_to_shell_);
+        riatom_to_bfs1_ = chain_maps(riatom_to_atoms1, atom_to_bf_);
 
         // We'll use these maps to screen the projected AO transform (second index):
         //   (mn|Q) * C_nu -> (mu|Q)
-        riatom_to_atoms2_ = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms_));
-        riatom_to_shells2_ = chain_maps(riatom_to_atoms2_, atom_to_shell_);
-        riatom_to_bfs2_ = chain_maps(riatom_to_atoms2_, atom_to_bf_);
+        const auto riatom_to_atoms2 = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms));
+        riatom_to_shells2_ = chain_maps(riatom_to_atoms2, atom_to_shell_);
+        riatom_to_bfs2_ = chain_maps(riatom_to_atoms2, atom_to_bf_);
 
         // Need dense versions of previous maps for quick lookup
 
@@ -1036,10 +1043,10 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
                 int u = riatom_to_paos_ext_[a_ri][u_ind];
                 riatom_to_paos_ext_dense_[a_ri][u] = u_ind;
             }
-            for (int a_bf : riatom_to_atoms1_[a_ri]) {
+            for (int a_bf : riatom_to_atoms1[a_ri]) {
                 riatom_to_atoms1_dense_[a_ri][a_bf] = true;
             }
-            for (int a_bf : riatom_to_atoms2_[a_ri]) {
+            for (int a_bf : riatom_to_atoms2[a_ri]) {
                 riatom_to_atoms2_dense_[a_ri][a_bf] = true;
             }
         }

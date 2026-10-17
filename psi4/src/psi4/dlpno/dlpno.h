@@ -185,9 +185,7 @@ class DLPNO : public Wavefunction {
 
     // AO to LMO/PAO
     SparseMap lmo_to_bfs_;
-    SparseMap lmo_to_atoms_;
     SparseMap pao_to_bfs_;
-    SparseMap pao_to_atoms_;
 
     // LMO domains
     SparseMap lmo_to_ribfs_; ///< which aux BFs are needed for density-fitting a LMO?
@@ -204,13 +202,10 @@ class DLPNO : public Wavefunction {
     SparseMap lmopair_to_lmos_; ///< Which LMOs "interact" with an LMO pair (determined by DOI integrals)
 
     // Extended LMO Domains 
-    SparseMap lmo_to_riatoms_ext_; ///< aux BFs on which atoms are needed for density-fitting a LMO and all connected LMOs
     SparseMap riatom_to_lmos_ext_; ///< the extended DF domains of which LMOs include aux BFs on an atom
     SparseMap riatom_to_paos_ext_; ///< the extended DF domains of which PAOs include aux BFs on an atom
-    SparseMap riatom_to_atoms1_; ///< orbital BFs on which atoms are needed for DF int transform (first index)
     SparseMap riatom_to_shells1_; ///< which shells of orbital BFs are needed for DF int transform (first index)
     SparseMap riatom_to_bfs1_; ///< which orbital BFs are needed for DF int transform (first index)
-    SparseMap riatom_to_atoms2_; ///< orbital BFs on which atoms are needed for DF int transform (second index)
     SparseMap riatom_to_shells2_; ///< which shells of orbital BFs are needed for DF int transform (second index)
     SparseMap riatom_to_bfs2_; ///< which orbital BFs are needed for DF int transform (second index)
 
