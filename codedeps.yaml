@@ -1602,7 +1602,7 @@ data:
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
 
-  - project: cint
+  - project: libcint
     use:
       added: 1.12
       required: false
@@ -1619,12 +1619,12 @@ data:
     cmake:
       name: cint
       constraint: "6.2.0"
-      constraint_note: "v6.2.0 installs a CMake config and keeps the integrals of diffuse high-l primitives."
+      constraint_note: "v6.2.0 installs a CMake config and correctly screens integrals of diffuse high-l primitives."
       target: cint::cint
     conda:
       channel: conda-forge
       name: libcint
-      constraint: ">=6.2"
+      constraint: ">=6.2.0"
       cmake:
         ENABLE_cint: true
         cint_DIR:
