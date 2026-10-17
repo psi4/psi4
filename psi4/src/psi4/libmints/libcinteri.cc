@@ -35,9 +35,7 @@
 #include "psi4/libmints/gshell.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/psi4-dec.h"
 
 #include <cmath>
 
@@ -98,48 +96,6 @@ double libint2_to_libcint(int l, bool cart) {
                                    {{0.0, 0.0, 0.0}});
     const double libint2_unit = unit_prim.contr[0].coeff[0];
     return libcint_unit / libint2_unit;
-}
-
-/// Does the libcint in use drop the integrals of diffuse primitives of high
-/// angular momentum? Its estimate of the size of a pair of primitives leaves out
-/// the factor a_ij^(-(l_i+l_j)/2) of its own bound on the pair,
-/// (d + 1/sqrt(a_ij))^(l_i+l_j) (pi/a_ij)^(3/2), so that, for instance, the
-/// one-center (gg|gg) integrals of exponents below 3e-4 come out zero (libcint
-/// and qcint 6.1.3). The derivative kernels are affected the same way.
-/// Integrals of normalized primitives of a common exponent a on one center scale
-/// exactly as sqrt(a): compare (gg|gg) at a = 1e-4 with a = 1 under the default
-/// screening. Evaluated once per process.
-bool libcint_drops_diffuse_pairs() {
-    static const bool drops = []() {
-        const int l = 4;
-        auto gggg = [](double a) {
-            int atm[ATM_SLOTS] = {0};
-            atm[PTR_COORD] = PTR_ENV_START;
-            int bas[BAS_SLOTS] = {0};
-            bas[ANG_OF] = l;
-            bas[NPRIM_OF] = 1;
-            bas[NCTR_OF] = 1;
-            bas[PTR_EXP] = PTR_ENV_START + 3;
-            bas[PTR_COEFF] = PTR_ENV_START + 4;
-            std::vector<double> env(PTR_ENV_START + 5, 0.0);
-            env[PTR_ENV_START + 3] = a;
-            env[PTR_ENV_START + 4] = CINTgto_norm(l, a);
-            int shls[4] = {0, 0, 0, 0};
-            const int n = 2 * l + 1;
-            std::vector<double> buf(static_cast<size_t>(n) * n * n * n);
-            int2e_sph(buf.data(), nullptr, shls, atm, 1, bas, 1, env.data(), nullptr, nullptr);
-            return buf[0];  // (00|00) of the m = -l function
-        };
-        const double a = 1e-4;
-        const double expected = std::sqrt(a) * gggg(1.0);
-        const bool wrong = std::fabs(gggg(a) - expected) > 1e-6 * expected;
-        if (wrong)
-            outfile->Printf(
-                "  Note: this libcint drops integrals of diffuse primitives of high angular momentum;\n"
-                "        raising its screening cutoff for basis sets that need it.\n");
-        return wrong;
-    }();
-    return drops;
 }
 
 }  // namespace
@@ -365,42 +321,6 @@ void LibcintTwoElectronInt::build_environment() {
         }
         bas_start_[i] = start;
     }
-
-    set_expcutoff();
-}
-
-void LibcintTwoElectronInt::set_expcutoff() {
-    // libcint skips a pair of primitives when its estimate of the size of the
-    // pair falls below exp(-expcutoff), 60 by default; in a four-center integral
-    // the estimates of the two pairs are added. If the library leaves out the
-    // factor for diffuse primitives (see libcint_drops_diffuse_pairs), a
-    // calculation in a basis with such functions collapses far below the
-    // variational limit. With the factor of the most diffuse pair missing from
-    // the estimates of both pairs, the effective cutoff is expcutoff - 2*deficit.
-    // Keep it at least 40, the smallest cutoff libcint accepts. This leaves the
-    // default untouched for common basis sets, such as aug-cc-pV5Z, and screens
-    // less only where the estimates fall short.
-    if (!libcint_drops_diffuse_pairs()) return;
-    // Smallest exponent for each angular momentum. The density-fitting dummy
-    // (l = 0, exponent 0) pairs with every shell, so its zero is kept.
-    std::vector<double> amin;
-    const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
-    for (int g = 0; g < nbas; ++g) {
-        const int l = bas_[g * BAS_SLOTS + ANG_OF];
-        const int nprim = bas_[g * BAS_SLOTS + NPRIM_OF];
-        const int exp_off = bas_[g * BAS_SLOTS + PTR_EXP];
-        if (static_cast<int>(amin.size()) <= l) amin.resize(l + 1, -1.0);
-        for (int p = 0; p < nprim; ++p)
-            if (amin[l] < 0.0 || env_[exp_off + p] < amin[l]) amin[l] = env_[exp_off + p];
-    }
-    double deficit = 0.0;
-    for (size_t li = 0; li < amin.size(); ++li)
-        for (size_t lj = 0; lj < amin.size(); ++lj) {
-            if (amin[li] < 0.0 || amin[lj] < 0.0) continue;
-            const double aij = amin[li] + amin[lj];
-            if (aij > 0.0) deficit = std::max(deficit, -0.5 * static_cast<double>(li + lj) * std::log(aij));
-        }
-    if (40.0 + 2.0 * deficit > 60.0) env_[PTR_EXPCUTOFF] = 40.0 + 2.0 * deficit;
 }
 
 bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int l[4], const int perm[4], double sign,

@@ -151,9 +151,6 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// Append one psi4 basis set's atoms and shells to atm_/bas_/env_, return its bas start.
     /// coef_ratio[l] converts Libint2 contraction coefficients to libcint's convention.
     int append_basis(const BasisSet &bs, const std::vector<double> &coef_ratio);
-    /// Raise env_[PTR_EXPCUTOFF] if libcint's pair screening would drop the
-    /// integrals of this basis's diffuse high-l primitives.
-    void set_expcutoff();
 
     /// The libcint two-electron kernels used: (ab|cd) and its derivatives.
     enum class Kernel { ERI, IP1, IPIP1, IPVIP1, IP1IP2 };
