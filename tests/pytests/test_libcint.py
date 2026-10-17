@@ -338,9 +338,9 @@ def _diffuse_basis(shell, exp_o, exp_h, puream):
 def test_libcint_diffuse_high_l(shell, exp_o, exp_h, max_deriv, puream):
     """Diffuse high-l functions match Libint2 in the ERIs and their derivatives.
 
-    libcint's screening of primitive pairs leaves out a factor that is large for
-    diffuse primitives of high angular momentum. Without the raised cutoff, the
-    one-center integrals of these shells come out exactly zero.
+    Before v6.2.0, libcint's screening of primitive pairs left out a factor that is
+    large for diffuse primitives of high angular momentum, so the one-center
+    integrals of these shells came out exactly zero.
     """
     import psi4
 
