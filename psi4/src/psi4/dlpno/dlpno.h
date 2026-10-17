@@ -163,8 +163,6 @@ class DLPNO : public Wavefunction {
     std::vector<SharedVector> e_pno_;   ///< PNO orbital energies
     std::vector<int> n_pno_;       ///< number of pnos
     std::vector<double> de_pno_;   ///< PNO truncation energy error
-    std::vector<double> de_pno_os_;   ///< opposite-spin contributions to de_pno_
-    std::vector<double> de_pno_ss_;   ///< same-spin contributions to de_pno_
 
     /// pre-screening energies
     double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs

@@ -1500,8 +1500,8 @@ void DLPNO::pno_transform() {
 
     n_pno_.resize(n_lmo_pairs);   // number of pnos
     de_pno_.resize(n_lmo_pairs);  // PNO truncation error
-    de_pno_os_.resize(n_lmo_pairs);  // opposite-spin contributions to de_pno_
-    de_pno_ss_.resize(n_lmo_pairs);  // same-spin contributions to de_pno_
+    std::vector<double> de_pno_os(n_lmo_pairs);  // opposite-spin contributions to de_pno_
+    std::vector<double> de_pno_ss(n_lmo_pairs);  // same-spin contributions to de_pno_
 
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
@@ -1640,8 +1640,8 @@ void DLPNO::pno_transform() {
         e_pno_[ij] = e_pno_ij;
         n_pno_[ij] = X_pno_ij->ncol();
         de_pno_[ij] = de_pno_ij;
-        de_pno_os_[ij] = de_pno_ij_os;
-        de_pno_ss_[ij] = de_pno_ij_ss;
+        de_pno_os[ij] = de_pno_ij_os;
+        de_pno_ss[ij] = de_pno_ij_ss;
 
         // account for symmetry
         if (i < j) {
@@ -1651,8 +1651,8 @@ void DLPNO::pno_transform() {
             e_pno_[ji] = e_pno_[ij];
             n_pno_[ji] = n_pno_[ij];
             de_pno_[ji] = de_pno_ij;
-            de_pno_os_[ji] = de_pno_ij_os;
-            de_pno_ss_[ji] = de_pno_ij_os;
+            de_pno_os[ji] = de_pno_ij_os;
+            de_pno_ss[ji] = de_pno_ij_os;
         }
     }
 
@@ -1663,8 +1663,8 @@ void DLPNO::pno_transform() {
         pno_count_min = std::min(pno_count_min, n_pno_[ij]);
         pno_count_max = std::max(pno_count_max, n_pno_[ij]);
         de_pno_total_ += de_pno_[ij];
-        de_pno_total_os_ += de_pno_os_[ij];
-        de_pno_total_ss_ += de_pno_ss_[ij];
+        de_pno_total_os_ += de_pno_os[ij];
+        de_pno_total_ss_ += de_pno_ss[ij];
     }
 
     outfile->Printf("  \n");
