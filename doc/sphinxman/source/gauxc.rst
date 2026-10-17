@@ -54,7 +54,7 @@ here are the list of compile-time options provided.
 * :makevar:`gauxc_ENABLE_GPU`: Enable GPU support for the Psi4-GauXC interface class. When building GauXC internally within Psi4, this keyword controls whether to enable GPU support on the internally-built GauXC instance. When using an external GauXC build, this keyword must align with the GPU capabilities of the external GauXC install.  
 
 Seminumerical Linear Exchange
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 GauXC can be used to compute exchange terms in an exact exchange self-consistent field computation. Literature references, keywords, and an overview of the algorithm may be found in :ref:`sec:scfsnlink`.
 
@@ -63,6 +63,6 @@ Kohn-Sham DFT
 
 GauXC may be used as a replacement for |PSIfour|'s own KS-DFT engine. At present, we support outsourcing to GauXC for energies and analytic gradients and electronic hessians, as needed in stability analysis and TDDFT. GauXC does not provide support for analytic hessians. GauXC may be enabled by setting |scf__dft_xc_integrator_packages|, which expects an array of the available integrators, to be tried in order. GauXC may be sent by including "gauxc" in that list. See :ref:`notes <sec:ks-integrators>` on how to enable and disable other integrators.
 
-The :ref:`keywords <apdx:scftgauxcdft>` are provided here. The most common keywords that will need editing are the number of radial integration grid points |scf__GAUXC_RADIAL_POINTS|, the number of angular integration grid points |scf__GAUXC_SPHERICAL_POINTS|, and whether or not to use GPUs |scf__GAUXC_USE_GPU|.
+The :ref:`keywords <apdx:scfgauxcdft>` are provided here. The most common keywords that will need editing are the number of radial integration grid points |scf__GAUXC_RADIAL_POINTS|, the number of angular integration grid points |scf__GAUXC_SPHERICAL_POINTS|, and whether or not to use GPUs |scf__GAUXC_USE_GPU|.
 
 Programs using GauXC to compute DFT on KS-CPUs should cite [Petrone:2018:169]_, and programs using GauXC to compute KS-DFT shoudl cite [Williams-Young:2020:581058]_ (CUDA and distributed memory) and [Williams-Young:2021:102829]_ (HIP/SYCL). All programs should cite [Lehtola:2018:1]_.
