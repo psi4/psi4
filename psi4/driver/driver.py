@@ -1749,12 +1749,20 @@ def vibanal_wfn(
         core.print_out('  Thermochemical analysis skipped for partial frequency calculation.\n')
 
     if core.get_option('FINDIF', 'HESSIAN_WRITE'):
-        filename = core.get_writer_file_prefix(mol.name()) + ".vibrec"
+        filename = p4util.safe_writer_file_path(
+            core.get_writer_file_prefix(mol.name()),
+            ".vibrec",
+            warning_context="FINDIF HESSIAN_WRITE",
+        )
         with open(filename, 'w') as handle:
             json.dump(vibrec, handle, sort_keys=True, indent=4)
 
     if core.get_option('FINDIF', 'NORMAL_MODES_WRITE'):
-        filename = core.get_writer_file_prefix(mol.name()) + ".molden_normal_modes"
+        filename = p4util.safe_writer_file_path(
+            core.get_writer_file_prefix(mol.name()),
+            ".molden_normal_modes",
+            warning_context="FINDIF NORMAL_MODES_WRITE",
+        )
         with open(filename, 'w') as handle:
             handle.write(qcdb.vib.print_molden_vibs(vibinfo, symbols, geom, standalone=True))
 

@@ -1545,14 +1545,22 @@ def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
 
 def hessian_write(wfn: core.Wavefunction):
     if core.get_option('FINDIF', 'HESSIAN_WRITE'):
-        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
+        filename = p4util.safe_writer_file_path(
+            core.get_writer_file_prefix(wfn.molecule().name()),
+            ".hess",
+            warning_context="FINDIF HESSIAN_WRITE",
+        )
         with open(filename, 'wb') as handle:
             qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='psi4')
 
 
 def gradient_write(wfn: core.Wavefunction):
     if core.get_option('FINDIF', 'GRADIENT_WRITE'):
-        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
+        filename = p4util.safe_writer_file_path(
+            core.get_writer_file_prefix(wfn.molecule().name()),
+            ".grad",
+            warning_context="FINDIF GRADIENT_WRITE",
+        )
         qcdb.gradparse.to_string(np.asarray(wfn.gradient()),
                                  filename,
                                  dtype='GRD',
