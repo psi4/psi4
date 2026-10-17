@@ -710,7 +710,7 @@ def test_simint():
     _test_scf5()
 
 
-@uusing("libcint")
+@uusing("cint")
 def test_libcint():
     """libcint/scf5"""
 
