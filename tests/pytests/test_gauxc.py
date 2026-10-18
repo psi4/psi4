@@ -336,4 +336,19 @@ def test_uks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
         gau_en = gau_wfn.variable(f"TD-{inp['name']} ROOT 0 -> ROOT {n+1} EXCITATION ENERGY")
         assert psi4.compare_values(ref_en, gau_en, 4, f"TD-{inp['name']}/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY")
 
+def test_hess_fallthrough():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
 
+    psi4.set_options({
+        "d_convergence": 10,
+        "dft_radial_points": 100,
+        "dft_spherical_points": 770,
+        "reference": "rks",
+        "dft_xc_integrator_packages": ["gauxc", "internal"],
+    })
+
+    psi4.frequencies("svwn/sto-6g", return_wfn=True)[0]
