@@ -2686,6 +2686,23 @@ void Matrix::apply_symmetry(const Matrix &a, const Matrix &transformer) {
         transformer.print();
         throw PSIEXCEPTION("Matrix::apply_symmetry: simple to regular. Sizes are not compatible.\n");
     }
+    if (nirrep() != transformer.nirrep()) {
+        throw PSIEXCEPTION("Matrix::apply_symmetry: target matrix and transformer need same number of irreps.");
+    }
+    if (colspi() != transformer.colspi()) {
+        throw PSIEXCEPTION("Matrix::apply_symmetry: target matrix's colspi must match transformer's colspi");
+    }
+    if (rowspi() != transformer.colspi()) {
+        throw PSIEXCEPTION("Matrix::apply_symmetry: target matrix's rowspi must match transformer's colspi");
+    }
+    if (transformer.symmetry()) {
+        throw PSIEXCEPTION("Matrix::apply_symmetry: transformer must be totally symmetric");
+    }
+    for (size_t h = 0; h < transformer.nirrep(); h++) {
+        if (transformer.rowdim(0) != transformer.rowdim(h)) {
+            throw PSIEXCEPTION("Matrix::apply_symmetry: all transformer rows need same number of AOs");
+	}
+    }
 
     // Create temporary matrix of proper size.
     Matrix temp(nirrep(), a.nrow(), transformer.colspi());
