@@ -27,6 +27,7 @@ if(${ENABLE_cint})
                        -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                       -DWITH_CINT2_INTERFACE=0
                        -DWITH_FORTRAN=0
                        -DENABLE_TEST=0
                        -DENABLE_EXAMPLE=0
