@@ -50,14 +50,19 @@ void IntegratorDispatcher::set_D(std::vector<SharedMatrix> Dvec) {
 }
 
 void IntegratorDispatcher::set_grac_shift(double shift) {
-  // This function isn't final, because GRAC support is currently only in Psi's integrator.
-  // Don't make any assumptions about a general IntegratorManager interface
-  // for GRAC until after that changes. It's too unstable until then.
-  for (const auto& manager: managers_) {
+  // If the user requests GRAC, that's a change to the low-level numerical integration
+  // that most codes don't support. Drop those that can't support it.
+  // Note the highly-irregular for loop.
+  for (auto it = managers_.begin(); it != managers_.end();) {
     if (auto grac_manager = dynamic_pointer_cast<VBase>(manager)) {
       grac_manager->set_grac_shift(shift);
+      ++it;              // Move to the next element
+    } else {
+      it = managers_.erase(it); // Erase returns the next valid iterator
     }
   }
+  if (managers_.empty())
+      throw PSIEXCEPTION("No IntegratorManager managed to set_grac_shift.");
 }
 
 std::map<std::string, double> IntegratorDispatcher::compute_V(std::vector<SharedMatrix> ret) {
