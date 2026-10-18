@@ -339,7 +339,7 @@ void GauRV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
             eigen_dx = permuter * eigen_dx * permuter.transpose();
         }
 #endif
-    //GauXC::IntegratorSettingsXC set;
+
         auto vx = integrator_->eval_fxc_contraction(eigen_d, eigen_dx);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
         if (primary_->has_puream()) {
@@ -348,7 +348,7 @@ void GauRV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
 #endif
         // Set the result
         auto ao = psi::linalg::matrix_from_eigen(vx);
-        if (AO2USO_) {
+        if (ret[i]->nirrep() != 1) {
             (*ret[i]).apply_symmetry(ao, *AO2USO_);
         } else {
             (*ret[i]).copy(ao);
@@ -430,11 +430,14 @@ void GauUV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
         // Set the result
         auto ao_a = psi::linalg::matrix_from_eigen(vx_a);
         auto ao_b = psi::linalg::matrix_from_eigen(vx_b);
-        if (AO2USO_) {
+        if (ret[2*i]->nirrep() != 1) {
             (*ret[2*i]).apply_symmetry(ao_a, *AO2USO_);
-            (*ret[2*i+1]).apply_symmetry(ao_b, *AO2USO_);
         } else {
             (*ret[2*i]).copy(ao_a);
+        }
+        if (ret[2*i+1]->nirrep() != 1) {
+            (*ret[2*i+1]).apply_symmetry(ao_b, *AO2USO_);
+        } else {
             (*ret[2*i+1]).copy(ao_b);
         }
     }
