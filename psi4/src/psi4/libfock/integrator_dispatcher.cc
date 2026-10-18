@@ -32,6 +32,7 @@
 
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
