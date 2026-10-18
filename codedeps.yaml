@@ -1630,7 +1630,7 @@ data:
         cint_DIR:
           unix: ${CONDA_PREFIX}/lib/cmake/cint
           win-64: ${CONDA_PREFIX}/Library/lib/cmake/cint
-        //LIBCINT_LIBRARY: null
-        //LIBCINT_INCLUDE_DIR: null
+        //cint_LIBRARY: null
+        //cint_INCLUDE_DIR: null
         //CMAKE_INSIST_FIND_PACKAGE_cint: true
         //CMAKE_DISABLE_FIND_PACKAGE_cint: true
