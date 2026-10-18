@@ -1618,17 +1618,19 @@ data:
       commit: v6.2.0
     cmake:
       name: cint
-      constraint: "6.2.0"
-      constraint_note: "v6.2.0 installs a CMake config and correctly screens integrals of diffuse high-l primitives."
+      constraint: "6.1.2"
+      constraint_note: "v6.2.0 installs a CMake config and correctly screens integrals of diffuse high-l primitives. For v6.1.x, psi4 synthesizes the config from LIBCINT_LIBRARY and LIBCINT_INCLUDE_DIR and works around the screening at run time. Building from source gets v6.2.0."
       target: cint::cint
     conda:
       channel: conda-forge
       name: libcint
-      constraint: ">=6.2.0"
+      constraint: ">=6.1.2"
       cmake:
         ENABLE_cint: true
         cint_DIR:
           unix: ${CONDA_PREFIX}/lib/cmake/cint
           win-64: ${CONDA_PREFIX}/Library/lib/cmake/cint
+        //LIBCINT_LIBRARY: null
+        //LIBCINT_INCLUDE_DIR: null
         //CMAKE_INSIST_FIND_PACKAGE_cint: true
         //CMAKE_DISABLE_FIND_PACKAGE_cint: true

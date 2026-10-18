@@ -240,7 +240,7 @@ else()
 endif()
 
 if(${ENABLE_cint})
-    find_package(cint 6.2.0 CONFIG REQUIRED)  # edit in codedeps
+    find_package(cint 6.1.2 CONFIG REQUIRED)  # edit in codedeps
     # libcint links quadmath and -lm without PRIVATE, so cint::cint passes them on to consumers. A shared
     # libcint resolves them itself, and on Windows, where libcint is built by MinGW gcc, MSVC-like linkers
     # can't use them at all ("could not open 'quadmath.lib'"), so drop them.
