@@ -54,7 +54,7 @@ void IntegratorDispatcher::set_grac_shift(double shift) {
   // that most codes don't support. Drop those that can't support it.
   // Note the highly-irregular for loop.
   for (auto it = managers_.begin(); it != managers_.end();) {
-    if (auto grac_manager = dynamic_pointer_cast<VBase>(manager)) {
+    if (auto grac_manager = dynamic_pointer_cast<VBase>(*it)) {
       grac_manager->set_grac_shift(shift);
       ++it;              // Move to the next element
     } else {
