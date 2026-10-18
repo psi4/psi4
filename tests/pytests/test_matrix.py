@@ -335,3 +335,57 @@ def test_transpose():
             transposed_mat.set(0, k, j, i)
             i += 1
     assert psi4.compare_matrices(mat.transpose(), transposed_mat)
+
+def test_apply_symmetry_validation():
+    dim1 = Dimension([2, 2])
+    mat = Matrix("Matrix", dim1, dim1)
+    with pytest.raises(RuntimeError) as err:
+        mat.apply_symmetry(mat, mat)
+    assert "first matrix must have no symmetry" in str(err.value)
+    dim2 = Dimension([4])
+    mat2 = Matrix("Matrix", dim2, dim2)
+    with pytest.raises(RuntimeError) as err:
+        mat.apply_symmetry(mat2, mat)
+    assert "Sizes are not compatible" in str(err.value)
+    dim3 = Dimension([4, 4])
+    mat3 = Matrix("Matrix", dim3, dim3)
+    with pytest.raises(RuntimeError) as err:
+        mat.apply_symmetry(mat2, mat3)
+    assert "Sizes are not compatible" in str(err.value)
+    dim4 = Dimension([1, 1, 1, 1])
+    dim5 = Dimension([4, 4, 4, 4])
+    mat4 = Matrix("Matrix", dim5, dim4)
+    with pytest.raises(RuntimeError) as err:
+        mat.apply_symmetry(mat2, mat4)
+    assert "need same number of irreps" in str(err.value)
+    mat5 = Matrix("Matrix", dim3, dim1)
+    with pytest.raises(RuntimeError) as err:
+        mat3.apply_symmetry(mat2, mat5)
+    assert "target matrix's colspi must match transformer's colspi" in str(err.value)
+    with pytest.raises(RuntimeError) as err:
+        mat5.apply_symmetry(mat2, mat5)
+    assert "target matrix's rowspi must match transformer's colspi" in str(err.value)
+    mat6 = Matrix("Matrix", dim3, dim1, 1)
+    with pytest.raises(RuntimeError) as err:
+        mat.apply_symmetry(mat2, mat6)
+    assert "must be totally symmetric" in str(err.value)
+    dim6 = Dimension([4, 3, 5, 4])
+    mat7 = Matrix("Matrix", dim6, dim4)
+    mat8 = Matrix("Matrix", dim4, dim4)
+    with pytest.raises(RuntimeError) as err:
+        mat8.apply_symmetry(mat2, mat7)
+    assert "all transformer rows need" in str(err.value)
+
+def test_apply_symmetry_correct():
+    SYM = 1
+    SOS = [2, 1, 3, 1]
+    so_dim = Dimension(SOS)
+    ao_dim = Dimension([so_dim.sum()])
+    aotoso_dim = Dimension([so_dim.sum()] * so_dim.n())
+    ao_mat = build_random_mat(ao_dim, ao_dim, 0)
+    aotoso_mat = build_random_mat(aotoso_dim, so_dim)
+    so_mat = Matrix("SO Matrix", so_dim, so_dim, SYM)
+    so_mat.apply_symmetry(ao_mat, aotoso_mat)
+    for h in range(so_dim.n()):
+        expected = np.einsum("mp, mn, nq -> pq", aotoso_mat.nph[h], ao_mat.np, aotoso_mat.nph[h ^ SYM])
+        assert compare_arrays(so_mat.nph[h], expected) 
