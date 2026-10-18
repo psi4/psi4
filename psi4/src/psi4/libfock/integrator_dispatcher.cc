@@ -60,21 +60,38 @@ void IntegratorDispatcher::set_grac_shift(double shift) {
 }
 
 std::map<std::string, double> IntegratorDispatcher::compute_V(std::vector<SharedMatrix> ret) {
+  std::map<std::string, double> rmap;
   for (const auto& manager: managers_) {
-    auto rmap = manager->compute_V(ret);
-    if (!rmap.empty()) {
-      quad_values_ = std::move(rmap);
-      return quad_values_;
+    try {
+      rmap = manager->compute_V(ret);
+      if (!rmap.empty()) {
+        quad_values_ = std::move(rmap);
+        return quad_values_;
+      }
     }
+    catch (const std::exception& e) {
+      outfile->Printf("Error in manager " + manager->getName() + ":\n");
+      outfile->Printf(e.what());
+    }
+    for (auto& vec: ret) { vec->zero(); }
   }
   throw PSIEXCEPTION("No IntegratorManager managed to compute_V.");
 }
 
 SharedMatrix IntegratorDispatcher::compute_gradient() {
   bool computable = false;
+  SharedMatrix grad;
   for (const auto& manager: managers_) {
     if (manager->can_compute_gradient()) computable = true;
-    auto grad = manager->compute_gradient();
+    else continue;
+    try {
+      grad = manager->compute_gradient();
+    }
+    catch (const std::exception& e) {
+      outfile->Printf("Error in manager " + manager->getName() + ":\n");
+      outfile->Printf(e.what());
+      continue;
+    }
     if (grad != nullptr) return grad;
   }
   if (computable)
@@ -83,41 +100,85 @@ SharedMatrix IntegratorDispatcher::compute_gradient() {
 }
 
 void IntegratorDispatcher::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+  bool computable = false;
   for (const auto& manager: managers_) {
-    if (!manager->can_compute_Vx()) continue;
-    manager->compute_Vx(Dx, ret);
+    if (manager->can_compute_Vx()) computable = true;
+    else continue;
+    try {
+      manager->compute_Vx(Dx, ret);
+    }
+    catch (const std::exception& e) {
+      outfile->Printf("Error in manager " + manager->getName() + ":\n");
+      outfile->Printf(e.what());
+    }
     return;
   }
-  throw PSIEXCEPTION("No IntegratorManager has compute_Vx defined.");
+  for (auto& vec: ret) { vec->zero(); }
+  if (computable)
+    throw PSIEXCEPTION("No IntegratorManager managed to compute_Vx.");
+  else throw PSIEXCEPTION("No IntegratorManager has compute_Vx defined.");
 }
 
 void IntegratorDispatcher::compute_Vx_triplet(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+  bool computable = false;
   for (const auto& manager: managers_) {
-    if (!manager->can_compute_Vx_triplet()) continue;
-    manager->compute_Vx_triplet(Dx, ret);
+    if (manager->can_compute_Vx_triplet()) computable = true;
+    else continue;
+    try {
+      manager->compute_Vx_triplet(Dx, ret);
+    }
+    catch (const std::exception& e) {
+      outfile->Printf("Error in manager " + manager->getName() + ":\n");
+      outfile->Printf(e.what());
+    }
     return;
   }
-  throw PSIEXCEPTION("No IntegratorManager has compute_Vx_triplet defined.");
+  for (auto& vec: ret) { vec->zero(); }
+  if (computable)
+    throw PSIEXCEPTION("No IntegratorManager managed to compute_Vx_triplet.");
+  else throw PSIEXCEPTION("No IntegratorManager has compute_Vx_triplet defined.");
 }
 
 SharedMatrix IntegratorDispatcher::compute_hessian() {
   bool computable = false;
+  SharedMatrix hess;
   for (const auto& manager: managers_) {
     if (manager->can_compute_hessian()) computable = true;
-    auto hess = manager->compute_hessian();
+    else continue;
+    try {
+      hess = manager->compute_hessian();
+    }
+    catch (const std::exception& e) {
+      outfile->Printf("Error in manager " + manager->getName() + ":\n");
+      outfile->Printf(e.what());
+      continue;
+    }
     if (hess != nullptr) return hess;
   }
   if (computable)
     throw PSIEXCEPTION("No IntegratorManager managed to compute_hessian.");
-  else throw PSIEXCEPTION("No IntegratorManager has compute_hessian defined.");
+  else throw PSIEXCEPTION("No IntegratorManager has compute_hessian.");
 }
 
 std::vector<SharedMatrix> IntegratorDispatcher::compute_fock_derivatives() {
+  bool computable = false;
+  std::vector<SharedMatrix> derivs;
   for (const auto& manager: managers_) {
-    auto rval = manager->compute_fock_derivatives();
-    if (!rval.empty()) return rval;
+    if (manager->can_compute_fock_derivatives()) computable = true;
+    else continue;
+    try {
+      derivs = manager->compute_fock_derivatives();
+    }
+    catch (const std::exception& e) {
+      outfile->Printf("Error in manager " + manager->getName() + ":\n");
+      outfile->Printf(e.what());
+      continue;
+    }
+    if (!derivs.empty()) return derivs;
   }
-  throw PSIEXCEPTION("No IntegratorManager has compute_fock_derivatives defined.");
+  if (computable)
+    throw PSIEXCEPTION("No IntegratorManager managed to compute_fock_derivatives.");
+  else throw PSIEXCEPTION("No IntegratorManager has compute_fock_derivatives.");
 }
 
 size_t IntegratorDispatcher::collocation_size() const {

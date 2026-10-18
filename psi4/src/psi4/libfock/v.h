@@ -104,6 +104,8 @@ class PSI_API VBase: public IntegratorManager {
     VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options);
     virtual ~VBase();
 
+    std::string getName() const override { return "VBase"; }
+
     static std::shared_ptr<VBase> build_V(std::shared_ptr<BasisSet> primary,
                                           std::shared_ptr<SuperFunctional> functional, Options& options,
                                           const std::string& type = "RV");
@@ -175,8 +177,9 @@ class RV : public VBase {
     bool can_compute_gradient() override { return true; };
     SharedMatrix compute_gradient() override;
     bool can_compute_hessian() override { return true; };
-    std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_hessian() override;
+    bool can_compute_fock_derivatives() override { return true; } ;
+    std::vector<SharedMatrix> compute_fock_derivatives() override;
 };
 
 class UV : public VBase {
@@ -197,8 +200,9 @@ class UV : public VBase {
     bool can_compute_gradient() override { return true; };
     SharedMatrix compute_gradient() override;
     bool can_compute_hessian() override { return true; };
-    std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_hessian() override;
+    bool can_compute_fock_derivatives() override { return true; } ;
+    std::vector<SharedMatrix> compute_fock_derivatives() override;
 };
 }
 #endif
