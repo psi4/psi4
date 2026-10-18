@@ -69,10 +69,11 @@ compare(13, len(hessfile.read_text().splitlines()), "hessian der=1 file length")
 clean()
 clean_variables()
 
+hbye_tol = 2.e-5 if (psi4.core.get_option("scf", "integral_package") == "LIBCINT") else 1.e-5
 set writer_file_label deriv0
 ene, wwfn = frequencies('hf/cc-pvdz', molecule=weird, return_wfn=True, dertype=0)
 w_freq = wwfn.frequencies().np[0]
-compare_values(math.sqrt(mu_weird / mu_plain), p_freq / w_freq, "HbyE sqrt(mu):freq ratio", atol=1.e-5)
+compare_values(math.sqrt(mu_weird / mu_plain), p_freq / w_freq, "HbyE sqrt(mu):freq ratio", atol=hbye_tol)
 
 hessfile = Path(core.get_writer_file_prefix(wwfn.molecule().name()) + ".hess")
 compare(13, len(hessfile.read_text().splitlines()), "hessian der=0 file length")
