@@ -88,7 +88,7 @@ PsiReturnType CoupledCluster::triples() {
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    long int memory = Process::environment.get_memory();
+    int64_t memory = Process::environment.get_memory();
     // TODO: MEMORY was owned by build-in ADC
     // if (options_["MEMORY"].has_changed()) {
     //     memory = options_.get_int("MEMORY");

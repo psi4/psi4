@@ -34,6 +34,7 @@
 #ifndef _psi_src_bin_cceom_params_h
 #define _psi_src_bin_cceom_params_h
 
+#include <cstdint>
 #include <string>
 
 namespace psi {
@@ -41,7 +42,7 @@ namespace cceom {
 
 /* Input parameters for ccenergy */
 struct Params {
-    long int memory;
+    int64_t memory;
     int cachelev;
     int cachetype;
     int ref;

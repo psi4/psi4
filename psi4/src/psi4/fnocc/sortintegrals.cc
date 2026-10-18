@@ -2278,7 +2278,7 @@ void SortBlock(size_t nelem, size_t blockdim, struct integral *buffer, double *t
  * ordering than the efficient default routine.  this function writes the
  * integrals to disk in the proper ordering.
  */
-void Sort_OV3_LowMemory(long int memory, long int o, long int v) {
+void Sort_OV3_LowMemory(int64_t memory, long int o, long int v) {
     outfile->Printf("\n");
     outfile->Printf("\n");
     outfile->Printf("        ==> Resort (ov|vv) integrals for low-memory (T) computation <==\n");

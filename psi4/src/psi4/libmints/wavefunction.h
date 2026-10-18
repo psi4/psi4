@@ -34,6 +34,7 @@
 #include "psi4/libmints/dimension.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 #include <array>
 #include <memory>
@@ -121,7 +122,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     std::shared_ptr<Wavefunction> reference_wavefunction_;
 
     /// How much memory you have access to.
-    long int memory_;
+    int64_t memory_;
 
     /// Perturb the Hamiltonian?
     int perturb_h_;

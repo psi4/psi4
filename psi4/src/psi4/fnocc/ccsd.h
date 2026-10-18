@@ -186,7 +186,7 @@ class CoupledCluster : public Wavefunction {
     long int ndoccact, ndocc, nvirt, nso, nmotemp, nmo, nfzc, nfzv, nvirt_no;
 
     /// available memory
-    long int memory;
+    int64_t memory;
 
     /// maximum number of iterations
     long int maxiter;
