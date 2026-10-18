@@ -91,7 +91,7 @@ jobs:
 
       icpx_conda:
         CXX_COMPILER: 'icpx'
-        PYTHON_VER: '3.10'
+        PYTHON_VER: '3.12'
         C_COMPILER: 'icx'
         F_COMPILER: 'ifx'
         BUILD_TYPE: 'release'
