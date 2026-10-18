@@ -50,7 +50,7 @@ class GauXCBase : public IntegratorManager {
     virtual ExchCXX::Spin spin() const = 0;
 
     void print_header() const override;
-    std::string getName() const override { return "GauXC"; }
+    std::string get_name() const override { return "GauXC"; }
 
 };
 
@@ -63,6 +63,7 @@ class GauRV : public GauXCBase {
     bool can_compute_Vx() override { return true; };
     void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
     ExchCXX::Spin spin() const override { return ExchCXX::Spin::Unpolarized; };
+    std::string get_timer_name() const override { return "GauRV"; }
 };
 
 class GauUV : public GauXCBase {
@@ -74,6 +75,7 @@ class GauUV : public GauXCBase {
     bool can_compute_Vx() override { return true; };
     void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
     ExchCXX::Spin spin() const override { return ExchCXX::Spin::Polarized; };
+    std::string get_timer_name() const override { return "GauUV"; }
 };
 }
 

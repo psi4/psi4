@@ -742,6 +742,7 @@ void BrianQCBase::initialize() {
 }
 
 std::map<std::string, double> BrianRV::compute_V(std::vector<SharedMatrix> ret) {
+    timer_on(get_timer_name() + ": Form V");
     double DFTEnergy;
     
     brianSCFBuildFockDFT(&brianCookie,
@@ -764,9 +765,11 @@ std::map<std::string, double> BrianRV::compute_V(std::vector<SharedMatrix> ret) 
     quad_values["RHO_BX"] = 0.0;
     quad_values["RHO_BY"] = 0.0;
     quad_values["RHO_BZ"] = 0.0;
+    timer_off(get_timer_name() + ": Form V");
     return quad_values;
 }
 std::map<std::string, double> BrianUV::compute_V(std::vector<SharedMatrix> ret) {
+    timer_on(get_timer_name() + ": Form V");
     double DFTEnergy;
     brianSCFBuildFockDFT(&brianCookie,
         D_AO_[0]->get_pointer(0),
@@ -788,6 +791,7 @@ std::map<std::string, double> BrianUV::compute_V(std::vector<SharedMatrix> ret) 
     quad_values["RHO_BX"] = 0.0;
     quad_values["RHO_BY"] = 0.0;
     quad_values["RHO_BZ"] = 0.0;
+    timer_off(get_timer_name() + ": Form V");
     return quad_values;
 }
 

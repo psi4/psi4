@@ -563,7 +563,7 @@ void SAP::print_header() const {
 }
 void SAP::finalize() { VBase::finalize(); }
 std::map<std::string, double> SAP::compute_V(std::vector<SharedMatrix> ret) {
-    timer_on("SAP: Form V");
+    timer_on(get_timer_name() + ": Form V");
 
     if (ret.size() != 1) {
         throw PSIEXCEPTION("SAP outputs only one V Matrix");
@@ -680,7 +680,7 @@ std::map<std::string, double> SAP::compute_V(std::vector<SharedMatrix> ret) {
     } else {
         ret[0]->copy(V_AO);
     }
-    timer_off("SAP: Form V");
+    timer_off(get_timer_name() + ": Form V");
 
     return {};
 }
@@ -704,7 +704,7 @@ void RV::finalize() { VBase::finalize(); }
 
 std::map<std::string, double> RV::compute_V(std::vector<SharedMatrix> ret) {
     // => Validate object <=
-    timer_on("RV: Form V");
+    timer_on(get_timer_name() + ": Form V");
     if ((D_AO_.size() != 1) || (ret.size() != 1)) {
         throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
     }
@@ -843,12 +843,12 @@ std::map<std::string, double> RV::compute_V(std::vector<SharedMatrix> ret) {
         outfile->Printf("    <\\vec r\\rho_b> : <%24.16E,%24.16E,%24.16E>\n\n", quad_values_["RHO_BX"],
                         quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
-    timer_off("RV: Form V");
+    timer_off(get_timer_name() + ": Form V");
     return quad_values_;
 }
 
 std::vector<SharedMatrix> RV::compute_fock_derivatives() {
-    timer_on("RV: Form Fx");
+    timer_on(get_timer_name() + ": Form Fx");
 
     int natoms = primary_->molecule()->natom();
     std::vector<SharedMatrix> Vx(3*natoms);
@@ -1083,12 +1083,12 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
         functional_workers_[i]->set_deriv(old_func_deriv);
         functional_workers_[i]->allocate();
     }
-    timer_off("RV: Form Fx");
+    timer_off(get_timer_name() + ": Form Fx");
     return Vx;
 }
 
 void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret, bool singlet) {
-    timer_on("RV: Form Vx");
+    timer_on(get_timer_name() + ": Form Vx");
 
     // => Validate object / inputs <=
     if (D_AO_.size() != 1) {
@@ -1379,9 +1379,10 @@ void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix>
         functional_workers_[i]->set_deriv(old_func_deriv);
         functional_workers_[i]->allocate();
     }
-    timer_off("RV: Form Vx");
+    timer_off(get_timer_name() + ": Form Vx");
 }
 SharedMatrix RV::compute_gradient() {
+    timer_on(get_timer_name() + ": Form gradient");
     // => Validation <= //
     if ((D_AO_.size() != 1)) throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
@@ -1504,10 +1505,12 @@ SharedMatrix RV::compute_gradient() {
     // RKS
     G->scale(2.0);
 
+    timer_off(get_timer_name() + ": Form gradient");
     return G;
 }
 
 SharedMatrix RV::compute_hessian() {
+    timer_on(get_timer_name() + ": Form hessian");
     // => Validation <=
     if (functional_->is_gga() || functional_->is_meta())
         throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
@@ -1834,6 +1837,7 @@ SharedMatrix RV::compute_hessian() {
     H->hermitivitize();
 //    H->print_out();
 
+    timer_off(get_timer_name() + ": Form hessian");
     return H;
 }
 
@@ -2010,7 +2014,7 @@ void UV::initialize() {
 void UV::finalize() { VBase::finalize(); }
 std::map<std::string, double> UV::compute_V(std::vector<SharedMatrix> ret) {
     // => Validate object <=
-    timer_on("UV: Form V");
+    timer_on(get_timer_name() + ": Form V");
     if ((D_AO_.size() != 2) || (ret.size() != 2)) {
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
     }
@@ -2304,12 +2308,12 @@ std::map<std::string, double> UV::compute_V(std::vector<SharedMatrix> ret) {
         outfile->Printf("    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n", quad_values_["RHO_BX"],
                         quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
-    timer_off("UV: Form V");
+    timer_off(get_timer_name() + ": Form V");
 
     return quad_values_;
 }
 std::vector<SharedMatrix> UV::compute_fock_derivatives() {
-    timer_on("UV: Form Fx");
+    timer_on(get_timer_name() + ": Form Fx");
 
     int natoms = primary_->molecule()->natom();
     std::vector<SharedMatrix> Vx(6*natoms);
@@ -2614,11 +2618,11 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
         functional_workers_[i]->set_deriv(old_func_deriv);
         functional_workers_[i]->allocate();
     }
-    timer_off("UV: Form Fx");
+    timer_off(get_timer_name() + ": Form Fx");
     return Vx;
 }
 void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
-    timer_on("UV: Form Vx");
+    timer_on(get_timer_name() + ": Form Vx");
 
     // => Validate object / inputs <=
     if (D_AO_.size() != 2) {
@@ -3128,9 +3132,10 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         functional_workers_[i]->allocate();
     }
 
-    timer_off("UV: Form Vx");
+    timer_off(get_timer_name() + ": Form Vx");
 }
 SharedMatrix UV::compute_gradient() {
+    timer_on(get_timer_name() + ": Form gradient");
     // => Validation <= //
     if ((D_AO_.size() != 2)) throw PSIEXCEPTION("V: UKS should have two D Matrices");
 
@@ -3487,9 +3492,11 @@ SharedMatrix UV::compute_gradient() {
         point_workers_[i]->set_deriv(old_deriv);
     }
 
+    timer_off(get_timer_name() + ": Form gradient");
     return G;
 }
 SharedMatrix UV::compute_hessian() {
+    timer_on(get_timer_name() + ": Form hessian");
     // => Validation <=
     if (functional_->is_gga() || functional_->is_meta())
         throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
@@ -3868,6 +3875,7 @@ SharedMatrix UV::compute_hessian() {
     H->hermitivitize();
 //    H->print_out();
 
+    timer_off(get_timer_name() + ": Form hessian");
     return H;
 }
 }  // namespace psi

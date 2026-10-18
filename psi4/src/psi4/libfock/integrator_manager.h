@@ -66,7 +66,8 @@ class IntegratorManager {
     void set_D(std::vector<SharedMatrix> Dvec);
     virtual void initialize() = 0;
     virtual void print_header() const = 0;
-    virtual std::string getName() const = 0;
+    virtual std::string get_name() const = 0;
+    virtual std::string get_timer_name() const = 0;
 
 
     /// When we need to distinguish between not being defined and throwing, have the function define
