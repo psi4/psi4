@@ -784,6 +784,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema",
             "module": wfn.module(),
+            **({"module_roles": dict(wfn.module_roles())} if wfn.module_roles() else {}),
         })
 
     if keep_wfn:
