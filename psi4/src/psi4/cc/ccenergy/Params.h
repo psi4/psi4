@@ -34,6 +34,7 @@
 #ifndef _psi_src_bin_ccenergy_params_h
 #define _psi_src_bin_ccenergy_params_h
 
+#include <cstdint>
 #include <string>
 
 namespace psi {
@@ -45,7 +46,7 @@ struct Params {
     double convergence;
     double e_convergence;
     int restart;
-    long int memory;
+    int64_t memory;
     std::string aobasis;
     int cachelev;
     int cachetype;

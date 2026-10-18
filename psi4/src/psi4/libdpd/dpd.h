@@ -33,6 +33,7 @@
 #ifndef _psi_src_lib_libdpd_dpd_h
 #define _psi_src_lib_libdpd_dpd_h
 
+#include <cstdint>
 #include <cstdio>
 #include <string>
 #include "psi4/psifiles.h"
@@ -245,10 +246,10 @@ struct thread_data {
 };
 
 struct dpd_gbl {
-    long int memory;    /* Total memory requested by the user */
-    long int memused;   /* Total memory used (cache + other) */
-    long int memcache;  /* Total memory in cache (locked and unlocked) */
-    long int memlocked; /* Total memory locked in the cache */
+    int64_t memory;    /* Total memory requested by the user */
+    int64_t memused;   /* Total memory used (cache + other) */
+    int64_t memcache;  /* Total memory in cache (locked and unlocked) */
+    int64_t memlocked; /* Total memory locked in the cache */
 
     // The default C'tor will zero everything out properly
     dpd_gbl()
@@ -327,17 +328,17 @@ class PSI_API DPD {
     std::vector<DPDMOSpace> moSpaces;
 
     PSI_DEPRECATED("DPD construction via a vector of int* is being deprecated and will be removed as soon as 1.12.")
-    DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+    DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
-    DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+    DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<DPDMOSpace> &moSpaces);
-    DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+    DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays);
     DPD();
 
     ~DPD();
 
-    int init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+    int init(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
              dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
 
     void dpd_error(const char *caller, std::string out_fname);
@@ -555,13 +556,13 @@ extern PSI_API DPD *global_dpd_; // The currently active DPD object.
 extern PSI_API int dpd_default; // index of global_dpd_ within dpd_list.
 extern DPD *dpd_list[2]; // The array of selectable DPD objects.
 extern PSI_API int dpd_set_default(int dpd_num); // Set the default DPD to be idx dpd_num of dpd_list.
-extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+extern int dpd_init(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
-extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+extern int dpd_init(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays);
 extern int dpd_close(int dpd_num);
-extern long int PSI_API dpd_memfree();
-extern void dpd_memset(long int memory);
+extern int64_t PSI_API dpd_memfree();
+extern void dpd_memset(int64_t memory);
 
 }  // Namespace psi
 
