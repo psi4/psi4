@@ -148,7 +148,7 @@ void GauXCBase::print_header() const {
 }
 
 std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
-    timer_on("GauRV: Form V");
+    timer_on(get_timer_name() + ": Form V");
     Eigen::MatrixXd eigen_d = psi::linalg::eigen_map(*D_AO_[0]);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
@@ -183,12 +183,12 @@ std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values["RHO_BX"] = 0.0;
     quad_values["RHO_BY"] = 0.0;
     quad_values["RHO_BZ"] = 0.0;
-    timer_off("GauRV: Form V");
+    timer_off(get_timer_name() + ": Form V");
     return quad_values;
 }
 
 std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
-    timer_on("GauUV: Form V");
+    timer_on(get_timer_name() + ": Form V");
     auto Ds = D_AO_[0]->clone();
     Ds->add(D_AO_[1]);
     auto Dz = D_AO_[0]->clone();
@@ -235,11 +235,12 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values_["RHO_BY"] = 0.0;
     quad_values_["RHO_BZ"] = 0.0;
 
-    timer_off("GauUV: Form V");
+    timer_off(get_timer_name() + ": Form V");
     return quad_values_;
 }
 
 SharedMatrix GauRV::compute_gradient() {
+    timer_on(get_timer_name() + ": Form gradient");
     Eigen::MatrixXd eigen_d = psi::linalg::eigen_map(*D_AO_[0]);
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
     if (primary_->has_puream()) {
@@ -264,10 +265,12 @@ SharedMatrix GauRV::compute_gradient() {
     quad_values_["RHO_BY"] = 0.0;
     quad_values_["RHO_BZ"] = 0.0;
 
+    timer_off(get_timer_name() + ": Form gradient");
     return G;
 }
 
 SharedMatrix GauUV::compute_gradient() {
+    timer_on(get_timer_name() + ": Form gradient");
     auto Ds = D_AO_[0]->clone();
     Ds->add(D_AO_[1]);
     auto Dz = D_AO_[0]->clone();
@@ -298,11 +301,12 @@ SharedMatrix GauUV::compute_gradient() {
     quad_values_["RHO_BY"] = 0.0;
     quad_values_["RHO_BZ"] = 0.0;
 
+    timer_off(get_timer_name() + ": Form gradient");
     return G;
 }
 
 void GauRV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
-    timer_on("GauRV: Form Vx");
+    timer_on(get_timer_name() + ": Form Vx");
 
     // Validation
     if (D_AO_.size() != 1) {
@@ -355,11 +359,11 @@ void GauRV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
         }
         ret[i]->scale(0.5);
     }
-    timer_off("GauRV: Form Vx");
+    timer_off(get_timer_name() + ": Form Vx");
 }
 
 void GauUV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
-    timer_on("GauUV: Form Vx");
+    timer_on(get_timer_name() + ": Form Vx");
 
     // Validation
     if (D_AO_.size() != 2) {
@@ -441,7 +445,7 @@ void GauUV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
             (*ret[2*i+1]).copy(ao_b);
         }
     }
-    timer_off("GauUV: Form Vx");
+    timer_off(get_timer_name() + ": Form Vx");
 }
 
 } // namespace psi

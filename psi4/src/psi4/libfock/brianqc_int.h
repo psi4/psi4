@@ -71,7 +71,7 @@ class BrianQCBase : public IntegratorManager {
     };
     void initialize() override;
     void print_header() const override;
-    std::string getName() const override { return "BrianQC"; }
+    std::string get_name() const override { return "BrianQC"; }
 
 };
 
@@ -80,6 +80,7 @@ class BrianRV : public BrianQCBase {
 
    public:
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+    std::string get_timer_name() const override { return "BrianRV"; }
 };
 
 class BrianUV : public BrianQCBase {
@@ -87,6 +88,7 @@ class BrianUV : public BrianQCBase {
 
    public:
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+    std::string get_timer_name() const override { return "BrianUV"; }
 };
 }
 

@@ -104,7 +104,7 @@ class PSI_API VBase: public IntegratorManager {
     VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options);
     virtual ~VBase();
 
-    std::string getName() const override { return "VBase"; }
+    std::string get_name() const override { return "VBase"; }
 
     static std::shared_ptr<VBase> build_V(std::shared_ptr<BasisSet> primary,
                                           std::shared_ptr<SuperFunctional> functional, Options& options,
@@ -148,6 +148,7 @@ class SAP : public VBase {
 
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
     void print_header() const override;
+    std::string get_timer_name() const override { return "SAP"; }
 };
 
 class RV : public VBase {
@@ -180,6 +181,7 @@ class RV : public VBase {
     SharedMatrix compute_hessian() override;
     bool can_compute_fock_derivatives() override { return true; } ;
     std::vector<SharedMatrix> compute_fock_derivatives() override;
+    std::string get_timer_name() const override { return "RV"; }
 };
 
 class UV : public VBase {
@@ -203,6 +205,7 @@ class UV : public VBase {
     SharedMatrix compute_hessian() override;
     bool can_compute_fock_derivatives() override { return true; } ;
     std::vector<SharedMatrix> compute_fock_derivatives() override;
+    std::string get_timer_name() const override { return "UV"; }
 };
 }
 #endif
