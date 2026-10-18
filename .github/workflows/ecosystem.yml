@@ -248,6 +248,17 @@ jobs:
         fi
         grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
 
+    - name: Special Config - Force testing Libcint
+      #if: matrix.cfg.python-version == 3.14 && (matrix.cfg.label == 'Conda Clang (M-Silicon)')
+      run: |
+        grep INTEGRAL_PACKAGE psi4/src/read_options.cc
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -E -i.bak 's;(options\.add_str\("INTEGRAL_PACKAGE", ")LIBINT2(", "LIBINT2 SIMINT LIBCINT");\1LIBCINT\2;' psi4/src/read_options.cc
+        else
+          sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 SIMINT LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
+        fi
+        grep INTEGRAL_PACKAGE psi4/src/read_options.cc
+
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
         conda/psi4-path-advisor.py \
