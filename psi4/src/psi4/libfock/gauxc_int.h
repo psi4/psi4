@@ -50,6 +50,7 @@ class GauXCBase : public IntegratorManager {
     virtual ExchCXX::Spin spin() const = 0;
 
     void print_header() const override;
+    std::string getName() const override { return "GauXC"; }
 
 };
 

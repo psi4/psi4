@@ -57,6 +57,7 @@ class IntegratorManager {
     bool can_compute_gradient_ = false;
     bool can_compute_Vx_ = false;
     bool can_compute_Vx_triplet_ = false;
+    bool can_compute_fock_derivatives_ = false;
     bool can_compute_hessian_ = false;
     bool can_compute_grac_ = false;
 
@@ -65,6 +66,7 @@ class IntegratorManager {
     void set_D(std::vector<SharedMatrix> Dvec);
     virtual void initialize() = 0;
     virtual void print_header() const = 0;
+    virtual std::string getName() const = 0;
 
 
     /// When we need to distinguish between not being defined and throwing, have the function define
@@ -84,11 +86,12 @@ class IntegratorManager {
     /// Computes first derivative of KS potential w.r.t. D matrix elts.
     virtual std::vector<SharedMatrix> compute_fock_derivatives() { return {}; };
     const std::shared_ptr<Molecule> molecule();
-    virtual bool can_compute_gradient() { return can_compute_gradient_; } ;
-    virtual bool can_compute_Vx() { return can_compute_Vx_; } ;
-    virtual bool can_compute_Vx_triplet() { return can_compute_Vx_triplet_; } ;
-    virtual bool can_compute_hessian() { return can_compute_hessian_; } ;
-    virtual bool can_compute_grac() { return can_compute_grac_; } ;
+    virtual bool can_compute_gradient() { return false; } ;
+    virtual bool can_compute_Vx() { return false; } ;
+    virtual bool can_compute_Vx_triplet() { return false; } ;
+    virtual bool can_compute_hessian() { return false; } ;
+    virtual bool can_compute_fock_derivatives() { return false; } ;
+    virtual bool can_compute_grac() { return false; } ;
     std::map<std::string, double>& quadrature_values() { return quad_values_; } ;
 
     /// Size of collocation matrices. Default to 0, which means no information.

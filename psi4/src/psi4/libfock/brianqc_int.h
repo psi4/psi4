@@ -71,6 +71,7 @@ class BrianQCBase : public IntegratorManager {
     };
     void initialize() override;
     void print_header() const override;
+    std::string getName() const override { return "BrianQC"; }
 
 };
 
