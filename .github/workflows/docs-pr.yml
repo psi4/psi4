@@ -11,7 +11,7 @@ jobs:
       matrix:
         cfg:
           - runs-on: ubuntu-latest
-            python-version: "3.10"
+            python-version: "3.13"
     name: Propose Docs
     runs-on: ${{ matrix.cfg.runs-on }}
     defaults:
