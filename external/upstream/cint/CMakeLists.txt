@@ -1,6 +1,6 @@
 if(${ENABLE_cint})
     # libcint >= 6.2.0 installs a CMake config package, cint
-    find_package(cint 6.2.0 CONFIG QUIET)
+    find_package(cint 6.2.0 CONFIG QUIET)  # edit in codedeps
 
     if(${cint_FOUND})
         get_property(_loc TARGET cint::cint PROPERTY LOCATION)
@@ -24,7 +24,7 @@ if(${ENABLE_cint})
             if(NOT _ver MATCHES "^[0-9]+\\.[0-9]+")
                 message(FATAL_ERROR "Can't read CINT_VERSION from ${LIBCINT_INCLUDE_DIR}/cint.h")
             endif()
-            if(_ver VERSION_LESS 6.1.2)  # edit in codedeps
+            if(_ver VERSION_LESS 6.1.2)
                 message(FATAL_ERROR "Found libcint ${_ver} (${LIBCINT_LIBRARY}), but psi4 needs >= 6.1.2. Point "
                                     "LIBCINT_LIBRARY and LIBCINT_INCLUDE_DIR to a newer one, or unset them to build it.")
             endif()
