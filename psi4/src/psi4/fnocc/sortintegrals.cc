@@ -36,9 +36,10 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <string>
+
 namespace psi {
 namespace fnocc {
-typedef long int size_t;
 struct integral {
     size_t ind;
     double val;
@@ -174,7 +175,11 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
             break;
         }
     }
-    if (nfiles == 0) throw PsiException("how is this possible? (ab|cd)", __FILE__, __LINE__);
+    if (nfiles == 0)
+        throw PsiException("how is this possible? (ab|cd) (memory = " + std::to_string(memory) + " bytes, maxelem = " +
+                               std::to_string(maxelem) + ", o = " + std::to_string(o) + ", v = " + std::to_string(v) +
+                               ")",
+                           __FILE__, __LINE__);
 
     // how many (ab|ci) files?
     size_t ov3filesize;
@@ -2359,7 +2364,9 @@ void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, i
 
     outfile->Printf("        CC integral sort will use %7.2lf mb\n", maxelem * (sizeof(double)) / 1024. / 1024.);
     if (maxelem < o * o * v * v) {
-        throw PsiException("out of memory: o^2v^2 won't fit in core.", __FILE__, __LINE__);
+        throw PsiException("out of memory: o^2v^2 won't fit in core (memory = " + std::to_string(memory) +
+                               " bytes, o = " + std::to_string(o) + ", v = " + std::to_string(v) + ").",
+                           __FILE__, __LINE__);
     }
 
     auto *klcd = new double[o * o * v * v];
