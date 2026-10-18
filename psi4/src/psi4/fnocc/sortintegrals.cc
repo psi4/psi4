@@ -196,7 +196,9 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
     if (ov3nfiles == 0) throw PsiException("how is this possible (ab|ci)?", __FILE__, __LINE__);
 
     struct integral *integralbuffer;
-    size_t nelem = maxelem / (5 + 3 * ov3nfiles + 2 * nfiles) - 20;
+    // tiny systems leave fewer than 20 per bucket; then flush after every integral
+    size_t nelem = maxelem / (5 + 3 * ov3nfiles + 2 * nfiles);
+    nelem = (nelem > 20) ? nelem - 20 : 1;
     if ((nelem + 20) * (5 + 3 * ov3nfiles + 2 * nfiles) > maxelem)
         integralbuffer = new integral[(nelem + 20) * (5 + 3 * ov3nfiles + 2 * nfiles)];
     else
