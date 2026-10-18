@@ -1,6 +1,6 @@
 if(${ENABLE_cint})
     # libcint >= 6.2.0 installs a CMake config package, cint
-    find_package(cint 6.2.0 CONFIG QUIET)  # edit in codedeps
+    find_package( cint 6.2.0 CONFIG QUIET)  # hide from codedeps
 
     if(${cint_FOUND})
         get_property(_loc TARGET cint::cint PROPERTY LOCATION)
@@ -14,7 +14,7 @@ if(${ENABLE_cint})
     else()
         # libcint before v6.2.0 installs no CMake config (conda-forge 6.1.x, distro packages). Locate the
         # library and header, or take them from LIBCINT_LIBRARY and LIBCINT_INCLUDE_DIR, and synthesize a
-        # config package so the core build's find_package(cint CONFIG) succeeds.
+        # config package so the core build's find_package(cint 6.1.2 CONFIG) succeeds.
         find_library(LIBCINT_LIBRARY NAMES cint)
         find_path(LIBCINT_INCLUDE_DIR NAMES cint_funcs.h)
 
