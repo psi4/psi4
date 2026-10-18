@@ -259,6 +259,11 @@ jobs:
         fi
         grep INTEGRAL_PACKAGE psi4/src/read_options.cc
 
+    - name: sladkfjsl
+      if: runner.os == 'Windows'
+      run: |
+        cat "C:/Miniconda/envs/p4build/Library/lib/cmake/cint/cintTargets.cmake"
+
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
         conda/psi4-path-advisor.py \
