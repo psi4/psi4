@@ -599,7 +599,7 @@ Convergence Stabilization
 A summary of Psi's supported convergence stabilization techniques is presented below.
 Alternatively, stabilization can run through the OpenOrbitalOptimizer library. See :ref:`options:ooo` for details.
 Where those techniques struggle, the second-order methods of :ref:`sec:soscf` -- either
-|PSIfour|'s own or the OpenTrustRegion library -- can finish a stubborn SCF instead.
+|PSIfours| own or the OpenTrustRegion library -- can finish a stubborn SCF instead.
 
 DIIS [On by Default]
     DIIS uses previous iterates of the Fock matrix together
@@ -1003,7 +1003,7 @@ follows:
 
     |scf__soscf_start_convergence|: when to start SOSCF based on the current density RMS
 
-    |scf__soscf_start|: the earliest iteration SOSCF may start on, both conditions required
+    |scf__soscf_start|: the earliest iteration SOSCF may start on, both this and above conditions required
 
     |scf__soscf_max_iter|: the maximum number of SOSCF microiterations per macroiteration
 
@@ -1021,9 +1021,9 @@ below |scf__soscf_start_convergence| and iteration |scf__soscf_start| is reached
 then hands the orbitals to the second-order package, which carries the calculation
 to convergence.
 
-Lowering |scf__soscf_start| hands over sooner, from a point the first-order iterations
-have had less time to settle. The default of 3 gives them room to fix the aufbau
-assignment first, which matters to OpenTrustRegion because it then holds that assignment
+Lowering |scf__soscf_start| from default 3 hands over sooner, from a point the first-order
+iterations have had less time to settle occpuancy. This matters to OpenTrustRegion because
+it then holds that assignment
 fixed: start at 1 and it can converge against one the aufbau rule later disagrees with,
 which |PSIfour| reports in the output before reconverging. The internal second-order code
 reassigns the occupation each iteration, so it has no such mismatch to report.
@@ -1039,7 +1039,7 @@ collapse to the ground state unless the occupation is pinned with
 |globals__docc| and |globals__socc|. Relatedly, OpenTrustRegion optimizes at a *fixed*
 occupation where the internal code re-runs the aufbau assignment each iteration.
 The occupation is usually settled before the SOSCF handoff, but if
-canonicalizing the converged orbitals changes it, |PSIfour| reconverges from the
+diagonalizing the converged orbitals changes it, |PSIfour| reconverges from the
 new occupation.
 
 Convergence is decided the same way whichever package runs the second-order

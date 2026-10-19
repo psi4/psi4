@@ -417,7 +417,7 @@ void export_wavefunction(py::module& m) {
              "Runs the SCF with OpenOrbitalOptimizer. Returns whether it stopped at the "
              "second-order handoff point rather than finishing the SCF itself.")
         .def("opentrustregion_scf", &scf::HF::opentrustregion_scf, "Runs SCF with OpenTrustRegion")
-        .def("otr_iteration_energies", &scf::HF::otr_iteration_energies,
+        .def("opentrustregion_iteration_energies", &scf::HF::otr_iteration_energies,
              "Total energy at each OpenTrustRegion macro-iteration");
 
     /// HF Functions

@@ -51,7 +51,7 @@ the Fock matrix to self-consistency, it minimizes the SCF energy directly with
 respect to the orbital rotation parameters, using a trust-region method with the
 orbital Hessian applied on the fly.
 
-Enabling OTR and adding ``set second_order_orbital_optimizer_package
+Enabling OTR by adding ``set second_order_orbital_optimizer_package
 opentrustregion`` or ``set second_order_orbital_optimizer_package otr``, together
 with |scf__soscf|, runs the second-order SCF iterations through OTR. Set to
 ``internal`` to revoke.

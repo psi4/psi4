@@ -1247,6 +1247,7 @@ bool RHF::openorbital_scf() {
         double d_conv = options_.get_double("D_CONVERGENCE");
         double e_delta = std::any_cast<double>(data.at("dE"));
         // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
+        // scale density norm to match internal algorithm
         double d_rms = 0.5 * ao_basis_diis_error;
         // A converged SCF has nothing left to hand off, so settle that first. D_CONVERGENCE is
         // tighter than SOSCF_START_CONVERGENCE, which means convergence always satisfies the
@@ -1431,7 +1432,8 @@ OTR::c_int RHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
 
     // loop over irreps
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
-        // skip if dimensions are zero
+        // Skip if dimensions are zero. Safe here (unlike ROHF): this irrep holds doccpi*virpi
+        // parameters, so the guard only fires when the loop below would write none.
         if (!doccpi[h] || !virpi[h]) continue;
 
         // get the pointer to the memory block for this irrep in shared matrix

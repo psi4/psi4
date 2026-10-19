@@ -1738,7 +1738,8 @@ OTR::c_int UHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
 
     // loop over irreps
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
-        // skip if dimensions are zero
+        // Skip if dimensions are zero. Safe here (unlike ROHF): each spin block holds occpi*virpi
+        // parameters and carries its own guard, so a guard fires exactly when its block would write nothing.
         if (occpi_a[h] && virpi_a[h]) {
             // get the pointer to the memory block for this irrep in shared matrix
             auto hess_x_irrep = hess_x_shared[0]->pointer(h);

@@ -254,7 +254,6 @@ class HF : public Wavefunction {
     bool frac_performed() const { return frac_performed_; }
     void set_frac_performed(bool tf) { frac_performed_ = tf; }
 
-    /// Runs the SCF using OpenOrbitalOptimizer
     /// Run the SCF through OpenOrbitalOptimizer. Returns whether it stopped at the
     /// second-order handoff point rather than finishing the SCF itself.
     virtual bool openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
@@ -282,7 +281,7 @@ class HF : public Wavefunction {
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };
 
-    /// The number non-redundant parameters
+    /// The number of non-redundant parameters
     virtual int otr_n_param()  {
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };

@@ -261,10 +261,6 @@ def scf_initialize(self):
     core.print_out("  ==> Iterations <==\n\n")
 
 
-#: OpenTrustRegion error codes that mean "ran out of macro-iterations" rather than "the step
-#: machinery failed", for the solver and for its stability check respectively. Anything else
-#: coming back nonzero is a genuine failure. See error_solver_max_iter and
-#: error_stability_check_max_iter in opentrustregion.f90.
 #: OpenTrustRegion numbers its solver and stability-check failures below 1000 and its
 #: callback failures above. The former all mean the orbitals are not converged -- the
 #: macro-iterations ran out, a line search could not descend along an unstable mode, or the
@@ -274,10 +270,13 @@ def scf_initialize(self):
 _OTR_CALLBACK_ERROR_FLOOR = 1000
 
 
-#: How many times to restart OpenTrustRegion when canonicalizing its solution changes the
-#: orbital occupation. An occupation that keeps moving without lowering the energy is a
-#: relabeling of degenerate orbitals rather than a better solution, so this is only a
-#: backstop; the loop normally exits as soon as a restart fails to improve the energy.
+#: How many times to restart OpenTrustRegion at a new occupation when the aufbau rule
+#: disagrees with the one it optimized. Diagonalizing preserves occupation, but the rule
+#: applied to the resulting orbital energies may not agree with it. Most calculations
+#: never restart: the first-order iterations settle the occupation before the handoff, so the
+#: loop exits on its first pass. Of the exits that do follow a restart, the energy test
+#: usually comes first -- an occupation that keeps moving without lowering the energy is a
+#: relabeling of degenerate orbitals rather than a better solution -- and this count is the backstop.
 _OTR_MAX_OCCUPATION_RESTARTS = 5
 
 
@@ -316,9 +315,10 @@ def _run_opentrustregion(self, e_conv, d_conv):
     consistent with the internal optimizer.
     """
     # OpenTrustRegion optimizes at fixed occupation, where the internal solver re-runs
-    # find_occupation every iteration. So canonicalizing what OpenTrustRegion converged can
-    # turn up a different aufbau assignment, and this loop reconverges at that one. The default
-    # |scf__soscf_start| usually leaves nothing to move, but earlier soscf can reac the branch.
+    # find_occupation every iteration. So the aufbau rule, applied to what OpenTrustRegion
+    # converged, can disagree with the occupation it optimized at, and this loop reconverges
+    # at the rule's answer. The default |scf__soscf_start| usually leaves nothing to move, but
+    # earlier soscf can reach the branch.
     SCFE_prev_attempt = None
     otr_e_conv = e_conv if e_conv is not None else core.get_option("SCF", "E_CONVERGENCE")
     for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
@@ -337,7 +337,7 @@ def _run_opentrustregion(self, e_conv, d_conv):
 
         # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL ENERGIES
         # mean the same thing as for internal solver. OTR's macro-iter=0 already recorded
-        otr_energies = list(self.otr_iteration_energies())
+        otr_energies = list(self.opentrustregion_iteration_energies())
         otr_energies[-1:] = [SCFE]
         otr_energies = otr_energies[1:]
         self.iteration_energies.extend(otr_energies)
