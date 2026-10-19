@@ -33,6 +33,7 @@
   *
   */
 
+#include <cinttypes>
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/libmints/mintshelper.h"
@@ -388,7 +389,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
     } else {
         // use user-specified number of virtuals
         for (int h = 0; h < nirrep_; h++) {
-            newVirOrbsPI[h] = (long int)options_["ACTIVE_NAT_ORBS"][h].to_double();
+            newVirOrbsPI[h] = (int64_t)options_["ACTIVE_NAT_ORBS"][h].to_double();
         }
     }
 
@@ -489,7 +490,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
     outfile->Printf("  ==> 3-index integrals <==\n");
     outfile->Printf("\n");
 
-    long int nQ;
+    int64_t nQ;
 
     // 1.  read scf 3-index integrals from disk
 
@@ -498,12 +499,12 @@ void DFFrozenNO::ThreeIndexIntegrals() {
     std::shared_ptr<IntegralFactory> integral = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
     auto eri = std::shared_ptr<TwoBodyAOInt>(integral->eri());
     const std::vector<std::pair<int, int> >& function_pairs = eri->function_pairs();
-    long int ntri = function_pairs.size();
+    int64_t ntri = function_pairs.size();
 
     auto psio = std::make_shared<PSIO>();
 
     // read integrals that were written to disk in the scf
-    long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
+    int64_t nQ_scf = Process::environment.globals["NAUX (SCF)"];
     if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos) {
         std::shared_ptr<BasisSet> primary = get_basisset("ORBITAL");
         std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_SCF");
@@ -512,7 +513,10 @@ void DFFrozenNO::ThreeIndexIntegrals() {
         Process::environment.globals["NAUX (SCF)"] = nQ_scf;
     } else if (options_.get_str("SCF_TYPE") == "CD") {
         psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
-        psio->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ_scf, sizeof(long int));
+        // libfock CDJK writes the Cholesky count as a long
+        long ncholesky;
+        psio->read_entry(PSIF_DFSCF_BJ, "length", (char*)&ncholesky, sizeof(long));
+        nQ_scf = ncholesky;
         psio->close(PSIF_DFSCF_BJ, 1);
         Process::environment.globals["NAUX (SCF)"] = nQ_scf;
     }
@@ -527,10 +531,10 @@ void DFFrozenNO::ThreeIndexIntegrals() {
     // unpack and write again in my format
     auto L = std::make_shared<Matrix>("3-index ERIs (SCF)", nQ_scf, nso * nso);
     double** Lp = L->pointer();
-    for (long int mn = 0; mn < ntri; mn++) {
-        long int m = function_pairs[mn].first;
-        long int n = function_pairs[mn].second;
-        for (long int P = 0; P < nQ_scf; P++) {
+    for (int64_t mn = 0; mn < ntri; mn++) {
+        int64_t m = function_pairs[mn].first;
+        int64_t n = function_pairs[mn].second;
+        for (int64_t P = 0; P < nQ_scf; P++) {
             Lp[P][m * nso + n] = Qmnp[P][mn];
             Lp[P][n * nso + m] = Qmnp[P][mn];
         }
@@ -554,7 +558,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
         psio->open(PSIF_DCC_QSO, PSIO_OPEN_OLD);
         psio->write_entry(PSIF_DCC_QSO, "Qso CC", (char*)&Qso[0][0], nQ * nso * nso * sizeof(double));
         psio->close(PSIF_DCC_QSO, 1);
-        outfile->Printf("    Number of auxiliary functions:       %5li\n", nQ);
+        outfile->Printf("    Number of auxiliary functions:       %5" PRId64 "\n", nQ);
 
         // stick nQ in process environment so ccsd can know it
         Process::environment.globals["NAUX (CC)"] = (double)nQ;
@@ -566,12 +570,15 @@ void DFFrozenNO::ThreeIndexIntegrals() {
             outfile->Printf("        Reading Cholesky vectors from disk ...\n");
 
             psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
-            psio->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ, sizeof(long int));
+            // libfock CDJK writes the Cholesky count as a long
+            long ncholesky;
+            psio->read_entry(PSIF_DFSCF_BJ, "length", (char*)&ncholesky, sizeof(long));
+            nQ = ncholesky;
             psio->close(PSIF_DFSCF_BJ, 1);
 
             outfile->Printf("        Cholesky decomposition threshold: %8.2le\n",
                             options_.get_double("CHOLESKY_TOLERANCE"));
-            outfile->Printf("        Number of Cholesky vectors:          %5li\n", nQ);
+            outfile->Printf("        Number of Cholesky vectors:          %5" PRId64 "\n", nQ);
 
             // ntri comes from sieve above
             auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ, ntri);
@@ -583,10 +590,10 @@ void DFFrozenNO::ThreeIndexIntegrals() {
 
             auto L = std::make_shared<Matrix>("CD Integrals", nQ, nso * nso);
             double** Lp = L->pointer();
-            for (long int mn = 0; mn < ntri; mn++) {
-                long int m = function_pairs[mn].first;
-                long int n = function_pairs[mn].second;
-                for (long int P = 0; P < nQ; P++) {
+            for (int64_t mn = 0; mn < ntri; mn++) {
+                int64_t m = function_pairs[mn].first;
+                int64_t n = function_pairs[mn].second;
+                for (int64_t P = 0; P < nQ; P++) {
                     Lp[P][m * nso + n] = Qmnp[P][mn];
                     Lp[P][n * nso + m] = Qmnp[P][mn];
                 }
@@ -610,7 +617,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
             psio->write_entry(PSIF_DCC_QSO, "Qso CC", (char*)&Lp[0][0], nQ * nso * nso * sizeof(double));
             psio->close(PSIF_DCC_QSO, 1);
             outfile->Printf("        Cholesky decomposition threshold: %8.2le\n", tol);
-            outfile->Printf("        Number of Cholesky vectors:          %5li\n", nQ);
+            outfile->Printf("        Number of Cholesky vectors:          %5" PRId64 "\n", nQ);
         }
 
         // stick nQ in process environment so ccsd can know it
@@ -626,7 +633,7 @@ void DFFrozenNO::FourIndexIntegrals() {
     outfile->Printf("  ==> Build 4-index ERI's from 3-index integrals <==\n");
     outfile->Printf("\n");
 
-    long int nQ = Process::environment.globals["NAUX (CC)"];
+    int64_t nQ = Process::environment.globals["NAUX (CC)"];
 
     double** Cap = Ca()->pointer();
 
@@ -691,10 +698,10 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     outfile->Printf("  ==> Frozen Natural Orbitals <==\n");
     outfile->Printf("\n");
 
-    long int o = ndoccact;
-    long int v = nvirt;
-    long int nQ = Process::environment.globals["NAUX (CC)"];
-    long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
+    int64_t nQ = Process::environment.globals["NAUX (CC)"];
+    int64_t nQ_scf = Process::environment.globals["NAUX (SCF)"];
     int64_t memory = Process::environment.get_memory();
 
     if (memory < 8L * (3L * nso * nso + nso * nso * nQ + o * v * nQ)) {
@@ -750,17 +757,17 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     emp2 = 0.0;
     double emp2_os = 0.0;
     double emp2_ss = 0.0;
-    for (long int i = 0; i < o; i++) {
+    for (int64_t i = 0; i < o; i++) {
         double di = - Fo->get(i);
-        for (long int j = 0; j < o; j++) {
+        for (int64_t j = 0; j < o; j++) {
             double dij = di - Fo->get(j);
             double pair_os = 0;
             double pair_ss = 0;
-            for (long int a = 0; a < v; a++) {
+            for (int64_t a = 0; a < v; a++) {
                 double dija = dij + Fv->get(a);
-                for (long int b = 0; b < v; b++) {
-                    long int iajb = i * v * v * o + a * v * o + j * v + b;
-                    long int abij = a * v * o * o + b * o * o + i * o + j;
+                for (int64_t b = 0; b < v; b++) {
+                    int64_t iajb = i * v * v * o + a * v * o + j * v + b;
+                    int64_t abij = a * v * o * o + b * o * o + i * o + j;
                     double dijab = dija + Fv->get(b);
                     amps1[abij] = -amps2[iajb] / dijab;
                     pair_os -= amps2[iajb] * amps2[iajb] / dijab;
@@ -818,7 +825,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     Diagonalize(v, Dab.data(), eigvalDab.data());
 
     // reorder transformation matrix:
-    for (long int i = 0; i < v; i++) {
+    for (int64_t i = 0; i < v; i++) {
         C_DCOPY(v, Dab.data() + (v - 1 - i) * v, 1, temp.data() + i * v, 1);
     }
 
@@ -829,7 +836,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
         if (!options_["OCC_PERCENTAGE"].has_changed()) {
             // use occupancy tolerance:
-            for (long int i = 0; i < v; i++)
+            for (int64_t i = 0; i < v; i++)
                 if (eigvalDab[i] > cutoff) nvirt_no++;
             outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n", cutoff);
             outfile->Printf("\n");
@@ -880,11 +887,11 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
         }
     } else {
         // use user-specified number of virtuals
-        nvirt_no = (long int)options_["ACTIVE_NAT_ORBS"][0].to_double();
+        nvirt_no = (int64_t)options_["ACTIVE_NAT_ORBS"][0].to_double();
     }
 
-    outfile->Printf("        Number of virtual orbitals in original space:  %5li\n", v);
-    outfile->Printf("        Number of virtual orbitals in truncated space: %5li\n", nvirt_no);
+    outfile->Printf("        Number of virtual orbitals in original space:  %5" PRId64 "\n", v);
+    outfile->Printf("        Number of virtual orbitals in truncated space: %5" PRId64 "\n", nvirt_no);
     outfile->Printf("\n");
 
     // transform Fock matrix to MP2 NO basis
@@ -909,7 +916,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
 }
 
 void DFFrozenNO::ModifyCa(const std::vector<double>& Dab) {
-    long int v = nvirt;
+    int64_t v = nvirt;
 
     auto ref = reference_wavefunction_;
 
@@ -919,23 +926,23 @@ void DFFrozenNO::ModifyCa(const std::vector<double>& Dab) {
 
     // so->no
     std::vector<double> temp(nso * nvirt_no);
-    for (long int i = 0; i < nso; i++) {
-        for (long int j = 0; j < nvirt_no; j++) {
+    for (int64_t i = 0; i < nso; i++) {
+        for (int64_t j = 0; j < nvirt_no; j++) {
             double dum = 0.0;
-            for (long int k = 0; k < v; k++) {
+            for (int64_t k = 0; k < v; k++) {
                 dum += Capointer[i][ndocc + k] * Dab[j * v + k];
             }
             temp[i * nvirt_no + j] = dum;
         }
     }
-    for (long int i = 0; i < nso; i++) {
-        for (long int j = 0; j < nvirt_no; j++) {
+    for (int64_t i = 0; i < nso; i++) {
+        for (int64_t j = 0; j < nvirt_no; j++) {
             Capointer[i][ndocc + j] = temp[i * nvirt_no + j];
         }
     }
 }
 void DFFrozenNO::ModifyCa_occ(double* Dij) {
-    long int o = ndoccact;
+    int64_t o = ndoccact;
 
     auto ref = reference_wavefunction_;
 
@@ -945,25 +952,25 @@ void DFFrozenNO::ModifyCa_occ(double* Dij) {
 
     // so->no
     std::vector<double> temp(nso * o);
-    for (long int i = 0; i < nso; i++) {
-        for (long int j = 0; j < o; j++) {
+    for (int64_t i = 0; i < nso; i++) {
+        for (int64_t j = 0; j < o; j++) {
             double dum = 0.0;
-            for (long int k = 0; k < o; k++) {
+            for (int64_t k = 0; k < o; k++) {
                 dum += Capointer[i][nfzc + k] * Dij[j * o + k];
             }
             temp[i * o + j] = dum;
         }
     }
-    for (long int i = 0; i < nso; i++) {
-        for (long int j = 0; j < o; j++) {
+    for (int64_t i = 0; i < nso; i++) {
+        for (int64_t j = 0; j < o; j++) {
             Capointer[i][nfzc + j] = temp[i * o + j];
         }
     }
 }
 
-void DFFrozenNO::TransformQ(long int nQ, double* Qso) {
-    long int o = ndoccact;
-    long int v = nvirt;
+void DFFrozenNO::TransformQ(int64_t nQ, double* Qso) {
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     double** Cap = Ca()->pointer();
     double* tmp = (double*)malloc(nso * o * nQ * sizeof(double));
@@ -994,7 +1001,7 @@ void DFFrozenNO::TransformQ(long int nQ, double* Qso) {
     free(tmp);
 }
 
-void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
+void DFFrozenNO::BuildFock(int64_t nQ, double* Qso, double* F) {
     double** Cap = Ca()->pointer();
 
     // Transform Qso to MO basis:
@@ -1002,8 +1009,8 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
     C_DCOPY(nso * nso * nQ, Qso, 1, tmp, 1);
     F_DGEMM('n', 'n', nmo, nso * nQ, nso, 1.0, &Cap[0][0], nmo, tmp, nso, 0.0, Qso, nmo);
 #pragma omp parallel for schedule(static)
-    for (long int q = 0; q < nQ; q++) {
-        for (long int mu = 0; mu < nso; mu++) {
+    for (int64_t q = 0; q < nQ; q++) {
+        for (int64_t mu = 0; mu < nso; mu++) {
             C_DCOPY(nmo, Qso + q * nso * nmo + mu * nmo, 1, tmp + q * nso * nmo + mu, nmo);
         }
     }
@@ -1015,7 +1022,7 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
     // one-electron integrals
     auto H = reference_wavefunction_->H()->clone();
 
-    long int max = nQ > nso * nso ? nQ : nso * nso;
+    int64_t max = nQ > nso * nso ? nQ : nso * nso;
     double* temp2 = (double*)malloc(max * sizeof(double));
     double* temp3 = (double*)malloc(nso * nso * sizeof(double));
     double* h = (double*)malloc(nmo * nmo * sizeof(double));
@@ -1026,9 +1033,9 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
 
 // build Fock matrix:  sum_k (Q|kk)
 #pragma omp parallel for schedule(static)
-    for (long int q = 0; q < nQ; q++) {
+    for (int64_t q = 0; q < nQ; q++) {
         double dum = 0.0;
-        for (long int k = 0; k < ndocc; k++) {
+        for (int64_t k = 0; k < ndocc; k++) {
             dum += Qso[q * nmo * nmo + k * nmo + k];
         }
         temp2[q] = 2.0 * dum;
@@ -1036,9 +1043,9 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
 
 // use temp and Qso as storage for Qmo( q, r, k)
 #pragma omp parallel for schedule(static)
-    for (long int q = 0; q < nQ; q++) {
-        for (long int r = 0; r < nmo; r++) {
-            for (long int k = 0; k < ndocc; k++) {
+    for (int64_t q = 0; q < nQ; q++) {
+        for (int64_t r = 0; r < nmo; r++) {
+            for (int64_t k = 0; k < ndocc; k++) {
                 tmp[q * nmo * ndocc + k * nmo + r] = Qso[q * nmo * nmo + k * nmo + r];
             }
         }
@@ -1048,8 +1055,8 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
 
 // Fock matrix
 #pragma omp parallel for schedule(static)
-    for (long int i = 0; i < nmo; i++) {
-        for (long int j = 0; j < nmo; j++) {
+    for (int64_t i = 0; i < nmo; i++) {
+        for (int64_t j = 0; j < nmo; j++) {
             double dum = h[i * nmo + j] - temp3[i * nmo + j];
             dum += C_DDOT(nQ, temp2, 1, Qso + i * nmo + j, nmo * nmo);
             F[i * nmo + j] = dum;

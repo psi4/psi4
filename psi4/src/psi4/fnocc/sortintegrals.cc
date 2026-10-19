@@ -204,8 +204,8 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
     else
         integralbuffer = new integral[maxelem];
 
-    outfile->Printf("        Number of (ab|cd) temporary files:            %5li\n", 2 * nfiles);
-    outfile->Printf("        Number of (ab|ci) temporary files:            %5li\n", 3 * ov3nfiles);
+    outfile->Printf("        Number of (ab|cd) temporary files:            %5zu\n", 2 * nfiles);
+    outfile->Printf("        Number of (ab|ci) temporary files:            %5zu\n", 3 * ov3nfiles);
     outfile->Printf("        Starting temporary file number:               %5i\n", PSIF_DCC_SORT_START);
     outfile->Printf("\n");
 
@@ -769,7 +769,7 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
 void klcd_terms_incore(double val, size_t pq, size_t rs, size_t p, size_t q, size_t r, size_t s, size_t o, size_t v,
                        double *klcd) {
     size_t k, l, c, d;
-    long int ind;
+    int64_t ind;
     if (p < o) {
         k = p;
         c = q - o;
@@ -2041,7 +2041,7 @@ void SortBlockNew(size_t nelem, size_t blockdim, struct integral *buffer, double
             }
         }
         lastbin = blockdim - (nbins - 1) * binsize;
-        outfile->Printf("  %5li files, %5li %5li\n", nbins, blockdim, binsize);
+        outfile->Printf("  %5zu files, %5zu %5zu\n", nbins, blockdim, binsize);
 
         // new integral buffers to hold rough sorted ints
         struct integral **buffer2;
@@ -2051,15 +2051,15 @@ void SortBlockNew(size_t nelem, size_t blockdim, struct integral *buffer, double
             psio->open(PSIF_DCC_SORT_START + i, PSIO_OPEN_NEW);
         }
         // count elements in buffer2
-        size_t *buffer2_count = (size_t *)malloc(nbins * sizeof(long int));
+        size_t *buffer2_count = (size_t *)malloc(nbins * sizeof(size_t));
         // total elements from buffer2 written to disk
-        size_t *buffer2_total = (size_t *)malloc(nbins * sizeof(long int));
+        size_t *buffer2_total = (size_t *)malloc(nbins * sizeof(size_t));
         // array of addresses
         auto *addr = new psio_address[nbins];
         // bucketsize is binsize / nbins
         size_t bucketsize = binsize / nbins;
         if (bucketsize * nbins < binsize) bucketsize++;
-        printf("%5li %5li\n", binsize, bucketsize);
+        printf("%5zu %5zu\n", binsize, bucketsize);
         for (size_t i = 0; i < nbins; i++) {
             addr[i] = PSIO_ZERO;
             buffer2_count[i] = 0;
@@ -2285,13 +2285,13 @@ void SortBlock(size_t nelem, size_t blockdim, struct integral *buffer, double *t
  * ordering than the efficient default routine.  this function writes the
  * integrals to disk in the proper ordering.
  */
-void Sort_OV3_LowMemory(int64_t memory, long int o, long int v) {
+void Sort_OV3_LowMemory(int64_t memory, int64_t o, int64_t v) {
     outfile->Printf("\n");
     outfile->Printf("\n");
     outfile->Printf("        ==> Resort (ov|vv) integrals for low-memory (T) computation <==\n");
     outfile->Printf("\n");
 
-    long int maxelem = memory / 8 / 2;
+    int64_t maxelem = memory / 8 / 2;
     auto *tmp = new double[maxelem];
     auto *tmp2 = new double[maxelem];
 

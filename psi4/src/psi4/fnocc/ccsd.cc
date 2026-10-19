@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <cinttypes>
 #include "ccsd.h"
 
 #include <ctime>
@@ -50,7 +51,7 @@
 #include "blas.h"
 
 // position in a symmetric packed matrix
-long int Position(long int i, long int j) {
+int64_t Position(int64_t i, int64_t j) {
     if (i < j) {
         return ((j * (j + 1)) >> 1) + i;
     }
@@ -66,7 +67,7 @@ void DefineQuadraticTasks();
 
 // sort
 void SortIntegrals(int nfzc, int nfzv, int norbs, int ndoccact, int nvirt, Options &options);
-void Sort_OV3_LowMemory(int64_t memory, long int o, long int v);
+void Sort_OV3_LowMemory(int64_t memory, int64_t o, int64_t v);
 
 // coupled cluster constructor
 CoupledCluster::CoupledCluster(SharedWavefunction ref_wfn, Options &options) : Wavefunction(options) {
@@ -270,12 +271,12 @@ double CoupledCluster::compute_energy() {
         else
             ccmethod = 1;
 
-        long int o = ndoccact;
-        long int v = nvirt;
+        int64_t o = ndoccact;
+        int64_t v = nvirt;
 
         // if low memory, need to generate one last set of integrals
         if (isLowMemory) {
-            Sort_OV3_LowMemory(memory - 8L * (long int)(!t2_on_disk) * o * o * v * v, o, v);
+            Sort_OV3_LowMemory(memory - 8L * (int64_t)(!t2_on_disk) * o * o * v * v, o, v);
         }
 
         // now there should be space for t2
@@ -392,11 +393,11 @@ void CoupledCluster::WriteOptions() {
     outfile->Printf("        Use frozen natural orbitals?        %5s\n", options_.get_bool("NAT_ORBS") ? "yes" : "no");
     outfile->Printf("        r_convergence:                  %5.3le\n", r_conv);
     outfile->Printf("        e_convergence:                  %5.3le\n", e_conv);
-    outfile->Printf("        Number of DIIS vectors:             %5li\n", maxdiis);
-    outfile->Printf("        Number of frozen core orbitals:     %5li\n", nfzc);
-    outfile->Printf("        Number of active occupied orbitals: %5li\n", ndoccact);
-    outfile->Printf("        Number of active virtual orbitals:  %5li\n", nvirt);
-    outfile->Printf("        Number of frozen virtual orbitals:  %5li\n", nfzv);
+    outfile->Printf("        Number of DIIS vectors:             %5" PRId64 "\n", maxdiis);
+    outfile->Printf("        Number of frozen core orbitals:     %5" PRId64 "\n", nfzc);
+    outfile->Printf("        Number of active occupied orbitals: %5" PRId64 "\n", ndoccact);
+    outfile->Printf("        Number of active virtual orbitals:  %5" PRId64 "\n", nvirt);
+    outfile->Printf("        Number of frozen virtual orbitals:  %5" PRId64 "\n", nfzv);
 }
 
 /*===================================================================
@@ -405,8 +406,8 @@ void CoupledCluster::WriteOptions() {
 
 ===================================================================*/
 PsiReturnType CoupledCluster::CCSDIterations() {
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     iter = 0;
     int diis_iter = 0;
@@ -666,16 +667,16 @@ PsiReturnType CoupledCluster::CCSDIterations() {
 
 ===================================================================*/
 void CoupledCluster::DefineTilingCPU() {
-    long int i, v = nvirt;
-    long int o = ndoccact;
-    long int ov2 = o * v * v;
-    long int ov = o * v;
+    int64_t i, v = nvirt;
+    int64_t o = ndoccact;
+    int64_t ov2 = o * v * v;
+    int64_t ov = o * v;
 
     // number of doubles in total memory
-    long int ndoubles = memory / 8L;
+    int64_t ndoubles = memory / 8L;
 
     // minus storage for other necessary buffers
-    long int oovv = o * o * v * v;
+    int64_t oovv = o * o * v * v;
     ndoubles -= o * o * v * v + 2L * (oovv + o * v) + 2L * o * v + 2 * v * v + (o + v);
     if (t2_on_disk) {
         ndoubles += o * o * v * v;
@@ -700,7 +701,7 @@ void CoupledCluster::DefineTilingCPU() {
     ntiles = 1L;
 
     // tiling for vabcd diagram
-    long int fulltile = v * (v + 1L) / 2L;
+    int64_t fulltile = v * (v + 1L) / 2L;
     ntiles = 1L;
     tilesize = fulltile / 1L;
     if (ntiles * tilesize < fulltile) tilesize++;
@@ -711,7 +712,7 @@ void CoupledCluster::DefineTilingCPU() {
     }
     lasttile = fulltile - (ntiles - 1L) * tilesize;
 
-    outfile->Printf("        v(ab,cd) diagrams will be evaluated in %3li blocks.\n", ntiles);
+    outfile->Printf("        v(ab,cd) diagrams will be evaluated in %3" PRId64 " blocks.\n", ntiles);
 
     // ov^3 type 1:
     if (v > ndoubles) {
@@ -727,7 +728,7 @@ void CoupledCluster::DefineTilingCPU() {
     }
     lastov2tile = ov2 - (nov2tiles - 1L) * ov2tilesize;
 
-    outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3li blocks over ov2.\n", nov2tiles);
+    outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3" PRId64 " blocks over ov2.\n", nov2tiles);
 
     // ov^3 type 2:
     if (v * v > ndoubles) {
@@ -742,7 +743,7 @@ void CoupledCluster::DefineTilingCPU() {
         if (novtiles * ovtilesize < ov) ovtilesize++;
     }
     lastovtile = ov - (novtiles - 1L) * ovtilesize;
-    outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3li blocks over ov.\n", novtiles);
+    outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3" PRId64 " blocks over ov.\n", novtiles);
 }
 
 /*===================================================================
@@ -752,9 +753,9 @@ void CoupledCluster::DefineTilingCPU() {
 
 ===================================================================*/
 void CoupledCluster::AllocateMemory() {
-    long int nthreads = Process::environment.get_n_threads();
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t nthreads = Process::environment.get_n_threads();
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
     if (!options_.get_bool("RUN_MP2")) {
         outfile->Printf("\n");
         outfile->Printf("  ==> Memory <==\n\n");
@@ -802,7 +803,7 @@ void CoupledCluster::AllocateMemory() {
     // define tiling for v^4 and ov^3 diagrams according to how much memory is available
     DefineTilingCPU();
 
-    long int dim = 0;
+    int64_t dim = 0;
     int fulltile = v * (v + 1) / 2;
     if (tilesize * fulltile > dim) dim = tilesize * fulltile;
     if (ovtilesize * v * v > dim) dim = ovtilesize * v * v;
@@ -832,7 +833,7 @@ void CoupledCluster::AllocateMemory() {
 
     maxelem = dim;
 
-    long int oovv = o * o * v * v;
+    int64_t oovv = o * o * v * v;
     double total_memory = 1. * dim + 2. * (oovv + o * v) + 1. * o * o * v * v + 2. * o * v + 2. * v * v;
     if (t2_on_disk) total_memory = 1. * dim + 2. * (oovv + o * v) + 2. * o * v + 2. * v * v;
     total_memory *= 8. / 1024. / 1024.;
@@ -877,9 +878,9 @@ void CoupledCluster::AllocateMemory() {
   * t1 <-- (ma|ei)
   */
 void CoupledCluster::CPU_t1_vmeai(CCTaskParams params) {
-    long int o = ndoccact;
-    long int v = nvirt;
-    long int i, a, m, e, id, one = 1;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
+    int64_t i, a, m, e, id, one = 1;
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IJAB, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IJAB, "E2ijab", (char *)&tempv[0], o * o * v * v * sizeof(double));
@@ -904,9 +905,9 @@ void CoupledCluster::CPU_t1_vmeai(CCTaskParams params) {
   * t1 <-- (mn|ei)
   */
 void CoupledCluster::CPU_t1_vmeni(CCTaskParams params) {
-    long int m, e, n, a, id;
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t m, e, n, a, id;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
     auto psio = std::make_shared<PSIO>();
 
     if (t2_on_disk) {
@@ -935,9 +936,9 @@ void CoupledCluster::CPU_t1_vmeni(CCTaskParams params) {
   *  t1 <-- (me|af)
   */
 void CoupledCluster::CPU_t1_vmaef(CCTaskParams params) {
-    long int m, e, i, f, a, id;
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t m, e, i, f, a, id;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     auto psio = std::make_shared<PSIO>();
 
@@ -957,8 +958,8 @@ void CoupledCluster::CPU_t1_vmaef(CCTaskParams params) {
         }
     }
 
-    long int tilesize, lasttile, ntiles = 1;
-    long int ov2 = o * v * v;
+    int64_t tilesize, lasttile, ntiles = 1;
+    int64_t ov2 = o * v * v;
 
     // tile v in chunks of o
     ntiles = 1L;
@@ -990,9 +991,9 @@ void CoupledCluster::CPU_t1_vmaef(CCTaskParams params) {
   * Build and use I(a,b)
   */
 void CoupledCluster::CPU_I1ab(CCTaskParams params) {
-    long int o = ndoccact;
-    long int v = nvirt;
-    long int b, m, n, e, a, id = 0;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
+    int64_t b, m, n, e, a, id = 0;
     // build I1(a,b)
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
@@ -1030,7 +1031,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params) {
     F_DGEMM('n', 't', v, v, o * o * v, -2.0, tempv, v, tempt, v, 0.0, I1, v);
 
     // add the singles parts to I1(a,b). n^4
-    long int i, j, l, k, c, d;
+    int64_t i, j, l, k, c, d;
     if (isccsd) {
         psio->open(PSIF_DCC_ABCI2, PSIO_OPEN_OLD);
         psio_address addr;
@@ -1041,7 +1042,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params) {
         }
 
         // try tiling dgemv bc ov^3 might be too large.
-        long int v2tilesize, nv2tiles, lastv2tile;
+        int64_t v2tilesize, nv2tiles, lastv2tile;
         nv2tiles = 1L;
         v2tilesize = v * v / 1L;
         if (nv2tiles * v2tilesize < v * v) v2tilesize++;
@@ -1107,10 +1108,10 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params) {
 // with other terms.  all we're left with is this 2o^3v^2 term
 // and another o^3v^2 term that was added to I2piajk
 void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params) {
-    long int o = ndoccact;
-    long int v = nvirt;
-    long int a, b, c, i, j, id = 0;
-    long int o2v = o * o * v;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
+    int64_t a, b, c, i, j, id = 0;
+    int64_t o2v = o * o * v;
 
     auto psio = std::make_shared<PSIO>();
 
@@ -1142,11 +1143,11 @@ void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params) {
   * Build and use I(i,j), I'(i,j), and I(i,a)
   */
 void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params) {
-    long int o = ndoccact;
-    long int v = nvirt;
-    long int m, j, e, f, i, a, b;  //,one=1;
-    long int ov2 = o * v * v;
-    long int id = 0;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
+    int64_t m, j, e, f, i, a, b;  //,one=1;
+    int64_t ov2 = o * v * v;
+    int64_t id = 0;
 
     // build I1(i,a). n^4
     auto psio = std::make_shared<PSIO>();
@@ -1257,7 +1258,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params) {
  *  Build and use I2ijkl
  */
 void CoupledCluster::I2ijkl(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
@@ -1326,7 +1327,7 @@ void CoupledCluster::I2ijkl(CCTaskParams params) {
  *  (it used to be I2p_abci_refactored_term3)
  */
 void CoupledCluster::I2piajk(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
@@ -1408,7 +1409,7 @@ void CoupledCluster::I2piajk(CCTaskParams params) {
  *  Use Vabcd1
  */
 void CoupledCluster::Vabcd1(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
@@ -1479,7 +1480,7 @@ void CoupledCluster::Vabcd1(CCTaskParams params) {
  *  Use Vabcd2
  */
 void CoupledCluster::Vabcd2(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     int sg, sg2;
     o = ndoccact;
     v = nvirt;
@@ -1559,7 +1560,7 @@ void CoupledCluster::Vabcd2(CCTaskParams params) {
  *  K from the SJS paper
  */
 void CoupledCluster::K(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
@@ -1694,7 +1695,7 @@ void CoupledCluster::K(CCTaskParams params) {
  *  2J - K
  */
 void CoupledCluster::TwoJminusK(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
@@ -1881,10 +1882,10 @@ void CoupledCluster::TwoJminusK(CCTaskParams params) {
    update amplitudes
 
 ================================================================*/
-void CoupledCluster::UpdateT2(long int iter) {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+void CoupledCluster::UpdateT2(int64_t iter) {
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
@@ -1895,15 +1896,15 @@ void CoupledCluster::UpdateT2(long int iter) {
 // psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
 // psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
 #pragma omp parallel for schedule(static)
-    for (long int a = o; a < rs; a++) {
+    for (int64_t a = o; a < rs; a++) {
         double da = eps[a];
-        for (long int b = o; b < rs; b++) {
+        for (int64_t b = o; b < rs; b++) {
             double dab = da + eps[b];
-            for (long int i = 0; i < o; i++) {
+            for (int64_t i = 0; i < o; i++) {
                 double dabi = dab - eps[i];
-                for (long int j = 0; j < o; j++) {
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
-                    long int ijab = (a - o) * v * o * o + (b - o) * o * o + i * o + j;
+                for (int64_t j = 0; j < o; j++) {
+                    int64_t iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
+                    int64_t ijab = (a - o) * v * o * o + (b - o) * o * o + i * o + j;
 
                     double dijab = dabi - eps[j];
                     double tnew = -(integrals[iajb] + tempv[ijab]) / dijab;
@@ -1931,14 +1932,14 @@ void CoupledCluster::UpdateT2(long int iter) {
     }
     psio.reset();
 }
-void CoupledCluster::UpdateT1(long int iter) {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+void CoupledCluster::UpdateT1(int64_t iter) {
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
 #pragma omp parallel for schedule(static)
-    for (long int a = o; a < rs; a++) {
-        for (long int i = 0; i < o; i++) {
+    for (int64_t a = o; a < rs; a++) {
+        for (int64_t i = 0; i < o; i++) {
             double dia = -eps[i] + eps[a];
             double tnew = -(w1[(a - o) * o + i]) / dia;
             w1[(a - o) * o + i] = tnew;
@@ -1956,11 +1957,11 @@ void CoupledCluster::UpdateT1(long int iter) {
 
 ================================================================*/
 void CoupledCluster::SCS_CCSD() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
-    long int i, j, a, b;
-    long int iajb, ijab = 0;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
+    int64_t i, j, a, b;
+    int64_t iajb, ijab = 0;
     double ssenergy = 0.0;
     double osenergy = 0.0;
     auto psio = std::make_shared<PSIO>();
@@ -1994,11 +1995,11 @@ void CoupledCluster::SCS_CCSD() {
     psio.reset();
 }
 void CoupledCluster::SCS_MP2() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
-    long int i, j, a, b;
-    long int iajb, ijab = 0;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
+    int64_t i, j, a, b;
+    int64_t iajb, ijab = 0;
     double ssenergy = 0.0;
     double osenergy = 0.0;
     auto psio = std::make_shared<PSIO>();
@@ -2030,11 +2031,11 @@ void CoupledCluster::SCS_MP2() {
     psio.reset();
 }
 double CoupledCluster::CheckEnergy() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
-    long int i, j, a, b;
-    long int iajb, jaib, ijab = 0;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
+    int64_t i, j, a, b;
+    int64_t iajb, jaib, ijab = 0;
     double energy = 0.0;
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
@@ -2130,8 +2131,8 @@ void CoupledCluster::DefineTasks() {
 
 void CoupledCluster::MP4_SDQ() {
     auto psio = std::make_shared<PSIO>();
-    int o = ndoccact;
-    int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     // cc diagrams split up as tasks
     // (define here so i don't get free errors when doing only mp4)

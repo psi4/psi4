@@ -35,7 +35,7 @@ namespace psi {
 namespace fnocc {
 
 // position in a symmetric packed matrix
-long int Position(long int i, long int j) {
+int64_t Position(int64_t i, int64_t j) {
     if (i < j) {
         return ((j * (j + 1)) >> 1) + i;
     }

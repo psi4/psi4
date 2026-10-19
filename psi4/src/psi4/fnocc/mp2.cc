@@ -57,8 +57,8 @@ namespace fnocc {
   * canonical MP2
   */
 void CoupledCluster::MP2() {
-    int o = ndoccact;
-    int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     // transform integrals
     outfile->Printf("\n");
