@@ -99,9 +99,11 @@ def test_coulomb_eri_integrals_role_in_schema():
     psi4.core.IntegralFactory.reset_coulomb_eri_engines()
     atin = {
         "molecule": {"symbols": ["O", "H", "H"], "geometry": [0, 0, 0.221, 0, 1.430, -0.883, 0, -1.430, -0.883]},
-        "driver": "energy",
-        "model": {"method": "hf", "basis": "6-31g*"},
-        "keywords": {"scf_type": "pk", "integral_package": "libint2"},
+        "specification": {
+            "driver": "energy",
+            "model": {"method": "hf", "basis": "6-31g*"},
+            "keywords": {"scf_type": "pk", "integral_package": "libint2"},
+        },
     }
     ret = psi4.schema_wrapper.run_qcschema(atin)
     assert ret.success, ret.error
