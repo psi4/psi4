@@ -1961,12 +1961,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("GAUXC_GPU_MEM", 90);
 #endif
 
-        /*- SUBSECTION BRIANINT -*/
-#ifdef USING_BrianQC
-    /*- Whether to enable using the BrianQC GPU module -*/
-    options.add_bool("BRIANQC_INTEGRATE", true);
-#endif
-
         /*- SUBSECTION TDSCF -*/
         /*- Number of roots (excited states) we should seek to converge. This
         can be either an integer (total number of states to seek) or a list

@@ -30,12 +30,6 @@
 #include "cubature.h"
 #include "points.h"
 #include "dft_integrators.h"
-#ifdef USING_BrianQC
-#include "brianqc_int.h"
-#endif
-#ifdef USING_gauxc
-#include "gauxc_int.h"
-#endif
 #include "sap.h"
 
 #include "psi4/libfunctional/LibXCfunctional.h"

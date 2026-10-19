@@ -79,10 +79,6 @@ class PSI_API VBase: public IntegratorManager {
     std::vector<std::shared_ptr<PointFunctions>> point_workers_;
     /// Integration grid, built by KSPotential
     std::shared_ptr<DFTGrid> grid_;
-#ifdef USING_BrianQC
-    /// Integrator object for BrianQC based integration
-    std::shared_ptr<BrianQCBase> brianqc_integrator_;
-#endif
     // Caches collocation grids
     std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map_;
     int cache_map_deriv_;
