@@ -69,10 +69,6 @@ class IntegratorManager {
     virtual std::string get_name() const = 0;
     virtual std::string get_timer_name() const = 0;
 
-
-    /// When we need to distinguish between not being defined and throwing, have the function define
-    /// nullptr to signify 'not defined.'
- 
     /// Must be implemented for any manager. Computes KS energy and potential (derivative w.r.t D matrix elts).
     virtual std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) = 0;
     /// Computes derivative of functional w.r.t nuclear centers.
