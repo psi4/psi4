@@ -144,7 +144,6 @@ jobs:
                         gau2grid ^
                         libxc-c ^
                         libint ^
-                        libcint ^
                         qcelemental ^
                         qcengine ^
                         qcmanybody ^
@@ -201,7 +200,6 @@ jobs:
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON ^
                 -DBUILD_SHARED_LIBS=OFF ^
-                -DENABLE_cint=ON ^
                 -DFORCE_PEDANTIC=ON ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
