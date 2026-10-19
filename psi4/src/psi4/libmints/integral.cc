@@ -234,6 +234,15 @@ void require_compiled_in(const std::string &package) {
                        "Rebuild with `-D ENABLE_" + option + "=ON`.");
 }
 
+/// The engines IntegralFactory::eri() has built since the last reset.
+std::mutex coulomb_eri_lock;
+std::set<std::string> coulomb_eri_built;
+
+void record_coulomb_eri_engine(const std::string &engine) {
+    std::lock_guard<std::mutex> guard(coulomb_eri_lock);
+    coulomb_eri_built.insert(engine);
+}
+
 /// INTEGRAL_PACKAGE's engine provides no integrals of this kind, so Libint2 supplies them. Announce each such
 /// substitution once per process, not once per (per-thread) integral object.
 void note_libint2_fallback(const std::string &package, const std::string &missing) {
@@ -253,14 +262,33 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
     const auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
     require_compiled_in(package);
 #ifdef USING_cint
-    if (package == "LIBCINT") return std::make_unique<LibcintERI>(this, deriv, use_shell_pairs, needs_exchange);
+    if (package == "LIBCINT") {
+        record_coulomb_eri_engine("libcint");
+        return std::make_unique<LibcintERI>(this, deriv, use_shell_pairs, needs_exchange);
+    }
 #endif
 #ifdef USING_simint
-    if (package == "SIMINT" && deriv == 0)
+    if (package == "SIMINT" && deriv == 0) {
+        record_coulomb_eri_engine("simint");
         return std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
+    }
 #endif
     note_libint2_fallback(package, "derivative integrals");
+    record_coulomb_eri_engine("libint2");
     return std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
+}
+
+void IntegralFactory::reset_coulomb_eri_engines() {
+    std::lock_guard<std::mutex> guard(coulomb_eri_lock);
+    coulomb_eri_built.clear();
+}
+
+std::string IntegralFactory::coulomb_eri_engines() {
+    std::lock_guard<std::mutex> guard(coulomb_eri_lock);
+    std::string engines;
+    for (const char *engine : {"simint", "libint2", "libcint"})
+        if (coulomb_eri_built.count(engine)) engines += (engines.empty() ? "" : ">") + std::string(engine);
+    return engines;
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
