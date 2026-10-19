@@ -43,12 +43,6 @@ class DFTGrid;
 class PointFunctions;
 class SuperFunctional;
 class BlockOPoints;
-#ifdef USING_BrianQC
-class BrianQCBase;
-#endif
-#ifdef USING_gauxc
-class GauXCBase;
-#endif
 
 // => BASE CLASS <= //
 

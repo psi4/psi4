@@ -85,7 +85,6 @@ bool brianEnableEnvValue = false;
 BrianCookie brianCookie = 0;
 
 bool brianEnable = false;
-bool brianEnableDFT = true;
 brianInt brianRestrictionType = 0;
 bool brianCPHFFlag = false;
 bool brianCPHFLeftSideFlag = false;
@@ -1142,9 +1141,6 @@ bool psi4_python_module_initialize() {
             brianInit();
         }
     }
-
-    const char* brianEnableDFTEnv = getenv("BRIANQC_ENABLE_DFT");
-    brianEnableDFT = brianEnableDFTEnv ? (bool)atoi(brianEnableDFTEnv) : true;
 #endif
 
     initialized = true;
