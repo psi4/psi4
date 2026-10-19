@@ -77,6 +77,20 @@ def test_coulomb_eri_integrals_role(package, driver, options, expected):
     assert wfn.module_role("coulomb_eri_integrals") == expected
 
 
+
+@uusing("simint")
+def test_coulomb_eri_integrals_role_sequential():
+    """Each driver call starts a fresh record: a SIMINT gradient followed by a SIMINT energy reports the
+    gradient's Libint2 derivative integrals on the first wavefunction only."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.geometry(_H2O)
+    psi4.set_options({"basis": "6-31g*", "scf_type": "pk", "integral_package": "simint"})
+    _, gwfn = psi4.gradient("hf", return_wfn=True)
+    _, ewfn = psi4.energy("hf", return_wfn=True)
+    assert gwfn.module_role("coulomb_eri_integrals") == "simint>libint2"
+    assert ewfn.module_role("coulomb_eri_integrals") == "simint"
+
 def test_coulomb_eri_integrals_role_in_schema():
     """The role reaches QCSchema provenance, and each calculation starts a fresh record."""
     psi4.core.clean()
