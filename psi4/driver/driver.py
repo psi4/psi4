@@ -32,6 +32,7 @@ frequency calculations.
 
 """
 import copy
+import functools
 import json
 import logging
 import os
@@ -82,6 +83,36 @@ def _filter_renamed_methods(compute, method):
     pass
 
 
+_coulomb_eri_depth = 0
+
+
+def _records_coulomb_eri_engines(func):
+    """Record which engines computed the plain (Coulomb) ERIs as the "coulomb_eri_integrals" module role of any
+    Wavefunction ``func`` returns, e.g., "simint>libint2" for a SIMINT gradient. Only the outermost driver call
+    resets the record, so nested calls add to it."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        global _coulomb_eri_depth
+        if _coulomb_eri_depth == 0:
+            core.IntegralFactory.reset_coulomb_eri_engines()
+        _coulomb_eri_depth += 1
+        try:
+            ret = func(*args, **kwargs)
+        finally:
+            _coulomb_eri_depth -= 1
+
+        engines = core.IntegralFactory.coulomb_eri_engines()
+        if engines and isinstance(ret, tuple):
+            for item in ret:
+                if isinstance(item, core.Wavefunction):
+                    item.set_module_role("coulomb_eri_integrals", engines)
+        return ret
+
+    return wrapper
+
+
+@_records_coulomb_eri_engines
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -555,6 +586,7 @@ def energy(name, **kwargs):
         return core.variable('CURRENT ENERGY')
 
 
+@_records_coulomb_eri_engines
 def gradient(name, **kwargs):
     r"""Function complementary to :py:func:`~psi4.driver.optimize()`. Carries out one gradient pass,
     deciding analytic or finite difference.
@@ -658,6 +690,7 @@ def gradient(name, **kwargs):
         return wfn.gradient()
 
 
+@_records_coulomb_eri_engines
 def properties(*args, **kwargs):
     r"""Function to compute various properties.
 
@@ -1371,6 +1404,7 @@ def optimize(name, **kwargs):
     raise OptimizationConvergenceError("""geometry optimization""", n - 1, wfn)
 
 
+@_records_coulomb_eri_engines
 def hessian(name, **kwargs):
     r"""Function complementary to :py:func:`~psi4.driver.frequency`. Computes force
     constants, deciding analytic, finite difference of gradients, or

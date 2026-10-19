@@ -494,6 +494,13 @@ class PSI_API IntegralFactory {
     /// Returns an ERI integral object
     virtual std::unique_ptr<TwoBodyAOInt> eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
+    /// Forget which engines eri() has built (the driver does so at the start of each calculation)
+    static void reset_coulomb_eri_engines();
+    /// The engines eri() has built since the last reset, in the order simint > libint2 > libcint, joined by ">"
+    /// (e.g., "simint>libint2" for a SIMINT gradient), or "" if none. Recorded on the Wavefunction as the
+    /// "coulomb_eri_integrals" module role.
+    static std::string coulomb_eri_engines();
+
     /// Returns an erf ERI integral object (omega integral)
     virtual std::unique_ptr<TwoBodyAOInt> erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
                                   bool needs_exchange = false);
