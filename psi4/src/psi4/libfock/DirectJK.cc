@@ -174,7 +174,11 @@ void DirectJK::compute_JK() {
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
 
-        if (do_wK_ and not options_.get_bool("BRIAN_INTEGRATE")) {
+        auto integrator = options_.get_string_vector("DFT_XC_INTEGRATOR_PACKAGES")[0];
+        std::ranges::transform(integrator, integrator.begin(), [](unsigned char c){
+            return std::toupper(c);
+        });
+        if (do_wK_ and not integrator != "BRIANQC") {
             throw PSIEXCEPTION("Currently, BrianQC cannot compute range-separated exact exchange when Psi4 is handling the DFT terms");
         }
 
