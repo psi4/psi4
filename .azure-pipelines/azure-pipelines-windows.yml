@@ -22,13 +22,13 @@ jobs:
           setlocal EnableDelayedExpansion
           echo python.version: %PYTHON_VERSION%
           set VALID=false
-          if "%PYTHON_VERSION%"=="3.10" set VALID=true
           if "%PYTHON_VERSION%"=="3.11" set VALID=true
           if "%PYTHON_VERSION%"=="3.12" set VALID=true
           if "%PYTHON_VERSION%"=="3.13" set VALID=true
           if "%PYTHON_VERSION%"=="3.14" set VALID=true
+          if "%PYTHON_VERSION%"=="3.15" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.10" through "3.14".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.11" through "3.15".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"

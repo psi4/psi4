@@ -261,7 +261,7 @@ V_diffuse_10 = extern_10.computePotentialMatrix(wfn.basisset()).np
 
 e_nuc_diffuse_10 = extern_10.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_10 = np.einsum("ij,ij->", V_diffuse_10, wfn_diffuse_01.Da().np)
-g_diffuse_10 = gradient('scf', ref_wfn=wfn)
+g_diffuse_10, wfn_g = gradient('scf', ref_wfn=wfn, return_wfn=True)
 g_diffuse_extern_10 = Matrix.from_array(
     np.vstack([x.np for x in extern_10.gradients_on_gaussians()]),
 )
@@ -270,6 +270,7 @@ compare_values(e_nuc_analytic_01, e_nuc_diffuse_10, 6, "Analytic 2 Gaussian char
 compare_values(e_elec_analytic_01, e_elec_diffuse_10, 6, "Analytic 2 Gaussian charges-s electron ixn energy vs. with external_potential")  #TEST
 compare_matrices(g_analytic_01, g_diffuse_10, 5, "Analytic 2 Gaussian charges-hydrogen gradient on hydrogen vs. with external_potential")  #TEST
 compare_matrices(g_analytic_extern_01, g_diffuse_extern_10, 5, "Analytic 2 Gaussian charges-hydrogen gradient on charge vs. with external_potential")  #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn_g.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
 
 
 # The interaction energy between two sets of two positive Gaussian
