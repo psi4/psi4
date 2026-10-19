@@ -351,4 +351,12 @@ def test_hess_fallthrough():
         "dft_xc_integrator_packages": ["gauxc", "internal"],
     })
 
-    psi4.frequencies("svwn/sto-6g", return_wfn=True)[0]
+    hybrid_wfn = psi4.frequencies("svwn/sto-6g", return_wfn=True)[1]
+ 
+    psi4.set_options({
+        "dft_xc_integrator_packages": ["internal"],
+    })
+
+    psi_wfn = psi4.frequencies("svwn/sto-6g", return_wfn=True)[1]
+
+    psi4.compare_arrays(psi_wfn.frequencies(), hybrid_wfn.frequencies(), 0.1, "Frequencies, Pure Psi vs. Psi-GauXC Difference")
