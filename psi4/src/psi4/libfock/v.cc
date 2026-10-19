@@ -105,7 +105,6 @@ std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::sh
     return v;
 }
 void VBase::initialize() {
-    // TODO: This should only run if the compute_V mode is Psi.
     timer_on("V: Grid");
     grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, options_);
     timer_off("V: Grid");
