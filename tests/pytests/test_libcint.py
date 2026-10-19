@@ -506,5 +506,5 @@ def test_libcint_not_compiled_in(method):
 
     _water()
     psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "integral_package": "libcint"})
-    with pytest.raises(RuntimeError, match="built without libcint"):
+    with pytest.raises(RuntimeError, match=r"INTEGRAL_PACKAGE LIBCINT.*built without it.*ENABLE_cint=ON"):
         psi4.energy(method)
