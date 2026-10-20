@@ -5232,6 +5232,9 @@ def test_mp2f12_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, re
 
 _psi_grid = {"dft_radial_points": 99, "dft_spherical_points": 590}
 _psi_grid_dd = {"dft_radial_points": 99, "dft_spherical_points": 590}
+# cuEST is a GPU route for SCF_TYPE DF; its refs are stored under scf_type "cuest_df" (see runner)
+_cuest = {"use_cuest": True, "cuest_mixed_precision": "disabled", "dft_nuclear_scheme": "stratmann"}
+_cuest_marks = [*using("cuest"), *using("cuda_cc8")]
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
@@ -5569,6 +5572,10 @@ def test_svwn_hessian_default(inp, dertype, basis, subjects, clsd_open_pmols, re
         pytest.param({"keywords": {"reference": "uhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                   }, id="pbe  uhf disk ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="pbe rohf disk ae:   scf  ",),
         ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                   }, id="pbe  rhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                   }, id="pbe  uhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       }, "error": {0: _p29}}, id="pbe rohf cuest ae:   scf  ", marks=_cuest_marks,),
+        ####
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   },                   }, id="pbe  rhf   cd ae:   scf  ",),
         pytest.param({"keywords": {"reference": "uhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   },                   }, id="pbe  uhf   cd ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="pbe rohf   cd ae:   scf  ",),
@@ -5666,6 +5673,10 @@ def test_pbe_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
         pytest.param({"keywords": {"reference": "uhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                            }, id="pbe  uhf disk ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   }, "error": {1: _p29, 0: _p29}}, id="pbe rohf disk ae:   scf  ",),
         ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                            }, id="pbe  rhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                            }, id="pbe  uhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       }, "error": {1: _p29, 0: _p29}}, id="pbe rohf cuest ae:   scf  ", marks=_cuest_marks,),
+        ####
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p30}         }, id="pbe  rhf   cd ae:   scf  ",),
         pytest.param({"keywords": {"reference": "uhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p30}         }, id="pbe  uhf   cd ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p30, 0: _p29}}, id="pbe rohf   cd ae:   scf  ",),
@@ -5761,6 +5772,10 @@ def test_pbe_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                   }, id="b3lyp  rhf disk ae:   scf  ",),
         pytest.param({"keywords": {"reference": "uhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                   }, id="b3lyp  uhf disk ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="b3lyp rohf disk ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                   }, id="b3lyp  rhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                   }, id="b3lyp  uhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       }, "error": {0: _p29}}, id="b3lyp rohf cuest ae:   scf  ", marks=_cuest_marks,),
         ####
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   },                   }, id="b3lyp  rhf   cd ae:   scf  ",),
         pytest.param({"keywords": {"reference": "uhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   },                   }, id="b3lyp  uhf   cd ae:   scf  ",),
@@ -5858,6 +5873,10 @@ def test_b3lyp_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, re
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                            }, id="b3lyp  rhf disk ae:   scf  ",),
         pytest.param({"keywords": {"reference": "uhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                            }, id="b3lyp  uhf disk ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   }, "error": {1: _p29, 0: _p29}}, id="b3lyp rohf disk ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                            }, id="b3lyp  rhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                            }, id="b3lyp  uhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       }, "error": {1: _p29, 0: _p29}}, id="b3lyp rohf cuest ae:   scf  ", marks=_cuest_marks,),
         ####
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p30}         }, id="b3lyp  rhf   cd ae:   scf  ",),
         pytest.param({"keywords": {"reference": "uhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p30}         }, id="b3lyp  uhf   cd ae:   scf  ",),
@@ -6101,6 +6120,122 @@ def test_wb97x_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, r
 )
 def test_wb97x_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, request):
     runner_asserter(*_processor(inp, dertype, basis, subjects, clsd_open_pmols, request, "wb97x", "gradient"))
+
+
+#
+#  <<<  wB97M-V Energy
+#
+# refs (pk, df, cuest_df) are at the runtime grid (99,590; VV10 at its 50,146 default), unlike wB97X's 500,1202
+
+
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
+@pytest.mark.parametrize(
+    "basis, subjects",
+    [
+        pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
+        pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
+        pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+    ],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+
+        ###### scf_solver
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "pk",      "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  rhf   pk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "pk",      "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  uhf   pk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "pk",      "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="wb97mv rohf   pk ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "direct",  "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  rhf drct ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "direct",  "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  uhf drct ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "direct",  "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="wb97mv rohf drct ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  rhf   df ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  uhf   df ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="wb97mv rohf   df ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  rhf  mem ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  uhf  mem ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="wb97mv rohf  mem ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  rhf disk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                   }, id="wb97mv  uhf disk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="wb97mv rohf disk ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                   }, id="wb97mv  rhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                   }, id="wb97mv  uhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       }, "error": {0: _p29}}, id="wb97mv rohf cuest ae:   scf  ", marks=_cuest_marks,),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {0: _p31}}, id="wb97mv  rhf   cd ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {0: _p31}}, id="wb97mv  uhf   cd ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {0: _p29}}, id="wb97mv rohf   cd ae:   scf  ",),
+        # yapf: enable
+    ],
+)
+def test_wb97mv_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    runner_asserter(*_processor(inp, dertype, basis, subjects, clsd_open_pmols, request, "wb97m-v", "energy"))
+
+
+#
+#  <<<  wB97M-V Gradient
+
+
+@pytest.mark.parametrize(
+    "dertype",
+    [
+        pytest.param(1, id="grd1"),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
+    ],
+)
+@pytest.mark.parametrize(
+    "basis, subjects",
+    [
+        pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
+        pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
+        pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+    ],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+
+        ###### scf_solver
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "pk",      "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  rhf   pk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "pk",      "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  uhf   pk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "pk",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p29, 0: _p29}}, id="wb97mv rohf   pk ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "direct",  "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  rhf drct ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "direct",  "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  uhf drct ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "direct",  "freeze_core": "false", **_psi_grid                   }, "error": {1: _p29, 0: _p29}}, id="wb97mv rohf drct ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  rhf   df ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  uhf   df ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p29, 0: _p29}}, id="wb97mv rohf   df ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  rhf  mem ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  uhf  mem ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                   }, "error": {1: _p29, 0: _p29}}, id="wb97mv rohf  mem ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  rhf disk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   },                            }, id="wb97mv  uhf disk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                   }, "error": {1: _p29, 0: _p29}}, id="wb97mv rohf disk ae:   scf  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                            }, id="wb97mv  rhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       },                            }, id="wb97mv  uhf cuest ae:   scf  ", marks=_cuest_marks,),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid, **_cuest       }, "error": {1: _p29, 0: _p29}}, id="wb97mv rohf cuest ae:   scf  ", marks=_cuest_marks,),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p30, 0: _p31}}, id="wb97mv  rhf   cd ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p30, 0: _p31}}, id="wb97mv  uhf   cd ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "rohf", "scf_type": "cd",      "freeze_core": "false", **_psi_grid                   }, "error": {1: _p30, 0: _p29}}, id="wb97mv rohf   cd ae:   scf  ",),
+        # yapf: enable
+    ],
+)
+def test_wb97mv_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    runner_asserter(*_processor(inp, dertype, basis, subjects, clsd_open_pmols, request, "wb97m-v", "gradient"))
 
 
 #

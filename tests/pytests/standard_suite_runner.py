@@ -76,6 +76,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
         "pbe": "df",  # dummy
         "b3lyp": "df",  # dummy
         "wb97x": "df",  # dummy
+        "wb97m-v": "df",  # dummy
         "b2plyp": "df",  # dummy
     }
     corl_type = corl_natural_values[method]
@@ -86,7 +87,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     natural_values = {"pk": "pk", "direct": "pk", "df": "df", "mem_df": "df", "disk_df": "df", "cd": "cd"}
     scf_type = natural_values[scf_type]
 
-    is_dft = method in ["svwn", "pbe", "b3lyp", "wb97x", "b3lyp5", "b2plyp"]
+    is_dft = method in ["svwn", "pbe", "b3lyp", "wb97x", "wb97m-v", "b3lyp5", "b2plyp"]
     is_dhdft = method in ["b2plyp"]
 
     if is_dhdft:
@@ -94,6 +95,13 @@ def runner_asserter(inp, subject, method, basis, tnm):
     elif is_dft:
         # Hartree--Fock doesn't need this b/c it does value sharing by variable so CONV-AE-CONV also stored at CONV-AE-DF
         corl_type = inp["keywords"].get("mp2_type", natural_ref_inv[scf_type])
+
+    using_cuest = inp["keywords"].get("use_cuest", False)
+    if using_cuest:
+        # cuEST is its own DF J/K and GPU XC engine, so it's stored as its own scf_type flavor and checked tightly
+        #   against cuEST refs. Psi4's DF and CONV values are only looser cross-checks (see atol_conv below).
+        assert scf_type == "df", f"cuEST accelerates SCF_TYPE DF only, not {scf_type}"
+        scf_type = "cuest_df"
 
     using_fd = (driver == "gradient" and inp["keywords"]["function_kwargs"]["dertype"] == 0 or driver == "hessian" and inp["keywords"]["function_kwargs"]["dertype"] in [0, 1])  # T/F: notate fd vs. analytic for docs table
     defaultness = "defaultdefault" if ("default" in tnm and all([not k.endswith("_type") for k in inp["keywords"]])) else ("default" if "default" in tnm else "")
@@ -129,10 +137,20 @@ def runner_asserter(inp, subject, method, basis, tnm):
     if method in ["mp2-f12"] and corl_type in ["df"]:
         # hf-cabs is sensitive
         atol_conv = 2.0e-3
+    if using_cuest:
+        # cuEST v. Psi4 DF/CONV: same DF_BASIS_SCF, but cuEST builds its own grid weights and includes grid-weight
+        #   derivatives in analytic gradients, while Psi4 omits them. Provisional; tighten to the spread observed
+        #   across the cuEST refs once they're in QCEngine.
+        atol_conv = 5.0e-4
     chash_conv = answer_hash(
         system=subject.name(), basis=basis, fcae=fcae, reference=reference, corl_type="conv", scf_type="pk", sdsc=sdsc
     )
     ref_block_conv = std_suite[chash_conv]
+    if using_cuest:
+        chash_df = answer_hash(
+            system=subject.name(), basis=basis, fcae=fcae, reference=reference, corl_type="df", scf_type="df", sdsc=sdsc
+        )
+        ref_block_df = std_suite[chash_df]
 
     # <<<  Prepare Calculation and Call API  >>>
 
@@ -378,6 +396,14 @@ def runner_asserter(inp, subject, method, basis, tnm):
             ref_block[f"{method.upper()} TOTAL GRADIENT"], wfn.gradient().np, tnm + " grad wfn", atol=atol_g, rtol=rtol_g
         )
         assert compare_values(ref_block[f"{method.upper()} TOTAL HESSIAN"], ret.np, tnm + " hess return", atol=atol_h, rtol=rtol_h)
+
+    if using_cuest:
+        # CONV cross-check already done in _asserter; add the Psi4 DF cross-check
+        assert compare_values(ref_block_df[f"{method.upper()} TOTAL ENERGY"], wfn.energy(), tnm + " wfn v. DF", atol=atol_conv, rtol=rtol_conv)
+        if driver == "gradient":
+            assert compare_values(
+                ref_block_df[f"{method.upper()} TOTAL GRADIENT"], wfn.gradient().np, tnm + " grad wfn v. DF", atol=atol_conv, rtol=rtol_conv
+            )
 
     # generics checks
     # yapf: disable
