@@ -190,9 +190,10 @@ double CoupledCluster::compute_energy() {
 
     // CCSD or QCISD
     if (!options_.get_bool("RUN_MP3") && !options_.get_bool("RUN_MP4")) {
-        timer_on("FNOCC: CCSD");
-        status = CCSDIterations();
-        timer_off("FNOCC: CCSD");
+        {
+            TimerGuard timer("FNOCC: CCSD");
+            status = CCSDIterations();
+        }
 
 
         // ccsd energy
@@ -609,7 +610,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
     outfile->Printf("      * MP3 total energy:                %20.12lf\n", emp2 + emp3 + escf);
     outfile->Printf("\n");
     outfile->Printf("        OS MP4(SDQ) correlation energy:  %20.12lf\n", emp2_os + emp3_os + emp4_sd_os + emp4_q_os);
-    outfile->Printf("        SS MP4(SDQ) correlation energy:  %20.12lf\n", emp2_ss + emp3_ss + emp4_sd_ss + emp4_q_os);
+    outfile->Printf("        SS MP4(SDQ) correlation energy:  %20.12lf\n", emp2_ss + emp3_ss + emp4_sd_ss + emp4_q_ss);
     outfile->Printf("        MP4(SDQ) correlation energy:     %20.12lf\n", emp2 + emp3 + emp4_sd + emp4_q);
     outfile->Printf("      * MP4(SDQ) total energy:           %20.12lf\n", emp2 + emp3 + emp4_sd + emp4_q + escf);
     outfile->Printf("\n");
@@ -2245,7 +2246,7 @@ void CoupledCluster::MP4_SDQ() {
         outfile->Printf("        OS MP4(SDQ) correlation energy:  %20.12lf\n",
                         emp2_os + emp3_os + emp4_sd_os + emp4_q_os);
         outfile->Printf("        SS MP4(SDQ) correlation energy:  %20.12lf\n",
-                        emp2_ss + emp3_ss + emp4_sd_ss + emp4_q_os);
+                        emp2_ss + emp3_ss + emp4_sd_ss + emp4_q_ss);
         outfile->Printf("        MP4(SDQ) correlation energy:     %20.12lf\n", emp2 + emp3 + emp4_sd + emp4_q);
         outfile->Printf("      * MP4(SDQ) total energy:           %20.12lf\n", emp2 + emp3 + emp4_sd + emp4_q + escf);
         outfile->Printf("\n");

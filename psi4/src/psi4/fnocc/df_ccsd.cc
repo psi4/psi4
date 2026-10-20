@@ -68,9 +68,10 @@ double DFCoupledCluster::compute_energy() {
 
     // WriteBanner();
     AllocateMemory();
-    timer_on("FNOCC: CCSD");
-    status = CCSDIterations();
-    timer_off("FNOCC: CCSD");
+    {
+        TimerGuard timer("FNOCC: CCSD");
+        status = CCSDIterations();
+    }
 
     // free some memory!
     free(Fij);
@@ -623,7 +624,7 @@ void DFCoupledCluster::AllocateMemory() {
         } else {
             outfile->Printf("\n");
             outfile->Printf("        error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",
-                            total_memory + df_memory - size_of_t2 - available_memory);
+                            (total_memory + df_memory - size_of_t2 - available_memory) * 1024.);  // GiB -> mb
             outfile->Printf("\n");
 
             throw PsiException("not enough memory (ccsd).", __FILE__, __LINE__);

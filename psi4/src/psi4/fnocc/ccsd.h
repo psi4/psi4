@@ -30,6 +30,8 @@
 #define CCSD_H
 
 #include <cstdint>
+#include <string>
+#include <utility>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libiwl/iwl.h"
@@ -38,11 +40,30 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
 
 PSI_API int64_t Position(int64_t i, int64_t j);
 
 namespace psi {
 namespace fnocc {
+
+/// timer_on for the guard's lifetime; timer_off runs even when an exception (e.g., not enough memory or
+/// nonconvergence) unwinds the scope, else the next fnocc call in this process dies on "timer is already on"
+class TimerGuard {
+   public:
+    explicit TimerGuard(std::string key) : key_(std::move(key)) { timer_on(key_); }
+    ~TimerGuard() {
+        try {
+            timer_off(key_);
+        } catch (...) {  // never throw from a destructor, possibly mid-unwind
+        }
+    }
+    TimerGuard(const TimerGuard &) = delete;
+    TimerGuard &operator=(const TimerGuard &) = delete;
+
+   private:
+    std::string key_;
+};
 
 std::tuple<SharedMatrix, SharedMatrix> spin_adapt(SharedMatrix ss, SharedMatrix os);
 

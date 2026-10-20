@@ -256,7 +256,8 @@ void CoupledCluster::UpdateT2_mp4(int64_t iter) {
     } else if (iter == 2) {
         if (t2_on_disk) {
             psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
-            psio->read_entry(PSIF_DCC_T2, "t2", (char*)&tempt[0], o * o * v * v * sizeof(double));
+            // contract with first-order amplitudes, as in core (MP4_SDQ reads "first" into tb); "t2" holds second-order
+            psio->read_entry(PSIF_DCC_T2, "first", (char*)&tempt[0], o * o * v * v * sizeof(double));
             psio->close(PSIF_DCC_T2, 1);
             tb = tempt;
         }
@@ -279,7 +280,7 @@ void CoupledCluster::UpdateT2_mp4(int64_t iter) {
     } else if (iter == 3) {
         if (t2_on_disk) {
             psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
-            psio->read_entry(PSIF_DCC_T2, "t2", (char*)&tempt[0], o * o * v * v * sizeof(double));
+            psio->read_entry(PSIF_DCC_T2, "first", (char*)&tempt[0], o * o * v * v * sizeof(double));
             psio->close(PSIF_DCC_T2, 1);
             tb = tempt;
         }
