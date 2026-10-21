@@ -171,6 +171,8 @@ def runner_asserter(inp, subject, method, basis, tnm):
             "orbital_optimizer_package": "internal",  # haven't tried to adapt for ooo
         }
     )
+    if method == "wb97m-v" and inp["keywords"].get("scf_type") == "mem_df":
+        psi4.set_memory("2 GiB")
     extra_kwargs = inp["keywords"].pop("function_kwargs", {})
 
     if "error" in inp:
