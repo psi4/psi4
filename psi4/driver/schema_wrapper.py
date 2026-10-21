@@ -162,6 +162,13 @@ def _serial_translation(value, json=False):
     if isinstance(value, (core.Dimension)):
         return value.to_tuple()
 
+    # Symmetry-blocked data (e.g., SCF STABILITY EIGENVALUES with one block per
+    # irrep) has no single array view (``.np`` raises); return one entry per
+    # irrep, in the molecule's irrep order.
+    if isinstance(value, (core.Matrix, core.Vector)) and value.nirrep() > 1:
+        blocks = [np.array(block) for block in value.nph]
+        return [block.ravel().tolist() for block in blocks] if json else blocks
+
     if json:
         if isinstance(value, (core.Matrix, core.Vector)):
             return value.np.ravel().tolist()
