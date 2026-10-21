@@ -5233,7 +5233,6 @@ def test_mp2f12_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, re
 
 _psi_grid = {"dft_radial_points": 99, "dft_spherical_points": 590}
 _psi_grid_dd = {"dft_radial_points": 99, "dft_spherical_points": 590}
-# cuEST is a GPU route for SCF_TYPE DF; its refs are stored under scf_type "cuest_df" (see runner)
 _cuest = {"use_cuest": True, "cuest_mixed_precision": "disabled", "dft_nuclear_scheme": "stratmann"}
 _cuest_marks = [*using("cuest"), *using("cuda_cc8")]
 
@@ -6125,8 +6124,6 @@ def test_wb97x_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, 
 
 #
 #  <<<  wB97M-V Energy
-#
-# refs (pk, df, cuest_df) are at the runtime grid (99,590; VV10 at its 50,146 default), unlike wB97X's 500,1202
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
