@@ -118,7 +118,7 @@ void RBase::set_reference(SharedWavefunction ref_wfn) {
 void RBase::preiterations() {
     if (!jk_) {
         if (options_.get_bool("SAVE_JK")) {
-            auto* hf = dynamic_cast<psi::scf::HF*>(reference_wavefunction_.get());
+            auto hf = std::dynamic_pointer_cast<psi::scf::HF>(reference_wavefunction_);
             if (!hf) {
                 throw PSIEXCEPTION("RBase: SAVE_JK requires an HF reference wavefunction");
             }
