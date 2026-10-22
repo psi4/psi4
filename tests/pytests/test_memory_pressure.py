@@ -14,13 +14,14 @@ regexes that prove the blocked path ran. Find a squeeze by scanning memory downw
 the module has not yet refused to run.
 """
 
+import math
 import re
 
 import psi4
 import pytest
 from utils import compare_values
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 _molecules = {
     "ethene": """
@@ -101,3 +102,34 @@ def test_memory_pressure_and_blocking(molecule, method, options, squeezed, trigg
     assert any(not re.search(pat, out_ample) for pat in triggers), "ample run already took every blocked path"
 
     assert compare_values(e_ample, e_squeezed, 9, f"{method} energy: squeezed vs ample memory")
+
+
+@pytest.mark.cc
+def test_dpd_32_gib_memory_accounting(tmp_path, restore_memory_and_threads):
+    """A large configured budget must not overflow DPD's internal word counts on LLP64 platforms."""
+    psi4.set_num_threads(2)
+    psi4.geometry(
+        """
+        O
+        H 1 1.0
+        H 1 1.0 2 90.0
+        """
+    )
+    psi4.set_options(
+        {
+            "basis": "sto-3g",
+            "scf_type": "pk",
+            "cc_type": "conv",
+            "qc_module": "ccenergy",
+            "freeze_core": True,
+        }
+    )
+    outfile = tmp_path / "dpd-large-memory.out"
+    psi4.core.set_output_file(str(outfile), False)
+    psi4.core.set_memory_bytes(32 * 1024**3)
+
+    energy = psi4.energy("ccsd(t)")
+    psi4.core.set_output_file(str(tmp_path / "dpd-large-memory.after"), False)
+
+    assert math.isfinite(energy)
+    assert re.search(r"Number of threads for explicit ijk threading:\s+2", outfile.read_text())
