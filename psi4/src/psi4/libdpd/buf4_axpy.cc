@@ -63,9 +63,10 @@ int DPD::buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha) {
 
     for (int h = 0; h < nirreps; h++) {
         if (BufX->params->rowtot[h] && BufX->params->coltot[h ^ my_irrep]) {
-            const auto coltot = BufX->params->coltot[h ^ my_irrep];
-            rows_per_bucket =
-                dpd_rows_per_bucket(dpd_memfree() - coltot, 2LL * coltot, BufX->params->rowtot[h]);
+            const auto buffer_coltot = BufX->params->coltot[h ^ my_irrep];
+            const auto file_coltot = BufX->file.params->coltot[h ^ my_irrep];
+            rows_per_bucket = dpd_rows_per_bucket(dpd_memfree() - file_coltot, 2LL * buffer_coltot,
+                                                  BufX->params->rowtot[h]);
 
             if (!rows_per_bucket) dpd_error("buf4_axpy: Not enough memory for one row!", "outfile");
 
