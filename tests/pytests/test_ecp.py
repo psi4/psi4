@@ -303,3 +303,143 @@ def test_ecp_ghost_sanity():
 
     assert compare_values(0.0, diff, 7, "ECP + valence vs. only valence")
 
+
+
+@uusing("ecpint")
+@pytest.mark.medlong
+def test_ecp_la2o3_grad_findif():
+    """Analytic HF gradient of La2O3 (two 46-electron La ECPs) must match 5-point finite differences of energies.
+
+    Before libecpint's fixes for narrow type-2 radial integrands and the early-stopping one-point quadrature,
+    ECP integrals jumped discontinuously with geometry: the energy was off by 7.5e-5 Eh and findif deviated from
+    analytic by 1.6e-4 Eh/a0 (no amount of tightening convergence helped). Now agreement is ~1e-7.
+    """
+    import psi4
+
+    psi4.geometry("""
+        La  0.0      0.944863  -0.3286479
+        La  0.0     -0.944863  -0.3286479
+        O   0.0      1.88973    1.5610781
+        O   0.0      0.0        1.5610781
+        O   0.0     -1.88973    1.5610781
+        units au
+        no_com
+        no_reorient
+    """)
+    psi4.set_options({
+        "scf_type": "pk",
+        "basis": "def2-svp",
+        "puream": True,
+        "e_convergence": 10,
+        "d_convergence": 10,
+        "points": 5,
+    })
+
+    analytic, wfn = psi4.gradient("hf", dertype=1, return_wfn=True)
+    findif = psi4.gradient("hf", dertype=0)
+    assert compare_values(analytic, findif, 6, "La2O3 HF gradient: analytic vs findif")
+    assert compare_values(-261.405809790, wfn.energy(), 6, "La2O3 HF energy")
+
+
+@uusing("ecpint")
+def test_ecp_ghost_beside_real_same_element():
+    """A ghost atom carries no ECP, even when a real atom with the same label does.
+
+    CH2I radical in the CH2I2 basis (one iodine ghosted). Previously the ECP shells were keyed by label,
+    so Gh(I) picked up the real I's ECP: E(UHF) was 2.2e-3 Eh too high. References from NWChem 7.2.3
+    (I def2-svp + def2-ecp from its library, bqI with basis only) at the same geometry;
+    outputs in test_ecp/nwchem_ch2i_gi_pure_{hf,mp2ae}.out.
+    """
+    import psi4
+
+    mol = psi4.geometry("""
+        0 2
+        C
+        I     1 2.15
+        Gh(I) 1 2.15 2 112.0
+        X     1 1.0  2 56.0  3 0.0
+        H     1 1.09 4 56.5  2 90.0
+        H     1 1.09 4 56.5  2 -90.0
+        symmetry c1
+        no_com
+        no_reorient
+    """)
+    psi4.set_options({
+        "basis": "def2-svp",
+        "reference": "uhf",
+        "scf_type": "pk",
+        "mp2_type": "conv",
+        "e_convergence": 10,
+        "d_convergence": 10,
+    })
+
+    nwchem_scf = -335.495596142434
+    nwchem_scf_grad = np.array([
+        [ 0.026200,  0.046304,  0.000000],
+        [-0.030250,  0.081196,  0.000000],
+        [-0.000487,  0.000317,  0.000000],
+        [ 0.002268, -0.063909,  0.013732],
+        [ 0.002268, -0.063909, -0.013732],
+    ])
+    nwchem_mp2 = -335.762780255744
+    nwchem_mp2_grad = np.array([
+        [ 0.011159,  0.058749,  0.000000],
+        [-0.026022,  0.042160,  0.000000],
+        [-0.002514,  0.001507,  0.000000],
+        [ 0.008688, -0.051208,  0.020881],
+        [ 0.008688, -0.051208, -0.020881],
+    ])
+
+    grad, wfn = psi4.gradient("hf", return_wfn=True)
+    bs = wfn.basisset()
+    assert bs.n_ecp_core() == 28
+    assert [bs.n_ecp_shell_on_center(a) for a in range(mol.natom())] == [0, 4, 0, 0, 0]
+    assert compare_values(nwchem_scf, wfn.energy(), 7, "CH2I + Gh(I) UHF energy")
+    assert compare_values(nwchem_scf_grad, grad, 5, "CH2I + Gh(I) UHF gradient")
+
+    grad = psi4.gradient("mp2")
+    assert compare_values(nwchem_mp2, psi4.variable("CURRENT ENERGY"), 7, "CH2I + Gh(I) MP2 energy")
+    assert compare_values(nwchem_mp2_grad, grad, 5, "CH2I + Gh(I) MP2 gradient")
+
+
+@uusing("ecpint")
+def test_ecp_ghost_cp_same_element():
+    """Counterpoise through nbody ghosts by fragment; each monomer-in-dimer-basis job has a real I beside a ghost I.
+
+    References from NWChem 7.2.3 (I def2-svp + def2-ecp, bq ghosts); outputs in test_ecp/nwchem_hi2_cp_*.out.
+    CP IE = AB - A(AB) - B(AB). The CP gradient psi4 returns is the CP-corrected total (return_total_data=True default
+    for gradients), which also adds the monomers in their own basis: AB - A(AB) - B(AB) + A(A) + B(B).
+    """
+    import psi4
+
+    psi4.geometry("""
+        0 1
+        H  0.0  0.0  0.0
+        I  0.0  0.0  1.609
+        --
+        0 1
+        H  0.0  2.9  2.4
+        I  0.0  4.2  3.3
+        symmetry c1
+        no_com
+        no_reorient
+    """)
+    psi4.set_options({
+        "basis": "def2-svp",
+        "scf_type": "pk",
+        "e_convergence": 10,
+        "d_convergence": 10,
+    })
+
+    nwchem_cp_ie = 0.001110341095
+    nwchem_cp_grad = np.array([  # CP-corrected total gradient; NWChem prints 6 decimals, five jobs summed
+        [0.0, -0.000011, -0.002939],
+        [0.0,  0.003179,  0.004034],
+        [0.0,  0.006250,  0.004895],
+        [0.0, -0.009416, -0.005990],
+    ])
+
+    psi4.energy("hf", bsse_type="cp")
+    assert compare_values(nwchem_cp_ie, psi4.variable("CP-CORRECTED INTERACTION ENERGY"), 8, "HI dimer CP IE")
+    grad = psi4.gradient("hf", bsse_type="cp")
+    assert compare_values(nwchem_cp_grad, grad, atol=3.e-6, label="HI dimer CP gradient")
