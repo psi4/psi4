@@ -26,8 +26,10 @@
  * @END LICENSE
  */
 
+#include <array>
 #include <cinttypes>
 #include <ctime>
+#include <vector>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -210,24 +212,13 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
     int pct10, pct20, pct30, pct40, pct50, pct60, pct70, pct80, pct90;
     pct10 = pct20 = pct30 = pct40 = pct50 = pct60 = pct70 = pct80 = pct90 = 0;
 
-    int64_t nabc = 0;
+    const int64_t nabc = v * (v + 1) * (v + 2) / 6;
+    std::vector<std::array<int, 3>> abc;
+    abc.reserve(static_cast<size_t>(nabc));
     for (int64_t a = 0; a < v; a++) {
         for (int64_t b = 0; b <= a; b++) {
             for (int64_t c = 0; c <= b; c++) {
-                nabc++;
-            }
-        }
-    }
-    int64_t **abc = (int64_t **)malloc(nabc * sizeof(int64_t *));
-    nabc = 0;
-    for (int64_t a = 0; a < v; a++) {
-        for (int64_t b = 0; b <= a; b++) {
-            for (int64_t c = 0; c <= b; c++) {
-                abc[nabc] = (int64_t *)malloc(3 * sizeof(int64_t));
-                abc[nabc][0] = a;
-                abc[nabc][1] = b;
-                abc[nabc][2] = c;
-                nabc++;
+                abc.push_back({static_cast<int>(a), static_cast<int>(b), static_cast<int>(c)});
             }
         }
     }
@@ -253,9 +244,9 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
     if (threaded) {
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         for (int64_t ind = 0; ind < nabc; ind++) {
-            int64_t a = abc[ind][0];
-            int64_t b = abc[ind][1];
-            int64_t c = abc[ind][2];
+            int a = abc[ind][0];
+            int b = abc[ind][1];
+            int c = abc[ind][2];
 
             int thread = 0;
 #ifdef _OPENMP
@@ -511,11 +502,6 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
         for (int i = 0; i < nthreads; i++) free(Z4[i]);
         free(Z4);
         free(etrip);
-        nabc = 0;
-        for (int64_t a = 0; a < v; a++)
-            for (int64_t b = 0; b <= a; b++)
-                for (int64_t c = 0; c <= b; c++) free(abc[nabc++]);
-        free(abc);
 
         return Failure;
     }
@@ -565,12 +551,6 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
     free(Z4);
     free(E2abci);
     free(etrip);
-
-    nabc = 0;
-    for (int64_t a = 0; a < v; a++)
-        for (int64_t b = 0; b <= a; b++)
-            for (int64_t c = 0; c <= b; c++) free(abc[nabc++]);
-    free(abc);
 
     return Success;
 }
