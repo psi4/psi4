@@ -564,6 +564,13 @@ extern int dpd_close(int dpd_num);
 extern int64_t PSI_API dpd_memfree();
 extern void dpd_memset(int64_t memory);
 
+// Compute in DPD words without narrowing, then clamp to the int-sized matrix dimension.
+inline int dpd_rows_per_bucket(int64_t available_words, int64_t words_per_row, int max_rows) {
+    if (available_words <= 0 || words_per_row <= 0 || max_rows <= 0) return 0;
+    const int64_t rows = available_words / words_per_row;
+    return rows > max_rows ? max_rows : static_cast<int>(rows);
+}
+
 }  // Namespace psi
 
 #endif /* _psi_src_lib_libdpd_dpd_h */

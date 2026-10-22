@@ -64,7 +64,8 @@ namespace psi {
 
 int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha) {
     int pq;
-    long int length, core, memoryd, core_total, rowtot, coltot, maxrows;
+    int64_t memoryd;
+    long int length, core, core_total, rowtot, coltot, maxrows;
     int h, nirreps, new_buf4, all_buf_irrep;
     double *X;
     bool incore;

@@ -63,7 +63,9 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z, int target_X, int targe
     long int size_Y, size_Z, size_file_X_row;
     int nbuckets;
     bool incore;
-    long int memoryd, core, rows_per_bucket, rows_left, memtotal;
+    int64_t memoryd;
+    long int core, memtotal;
+    int rows_per_bucket, rows_left;
     int nrows, ncols, nlinks;
 #if DPD_DEBUG
     int *xrow, *xcol, *yrow, *ycol, *zrow, *zcol;
@@ -139,11 +141,10 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z, int target_X, int targe
 
         if (X->params->rowtot[Hx] && X->params->coltot[Hx ^ GX]) {
             if (X->params->coltot[Hx ^ GX])
-                rows_per_bucket = memoryd / X->params->coltot[Hx ^ GX];
+                rows_per_bucket = dpd_rows_per_bucket(memoryd, X->params->coltot[Hx ^ GX],
+                                                      X->params->rowtot[Hx]);
             else
                 rows_per_bucket = -1;
-
-            if (rows_per_bucket > X->params->rowtot[Hx]) rows_per_bucket = X->params->rowtot[Hx];
 
             if (!rows_per_bucket) dpd_error("contract444: Not enough memory for one row", "outfile");
 

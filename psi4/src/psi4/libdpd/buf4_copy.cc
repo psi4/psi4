@@ -56,7 +56,8 @@ int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const std::string& label) {
     int h, row, col, my_irrep;
     long int rowtot, coltot;
     int nbuckets, n;
-    long int memoryd, rows_per_bucket, rows_left, size;
+    long int size;
+    int rows_per_bucket, rows_left;
     dpdbuf4 OutBuf;
     bool incore;
 
@@ -66,15 +67,11 @@ int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const std::string& label) {
               InBuf->params->pqnum, InBuf->params->rsnum, 0, label);
 
     for (h = 0; h < InBuf->params->nirreps; h++) {
-        memoryd = dpd_memfree() / 2; /* use half the memory for each buf4 */
-
         rowtot = InBuf->params->rowtot[h];
         coltot = InBuf->params->coltot[h ^ my_irrep];
 
         if (rowtot && coltot) {
-            rows_per_bucket = memoryd / coltot;
-            /* enough memory for the whole matrix? */
-            if (rows_per_bucket > rowtot) rows_per_bucket = rowtot;
+            rows_per_bucket = dpd_rows_per_bucket(dpd_memfree(), 2LL * coltot, static_cast<int>(rowtot));
 
             if (!rows_per_bucket) dpd_error("buf4_scmcopy: Not enough memory for one row!", "outfile");
 
