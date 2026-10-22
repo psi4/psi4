@@ -1,10 +1,10 @@
 """
 Same answer under memory pressure.
 
-Each case runs one post-HF method twice on the same reference wavefunction: first with ample memory, then with
-memory squeezed so that the module takes its blocked, tiled, or out-of-core paths. The energies must agree, and the
-squeezed output must show that the blocked path actually ran (else a change of basis, default, or memory formula
-would silently turn the case into a duplicate of the ample run).
+Each case runs one post-HF method twice with independent reference wavefunctions: first with ample memory, then
+with memory squeezed so that the module takes its blocked, tiled, or out-of-core paths. The energies must agree,
+and the squeezed output must show that the blocked path actually ran (else a change of basis, default, or memory
+formula would silently turn the case into a duplicate of the ample run).
 
 Memory is squeezed with psi4.core.set_memory_bytes, which, unlike psi4.set_memory, skips the 250 MiB floor, so small
 molecules suffice. Only the post-HF step is squeezed; the SCF runs with ample memory.
@@ -74,7 +74,11 @@ def restore_memory_and_threads():
     psi4.core.set_num_threads(nthreads)
 
 
-def _run(method, ref_wfn, outfile, memory):
+def _run(method, outfile, memory, ample):
+    psi4.core.set_output_file(str(outfile.with_suffix(".scf.out")), False)
+    psi4.core.set_memory_bytes(ample)
+    _, ref_wfn = psi4.energy("scf", return_wfn=True)
+
     psi4.core.set_output_file(str(outfile), False)
     psi4.core.set_memory_bytes(memory)
     energy = psi4.energy(method, ref_wfn=ref_wfn)
@@ -89,12 +93,8 @@ def test_memory_pressure_and_blocking(molecule, method, options, squeezed, trigg
     psi4.set_options({**_common_options, **options})
 
     ample = 2 * 1024**3
-    psi4.core.set_output_file(str(tmp_path / "scf.out"), False)
-    psi4.core.set_memory_bytes(ample)
-    _, ref_wfn = psi4.energy("scf", return_wfn=True)
-
-    e_ample, out_ample = _run(method, ref_wfn, tmp_path / "ample.out", ample)
-    e_squeezed, out_squeezed = _run(method, ref_wfn, tmp_path / "squeezed.out", squeezed)
+    e_ample, out_ample = _run(method, tmp_path / "ample.out", ample, ample)
+    e_squeezed, out_squeezed = _run(method, tmp_path / "squeezed.out", squeezed, ample)
 
     missing = [pat for pat in triggers if not re.search(pat, out_squeezed)]
     assert not missing, f"squeezed run ({squeezed} bytes) did not take the blocked path: {missing}"
