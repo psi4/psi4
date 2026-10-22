@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #include <cstdio>
 #include <iomanip>
@@ -59,6 +62,8 @@
 #include "psi4/libqt/qt.h"
 
 #include "python_data_type.h"
+
+#include "cuest_runtime.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -148,6 +153,7 @@ void export_mints(py::module&);
 void export_misc(py::module&);
 void export_oeprop(py::module&);
 void export_pcm(py::module&);
+void export_cuestpcm(py::module&);
 void export_plugins(py::module&);
 void export_psio(py::module&);
 void export_wavefunction(py::module&);
@@ -1159,6 +1165,9 @@ void psi4_python_module_finalize() {
     }
 #endif
 
+    // No-op unless cuEST was built in and actually initialized on a GPU.
+    psi::cuest_runtime::shutdown();
+
 #ifdef INTEL_Fortran_ENABLED
     for_rtl_finish_();
 #endif
@@ -1236,6 +1245,10 @@ PYBIND11_MODULE(core, core) {
 #ifdef USING_PCMSolver
     // PCM
     export_pcm(core);
+#endif
+#ifdef USING_cuEST
+    // cuEST PCM
+    export_cuestpcm(core);
 #endif
 
     // CubeProperties

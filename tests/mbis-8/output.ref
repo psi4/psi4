@@ -1,0 +1,702 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.12a1.dev45 
+
+                         Git: Rev {mbis_speed1} 4dd891c dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Friday, 11 September 2026 04:46AM
+
+    Process ID: 1391034
+    Host:       atl1-1-02-002-25-1.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-cs207-0/lburns7/posthive/p4priv_collab/hrw-priv/objdir_py314_cuest02/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                dftd4, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, g̶e̶o̶m̶e̶t̶r̶i̶c̶, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶,
+                i̶p̶i̶, l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, qcmanybody, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶,
+                s̶n̶s̶m̶p̶2̶, v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! MBIS guards: Anderson must not change the fixed point (NaCl), and ghosts must say so
+#
+# Anderson mixing is a convergence accelerator, so switching it off must reach the same
+# stockholder fixed point, only more slowly. NaCl is the case that proves this is not automatic:
+# an unsafeguarded Anderson iteration oscillates here, drives a shell population to zero, and
+# returns NaN charges -- while reporting convergence, because the density change between two
+# all-zero densities is exactly zero. This test pins both halves of that: the two paths agree
+# with each other, and neither produces a non-finite number.
+#
+# References are the mbis-4 values, so both paths are anchored to known-good results rather than
+# merely to one another.
+
+import numpy as np
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [ 0.96523585],   #TEST
+ [-0.96523183]])  #TEST
+
+vwidths_ref = psi4.Matrix.from_list([  #TEST
+ [1.13464706],     #TEST
+ [0.56829083]])    #TEST
+
+molecule mol {
+  0 1
+  Na 0.00 0.00 0.00
+  Cl 0.00 0.00 2.36
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 9
+  mbis_radial_points 99
+  mbis_spherical_points 350
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+
+results = {}
+for label, accelerate in (("anderson", True), ("picard", False)):
+    psi4.set_options({"mbis_anderson": accelerate})
+    oeprop(wfn, 'MBIS_CHARGES', title='NaCl ' + label)
+    results[label] = {
+        "charges": np.array(wfn.array_variable('MBIS CHARGES')),
+        "vwidths": np.array(wfn.array_variable('MBIS VALENCE WIDTHS')),
+        "vcharges": np.array(wfn.array_variable('MBIS VALENCE CHARGES')),
+    }
+
+# The NaN regression: every MBIS quantity must be a number, on both paths.
+for label, quantities in results.items():                                                  #TEST
+    for name, value in quantities.items():                                                 #TEST
+        compare_integers(1, int(np.all(np.isfinite(value))),                               #TEST
+                         "MBIS %s %s finite" % (label, name))                              #TEST
+
+# Acceleration must not move the fixed point. MBIS_D_CONVERGENCE = 1e-8 is a tolerance on the
+# pro-atom *density*, and it does not pin every derived quantity equally: two iteration paths that
+# both satisfy it agree to ~1e-7 on the charges but only ~1e-6 on the valence widths, which are
+# sum_s / (3 N) and so divide one converged sum by another. The tolerances below are set from
+# that measured behaviour, not from an assumption that the two paths are interchangeable to
+# machine precision.
+cross_path_digits = {"charges": 6, "vcharges": 6, "vwidths": 5}                            #TEST
+for name, digits in cross_path_digits.items():                                             #TEST
+    compare_values(results["picard"][name], results["anderson"][name], digits,             #TEST
+                   "MBIS %s: Anderson matches Picard" % name)                              #TEST
+
+# ... and both must still be right.
+for label in ("anderson", "picard"):                                                       #TEST
+    compare_matrices(charges_ref, psi4.Matrix.from_array(results[label]["charges"]), 5,    #TEST
+                     "MBIS Charges (%s)" % label)                                          #TEST
+    compare_matrices(vwidths_ref, psi4.Matrix.from_array(results[label]["vwidths"]), 5,    #TEST
+                     "MBIS Valence Widths (%s)" % label)                                   #TEST
+
+
+# A ghost atom carries basis functions but no electrons, so Z == 0 while its element says
+# otherwise -- the same inequality an ECP trips. Both used to be reported as "ECP detected",
+# which sends anyone doing a counterpoise correction after an all-electron basis they do not
+# need. Pin the two apart: the ghost must be named as a ghost, and must not be called an ECP.
+ghosted = psi4.geometry("""
+0 1
+Ne 0.00 0.00 0.00
+--
+@Ne 0.00 0.00 3.00
+symmetry c1
+no_reorient
+no_com
+""")
+
+e_gh, wfn_gh = energy('hf/cc-pvdz', return_wfn=True, molecule=ghosted)
+ghost_error = ""
+try:
+    oeprop(wfn_gh, 'MBIS_CHARGES', title='ghost')
+except RuntimeError as exc:
+    ghost_error = str(exc)
+
+compare(True, "does not support ghost atoms" in ghost_error,                               #TEST
+        "ghost atom is named as a ghost")                                                  #TEST
+compare(True, "ECP" not in ghost_error,                                                    #TEST
+        "ghost atom is not misreported as an ECP")                                         #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-25-1.pace.gatech.edu
+*** at Fri Sep 11 04:46:45 2026
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry NA         line   288 file /storage/project/r-cs207-0/lburns7/posthive/p4priv_collab/hrw-priv/objdir_py314_cuest02/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry CL         line   658 file /storage/project/r-cs207-0/lburns7/posthive/p4priv_collab/hrw-priv/objdir_py314_cuest02/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         NA           0.000000000000     0.000000000000     0.000000000000    22.989769282000
+         CL           0.000000000000     0.000000000000     2.360000000000    34.968852682000
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      0.08655  C =      0.08655 [cm^-1]
+  Rotational constants: A = ************  B =   2594.84732  C =   2594.84732 [MHz]
+  Nuclear repulsion =   41.930567116648305
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 28
+  Nalpha       = 14
+  Nbeta        = 14
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 16
+    Number of basis functions: 36
+    Number of Cartesian functions: 38
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry NA         line   498 file /storage/project/r-cs207-0/lburns7/posthive/p4priv_collab/hrw-priv/objdir_py314_cuest02/stage/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 2 entry CL         line   667 file /storage/project/r-cs207-0/lburns7/posthive/p4priv_collab/hrw-priv/objdir_py314_cuest02/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.003 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT + DEF2-UNIVERSAL-JKFIT
+    Number of shells: 70
+    Number of basis functions: 224
+    Number of Cartesian functions: 267
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  Minimum eigenvalue in the overlap matrix is 1.0327031572E-02.
+  Reciprocal condition number of the overlap matrix is 3.7657931940E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         36      36 
+   -------------------------
+    Total      36      36
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:  -620.94148883013065   -6.20941e+02   0.00000e+00 
+   @DF-RHF iter   1:  -621.38771176644502   -4.46223e-01   6.97696e-03 ADIIS/DIIS
+   @DF-RHF iter   2:  -621.42850815197767   -4.07964e-02   2.82756e-03 ADIIS/DIIS
+   @DF-RHF iter   3:  -621.43354301210525   -5.03486e-03   1.88946e-04 ADIIS/DIIS
+   @DF-RHF iter   4:  -621.43361677225141   -7.37601e-05   5.29915e-05 DIIS
+   @DF-RHF iter   5:  -621.43362372731133   -6.95506e-06   9.59533e-06 DIIS
+   @DF-RHF iter   6:  -621.43362400391459   -2.76603e-07   3.18994e-06 DIIS
+   @DF-RHF iter   7:  -621.43362404935579   -4.54412e-08   5.22507e-07 DIIS
+   @DF-RHF iter   8:  -621.43362405029097   -9.35188e-10   7.88247e-08 DIIS
+   @DF-RHF iter   9:  -621.43362405030621   -1.52340e-11   1.12752e-08 DIIS
+   @DF-RHF iter  10:  -621.43362405030689   -6.82121e-13   1.32594e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A   -104.698637     2A    -40.505194     3A    -10.423282  
+       4A     -7.889706     5A     -7.888905     6A     -7.888905  
+       7A     -2.827009     8A     -1.549220     9A     -1.549210  
+      10A     -1.549210    11A     -0.937466    12A     -0.364644  
+      13A     -0.348287    14A     -0.348287  
+
+    Virtual:                                                              
+
+      15A     -0.016752    16A      0.035654    17A      0.035654  
+      18A      0.067079    19A      0.111400    20A      0.146052  
+      21A      0.146052    22A      0.204707    23A      0.244898  
+      24A      0.244898    25A      0.290988    26A      0.290988  
+      27A      0.378292    28A      0.925512    29A      0.925512  
+      30A      0.933579    31A      1.094051    32A      1.111512  
+      33A      1.111512    34A      1.152404    35A      1.152404  
+      36A      1.376553  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [    14 ]
+    NA   [    14 ]
+    NB   [    14 ]
+
+  @DF-RHF Final Energy:  -621.43362405030689
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             41.9305671166483052
+    One-Electron Energy =                -949.1924605660614134
+    Two-Electron Energy =                 285.8282693991063184
+    Total Energy =                       -621.4336240503068893
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :        -79.4879772           75.8158122           -3.6721650
+ Magnitude           :                                                    3.6721650
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-25-1.pace.gatech.edu at Fri Sep 11 04:46:47 2026
+Module time:
+	user time   =       0.97 seconds =       0.02 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       0.97 seconds =       0.02 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the NaCl anderson density matrix
+
+  ==> Computing MBIS Charges <==
+
+  MBIS Memory: needs 0.003 GiB; user supplied 0.488 GiB.
+
+  Electron Count from Grid (Expected Number): 28.00000 (28.00000)
+  Difference: -0.00000
+
+  MBIS Charges: (a.u.)
+   Center  Symbol  Z      Pop.       Charge
+      1      NA   11   10.034764    0.965236
+      2      CL   17   17.965232   -0.965232
+
+  MBIS Dipoles: [e a0]
+   Center  Symbol  Z        X           Y           Z
+      1      NA   11   -0.000000    0.000000   -0.009806
+      2      CL   17    0.000000    0.000000    0.642358
+
+  MBIS Quadrupoles: [e a0^2]
+   Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
+      1      NA   11   -2.3499    0.0000    0.0000   -2.3499    0.0000   -2.2898
+      2      CL   17   -11.8920    0.0000   -0.0000   -11.8920   -0.0000   -12.0798
+
+  MBIS Octupoles: [e a0^3]
+   Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
+      1      NA   11   -0.0000    0.0000   -0.0256   -0.0000    0.0000   -0.0000   -0.0000   -0.0256    0.0000   -0.0592
+      2      CL   17    0.0000    0.0000    2.2570   -0.0000    0.0000   -0.0000   -0.0000    2.2570    0.0000    4.5695
+
+  MBIS Radial Moments:
+   Center  Symbol  Z      [a0^2]      [a0^3]      [a0^4]      
+      1      NA   11    6.989657   10.985662   33.141114
+      2      CL   17   35.863783   93.713828   296.832772
+
+  MBIS Valence Widths: [a0]
+   Center  Symbol  Z     Width
+      1      NA   11    1.134648
+      2      CL   17    0.568291
+
+
+  MBIS Valence Charges: (a.u.)
+   Center  Symbol  Z     Charge
+      1      NA   11   -0.032768
+      2      CL   17   -9.231223
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the NaCl picard density matrix
+
+  ==> Computing MBIS Charges <==
+
+  MBIS Memory: needs 0.003 GiB; user supplied 0.488 GiB.
+
+  Electron Count from Grid (Expected Number): 28.00000 (28.00000)
+  Difference: -0.00000
+
+  MBIS Charges: (a.u.)
+   Center  Symbol  Z      Pop.       Charge
+      1      NA   11   10.034764    0.965236
+      2      CL   17   17.965232   -0.965232
+
+  MBIS Dipoles: [e a0]
+   Center  Symbol  Z        X           Y           Z
+      1      NA   11   -0.000000    0.000000   -0.009806
+      2      CL   17    0.000000    0.000000    0.642357
+
+  MBIS Quadrupoles: [e a0^2]
+   Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
+      1      NA   11   -2.3499    0.0000    0.0000   -2.3499    0.0000   -2.2898
+      2      CL   17   -11.8920   -0.0000   -0.0000   -11.8920   -0.0000   -12.0798
+
+  MBIS Octupoles: [e a0^3]
+   Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
+      1      NA   11   -0.0000    0.0000   -0.0256   -0.0000    0.0000   -0.0000   -0.0000   -0.0256    0.0000   -0.0592
+      2      CL   17   -0.0000    0.0000    2.2570    0.0000    0.0000   -0.0000   -0.0000    2.2570    0.0000    4.5695
+
+  MBIS Radial Moments:
+   Center  Symbol  Z      [a0^2]      [a0^3]      [a0^4]      
+      1      NA   11    6.989657   10.985663   33.141116
+      2      CL   17   35.863782   93.713824   296.832754
+
+  MBIS Valence Widths: [a0]
+   Center  Symbol  Z     Width
+      1      NA   11    1.134647
+      2      CL   17    0.568291
+
+
+  MBIS Valence Charges: (a.u.)
+   Center  Symbol  Z     Charge
+      1      NA   11   -0.032768
+      2      CL   17   -9.231223
+    MBIS anderson charges finite..........................................................PASSED
+    MBIS anderson vwidths finite..........................................................PASSED
+    MBIS anderson vcharges finite.........................................................PASSED
+    MBIS picard charges finite............................................................PASSED
+    MBIS picard vwidths finite............................................................PASSED
+    MBIS picard vcharges finite...........................................................PASSED
+    MBIS charges: Anderson matches Picard.................................................PASSED
+    MBIS vcharges: Anderson matches Picard................................................PASSED
+    MBIS vwidths: Anderson matches Picard.................................................PASSED
+    MBIS Charges (anderson)...............................................................PASSED
+    MBIS Valence Widths (anderson)........................................................PASSED
+    MBIS Charges (picard).................................................................PASSED
+    MBIS Valence Widths (picard)..........................................................PASSED
+
+Scratch directory: /tmp/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-25-1.pace.gatech.edu
+*** at Fri Sep 11 04:46:49 2026
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry NE         line   258 file /storage/project/r-cs207-0/lburns7/posthive/p4priv_collab/hrw-priv/objdir_py314_cuest02/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         NE           0.000000000000     0.000000000000     0.000000000000    19.992440176200
+      Gh(NE)          0.000000000000     0.000000000000     3.000000000000    19.992440176200
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      0.09369  C =      0.09369 [cm^-1]
+  Rotational constants: A = ************  B =   2808.72283  C =   2808.72283 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 28
+    Number of Cartesian functions: 30
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry NE         line   321 file /storage/project/r-cs207-0/lburns7/posthive/p4priv_collab/hrw-priv/objdir_py314_cuest02/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):      18.6224
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 48
+    Number of basis functions: 140
+    Number of Cartesian functions: 162
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.9312724808E-01.
+  Reciprocal condition number of the overlap matrix is 1.1328320081E-01.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         28      28 
+   -------------------------
+    Total      28      28
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:  -128.48879233394612   -1.28489e+02   0.00000e+00 
+   @DF-RHF iter   1:  -128.48885961916667   -6.72852e-05   6.19114e-05 DIIS
+   @DF-RHF iter   2:  -128.48886077776811   -1.15860e-06   2.13275e-05 DIIS
+   @DF-RHF iter   3:  -128.48886086910284   -9.13347e-08   3.55500e-06 DIIS
+   @DF-RHF iter   4:  -128.48886087227083   -3.16800e-09   1.07507e-07 DIIS
+   @DF-RHF iter   5:  -128.48886087227609   -5.25802e-12   1.67616e-08 DIIS
+   @DF-RHF iter   6:  -128.48886087227606    2.84217e-14   4.72146e-10 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -32.765791     2A     -1.918887     3A     -0.832199  
+       4A     -0.832199     5A     -0.832177  
+
+    Virtual:                                                              
+
+       6A      0.660586     7A      1.058968     8A      1.060670  
+       9A      1.060670    10A      1.694622    11A      1.694622  
+      12A      1.697372    13A      2.159700    14A      4.155364  
+      15A      5.197019    16A      5.197020    17A      5.197020  
+      18A      5.197022    19A      5.197022    20A      7.707040  
+      21A      7.707040    22A      7.707042    23A      7.707042  
+      24A      7.707045    25A      8.670154    26A      8.670154  
+      27A      8.670882    28A     53.244243  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+    NA   [     5 ]
+    NB   [     5 ]
+
+  @DF-RHF Final Energy:  -128.48886087227606
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -182.6152154857397534
+    Two-Electron Energy =                  54.1263546134636897
+    Total Energy =                       -128.4888608722760637
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.0005041            0.0000000           -0.0005041
+ Magnitude           :                                                    0.0005041
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-25-1.pace.gatech.edu at Fri Sep 11 04:46:49 2026
+Module time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       3.19 seconds =       0.05 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the ghost density matrix
+
+  ==> Computing MBIS Charges <==
+
+  MBIS Memory: needs 0.003 GiB; user supplied 0.488 GiB.
+
+  Electron Count from Grid (Expected Number): 10.00000 (10.00000)
+  Difference:  0.00000
+
+    ghost atom is named as a ghost........................................................PASSED
+    ghost atom is not misreported as an ECP...............................................PASSED
+
+    Psi4 stopped on: Friday, 11 September 2026 04:46AM
+    Psi4 wall time for execution: 0:00:03.73
+
+*** Psi4 exiting successfully. Buy a developer a beer!

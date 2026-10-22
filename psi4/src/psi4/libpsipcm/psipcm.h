@@ -26,8 +26,9 @@
  * @END LICENSE
  */
 
-#ifndef PCM_H
-#define PCM_H
+#ifndef PSIPCM_H
+#define PSIPCM_H
+
 #ifdef USING_PCMSolver
 
 #include "psi4/libmints/dimension.h"
@@ -110,5 +111,6 @@ std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::string &pcmsolver
                                                     const std::shared_ptr<Molecule> &molecule);
 }  // namespace detail
 }  // namespace psi
-#endif
-#endif
+#endif // USING_PCMSolver
+
+#endif // PSIPCM_H

@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #ifndef _psi_src_lib_libmints_basisset_h_
 #define _psi_src_lib_libmints_basisset_h_
@@ -45,6 +48,10 @@
 #include <type_traits>
 #include <algorithm>
 #include <memory>
+
+#ifdef USING_cuEST
+#include <cuest.h>
+#endif
 
 namespace libint2 {
 struct Shell;
@@ -169,6 +176,18 @@ class PSI_API BasisSet {
 
     /// Update Libint2 shells
     void update_l2_shells(bool embed_normalization = true);
+
+#ifdef USING_cuEST
+   protected:
+    cuestAOBasis_t cuest_basis_;
+    cuestWorkspace_t* cuest_basis_ws_ptr_;
+
+    void cuest_initialize();
+    void cuest_finalize();
+
+   public:
+    cuestAOBasis_t cuest_basis();
+#endif
 
    public:
     BasisSet();

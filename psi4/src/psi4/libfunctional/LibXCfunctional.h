@@ -110,6 +110,7 @@ class LibXCFunctional : public Functional {
 
     // Get libxc provenance stamp
     static std::string xclib_description();
+    const xc_func_type* xc_functional() { return xc_functional_.get(); }
 };
 }  // namespace psi
 
