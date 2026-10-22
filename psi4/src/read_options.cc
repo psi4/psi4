@@ -1637,10 +1637,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do we print the SOSCF microiterations?. -*/
         options.add_bool("SOSCF_PRINT", false);
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, solver used for the
-            trust-region subproblem. `TCG` is often faster, markedly so with diffuse basis
+            trust-region subproblem. The Davidson family comes in a linear-system (`_LS`) and an
+            augmented-Hessian (`_AH`) formulation; `_AH` is the longer-standing algorithm and
+            OpenTrustRegion's own default. `TCG` is often faster, markedly so with diffuse basis
             sets, but is less robust: it can stall before reaching the convergence
             threshold. -*/
-        options.add_str("OTR_SUBSYSTEM_SOLVER", "DAVIDSON", "DAVIDSON JACOBI-DAVIDSON TCG");
+        options.add_str("OTR_SUBSYSTEM_SOLVER", "DAVIDSON_AH",
+                        "DAVIDSON_LS DAVIDSON_AH JACOBI-DAVIDSON_LS JACOBI-DAVIDSON_AH TCG");
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, number of random
             trial vectors seeding each microiteration space. Raising it is OpenTrustRegion's
             suggested remedy when it reports a trial subspace that is too small, at the cost
@@ -1664,6 +1667,16 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, seed for the random
             trial vectors. Fixed so runs are reproducible. -*/
         options.add_int("OTR_SEED", 42);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, what to do when
+            OpenTrustRegion stops at its floating-point precision floor short of
+            |scf__e_convergence| and |scf__d_convergence|. Its trust-region step is accepted on
+            the measured against the predicted energy change, so once neither can be resolved it
+            cannot verify further progress and stops, reporting success. `DIIS` finishes the job
+            with first-order iterations, which converge on the orbital gradient instead and are
+            not subject to that limit, and fails if they cannot reach the thresholds either.
+            `FAIL` treats the shortfall as non-convergence at once. `WARN` accepts the orbitals,
+            reporting the shortfall in the output. -*/
+        options.add_str("OTR_MAX_PRECISION_REACHED_HANDLING", "DIIS", "DIIS FAIL WARN");
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, verbosity of the
             solver's own printing: 0 macro-iterations only, 1 the default table, 2 or more
             adds microiteration detail. Unset, this follows |scf__soscf_print| ; setting it

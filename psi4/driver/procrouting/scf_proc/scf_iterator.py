@@ -28,6 +28,8 @@
 """
 The SCF iteration functions
 """
+import math
+
 import numpy as np
 
 from psi4 import core
@@ -270,6 +272,42 @@ def scf_initialize(self):
 _OTR_CALLBACK_ERROR_FLOOR = 1000
 
 
+#: Returned by :py:func:`_run_opentrustregion` when OpenTrustRegion stopped at its precision
+#: floor short of both convergence criteria and first-order iterations should finish the SCF.
+_OTR_NEEDS_POLISH = object()
+
+
+def _otr_shortfall(self):
+    """How far OpenTrustRegion finished from this SCF's thresholds, as text and as orders."""
+    e_conv = core.get_option("SCF", "E_CONVERGENCE")
+    d_conv = core.get_option("SCF", "D_CONVERGENCE")
+    grad = self.opentrustregion_final_grad_rms()
+    dE = self.opentrustregion_final_energy_delta()
+    text = (f"gradient RMS {grad:.2e} against D_CONVERGENCE {d_conv:.2e}, last energy change "
+            f"{dE:.2e} against E_CONVERGENCE {e_conv:.2e}")
+    # Whichever criterion is further off sets how much work is left: a tight D_CONVERGENCE
+    # against a loose E_CONVERGENCE leaves the gradient to travel, and the reverse happens too.
+    e_orders = math.log10(dE / e_conv) if (dE > 0.0 and e_conv > 0.0) else 0.0
+    d_orders = math.log10(grad / d_conv) if (grad > 0.0 and d_conv > 0.0) else 0.0
+    return text, max(e_orders, d_orders)
+
+
+def _otr_polish_budget(self):
+    """First-order iterations to allow after OpenTrustRegion stops at its precision floor.
+
+    Three per order of magnitude the further-off criterion is short, which is generous
+    against the ~3 iterations a polish actually takes, floored so there is always a real
+    attempt and capped so a polish going nowhere fails quickly. MAXITER still applies and
+    can cut this shorter.
+    """
+    _, orders = _otr_shortfall(self)
+    return min(_OTR_POLISH_MAX_ITER, max(3, 3 * math.ceil(orders)))
+
+
+#: Ceiling on the first-order iterations a precision-floor polish may use.
+_OTR_POLISH_MAX_ITER = 10
+
+
 #: How many times to restart OpenTrustRegion at a new occupation when the aufbau rule
 #: disagrees with the one it optimized. Diagonalizing preserves occupation, but the rule
 #: applied to the resulting orbital energies may not agree with it. Most calculations
@@ -384,6 +422,28 @@ def _run_opentrustregion(self, e_conv, d_conv):
         raise PsiException(
             f"OpenTrustRegion solver failed with error {otr_error}. See the output file for "
             f"the solver's own message.")
+
+    if self.opentrustregion_stopped_short():
+        # OpenTrustRegion stopped where the objective function stops resolving, short of both
+        # criteria. Its step acceptance compares the measured against the predicted energy
+        # change, so it cannot verify progress it cannot measure.
+        handling = core.get_option("SCF", "OTR_MAX_PRECISION_REACHED_HANDLING")
+        if handling == "DIIS":
+            # First-order iterations converge on the orbital gradient instead, which is still
+            # measurable here, so let the caller finish the SCF with them.
+            return _OTR_NEEDS_POLISH
+        if handling == "FAIL":
+            shortfall, _ = _otr_shortfall(self)
+            raise SCFConvergenceError(
+                "SCF to the requested precision", self.iteration_, self, 0.0, 0.0,
+                "OpenTrustRegion stopped at its floating-point precision floor: a further\n"
+                "trust-region step changed the objective function by less than can be resolved\n"
+                "at this energy, so the step could not be verified and was rejected. The\n"
+                "orbitals are the best it found -- " + shortfall + ".\n\n"
+                "More iterations will not help. Loosen D_CONVERGENCE and E_CONVERGENCE to what\n"
+                "this system supports, or set OTR_MAX_PRECISION_REACHED_HANDLING to DIIS to\n"
+                "finish with first-order iterations, or to WARN to accept this result.")
+        # WARN: the note in the output is the whole report; accept the orbitals as they are.
 
 
 
@@ -552,6 +612,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     SCFE_old = 0.0
     Dnorm = 0.0
     scf_iter_post_screening = 0
+    polish_remaining = None
+    polish_budget = 0
+    polish_shortfall = ""
+
     while True:
         self.iteration_ += 1
 
@@ -673,7 +737,22 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
                     ("DF-" if is_dfjk else "", reference, self.iteration_, SCFE, Ediff, Dnorm,
                      "Handoff"))
-                return _run_opentrustregion(self, e_conv, d_conv)
+                otr_outcome = _run_opentrustregion(self, e_conv, d_conv)
+                if otr_outcome is not _OTR_NEEDS_POLISH:
+                    return otr_outcome
+                # Finish with first-order iterations. Turn second order off so this loop
+                # neither hands off again nor starts internal microiterations, and drop the
+                # DIIS subspace, whose vectors predate the orbitals OpenTrustRegion returned.
+                otr_soscf = False
+                soscf_enabled = False
+                polish_shortfall, _ = _otr_shortfall(self)
+                polish_budget = _otr_polish_budget(self)
+                polish_remaining = polish_budget
+                if self.initialized_diis_manager_:
+                    self.diis_manager_.reset_subspace()
+                core.print_out("    Finishing with first-order iterations, which converge on\n"
+                               "    the orbital gradient rather than the energy change.\n")
+                continue
 
             if not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
                 nmicro = self.soscf_update(core.get_option('SCF', 'SOSCF_CONV'),
@@ -825,6 +904,22 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     core.print_out("  Continuing SCF iterations with tighter screening.\n\n")
             else:
                 break
+
+        if polish_remaining is not None:
+            polish_remaining -= 1
+            if polish_remaining <= 0:
+                raise SCFConvergenceError(
+                    "SCF to the requested precision", self.iteration_, self, Ediff, Dnorm,
+                    "OpenTrustRegion stopped at its floating-point precision floor and the\n"
+                    "first-order iterations that followed did not reach the thresholds either.\n\n"
+                    "Where OpenTrustRegion stopped: " + polish_shortfall + ".\n"
+                    f"After {polish_budget} first-order iterations: last energy change "
+                    f"{abs(Ediff):.2e} against E_CONVERGENCE "
+                    f"{core.get_option('SCF', 'E_CONVERGENCE'):.2e}, Dnorm {Dnorm:.2e} against "
+                    f"D_CONVERGENCE {core.get_option('SCF', 'D_CONVERGENCE'):.2e}.\n\n"
+                    "A second-order and a first-order method have both stalled here, so this\n"
+                    "request is past what this system and basis support. Loosen D_CONVERGENCE\n"
+                    "and E_CONVERGENCE.")
 
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
             raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)

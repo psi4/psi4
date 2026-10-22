@@ -267,6 +267,20 @@ class HF : public Wavefunction {
     const std::vector<double>& otr_iteration_energies() const { return otr_iteration_energies_; }
     std::vector<double> otr_iteration_energies_;
 
+    /// Whether OpenTrustRegion stopped at its floating-point precision floor with *neither*
+    /// half of this SCF's convergence test met. Not an error code: the solver reports success.
+    /// Meeting one half and missing the other is ordinary at the floor and is reported in the
+    /// output rather than flagged here, so this means the orbitals are genuinely unconverged.
+    bool otr_stopped_short() const { return otr_stopped_short_; }
+    bool otr_stopped_short_ = false;
+
+    /// The gradient RMS and energy change OpenTrustRegion finished on, for sizing the
+    /// first-order polish and for reporting what precision was actually reached.
+    double otr_final_grad_rms() const { return otr_final_grad_rms_; }
+    double otr_final_energy_delta() const { return otr_final_energy_delta_; }
+    double otr_final_grad_rms_ = 0.0;
+    double otr_final_energy_delta_ = 0.0;
+
 #ifdef USING_OpenTrustRegion
     void otr_record_iteration(OTR::c_real func, const OTR::c_real* grad);
     bool otr_converged() const;
@@ -293,9 +307,6 @@ class HF : public Wavefunction {
     double otr_prev_func_;
     double otr_curr_func_;
     double otr_grad_rms_;
-
-    /// Temporary global pointer to the active instance
-    static inline HF* instance = nullptr;
 #endif
 
     /// Are we to do excited-state MOM?
