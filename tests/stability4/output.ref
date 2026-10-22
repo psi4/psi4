@@ -1,0 +1,49 @@
+# NOTE: This output.ref is a structural placeholder and MUST be regenerated
+# from a real Psi4 run on a working build before the test is valid.
+# To regenerate: run `psi4 tests/stability4/input.dat` and copy the output
+# as tests/stability4/output.ref, then replace host/timestamp header lines.
+
+# The test asserts:
+# 1. compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+# 2. compare_values(refenergy, thisenergy, 7, "Reference energy")
+# 3. compare_integers(1, wfn.attempt_number_, "Stable RHF FOLLOW did not rotate orbitals")
+#
+# All must show PASSED. The "Rotating orbitals by" message must NOT appear
+# in the output (confirming FOLLOW took no action on the stable solution).
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF stability FOLLOW test for a stable system (water, cc-pVDZ).
+#! Verifies that FOLLOW does not attempt to rotate orbitals when the
+#! wavefunction is already a singlet-stable minimum. The wfn's
+#! attempt_number_ must remain 1 (no re-SCF triggered) and the
+#! post-FOLLOW energy must match the RHF reference.
+
+nucenergy =   8.8014655646     #TEST
+refenergy = -76.02141844515491 #TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+basis cc-pvdz
+reference rhf
+scf_type pk
+d_convergence 8
+stability_analysis follow
+}
+
+thisenergy, wfn = energy('scf', return_wfn=True)
+
+# If FOLLOW returned True, scf_iterator.py would increment the attempt counter to 2+.
+# A value of 1 proves FOLLOW returned False, meaning no orbital rotation, no re-SCF.
+attempts = wfn.attempt_number_
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 7, "Reference energy")                            #TEST
+compare_integers(1, attempts, "Stable RHF FOLLOW did not rotate orbitals")             #TEST

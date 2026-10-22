@@ -1,0 +1,55 @@
+#! RHF singlet (RHF->RHF) instability following with symmetry on N2 stretched to 2.0 Angstrom
+#! (cc-pVDZ). In D2h the lowest singlet instability is a degenerate Au/B1u pair, which is reported
+#! but not followed because FOLLOW only follows totally symmetric instabilities. In the C2v
+#! subgroup one member of the pair becomes totally symmetric (A1), and FOLLOW relaxes to the
+#! lower symmetry-broken solution in which the two pi pairs localize on different atoms.
+
+molecule n2_d2h {
+0 1
+N   0.0  0.0  0.0
+N   0.0  0.0  2.0
+}
+
+molecule n2_c2v {
+0 1
+N   0.0  0.0  0.0
+N   0.0  0.0  2.0
+symmetry c2v
+}
+
+set {
+basis cc-pvdz
+reference rhf
+scf_type pk
+d_convergence 8
+e_convergence 10
+stability_analysis follow
+}
+
+nucenergy      =   12.9648416614  #TEST
+e_saddle_ref   = -108.3305827531  #TEST
+e_relaxed_ref  = -108.4686214201  #TEST
+eig_saddle_ref =   -0.189843      #TEST
+
+# Stage 1: full D2h symmetry. The instability is Au/B1u (irrep indices 4 and 5), nothing is followed.
+e_d2h, wfn = energy('scf', molecule=n2_d2h, return_wfn=True)
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, n2_d2h.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                 #TEST
+compare_integers(8, stab.nirrep(), "Stability eigenvalues are resolved into the 8 irreps of D2h")            #TEST
+compare_values(eig_saddle_ref, stab.get(4, 0, 0), 4, "Negative singlet eigenvalue in Au is detected")        #TEST
+compare_values(eig_saddle_ref, stab.get(5, 0, 0), 4, "Negative singlet eigenvalue in B1u is detected")       #TEST
+compare_values(e_saddle_ref, e_d2h, 6, "Energy stays at the symmetric solution")                             #TEST
+compare_integers(1, wfn.attempt_number_, "Non-totally-symmetric instability is not followed")               #TEST
+
+clean()
+
+# Stage 2: C2v subgroup. The B1u member of the pair is now A1 and FOLLOW relaxes the wavefunction.
+e_c2v, wfn = energy('scf', molecule=n2_c2v, return_wfn=True)
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_integers(4, stab.nirrep(), "Stability eigenvalues are resolved into the 4 irreps of C2v")            #TEST
+compare_values(e_relaxed_ref, e_c2v, 6, "RHF energy after following the instability in C2v")                 #TEST
+compare_integers(2, wfn.attempt_number_, "FOLLOW re-ran the SCF exactly once")                               #TEST
+compare_integers(1, int(stab.get(0, 0, 0) > 0.0), "Relaxed solution is stable in the totally symmetric irrep") #TEST
+compare_integers(1, int(e_c2v < e_d2h - 0.1), "FOLLOW lowered the energy")                                   #TEST

@@ -1877,8 +1877,8 @@ def scf_helper(name, post_scf=True, **kwargs):
     if cast and read_orbitals:
         raise ValidationError("""Detected options to both cast and read orbitals""")
 
-    if (core.get_option('SCF', 'STABILITY_ANALYSIS') == 'FOLLOW') and (core.get_option('SCF', 'REFERENCE') != 'UHF'):
-        raise ValidationError(f"""Stability analysis root following is only available for unrestricted Hartree--Fock, not present {core.get_option('SCF', 'REFERENCE')}""")
+    if (core.get_option('SCF', 'STABILITY_ANALYSIS') == 'FOLLOW') and (core.get_option('SCF', 'REFERENCE') not in {'UHF', 'RHF'}):
+        raise ValidationError(f"""Stability analysis root following is only available for UHF and RHF, not present {core.get_option('SCF', 'REFERENCE')}""")
 
     # If GUESS is auto guess what it should be
     if core.get_option('SCF', 'GUESS') == "AUTO":
