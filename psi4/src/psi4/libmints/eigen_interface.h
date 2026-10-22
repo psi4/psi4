@@ -28,6 +28,7 @@
 
 #pragma once
 
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 
 #include <eigen3/Eigen/Core>
@@ -40,6 +41,11 @@ PSI_API Eigen::Map<Eigen::MatrixXd> eigen_map(Matrix& matrix);
 
 /// Map each irrep block of a Psi4 Matrix onto its underlying data.
 PSI_API std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps(Matrix& matrix);
+
+Matrix matrix_from_eigen(const Eigen::MatrixXd& eigen_mat, const std::string& name = "");
+
+// Generates the PermutationMatrix that transforms AOs from Gaussian to standard basis.
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_to_cca(const BasisSet& basis);
 
 }  // namespace linalg
 }  // namespace psi

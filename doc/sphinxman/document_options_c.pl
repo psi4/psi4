@@ -400,7 +400,7 @@ sub determine_keyword_type_and_default
          $Type = $1;
          $Keyword = $2;
          $Default = $3;
-     }elsif(/add\(\s*\"(\w*)\"\,\s*new\s+(\w+)\(\)/){
+     }elsif(/add\(\s*\"(\w*)\"\,\s*new\s+(\w+)\(\w*\)/){
          # This is a custom DataType thingy
          $Keyword = $1;
          if($2 eq "ArrayType"){
