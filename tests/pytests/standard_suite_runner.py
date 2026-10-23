@@ -76,6 +76,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
         "pbe": "df",  # dummy
         "b3lyp": "df",  # dummy
         "wb97x": "df",  # dummy
+        "wb97m-v": "df",  # dummy
         "b2plyp": "df",  # dummy
     }
     corl_type = corl_natural_values[method]
@@ -86,7 +87,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     natural_values = {"pk": "pk", "direct": "pk", "df": "df", "mem_df": "df", "disk_df": "df", "cd": "cd"}
     scf_type = natural_values[scf_type]
 
-    is_dft = method in ["svwn", "pbe", "b3lyp", "wb97x", "b3lyp5", "b2plyp"]
+    is_dft = method in ["svwn", "pbe", "b3lyp", "wb97x", "wb97m-v", "b3lyp5", "b2plyp"]
     is_dhdft = method in ["b2plyp"]
 
     if is_dhdft:
@@ -94,6 +95,11 @@ def runner_asserter(inp, subject, method, basis, tnm):
     elif is_dft:
         # Hartree--Fock doesn't need this b/c it does value sharing by variable so CONV-AE-CONV also stored at CONV-AE-DF
         corl_type = inp["keywords"].get("mp2_type", natural_ref_inv[scf_type])
+
+    using_cuest = inp["keywords"].get("use_cuest", False)
+    if using_cuest:
+        assert scf_type == "df", f"cuEST accelerates SCF_TYPE DF only, not {scf_type}"
+        scf_type = "cuest_df"
 
     using_fd = (driver == "gradient" and inp["keywords"]["function_kwargs"]["dertype"] == 0 or driver == "hessian" and inp["keywords"]["function_kwargs"]["dertype"] in [0, 1])  # T/F: notate fd vs. analytic for docs table
     defaultness = "defaultdefault" if ("default" in tnm and all([not k.endswith("_type") for k in inp["keywords"]])) else ("default" if "default" in tnm else "")
@@ -123,16 +129,23 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # check all calcs against conventional reference to looser tolerance
     atol_conv = 1.5e-4
     rtol_conv = 1.0e-16  # qcdb 1.0e-3
-    if (method in ["ccsd", "ccsd(t)"] and corl_type in ["df", "cd"]) or (method == "wb97x"):
+    if (method in ["ccsd", "ccsd(t)"] and corl_type in ["df", "cd"]) or (method in ["wb97x", "wb97m-v"]):
         # fnocc non-conv ccsd opposite-spin df error is larger than corl df error. TODO: see if other methods/module/mols show this or if suspicious.
         atol_conv = 3.0e-4
     if method in ["mp2-f12"] and corl_type in ["df"]:
         # hf-cabs is sensitive
         atol_conv = 2.0e-3
+    if using_cuest:
+        atol_conv, atol_df = (5.0e-4, 3.0e-4) if method == "wb97m-v" else (1.5e-4, 1.0e-5)
     chash_conv = answer_hash(
         system=subject.name(), basis=basis, fcae=fcae, reference=reference, corl_type="conv", scf_type="pk", sdsc=sdsc
     )
     ref_block_conv = std_suite[chash_conv]
+    if using_cuest:
+        chash_df = answer_hash(
+            system=subject.name(), basis=basis, fcae=fcae, reference=reference, corl_type="df", scf_type="df", sdsc=sdsc
+        )
+        ref_block_df = std_suite[chash_df]
 
     # <<<  Prepare Calculation and Call API  >>>
 
@@ -158,6 +171,8 @@ def runner_asserter(inp, subject, method, basis, tnm):
             "orbital_optimizer_package": "internal",  # haven't tried to adapt for ooo
         }
     )
+    if method == "wb97m-v" and inp["keywords"].get("scf_type") == "mem_df":
+        psi4.set_memory("2 GiB")
     extra_kwargs = inp["keywords"].pop("function_kwargs", {})
 
     if "error" in inp:
@@ -378,6 +393,13 @@ def runner_asserter(inp, subject, method, basis, tnm):
             ref_block[f"{method.upper()} TOTAL GRADIENT"], wfn.gradient().np, tnm + " grad wfn", atol=atol_g, rtol=rtol_g
         )
         assert compare_values(ref_block[f"{method.upper()} TOTAL HESSIAN"], ret.np, tnm + " hess return", atol=atol_h, rtol=rtol_h)
+
+    if using_cuest:
+        assert compare_values(ref_block_df[f"{method.upper()} TOTAL ENERGY"], wfn.energy(), tnm + " wfn v. DF", atol=atol_df, rtol=rtol_conv)
+        if driver == "gradient":
+            assert compare_values(
+                ref_block_df[f"{method.upper()} TOTAL GRADIENT"], wfn.gradient().np, tnm + " grad wfn v. DF", atol=atol_df, rtol=rtol_conv
+            )
 
     # generics checks
     # yapf: disable
