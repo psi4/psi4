@@ -1638,17 +1638,17 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SOSCF_PRINT", false);
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, solver used for the
             trust-region subproblem. The Davidson family comes in a linear-system (`_LS`) and an
-            augmented-Hessian (`_AH`) formulation; `_AH` is the longer-standing algorithm and
-            OpenTrustRegion's own default. `TCG` is often faster, markedly so with diffuse basis
+            augmented-Hessian (`_AH`) formulation; `_LS` is OpenTrustRegion's own default.
+            `TCG` is often faster, markedly so with diffuse basis
             sets, but is less robust: it can stall before reaching the convergence
             threshold. -*/
-        options.add_str("OTR_SUBSYSTEM_SOLVER", "DAVIDSON_AH",
+        options.add_str("OTR_SUBSYSTEM_SOLVER", "DAVIDSON_LS",
                         "DAVIDSON_LS DAVIDSON_AH JACOBI-DAVIDSON_LS JACOBI-DAVIDSON_AH TCG");
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, number of random
             trial vectors seeding each microiteration space. Raising it is OpenTrustRegion's
             suggested remedy when it reports a trial subspace that is too small, at the cost
             of one Hessian application per vector. -*/
-        options.add_int("OTR_N_RANDOM_TRIAL_VECTORS", 1);
+        options.add_int("OTR_N_RANDOM_TRIAL_VECTORS", 0);
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, microiteration at
             which to switch from Davidson to Jacobi-Davidson. -*/
         options.add_int("OTR_JACOBI_DAVIDSON_START", 30);
