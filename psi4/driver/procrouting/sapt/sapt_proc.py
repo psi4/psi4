@@ -57,20 +57,6 @@ import qcelemental as qcel
 from ...p4util.exceptions import ConvergenceError
 
 
-def _einsums_terms():
-    """Import the einsums SAPT backends on first use, or return None.
-
-    Deferred so that importing psi4 never loads einsums: some einsums builds
-    log to stdout on import, which corrupts ``psi4 --module`` for QCEngine.
-    """
-    try:
-        import einsums
-        from . import sapt_jk_terms_ein, sapt_mp2_terms_ein
-    except ImportError:
-        return None
-    return einsums, sapt_jk_terms_ein, sapt_mp2_terms_ein
-
-
 # Only export the run_ scripts
 __all__ = ["run_sapt_dft", "sapt_dft", "run_sf_sapt"]
 
@@ -125,24 +111,7 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     do_fsapt = fsapt_type != "NONE"
     if induction_type == "NONE" and do_fsapt:
         raise ValidationError("F-SAPT requires induction; SAPT_DFT_INDUCTION_TYPE=NONE is unavailable.")
-    if induction_type == "CPHF" and fsapt_type == "SAPTDFT":
-        raise ValidationError(
-            "SAPTDFT F-SAPT requires SAPT(DFT) fragment induction; "
-            "use SAPT_DFT_DO_FSAPT=FISAPT with SAPT_DFT_INDUCTION_TYPE=CPHF."
-        )
-
-    use_einsums = core.get_option("SAPT", "SAPT_DFT_USE_EINSUMS")
-
-    # Build SAPT cache
-    ein_terms = _einsums_terms() if use_einsums else None
-    if ein_terms is not None:
-        ein, jk_terms, _ = ein_terms
-        ein.initialize()
-    else:
-        # If einsums is not available, clear use_einsums so later checks
-        # only need that one flag.
-        use_einsums = False
-        jk_terms = sapt_jk_terms
+    jk_terms = sapt_jk_terms
 
     # Alter default algorithm
     if not core.has_global_option_changed("SCF_TYPE"):
@@ -626,7 +595,7 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
                     _set_external_potentials_to_wavefunction(ext_pot_B, hf_wfn_B)
 
             # Build the SAPT0 cache needed for electrostatics and exchange.
-            hf_cache_ein = jk_terms.build_sapt_jk_cache(
+            hf_cache = jk_terms.build_sapt_jk_cache(
                 hf_wfn_dimer,
                 hf_wfn_A,
                 hf_wfn_B,
@@ -637,21 +606,21 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
 
             # Electrostatics
             core.timer_on("SAPT(HF):elst")
-            elst, extern_extern_IE = jk_terms.electrostatics(hf_cache_ein, True)
+            elst, extern_extern_IE = jk_terms.electrostatics(hf_cache, True)
             hf_data["extern_extern_IE"] = extern_extern_IE
             hf_data.update(elst)
             core.timer_off("SAPT(HF):elst")
 
             # Exchange
             core.timer_on("SAPT(HF):exch")
-            exch = jk_terms.exchange(hf_cache_ein, sapt_jk, True)
+            exch = jk_terms.exchange(hf_cache, sapt_jk, True)
             hf_data.update(exch)
             core.timer_off("SAPT(HF):exch")
 
             if induction_type != "NONE":
                 core.timer_on("SAPT(HF):ind")
                 ind = jk_terms.induction(
-                    hf_cache_ein,
+                    hf_cache,
                     sapt_jk,
                     True,
                     maxiter=core.get_option("SAPT", "MAXITER"),
@@ -691,19 +660,18 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
                 if do_delta_hf:
                     hf_data["Delta HF Correction"] = data["Delta HF Correction"]
                 if fsapt_type == "FISAPT":
-                    # The einsums exchange-induction path retains JK-owned
-                    # J_P matrices. Clone them before finalizing the HF JK
-                    # object so the later FISAPT::find() cannot dereference
-                    # released storage.
-                    hf_cache_ein["J_P_A"] = hf_cache_ein["J_P_A"].clone()
-                    hf_cache_ein["J_P_B"] = hf_cache_ein["J_P_B"].clone()
+                    # Keep the J_P matrices independent of the HF JK object,
+                    # which is finalized below, so the later FISAPT::find()
+                    # cannot dereference released storage.
+                    hf_cache["J_P_A"] = hf_cache["J_P_A"].clone()
+                    hf_cache["J_P_B"] = hf_cache["J_P_B"].clone()
 
                     # Retain the SAPT0 cache and wavefunctions so FISAPT::find()
                     # can partition the same HF induction used by CPHF.
                     fsapt_induction_data = (
                         hf_wfn_A,
                         hf_wfn_B,
-                        hf_cache_ein,
+                        hf_cache,
                         hf_data.copy(),
                     )
             sapt_jk.finalize()
@@ -1452,18 +1420,9 @@ def sapt_dft(
         sapt_jk.set_do_wK(True)
         sapt_jk.set_omega(wfn_A.functional().x_omega())
 
-    use_einsums = core.get_option("SAPT", "SAPT_DFT_USE_EINSUMS")
-
     # Build SAPT cache
-    ein_terms = _einsums_terms() if use_einsums else None
-    if ein_terms is not None:
-        _, jk_terms, sapt_mp2 = ein_terms
-    else:
-        # If einsums is not available, clear use_einsums so later checks
-        # only need that one flag.
-        use_einsums = False
-        jk_terms = sapt_jk_terms
-        sapt_mp2 = sapt_mp2_terms
+    jk_terms = sapt_jk_terms
+    sapt_mp2 = sapt_mp2_terms
     cache = jk_terms.build_sapt_jk_cache(
         dimer_wfn, wfn_A, wfn_B, sapt_jk, True, external_potentials
     )
@@ -1532,53 +1491,7 @@ def sapt_dft(
 
     core.timer_off("SAPT(DFT):ind")
 
-    # Use DFHelper before deleting the JK object for dispersion
-    if do_fsapt and fsapt_type == "SAPTDFT" and use_einsums:
-        core.timer_on("SAPT(DFT):Localize Orbitals")
-        jk_terms.localization(cache, dimer_wfn)
-        core.timer_off("SAPT(DFT):Localize Orbitals")
-        core.timer_on("SAPT(DFT):Partition")
-        cache = jk_terms.partition(cache, dimer_wfn)
-        core.timer_off("SAPT(DFT):Partition")
-
-        core.timer_on("SAPT(DFT): F-SAPT Localization (IBO)")
-        jk_terms.flocalization(cache, dimer_wfn)
-        core.timer_off("SAPT(DFT): F-SAPT Localization (IBO)")
-        # Primary return is stored as cache['Elst_AB']
-        core.timer_on("SAPT(DFT): F-SAPT Electrostatics")
-        cache = jk_terms.felst(
-            cache,
-            elst["Elst10,r"] + extern_extern_IE,
-            dimer_wfn,
-            wfn_A,
-            wfn_B,
-            sapt_jk,
-            True,
-        )
-        core.timer_off("SAPT(DFT): F-SAPT Electrostatics")
-        core.timer_on("SAPT(DFT): F-SAPT Exchange")
-        cache = jk_terms.fexch(
-            cache,
-            exch["Exch10(S^2)"],
-            exch["Exch10"],
-            dimer_wfn,
-            wfn_A,
-            wfn_B,
-            sapt_jk,
-            True,
-        )
-        core.timer_off("SAPT(DFT): F-SAPT Exchange")
-
-        core.timer_on("SAPT(DFT): F-SAPT Induction")
-        cache = jk_terms.find(cache, data, dimer_wfn, wfn_A, wfn_B, sapt_jk, True)
-        core.timer_off("SAPT(DFT): F-SAPT Induction")
-
-    elif do_fsapt:
-        if fsapt_type == "SAPTDFT":
-            core.print_out(
-                "\n  => Einsums is not available, switching to using FISAPT0 object for FSAPT <= \n\n"
-            )
-
+    if do_fsapt:
         # Build auxiliary basis for FISAPT
         aux_basis = core.BasisSet.build(
             dimer_wfn.molecule(),
@@ -1767,26 +1680,7 @@ def sapt_dft(
         core.timer_off("SAPT(DFT):disp")
 
     # Now do F-SAPT on dispersion if requested
-    if do_fsapt and fsapt_type == "SAPTDFT" and use_einsums:
-        # Because dispersion is defined differently between SAPT0 (E_disp20 =
-        # -4\sigma_{abrs} |(ar|bs)|^2 / (epsilon_a + epsilon_b)) and SAPT(DFT)
-        # with FDDS dispersion, we will only implement F-SAPT for the SAPT0
-        # case. Practically speaking, -D3/-D4 dispersion is preferred for
-        # SAPT(DFT) due to computational costs, so those are the only currently
-        # supported dispersion method for F-SAPT in SAPT(DFT). Hence,
-        # FSAPT_DISP_AB will be set to zero if SAPT(DFT) is requested with FDDS
-        # dispersion with DO_FSAPT.
-
-        if do_disp:
-            core.timer_on("SAPT(DFT): F-SAPT Dispersion")
-            cache = jk_terms.fdisp0(
-                cache, data, dimer_wfn, wfn_A, wfn_B, sapt_jk, do_print=True
-            )
-            data["Exch-Disp20,u"] = cache["Exch-Disp20,u"]
-            data["Disp20,u"] = cache["Disp20,u"]
-            core.timer_off("SAPT(DFT): F-SAPT Dispersion")
-
-    elif do_fsapt and do_disp:
+    if do_fsapt and do_disp:
         core.timer_on("SAPT(DFT): F-SAPT Dispersion")
         FISAPT_obj.fdisp()
         core.timer_off("SAPT(DFT): F-SAPT Dispersion")
@@ -1797,7 +1691,7 @@ def sapt_dft(
         matrices = FISAPT_obj.matrices()
         for k, v in matrices.items():
             cache[k] = v
-    elif do_fsapt and fsapt_type == "FISAPT":
+    elif do_fsapt:
         matrices = FISAPT_obj.matrices()
         for k, v in matrices.items():
             cache[k] = v

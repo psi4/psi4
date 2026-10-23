@@ -705,7 +705,6 @@ Basic Keywords for SAPT(DFT)
 .. include:: autodir_options_c/sapt__sapt_dft_grac_compute.rst
 .. include:: autodir_options_c/sapt__sapt_dft_do_ddft.rst
 .. include:: autodir_options_c/sapt__sapt_dft_do_disp.rst
-.. include:: autodir_options_c/sapt__sapt_dft_use_einsums.rst
 
 Advanced Keywords for SAPT(DFT)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -43,13 +43,12 @@ units angstrom
             "FISAPT_FSAPT_FILEPATH": "none",
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
             "SAPT_DFT_DO_FSAPT": "FISAPT",
-            "SAPT_DFT_USE_EINSUMS": True,
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     psi4.core.clean_timers()
     _ = psi4.energy("sapt(dft)", molecule=mol)
-    compute_time_saptdft_fi_ein = next(
+    compute_time_saptdft_fi = next(
         record
         for record in psi4.core.get_timer_records().values()
         if record["timer_name"] == "SAPT(DFT) Energy"
@@ -57,17 +56,17 @@ units angstrom
     csv_text = psi4.driver.p4util.write_timer_csv("saptdft_fi_useEin_timers.csv")
     df = pd.read_csv("saptdft_fi_useEin_timers.csv")
     os.remove("saptdft_fi_useEin_timers.csv")
-    print(f"compute_time_fi_ein: {compute_time_saptdft_fi_ein['wall_time']:.2f}s\n")
+    print(f"compute_time_fi: {compute_time_saptdft_fi['wall_time']:.2f}s\n")
     print(df)
     timer_cols = ["timer_name", "wall_time", "user_time", "system_time", "n_calls"]
     assert list(df.columns) == timer_cols
     timer_row = df.loc[df["timer_name"] == "SAPT(DFT) Energy"]
     assert len(timer_row) == 1
-    assert compute_time_saptdft_fi_ein["n_calls"] >= 1
-    assert compute_time_saptdft_fi_ein["wall_time"] >= 0.0
-    assert timer_row.iloc[0]["n_calls"] == compute_time_saptdft_fi_ein["n_calls"]
+    assert compute_time_saptdft_fi["n_calls"] >= 1
+    assert compute_time_saptdft_fi["wall_time"] >= 0.0
+    assert timer_row.iloc[0]["n_calls"] == compute_time_saptdft_fi["n_calls"]
     assert timer_row.iloc[0]["wall_time"] == pytest.approx(
-        compute_time_saptdft_fi_ein["wall_time"]
+        compute_time_saptdft_fi["wall_time"]
     )
     assert csv_text.startswith("timer_name,wall_time,user_time,system_time,n_calls\n")
     assert "SAPT(DFT) Energy" in csv_text
@@ -317,7 +316,6 @@ no_com
             "SAPT_DFT_DO_DISP": True,
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
             # Normally on
-            "SAPT_DFT_USE_EINSUMS": True,
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
@@ -414,7 +412,7 @@ no_com
             "SAPT_DFT_FUNCTIONAL": "HF",
             "SAPT_DFT_DO_DHF": True,
             "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
+            "SAPT_DFT_DO_FSAPT": "FISAPT",
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
@@ -640,13 +638,10 @@ no_com
             "SAPT_DFT_FUNCTIONAL": "PBE0",
             "SAPT_DFT_DO_DHF": True,
             "SAPT_DFT_DO_HYBRID": False,
-            # "SAPT_DFT_DO_FSAPT": "SAPTDFT",
             "SAPT_DFT_DO_FSAPT": "FISAPT",
             "SAPT_DFT_GRAC_SHIFT_A": 0.11652342,
             "SAPT_DFT_GRAC_SHIFT_B": 0.12724880,
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
-            # "SAPT_DFT_USE_EINSUMS": False,
-            "SAPT_DFT_USE_EINSUMS": True,
             "e_convergence": 1e-10,
             "d_convergence": 1e-10,
         }
@@ -921,12 +916,10 @@ no_com
             "SAPT_DFT_FUNCTIONAL": "HF",
             "SAPT_DFT_DO_DHF": True,
             "SAPT_DFT_DO_HYBRID": False,
-            # "SAPT_DFT_DO_FSAPT": "FISAPT",
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
+            "SAPT_DFT_DO_FSAPT": "FISAPT",
             "SAPT_DFT_D4_IE": False,
             "SAPT_DFT_DO_DISP": True,
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
-            "SAPT_DFT_USE_EINSUMS": False,
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
@@ -1076,7 +1069,6 @@ no_com
             "SAPT_DFT_DO_DHF": True,
             "SAPT_DFT_DO_HYBRID": False,
             "SAPT_DFT_DO_FSAPT": "FISAPT",
-            "SAPT_DFT_USE_EINSUMS": True,
             "FISAPT_FSAPT_FILEPATH": "tmp",
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }

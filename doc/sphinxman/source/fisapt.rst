@@ -339,11 +339,8 @@ SAPT(DFT)-D3 and SAPT(DFT)-D4 variants. The workflow is the same as for
 ``fisapt0``: run the interaction-energy method with ``return_wfn=True`` and
 pass that wavefunction to :func:`~psi4.driver.fsapt_analysis`.
 
-To enable this in SAPT(DFT), set |sapt__sapt_dft_do_fsapt| to either:
-
-- ``SAPTDFT`` to use the SAPT(DFT)-native pathway (with Einsums
-  when available), or
-- ``FISAPT`` to use the FISAPT code for decomposition.
+To enable this in SAPT(DFT), set |sapt__sapt_dft_do_fsapt| to ``FISAPT``,
+which uses the FISAPT code for the decomposition.
 
 Typical usage is::
 

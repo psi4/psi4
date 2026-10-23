@@ -26,7 +26,6 @@ def grac_dimer():
         "basis": "sto-3g",
         "sapt_dft_grac_compute": "single",
         "sapt_dft_functional": "pbe0",
-        "sapt_dft_use_einsums": False,
         "e_convergence": 1e-10,
         "d_convergence": 1e-10,
     })
@@ -240,7 +239,6 @@ def test_grac_only_schema_wfn_variables(grac_dimer):
             "sapt_dft_grac_shift_only": True,
             "sapt_dft_grac_compute": "single",
             "sapt_dft_functional": "pbe0",
-            "sapt_dft_use_einsums": False,
         },
         "extras": {"wfn_qcvars_only": True},
     })
@@ -1189,17 +1187,7 @@ no_com
 
 @pytest.mark.extern
 @pytest.mark.saptdft
-@pytest.mark.parametrize(
-    "use_einsums",
-    [
-        pytest.param(True, id="einsums"),
-        pytest.param(False, id="non-einsums"),
-    ],
-)
-def test_fisapt0_sapthf_external_potential(use_einsums):
-    if use_einsums:
-        pytest.importorskip("einsums")
-
+def test_fisapt0_sapthf_external_potential():
     mol = psi4.geometry(
         """
 0 1
@@ -1268,7 +1256,7 @@ no_com
 
     psi4.core.clean()
     psi4.core.clean_variables()
-    psi4.set_options({**options, "SAPT_DFT_USE_EINSUMS": use_einsums})
+    psi4.set_options(options)
 
     # Run the SAPT(HF) energy calculation
     psi4.energy(
@@ -1291,7 +1279,7 @@ no_com
             calculated_fisapt0_energies[k1],
             calculated_sapthf_energies[k1],
             7,
-            f"{k1} use_einsums={use_einsums}",
+            k1,
         )
 
     # Also check nuclear repulsion energy
@@ -1299,7 +1287,7 @@ no_com
         calculated_fisapt0_energies["Enuc"],
         calculated_sapthf_energies["Enuc"],
         8,
-        f"Enuc use_einsums={use_einsums}",
+        "Enuc",
     )
 
 
@@ -1528,7 +1516,6 @@ def test_saptdft_induction_routes(monkeypatch, induction_type, delta_hf, expecte
         "sapt_dft_grac_shift_b": 0.203293,
         "sapt_dft_do_dhf": delta_hf,
         "sapt_dft_do_hybrid": False,
-        "sapt_dft_use_einsums": False,
         "orbital_optimizer_package": "internal",
     }
     if induction_type is not None:
@@ -1614,7 +1601,6 @@ def test_saptdft_none_delta_hf_matches_cphf_total_induction():
         "sapt_dft_grac_shift_b": 0.203293,
         "sapt_dft_do_dhf": True,
         "sapt_dft_do_hybrid": False,
-        "sapt_dft_use_einsums": False,
         "orbital_optimizer_package": "internal",
     }
 
@@ -1690,12 +1676,7 @@ no_com
 @pytest.mark.parametrize(
     "options, message",
     [
-        ({"sapt_dft_induction_type": "NONE", "sapt_dft_do_fsapt": "SAPTDFT"}, "F-SAPT requires induction"),
         ({"sapt_dft_induction_type": "NONE", "sapt_dft_do_fsapt": "FISAPT"}, "F-SAPT requires induction"),
-        (
-            {"sapt_dft_induction_type": "CPHF", "sapt_dft_do_fsapt": "SAPTDFT"},
-            "F-SAPT requires SAPT\\(DFT\\) fragment induction",
-        ),
     ],
 )
 def test_saptdft_induction_option_checks(monkeypatch, options, message):
@@ -1713,46 +1694,6 @@ def test_saptdft_induction_option_checks(monkeypatch, options, message):
     )
     with pytest.raises(psi4.ValidationError, match=message):
         psi4.energy("sapt(dft)", molecule=mol)
-
-
-@pytest.mark.saptdft
-def test_einsum_terms():
-    """
-    built from sapt-dft1 ctest
-    """
-    pytest.importorskip("einsums")
-    Eref_nh = {
-        "SAPT ELST ENERGY": -0.22987897,  # mEh
-        "SAPT EXCH ENERGY": 0.59560159,  # mEh
-        "SAPT IND ENERGY": -0.00010341,  # mEh
-        "SAPT DISP ENERGY": 0.00000574,  # mEh
-        "CURRENT ENERGY": 0.36562495,  # mEh
-    }  # TEST
-    mol = psi4.geometry("""
-  Ne
-  --
-  Ne 1 4.5
-  units bohr
-    """)
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "sapt_dft_grac_shift_a": 0.203293,
-            "sapt_dft_grac_shift_b": 0.203293,
-            "SAPT_DFT_DO_DHF": False,
-            "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_USE_EINSUMS": True,
-            "SAPT_DFT_EXCH_DISP_SCALE_SCHEME": "None",
-            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
-        }
-    )
-    psi4.energy("sapt(dft)", molecule=mol)
-    for k, v in Eref_nh.items():  # TEST
-        ref = v
-        assert compare_values(
-            ref, psi4.variable(k) * 1000, 7, "!hyb, xd=none, !dHF: " + k
-        )
 
 
 @pytest.mark.saptdft
