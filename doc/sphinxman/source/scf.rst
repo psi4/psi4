@@ -1045,17 +1045,16 @@ new occupation.
 Convergence is decided the same way whichever package runs the second-order
 iterations: a macro-iteration converges when the energy change is under
 |scf__e_convergence| and the RMS orbital gradient is under |scf__d_convergence|,
-both required. OpenTrustRegion applies that test through a callback, and supplying
-one replaces its own gradient criterion rather than racing it, so those two keywords
-mean what they always mean and control the final result.
+both required. OpenTrustRegion applies that same test through a callback function.
 
-OpenTrustRegion can also stop short of them: it accepts a step by comparing the energy
+OpenTrustRegion can also stop short of requested convergence: it accepts a step by comparing the energy
 change it measured against the one its model predicted, so once neither resolves in
 floating point it stops, typically near a 1.e-10 orbital gradient. The energy there is
 converged as far as a double represents it, but the orbitals are not, and first-order
 iterations can still improve them. |scf__otr_max_precision_reached_handling| chooses
-between finishing with those iterations (``DIIS``, the default), failing, and accepting
-the result; all three report the precision reached.
+between finishing with those iterations (``DIIS``, the default, returns the better of
+the OTR or DIIS polishing solutions), failing (``FAIL``), and accepting
+the result (``WARN``); all three report the precision reached.
 
 
 Microiterations are a separate matter. They solve the trust-region subproblem

@@ -20,9 +20,8 @@ if psi4.core.get_option("scf", "second_order_orbital_optimizer_package") in ["OT
     # vector. Which of the two sigma states survives the filter turns on orbital differences
     # around 1e-6 -- OpenTrustRegion agrees with the internal optimizer on the SCF energy to
     # 3e-12 and on root 0 to 2e-8, but lands on the delta state for root 1. Tightening SCF
-    # convergence does not pin it down. This guard was keyed on |scf__orbital_optimizer_package|
-    # until OTR moved to the second-order keyword, which left it unreachable.
-    psi4.set_options({"second_order_orbital_optimizer_package": "internal"})  # TODO fix
+    # convergence does not pin it down.
+    psi4.set_options({"second_order_orbital_optimizer_package": "internal"})
 
 #
 # This input also serves as an example of the filter guess capability
