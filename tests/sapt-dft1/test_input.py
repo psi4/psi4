@@ -1,6 +1,6 @@
 from addons import *
 
-@ctest_labeler("quick;sapt")
+@ctest_labeler("quick;sapt;saptdft")
 def test_sapt_dft1():
     ctest_runner(__file__)
 

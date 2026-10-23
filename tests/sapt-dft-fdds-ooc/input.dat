@@ -1,0 +1,43 @@
+#! SAPT(DFT) hybrid FDDS dispersion with its three-index AO integrals on disk must
+#! match the in-core result.  The hybrid second round re-initializes DFHelper with a
+#! different metric power, and an out-of-core re-initialization used to append to the
+#! first round's AO file and transform the stale integrals.
+
+molecule dimer {
+  O -2.930978458   -0.216411437    0.000000000
+  H -3.655219777    1.440921844    0.000000000
+  H -1.133225297    0.076934530    0.000000000
+   --
+  O  2.552311356    0.210645882    0.000000000
+  H  3.175492012   -0.706268134   -1.433472544
+  H  3.175492012   -0.706268134    1.433472544
+  units bohr
+}
+
+set {
+    basis                 aug-cc-pvdz
+    e_convergence         1e-8
+    d_convergence         1e-8
+    sapt_dft_grac_shift_a 0.136
+    sapt_dft_grac_shift_b 0.136
+    sapt_dft_functional   pbe0
+    sapt_dft_do_hybrid    true
+}
+
+set sapt_fdds_disp_ao_storage incore
+energy('sapt(dft)', molecule=dimer)
+disp_core = variable("SAPT DISP ENERGY")
+total_core = variable("SAPT TOTAL ENERGY")
+
+# Through the FDDS option ...
+set sapt_fdds_disp_ao_storage out_of_core
+energy('sapt(dft)', molecule=dimer)
+compare_values(disp_core, variable("SAPT DISP ENERGY"), 8, "FDDS AO on disk: Disp")  #TEST
+compare_values(total_core, variable("SAPT TOTAL ENERGY"), 8, "FDDS AO on disk: Total")  #TEST
+
+# ... and through SCF_SUBTYPE, which is how a large job usually gets there.
+set sapt_fdds_disp_ao_storage auto
+set scf_subtype out_of_core
+energy('sapt(dft)', molecule=dimer)
+compare_values(disp_core, variable("SAPT DISP ENERGY"), 8, "SCF_SUBTYPE=OUT_OF_CORE: Disp")  #TEST
+compare_values(total_core, variable("SAPT TOTAL ENERGY"), 8, "SCF_SUBTYPE=OUT_OF_CORE: Total")  #TEST

@@ -733,39 +733,95 @@ void VBase::print_header() const {
 }
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
-void VBase::finalize() { grid_.reset(); }
+void VBase::finalize() {
+    // The collocation cache is keyed by grid block index, so it must never
+    // outlive the grid it was built from.
+    clear_collocation_cache();
+    grid_.reset();
+    // The grid is a block list, i.e. many small allocations, so the same arena retention that
+    // hides a released collocation cache hides this too.
+    release_freed_memory();
+}
 void VBase::build_collocation_cache(size_t memory) {
-    // Figure out many blocks to skip
-
-    size_t collocation_size = grid_->collocation_size();
-    if (functional_->ansatz() == 1) {
-        collocation_size *= 4;  // For gradients
-    }
-    if (functional_->ansatz() == 2) {
-        collocation_size *= 10;  // For gradients and Hessians
-    }
-
-    // Figure out stride as closest whole number to amount we need
-    size_t stride = (size_t)(std::ceil(collocation_size / (double)memory));
-
-    // More memory than needed
-    if (stride == 0) {
-        stride = 1;
-    }
-    cache_map_.clear();
-
-    // Effectively zero blocks saved.
-    if (stride > grid_->blocks().size()) {
+    clear_collocation_cache();
+    if (memory == 0) {
         return;
     }
 
+    const auto& blocks = grid_->blocks();
+    const size_t nblock = blocks.size();
+    if (nblock == 0) {
+        return;
+    }
+
+    // Components actually stored per block (PHI, PHI_X, ... according to the points
+    // worker's derivative level), so the cost model below is the exact allocation rather
+    // than an ansatz-derived guess.
+    const size_t ncomp = point_workers_[0]->basis_values().size();
+    if (ncomp == 0) {
+        return;
+    }
+
+    auto block_cost = [&](size_t Q) { return ncomp * blocks[Q]->npoints() * blocks[Q]->local_nbf(); };
+
+    // Blocks span nearly two orders of magnitude in cost, so the cache has to be filled
+    // by cost and not by counting blocks.  Walk the grid in order and take blocks at a
+    // constant rate f = memory / total_cost with a fractional accumulator: that spreads
+    // the cached blocks uniformly for any real f, where the 1-in-stride sieve this
+    // replaces could only realize f = 1, 1/2, 1/3, ... and so threw away everything
+    // between two reachable fractions (a 12.94 GiB grant used to cache 6.46 GiB and
+    // discard the remaining 6.49 GiB).
+    size_t total_cost = 0;
+    for (size_t Q = 0; Q < nblock; Q++) {
+        total_cost += block_cost(Q);
+    }
+    const double rate = std::min(1.0, (double)memory / (double)total_cost);
+
+    std::vector<size_t> selected;
+    std::vector<size_t> deferred;
+    selected.reserve((size_t)(rate * nblock) + 1);
+    size_t claimed = 0;
+    double accumulator = 0.0;
+    for (size_t Q = 0; Q < nblock; Q++) {
+        accumulator += rate;
+        if (accumulator < 1.0) {
+            deferred.push_back(Q);
+            continue;
+        }
+        accumulator -= 1.0;
+        const size_t cost = block_cost(Q);
+        if (claimed + cost <= memory) {
+            selected.push_back(Q);
+            claimed += cost;
+        } else {
+            deferred.push_back(Q);
+        }
+    }
+
+    // The rate is set by the mean block cost, so a run of cheaper-than-average blocks
+    // leaves memory unspent.  Give the remainder to the blocks that were passed over.
+    for (size_t Q : deferred) {
+        const size_t cost = block_cost(Q);
+        if (claimed + cost > memory) {
+            continue;
+        }
+        selected.push_back(Q);
+        claimed += cost;
+    }
+
+    if (selected.empty()) {
+        return;
+    }
+    std::sort(selected.begin(), selected.end());
+
     cache_map_deriv_ = point_workers_[0]->deriv();
     auto saved_size_rank = std::vector<size_t>(num_threads_, 0);
-    auto ncomputed_rank = std::vector<size_t>(num_threads_, 0);
 
-// Loop over the blocks
-#pragma omp parallel for schedule(guided) num_threads(num_threads_)
-    for (size_t Q = 0; Q < grid_->blocks().size(); Q += stride) {
+// Loop over the selected blocks.  Per-block cost varies by an order of magnitude and the
+// selection no longer has the periodic structure that made guided scheduling unbalanced,
+// so hand the blocks out dynamically.
+#pragma omp parallel for schedule(dynamic) num_threads(num_threads_)
+    for (size_t iblock = 0; iblock < selected.size(); iblock++) {
         // Get thread info
         int rank = 0;
 #ifdef _OPENMP
@@ -773,7 +829,7 @@ void VBase::build_collocation_cache(size_t memory) {
 #endif
 
         // Compute a collocation block
-        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
+        std::shared_ptr<BlockOPoints> block = blocks[selected[iblock]];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
         pworker->compute_functions(block);
 
@@ -797,16 +853,16 @@ void VBase::build_collocation_cache(size_t memory) {
 
             saved_size_rank[rank] += nrows * ncols;
         }
-        ncomputed_rank[rank]++;
 #pragma omp critical
         cache_map_[block->index()] = collocation_map;
     }
 
-    size_t saved_size = std::accumulate(saved_size_rank.begin(), saved_size_rank.end(), 0.0);
-    size_t ncomputed = std::accumulate(ncomputed_rank.begin(), ncomputed_rank.end(), 0.0);
+    size_t saved_size = std::accumulate(saved_size_rank.begin(), saved_size_rank.end(), (size_t)0);
+
+    cache_claim_.set(saved_size);
 
     double gib_saved = 8.0 * (double)saved_size / 1024.0 / 1024.0 / 1024.0;
-    double fraction = (double)ncomputed / grid_->blocks().size() * 100;
+    double fraction = (double)selected.size() / nblock * 100;
     if (print_) {
         outfile->Printf("  Cached %.1lf%% of DFT collocation blocks in %.3lf [GiB].\n\n", fraction, gib_saved);
     }
