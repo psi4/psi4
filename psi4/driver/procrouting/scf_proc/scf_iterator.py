@@ -615,6 +615,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     polish_remaining = None
     polish_budget = 0
     polish_shortfall = ""
+    polish_entry_dnorm = None
+    polish_entry_C = None
 
     while True:
         self.iteration_ += 1
@@ -748,6 +750,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 polish_shortfall, _ = _otr_shortfall(self)
                 polish_budget = _otr_polish_budget(self)
                 polish_remaining = polish_budget
+                # Keep what OpenTrustRegion converged. First-order iterations usually
+                # improve on it, but from a solution this close they can also wander off
+                # -- a pinned-occupation ROHF will -- and the better orbitals should be
+                # the ones left behind. Measure its gradient the way this loop does, so
+                # the comparison below is like for like.
+                polish_entry_dnorm = self.compute_orbital_gradient(
+                    False, core.get_option("SCF", "DIIS_MAX_VECS"))
+                polish_entry_C = (self.Ca().clone(), self.Cb().clone())
                 if self.initialized_diis_manager_:
                     self.diis_manager_.reset_subspace()
                 core.print_out("    Finishing with first-order iterations, which converge on\n"
@@ -908,6 +918,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if polish_remaining is not None:
             polish_remaining -= 1
             if polish_remaining <= 0:
+                if Dnorm > polish_entry_dnorm:
+                    self.Ca().copy(polish_entry_C[0])
+                    self.Cb().copy(polish_entry_C[1])
+                    self.form_D()
+                    self.form_G()
+                    self.form_F()
+                    SCFE = self.compute_E()
+                    self.set_energies("Total Energy", SCFE)
+                    core.print_out(
+                        f"    The first-order iterations left the orbitals worse than\n"
+                        f"    OpenTrustRegion did ({Dnorm:.2e} against "
+                        f"{polish_entry_dnorm:.2e}); keeping its solution.\n")
+                    Dnorm = polish_entry_dnorm
                 raise SCFConvergenceError(
                     "SCF to the requested precision", self.iteration_, self, Ediff, Dnorm,
                     "OpenTrustRegion stopped at its floating-point precision floor and the\n"
