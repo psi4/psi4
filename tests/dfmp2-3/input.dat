@@ -46,5 +46,4 @@ print(f"{roles=}")
 compare("dfmp2", wfn.module(), "primary")  #TEST
 compare("dfmp2", roles.pop("qc_module"), "qc_module")  #TEST
 compare("internal", roles.pop("orbital_optimizer"), "orbital_optimizer")  #TEST
-compare("internal", roles.pop("second_order_orbital_optimizer"), "second_order_orbital_optimizer")  #TEST
 compare(0, len(roles), "all modules asserted")  #TEST
