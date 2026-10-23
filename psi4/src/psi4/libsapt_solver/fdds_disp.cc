@@ -112,7 +112,6 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
                                  std::map<std::string, SharedVector> vector_cache, 
                                  bool is_hybrid)
     : primary_(primary), auxiliary_(auxiliary), matrix_cache_(matrix_cache), vector_cache_(vector_cache), is_hybrid_(is_hybrid) {
-    Options& options = Process::environment.options;
 
     // ==> Check incoming cache <==
     std::vector<std::string> matrix_cache_check = {"Cocc_A", "Cvir_A", "Cocc_B", "Cvir_B"};
@@ -221,6 +220,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     // in final form, instead of being written, read back, contracted with the
     // metric and written again.  Both rounds below want exactly that, so STORE
     // is the default; the older paths stay reachable for comparison.
+    Options& options = Process::environment.options;
     std::string round1_algo = options.get_str("SAPT_FDDS_DISP_DF_ALGORITHM");
     if (round1_algo == "AUTO") round1_algo = "STORE";
     if (round1_algo == "LEGACY") round1_algo = (is_hybrid_ ? "DIRECT" : "DIRECT_iaQ");
