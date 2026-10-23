@@ -50,7 +50,7 @@ namespace psi {
 int DPD::buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha) {
     int row, col, n, nbuckets;
     long int length;
-    long int memoryd, rows_per_bucket, rows_left;
+    int rows_per_bucket, rows_left;
     double *X, *Y;
     bool incore;
 
@@ -62,12 +62,11 @@ int DPD::buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha) {
 #endif
 
     for (int h = 0; h < nirreps; h++) {
-        memoryd = (dpd_memfree() - BufX->file.params->coltot[h ^ my_irrep]) / 2; /* use half the memory for each buf4 */
         if (BufX->params->rowtot[h] && BufX->params->coltot[h ^ my_irrep]) {
-            rows_per_bucket = memoryd / BufX->params->coltot[h ^ my_irrep];
-
-            /* enough memory for the whole matrix? */
-            if (rows_per_bucket > BufX->params->rowtot[h]) rows_per_bucket = BufX->params->rowtot[h];
+            const auto buffer_coltot = BufX->params->coltot[h ^ my_irrep];
+            const auto file_coltot = BufX->file.params->coltot[h ^ my_irrep];
+            rows_per_bucket = dpd_rows_per_bucket(dpd_memfree() - file_coltot, 2LL * buffer_coltot,
+                                                  BufX->params->rowtot[h]);
 
             if (!rows_per_bucket) dpd_error("buf4_axpy: Not enough memory for one row!", "outfile");
 

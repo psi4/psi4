@@ -64,7 +64,8 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X, int sum_Y, 
     int rking = 0, symlink;
     int Xtrans, Ytrans;
     int *numlinks, *numrows, *numcols;
-    long int core, memoryd, core_total, rowtot, coltot, maxrows;
+    int64_t memoryd;
+    long int core, core_total, rowtot, coltot, maxrows;
     int xcount, zcount, scount, Ysym;
     int rowx, rowz, colx, colz;
     int pq, rs, r, s, Gr, Gs;
