@@ -1655,6 +1655,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, do a line search
             along the trust-region step. -*/
         options.add_bool("OTR_LINE_SEARCH", false);
+        /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, whether to perturb
+            the orbital gradient. The perturbation helps the solver leave a stationary point,
+            which is wanted when seeking a minimum and not when a calculation means to sit at
+            a saddle point, and it moves the converged orbitals within |scf__d_convergence|
+            enough to show in a sensitive response property. -*/
+        options.add_bool("OTR_GRAD_NOISE", true);
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, initial trust
             radius. -*/
         options.add_double("OTR_START_TRUST_RADIUS", 0.4);

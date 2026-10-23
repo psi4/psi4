@@ -109,6 +109,7 @@ exposed as ``OTR_*`` keywords, each defaulting to OpenTrustRegion's own default.
 .. include:: autodir_options_c/scf__otr_n_random_trial_vectors.rst
 .. include:: autodir_options_c/scf__otr_jacobi_davidson_start.rst
 .. include:: autodir_options_c/scf__otr_line_search.rst
+.. include:: autodir_options_c/scf__otr_grad_noise.rst
 .. include:: autodir_options_c/scf__otr_start_trust_radius.rst
 .. include:: autodir_options_c/scf__otr_global_red_factor.rst
 .. include:: autodir_options_c/scf__otr_local_red_factor.rst

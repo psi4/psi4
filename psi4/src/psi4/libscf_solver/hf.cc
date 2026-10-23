@@ -1568,6 +1568,7 @@ int HF::opentrustregion_scf() {
     settings.n_random_trial_vectors = options_.get_int("OTR_N_RANDOM_TRIAL_VECTORS");
     settings.jacobi_davidson_start = options_.get_int("OTR_JACOBI_DAVIDSON_START");
     settings.line_search = options_.get_bool("OTR_LINE_SEARCH");
+    settings.grad_noise = options_.get_bool("OTR_GRAD_NOISE");
     settings.start_trust_radius = options_.get_double("OTR_START_TRUST_RADIUS");
     settings.global_red_factor = options_.get_double("OTR_GLOBAL_RED_FACTOR");
     settings.local_red_factor = options_.get_double("OTR_LOCAL_RED_FACTOR");
