@@ -297,12 +297,16 @@ def scf_initialize(self):
     held_memory = committed_memory + overhead_memory
 
     resident_hold = 0.0
-    if reserve_total >= unclaimed_memory:
+    if reserve_total + process_reserve >= unclaimed_memory:
         # The declaration is smaller than the parts of this SCF that are not negotiable, so
         # it is not a budget at all -- a test that asks for two megabytes to force a disk
         # algorithm, say.  Holding a reserve back cannot make such a job fit; it only pushes
         # the JK under the floor its out-of-core algorithm needs to start.  Hand over the
-        # whole (fictional) budget and let the JK pick the smallest algorithm it has.
+        # whole (fictional) budget and let the JK pick the smallest algorithm it has.  The
+        # interpreter counts here even though it is not taken out of a real split: a
+        # declaration that cannot hold the process it runs in is not a budget either, and
+        # without it the 2 MB dft-grad-disk passed this test at two threads and failed at
+        # four, where the reserve took half its grant and DiskDFJK could no longer start.
         reserve_memory = 0.0
     else:
         reserve_memory = min(reserve_total, 0.5 * unclaimed_memory)
