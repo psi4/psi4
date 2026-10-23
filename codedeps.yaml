@@ -1601,3 +1601,33 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
+
+  - project: opentrustregion
+    use:
+      added: 1.12
+      required: false
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: eriksen-lab
+      name: opentrustregion
+      commit: master
+    cmake:
+      name: OpenTrustRegion
+      constraint: "3.0.0"
+      components:
+        - int32
+      target: OpenTrustRegion::OpenTrustRegion
+    conda:
+      channel: conda-forge
+      name: opentrustregion
+      constraint: null
+      cmake:
+        ENABLE_OpenTrustRegion: true
+        OpenTrustRegion_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/OpenTrustRegion
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenTrustRegion
+        # UNDO w/v3 //CMAKE_INSIST_FIND_PACKAGE_OpenTrustRegion: true
+        # UNDO w/v3 //CMAKE_DISABLE_FIND_PACKAGE_OpenTrustRegion: true

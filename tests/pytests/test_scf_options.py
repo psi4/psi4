@@ -3,6 +3,7 @@ import pytest
 
 import psi4
 
+from addons import using, uusing
 from utils import compare_values
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
@@ -22,6 +23,14 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
     ],
 )
 def test_guess_mix_for_broken_symmetry(inp):
+    if (psi4.core.get_option("SCF", "SOSCF")
+            and psi4.core.get_option("scf", "second_order_orbital_optimizer_package")
+            in ["OTR", "OPENTRUSTREGION"]):
+        # This test expects a plain UHF to stop at -0.82648 but guess_mix to reach -0.99872 .
+        # The former is a saddle point, and OpenTrustRegion's gradient perturbation is there to
+        # leave one, so with it on the plain run descends to -0.99872 too and the test cannot
+        # tell the two apart.
+        psi4.set_options({"otr_grad_noise": False})
 
     refENuc = 0.17639240356
     refSCF = -0.82648407827446
@@ -288,3 +297,46 @@ def test_sad_frac_occ_atomic_natural_occupations(atom, geom, expected_spin_elect
 # 0  O:   4.00000000   4.00000000   8.00000000
 # 1  H:   0.50000000   0.50000000   1.00000000
 # 2  H:   0.50000000   0.50000000   1.00000000
+
+
+@pytest.mark.parametrize("soopkg", [
+    pytest.param("internal", id="internal"),
+    pytest.param("otr", id="otr", marks=using("otr")),
+])
+def test_soscf_maxiter_budget(soopkg):
+    """MAXITER caps the whole SCF, not each stage of it.
+
+    The second-order package takes over partway through, so its own iteration budget has to
+    account for what the first-order iterations already spent -- and, for OpenTrustRegion, for
+    the macro-iteration that re-evaluates the handoff state psi4 has already counted. Both
+    packages should therefore need the same MAXITER to converge the same computation, and
+    should report the same iteration count.
+    """
+    psi4.geometry("""
+      O
+      H 1 0.96
+      H 1 0.96 2 104.5
+      symmetry c1
+    """)
+    common = {"basis": "cc-pvdz", "scf_type": "pk", "soscf": True,
+              "second_order_orbital_optimizer_package": soopkg, "fail_on_maxiter": True}
+
+    # find the smallest budget that converges
+    for maxiter in range(2, 20):
+        psi4.set_options({**common, "maxiter": maxiter})
+        try:
+            psi4.energy("scf")
+        except psi4.SCFConvergenceError:
+            continue
+        break
+    else:
+        pytest.fail("never converged")
+
+    niter = int(psi4.variable("SCF ITERATIONS"))
+    # the budget actually spent is what was reported, not one more or one less
+    assert niter == maxiter, f"converged at MAXITER={maxiter} but reported {niter} iterations"
+
+    # and one fewer must fail rather than quietly returning a shorter run
+    psi4.set_options({**common, "maxiter": maxiter - 1})
+    with pytest.raises(psi4.SCFConvergenceError):
+        psi4.energy("scf")
