@@ -30,9 +30,11 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
-#include <cstdio>
+#include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
+#include <limits>
 #include "psi4/libqt/qt.h"
 #include "dpd.h"
 
@@ -62,14 +64,20 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
 
     all_buf_irrep = InBuf->file.my_irrep;
 
+    // The file4 block I/O routines form byte counts in long, so keep each buffer within that limit.
+    const int64_t max_buffer_words =
+        static_cast<int64_t>(std::numeric_limits<long>::max()) / static_cast<int64_t>(sizeof(double));
+
     buf4_init(&OutBuf, outfilenum, InBuf->file.my_irrep, InBuf->params->pqnum, InBuf->params->rsnum,
               InBuf->params->pqnum, InBuf->params->rsnum, 0, label);
 
     for (h = 0; h < InBuf->params->nirreps; h++) {
         /* select in-core or out-of-core algorithm */
         if (InBuf->params->rowtot[h] && InBuf->params->coltot[h ^ all_buf_irrep]) {
-            rows_per_bucket = dpd_rows_per_bucket(dpd_memfree(), 2LL * InBuf->params->coltot[h ^ all_buf_irrep],
-                                                  InBuf->params->rowtot[h]);
+            const int64_t available_words = std::min(dpd_memfree(), 2 * max_buffer_words);
+            rows_per_bucket =
+                dpd_rows_per_bucket(available_words, 2LL * InBuf->params->coltot[h ^ all_buf_irrep],
+                                    InBuf->params->rowtot[h]);
 
             if (!rows_per_bucket) dpd_error("buf4_scmcopy: Not enough memory for one row!", "outfile");
 
