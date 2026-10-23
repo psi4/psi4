@@ -27,9 +27,10 @@ def test_guess_mix_for_broken_symmetry(inp):
             and psi4.core.get_option("scf", "second_order_orbital_optimizer_package")
             in ["OTR", "OPENTRUSTREGION"]):
         # This test expects a plain UHF to stop at -0.82648 but guess_mix to reach -0.99872 .
-        # The former is a saddle point, and OTR minimizes rather than seeking a stationary
-        # point, so OTR reaches -0.99872 w/ or w/o the mixing, so fails.
-        pytest.skip("OpenTrustRegion descends off the saddle point this test relies on")
+        # The former is a saddle point, and OpenTrustRegion's gradient perturbation is there to
+        # leave one, so with it on the plain run descends to -0.99872 too and the test cannot
+        # tell the two apart.
+        psi4.set_options({"otr_grad_noise": False})
 
     refENuc = 0.17639240356
     refSCF = -0.82648407827446
