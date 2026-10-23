@@ -56,16 +56,20 @@ from .sapt_util import (
 import qcelemental as qcel
 from ...p4util.exceptions import ConvergenceError
 
-try:
-    import einsums as ein
-    from . import (
-        sapt_jk_terms_ein,
-        sapt_mp2_terms_ein,
-    )
 
-    einsums_available = True
-except ImportError:
-    einsums_available = False
+def _einsums_terms():
+    """Import the einsums SAPT backends on first use, or return None.
+
+    Deferred so that importing psi4 never loads einsums: some einsums builds
+    log to stdout on import, which corrupts ``psi4 --module`` for QCEngine.
+    """
+    try:
+        import einsums
+        from . import sapt_jk_terms_ein, sapt_mp2_terms_ein
+    except ImportError:
+        return None
+    return einsums, sapt_jk_terms_ein, sapt_mp2_terms_ein
+
 
 # Only export the run_ scripts
 __all__ = ["run_sapt_dft", "sapt_dft", "run_sf_sapt"]
@@ -130,12 +134,13 @@ def _run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     use_einsums = core.get_option("SAPT", "SAPT_DFT_USE_EINSUMS")
 
     # Build SAPT cache
-    if einsums_available and use_einsums:
-        jk_terms = sapt_jk_terms_ein
+    ein_terms = _einsums_terms() if use_einsums else None
+    if ein_terms is not None:
+        ein, jk_terms, _ = ein_terms
         ein.initialize()
     else:
-        # If einsums is not available, need to conditionally stop einsums
-        # without adding einsums_available and use_einsums to every check.
+        # If einsums is not available, clear use_einsums so later checks
+        # only need that one flag.
         use_einsums = False
         jk_terms = sapt_jk_terms
 
@@ -1450,12 +1455,12 @@ def sapt_dft(
     use_einsums = core.get_option("SAPT", "SAPT_DFT_USE_EINSUMS")
 
     # Build SAPT cache
-    if einsums_available and use_einsums:
-        jk_terms = sapt_jk_terms_ein
-        sapt_mp2 = sapt_mp2_terms_ein
+    ein_terms = _einsums_terms() if use_einsums else None
+    if ein_terms is not None:
+        _, jk_terms, sapt_mp2 = ein_terms
     else:
-        # If einsums is not available, need to conditionally stop einsums
-        # without adding einsums_available and use_einsums to every check.
+        # If einsums is not available, clear use_einsums so later checks
+        # only need that one flag.
         use_einsums = False
         jk_terms = sapt_jk_terms
         sapt_mp2 = sapt_mp2_terms
