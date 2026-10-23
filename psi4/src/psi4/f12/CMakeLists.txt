@@ -3,6 +3,8 @@ list(APPEND sources
   wrapper.cc
   integrals.cc
   f12_intermediates.cc
+  streamed.cc
+  streamed_integrals.cc
   )
 
 if(TARGET Einsums::Einsums)
