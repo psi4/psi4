@@ -917,9 +917,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     f"{abs(Ediff):.2e} against E_CONVERGENCE "
                     f"{core.get_option('SCF', 'E_CONVERGENCE'):.2e}, Dnorm {Dnorm:.2e} against "
                     f"D_CONVERGENCE {core.get_option('SCF', 'D_CONVERGENCE'):.2e}.\n\n"
-                    "A second-order and a first-order method have both stalled here, so this\n"
-                    "request is past what this system and basis support. Loosen D_CONVERGENCE\n"
-                    "and E_CONVERGENCE.")
+                    "A second-order and a first-order method have both failed to reach the\n"
+                    "thresholds within the iterations allowed, so this request is past what\n"
+                    "this system and basis support. Loosen D_CONVERGENCE and E_CONVERGENCE.")
 
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
             raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)

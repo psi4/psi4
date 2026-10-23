@@ -113,6 +113,7 @@ exposed as ``OTR_*`` keywords, each defaulting to OpenTrustRegion's own default.
 .. include:: autodir_options_c/scf__otr_global_red_factor.rst
 .. include:: autodir_options_c/scf__otr_local_red_factor.rst
 .. include:: autodir_options_c/scf__otr_seed.rst
+.. include:: autodir_options_c/scf__otr_max_precision_reached_handling.rst
 .. include:: autodir_options_c/scf__otr_print.rst
 
 
