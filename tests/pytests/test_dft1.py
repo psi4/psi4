@@ -198,7 +198,7 @@ _ATOL_OWN = {
     #
     # 1e-8 is an order of magnitude above that budget.  It was 1e-9 when the
     # references were L40S-only and there was no long-range exchange; both of
-    # those assumptions are now gone.  Setting CUEST_MIXED_PRECISION false
+    # those assumptions are now gone.  Setting CUEST_MIXED_PRECISION disabled
     # collapses the run-to-run spread to ~1e-12, but the default is what users
     # get, so the default is what is tested.
     "cuest": 1.0e-8,
@@ -212,7 +212,7 @@ _ATOL_CROSS = 1.0e-8
 # magnitude looser than everything else, and deliberately so.
 #
 # This is not noise and not an SCF-convergence artifact: it is identical to
-# 1e-12 with CUEST_MIXED_PRECISION false, so it is not the INT8 path either.
+# 1e-12 with CUEST_MIXED_PRECISION disabled, so it is not the INT8 path either.
 # The two engines simply make different density-fitting approximations for the
 # erf-attenuated (long-range) exchange, and with sto-3g/def2-universal-JKFIT
 # the fitting error itself is ~4e-4, so a ~3e-5 difference between two such
