@@ -384,7 +384,6 @@ void FISAPT::partition() {
         for (int ind = 0; ind < link_orbs.size(); ind++) {
             int a = link_orbs[ind];
             int A1 = link_atoms[ind].first;
-            int A2 = link_atoms[ind].second;
             std::string type = link_types[ind];
 
             if (type == "AC") {
@@ -6555,7 +6554,6 @@ void FISAPT::find() {
                                       (scalars_["Ind20,u (B<-A)"] + scalars_["Exch-Ind20,u (B<-A)"]));
 
         double sIndHF = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"] + dHF;
-        double sIndSAPT0 = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"];
 
         double sSdelta = sIndHF / IndSAPT0;
 

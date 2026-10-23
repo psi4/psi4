@@ -231,8 +231,8 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.13 3.12 3.11 3.10)  # adjust with CMake minimum FindPythonInterp
-find_package(Python 3.10 COMPONENTS Interpreter Development NumPy REQUIRED)
+set(Python_ADDITIONAL_VERSIONS 3.15 3.14 3.13 3.12 3.11)  # adjust with CMake minimum FindPythonInterp
+find_package(Python 3.11 COMPONENTS Interpreter Development NumPy REQUIRED)
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION}; NumPy version: ${Python_NumPy_VERSION})")
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")

@@ -61,7 +61,6 @@ void ZFW(dpdbuf4 *Z, dpdbuf4 *F, dpdbuf4 *W, double alpha, double beta);
 void Wabei_RHF() {
     dpdfile2 Fme, T1;
     dpdbuf4 F, W, T2, B, Z, Z1, Z2, D, T, C, F1, F2, W1, W2, Tau;
-    double value;
     int Gef, Gei, Gab, Ge, Gi, Gf, Gmi, Gm, nrows, ncols, nlinks, EE, e, row, Gnm;
     int Gma, ma, m, a, Ga, Gb, I, i, mi, E, ei, ab, ba, b, BB, fb, bf, fe, ef, mb, am;
     double ***WW1, ***WW2;

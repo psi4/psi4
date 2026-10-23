@@ -1291,7 +1291,6 @@ void DFHelper::compute_sparse_pQq_blocking_p(const size_t start, const size_t st
                                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
-    size_t block_size = end - begin + 1;
     size_t startind = big_skips_[begin];
     //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
     //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
@@ -1349,7 +1348,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
                                                   std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
-    size_t block_size = end - begin + 1;
     size_t startind = symm_big_skips_[begin];
     //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
     //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
@@ -1416,7 +1414,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
 ) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
-    size_t block_size = end - begin + 1;
     size_t startind = symm_big_skips_[begin];
     //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
     //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
@@ -1996,7 +1993,6 @@ void DFHelper::transform() {
     timer_on("DFH: transform()");
     // outfile->Printf("\n     ==> DFHelper:--Begin Transformations <==\n\n");
 
-    size_t nthreads = nthreads_;
 
     // reset tranposes (in case the transpose() function was called)
     tsizes_.clear();

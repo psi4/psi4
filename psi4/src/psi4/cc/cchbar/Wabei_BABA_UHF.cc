@@ -88,7 +88,6 @@ void WaBeI_UHF() {
     global_dpd_->file2_mat_rd(&T1);
     for (int Gef = 0; Gef < moinfo.nirreps; Gef++) {
         int Gei = Gef;
-        int Gab = Gef;
         for (int Ge = 0; Ge < moinfo.nirreps; Ge++) {
             int Gf = Ge ^ Gef;
             int Gi = Gf;

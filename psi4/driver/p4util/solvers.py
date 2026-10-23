@@ -49,6 +49,7 @@ Generalized iterative solvers for Psi4.
 
 """
 
+NUM_ZERO = 1e-11
 
 def cg_solver(
     rhs_vec: List[core.Matrix],
@@ -559,7 +560,7 @@ def _print_array(name, arr, verbose):
         core.print_out(f"\n\n{name}:\n{str(arr)}\n")
 
 
-def _gs_orth(engine, U, V, thresh: float = 1.0e-8):
+def _gs_orth(engine, U, V, thresh: float = NUM_ZERO):
     """Perform Gram-Schmidt orthonormalization of a set V against a previously orthonormalized set U
 
     Parameters
@@ -877,6 +878,13 @@ def davidson_solver(
     """
     nk = nroot
 
+    # TODO: Double-check if we can reliably tighten these restraints.
+    eigmax_to_error = 100
+    if nonneg_only and r_convergence < eigmax_to_error * NUM_ZERO:
+        r_convergence = eigmax_to_error * NUM_ZERO
+        core.print_out(f"\n\nWarning! r_convergence truncated to {eigmax_to_error * NUM_ZERO:3e}.\n")
+        core.print_out("\tPsi cannot reliably converge tighter.")
+
     iter_info = {
         "count": 0,
         "res_norm": np.zeros((nk)),
@@ -938,8 +946,8 @@ def davidson_solver(
 
         if nonneg_only:
             # remove zeros/negatives
-            alpha = alpha[:, lam > 1.0e-10]
-            lam = lam[lam > 1.0e-10]
+            alpha = alpha[:, lam > NUM_ZERO]
+            lam = lam[lam > NUM_ZERO]
 
         # sort/truncate to nroot
         idx = np.argsort(lam)
@@ -1092,6 +1100,13 @@ def hamiltonian_solver(
 
     nk = nroot
 
+    # TODO: Double-check if we can reliably tighten these restraints.
+    eigmax_to_error = 100
+    if r_convergence < eigmax_to_error * NUM_ZERO:
+        r_convergence = eigmax_to_error * NUM_ZERO
+        core.print_out(f"\n\nWarning! r_convergence truncated to {eigmax_to_error * NUM_ZERO:3e}.\n")
+        core.print_out("\tPsi cannot reliably converge tighter.")
+
     iter_info = {
         "count": 0,
         "res_norm": np.zeros((nk)),
@@ -1176,8 +1191,8 @@ def hamiltonian_solver(
         _print_array("Eigvectors (A-B)^(1/2)(A+B)(A-B)^(1/2)", Tss, verbose)
 
         # pick positive roots
-        Tss = Tss[:, w2 > 1.0e-10]
-        w2 = w2[w2 > 1.0e-10]
+        Tss = Tss[:, w2 > NUM_ZERO]
+        w2 = w2[w2 > NUM_ZERO]
 
         # check for invalid eigvals
         with np.errstate(invalid='raise'):

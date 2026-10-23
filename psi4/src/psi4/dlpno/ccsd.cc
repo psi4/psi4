@@ -65,7 +65,6 @@ inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     std::tie(m, n) = ij_to_i_j_[mn];
 
     int ji = ij_to_ji_[ij];
-    int nm = ij_to_ji_[mn];
 
     if (i == m) { // S(ij, mn) -> S(ij, in) -> S(ji, ni)
         return S_pno_ij_kj_[ji][n];
@@ -176,7 +175,6 @@ void DLPNOCCSD::compute_pno_overlaps() {
 
         S_pno_ij_kj_[ij].resize(naocc);
 
-        const int npno_ij = n_pno_[ij];
         const int nlmo_ij = lmopair_to_lmos_[ij].size();
 
         for (int k = 0; k < naocc; ++k) {
@@ -231,13 +229,11 @@ void DLPNOCCSD::estimate_memory() {
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         auto &[i, j] = ij_to_i_j_[ij];
 
-        const int npno_ij = n_pno_[ij];
         const int nlmo_ij = lmopair_to_lmos_[ij].size();
 
         // These account for the memory costs of cheaper overlap integrals S(ij, kj) and S(ij, kk)
         for (int k = 0; k < naocc; ++k) {
             int kj = i_j_to_ij_[k][j];
-            int ik = i_j_to_ij_[i][k];
 
             if (kj != -1) {
                 pno_overlap_memory += n_pno_[ij] * n_pno_[kj];
@@ -1899,7 +1895,6 @@ void DLPNOCCSD::t1_fock() {
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         auto &[i, j] = ij_to_i_j_[ij];
-        int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
         int ji = ij_to_ji_[ij], jj = i_j_to_ij_[j][j];
         int pair_idx = (i > j) ? ji : ij;
 
@@ -1980,7 +1975,6 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_beta() {
         int naux_ij = lmopair_to_ribfs_[ij].size();
         int nlmo_ij = lmopair_to_lmos_[ij].size();
         int pair_idx = (i > j) ? ji : ij;
-        int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
 
         // Jiang Eq. 82a
         beta[ij] = linalg::doublet(i_Qk_t1_[ij], i_Qk_t1_[ji], true, false); // (Q, k) (Q, l) -> (k, l)
@@ -2016,7 +2010,6 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_gamma() {
         int naux_ki = lmopair_to_ribfs_[ki].size();
         int nlmo_ki = lmopair_to_lmos_[ki].size();
         int npno_ki = n_pno_[ki];
-        int k_ki = lmopair_to_lmos_dense_[ki][k], i_ki = lmopair_to_lmos_dense_[ki][i];
         int pair_idx = (k > i) ? ij_to_ji_[ki] : ki;
 
         gamma[ki] = std::make_shared<Matrix>(npno_ki, npno_ki);
@@ -2087,7 +2080,6 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_delta() {
         int naux_ik = lmopair_to_ribfs_[ik].size();
         int nlmo_ik = lmopair_to_lmos_[ik].size();
         int npno_ik = n_pno_[ik];
-        int i_ik = lmopair_to_lmos_dense_[ik][i], k_ik = lmopair_to_lmos_dense_[ik][k];
         int pair_idx = (i > k) ? ki : ik;
 
         delta[ik] = std::make_shared<Matrix>(npno_ik, npno_ik);
@@ -2208,7 +2200,6 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
     // Initialize R1 residuals, Jiang Eq. 87a
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
-        int ii = i_j_to_ij_[i][i];
         // Initialize Ria as T1-dressed Fock matrix element Fai
         R_ia[i]->copy(Fai_[i]);
     }
@@ -2225,7 +2216,6 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
     for (int ik = 0; ik < n_lmo_pairs; ++ik) {
         auto &[i, k] = ij_to_i_j_[ik];
         int ki = ij_to_ji_[ik];
-        int k_ki = lmopair_to_lmos_dense_[ki][k]; // Grabs the index of k within domain ki
         int pair_idx = (i > k) ? ki : ik;
 
         int nlmo_ik = lmopair_to_lmos_[ik].size();
@@ -2279,9 +2269,7 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
 
         int naux_kl = lmopair_to_ribfs_[kl].size();
         int nlmo_kl = lmopair_to_lmos_[kl].size();
-        int npno_kl = n_pno_[kl];
         int pair_idx = (k > l) ? ij_to_ji_[kl] : kl;
-        int k_kl = lmopair_to_lmos_dense_[kl][k], l_kl = lmopair_to_lmos_dense_[kl][l];
 
         int thread = 0;
 #ifdef _OPENMP
@@ -2529,7 +2517,6 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
         for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
             int k = lmopair_to_lmos_[ij][k_ij];
             int ik = i_j_to_ij_[i][k], jk = i_j_to_ij_[j][k];
-            int j_ik = lmopair_to_lmos_dense_[ik][j];
 
             // 2 (i a_{ij} | k c_{jk}) - (i k | a_{ij} c_{jk})
             auto delta_total = K_iakc_non_proj_[ij][k_ij]->clone();

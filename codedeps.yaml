@@ -1288,14 +1288,14 @@ data:
       host: github
       account: MolSSI
       name: QCFractal
-      commit: v0.52
-      commit_note: "Includes snowflake fix at v0.52."
+      commit: v0.71
+      commit_note: "Includes QCSchema v2 handling and postgres update at v0.71."
     cmake: null
     conda:
       channel: conda-forge
       name: qcfractal
-      constraint: ">=0.60,!=0.62"
-      constraint_note: "v0.60 includes new compute_tag syntax. v0.62 hangs for snowflake jobs."
+      constraint: ">=0.70"
+      constraint_note: "v0.70 starts handling QCSchema v2."
       aux_run_names:
         - postgresql
       aux_run_names_note:

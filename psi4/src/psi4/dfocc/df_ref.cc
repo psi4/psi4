@@ -364,7 +364,6 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
 
         int pstart = auxiliary_->shell(Pstart).function_index();
         int pstop = (Pstop == auxiliary_->nshell() ? nQ_ref : auxiliary_->shell(Pstop).function_index());
-        int np = pstop - pstart;
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)

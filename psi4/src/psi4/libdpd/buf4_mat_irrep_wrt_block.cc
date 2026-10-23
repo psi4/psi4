@@ -49,7 +49,6 @@ int DPD::buf4_mat_irrep_wrt_block(dpdbuf4 *Buf, int irrep, int start_pq, int num
     int p, q, r, s;           /* orbital indices */
     int filepq, bufpq, bufrs; /* Input dpdbuf row and column indices */
     int rowtot, coltot;       /* dpdfile row and column dimensions */
-    int permute;
     double value;
 
     all_buf_irrep = Buf->file.my_irrep;

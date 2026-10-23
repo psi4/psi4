@@ -99,7 +99,7 @@ void HF::common_init() {
     attempt_number_ = 1;
     reset_occ_ = false;
     sad_ = false;
-    module_ = "scf";
+    set_module("scf");
     frac_performed_ = false;
 
     // This quantity is needed fairly soon
@@ -299,7 +299,13 @@ int HF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, 
 }
 
 void HF::form_V() { throw PSIEXCEPTION("Sorry, DFT functionals are not supported for this type of SCF wavefunction."); }
-void HF::form_C(double shift) { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals."); }
+void HF::form_C(double shift) {
+    diagonalize_orbitals(shift);
+    find_occupation();
+}
+void HF::diagonalize_orbitals(double shift) {
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals.");
+}
 void HF::form_D() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities."); }
 
 std::vector<SharedMatrix> HF::onel_Hx(std::vector<SharedMatrix> x) {

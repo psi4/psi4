@@ -312,7 +312,6 @@ void OCCWave::get_moinfo() {
         for (int h1 = 0; h1 < nirrep_; h1++) {
             for (int h2 = 0; h2 < nirrep_; h2++) {
                 int h = h1 ^ h2;
-                int pcount = 0;
                 for (int a = 0; a < virtpiA[h1]; a++) {
                     int A = a + vir_offA[h1];
                     for (int b = 0; b < virtpiA[h2]; b++) {

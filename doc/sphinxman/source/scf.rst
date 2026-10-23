@@ -483,7 +483,7 @@ SAD [:term:`Default <GUESS (SCF)>`]
     performed. If orbitals are needed (*e.g.*, in density fitting), a partial
     Cholesky factorization of the density matrices is used. Often extremely
     accurate, particularly for closed-shell systems. This is the default for
-    systems of more than one atom.
+    systems of more than one atom, see [Almlof:1982:385]_ and [VanLenthe:2006:926]_.
 SADNO
     Natural orbitals from Superposition of Atomic Densities. Similar
     to the above, but it forms natural orbitals from the SAD density

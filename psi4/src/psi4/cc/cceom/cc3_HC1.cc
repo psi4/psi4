@@ -76,7 +76,6 @@ void HC1_F(int i, int C_irr) {
     char CME_lbl[32], Cme_lbl[32];
     sprintf(CME_lbl, "%s %d", "CME", i);
     sprintf(Cme_lbl, "%s %d", "Cme", i);
-    double tval;
 
     if (params.ref == 0) {
         /* HC1_F()  Fme = +C_n^f <mn||ef> */

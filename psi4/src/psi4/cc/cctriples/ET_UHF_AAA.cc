@@ -43,7 +43,6 @@ namespace psi {
 namespace cctriples {
 
 double ET_UHF_AAA() {
-    int cnt;
     int h, nirreps;
     int Gi, Gj, Gk, Ga, Gb, Gc, Gd, Gl;
     int Gji, Gij, Gjk, Gkj, Gik, Gki, Gijk;
@@ -69,7 +68,6 @@ double ET_UHF_AAA() {
     dpdfile2 fIJ, fAB, fIA, T1;
     double ***WABC, ***WBCA, ***WACB, ***VABC;
     int nijk, mijk;
-    FILE *ijkfile;
 
     nirreps = moinfo.nirreps;
     const auto& occpi = moinfo.aoccpi;

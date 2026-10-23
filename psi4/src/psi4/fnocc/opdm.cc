@@ -79,7 +79,6 @@ void CoupledPair::OPDM() {
         irrepoffset[h] = irrepoffset[h - 1] + nmopi_[h - 1];
     }
     int* reorder = (int*)malloc(nmo * sizeof(int));
-    int mo_offset = 0;
     int count = 0;
 
     // frozen core

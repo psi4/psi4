@@ -50,7 +50,6 @@ void ex_tdensity_rohf(const struct TD_Params& S, const struct TD_Params& U) {
     dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
     dpdfile2 LIA, Lia, RIA, Ria, Int, XIJ, Xij, R1;
     dpdbuf4 T2, L2, R2, I2;
-    dpdfile2 D, T1, L1, Z;
 
     // For generalization, may want to put an if-check here that
     // allows me to set the LHS DPD file number to either ground
@@ -498,7 +497,6 @@ void ex_tdensity_uhf(const struct TD_Params& S, const struct TD_Params& U) {
     dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
     dpdfile2 LIA, Lia, RIA, Ria, Int, XIJ, Xij, R1;
     dpdbuf4 T2, L2, R2, I2;
-    dpdfile2 D, T1, L1, Z;
 
     /* Set LHS to Excited State */
     int LHS = PSIF_CC_GL;

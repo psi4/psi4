@@ -407,7 +407,10 @@ def _core_wavefunction_to_file(wfn: core.Wavefunction, filename: str = None) -> 
         'string': {
             'name': wfn.name(),
             'module': wfn.module(),
-            'basisname': wfn.basisset().name()
+            'basisname': wfn.basisset().name(),
+            # roles other than qc_module, which travels as 'module' above
+            **{f'module_role:{role}': mod for role, mod in wfn.module_roles().items()
+               if role != 'qc_module'},
         },
         'boolean': {
             'PCM_enabled':    wfn.PCM_enabled(),

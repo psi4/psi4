@@ -722,7 +722,6 @@ std::map<std::string, SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::stri
     size_t nocc = eps_occ->dim(0);
     size_t nvir = eps_vir->dim(0);
     size_t naux = auxiliary_->nbf();
-    size_t nov = nocc * nvir;
 
     // => Blocking <= //
 

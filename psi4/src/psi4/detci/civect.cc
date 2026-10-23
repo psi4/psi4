@@ -1762,7 +1762,6 @@ void CIvect::close_io_files(int keep) {
 int CIvect::read(int ivect, int ibuf) {
     int unit, buf, k, i;
     size_t size;
-    int blk;
     char key[20];
 
     timer_on("CIWave: CIvect read");
@@ -1814,7 +1813,6 @@ int CIvect::read(int ivect, int ibuf) {
 int CIvect::write(int ivect, int ibuf) {
     int unit, buf, i;
     size_t size;
-    int blk;
     char key[20];
 
     // If we are just an incore buffer
@@ -2078,7 +2076,6 @@ void CIvect::zero() { zero_arr(buffer_, (int)buffer_size_); }
 */
 void CIvect::sigma_renorm(int nr, int L, double renorm_C, CIvect &S, double *buf1, int printflag) {
     int buf, ivect, root;
-    double tval;
 
     for (buf = 0; buf < buf_per_vect_; buf++) {
         for (ivect = 0; ivect < L; ivect++) {
@@ -2807,8 +2804,6 @@ void CIvect::gather(int ivec, int nvec, int nroot, double **alpha, CIvect &C) {
 ** the new "0" vector.  This is more natural for the libpsio implementation.
 */
 void CIvect::restart_reord_fp(int L) {
-    int buf, newbuf;
-    int *tmp_file_number_;
 
     new_first_buf_ = L * buf_per_vect_ + new_first_buf_;
     if (new_first_buf_ >= buf_total_) new_first_buf_ -= buf_total_;
@@ -3380,7 +3375,6 @@ void CIvect::write_toc() {
 ** Print libpsio debug info
 */
 void CIvect::civect_psio_debug() {
-    int i, unit;
 
     /* psio_tocprint not available right now in PSI4; re-enable it if you
        need this functionality.
@@ -3559,7 +3553,6 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
     double value, tval = 0.0, tval2, Kave;
     struct stringwr *betlist0;
     double k_total;   /* total number of K ints in energy expression */
-    int k_combo;      /* total combination of unique K ints over spin-coupling set */
     int *unique_occs; /* the uniquely occupied orbitals for a given determinant */
     int num_el;       /* total number of electrons explicitly treated */
     int num_unique;   /* number of unique orbitals */
@@ -3714,7 +3707,6 @@ void CIvect::calc_hd_block_orbenergy(struct stringwr *alplist_local, struct stri
     double value, tval;
     struct stringwr *betlist0, *alplist0;
     double *orb_e_diff_alp, *orb_e_diff_bet;
-    double sum_orb_energies = 0.0;
 
     betlist0 = betlist_local;
     alplist0 = alplist_local;
@@ -3975,7 +3967,6 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local, struct stringwr
     double value, tval = 0.0, tval2, Kave;
     struct stringwr *betlist0;
     double k_total;   /* total number of K ints in energy expression */
-    int k_combo;      /* total combination of unique K ints over spin-coupling set */
     int *unique_occs; /* the uniquely occupied orbitals for a given determinant */
     int num_el;       /* total number of electrons explicitly treated */
     int num_unique;   /* number of unique orbitals */
