@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 import psi4
 from qcelemental import constants
@@ -11,6 +13,8 @@ from psi4.driver.procrouting.sapt import sapt_proc
 
 hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+_ispy314 = sys.version_info >= (3, 14)
 
 
 @pytest.fixture
@@ -224,6 +228,7 @@ def test_grac_error_restores_options(grac_dimer, monkeypatch):
 
 
 @pytest.mark.saptdft
+@pytest.mark.skipif(_ispy314, reason="Py314+QCSk1")
 def test_grac_only_schema_wfn_variables(grac_dimer):
     result = psi4.schema_wrapper.run_qcschema({
         "schema_name": "qcschema_input",
@@ -1299,6 +1304,7 @@ no_com
 
 
 @pytest.mark.saptdft
+@pytest.mark.skipif(_ispy314, reason="Py314+QCSk1")
 def test_qcng_embedded_saptdft():
     import qcengine as qcng
 
