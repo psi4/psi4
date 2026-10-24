@@ -34,6 +34,7 @@
 #include <algorithm>
 
 namespace psi {
+namespace dlpno {
 
 std::vector<int> merge_lists(const std::vector<int> &l1, const std::vector<int> &l2) {
 
@@ -89,7 +90,7 @@ std::vector<int> index_list(const std::vector<int> &l1, const std::vector<int> &
     return lsub;
 }
 
-std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std::vector<int>> &A_to_y) {
+std::vector<int> contract_lists(const std::vector<int> &y, const SparseMap &A_to_y) {
 
     // TODO: runtime is proportional to A_to_y size (system size, O(N))
     // could maybe reduce to &y size (domain size, O(1)), probably doesn't matter
@@ -134,25 +135,10 @@ std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<in
 
 }
 
-std::vector<std::vector<int>> invert_map(const std::vector<std::vector<int>> &x_to_y, int ny) {
+SparseMap chain_maps(const SparseMap &x_to_y, const SparseMap &y_to_z) {
 
     int nx = x_to_y.size();
-    std::vector<std::vector<int>> y_to_x(ny);
-
-    for(int x = 0; x < nx; x++) {
-        for(auto y : x_to_y[x]) {
-            y_to_x[y].push_back(x);
-        }
-    }
-
-    return y_to_x;
-
-}
-
-std::vector<std::vector<int>> chain_maps(const std::vector<std::vector<int>> &x_to_y, const std::vector<std::vector<int>> &y_to_z) {
-
-    int nx = x_to_y.size();
-    std::vector<std::vector<int>> x_to_z(nx);
+    SparseMap x_to_z(nx);
 
     for(int x = 0; x < nx; x++) {
         for(auto y : x_to_y[x]) {
@@ -168,10 +154,10 @@ std::vector<std::vector<int>> chain_maps(const std::vector<std::vector<int>> &x_
 
 }
 
-std::vector<std::vector<int>> extend_maps(const std::vector<std::vector<int>> &x_to_y, const std::vector<std::pair<int,int>> &xpairs) {
+SparseMap extend_maps(const SparseMap &x_to_y, const std::vector<std::pair<int,int>> &xpairs) {
 
     int nx = x_to_y.size();
-    std::vector<std::vector<int>> xext_to_y(nx);
+    SparseMap xext_to_y(nx);
 
     for(auto xpair : xpairs) {
         size_t x1, x2;
@@ -223,5 +209,6 @@ SharedMatrix submatrix_rows_and_cols(const Matrix &mat, const std::vector<int> &
     return mat_new;
 }
 
+} // namespace dlpno
 } // namespace psi
 

@@ -169,7 +169,7 @@ class DLPNO : public Wavefunction {
     SparseMap lmo_to_riatoms_; ///< aux BFs on which atoms are needed for density-fitting a LMO?
     SparseMap lmo_to_paos_; ///< which PAOs span the virtual space of a LMO?
     SparseMap lmo_to_paoatoms_; ///< PAOs on which atoms span the virtual space of a LMO?
-    std::vector<std::vector<int>> i_j_to_ij_; ///< LMO indices (i, j) to significant LMO pair index (ij); insignificant (i, j) maps to -1
+    SparseMap i_j_to_ij_; ///< LMO indices (i, j) to significant LMO pair index (ij); insignificant (i, j) maps to -1
     std::vector<std::pair<int,int>> ij_to_i_j_; ///< LMO pair index (ij) to both LMO indices (i, j)
     std::vector<int> ij_to_ji_; ///< LMO pair index (ij) to LMO pair index (ji)
 
@@ -196,20 +196,20 @@ class DLPNO : public Wavefunction {
     /* Takes an atom index and a global LMO index 
     to return the sparse LMO index on that atom,
     (-1) if that LMO is not on the riatom's extended domain */
-    std::vector<std::vector<int>> riatom_to_lmos_ext_dense_;
+    SparseMap riatom_to_lmos_ext_dense_;
     /* Takes an atom index and a global PAO index 
     to return the sparse PAO index on that atom,
     (-1) if that PAO is not on the riatom's extended domain */
-    std::vector<std::vector<int>> riatom_to_paos_ext_dense_;
+    SparseMap riatom_to_paos_ext_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms1_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms2_dense_;
-    std::vector<std::vector<int>> lmopair_to_lmos_dense_;
+    SparseMap lmopair_to_lmos_dense_;
 
     /// Useful for generating DF integrals (TODO: Replace this with "index_list" function)
-    std::vector<std::vector<std::vector<int>>> lmopair_lmo_to_riatom_lmo_;
-    std::vector<std::vector<std::vector<int>>> lmopair_pao_to_riatom_pao_;
+    std::vector<SparseMap> lmopair_lmo_to_riatom_lmo_;
+    std::vector<SparseMap> lmopair_pao_to_riatom_pao_;
     std::vector<std::vector<std::pair<int,int>>> riatom_to_pao_pairs_; ///< Which (u,v) pao pairs belong to an riatom
-    std::vector<std::vector<std::vector<int>>> riatom_to_pao_pairs_dense_; ///< For each riatom, returns the index of the element in qab tensor
+    std::vector<SparseMap> riatom_to_pao_pairs_dense_; ///< For each riatom, returns the index of the element in qab tensor
 
     /// PSIO object (helps with reading/writing large tensors)
     std::shared_ptr<PSIO> psio_;
@@ -324,11 +324,11 @@ class PSI_API DLPNOCCSD : public DLPNO {
 
     std::vector<double> e_ij_mp2_scale_; ///< how much to scale MP2 energies for scaled approximation to PAO-LMP2
 
-    std::vector<std::vector<int>> i_j_to_ij_strong_; ///< LMO indices (i, j) to significant strong pair index (ij); insignificant (i, j) maps to -1
+    SparseMap i_j_to_ij_strong_; ///< LMO indices (i, j) to significant strong pair index (ij); insignificant (i, j) maps to -1
     std::vector<std::pair<int,int>> ij_to_i_j_strong_;  ///< LMO strong pair index (ij) to both LMO indices (i, j)
     std::vector<int> ij_to_ji_strong_; ///< LMO strong pair index (ij) to LMO pair index (ji)
 
-    std::vector<std::vector<int>> i_j_to_ij_weak_; ///< LMO indices (i, j) to significant weak pair index (ij); insignificant (i, j) maps to -1
+    SparseMap i_j_to_ij_weak_; ///< LMO indices (i, j) to significant weak pair index (ij); insignificant (i, j) maps to -1
     std::vector<std::pair<int,int>> ij_to_i_j_weak_;  ///< LMO weak pair index (ij) to both LMO indices (i, j)
     std::vector<int> ij_to_ji_weak_; ///< LMO weak pair index (ij) to LMO pair index (ji)
 
