@@ -1082,6 +1082,8 @@ def plump_qcvar(
     elif "HESSIAN" in key.upper():
         ndof = int(math.sqrt(tgt.size))
         reshaper = (ndof, ndof)
+    elif "PAIR ENERGIES" in key.upper():
+        reshaper = (-1, )
     else:
         raise ValidationError(f'Uncertain how to reshape array: {key}')
 
