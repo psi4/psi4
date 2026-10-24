@@ -8,8 +8,8 @@ if(NOT psi4_CXX_STANDARD IN_LIST _allowed_cxx_standards)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
-        message(FATAL_ERROR "GCC version must be at least 10.0!")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12.0)
+        message(FATAL_ERROR "GCC version must be at least 12.0!")
     endif()
 
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
