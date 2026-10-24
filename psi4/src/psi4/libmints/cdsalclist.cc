@@ -99,7 +99,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
     // Immediately create the rotation and translation vectors to be projected out.
     Matrix constraints("COM & Rotational Constraints", 6, ncd_);
 
-    SharedMatrix pI(molecule_->inertia_tensor());
+    SharedMatrix pI = molecule_->inertia_tensor();
     Vector ev(3);
     Matrix X(3, 3);
     pI->diagonalize(X, ev);
@@ -384,7 +384,7 @@ SharedMatrix CdSalcList::matrix_projected_out() const
 
     Matrix constraints("COM & Rotational Constraints", 6, 3*natom);
 
-    SharedMatrix pI(molecule_->inertia_tensor());
+    SharedMatrix pI = molecule_->inertia_tensor();
     Vector ev(3);
     Matrix X(3, 3);
     pI->diagonalize(X, ev);
