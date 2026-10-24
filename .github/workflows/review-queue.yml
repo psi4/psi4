@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -34,10 +34,11 @@ jobs:
         shell: python
         run: |
           import os
-          from github import Github
+          from github import Auth, Github
 
           # Initialize GitHub API client
-          g = Github(os.environ['GITHUB_TOKEN'])
+          auth = Auth.Token(os.environ["GITHUB_TOKEN"])
+          g = Github(auth=auth)
           repo = g.get_repo(os.environ['REPO'])
           commenter = os.environ['COMMENTER']
           current_pr_num = int(os.environ['CURRENT_PR'])
