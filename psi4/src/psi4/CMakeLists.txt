@@ -73,6 +73,14 @@ if(TARGET Einsums::Einsums)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_Einsums)
 endif()
 
+if(TARGET cuEST::cuEST)
+  target_link_libraries(psi4_optional_deps INTERFACE cuEST::cuEST)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_cuEST)
+
+  # cuEST adds members to public Psi4 classes, so plugins must use the same ABI.
+  target_compile_definitions(core INTERFACE USING_cuEST)
+endif()
+
 foreach(dir_name
   lib3index
   libciomr
