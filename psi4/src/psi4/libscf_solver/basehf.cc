@@ -34,12 +34,11 @@
 namespace psi {
 namespace scf {
 
-void BaseHF::common_init(Options& options, std::string& module, const std::shared_ptr<Molecule>& molecule,
+void BaseHF::common_init(Options& options, const std::shared_ptr<Molecule>& molecule,
                          const std::array<double, 3>& dipole_field_strength) {
     attempt_number_ = 1;
     reset_occ_ = false;
     sad_ = false;
-    module = "scf";
 
     scf_type_ = options.get_str("SCF_TYPE");
 

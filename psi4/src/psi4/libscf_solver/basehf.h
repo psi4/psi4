@@ -115,8 +115,7 @@ class BaseHF {
     explicit BaseHF(std::shared_ptr<SuperFunctional> functional) : functional_(std::move(functional)) {}
 
     /// Shared SCF bookkeeping
-    /// `module` is BaseWavefunction::module_
-    void common_init(Options& options, std::string& module, const std::shared_ptr<Molecule>& molecule,
+    void common_init(Options& options, const std::shared_ptr<Molecule>& molecule,
                      const std::array<double, 3>& dipole_field_strength);
 
    public:

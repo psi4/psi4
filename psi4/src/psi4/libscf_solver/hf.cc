@@ -96,7 +96,7 @@ HF::HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Option
 HF::~HF() {}
 
 void HF::common_init() {
-    BaseHF::common_init(options_, module_, molecule_, dipole_field_strength_);
+    BaseHF::common_init(options_, molecule_, dipole_field_strength_);
     set_module("scf");
     frac_performed_ = false;
 
