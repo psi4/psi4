@@ -724,7 +724,8 @@ medium to large systems in difficult electronic environments (*e.g.*, compact
 spatial extents, diffuse basis sets, low band-gaps, LRC and/or hybrid GKS
 functionals), and time to code completion. We are very interested in optimizing
 and extending the code, so expect performance gains and extensions to
-gradients/hessians and TDDFT in future releases.
+Hessians and TDDFT in future releases. Analytic gradients are available for
+RKS and UKS, including DFT-NL (see :ref:`sec:dftnl`).
 
 Some rough guidelines for using the KS-DFT code are as follows,
 

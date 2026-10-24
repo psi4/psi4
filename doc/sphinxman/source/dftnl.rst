@@ -72,3 +72,15 @@ post-SCF time savings
 
 Substantial time-savings for energy calculations are available by evaluating the VV10 kernel only at the converged electron density, i.e. in a post-SCF fashion.
 The deviations from the fully self-consistent treatment are usually minimal. To activate this set |scf__dft_vv10_postscf| to `true`.
+
+Analytic gradients
+~~~~~~~~~~~~~~~~~~
+
+Analytic nuclear gradients are available for DFT-NL with RKS and UKS
+references, including meta-GGA hosts such as wB97M-V. The gradient
+includes the response of the VV10 kernel to the density; the response of
+the NL grid points and partition weights to nuclear displacement is
+neglected; on the default NL grid this changes gradient components by
+roughly :math:`10^{-5}` [E_h/a_0]. The gradient assumes a self-consistent
+VV10 treatment, so do not combine it with |scf__dft_vv10_postscf|. Analytic
+Hessians and TDDFT are not available for VV10 functionals.
