@@ -37,3 +37,15 @@
 * Results
   * archived tarball of HTML docs (download from Actions, Archives, then unpack and view in browser)
 
+----
+
+## [review-queue.yml](./review-queue.yml)
+
+* Since: Octobr 2026
+* Runs on: PR comment
+* Goals
+  * User signal ready for review more visibly and editably than the checkbox in PR frontmatter that rarely gets updated
+  * User signal to reviewers what is their priority
+  * Labels is the means of communication but non-core can't add them, so this GHA lets them add through comments
+* Results
+  * labels added or removed 
