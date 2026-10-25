@@ -178,7 +178,9 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers[rank]->shell_pair_value(M,N) < thresh2) {
+        // off-diagonal shell pairs contribute (D_mn + D_nm) * (mn|p) below, so bound both blocks
+        double Dbound = (M == N) ? Dshellp[M][N] : Dshellp[M][N] + Dshellp[N][M];
+        if(Dbound * Dbound * J_metric_shell_diag[P] * eri_computers[rank]->shell_pair_value(M,N) < thresh2) {
             continue;
         }
         computed_triplets1++;
