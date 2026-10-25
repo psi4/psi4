@@ -506,3 +506,16 @@ void GauUV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
 } // namespace psi
 
 #endif
+
+namespace psi {
+
+// GAUXC_HAS_DEVICE comes from gauxc_config.hpp, so this reports the GauXC psi4 was compiled against
+bool gauxc_has_device() {
+#ifdef GAUXC_HAS_DEVICE
+    return true;
+#else
+    return false;
+#endif
+}
+
+}  // namespace psi

@@ -17,7 +17,8 @@ if(${ENABLE_gauxc})
         if(${gauxc_ENABLE_GPU} AND (NOT ${_gpu}))
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned on, but selected GauXC install is not built for GPU support!")
         elseif((NOT ${gauxc_ENABLE_GPU}) AND ${_gpu})
-           message(WARNING "gauxc_ENABLE_GPU turned off, but selected GauXC install is built for GPU support! If you want GPU support for the Psi4/GauXC interface, make sure to explicitly turn on gauxc_ENABLE_GPU!")
+           # GPU code paths are selected by GauXC's own header (GAUXC_HAS_DEVICE), so psi4 gets them regardless
+           message(STATUS "Selected GauXC install is built for GPU support; Psi4/GauXC interface will be GPU-capable")
         endif()
 
         #== check if MAGMA-enabled GauXC is found, if MAGMA is specified ==#
