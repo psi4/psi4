@@ -35,7 +35,10 @@
 
 #include "psi4/pragma.h"
 
+#include "psi4/libmints/typedefs.h"
 #include "psi4/pybind11.h"
+
+#include <vector>
 
 namespace psi {
 
@@ -87,6 +90,14 @@ class PSI_API DIISManager {
         auto success = pydiis.attr("add_entry")(arrays...);
         return success.template cast<bool>();
     }
+
+    /// Dynamic-list variants for algorithms whose number of DIIS chunks is
+    /// determined at runtime. All chunks form one mathematical DIIS entry.
+    void set_error_vector_size_from_list(const std::vector<SharedVector>& arrays);
+    void set_vector_size_from_list(const std::vector<SharedVector>& arrays);
+    bool extrapolate_from_list(const std::vector<SharedVector>& arrays);
+    bool add_entry_from_lists(const std::vector<SharedVector>& errors,
+                              const std::vector<SharedVector>& targets);
 
     void delete_diis_file();
 

@@ -28,6 +28,8 @@
 
 #include "diismanager.h"
 
+#include "psi4/libmints/vector.h"
+
 using namespace psi;
 
 namespace psi {
@@ -57,6 +59,23 @@ DIISManager::DIISManager(int maxSubspaceSize, const std::string &label, RemovalP
 }
 
 int DIISManager::subspace_size() { return py::len(pydiis.attr("stored_vectors")); }
+
+void DIISManager::set_error_vector_size_from_list(const std::vector<SharedVector>& arrays) {
+    pydiis.attr("set_error_vector_size_from_list")(arrays);
+}
+
+void DIISManager::set_vector_size_from_list(const std::vector<SharedVector>& arrays) {
+    pydiis.attr("set_vector_size_from_list")(arrays);
+}
+
+bool DIISManager::extrapolate_from_list(const std::vector<SharedVector>& arrays) {
+    return py::len(pydiis.attr("extrapolate_from_list")(arrays));
+}
+
+bool DIISManager::add_entry_from_lists(const std::vector<SharedVector>& errors,
+                                       const std::vector<SharedVector>& targets) {
+    return pydiis.attr("add_entry_from_lists")(errors, targets).cast<bool>();
+}
 
 void DIISManager::delete_diis_file() {
     pydiis.attr("delete_diis_file")();
