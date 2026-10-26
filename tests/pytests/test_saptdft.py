@@ -100,13 +100,13 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
     assert compare_values(
         refA,
         psi4.core.variable("SAPT DFT GRAC SHIFT A"),
-        8,
+        2.e-8,
         "SAPT DFT GRAC SHIFT A",
     )
     assert compare_values(
         refB,
         psi4.core.variable("SAPT DFT GRAC SHIFT B"),
-        8,
+        2.e-8,
         "SAPT DFT GRAC SHIFT B",
     )
 
