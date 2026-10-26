@@ -55,8 +55,8 @@ compare_values(ref_dlpnomp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENE
 compare_values(ref_dlpnomp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
 os_plus_ss = variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY') + variable('MP2 SAME-SPIN CORRELATION ENERGY')  #TEST
 compare_values(variable('MP2 CORRELATION ENERGY'), os_plus_ss, 8, 'mp2 os+ss sums to corl')                   #TEST
-compare_values(ref_dlpnomp2_scs_corl, variable('SCS-MP2 CORRELATION ENERGY'), 7, 'mp2 scs-corl')              #TEST
-compare_values(ref_dlpnomp2_scs_tot, variable('SCS-MP2 TOTAL ENERGY'), 7, 'mp2 scs-tot')                      #TEST
+compare_values(ref_dlpnomp2_scs_corl, variable('SCS-MP2 CORRELATION ENERGY'), 8, 'mp2 scs-corl')              #TEST
+compare_values(ref_dlpnomp2_scs_tot, variable('SCS-MP2 TOTAL ENERGY'), 8, 'mp2 scs-tot')                      #TEST
 compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
 compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')   #TEST
 compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                 #TEST
@@ -76,8 +76,8 @@ compare_values(ref_dfmp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY
 compare_values(ref_dfmp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
 os_plus_ss = variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY') + variable('MP2 SAME-SPIN CORRELATION ENERGY')  #TEST
 compare_values(variable('MP2 CORRELATION ENERGY'), os_plus_ss, 8, 'mp2 os+ss sums to corl')                   #TEST
-compare_values(ref_dfmp2_scs_corl, variable('SCS-MP2 CORRELATION ENERGY'), 7, 'mp2 scs-corl')                 #TEST
-compare_values(ref_dfmp2_scs_tot, variable('SCS-MP2 TOTAL ENERGY'), 7, 'mp2 scs-tot')                         #TEST
+compare_values(ref_dfmp2_scs_corl, variable('SCS-MP2 CORRELATION ENERGY'), 8, 'mp2 scs-corl')                 #TEST
+compare_values(ref_dfmp2_scs_tot, variable('SCS-MP2 TOTAL ENERGY'), 8, 'mp2 scs-tot')                         #TEST
 compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
 compare_values(ref_dfmp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')      #TEST
 compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                    #TEST
