@@ -35,8 +35,8 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_dpd(py::module &m) {
-    py::class_<dpdbuf4, std::shared_ptr<dpdbuf4>>(m, "dpdbuf4", "docstring")
+void export_dpd(py::module_ &m) {
+    py::classh<dpdbuf4>(m, "dpdbuf4", "docstring")
         .def("axpy_matrix", &dpdbuf4::axpy_matrix, "Add 'a' times a Matrix to this.")
         .def("zero", &dpdbuf4::zero, "Fill all with entries.")
         .def("rowdim", [](dpdbuf4& buf) {
@@ -54,7 +54,7 @@ void export_dpd(py::module &m) {
                 return Dimension(dim);
             }, "Return the dimensions of the column index.");
 
-    py::class_<dpdfile2, std::shared_ptr<dpdfile2>>(m, "dpdfile2", "docstring")
+    py::classh<dpdfile2>(m, "dpdfile2", "docstring")
         .def("axpy_matrix", &dpdfile2::axpy_matrix, "Add 'a' times a Matrix to this.")
         .def("zero", &dpdfile2::zero, "Fill all entries with zeroes.")
         .def("rowdim", [](dpdfile2& file) {
