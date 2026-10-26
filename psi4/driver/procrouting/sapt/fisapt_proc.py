@@ -32,9 +32,6 @@ import numpy as np
 
 from psi4 import core
 
-from .. import empirical_dispersion
-from ...p4util.exceptions import ValidationError
-
 
 def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
     """Computes the FSAPT energy. FISAPT::compute_energy"""
@@ -157,29 +154,26 @@ def fisapt_fdrop(self, external_potentials=None):
         with open(psi4file, "w") as fh:
             fh.write(self.molecule().to_string(dtype="psi4", units="Angstrom"))
 
-    # write external potential geometries
-    if external_potentials is not None and isinstance(external_potentials, dict):
+    # Write point and diffuse external-potential centers. Matrix-only
+    # potentials have no geometry to serialize.
+    if external_potentials is not None:
+        from ..proc import validate_external_potential
+
+        normalized_potentials = validate_external_potential(external_potentials)
         for frag in "ABC":
-            potential = external_potentials.get(frag, None)
-            if potential is not None:
-                xyz = str(len(potential)) + "\n\n"
-                potential_lst = []
-                for qxyz in potential:
-                    if len(qxyz) == 2:
-                        xyz += "Ch %f %f %f\n" % (qxyz[1][0], qxyz[1][1], qxyz[1][2])
-                        potential_lst.append(qxyz[1])
-                    elif len(qxyz) == 4:
-                        xyz += "Ch %f %f %f\n" % (qxyz[1], qxyz[2], qxyz[3])
-                        potential_lst.append(qxyz[1:])
-                    else:
-                        raise ValidationError(
-                            f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'"
-                        )
-                potential_lst = np.array(potential_lst)
-                core.set_variable("FSAPT_EXTERN_POTENTIAL_{}".format(frag), potential_lst)
-                if write_output_files:
-                    with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
-                        fh.write(xyz)
+            potential = normalized_potentials.get(frag, {})
+            potential_lst = [row[1:4] for row in potential.get("points", [])]
+            potential_lst.extend(row[1:4] for row in potential.get("diffuse", []))
+            if not potential_lst:
+                continue
+
+            xyz = f"{len(potential_lst)}\n\n"
+            xyz += "".join("Ch %f %f %f\n" % tuple(xyz_row) for xyz_row in potential_lst)
+            potential_array = np.asarray(potential_lst)
+            core.set_variable(f"FSAPT_EXTERN_POTENTIAL_{frag}", potential_array)
+            if write_output_files:
+                with open(filepath + os.sep + f"Extern_{frag}.xyz", "w") as fh:
+                    fh.write(xyz)
 
     vectors = self.vectors()
     matrices = self.matrices()
@@ -251,51 +245,56 @@ def fisapt_fdrop(self, external_potentials=None):
                 _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 
-def fisapt_variables_to_wfn(self, ref_wfn, external_potentials=None):
+def fisapt_variables_to_wfn(self, ref_wfn, external_potentials=None, sapt_type='fisapt0'):
     """
     Stores FISAPT variables to the wavefunction for AtomicResults to
     store results.
     """
     # First Scalars
-    scalars = self.scalars()
-    ref_wfn.set_variable("SAPT ELST ENERGY", scalars["Electrostatics"])
-    ref_wfn.set_variable("SAPT ELST10,R ENERGY", scalars["Elst10,r"])
-    if "Extern-Extern" in scalars:
-        ref_wfn.set_variable("SAPT ELST EXTERN-EXTERN ENERGY", scalars["Extern-Extern"])
-    if core.has_variable("FSAPT_EXTERN_POTENTIAL_A"):
-        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_A", core.variable("FSAPT_EXTERN_POTENTIAL_A"))
-    if core.has_variable("FSAPT_EXTERN_POTENTIAL_B"):
-        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_B", core.variable("FSAPT_EXTERN_POTENTIAL_B"))
-    if core.has_variable("FSAPT_EXTERN_POTENTIAL_C"):
-        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_C", core.variable("FSAPT_EXTERN_POTENTIAL_C"))
-    ref_wfn.set_variable("SAPT EXCH ENERGY", scalars["Exchange"])
-    ref_wfn.set_variable("SAPT EXCH10 ENERGY", scalars["Exch10"])
-    ref_wfn.set_variable("SAPT EXCH10(S^2) ENERGY", scalars["Exch10(S^2)"])
-    ref_wfn.set_variable("SAPT IND ENERGY", scalars["Induction"])
-    ref_wfn.set_variable("SAPT IND20,R ENERGY", scalars["Ind20,r"])
-    ref_wfn.set_variable("SAPT EXCH-IND20,R ENERGY", scalars["Exch-Ind20,r"])
-    ref_wfn.set_variable("SAPT IND20,U ENERGY", scalars["Ind20,u"])
-    ref_wfn.set_variable("SAPT EXCH-IND20,U ENERGY", scalars["Exch-Ind20,u"])
-    ref_wfn.set_variable("SAPT DISP ENERGY", scalars["Dispersion"])
-    ref_wfn.set_variable("SAPT DISP20 ENERGY", scalars["Disp20"])
-    ref_wfn.set_variable("SAPT EXCH-DISP20 ENERGY", scalars["Exch-Disp20"])
-    ref_wfn.set_variable("SAPT0 TOTAL ENERGY", scalars["SAPT"])
-    ref_wfn.set_variable("SAPT TOTAL ENERGY", scalars["SAPT"])
-    ref_wfn.set_variable("CURRENT ENERGY", scalars["SAPT"])
-    # dHF to ref_wfn
-    ref_wfn.set_variable("SAPT HF(2) ENERGY ABC(HF)", scalars["E_ABC_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY AC(0)", scalars["E_AC"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY BC(0)", scalars["E_BC"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY A(0)", scalars["E_A"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY B(0)", scalars["E_B"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY AC(HF)", scalars["E_AC_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY BC(HF)", scalars["E_BC_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY AB(HF)", scalars["E_AB_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY A(HF)", scalars["E_A_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY B(HF)", scalars["E_B_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY C", scalars["E_C"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY HF", scalars["HF"])
+    if sapt_type.lower() == 'fisapt0':
+        scalars = self.scalars()
+        ref_wfn.set_variable("SAPT ELST ENERGY", scalars["Electrostatics"])
+        ref_wfn.set_variable("SAPT ELST10,R ENERGY", scalars["Elst10,r"])
+        if "Extern-Extern" in scalars:
+            ref_wfn.set_variable("SAPT ELST EXTERN-EXTERN ENERGY", scalars["Extern-Extern"])
+        if core.has_variable("FSAPT_EXTERN_POTENTIAL_A"):
+            ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_A", core.variable("FSAPT_EXTERN_POTENTIAL_A"))
+        if core.has_variable("FSAPT_EXTERN_POTENTIAL_B"):
+            ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_B", core.variable("FSAPT_EXTERN_POTENTIAL_B"))
+        if core.has_variable("FSAPT_EXTERN_POTENTIAL_C"):
+            ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_C", core.variable("FSAPT_EXTERN_POTENTIAL_C"))
+        ref_wfn.set_variable("SAPT EXCH ENERGY", scalars["Exchange"])
+        ref_wfn.set_variable("SAPT EXCH10 ENERGY", scalars["Exch10"])
+        ref_wfn.set_variable("SAPT EXCH10(S^2) ENERGY", scalars["Exch10(S^2)"])
+        ref_wfn.set_variable("SAPT IND ENERGY", scalars["Induction"])
+        ref_wfn.set_variable("SAPT IND20,R ENERGY", scalars["Ind20,r"])
+        ref_wfn.set_variable("SAPT EXCH-IND20,R ENERGY", scalars["Exch-Ind20,r"])
+        ref_wfn.set_variable("SAPT IND20,U ENERGY", scalars["Ind20,u"])
+        ref_wfn.set_variable("SAPT EXCH-IND20,U ENERGY", scalars["Exch-Ind20,u"])
+        ref_wfn.set_variable("SAPT DISP ENERGY", scalars["Dispersion"])
+        ref_wfn.set_variable("SAPT DISP20 ENERGY", scalars["Disp20"])
+        ref_wfn.set_variable("SAPT EXCH-DISP20 ENERGY", scalars["Exch-Disp20"])
+        ref_wfn.set_variable("SAPT0 TOTAL ENERGY", scalars["SAPT"])
+        ref_wfn.set_variable("SAPT TOTAL ENERGY", scalars["SAPT"])
+        ref_wfn.set_variable("CURRENT ENERGY", scalars["SAPT"])
+        # dHF to ref_wfn
+        ref_wfn.set_variable("SAPT HF(2) ENERGY ABC(HF)", scalars["E_ABC_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY AC(0)", scalars["E_AC"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY BC(0)", scalars["E_BC"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY A(0)", scalars["E_A"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY B(0)", scalars["E_B"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY AC(HF)", scalars["E_AC_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY BC(HF)", scalars["E_BC_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY AB(HF)", scalars["E_AB_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY A(HF)", scalars["E_A_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY B(HF)", scalars["E_B_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY C", scalars["E_C"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY HF", scalars["HF"])
 
+    # Check if doing FSAPT. If not, we do not have FSAPT vars to set so just
+    # return early
+    if not core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
+        return
     # Then matrices
     matrices = self.matrices()
     ref_wfn.set_variable("FSAPT_QA", matrices["Qocc0A"])
