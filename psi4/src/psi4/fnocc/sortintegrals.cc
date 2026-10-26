@@ -36,9 +36,10 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <string>
+
 namespace psi {
 namespace fnocc {
-typedef long int size_t;
 struct integral {
     size_t ind;
     double val;
@@ -174,7 +175,11 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
             break;
         }
     }
-    if (nfiles == 0) throw PsiException("how is this possible? (ab|cd)", __FILE__, __LINE__);
+    if (nfiles == 0)
+        throw PsiException("how is this possible? (ab|cd) (memory = " + std::to_string(memory) + " bytes, maxelem = " +
+                               std::to_string(maxelem) + ", o = " + std::to_string(o) + ", v = " + std::to_string(v) +
+                               ")",
+                           __FILE__, __LINE__);
 
     // how many (ab|ci) files?
     size_t ov3filesize;
@@ -191,7 +196,9 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
     if (ov3nfiles == 0) throw PsiException("how is this possible (ab|ci)?", __FILE__, __LINE__);
 
     struct integral *integralbuffer;
-    size_t nelem = maxelem / (5 + 3 * ov3nfiles + 2 * nfiles) - 20;
+    // tiny systems leave fewer than 20 per bucket; then flush after every integral
+    size_t nelem = maxelem / (5 + 3 * ov3nfiles + 2 * nfiles);
+    nelem = (nelem > 20) ? nelem - 20 : 1;
     if ((nelem + 20) * (5 + 3 * ov3nfiles + 2 * nfiles) > maxelem)
         integralbuffer = new integral[(nelem + 20) * (5 + 3 * ov3nfiles + 2 * nfiles)];
     else
@@ -2278,7 +2285,7 @@ void SortBlock(size_t nelem, size_t blockdim, struct integral *buffer, double *t
  * ordering than the efficient default routine.  this function writes the
  * integrals to disk in the proper ordering.
  */
-void Sort_OV3_LowMemory(long int memory, long int o, long int v) {
+void Sort_OV3_LowMemory(int64_t memory, long int o, long int v) {
     outfile->Printf("\n");
     outfile->Printf("\n");
     outfile->Printf("        ==> Resort (ov|vv) integrals for low-memory (T) computation <==\n");
@@ -2359,7 +2366,9 @@ void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, i
 
     outfile->Printf("        CC integral sort will use %7.2lf mb\n", maxelem * (sizeof(double)) / 1024. / 1024.);
     if (maxelem < o * o * v * v) {
-        throw PsiException("out of memory: o^2v^2 won't fit in core.", __FILE__, __LINE__);
+        throw PsiException("out of memory: o^2v^2 won't fit in core (memory = " + std::to_string(memory) +
+                               " bytes, o = " + std::to_string(o) + ", v = " + std::to_string(v) + ").",
+                           __FILE__, __LINE__);
     }
 
     auto *klcd = new double[o * o * v * v];
