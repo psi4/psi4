@@ -472,11 +472,8 @@ data:
       constraint: ">=2.13.1"
       constraint_note: "Provides rt-switchable ordering (v2.8.0 src), CMake and C++ codes for supported integrals (v2.13.0 src), and derivative integrals (build). It is possible to use >=2.8.1,<2.13.0 with Psi4 provided you revert the find_package() and libint2_citation interface sugar in https://github.com/psi4/psi4/pull/3353 ."
       aux_build_names:
-        # - //psi4::libint
         - libboost-headers
         - eigen
-      # aux_build_names_note:
-        # "//psi4::libint": "Optionally for linux-64, an AM=7 build is available here."
       cmake:
         BOOST_ROOT:
           unix: ${CONDA_PREFIX}
