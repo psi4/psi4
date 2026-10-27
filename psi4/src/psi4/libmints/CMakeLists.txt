@@ -118,6 +118,13 @@ else()
 endif()
 
 # Conditionally add sources that depend on optional dependencies
+if(TARGET Einsums::Einsums)
+  target_sources(mints
+    PRIVATE
+      complexmatrix.cc
+    )
+endif()
+
 if(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
