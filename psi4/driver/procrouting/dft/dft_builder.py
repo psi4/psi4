@@ -40,7 +40,8 @@ dict = {
     "description":  "",       description of the method, printed in output
 
  "xc_functionals":  {         definition of a full XC functional from LibXC
-      "XC_METHOD_NAME": {}      must match a LibXC method, see libxc_functionals.py for examples
+      "XC_METHOD_NAME": {       must match a LibXC method, see libxc_functionals.py for examples
+                 "tweak": {},    tweak the underlying functional, e.g., {"_omega": 0.4}; the only key read here
      },                         if present, the x/c_functionals and x_hf/c_mp2 parameters are not read!
 
   "x_functionals":  {          definition of X contributions
@@ -200,6 +201,21 @@ def check_consistency(func_dictionary):
     # 1c) require at least an empty correlation functional entry or C_MP2
     elif "c_functionals" not in func_dictionary and "c_mp2" not in func_dictionary:
         raise ValidationError("SCF: No correlation specified in functional %s." % (name))
+
+    # 1d) component parameters the builder doesn't read would be silently ignored, so reject them.
+    #     A full XC kernel's own parameters (e.g., omega of a range-separated hybrid) go through "tweak".
+    allowed_component_keys = {
+        "xc_functionals": {"tweak"},
+        "x_functionals": {"alpha", "omega", "tweak", "use_libxc"},
+        "c_functionals": {"alpha", "tweak"},
+    }
+    for part, allowed in allowed_component_keys.items():
+        for comp, params in func_dictionary.get(part, {}).items():
+            unknown = sorted(set(params) - allowed)
+            if unknown:
+                raise ValidationError(
+                    f"SCF: Unrecognized parameter(s) {unknown} for {part} component {comp} in functional {name}; "
+                    f"allowed are {sorted(allowed)}. Set a LibXC kernel's own parameters (e.g., '_omega') via 'tweak'.")
 
     # 2) use_libxc handling:
     use_libxc = 0
