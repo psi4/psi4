@@ -8,6 +8,11 @@ if(${ENABLE_gauxc})
 
     get_property(BLAS_LIBRARIES TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 
+    if(${gauxc_ENABLE_GPU})
+        # psi4 only links CUDA libs (through gauxc::gauxc), so a toolkit suffices; no CUDA compiler needed
+        find_package(CUDAToolkit REQUIRED)
+    endif()
+
     find_package(gauxc CONFIG)  # edit in codedeps
 
     if(${gauxc_FOUND})

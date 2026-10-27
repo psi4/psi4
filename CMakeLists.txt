@@ -250,6 +250,16 @@ include(custom_static_library)
 # On W, var may come in in native, and w/cmake v4, the psi4-core cache protests, so normalize path
 file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
 
+# A device-enabled GauXC config calls enable_language(CUDA) and finds CUDAToolkit and MAGMA,
+#   so pass along any hints for those. Only forward what's set, as empty CMAKE_CUDA_ARCHITECTURES is an error.
+set(_psi4_core_device_args)
+foreach(_var CMAKE_CUDA_HOST_COMPILER CMAKE_CUDA_ARCHITECTURES
+             CUDAToolkit_ROOT CUDAToolkit_rt_LIBRARY MAGMA_ROOT_DIR MAGMA_INCLUDE_DIR MAGMA_LIBRARY)
+    if(NOT "${${_var}}" STREQUAL "")
+        list(APPEND _psi4_core_device_args "-D${_var}:STRING=${${_var}}")
+    endif()
+endforeach()
+
 include(ExternalProject)
 ExternalProject_Add(psi4-core
    DEPENDS lapack_external
@@ -382,10 +392,12 @@ ExternalProject_Add(psi4-core
               -DOpenMP_iomp5_LIBRARY=${OpenMP_iomp5_LIBRARY}
               -DOpenMP_libiomp5md_LIBRARY=${OpenMP_libiomp5md_LIBRARY}
               -DOpenMP_pthread_LIBRARY=${OpenMP_pthread_LIBRARY}
+              -DCMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
               -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${_cmake_CMAKE_PREFIX_PATH}
+              ${_psi4_core_device_args}
               -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
               -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
               -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
