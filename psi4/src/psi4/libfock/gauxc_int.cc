@@ -48,7 +48,62 @@
 #include <gauxc/molgrid/defaults.hpp>
 #include <gauxc/xc_integrator/integrator_factory.hpp>
 
+#include <sstream>
+
+#if defined(GAUXC_HAS_CUDA) && defined(PSI4_HAS_CUDA_RUNTIME)
+#include <cuda_runtime.h>
+#include "psi4/libpsi4util/cuda_diagnostics.h"
+#endif
+
 namespace psi {
+
+namespace {
+
+#if defined(GAUXC_HAS_CUDA) && defined(PSI4_HAS_CUDA_RUNTIME)
+// Before handing the GPU to GauXC, confirm there is one and identify it. Returns a description for
+// output and error messages; throws a readable PsiException if no device is usable.
+std::string gauxc_cuda_device() {
+    using namespace cuda_diagnostics;
+    int device_count = 0;
+    cudaError_t err = cudaGetDeviceCount(&device_count);
+    if (err != cudaSuccess) {
+        throw PSIEXCEPTION(cuda_failure_message("GAUXC_USE_GPU requested, but CUDA device discovery failed", err, "", "GauXC"));
+    }
+    if (device_count == 0) {
+        throw PSIEXCEPTION("GAUXC_USE_GPU requested, but no CUDA-capable GPU was found. Set GAUXC_USE_GPU false to run GauXC on the CPU.");
+    }
+    int device_id = 0;
+    err = cudaGetDevice(&device_id);
+    if (err != cudaSuccess) {
+        throw PSIEXCEPTION(cuda_failure_message("GAUXC_USE_GPU requested, but cudaGetDevice failed", err, "", "GauXC"));
+    }
+    cudaDeviceProp props;
+    err = cudaGetDeviceProperties(&props, device_id);
+    if (err != cudaSuccess) {
+        throw PSIEXCEPTION(cuda_failure_message("GAUXC_USE_GPU requested, but cudaGetDeviceProperties failed", err, "", "GauXC"));
+    }
+    std::ostringstream desc;
+    desc << describe_cuda_device(device_id, props) << ", compute capability " << props.major << "." << props.minor;
+    return desc.str();
+}
+#endif
+
+// GauXC's own device errors (e.g., CUBLAS_STATUS_ARCH_MISMATCH, no kernel image for device) read like
+// internal faults. Which architectures a GauXC binary carries isn't exported, so explain the likely causes.
+std::string gauxc_device_failure_message(const std::string& what, const std::string& device_desc) {
+    std::ostringstream msg;
+    msg << "GauXC failed to run on the GPU";
+    if (!device_desc.empty()) msg << ": " << device_desc;
+    msg << ".\n\n" << what << "\n"
+        << "  This is almost always the GPU or the GauXC build, not the input. GauXC runs only on GPU\n"
+        << "  architectures it was compiled for (list them with `cuobjdump --list-elf libgauxc.so`;\n"
+        << "  CUDA 13 cannot target compute capability below 7.5). Run on a supported GPU, rebuild GauXC\n"
+        << "  with this compute capability in CMAKE_CUDA_ARCHITECTURES, or set GAUXC_USE_GPU false to\n"
+        << "  run GauXC on the CPU.\n";
+    return msg.str();
+}
+
+}  // namespace
 
 void GauXCBase::initialize() {
     // No VV10 support: https://github.com/wavefunction91/GauXC/pull/210
@@ -65,12 +120,30 @@ void GauXCBase::initialize() {
         throw PSIEXCEPTION("GAUXC_USE_GPU was requested, but GauXC was not built with device support.");
     }
 #endif
+    device_desc_.clear();
+#if defined(GAUXC_HAS_CUDA) && defined(PSI4_HAS_CUDA_RUNTIME)
+    if (use_gpu_) device_desc_ = gauxc_cuda_device();
+#endif
+    // Device setup and the first kernel launches happen below; run them so failures get explained
+    auto on_device = [this](auto&& step) {
+        try {
+            step();
+        } catch (const PsiException&) {
+            throw;
+        } catch (const std::exception& e) {
+            if (!use_gpu_) throw;
+            throw PSIEXCEPTION(gauxc_device_failure_message(e.what(), device_desc_));
+        }
+    };
+
     const auto gauxc_execspace = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;
     GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("GAUXC_LOAD_BALANCER_KERNEL"));
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr;
- #ifdef GAUXC_HAS_DEVICE 
+ #ifdef GAUXC_HAS_DEVICE
     if (use_gpu_) {
-        rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("GAUXC_GPU_MEM"));
+        on_device([&] {
+            rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("GAUXC_GPU_MEM"));
+        });
     } else {
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
     }
@@ -145,11 +218,14 @@ void GauXCBase::initialize() {
         GauXC::AngularSize(spherical_points)
     );
     auto gauxc_primary = primary_->to_gauxc_basisset<double>(basis_tolerance, false);
-    auto load_balancer = lb_factory.get_shared_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
-    GauXC::MolecularWeightsFactory mw_factory(gauxc_execspace, "Default",
+    std::shared_ptr<GauXC::LoadBalancer> load_balancer;
+    on_device([&] {
+        load_balancer = lb_factory.get_shared_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
+        GauXC::MolecularWeightsFactory mw_factory(gauxc_execspace, "Default",
                                           GauXC::MolecularWeightsSettings{nuclear_weight_scheme_map[nuclear_scheme], false});
-    auto mw = mw_factory.get_instance();
-    mw.modify_weights(*load_balancer);
+        auto mw = mw_factory.get_instance();
+        mw.modify_weights(*load_balancer);
+    });
 
     // TODO: Allow for more options here. This is quick-and-dirty.
     GauXC::XCIntegratorFactory<Eigen::MatrixXd> integrator_factory(
@@ -190,6 +266,7 @@ void GauXCBase::print_header() const {
     functional_->print("outfile", options_.get_int("PRINT"));
     outfile->Printf("   => GauXC Quadrature <=\n\n");
     outfile->Printf("    Execution Space        = %14s\n", use_gpu_ ? "Device (GPU)" : "Host (CPU)");
+    if (use_gpu_ && !device_desc_.empty()) outfile->Printf("    GPU Device             = %s\n", device_desc_.c_str());
     outfile->Printf("    Radial Scheme          = %14s\n", options_.get_str("GAUXC_RADIAL_SCHEME").c_str());
     outfile->Printf("    Pruning Scheme         = %14s\n", options_.get_str("GAUXC_PRUNING_SCHEME").c_str());
     outfile->Printf("    Nuclear Scheme         = %14s\n", options_.get_str("GAUXC_NUCLEAR_SCHEME").c_str());
