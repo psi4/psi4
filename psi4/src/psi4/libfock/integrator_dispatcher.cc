@@ -37,7 +37,20 @@
 namespace psi {
 
 void IntegratorDispatcher::initialize() {
-  for (const auto& manager: managers_) manager->initialize();
+  // Note the highly-irregular for loop.
+  for (auto it = managers_.begin(); it != managers_.end();) {
+    try {
+        (*it)->initialize();
+        ++it;
+    }
+    catch (const std::exception& e) {
+      outfile->Printf("Error in manager " + (*it)->get_name() + ":\n");
+      outfile->Printf(e.what());
+      it = managers_.erase(it); // Erase returns the next valid iterator
+    }
+  }
+  if (managers_.empty())
+      throw PSIEXCEPTION("No IntegratorManager managed to initialize.");
 }
 
 void IntegratorDispatcher::print_header() const {
