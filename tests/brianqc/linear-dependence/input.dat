@@ -56,7 +56,8 @@ set = {
     reference rhf
     scf_type direct
     df_scf_guess False
-    brianqc_enable True
+    dft_xc_integrator_packages ["brianqc"]
+    d_convergence 9
 }
 
 thisenergy = energy('scf')

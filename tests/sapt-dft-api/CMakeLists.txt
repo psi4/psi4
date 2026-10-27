@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(sapt-dft-api "psi;sapt")
+add_regression_test(sapt-dft-api "psi;sapt;dft")

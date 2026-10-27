@@ -941,14 +941,7 @@ In contrast, sn-LinK only uses a single-grid scheme, simply converging the SCF o
 As another example, while the COSX grid defaults are selected to emphasize speed over accuracy, 
 the defaults for sn-LinK are selected to achieve higher accuracy (~0.1 kcal/mol error for interaction/conformer energies).
 
-To control compilation and linking of the optional GauXC dependency required for the sn-LinK algorithm, 
-here are the list of compile-time options provided.
-  
-* :makevar:`ENABLE_gauxc`: Compile Psi4 with support for GauXC.
-
-* :makevar:`gauxc_DIR`: Location of the external GauXC install to compile Psi4 with, if using an external GauXC instance.
-
-* :makevar:`gauxc_ENABLE_GPU`: Enable GPU support for the Psi4-GauXC interface class. When building GauXC internally within Psi4, this keyword controls whether to enable GPU support on the internally-built GauXC instance. When using an external GauXC build, this keyword must align with the GPU capabilities of the external GauXC install.  
+To control compilation and linking of the optional GauXC dependency required for the sn-LinK algorithm, see `sec:gauxc`.
 
 To control the sn-LinK algorithm, here are the list of options provided.
   

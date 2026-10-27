@@ -56,6 +56,7 @@ platform capabilities, *etc*.
    fchk
    plugin_psi4fockci
    gau2grid
+   gauxc
    gcp
    gdma
    libint

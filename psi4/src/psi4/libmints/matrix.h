@@ -291,6 +291,9 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void copy(const Matrix* cp);
     /** @} */
 
+    /// Copies data from the passed matrix to this matrix_
+    void copy_from(const double* const, int h=0);
+
     /// Returns an Armadillo matrix
     arma::mat to_armadillo_matrix(int h=0);
     /// Copies data from an Armadillo matrix
@@ -783,6 +786,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      *  \param a Matrix to transform
      *  \param transformer The matrix returned by PetiteList::aotoso() that acts as the transformer
      */
+    void apply_symmetry(const Matrix& a, const Matrix& transformer);
     void apply_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
 
     /** Special function to remove symmetry from a matrix.
