@@ -118,9 +118,9 @@ void IntegratorDispatcher::compute_Vx(const std::vector<SharedMatrix> Dx, std::v
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
       outfile->Printf(e.what());
-      timer_off(manager->get_timer_name() + ": Form Vx"); 
+      timer_off(manager->get_timer_name() + ": Form Vx");
+      return;
     }
-    return;
   }
   for (auto& vec: ret) { vec->zero(); }
   if (computable)
@@ -139,9 +139,9 @@ void IntegratorDispatcher::compute_Vx_triplet(const std::vector<SharedMatrix> Dx
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
       outfile->Printf(e.what());
-      timer_off(manager->get_timer_name() + ": Form Vx"); 
+      timer_off(manager->get_timer_name() + ": Form Vx");
+      return;
     }
-    return;
   }
   for (auto& vec: ret) { vec->zero(); }
   if (computable)
