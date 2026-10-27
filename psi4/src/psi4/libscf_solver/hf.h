@@ -50,7 +50,7 @@ class DIISManager;
 class PSIO;
 namespace scf {
 
-class HF : public Wavefunction, public BaseHF {
+class HF : public BaseHF, public Wavefunction {
    protected:
     // Prefer BaseHF's copies over BaseWavefunction's for these names.
     using BaseHF::nelectron_;
