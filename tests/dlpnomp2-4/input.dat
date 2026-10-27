@@ -1,0 +1,72 @@
+#! DLPNO-SCS-MP2 through energy('scs-dlpno-mp2'), and CUSTOM SCS-MP2 with user-set MP2_OS_SCALE and MP2_SS_SCALE
+
+ref_scf                  =    -76.0267872755965              #TEST
+
+# Same system and settings as the default-convergence run of dlpnomp2-1               #TEST
+ref_dlpnomp2_corl        =     -0.2015778022639              #TEST
+ref_dlpnomp2_os_corl     =     -0.1508217508886              #TEST
+ref_dlpnomp2_ss_corl     =     -0.0507560513753              #TEST
+ref_dlpnomp2_tot         =    -76.2283650778585              #TEST
+
+# SCS-MP2 scales the spin components by 6/5 (opposite-spin) and 1/3 (same-spin)       #TEST
+ref_dlpnomp2_scs_corl    = 6.0/5.0 * ref_dlpnomp2_os_corl + 1.0/3.0 * ref_dlpnomp2_ss_corl  #TEST
+ref_dlpnomp2_scs_tot     = ref_scf + ref_dlpnomp2_scs_corl                                  #TEST
+
+# User-set scales, unlike the SCS-MP2 ones and weighting same-spin more than          #TEST
+# opposite-spin, so a mix-up of the two scales or of the two sets of psivars is caught #TEST
+os_scale                 = 0.5                               #TEST
+ss_scale                 = 1.5                               #TEST
+ref_dlpnomp2_custom_corl = os_scale * ref_dlpnomp2_os_corl + ss_scale * ref_dlpnomp2_ss_corl  #TEST
+ref_dlpnomp2_custom_tot  = ref_scf + ref_dlpnomp2_custom_corl                                #TEST
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+print('   Testing DLPNO-SCS-MP2 ...')
+val = energy('scs-dlpno-mp2')
+
+# scs-dlpno-mp2 returns the SCS-MP2 energy, but still sets the unscaled MP2 psivars
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scs-mp2 ref')                       #TEST
+compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
+compare_values(ref_dlpnomp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')    #TEST
+compare_values(ref_dlpnomp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
+compare_values(ref_dlpnomp2_scs_corl, variable('SCS-MP2 CORRELATION ENERGY'), 8, 'scs-mp2 corl')            #TEST
+compare_values(ref_dlpnomp2_scs_tot, variable('SCS-MP2 TOTAL ENERGY'), 8, 'scs-mp2 tot')                    #TEST
+# With the default MP2_OS_SCALE and MP2_SS_SCALE, CUSTOM SCS-MP2 is SCS-MP2            #TEST
+compare_values(ref_dlpnomp2_scs_corl, variable('CUSTOM SCS-MP2 CORRELATION ENERGY'), 8, 'custom scs-mp2 corl, default scales')  #TEST
+compare_values(ref_dlpnomp2_scs_tot, variable('CUSTOM SCS-MP2 TOTAL ENERGY'), 8, 'custom scs-mp2 tot, default scales')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scs-mp2 ref')               #TEST
+compare_values(ref_dlpnomp2_scs_corl, variable('CURRENT CORRELATION ENERGY'), 8, 'scs-mp2 corl')            #TEST
+compare_values(ref_dlpnomp2_scs_tot, variable('CURRENT ENERGY'), 8, 'scs-mp2 tot')                          #TEST
+compare_values(ref_dlpnomp2_scs_tot, val, 8, 'scs-mp2 return')                                              #TEST
+clean()
+
+set mp2_os_scale 0.5
+set mp2_ss_scale 1.5
+
+print('   Testing DLPNO-SCS-MP2 w/ custom spin-component scales ...')
+val = energy('scs-dlpno-mp2')
+
+# The custom scales only affect the CUSTOM SCS-MP2 psivars
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scs-mp2 ref')                       #TEST
+compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dlpnomp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')    #TEST
+compare_values(ref_dlpnomp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
+compare_values(ref_dlpnomp2_custom_corl, variable('CUSTOM SCS-MP2 CORRELATION ENERGY'), 8, 'custom scs-mp2 corl')  #TEST
+compare_values(ref_dlpnomp2_custom_tot, variable('CUSTOM SCS-MP2 TOTAL ENERGY'), 8, 'custom scs-mp2 tot')          #TEST
+compare_values(ref_dlpnomp2_scs_corl, variable('SCS-MP2 CORRELATION ENERGY'), 8, 'scs-mp2 corl')            #TEST
+compare_values(ref_dlpnomp2_scs_tot, variable('SCS-MP2 TOTAL ENERGY'), 8, 'scs-mp2 tot')                    #TEST
+compare_values(ref_dlpnomp2_scs_corl, variable('CURRENT CORRELATION ENERGY'), 8, 'scs-mp2 corl')            #TEST
+compare_values(ref_dlpnomp2_scs_tot, variable('CURRENT ENERGY'), 8, 'scs-mp2 tot')                          #TEST
+compare_values(ref_dlpnomp2_scs_tot, val, 8, 'scs-mp2 return')                                              #TEST
+clean()
