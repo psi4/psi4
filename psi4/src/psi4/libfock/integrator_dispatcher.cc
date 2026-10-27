@@ -127,15 +127,15 @@ void IntegratorDispatcher::compute_Vx(const std::vector<SharedMatrix> Dx, std::v
     else continue;
     try {
       manager->compute_Vx(Dx, ret);
+      return;
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
       outfile->Printf(e.what());
       timer_off(manager->get_timer_name() + ": Form Vx");
-      return;
+      for (auto& vec: ret) { vec->zero(); }
     }
   }
-  for (auto& vec: ret) { vec->zero(); }
   if (computable)
     throw PSIEXCEPTION("No IntegratorManager managed to compute_Vx.");
   else throw PSIEXCEPTION("No IntegratorManager has compute_Vx defined.");
@@ -148,15 +148,15 @@ void IntegratorDispatcher::compute_Vx_triplet(const std::vector<SharedMatrix> Dx
     else continue;
     try {
       manager->compute_Vx_triplet(Dx, ret);
+      return;
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
       outfile->Printf(e.what());
       timer_off(manager->get_timer_name() + ": Form Vx");
-      return;
+      for (auto& vec: ret) { vec->zero(); }
     }
   }
-  for (auto& vec: ret) { vec->zero(); }
   if (computable)
     throw PSIEXCEPTION("No IntegratorManager managed to compute_Vx_triplet.");
   else throw PSIEXCEPTION("No IntegratorManager has compute_Vx_triplet defined.");
