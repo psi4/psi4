@@ -360,3 +360,34 @@ def test_hess_fallthrough():
     psi_wfn = psi4.frequencies("svwn/sto-6g", return_wfn=True)[1]
 
     psi4.compare_arrays(psi_wfn.frequencies(), hybrid_wfn.frequencies(), 0.1, "Frequencies, Pure Psi vs. Psi-GauXC Difference")
+
+def test_blocked_vv10():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
+
+    psi4.set_options({
+        "dft_xc_integrator_packages": ["gauxc"]
+    })
+
+    with pytest.raises(RuntimeError):
+        psi4.energy("wb97X-v/cc-pvdz")
+
+def test_blocked_custom_omega():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
+    
+    psi4.set_options({
+        "dft_xc_integrator_packages": ["gauxc"],
+        "dft_omega": 0.42
+    })
+
+    with pytest.raises(RuntimeError):
+        psi4.energy("wb97X/cc-pvdz")
+
+
