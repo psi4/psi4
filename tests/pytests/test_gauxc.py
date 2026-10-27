@@ -361,6 +361,40 @@ def test_hess_fallthrough():
 
     psi4.compare_arrays(psi_wfn.frequencies(), hybrid_wfn.frequencies(), 0.1, "Frequencies, Pure Psi vs. Psi-GauXC Difference")
 
+def test_triplet_fallthrough():
+    h2o = psi4.geometry("""
+        symmetry c1
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
+
+    psi4.set_options({
+        "d_convergence": 10,
+        "dft_radial_points": 100,
+        "dft_spherical_points": 770,
+        "reference": "rks",
+        "tdscf_triplets": "only",
+        "tdscf_tda": "true",
+        "tdscf_states": [2],
+        "dft_xc_integrator_packages": ["gauxc", "internal"],
+    })
+
+    hybrid_wfn = psi4.energy("SVWN/sto-6g", return_wfn=True)[1]
+    psi4.tdscf(hybrid_wfn)
+
+    psi4.set_options({
+        "dft_xc_integrator_packages": ["internal"],
+    })
+
+    psi_wfn = psi4.energy("SVWN/sto-6g", return_wfn=True)[1]
+    psi4.tdscf(psi_wfn)
+
+    for n in range(2):
+        ref_en = psi_wfn.variable(f"TD-SVWN ROOT 0 -> ROOT {n+1} EXCITATION ENERGY")
+        hyb_en = hybrid_wfn.variable(f"TD-SVWN ROOT 0 -> ROOT {n+1} EXCITATION ENERGY")
+        assert psi4.compare_values(ref_en, hyb_en, 4, f"TD-SVWN/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY")
+
 def test_blocked_vv10():
     h2o = psi4.geometry("""
         O
@@ -389,5 +423,22 @@ def test_blocked_custom_omega():
 
     with pytest.raises(RuntimeError):
         psi4.energy("wb97X/cc-pvdz")
+
+def test_blocked_custom():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
+
+    pbe_tweak = {"name": "pbe_tw", "x_functionals": {"GGA_X_PBE": {"tweak": {"_kappa": 0.9, "_mu": 0.2195149727645171}}},
+             "c_functionals": {"GGA_C_PBE": {}}}
+
+    psi4.set_options({
+        "dft_xc_integrator_packages": ["gauxc"],
+    })
+
+    with pytest.raises(RuntimeError):
+        psi4.energy("scf/cc-pvdz", dft_functional = pbe_tweak)
 
 

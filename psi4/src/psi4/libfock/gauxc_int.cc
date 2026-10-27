@@ -122,6 +122,9 @@ void GauXCBase::initialize() {
         if (xcfunc == nullptr) {
             throw PSIEXCEPTION("GauXC integration requires LibXC functionals.");
         }
+        if (xcfunc->user_omega() || xcfunc->user_tweaked()) {
+            throw PSIEXCEPTION("GauXC does not support customized LibXC parameters (" + xcfunc->name() + ").");
+        }
         auto name = xcfunc->name();
         auto alpha = xcfunc->alpha();
         init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), this->spin()));
@@ -130,6 +133,9 @@ void GauXCBase::initialize() {
         auto xcfunc = dynamic_pointer_cast<LibXCFunctional>(functionalComponent);
         if (xcfunc == nullptr) {
             throw PSIEXCEPTION("GauXC integration requires LibXC functionals.");
+        }
+        if (xcfunc->user_omega() || xcfunc->user_tweaked()) {
+            throw PSIEXCEPTION("GauXC does not support customized LibXC parameters (" + xcfunc->name() + ").");
         }
         auto name = xcfunc->name();
         auto alpha = xcfunc->alpha();
