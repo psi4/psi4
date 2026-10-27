@@ -16,14 +16,18 @@ if(${ENABLE_gauxc})
     find_package(gauxc CONFIG)  # edit in codedeps
 
     if(${gauxc_FOUND})
-        #== check if GPU-enabled GauXC is found, if GPU is specified ==#
+        #== GauXC variant (cpu|gpu) must be the one gauxc_ENABLE_GPU asks for ==#
         get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_HAS_DEVICE)
-        
-        if(${gauxc_ENABLE_GPU} AND (NOT ${_gpu}))
-           message(FATAL_ERROR "gauxc_ENABLE_GPU turned on, but selected GauXC install is not built for GPU support!")
-        elseif((NOT ${gauxc_ENABLE_GPU}) AND ${_gpu})
-           # GPU code paths are selected by GauXC's own header (GAUXC_HAS_DEVICE), so psi4 gets them regardless
-           message(STATUS "Selected GauXC install is built for GPU support; Psi4/GauXC interface will be GPU-capable")
+
+        # empty for GauXC configs predating the property; psi4-core checks those
+        if(NOT "${_gpu}" STREQUAL "")
+            if(gauxc_ENABLE_GPU AND NOT _gpu)
+                message(FATAL_ERROR "gauxc_ENABLE_GPU=ON, but the GauXC at ${gauxc_DIR} is built without GPU support. "
+                                    "Point gauxc_DIR at a GPU-enabled GauXC, or set gauxc_ENABLE_GPU=OFF.")
+            elseif(NOT gauxc_ENABLE_GPU AND _gpu)
+                message(FATAL_ERROR "gauxc_ENABLE_GPU=OFF, but the GauXC at ${gauxc_DIR} is built with GPU support. "
+                                    "Set gauxc_ENABLE_GPU=ON (plus CUDA hints like CUDAToolkit_ROOT as needed), or point gauxc_DIR at a CPU-only GauXC.")
+            endif()
         endif()
 
         #== check if MAGMA-enabled GauXC is found, if MAGMA is specified ==#
@@ -50,7 +54,8 @@ if(${ENABLE_gauxc})
 
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_gauxc})
-            message(FATAL_ERROR "Suitable gauxc could not be externally located as user insists")
+            message(FATAL_ERROR "Suitable gauxc could not be externally located as user insists. ${gauxc_NOT_FOUND_MESSAGE}\n"
+                                "A GPU-enabled GauXC also needs its CUDA dependencies found: set gauxc_ENABLE_GPU=ON and, as needed, CUDAToolkit_ROOT.")
         endif()
 
         set(CMAKE_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}" CACHE STRING "CUDA architectures")

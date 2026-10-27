@@ -191,8 +191,13 @@ if(${ENABLE_gauxc})
     else()
         set(_gauxc_has_device FALSE)
     endif()
+    # GauXC variant (cpu|gpu) must be the one gauxc_ENABLE_GPU asks for
     if(gauxc_ENABLE_GPU AND NOT _gauxc_has_device)
-        message(FATAL_ERROR "gauxc_ENABLE_GPU turned on, but ${_loc} is not built for GPU support!")
+        message(FATAL_ERROR "gauxc_ENABLE_GPU=ON, but ${_loc} is built without GPU support. "
+                            "Point gauxc_DIR at a GPU-enabled GauXC, or set gauxc_ENABLE_GPU=OFF.")
+    elseif(NOT gauxc_ENABLE_GPU AND _gauxc_has_device)
+        message(FATAL_ERROR "gauxc_ENABLE_GPU=OFF, but ${_loc} is built with GPU support. "
+                            "Set gauxc_ENABLE_GPU=ON (plus CUDA hints like CUDAToolkit_ROOT as needed), or point gauxc_DIR at a CPU-only GauXC.")
     endif()
     message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION}, device ${_gauxc_has_device})")
 else()
