@@ -25,9 +25,6 @@
  *
  * @END LICENSE
  */
-// Adapted from the cuEST interface, contributed by NVIDIA under the following terms:
-// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-// SPDX-License-Identifier: LGPL-3.0-only
 
 #ifdef PSI4_HAS_CUDA_RUNTIME
 
