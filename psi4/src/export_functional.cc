@@ -296,9 +296,6 @@ void export_functional(py::module &m) {
         .def("clear_collocation_cache", &DensityFunctionalIntegratorDispatcher::clear_collocation_cache, "Clears the collocation cache.")
         .def("psi_manager", &DensityFunctionalIntegratorDispatcher::psi_manager, "Return the first Psi4-native IntegrationManager (VBase), if any.");
 
-    m.def("gauxc_has_device", &gauxc_has_device,
-          "Whether Psi4 was compiled against a GauXC with device (GPU) support. False if GauXC is not enabled.");
-
     py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(m, "RKSFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>());
 

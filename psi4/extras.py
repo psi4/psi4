@@ -179,7 +179,7 @@ _addons_ = {
     "einsums": _CMake_to_Py_boolean("@ENABLE_Einsums@"),
     "pyeinsums": which_import("einsums", return_bool=True),
     "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
-    "gauxc_gpu": core.gauxc_has_device(),
+    "gauxc_gpu": _CMake_to_Py_boolean("@ENABLE_gauxc@") and _CMake_to_Py_boolean("@gauxc_ENABLE_GPU@"),
     "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
     "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),
     "qcmanybody": which_import("qcmanybody", return_bool=True),
