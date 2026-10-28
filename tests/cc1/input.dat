@@ -38,4 +38,5 @@ compare_values(ccT,      wfn.variable("CC Correlation Kinetic Energy"),       5,
 compare_values(ccV,      wfn.variable("CC Correlation Potential Energy"),     5, "CC Correlation Potential Energy")      #TEST
 compare_values(ccVT,     wfn.variable("CC Correlation Virial Ratio"),         5, "CC Correlation Virial Ratio")          #TEST
 compare_values(totalVT,  wfn.variable("CC Virial Ratio"),         5, "CC Virial Ratio")      #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
 
