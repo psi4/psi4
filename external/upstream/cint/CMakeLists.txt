@@ -1,4 +1,10 @@
 if(${ENABLE_cint})
+    # A config this file synthesized on an earlier run (below) isn't libcint's own; look afresh, so that a
+    # changed LIBCINT_LIBRARY takes effect, even after a qcint >= 6.2.0 was found.
+    if(cint_DIR STREQUAL "${CMAKE_CURRENT_BINARY_DIR}/cint-config")
+        unset(cint_DIR CACHE)
+    endif()
+
     # libcint >= 6.2.0 installs a CMake config package, cint
     find_package( cint 6.2.0 CONFIG QUIET)  # hide from codedeps
 
@@ -35,6 +41,32 @@ if(${ENABLE_cint})
                                     "LIBCINT_LIBRARY and LIBCINT_INCLUDE_DIR to a newer one, or unset them to build it.")
             endif()
             message(STATUS "${Cyan}Found system ${_flavor}${ColourReset}: ${LIBCINT_LIBRARY} (found version ${_ver})")
+
+            # A shared libcint resolves its own dependencies. A static one leaves them to whatever links it: libm, and
+            # libquadmath if it was built where that was available. Find which by linking its two-electron code.
+            set(_link_deps "")
+            if(LIBCINT_LIBRARY MATCHES "${CMAKE_STATIC_LIBRARY_SUFFIX}$")
+                include(CheckCSourceCompiles)
+                set(CMAKE_REQUIRED_INCLUDES ${LIBCINT_INCLUDE_DIR})
+                set(_src "#include <cint_funcs.h>\nint main(void) { void *volatile f = (void *)int2e_sph; return f == 0; }")
+                foreach(_deps IN ITEMS "m" "quadmath;m")
+                    string(MAKE_C_IDENTIFIER "LIBCINT_STATIC_LINKS_${_deps}" _result)
+                    unset(${_result} CACHE)
+                    set(CMAKE_REQUIRED_LIBRARIES ${LIBCINT_LIBRARY} ${_deps})
+                    check_c_source_compiles("${_src}" ${_result})
+                    if(${_result})
+                        set(_link_deps "${_deps}")
+                        break()
+                    endif()
+                endforeach()
+                unset(CMAKE_REQUIRED_INCLUDES)
+                unset(CMAKE_REQUIRED_LIBRARIES)
+                if(NOT _link_deps)
+                    message(FATAL_ERROR "Can't link the static ${LIBCINT_LIBRARY} with libm, nor with libquadmath "
+                                        "and libm. Point LIBCINT_LIBRARY to a shared one, or unset it to build one.")
+                endif()
+                message(STATUS "Static ${_flavor} links: ${_link_deps}")
+            endif()
             set(_gen ${CMAKE_CURRENT_BINARY_DIR}/cint-config)
             file(MAKE_DIRECTORY ${_gen})
             file(WRITE ${_gen}/cintConfig.cmake
@@ -42,7 +74,8 @@ if(${ENABLE_cint})
   add_library(cint::cint UNKNOWN IMPORTED)
   set_target_properties(cint::cint PROPERTIES
     IMPORTED_LOCATION \"${LIBCINT_LIBRARY}\"
-    INTERFACE_INCLUDE_DIRECTORIES \"${LIBCINT_INCLUDE_DIR}\")
+    INTERFACE_INCLUDE_DIRECTORIES \"${LIBCINT_INCLUDE_DIR}\"
+    INTERFACE_LINK_LIBRARIES \"${_link_deps}\")
 endif()
 set(cint_VERSION \"${_ver}\")
 ")
