@@ -12,23 +12,29 @@ if(${ENABLE_cint})
         endif()
 
     else()
-        # libcint before v6.2.0 installs no CMake config (conda-forge 6.1.x, distro packages). Locate the
-        # library and header, or take them from LIBCINT_LIBRARY and LIBCINT_INCLUDE_DIR, and synthesize a
+        # libcint before v6.2.0 installs no CMake config (conda-forge 6.1.x, distro packages), nor does qcint, the
+        # drop-in libcint (same libcint.so and headers; cint.h defines QCINT_VERSION instead of CINT_VERSION). Locate
+        # the library and header, or take them from LIBCINT_LIBRARY and LIBCINT_INCLUDE_DIR, and synthesize a
         # config package so the core build's find_package(cint 6.1.2 CONFIG) succeeds.
         find_library(LIBCINT_LIBRARY NAMES cint)
         find_path(LIBCINT_INCLUDE_DIR NAMES cint_funcs.h)
 
         if(LIBCINT_LIBRARY AND LIBCINT_INCLUDE_DIR)
-            file(STRINGS ${LIBCINT_INCLUDE_DIR}/cint.h _ver REGEX "^#define CINT_VERSION ")
+            file(STRINGS ${LIBCINT_INCLUDE_DIR}/cint.h _ver REGEX "^#define Q?CINT_VERSION ")
+            if(_ver MATCHES "QCINT_VERSION")
+                set(_flavor qcint)
+            else()
+                set(_flavor libcint)
+            endif()
             string(REGEX REPLACE ".*\"([0-9.]+)\".*" "\\1" _ver "${_ver}")
             if(NOT _ver MATCHES "^[0-9]+\\.[0-9]+")
-                message(FATAL_ERROR "Can't read CINT_VERSION from ${LIBCINT_INCLUDE_DIR}/cint.h")
+                message(FATAL_ERROR "Can't read CINT_VERSION or QCINT_VERSION from ${LIBCINT_INCLUDE_DIR}/cint.h")
             endif()
             if(_ver VERSION_LESS 6.1.2)
-                message(FATAL_ERROR "Found libcint ${_ver} (${LIBCINT_LIBRARY}), but psi4 needs >= 6.1.2. Point "
+                message(FATAL_ERROR "Found ${_flavor} ${_ver} (${LIBCINT_LIBRARY}), but psi4 needs >= 6.1.2. Point "
                                     "LIBCINT_LIBRARY and LIBCINT_INCLUDE_DIR to a newer one, or unset them to build it.")
             endif()
-            message(STATUS "${Cyan}Found system libcint${ColourReset}: ${LIBCINT_LIBRARY} (found version ${_ver})")
+            message(STATUS "${Cyan}Found system ${_flavor}${ColourReset}: ${LIBCINT_LIBRARY} (found version ${_ver})")
             set(_gen ${CMAKE_CURRENT_BINARY_DIR}/cint-config)
             file(MAKE_DIRECTORY ${_gen})
             file(WRITE ${_gen}/cintConfig.cmake

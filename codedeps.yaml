@@ -1615,6 +1615,7 @@ data:
       host: github
       account: sunqm
       name: libcint
+      name_note: "sunqm/qcint repo is also usable (note GPL)"
       commit: v6.2.0
     cmake:
       name: cint
