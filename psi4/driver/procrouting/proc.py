@@ -1736,6 +1736,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
         ['SCF', 'ORBITALS_WRITE'],
+        ['SCF', 'DFT_NUCLEAR_SCHEME'],
         ['SCF_TYPE'],  # Hack: scope gets changed internally with the Andy trick
     )
 
@@ -1748,6 +1749,30 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # Make sure we grab the correctly scoped integral threshold for SCF
     core.set_global_option('INTS_TOLERANCE', core.get_option('SCF', 'INTS_TOLERANCE'))
+
+    # cuEST builds the DFT quadrature grid on the GPU and applies its own, fixed
+    # nuclear partitioning, which is Stratmann's.  Psi4 hands cuEST only the radial
+    # nodes/weights and the per-shell angular counts, so DFT_NUCLEAR_SCHEME has no
+    # route to the device and was previously ignored in silence -- while the output
+    # still printed whatever scheme the user had asked for.  Fall back to STRATMANN
+    # when the user expressed no preference, the same way SCF_TYPE is reset to DF for
+    # the DF-only correlated methods, so that what the grid reports is what the grid
+    # did.  An explicit request for some other scheme cannot be honoured at all, so
+    # it is an error rather than a silent substitution.
+    if core.get_option('SCF', 'USE_CUEST'):
+        requested_nucscheme = core.get_option('SCF', 'DFT_NUCLEAR_SCHEME')
+        # Ask before setting: set_local_option itself marks the option as changed.
+        user_asked = core.has_option_changed('SCF', 'DFT_NUCLEAR_SCHEME')
+        if requested_nucscheme != 'STRATMANN':
+            if user_asked:
+                raise ValidationError(
+                    f"""DFT_NUCLEAR_SCHEME {requested_nucscheme} is not available with USE_CUEST.\n"""
+                    f"""    cuEST builds the DFT grid on the GPU and applies Stratmann partitioning,\n"""
+                    f"""    which it exposes no parameter to change.  Set DFT_NUCLEAR_SCHEME to\n"""
+                    f"""    STRATMANN, or leave it unset to have it reset for you, or run with\n"""
+                    f"""    USE_CUEST false to use {requested_nucscheme} on the CPU.""")
+            core.set_local_option('SCF', 'DFT_NUCLEAR_SCHEME', 'STRATMANN')
+            core.print_out("""    DFT Nuclear Scheme (re)set to STRATMANN for cuEST.\n""")
 
     # Grab a few kwargs
     use_c1 = kwargs.get('use_c1', False)
