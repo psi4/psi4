@@ -254,10 +254,8 @@ include(custom_static_library)
 # On W, var may come in in native, and w/cmake v4, the psi4-core cache protests, so normalize path
 file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
 
-# A device-enabled GauXC config calls enable_language(CUDA) and finds CUDAToolkit and MAGMA,
-#   so pass along any hints for those. Only forward what's set, as empty CMAKE_CUDA_ARCHITECTURES is an error.
 set(_psi4_core_device_args)
-# MAGMA_ROOT_DIR only when set: FindMAGMA skips its pkg-config lookup whenever it is defined, even empty
+    # Only forward what's set as empty CMAKE_CUDA_ARCHITECTURES is an error and FindMAGMA skips its pkg-config lookup whenever MAGMA_ROOT_DIR is defined, even empty
 foreach(_var CMAKE_CUDA_HOST_COMPILER CMAKE_CUDA_ARCHITECTURES MAGMA_ROOT_DIR)
     if(NOT "${${_var}}" STREQUAL "")
         list(APPEND _psi4_core_device_args "-D${_var}:STRING=${${_var}}")
