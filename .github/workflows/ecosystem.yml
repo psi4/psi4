@@ -249,7 +249,7 @@ jobs:
         grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
 
     - name: Special Config - Force testing Libcint
-      #if: matrix.cfg.python-version == 3.14 && (matrix.cfg.label == 'Conda Clang (M-Silicon)')
+      if: false  # LIBCINT as the default on every lane; Azure gcc_11 does it on one, and `pytest -m cint` runs everywhere
       run: |
         grep INTEGRAL_PACKAGE psi4/src/read_options.cc
         if [[ "${{ runner.os }}" == "macOS" ]]; then
