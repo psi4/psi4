@@ -237,6 +237,10 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 set(Python_ADDITIONAL_VERSIONS 3.15 3.14 3.13 3.12 3.11)  # adjust with CMake minimum FindPythonInterp
 find_package(Python 3.11 COMPONENTS Interpreter Development NumPy REQUIRED)
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION}; NumPy version: ${Python_NumPy_VERSION})")
+if(${gauxc_ENABLE_GPU})
+    # psi4 only links CUDA libs (through gauxc::gauxc), so a toolkit suffices; no CUDA compiler needed
+    find_package(CUDAToolkit REQUIRED)
+endif()
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
@@ -253,8 +257,8 @@ file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
 # A device-enabled GauXC config calls enable_language(CUDA) and finds CUDAToolkit and MAGMA,
 #   so pass along any hints for those. Only forward what's set, as empty CMAKE_CUDA_ARCHITECTURES is an error.
 set(_psi4_core_device_args)
-foreach(_var CMAKE_CUDA_HOST_COMPILER CMAKE_CUDA_ARCHITECTURES
-             CUDAToolkit_ROOT CUDAToolkit_rt_LIBRARY MAGMA_ROOT_DIR MAGMA_INCLUDE_DIR MAGMA_LIBRARY)
+# MAGMA_ROOT_DIR only when set: FindMAGMA skips its pkg-config lookup whenever it is defined, even empty
+foreach(_var CMAKE_CUDA_HOST_COMPILER CMAKE_CUDA_ARCHITECTURES MAGMA_ROOT_DIR)
     if(NOT "${${_var}}" STREQUAL "")
         list(APPEND _psi4_core_device_args "-D${_var}:STRING=${${_var}}")
     endif()
@@ -374,6 +378,7 @@ ExternalProject_Add(psi4-core
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
+              -DExchCXX_DIR=${ExchCXX_DIR}
               -Dgauxc_DIR=${gauxc_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
@@ -392,6 +397,10 @@ ExternalProject_Add(psi4-core
               -DOpenMP_iomp5_LIBRARY=${OpenMP_iomp5_LIBRARY}
               -DOpenMP_libiomp5md_LIBRARY=${OpenMP_libiomp5md_LIBRARY}
               -DOpenMP_pthread_LIBRARY=${OpenMP_pthread_LIBRARY}
+              -DCUDAToolkit_ROOT=${CUDAToolkit_ROOT}
+              -DCUDAToolkit_rt_LIBRARY=${CUDAToolkit_rt_LIBRARY}
+              -DMAGMA_INCLUDE_DIR=${MAGMA_INCLUDE_DIR}
+              -DMAGMA_LIBRARY=${MAGMA_LIBRARY}
               -DCMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}

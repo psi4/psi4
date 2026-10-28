@@ -1,17 +1,16 @@
 if(${ENABLE_gauxc})
     if(NOT "${gauxc_DIR}" STREQUAL "")
+        # a GauXC built standalone installs its ExchCXX/IntegratorXX alongside; default to those
+        #   (find_package ignores a <Pkg>_DIR holding no config, so a wrong guess just searches)
         if("${IntegratorXX_DIR}" STREQUAL "")
             set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
         endif()
-        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
+        if("${ExchCXX_DIR}" STREQUAL "")
+            set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
+        endif()
     endif()
 
     get_property(BLAS_LIBRARIES TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)
-
-    if(${gauxc_ENABLE_GPU})
-        # psi4 only links CUDA libs (through gauxc::gauxc), so a toolkit suffices; no CUDA compiler needed
-        find_package(CUDAToolkit REQUIRED)
-    endif()
 
     find_package(gauxc CONFIG)  # edit in codedeps
 
@@ -19,15 +18,16 @@ if(${ENABLE_gauxc})
         #== GauXC variant (cpu|gpu) must be the one gauxc_ENABLE_GPU asks for ==#
         get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_HAS_DEVICE)
 
-        # empty for GauXC configs predating the property; psi4-core checks those
-        if(NOT "${_gpu}" STREQUAL "")
-            if(gauxc_ENABLE_GPU AND NOT _gpu)
-                message(FATAL_ERROR "gauxc_ENABLE_GPU=ON, but the GauXC at ${gauxc_DIR} is built without GPU support. "
-                                    "Point gauxc_DIR at a GPU-enabled GauXC, or set gauxc_ENABLE_GPU=OFF.")
-            elseif(NOT gauxc_ENABLE_GPU AND _gpu)
-                message(FATAL_ERROR "gauxc_ENABLE_GPU=OFF, but the GauXC at ${gauxc_DIR} is built with GPU support. "
-                                    "Set gauxc_ENABLE_GPU=ON (plus CUDA hints like CUDAToolkit_ROOT as needed), or point gauxc_DIR at a CPU-only GauXC.")
-            endif()
+        # GauXC v1.1 exports GAUXC_HAS_DEVICE as TRUE or FALSE; its config version still reads 1.0.0, so check this instead
+        if("${_gpu}" STREQUAL "")
+            message(FATAL_ERROR "The GauXC at ${gauxc_DIR} predates v1.1 (its gauxc::gauxc target lacks GAUXC_HAS_DEVICE). "
+                                "Psi4 requires GauXC v1.1 or newer.")
+        elseif(gauxc_ENABLE_GPU AND NOT _gpu)
+            message(FATAL_ERROR "gauxc_ENABLE_GPU=ON, but the GauXC at ${gauxc_DIR} is built without GPU support. "
+                                "Point gauxc_DIR at a GPU-enabled GauXC, or set gauxc_ENABLE_GPU=OFF.")
+        elseif(NOT gauxc_ENABLE_GPU AND _gpu)
+            message(FATAL_ERROR "gauxc_ENABLE_GPU=OFF, but the GauXC at ${gauxc_DIR} is built with GPU support. "
+                                "Set gauxc_ENABLE_GPU=ON (plus CUDA hints like CUDAToolkit_ROOT as needed), or point gauxc_DIR at a CPU-only GauXC.")
         endif()
 
         #== check if MAGMA-enabled GauXC is found, if MAGMA is specified ==#
@@ -109,6 +109,11 @@ if(${ENABLE_gauxc})
                          # allowing ExchCXX to find Psi4's LibXC without rebuilding from source
                          -DCMAKE_PREFIX_PATH:STRING=${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH})
         set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
+        # GauXC's FetchContent builds of its dependencies stage alongside it
+        set(ExchCXX_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/ExchCXX CACHE PATH "path to internally built ExchCXXConfig.cmake" FORCE)
+        if("${IntegratorXX_DIR}" STREQUAL "")
+            set(IntegratorXX_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/IntegratorXX CACHE PATH "path to internally built IntegratorXXConfig.cmake" FORCE)
+        endif()
     endif()
 else()
     message(STATUS "Optional addon ${Blue}unsought: gauxc${ColourReset}")

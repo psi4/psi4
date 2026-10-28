@@ -158,13 +158,7 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
 
 if(${ENABLE_gauxc})
-    if(NOT "${gauxc_DIR}" STREQUAL "")
-        if("${IntegratorXX_DIR}" STREQUAL "")
-            set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
-        endif()
-        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
-    endif()
-
+    # gauxc_DIR, ExchCXX_DIR, IntegratorXX_DIR arrive as the superbuild found them
     get_property(BLAS_LIBRARIES TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 
     if(gauxc_ENABLE_GPU)
@@ -176,21 +170,8 @@ if(${ENABLE_gauxc})
     get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
 
-    # Device support of the GauXC actually compiled against. Runtime truth is core.gauxc_has_device().
+    # superbuild already required GauXC v1.1+, which exports GAUXC_HAS_DEVICE as TRUE or FALSE
     get_property(_gauxc_has_device TARGET gauxc::gauxc PROPERTY GAUXC_HAS_DEVICE)
-    if("${_gauxc_has_device}" STREQUAL "")
-        # GauXC config predating the target property: ask the header
-        include(CheckCXXSymbolExists)
-        get_property(_inc TARGET gauxc::gauxc PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-        set(CMAKE_REQUIRED_INCLUDES ${_inc})
-        check_cxx_symbol_exists(GAUXC_HAS_DEVICE "gauxc/gauxc_config.hpp" _gauxc_has_device)
-        unset(CMAKE_REQUIRED_INCLUDES)
-    endif()
-    if(_gauxc_has_device)
-        set(_gauxc_has_device TRUE)
-    else()
-        set(_gauxc_has_device FALSE)
-    endif()
     # GauXC variant (cpu|gpu) must be the one gauxc_ENABLE_GPU asks for
     if(gauxc_ENABLE_GPU AND NOT _gauxc_has_device)
         message(FATAL_ERROR "gauxc_ENABLE_GPU=ON, but ${_loc} is built without GPU support. "
