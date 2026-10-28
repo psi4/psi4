@@ -59,6 +59,14 @@ bool is_dummy_basis(const BasisSet &bs) {
     return bs.nshell() == 1 && bs.nprimitive() == 1 && bs.shell(0).am() == 0 && bs.shell(0).exp(0) == 0.0;
 }
 
+// psi4_slot below hard-codes the Gaussian solid-harmonic ordering (psi4's default), while transform_mixed uses
+// psi4's SphericalTransform, which follows psi4_SHGSHELL_ORDERING. In a build with the Standard ordering, the
+// spherical repack would put components in the wrong slots, so stop such a build until psi4_slot follows the
+// ordering too.
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+#error "LIBCINT backend: Gaussian solid-harmonic ordering only. Teach psi4_slot Standard, or ENABLE_cint=OFF."
+#endif
+
 /// psi4 / libint2-Gaussian spherical slot for magnetic quantum number m
 /// (m == 0 -> 0, m > 0 -> 2m-1, m < 0 -> -2m). All relative signs are +1
 /// (machine-verified against libint2 in Gaussian ordering, l = 0..4).
