@@ -30,7 +30,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
 #include <ctime>
 #include <vector>
 #include <utility>
@@ -1044,7 +1043,7 @@ void RHF::setup_potential() {
     }
 }
 
-void RHF::openorbital_scf() {
+bool RHF::openorbital_scf() {
 #ifndef USING_OpenOrbitalOptimizer
   throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenOrbitalOptimizer=ON`.\n");
 #else
@@ -1239,19 +1238,40 @@ void RHF::openorbital_scf() {
     }
   };
 
+  // Set when the loop below stops for the handoff rather than for convergence, so the
+  // driver knows whether a second-order package still has work to do.
+  bool reached_handoff = false;
   std::function<bool(const std::map<std::string,std::any> &)> callback_convergence_function = [&](const std::map<std::string,std::any> & data) -> bool {
 
         double e_conv = options_.get_double("E_CONVERGENCE");
         double d_conv = options_.get_double("D_CONVERGENCE");
         double e_delta = std::any_cast<double>(data.at("dE"));
         // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
-        double d_rms = 0.5 * ao_basis_diis_error;
         // scale density norm to match internal algorithm
-
+        double d_rms = 0.5 * ao_basis_diis_error;
+        // A converged SCF has nothing left to hand off, so settle that first. D_CONVERGENCE is
+        // tighter than SOSCF_START_CONVERGENCE, which means convergence always satisfies the
+        // handoff test below; checking the handoff first would shadow convergence entirely and
+        // spend two more J/K builds rediscovering it.
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
         if (iteration_ == options_.get_int("MAXITER"))
             printf("%d = |%e| < %e && %e < %e\n", converged, e_delta, e_conv, d_rms, d_conv);
-        return converged;
+        if (converged) return true;
+
+        // When second-order iterations are to take over, OpenOrbitalOptimizer's job is only
+        // to reach the handoff point; stop there and let the driver hand off. The iteration
+        // the driver will run is two beyond iteration_: this one is not counted until the
+        // printing callback runs, and the driver takes one more first-order step before it
+        // looks. It has to fit inside MAXITER, or handing off would spend a J/K build the
+        // budget cannot pay for; carry on here instead and fail as an ordinary SCF would.
+        int handoff_iteration = iteration_ + 2;
+        if (options_.get_bool("SOSCF") && handoff_iteration >= options_.get_int("SOSCF_START") &&
+            handoff_iteration <= options_.get_int("MAXITER") &&
+            d_rms < options_.get_double("SOSCF_START_CONVERGENCE")) {
+            reached_handoff = true;
+            return true;
+        }
+        return false;
   };
 
   std::function<void(const std::map<std::string,std::any> &)> callback_function = [&](const std::map<std::string,std::any> & data) {
@@ -1286,8 +1306,16 @@ void RHF::openorbital_scf() {
   scfsolver.optimal_damping_threshold(options_.get_double("OOO_OPTIMAL_DAMPING_THRESHOLD"));
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
-  if(fail_on_maxiter and not scfsolver.converged())
-    throw PSIEXCEPTION("SCF did not converge and FAIL_ON_MAXITER is set to true.\n");
+  // converged() re-runs the convergence callback, and the handoff arm of that callback
+  // depends on iteration_, which the printing callback has since advanced. So ask the
+  // flag, not the solver, whether we stopped for the handoff. Report a real failure
+  // either way: the driver no longer runs an iteration of its own afterwards, so
+  // nothing downstream would otherwise notice.
+  if(not reached_handoff and not scfsolver.converged()) {
+    if(fail_on_maxiter)
+      throw PSIEXCEPTION("SCF did not converge and FAIL_ON_MAXITER is set to true.\n");
+    outfile->Printf("    OpenOrbitalOptimizer did not converge, but FAIL_ON_MAXITER is false.\n");
+  }
 
   // Update the orbitals with OOO's solution
   auto solution = scfsolver.get_solution();
@@ -1317,8 +1345,170 @@ void RHF::openorbital_scf() {
   form_G();
   // Compute the energy
   compute_E();
+
+  return reached_handoff;
 #endif
 }
+
+#ifdef USING_OpenTrustRegion
+SharedMatrix RHF::unpack(const OTR::c_real* matrix, const std::string name, const Dimension doccpi,
+                         const Dimension virpi) {
+    // create shared matrix
+    auto shared_matrix = std::make_shared<Matrix>(name, doccpi, virpi);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (!doccpi[h] || !virpi[h]) continue;
+
+        // get the pointer to the memory block for this irrep in shared matrix
+        auto block = shared_matrix->pointer(h);
+
+        // copy matrix to shared matrix
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = 0; a < virpi[h]; a++) {
+                block[i][a] = matrix[counter++];
+            }
+        }
+    }
+
+    return shared_matrix;
+}
+
+OTR::c_int RHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
+    // get doubly occupied and virtual dimensions per irrep
+    auto doccpi = nalphapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack kappa
+    auto kappa_shared = unpack(kappa, "kappa", doccpi, virpi);
+
+    // save coefficients, density matrix and other quantities
+    auto C_save = std::make_shared<Matrix>(Ca_);
+    auto D_save = std::make_shared<Matrix>(Da_);
+    auto G_save = std::make_shared<Matrix>(G_);
+    auto V_save = std::make_shared<Matrix>(Va_);
+    auto J_save = std::make_shared<Matrix>(J_);
+    auto K_save = std::make_shared<Matrix>(K_);
+    auto wK_save = std::make_shared<Matrix>(wK_);
+
+    // apply orbital rotation
+    rotate_orbitals(Ca_, kappa_shared);
+
+    // form density matrix
+    form_D();
+
+    // form two-electron contribution to Fock matrix (also forms Coulomb and exchange contributions separately)
+    form_G();
+
+    // compute energy
+    *func = compute_E();
+
+    // get back previous quantities
+    Ca_->copy(C_save);
+    Da_->copy(D_save);
+    G_->copy(G_save);
+    Va_->copy(V_save);
+    J_->copy(J_save);
+    K_->copy(K_save);
+    wK_->copy(wK_save);
+    if (functional_->needs_xc()) {
+        potential_->set_D({Da_});
+    }
+
+    return 0;
+}
+
+OTR::c_int RHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
+    // get doubly occupied and virtual dimensions per irrep
+    auto doccpi = nalphapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack x
+    auto x_shared = unpack(x, "x", doccpi, virpi);
+
+    // apply Hessian linear transformation
+    auto hess_x_shared = cphf_Hx({x_shared})[0];
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // Skip if dimensions are zero. Safe here (unlike ROHF): this irrep holds doccpi*virpi
+        // parameters, so the guard only fires when the loop below would write none.
+        if (!doccpi[h] || !virpi[h]) continue;
+
+        // get the pointer to the memory block for this irrep in shared matrix
+        auto hess_x_irrep = hess_x_shared->pointer(h);
+
+        // copy shared matrix to Hessian linear transformation, factor 2 for doubly
+        // occupied orbitals and another factor 2 to account for redundant parameters
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = 0; a < virpi[h]; a++) {
+                hess_x[counter++] = -4 * hess_x_irrep[i][a];
+            }
+        }
+    }
+
+    return 0;
+}
+
+OTR::c_int RHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad,
+                                double* h_diag, OTR::hess_x_fp* hess_x_fp) {
+
+    // get doubly occupied and virtual dimensions per irrep
+    auto doccpi = nalphapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack kappa
+    auto kappa_shared = unpack(kappa, "kappa", doccpi, virpi);
+
+    // apply orbital rotation
+    rotate_orbitals(Ca_, kappa_shared);
+
+    // form density matrix
+    form_D();
+
+    // form two-electron contribution to Fock matrix (also forms Coulomb and exchange contributions separately)
+    form_G();
+
+    // compute energy
+    *func = compute_E();
+
+    // form Fock matrix
+    form_F();
+
+    // compute Fock matrix
+    auto fock = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (!doccpi[h] || !virpi[h]) continue;
+
+        // get the pointer to the memory block for this irrep in shared matrix
+        auto fp = fock->pointer(h);
+
+        // construct gradient and Hessian diagonal, factor 2 for doubly occupied
+        // orbitals and another factor 2 to account for redundant parameters
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = doccpi[h]; a < nmopi_[h]; a++) {
+                grad[counter] = 4 * fp[i][a];
+                h_diag[counter++] = 4 * (-fp[i][i] + fp[a][a]);
+            }
+        }
+    }
+
+    // set pointer
+    *hess_x_fp = otr_hess_x_wrapper;
+
+    return 0;
+}
+
+int RHF::otr_n_param() {
+    Dimension nparampi = nalphapi_;
+    for (size_t i = 0, maxi = nparampi.n(); i < maxi; ++i) nparampi[i] *= (nmopi_ - nalphapi_)[i];
+    return nparampi.sum();
+}
+#endif
 
 }  // namespace scf
 }  // namespace psi

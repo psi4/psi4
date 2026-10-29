@@ -18,6 +18,9 @@ set guess read
 energy('scf')
 compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy, read-in guess')  #TEST
 niter = int(variable('SCF ITERATIONS'))
+# One iteration to confirm orbitals that were read in already converged. OpenOrbitalOptimizer  #TEST
+# declines an ROHF reference and falls back to the internal code, so it costs nothing extra     #TEST
+# here, unlike the UHF case below.                                                              #TEST
 compare(1, niter, f'ROHF Iterations {niter}, read-in guess')  #TEST
 
 
@@ -30,4 +33,8 @@ set guess read
 energy('scf')
 compare_values(-247.03206951, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy, read-in guess')  #TEST
 niter = int(variable('SCF ITERATIONS'))
-compare(1, niter, f'UHF Iterations {niter}, read-in guess')  #TEST
+# OpenOrbitalOptimizer costs one extra: it reaches the second-order handoff and the psi4  #TEST
+# loop then takes its own iteration to see that nothing is left to do.                    #TEST
+nexp = 2 if (psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL"
+             and psi4.core.get_option("SCF", "SOSCF")) else 1  # KP-LOGIC
+compare(nexp, niter, f'UHF Iterations {niter}, read-in guess')  #TEST

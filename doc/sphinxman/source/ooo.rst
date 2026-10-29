@@ -57,6 +57,11 @@ orbital_optimizer_package openorbitaloptimizer`` or ``set
 orbital_optimizer_package ooo``
 runs the SCF iterations steps from OOO. Set to ``internal`` to revoke.
 
+If |scf__soscf| is also on, OpenOrbitalOptimizer drives the first-order
+iterations only, stopping at |scf__soscf_start_convergence| so that the
+second-order package selected by |globals__second_order_orbital_optimizer_package|
+can finish the calculation. See :ref:`sec:otr`.
+
 Installation
 ~~~~~~~~~~~~
 
