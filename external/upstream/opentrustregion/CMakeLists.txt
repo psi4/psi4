@@ -22,7 +22,7 @@ if(${ENABLE_OpenTrustRegion})
 
         ExternalProject_Add(opentrustregion_external
             DEPENDS lapack_external
-            URL https://github.com/eriksen-lab/opentrustregion/archive/master.tar.gz  # edit in codedeps
+            URL https://github.com/eriksen-lab/opentrustregion/archive/v3.0.0.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
