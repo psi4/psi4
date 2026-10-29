@@ -1,6 +1,9 @@
 #! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
 #! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 Eref = [ 85.1890645313,  -0.00359915058,  0.00362911158,  #TEST
          -0.00083137117,      -0.00150542374, -0.00230683391 ] #TEST
 
@@ -38,7 +41,7 @@ set {
     df_basis_elst cc-pvdz-ri
 }
 
-energy('sapt0', molecule=ethene_ethyne)
+_, wfn = energy('sapt0', molecule=ethene_ethyne, return_wfn=True)
 
 Eelst = psi4.variable("SAPT ELST ENERGY")
 Eexch = psi4.variable("SAPT EXCH ENERGY")
@@ -52,3 +55,4 @@ compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch")                                
 compare_values(Eref[3], Eind, 6, "SAPT0 Eind")                                                   #TEST
 compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")                                                 #TEST
 compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                                   #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower().replace("auto", "libint2"), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST

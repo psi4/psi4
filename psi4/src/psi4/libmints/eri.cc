@@ -68,16 +68,24 @@ Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_thresho
         throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
     }
 
-    for (int der = 0; der <= deriv; ++der) {
-        // set braket upon engine construction so particular LIBINT2_MAX_AM_eri[|2|3] limit governs validity
-        engines_.emplace_back(libint2::Operator::coulomb, max_nprim, max_am, der, max_precision,
-                              libint2::operator_traits<libint2::Operator::coulomb>::default_params(), braket_);
+    // Engine construction throws Engine::lmax_exceeded past Libint2's compiled angular momentum, which
+    // IntegralFactory may handle (falling back to libcint), so leave the timer balanced.
+    try {
+        for (int der = 0; der <= deriv; ++der) {
+            // set braket upon engine construction so particular LIBINT2_MAX_AM_eri[|2|3] limit governs validity
+            engines_.emplace_back(libint2::Operator::coulomb, max_nprim, max_am, der, max_precision,
+                                  libint2::operator_traits<libint2::Operator::coulomb>::default_params(), braket_);
+        }
+        // set max_am for primary basis to be sieved, not all basis1234
+        max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
+        schwarz_engine_ =
+            libint2::Engine(libint2::Operator::coulomb, max_nprim, max_am, 0, max_precision,
+                            libint2::operator_traits<libint2::Operator::coulomb>::default_params(),
+                            libint2::BraKet::xx_xx);
+    } catch (...) {
+        timer_off("Libint2ERI::Libint2ERI");
+        throw;
     }
-    // set max_am for primary basis to be sieved, not all basis1234
-    max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
-    schwarz_engine_ =
-        libint2::Engine(libint2::Operator::coulomb, max_nprim, max_am, 0, max_precision,
-                        libint2::operator_traits<libint2::Operator::coulomb>::default_params(), libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2ERI::Libint2ERI");
 }
@@ -174,12 +182,18 @@ Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, doub
         throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
     }
 
-    for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::erf_coulomb, max_nprim, max_am, der, max_precision, omega, braket_);
+    try {
+        for (int der = 0; der <= deriv; ++der) {
+            engines_.emplace_back(libint2::Operator::erf_coulomb, max_nprim, max_am, der, max_precision, omega,
+                                  braket_);
+        }
+        max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
+        schwarz_engine_ = libint2::Engine(libint2::Operator::erf_coulomb, max_nprim, max_am, 0, max_precision, omega,
+                                          libint2::BraKet::xx_xx);
+    } catch (...) {
+        timer_off("Libint2ErfERI::Libint2ErfERI");
+        throw;
     }
-    max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
-    schwarz_engine_ = libint2::Engine(libint2::Operator::erf_coulomb, max_nprim, max_am, 0, max_precision, omega,
-                                      libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2ErfERI::Libint2ErfERI");
 }
@@ -288,12 +302,18 @@ Libint2ErfComplementERI::Libint2ErfComplementERI(double omega, const IntegralFac
         throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
     }
 
-    for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::erfc_coulomb, max_nprim, max_am, der, max_precision, omega, braket_);
+    try {
+        for (int der = 0; der <= deriv; ++der) {
+            engines_.emplace_back(libint2::Operator::erfc_coulomb, max_nprim, max_am, der, max_precision, omega,
+                                  braket_);
+        }
+        max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
+        schwarz_engine_ = libint2::Engine(libint2::Operator::erfc_coulomb, max_nprim, max_am, 0, max_precision, omega,
+                                          libint2::BraKet::xx_xx);
+    } catch (...) {
+        timer_off("Libint2ErfComplementERI::Libint2ErfComplementERI");
+        throw;
     }
-    max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
-    schwarz_engine_ = libint2::Engine(libint2::Operator::erfc_coulomb, max_nprim, max_am, 0, max_precision, omega,
-                                      libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2ErfComplementERI::Libint2ErfComplementERI");
 }

@@ -1,5 +1,8 @@
 #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 molecule h2o {
     O
     H 1 0.97
@@ -35,4 +38,5 @@ compare_values(ccT,      wfn.variable("CC Correlation Kinetic Energy"),       5,
 compare_values(ccV,      wfn.variable("CC Correlation Potential Energy"),     5, "CC Correlation Potential Energy")      #TEST
 compare_values(ccVT,     wfn.variable("CC Correlation Virial Ratio"),         5, "CC Correlation Virial Ratio")          #TEST
 compare_values(totalVT,  wfn.variable("CC Virial Ratio"),         5, "CC Virial Ratio")      #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower().replace("auto", "libint2"), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
 
