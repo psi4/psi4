@@ -1,5 +1,8 @@
 #! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 nucenergy =    2.6458860533     #TEST
 refenergy =  -25.10354689562797 #TEST
 
@@ -23,7 +26,8 @@ set = {
     e_convergence 10
 }
 
-thisenergy = energy('scf')
+thisenergy, wfn = energy('scf', return_wfn=True)
 
 compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
