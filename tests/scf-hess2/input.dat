@@ -52,7 +52,7 @@ compare_values(ref_ene, wfn.variable('current ENERGY'), 6, 'STO-3G energy')  #TE
 compare_values(ref_ene, wfn.variable('HF TOTAL ENERGY'), 6, 'STO-3G energy')  #TEST
 compare_arrays(psi3_hess, wfn.variable('CURRENT HESSIAN'), 7, "STO-3G Hessian")  #TEST
 compare_arrays(psi3_hess, wfn.variable('HF TOTAL HESSIAN'), 7, "STO-3G Hessian")  #TEST
-compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower().replace("auto", "libint2"), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
 
 # Clean out scratch files and go again with cc-pVDZ
 psi4.clean()

@@ -170,7 +170,7 @@ jobs:
   - bash: |
       grep '"INTEGRAL_PACKAGE"' psi4/src/read_options.cc
       if [[ "$(Agent.JobName)" == "Linux Builds gcc_11" ]]; then
-        sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 SIMINT LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
+        sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)AUTO";\1LIBCINT";' psi4/src/read_options.cc
       fi
       grep '"INTEGRAL_PACKAGE"' psi4/src/read_options.cc
     displayName: "Special Operation: test libcint as default integral package"

@@ -27,9 +27,15 @@
  */
 #include "psi4/libmints/integral.h"
 
+#include <algorithm>
+#include <array>
+#include <functional>
 #include <mutex>
 #include <set>
 #include <string>
+
+#include <libint2/util/configuration.h>
+
 #include "psi4/libmints/shellrotation.h"
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/rel_potential.h"
@@ -219,9 +225,9 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::electric_field(int deriv) {
 
 namespace {
 
-/// Stop unless INTEGRAL_PACKAGE names an engine compiled into this build. LIBINT2 always is.
+/// Stop unless INTEGRAL_PACKAGE names an engine compiled into this build. AUTO and LIBINT2 always are.
 void require_compiled_in(const std::string &package) {
-    bool compiled = package == "LIBINT2";
+    bool compiled = package == "AUTO" || package == "LIBINT2";
 #ifdef USING_simint
     compiled |= package == "SIMINT";
 #endif
@@ -243,16 +249,79 @@ void record_coulomb_eri_engine(const std::string &engine) {
     coulomb_eri_built.insert(engine);
 }
 
-/// INTEGRAL_PACKAGE's engine provides no integrals of this kind, so Libint2 supplies them. Announce each such
-/// substitution once per process, not once per (per-thread) integral object.
-void note_libint2_fallback(const std::string &package, const std::string &missing) {
-    if (package == "LIBINT2") return;
+/// Print a note once per process, not once per (per-thread) integral object.
+void note_once(const std::string &note) {
     static std::mutex lock;
     static std::set<std::string> announced;
     std::lock_guard<std::mutex> guard(lock);
-    if (!announced.insert(package + missing).second) return;
-    outfile->Printf("  INTEGRAL_PACKAGE %s: provides no %s; using Libint2 instead.\n", package.c_str(),
-                    missing.c_str());
+    if (announced.insert(note).second) outfile->Printf("  %s\n", note.c_str());
+}
+
+/// INTEGRAL_PACKAGE's engine provides no integrals of this kind, so Libint2 supplies them.
+void note_libint2_fallback(const std::string &package, const std::string &missing) {
+    if (package == "AUTO" || package == "LIBINT2") return;
+    note_once("INTEGRAL_PACKAGE " + package + ": provides no " + missing + "; using Libint2 instead.");
+}
+
+using TwoBodyMaker = std::function<std::unique_ptr<TwoBodyAOInt>()>;
+
+/// "Coulomb integrals", "Coulomb first-derivative integrals", ...
+std::string integral_kind(const std::string &op, int deriv) {
+    return op + (deriv == 1 ? " first-derivative" : deriv == 2 ? " second-derivative" : "") + " integrals";
+}
+
+/// The highest angular momentum of Libint2's Coulomb-type integrals over 2, 3 or 4 centers, by derivative order, or -1
+/// where Libint2 has none. Libint2 (>= 2.13) names each component of its configuration by the angular momentum common
+/// to all centers, e.g., eri_kkkk_d0 for 4-center integrals up to k.
+int libint2_lmax(int centers, int deriv) {
+    static const auto table = []() {
+        const std::string am = "spdfghiklmnoqrtuvwxyz";
+        std::array<std::array<int, 3>, 3> lmax;
+        for (int c = 2; c <= 4; ++c)
+            for (int d = 0; d <= 2; ++d) {
+                lmax[c - 2][d] = -1;
+                for (int l = 0; l < static_cast<int>(am.size()); ++l) {
+                    const std::string component = "eri_" + std::string(c, am[l]) + "_d" + std::to_string(d);
+                    if (libint2::supports(component)) lmax[c - 2][d] = l;
+                }
+            }
+        return lmax;
+    }();
+    return table[centers - 2][deriv];
+}
+
+/// Libint2's integrals over these bases, or, under AUTO, libcint's when Libint2 lacks them: beyond the angular
+/// momentum it was built for, or at a derivative order it was built without (Hessians on some platforms).
+/// make_libcint is empty without libcint. Sets engine to the one used.
+std::unique_ptr<TwoBodyAOInt> libint2_unless_beyond(const std::string &package, const std::string &op, int deriv,
+                                                    const std::vector<const BasisSet *> &bases,
+                                                    const TwoBodyMaker &make_libint2, const TwoBodyMaker &make_libcint,
+                                                    std::string &engine) {
+    // The density-fitting dummy basis is not a center.
+    int centers = 0, l = 0;
+    for (const auto *bs : bases) {
+        if (bs->nshell() == 1 && bs->shell(0).am() == 0 && bs->shell(0).exp(0) == 0.0) continue;
+        ++centers;
+        l = std::max(l, bs->max_am());
+    }
+    const int lmax = centers >= 2 ? libint2_lmax(centers, deriv) : 0;
+    // A Libint2 that reports no 4-center energy integrals reports nothing at all: let it try.
+    if (l <= lmax || libint2_lmax(4, 0) < 0) {
+        engine = "libint2";
+        return make_libint2();
+    }
+    const std::string kind = std::to_string(centers) + "-center " + integral_kind(op, deriv);
+    const std::string lacks = lmax < 0 ? "Libint2 was built without " + kind
+                                       : "Libint2 was built for " + kind + " up to angular momentum " +
+                                             std::to_string(lmax) + ", but these need " + std::to_string(l);
+    if (package == "AUTO" && make_libcint) {
+        note_once("INTEGRAL_PACKAGE AUTO: " + lacks + "; using libcint instead.");
+        engine = "libcint";
+        return make_libcint();
+    }
+    const std::string remedy = make_libcint ? "INTEGRAL_PACKAGE AUTO or LIBCINT computes them with libcint."
+                                            : "Rebuild with `-D ENABLE_cint=ON` for libcint to compute them.";
+    throw PSIEXCEPTION("INTEGRAL_PACKAGE " + package + ": " + lacks + ". " + remedy);
 }
 
 }  // namespace
@@ -274,8 +343,17 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
     }
 #endif
     note_libint2_fallback(package, "derivative integrals");
-    record_coulomb_eri_engine("libint2");
-    return std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
+    TwoBodyMaker make_libcint;
+#ifdef USING_cint
+    make_libcint = [&] { return std::make_unique<LibcintERI>(this, deriv, use_shell_pairs, needs_exchange); };
+#endif
+    std::string engine;
+    auto ints = libint2_unless_beyond(
+        package, "Coulomb", deriv, {bs1_.get(), bs2_.get(), bs3_.get(), bs4_.get()},
+        [&] { return std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange); },
+        make_libcint, engine);
+    record_coulomb_eri_engine(engine);
+    return ints;
 }
 
 void IntegralFactory::reset_coulomb_eri_engines() {
@@ -300,7 +378,17 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, 
         return std::make_unique<LibcintErfERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
 #endif
     note_libint2_fallback(package, "range-separated (erf) integrals");
-    return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+    TwoBodyMaker make_libcint;
+#ifdef USING_cint
+    make_libcint = [&] { return std::make_unique<LibcintErfERI>(omega, this, deriv, use_shell_pairs, needs_exchange); };
+#endif
+    std::string engine;
+    return libint2_unless_beyond(
+        package, "range-separated (erf)", deriv, {bs1_.get(), bs2_.get(), bs3_.get(), bs4_.get()},
+        [&] {
+            return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+        },
+        make_libcint, engine);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
@@ -312,7 +400,20 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, 
         return std::make_unique<LibcintErfComplementERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
 #endif
     note_libint2_fallback(package, "range-separated (erfc) integrals");
-    return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+    TwoBodyMaker make_libcint;
+#ifdef USING_cint
+    make_libcint = [&] {
+        return std::make_unique<LibcintErfComplementERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+    };
+#endif
+    std::string engine;
+    return libint2_unless_beyond(
+        package, "range-separated (erfc)", deriv, {bs1_.get(), bs2_.get(), bs3_.get(), bs4_.get()},
+        [&] {
+            return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs,
+                                                             needs_exchange);
+        },
+        make_libcint, engine);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
