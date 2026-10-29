@@ -98,11 +98,12 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     std::vector<double> env_;
     /// libcint CINTOpt* for each kernel (held opaquely so the header stays free
     /// of <cint.h>): (ab|cd), and when deriv_ allows, ip1, ipip1, ipvip1, ip1ip2.
-    void *opt_;
-    void *opt_ip1_;
-    void *opt_ipip1_;
-    void *opt_ipvip1_;
-    void *opt_ip1ip2_;
+    /// libcint only reads them while computing, so clones share them.
+    std::shared_ptr<void> opt_;
+    std::shared_ptr<void> opt_ip1_;
+    std::shared_ptr<void> opt_ipip1_;
+    std::shared_ptr<void> opt_ipvip1_;
+    std::shared_ptr<void> opt_ip1ip2_;
 
     /// Global libcint bas-index of shell 0 of each of the four psi4 bases.
     int bas_start_[4];
@@ -144,6 +145,8 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     std::vector<double> mixed_scratch_;
 
     void common_init();
+    /// Size the quartet buffers and, for a mix, the solid-harmonic transforms.
+    void allocate_buffers();
 
     /// Build the libcint atm/bas/env arrays from the four psi4 basis sets.
     void build_environment();
@@ -186,7 +189,7 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     LibcintTwoElectronInt(const IntegralFactory *integral, int deriv = 0, double omega = 0.0,
                           bool use_shell_pairs = false, bool needs_exchange = false);
     LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs);
-    ~LibcintTwoElectronInt() override;
+    ~LibcintTwoElectronInt() override = default;
 
     void initialize_sieve() override;
 

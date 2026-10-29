@@ -155,13 +155,7 @@ bool libcint_drops_diffuse_pairs() {
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, int deriv, double omega,
                                              bool use_shell_pairs, bool needs_exchange)
-    : TwoBodyAOInt(integral, deriv),
-      opt_(nullptr),
-      opt_ip1_(nullptr),
-      opt_ipip1_(nullptr),
-      opt_ipvip1_(nullptr),
-      opt_ip1ip2_(nullptr),
-      omega_(omega) {
+    : TwoBodyAOInt(integral, deriv), omega_(omega) {
     if (deriv_ < 0 || deriv_ > 2)
         throw PSIEXCEPTION("LIBCINT backend: only first and second integral derivatives are implemented.");
 
@@ -198,16 +192,18 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
     timer_off("LibcintTwoElectronInt::LibcintTwoElectronInt");
 }
 
+// A clone, one per thread, shares the optimizers and keeps what TwoBodyAOInt copied: the sieve and the shell-pair
+// blocks, as Libint2's clones do. Only the buffers are its own.
 LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
     : TwoBodyAOInt(rhs),
       atm_(rhs.atm_),
       bas_(rhs.bas_),
       env_(rhs.env_),
-      opt_(nullptr),
-      opt_ip1_(nullptr),
-      opt_ipip1_(nullptr),
-      opt_ipvip1_(nullptr),
-      opt_ip1ip2_(nullptr),
+      opt_(rhs.opt_),
+      opt_ip1_(rhs.opt_ip1_),
+      opt_ipip1_(rhs.opt_ipip1_),
+      opt_ipvip1_(rhs.opt_ipvip1_),
+      opt_ip1ip2_(rhs.opt_ip1ip2_),
       basis_starts_(rhs.basis_starts_),
       active_(rhs.active_),
       omega_(rhs.omega_),
@@ -218,15 +214,7 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
     bas_start_[1] = rhs.bas_start_[1];
     bas_start_[2] = rhs.bas_start_[2];
     bas_start_[3] = rhs.bas_start_[3];
-    common_init();
-}
-
-LibcintTwoElectronInt::~LibcintTwoElectronInt() {
-    for (void *opt : {opt_, opt_ip1_, opt_ipip1_, opt_ipvip1_, opt_ip1ip2_}) {
-        if (!opt) continue;
-        CINTOpt *o = static_cast<CINTOpt *>(opt);
-        CINTdel_optimizer(&o);
-    }
+    allocate_buffers();
 }
 
 void LibcintTwoElectronInt::common_init() {
@@ -238,7 +226,10 @@ void LibcintTwoElectronInt::common_init() {
     auto make_opt = [&](CINTOptimizerFunction *f) {
         CINTOpt *o = nullptr;
         f(&o, atm_.data(), natm, bas_.data(), nbas, env_.data());
-        return static_cast<void *>(o);
+        return std::shared_ptr<void>(o, [](void *p) {
+            CINTOpt *q = static_cast<CINTOpt *>(p);
+            if (q) CINTdel_optimizer(&q);
+        });
     };
     opt_ = make_opt(int2e_optimizer);
     if (deriv_ >= 1) opt_ip1_ = make_opt(int2e_ip1_optimizer);
@@ -248,6 +239,12 @@ void LibcintTwoElectronInt::common_init() {
         opt_ip1ip2_ = make_opt(int2e_ip1ip2_optimizer);
     }
 
+    allocate_buffers();
+    setup_sieve();
+    create_blocks();
+}
+
+void LibcintTwoElectronInt::allocate_buffers() {
     // Size scratch for the largest quartet block we may compute. This must
     // cover not only the factory's (bs1,bs2,bs3,bs4) block but also the Schwarz
     // sieve, which computes (MN|MN) over a single basis -- so a block up to
@@ -279,9 +276,6 @@ void LibcintTwoElectronInt::common_init() {
     target_full_ = target_store_.data();
     source_full_ = nullptr;
     buffers_.assign(nbuf, target_full_);
-
-    setup_sieve();
-    create_blocks();
 }
 
 void LibcintTwoElectronInt::initialize_sieve() {
@@ -420,26 +414,26 @@ bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int 
     switch (kernel) {
         case Kernel::ERI:
             f = cart_ ? int2e_cart : int2e_sph;
-            opt = opt_;
+            opt = opt_.get();
             break;
         case Kernel::IP1:
             f = cart_ ? int2e_ip1_cart : int2e_ip1_sph;
-            opt = opt_ip1_;
+            opt = opt_ip1_.get();
             ncomp = 3;
             break;
         case Kernel::IPIP1:
             f = cart_ ? int2e_ipip1_cart : int2e_ipip1_sph;
-            opt = opt_ipip1_;
+            opt = opt_ipip1_.get();
             ncomp = 9;
             break;
         case Kernel::IPVIP1:
             f = cart_ ? int2e_ipvip1_cart : int2e_ipvip1_sph;
-            opt = opt_ipvip1_;
+            opt = opt_ipvip1_.get();
             ncomp = 9;
             break;
         case Kernel::IP1IP2:
             f = cart_ ? int2e_ip1ip2_cart : int2e_ip1ip2_sph;
-            opt = opt_ip1ip2_;
+            opt = opt_ip1ip2_.get();
             ncomp = 9;
             break;
     }
