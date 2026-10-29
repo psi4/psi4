@@ -273,7 +273,7 @@ void DCTSolver::form_density_weighted_fock_RHF() {
     a_tau_mo.set_diagonal(a_evals);
 
     // Transform the Fock matrix to NSO basis
-    auto nso_Fa = std::make_shared<Matrix>("Alpha Fock in the NSO basis", nirrep_, nmopi_, nmopi_);
+    auto nso_Fa = std::make_shared<Matrix>("Alpha Fock in the NSO basis", nmopi_, nmopi_);
 
     // Alpha spin
     nso_Fa->transform(moFa_, a_evecs);

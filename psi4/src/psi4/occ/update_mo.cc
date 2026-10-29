@@ -39,7 +39,7 @@ void OCCWave::update_mo_spincase(const SpinType spin) {
     const auto& kappa_bar = kappa_bar_[spin];
 
     // Form the linearized orbital rotation matrix, K, from the amplitudes, kappa_bar
-    auto Korb = std::make_shared<Matrix>("K MO rotation", nirrep_, nmopi_, nmopi_);
+    auto Korb = std::make_shared<Matrix>("K MO rotation", nmopi_, nmopi_);
     const auto idpS = idp_dimensions_[spin].sum();
     const auto& idprowS = idprow_[spin];
     const auto& idpcolS = idpcol_[spin];
@@ -54,7 +54,7 @@ void OCCWave::update_mo_spincase(const SpinType spin) {
     }
 
     // Approximate orbital rotation matrix U = exp(K) by I + K + K^2/2.
-    auto Uorb = std::make_shared<Matrix>("MO rotation matrix", nirrep_, nmopi_, nmopi_);
+    auto Uorb = std::make_shared<Matrix>("MO rotation matrix", nmopi_, nmopi_);
     Uorb->identity();
     Uorb->add(Korb);
     auto Ksqr = linalg::doublet(Korb, Korb);

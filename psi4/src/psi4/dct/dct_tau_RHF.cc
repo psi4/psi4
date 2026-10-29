@@ -180,8 +180,8 @@ void DCTSolver::build_tau_R() {
         aocc_tau_.zero();
         avir_tau_.zero();
         // Diagonalize and take a square root
-        auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-        auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
+        auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", naoccpi_, naoccpi_);
+        auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", navirpi_, navirpi_);
         auto aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", naoccpi_);
         auto avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", navirpi_);
         aocc_tau_old.diagonalize(aocc_evecs, aocc_evals);
