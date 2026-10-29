@@ -73,3 +73,35 @@ def test_gradient_ref():
         psi4.gradient("scf", ref_wfn=mp2_wfn)
     scf_wfn = psi4.energy("scf", return_wfn=True)[1]
     psi4.gradient("scf", ref_wfn=scf_wfn)
+
+def test_gradient_ref_save_jk():
+    psi4.geometry("""
+        H
+        H 1 0.74
+        symmetry c1
+    """)
+    psi4.set_options({"basis": "cc-pVDZ", "scf_type": "df", "mp2_type": "df", "d_convergence": 10})
+    ref_gradient = psi4.gradient("mp2")
+
+    # SAVE_JK makes the DF-MP2 gradient reuse the JK object of its HF reference
+    psi4.set_options({"save_jk": True})
+    scf_wfn = psi4.energy("scf", return_wfn=True)[1]
+    assert scf_wfn.jk() is not None
+    assert compare_values(ref_gradient, psi4.gradient("mp2", ref_wfn=scf_wfn), 8, "DF-MP2 gradient reusing the SCF JK")
+
+@pytest.mark.parametrize("ref_method, error", [
+    pytest.param("mp2", "SAVE_JK requires an HF reference wavefunction", id="mp2 reference"),
+    pytest.param("scf", "SAVE_JK requires the HF reference to keep its JK object", id="scf reference without JK"),
+])
+def test_gradient_ref_save_jk_unusable_reference(ref_method, error):
+    psi4.geometry("""
+        H
+        H 1 0.74
+        symmetry c1
+    """)
+    psi4.set_options({"basis": "cc-pVDZ", "scf_type": "df", "mp2_type": "df"})
+    ref_wfn = psi4.energy(ref_method, return_wfn=True)[1]
+
+    psi4.set_options({"save_jk": True})
+    with pytest.raises(RuntimeError, match=error):
+        psi4.gradient("mp2", ref_wfn=ref_wfn)
