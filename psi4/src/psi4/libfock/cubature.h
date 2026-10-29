@@ -179,11 +179,18 @@ class MolecularGrid {
 
 #if USING_cuEST
     cuestMolecularGrid_t cuest_grid() const { return cuest_molecular_grid_; }
-    /// Is this grid GPU-resident (built for cuEST) rather than host-resident?
-    bool is_cuest_grid() const { return cuest_molecular_grid_ != nullptr; }
     /// Nominal, pre-screening quadrature size of a GPU-resident grid; see cuest_npoints_.
     long int cuest_npoints() const { return cuest_npoints_; }
 #endif
+    /// Is this grid GPU-resident (built for cuEST) rather than host-resident?  Always false
+    /// in a build without cuEST, so callers need no #ifdef of their own.
+    bool is_cuest_grid() const {
+#if USING_cuEST
+        return cuest_molecular_grid_ != nullptr;
+#else
+        return false;
+#endif
+    }
     /// Number of grid points
     int npoints() const { return npoints_; }
     /// Maximum number of grid points in a block

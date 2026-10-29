@@ -3849,6 +3849,30 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, bool i
                     break;
             }
             uint64_t nradial = rvalues.size();
+            // cuEST requires every angular count to be a genuine Lebedev number.  Psi4's
+            // Lebedev table begins with a non-Lebedev {order 0, 1 point} entry, so whenever a
+            // pruning function drives nominal_order * f(rho) <= 0, GetPrunedNumAngPts returns
+            // 1 and cuEST rejects the whole molecular grid with an opaque status code.  The
+            // Gaussian pruning schemes reach that regime routinely: P_GAUSSIAN beyond
+            // rho ~ 7.9, D_GAUSSIAN beyond rho ~ 5.6 (and below rho ~ 1e-6), LOG_GAUSSIAN on
+            // the innermost shells once DFT_PRUNING_ALPHA >~ 0.2.  Promote those shells to the
+            // smallest real Lebedev rule (6 points) so the grid is buildable, and say so.
+            uint64_t n_promoted = 0;
+            for (uint64_t i = 0; i < nradial; i++) {
+                if (nangpts[i] < 6) {
+                    nangpts[i] = 6;
+                    n_promoted++;
+                }
+            }
+            if (n_promoted > 0 && opt.print > 0) {
+                outfile->Printf(
+                    "    cuEST grid: promoted %zu of %zu radial shells on atom %d from psi4's\n"
+                    "                1-point rule to the 6-point Lebedev rule; cuEST accepts\n"
+                    "                only genuine Lebedev counts.  Pruning scheme '%s' is very\n"
+                    "                aggressive for this grid.\n",
+                    static_cast<size_t>(n_promoted), static_cast<size_t>(nradial), A,
+                    opt.prunescheme.c_str());
+            }
             // Record the nominal quadrature size for reporting; see cuest_npoints_.
             for (uint64_t i = 0; i < nradial; i++) cuest_npoints_ += nangpts[i];
             CHECK_CUEST(cuestAtomGridCreate(
@@ -4650,6 +4674,16 @@ void MolecularGrid::postProcess(std::shared_ptr<BasisExtents> extents, int max_p
 
 void MolecularGrid::print(std::string out, int /*print*/) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    // A cuEST grid is built from the radial nodes/weights and per-shell angular counts
+    // that psi4 hands to the device, and nothing else: cuEST exposes no grid parameters
+    // (its AtomGrid/MolecularGrid parameter objects carry only a reserved *_NONE), and the
+    // host post-processing that consumes the blocking and screening options never runs.
+    // Printing those options for a GPU grid asserted settings that were not in effect, so
+    // they are suppressed here rather than silently misreported.  Nuclear partitioning is
+    // cuEST's own and fixed (Stratmann); the driver resets DFT_NUCLEAR_SCHEME to match, so
+    // the value printed below is accurate rather than aspirational.
+    const bool gpu_resident = is_cuest_grid();
+
     printer->Printf("   => Molecular Quadrature <=\n\n");
     printer->Printf("    Radial Scheme          = %14s\n", RadialGridMgr::SchemeName(options_.radscheme));
     printer->Printf("    Pruning Scheme         = %14s\n", options_.prunescheme.c_str());
@@ -4658,14 +4692,16 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     }
     printer->Printf("    Nuclear Scheme         = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
     printer->Printf("\n");
-    printer->Printf("    Blocking Scheme        = %14s\n", options_.blockscheme.c_str());
+    if (!gpu_resident) {
+        printer->Printf("    Blocking Scheme        = %14s\n", options_.blockscheme.c_str());
+    }
     printer->Printf("    BS radius alpha        = %14g\n", options_.bs_radius_alpha);
     printer->Printf("    Pruning alpha          = %14g\n", options_.pruning_alpha);
     printer->Printf("    Radial Points          = %14d\n", options_.nradpts);
     printer->Printf("    Spherical Points       = %14d\n", options_.nangpts);
     long int reported_npoints = npoints_;
 #ifdef USING_cuEST
-    if (is_cuest_grid()) {
+    if (gpu_resident) {
         // A cuEST grid lives on the device: it has no host points and no host blocks,
         // so npoints_/blocks_/max_points_/max_functions_ are all legitimately 0 and
         // printing them as such reads like a broken grid.  Report the nominal size
@@ -4683,7 +4719,9 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
 #ifdef USING_cuEST
     }
 #endif
-    printer->Printf("    Weights Tolerance      = %14.2E\n", options_.weights_cutoff);
+    if (!gpu_resident) {
+        printer->Printf("    Weights Tolerance      = %14.2E\n", options_.weights_cutoff);
+    }
     // printer->Printf("    Collocation Size [MiB] = %14d\n", (int)((8.0 * collocation_size_) / (1024.0 * 1024.0)));
     printer->Printf("\n");
     Process::environment.globals["XC GRID TOTAL POINTS"] = reported_npoints;

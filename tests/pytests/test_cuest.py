@@ -859,3 +859,166 @@ def test_cuest_grid_reports_its_size():
     assert npoints == 3 * 75 * 302, (
         f"cuEST grid reported {npoints} points; a GPU-resident grid used to "
         f"report 0 here, which reads like a broken grid.")
+
+
+# ===========================================================================
+# Which psi4 grid keywords actually reach the cuEST grid
+# ===========================================================================
+#
+# cuEST exposes no grid parameters at all: its AtomGrid and MolecularGrid
+# parameter objects each carry a single reserved *_NONE attribute. Psi4 computes
+# the radial nodes, the radial weights and the per-shell angular counts on the
+# host and hands cuEST those three arrays plus the geometry; cuEST builds the
+# grid on the device and applies its own nuclear partitioning. So a keyword is
+# honoured iff it shapes those arrays, and the host post-processing keywords
+# (blocking, screening) are structurally absent. See docs cuest.rst.
+
+__grid_geom = """
+0 1
+symmetry c1
+no_reorient
+no_com
+O
+H  1  0.9584
+H  1  0.9584  2  104.5
+"""
+
+__grid_base = {
+    "basis": "cc-pvdz",
+    "scf_type": "df",
+    "df_basis_scf": "cc-pvdz-jkfit",
+    "e_convergence": 11,
+    "d_convergence": 9,
+    "maxiter": 200,
+    "cuest_mixed_precision": False,
+}
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+def test_cuest_nuclear_scheme_defaults_to_stratmann(tmp_path):
+    """Unrequested, the scheme falls back to cuEST's Stratmann, with a notice."""
+    outfile = tmp_path / "nucscheme_default.out"
+    psi4.set_output_file(str(outfile), False)
+    try:
+        psi4.core.clean()
+        psi4.core.clean_options()
+        psi4.set_options({**__grid_base, "use_cuest": True})   # DFT_NUCLEAR_SCHEME untouched
+        energy = psi4.energy("pbe", molecule=psi4.geometry(__grid_geom))
+    finally:
+        psi4.set_output_file(str(tmp_path / "unused.out"), False)
+
+    # Reference from non-cuEST psi4 with DFT_NUCLEAR_SCHEME STRATMANN, same options.
+    # scf_helper's optstash restores the keyword after the run, so the energy, not a
+    # read-back, is the evidence that the reset took effect.
+    assert compare_values(-76.333506148935, energy, 6, "cuEST pbe, nuclear scheme unset")
+
+    text = outfile.read_text()
+    assert "DFT Nuclear Scheme (re)set to STRATMANN" in text, (
+        "the fallback to Stratmann must be announced, not silent")
+    quadrature = text[text.index("=> Molecular Quadrature <="):][:900]
+    assert "STRATMANN" in quadrature, (
+        f"grid summary should report the scheme cuEST used.\n{quadrature}")
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+def test_cuest_explicit_stratmann_is_accepted():
+    """Asking for the scheme cuEST actually uses is not an error."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.set_options({**__grid_base, "use_cuest": True, "dft_nuclear_scheme": "STRATMANN"})
+    energy = psi4.energy("pbe", molecule=psi4.geometry(__grid_geom))
+    assert compare_values(-76.333506148935, energy, 6, "cuEST pbe, explicit STRATMANN")
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize("requested", ["TREUTLER", "BECKE", "NAIVE", "SBECKE"])
+def test_cuest_explicit_non_stratmann_raises(requested):
+    """cuEST cannot honour another partitioning, so asking for one must not pass silently."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.set_options({**__grid_base, "use_cuest": True, "dft_nuclear_scheme": requested})
+    with pytest.raises(psi4.ValidationError) as exc:
+        psi4.energy("pbe", molecule=psi4.geometry(__grid_geom))
+    assert requested in str(exc.value)
+    assert "STRATMANN" in str(exc.value)
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize("scheme", [
+    "NONE", "FLAT", "ROBUST", "TREUTLER",
+    "P_SLATER", "D_SLATER", "LOG_SLATER",
+    # These three drive shells onto psi4's degenerate 1-point rule, which is not
+    # a Lebedev number.  cuEST rejects such a grid outright, so the shells are
+    # promoted to the 6-point rule rather than aborting the run.
+    "P_GAUSSIAN", "D_GAUSSIAN", "LOG_GAUSSIAN",
+])
+def test_cuest_every_pruning_scheme_builds(scheme):
+    """No DFT_PRUNING_SCHEME value may abort the cuEST grid build."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.set_options({**__grid_base, "use_cuest": True, "dft_pruning_scheme": scheme})
+    energy = psi4.energy("pbe", molecule=psi4.geometry(__grid_geom))
+
+    # Loose: the point is that the grid builds and integrates something sane,
+    # not that aggressively pruned grids reproduce a reference.
+    assert -76.4 < energy < -76.2, f"pbe/cc-pvdz water with pruning {scheme} gave {energy}"
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+@pytest.mark.parametrize("keyword,value", [
+    ("dft_weights_tolerance", 1.0e-8),
+    ("dft_basis_tolerance", 1.0e-6),
+    ("dft_block_scheme", "NAIVE"),
+    ("dft_block_max_points", 1024),
+    ("dft_remove_distant_points", False),
+])
+def test_cuest_host_only_grid_keywords_are_inert(keyword, value):
+    """Keywords that only feed host post-processing cannot change a GPU grid."""
+    def energy_with(extra):
+        psi4.core.clean()
+        psi4.core.clean_options()
+        psi4.set_options({**__grid_base, "use_cuest": True, **extra})
+        return psi4.energy("pbe", molecule=psi4.geometry(__grid_geom))
+
+    assert compare_values(energy_with({}), energy_with({keyword: value}), 10,
+                          f"cuEST pbe is unmoved by {keyword}")
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+def test_cuest_grid_print_omits_inert_keywords(tmp_path):
+    """The grid summary must not report settings a GPU-resident grid ignores."""
+    outfile = tmp_path / "cuest_grid_print.out"
+    psi4.set_output_file(str(outfile), False)
+    try:
+        psi4.core.clean()
+        psi4.core.clean_options()
+        # Nuclear scheme left unset: an explicit non-Stratmann request is an error,
+        # so the interesting print case is the fallback.
+        psi4.set_options({**__grid_base, "use_cuest": True,
+                          "dft_block_scheme": "NAIVE",
+                          "dft_weights_tolerance": 1.0e-8})
+        psi4.energy("pbe", molecule=psi4.geometry(__grid_geom))
+    finally:
+        psi4.set_output_file(str(tmp_path / "unused.out"), False)
+
+    text = outfile.read_text()
+    quadrature = text[text.index("=> Molecular Quadrature <="):][:900]
+
+    assert "Grid Residency" in quadrature, "GPU-resident grid did not announce itself"
+    assert "STRATMANN" in quadrature, (
+        f"grid summary should report the scheme cuEST used.\n{quadrature}")
+    for inert in ("Blocking Scheme", "Weights Tolerance"):
+        assert inert not in quadrature, (
+            f"grid summary reports '{inert}', which a cuEST grid does not use.\n{quadrature}")
