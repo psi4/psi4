@@ -169,4 +169,4 @@ compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAP  
 set guess sapgau
 _, wfn = energy('scf', return_wfn=True)
 compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAPGAU guess (a.u.)");             #TEST
-compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower().replace("auto", "libint2"), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST

@@ -270,7 +270,7 @@ compare_values(e_nuc_analytic_01, e_nuc_diffuse_10, 6, "Analytic 2 Gaussian char
 compare_values(e_elec_analytic_01, e_elec_diffuse_10, 6, "Analytic 2 Gaussian charges-s electron ixn energy vs. with external_potential")  #TEST
 compare_matrices(g_analytic_01, g_diffuse_10, 5, "Analytic 2 Gaussian charges-hydrogen gradient on hydrogen vs. with external_potential")  #TEST
 compare_matrices(g_analytic_extern_01, g_diffuse_extern_10, 5, "Analytic 2 Gaussian charges-hydrogen gradient on charge vs. with external_potential")  #TEST
-compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn_g.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower().replace("auto", "libint2"), wfn_g.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
 
 
 # The interaction energy between two sets of two positive Gaussian
