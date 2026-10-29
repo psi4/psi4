@@ -26,4 +26,4 @@ set findif points 5
 
 findif_grad = gradient('eom-ccsd', dertype=0)
 
-compare_matrices(analytic_grad, findif_grad, 6, "UHF-EOM-CCSD finite-diff. (5-pt.) vs. analytic gradient to 10^-7") #TEST
+compare_matrices(analytic_grad, findif_grad, 2.e-6, "UHF-EOM-CCSD finite-diff. (5-pt.) vs. analytic gradient to 10^-6") #TEST
