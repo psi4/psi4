@@ -239,13 +239,13 @@ else()
     message(STATUS "Disabled simint ${simint_DIR}")
 endif()
 
-if(${ENABLE_libcint})
-    find_package(libcint CONFIG REQUIRED)
-    get_property(_loc TARGET libcint::libcint PROPERTY LOCATION)
+if(${ENABLE_cint})
+    find_package(cint 6.1.2 CONFIG REQUIRED)  # edit in codedeps
+    get_property(_loc TARGET cint::cint PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
-    message(STATUS "${Cyan}Using libcint${ColourReset}: ${_loc} (version ${libcint_VERSION})")
+    message(STATUS "${Cyan}Using cint${ColourReset}: ${_loc} (version ${cint_VERSION})")
 else()
-    message(STATUS "Disabled libcint ${libcint_DIR}")
+    message(STATUS "Disabled cint ${cint_DIR}")
 endif()
 
 if(${ENABLE_BrianQC})

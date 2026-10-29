@@ -89,7 +89,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gauxc, gdma,
 #                         IntegratorXX, Libint2, OpenOrbitalOptimizer, optking, PCMSolver, pybind11,
-#                         pylibefp, qcelemental, qcengine, simint, Libxc, qcmanybody
+#                         pylibefp, qcelemental, qcengine, simint, Libxc, qcmanybody, cint
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -129,7 +129,7 @@ option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
-option(ENABLE_libcint "Enables use of the libcint two-electron integral library (experimental)" OFF)
+option(ENABLE_cint "Enables use of the libcint two-electron integral library (experimental). Can also detect a qcint" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_IntegratorXX "Enables use of IntegratorXX density functional grids library" OFF)
@@ -273,7 +273,7 @@ ExternalProject_Add(psi4-core
            openorbitaloptimizer_external
            optking_external
            simint_external
-           libcint_external
+           cint_external
            libxc_external
            mdi_external
            brianqc_external
@@ -333,7 +333,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
               -DENABLE_simint=${ENABLE_simint}
-              -DENABLE_libcint=${ENABLE_libcint}
+              -DENABLE_cint=${ENABLE_cint}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DENABLE_mdi=${ENABLE_mdi}
@@ -360,7 +360,7 @@ ExternalProject_Add(psi4-core
               -Dgauxc_DIR=${gauxc_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
-              -Dlibcint_DIR=${libcint_DIR}
+              -Dcint_DIR=${cint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
               -DBrianQC_DIR=${BrianQC_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}

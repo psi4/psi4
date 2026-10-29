@@ -21,7 +21,7 @@ foreach(dir
   openorbitaloptimizer
   optking
   simint
-  libcint
+  cint
   libxc
   brianqc
   ddx
