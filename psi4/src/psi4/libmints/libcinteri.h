@@ -148,8 +148,6 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// own, rather than TwoBodyAOInt::pure_transform's from the IntegralFactory, since the
     /// sieve's quartets come from one basis, not bs1_..bs4_, and the factory's stop at l=8.
     std::vector<SphericalTransform> sph_trans_;
-    /// Scratch for transform_mixed, as large as a cartesian quartet block.
-    std::vector<double> mixed_scratch_;
 
     void common_init();
     /// Size the quartet buffers and, for a mix, the solid-harmonic transforms.
@@ -177,8 +175,9 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
                     double *const *out);
 
     /// Transform a row-major cartesian quartet in psi4 center order, in place, for the
-    /// spherical shells among the libcint bas indices g (mixed_ only).
-    void transform_mixed(double *data, const int g[4], const int l[4]);
+    /// spherical shells among the libcint bas indices g (mixed_ only). scratch must hold
+    /// as many doubles as the cartesian quartet.
+    void transform_mixed(double *data, double *scratch, const int g[4], const int l[4]);
     /// Number of psi4 functions of the shell at libcint bas index g, of angular momentum l.
     int nfunction(int g, int l) const;
 

@@ -264,7 +264,6 @@ void LibcintTwoElectronInt::allocate_buffers() {
     const size_t nbuf = deriv_ >= 2 ? 78 : (deriv_ == 1 ? 12 : 1);
     target_store_.assign(std::max(sieve_blk, quartet_size_), 0.0);
     if (mixed_) {
-        mixed_scratch_.assign(std::max(sieve_blk, quartet_size_), 0.0);
         sph_trans_.clear();
         for (int l = 0; l <= maxam; ++l) sph_trans_.emplace_back(l);
     }
@@ -509,21 +508,22 @@ bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int 
                 }
             }
         }
-        if (mixed_) transform_mixed(dst, g, l);
+        // The component just repacked frees its nint doubles of cint_buf_ for scratch.
+        if (mixed_) transform_mixed(dst, cint_buf_.data() + c * nint, g, l);
     }
     return true;
 }
 
-void LibcintTwoElectronInt::transform_mixed(double *data, const int g[4], const int l[4]) {
+void LibcintTwoElectronInt::transform_mixed(double *data, double *scratch, const int g[4], const int l[4]) {
     // data holds a row-major cartesian quartet in psi4 center order. Transform, one
     // index at a time, each shell psi4 wants spherical, using psi4's solid harmonics
     // (the same cartesian -> Gaussian-ordered spherical transform the Libint2 path
     // effectively applies, given libcint cartesians normalized like libint2's).
-    // Alternate between data and mixed_scratch_, which is as large.
+    // Alternate between data and scratch, which is as large.
     size_t d[4];
     for (int k = 0; k < 4; ++k) d[k] = ncart(l[k]);
     double *in = data;
-    double *out = mixed_scratch_.data();
+    double *out = scratch;
     for (int k = 0; k < 4; ++k) {
         if (!bas_pure_[g[k]] || l[k] == 0) continue;
         const size_t np = 2 * l[k] + 1;
