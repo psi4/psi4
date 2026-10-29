@@ -84,7 +84,7 @@ class GridBlocker {
     int npoints() const { return npoints_; }
     int max_points() const { return max_points_; }
     int max_functions() const { return max_functions_; }
-    int collocation_size() const { return collocation_size_; }
+    size_t collocation_size() const { return collocation_size_; }
     double* x() const { return x_; }
     double* y() const { return y_; }
     double* z() const { return z_; }
