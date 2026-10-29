@@ -205,6 +205,7 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
       opt_ipvip1_(rhs.opt_ipvip1_),
       opt_ip1ip2_(rhs.opt_ip1ip2_),
       basis_starts_(rhs.basis_starts_),
+      cache_sizes_(rhs.cache_sizes_),
       active_(rhs.active_),
       omega_(rhs.omega_),
       cart_(rhs.cart_),
@@ -450,8 +451,36 @@ bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int 
 
     const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
     const int natm = static_cast<int>(atm_.size() / ATM_SLOTS);
+
+    // Hand libcint its working memory, sized by libcint itself: a null out makes it return the size instead. The
+    // size depends only on the kernel and on each slot's angular momentum and number of primitives, so ask once
+    // per kind of quartet. The base is aligned to 64 bytes, since qcint aligns what it takes from the cache to its
+    // SIMD width and counts on an aligned start, as its own allocation has.
+    uint64_t key = static_cast<uint64_t>(kernel);
+    bool keyed = true;
+    for (int t = 0; t < 4; ++t) {
+        const int lt = bas_[shls[t] * BAS_SLOTS + ANG_OF], pt = bas_[shls[t] * BAS_SLOTS + NPRIM_OF];
+        keyed = keyed && pt < 256;
+        key = (key << 13) | (static_cast<uint64_t>(lt) << 8) | static_cast<uint64_t>(pt & 255);
+    }
+    const auto known = keyed ? cache_sizes_.find(key) : cache_sizes_.end();
+    size_t need;
+    if (known != cache_sizes_.end()) {
+        need = known->second;
+    } else {
+        need = f(nullptr, nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(), nullptr, nullptr);
+        if (keyed) cache_sizes_.emplace(key, need);
+    }
+    double *cache = nullptr;  // libcint reports 0 when the size overflows its int; it then allocates for itself
+    if (need > 0) {
+        constexpr size_t align = 8;  // doubles: 64 bytes
+        if (cache_.size() < need + align) cache_.resize(need + align);
+        const auto addr = reinterpret_cast<std::uintptr_t>(cache_.data());
+        cache = cache_.data() + ((align - (addr / sizeof(double)) % align) % align);
+    }
+
     const bool nonzero = f(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
-                           static_cast<CINTOpt *>(opt), nullptr);
+                           static_cast<CINTOpt *>(opt), cache);
     if (!nonzero) {
         for (int c = 0; c < ncomp; ++c) std::fill(out[c], out[c] + nint, 0.0);
         return false;

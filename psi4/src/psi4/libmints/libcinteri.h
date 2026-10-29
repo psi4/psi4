@@ -29,7 +29,9 @@
 #ifndef _psi4_libmints_libcinteri_h
 #define _psi4_libmints_libcinteri_h
 
+#include <cstdint>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "psi4/libmints/twobody.h"
@@ -114,6 +116,11 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     std::vector<double> target_store_;
     /// Scratch for libcint's (col-major) output before repack into target_.
     std::vector<double> cint_buf_;
+    /// libcint's working memory, which it would otherwise allocate and free on every call. libcint never checks the
+    /// size of what it is handed, so cache_sizes_ keeps libcint's own count of what each kind of quartet needs, keyed
+    /// by kernel and by each slot's angular momentum and number of primitives.
+    std::vector<double> cache_;
+    std::unordered_map<uint64_t, size_t> cache_sizes_;
     /// Derivative buffers (12 or 78 quartet-sized blocks), a block of zeros for
     /// the buffers Libint2 leaves empty, and a sink for redundant components.
     std::vector<double> deriv_store_;
