@@ -30,6 +30,7 @@
     \ingroup CCHBAR
     \brief Enter brief description of file here
 */
+#include <cstdint>
 #include <string>
 
 #ifndef CCHBAR_PARAMS_H
@@ -40,7 +41,7 @@ namespace cchbar {
 
 /* Input parameters for cchbar */
 struct Params {
-    long int memory;
+    int64_t memory;
     int cachelev;
     int ref;
     int print;

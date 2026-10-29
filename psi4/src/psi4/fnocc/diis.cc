@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <cinttypes>
 #include "ccsd.h"
 #include "blas.h"
 #include "psi4/libqt/qt.h"
@@ -41,7 +42,7 @@ using namespace psi;
 namespace psi {
 namespace fnocc {
 
-void CoupledCluster::DIIS(double* c, long int nvec, long int n, int replace_diis_iter) {
+void CoupledCluster::DIIS(double* c, int64_t nvec, int64_t n, int replace_diis_iter) {
     integer nvar = nvec + 1;
     integer* ipiv = (integer*)malloc(nvar * sizeof(integer));
     doublereal* temp = (doublereal*)malloc(sizeof(doublereal) * maxdiis * maxdiis);
@@ -58,18 +59,18 @@ void CoupledCluster::DIIS(double* c, long int nvec, long int n, int replace_diis
 
     // add row to matrix, don't build the whole thing.
     psio->read_entry(PSIF_DCC_EVEC, "error matrix", (char*)&temp[0], maxdiis * maxdiis * sizeof(double));
-    for (long int i = 0; i < nvec; i++) {
-        for (long int j = 0; j < nvec; j++) {
+    for (int64_t i = 0; i < nvec; i++) {
+        for (int64_t j = 0; j < nvec; j++) {
             A[i * nvar + j] = temp[i * maxdiis + j];
         }
     }
 
     if (nvec <= 3) {
-        for (long int i = 0; i < nvec; i++) {
-            sprintf(evector, "evector%li", i + 1);
+        for (int64_t i = 0; i < nvec; i++) {
+            sprintf(evector, "evector%" PRId64, i + 1);
             psio->read_entry(PSIF_DCC_EVEC, evector, (char*)&tempt[0], n * sizeof(double));
-            for (long int j = i; j < nvec; j++) {
-                sprintf(evector, "evector%li", j + 1);
+            for (int64_t j = i; j < nvec; j++) {
+                sprintf(evector, "evector%" PRId64, j + 1);
                 psio->read_entry(PSIF_DCC_EVEC, evector, (char*)&tempv[0], n * sizeof(double));
                 double sum = C_DDOT(n, tempt, 1, tempv, 1);
                 A[i * nvar + j] = sum;
@@ -77,16 +78,16 @@ void CoupledCluster::DIIS(double* c, long int nvec, long int n, int replace_diis
             }
         }
     } else {
-        long int i;
+        int64_t i;
         if (nvec <= maxdiis && iter <= maxdiis) {
             i = nvec - 1;
         } else {
             i = replace_diis_iter - 1;
         }
-        sprintf(evector, "evector%li", i + 1);
+        sprintf(evector, "evector%" PRId64, i + 1);
         psio->read_entry(PSIF_DCC_EVEC, evector, (char*)&tempt[0], n * sizeof(double));
-        for (long int j = 0; j < nvec; j++) {
-            sprintf(evector, "evector%li", j + 1);
+        for (int64_t j = 0; j < nvec; j++) {
+            sprintf(evector, "evector%" PRId64, j + 1);
             psio->read_entry(PSIF_DCC_EVEC, evector, (char*)&tempv[0], n * sizeof(double));
             double sum = C_DDOT(n, tempt, 1, tempv, 1);
             A[i * nvar + j] = sum;
@@ -94,16 +95,16 @@ void CoupledCluster::DIIS(double* c, long int nvec, long int n, int replace_diis
         }
     }
 
-    long int j = nvec;
-    for (long int i = 0; i < nvar; i++) {
+    int64_t j = nvec;
+    for (int64_t i = 0; i < nvar; i++) {
         A[j * nvar + i] = -1.0;
         A[i * nvar + j] = -1.0;
     }
     A[nvar * nvar - 1] = 0.;
 
     // save matrix for next iteration
-    for (long int i = 0; i < nvec; i++) {
-        for (long int j = 0; j < nvec; j++) {
+    for (int64_t i = 0; i < nvec; i++) {
+        for (int64_t j = 0; j < nvec; j++) {
             temp[i * maxdiis + j] = A[i * nvar + j];
         }
     }
@@ -125,9 +126,9 @@ void CoupledCluster::DIIS(double* c, long int nvec, long int n, int replace_diis
     psio.reset();
 }
 
-void CoupledCluster::DIISOldVector(long int iter, int diis_iter, int replace_diis_iter) {
-    long int j, o = ndoccact;
-    long int arraysize, v = nvirt;
+void CoupledCluster::DIISOldVector(int64_t iter, int diis_iter, int replace_diis_iter) {
+    int64_t j, o = ndoccact;
+    int64_t arraysize, v = nvirt;
     arraysize = o * o * v * v;
 
     char* oldvector = (char*)malloc(1000 * sizeof(char));
@@ -164,8 +165,8 @@ void CoupledCluster::DIISOldVector(long int iter, int diis_iter, int replace_dii
 }
 double CoupledCluster::DIISErrorVector(int diis_iter, int replace_diis_iter, int iter) {
     double nrm;
-    long int i, j, o = ndoccact;
-    long int arraysize, v = nvirt;
+    int64_t i, j, o = ndoccact;
+    int64_t arraysize, v = nvirt;
     arraysize = o * o * v * v;
 
     char* evector = (char*)malloc(1000 * sizeof(char));
@@ -198,8 +199,8 @@ double CoupledCluster::DIISErrorVector(int diis_iter, int replace_diis_iter, int
     return nrm;
 }
 void CoupledCluster::DIISNewAmplitudes(int diis_iter, int& replace_diis_iter) {
-    long int o = ndoccact;
-    long int arraysize, v = nvirt;
+    int64_t o = ndoccact;
+    int64_t arraysize, v = nvirt;
     arraysize = o * o * v * v;
 
     char* oldvector;
@@ -217,12 +218,12 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter, int& replace_diis_iter) {
     memset((void*)tb, '\0', arraysize * sizeof(double));
     memset((void*)t1, '\0', o * v * sizeof(double));
 
-    long int max = diis_iter;
+    int64_t max = diis_iter;
     if (max > maxdiis) max = maxdiis;
 
-    for (long int j = 1; j <= max; j++) {
+    for (int64_t j = 1; j <= max; j++) {
         addr = PSIO_ZERO;
-        sprintf(oldvector, "oldvector%li", j);
+        sprintf(oldvector, "oldvector%" PRId64, j);
         psio->read(PSIF_DCC_OVEC, oldvector, (char*)&tempt[0], arraysize * sizeof(double), addr, &addr);
         C_DAXPY(arraysize, diisvec[j - 1], tempt, 1, tb, 1);
         psio->read(PSIF_DCC_OVEC, oldvector, (char*)&tempt[0], o * v * sizeof(double), addr, &addr);

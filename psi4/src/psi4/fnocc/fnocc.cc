@@ -74,15 +74,17 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 
         if (!options.get_bool("RUN_CEPA")) {
             auto ccsd = std::make_shared<CoupledCluster>(wfn, options);
-            timer_on("FNOCC: CC energy");
-            ccsd->compute_energy();
-            timer_off("FNOCC: CC energy");
+            {
+                TimerGuard timer("FNOCC: CC energy");
+                ccsd->compute_energy();
+            }
             return ccsd;
         } else {
             auto cepa = std::make_shared<CoupledPair>(wfn, options);
-            timer_on("FNOCC: CEPA energy");
-            cepa->compute_energy();
-            timer_off("FNOCC: CEPA energy");
+            {
+                TimerGuard timer("FNOCC: CEPA energy");
+                cepa->compute_energy();
+            }
             return cepa;
         }
 
@@ -113,14 +115,16 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 
 #ifdef GPUCC
         auto ccsd = std::make_shared<GPUDFCoupledCluster>(wfn, options);
-        timer_on("FNOCC: CC energy");
-        ccsd->compute_energy();
-        timer_off("FNOCC: CC energy");
+        {
+            TimerGuard timer("FNOCC: CC energy");
+            ccsd->compute_energy();
+        }
 #else
         auto ccsd = std::make_shared<DFCoupledCluster>(wfn, options);
-        timer_on("FNOCC: CC energy");
-        ccsd->compute_energy();
-        timer_off("FNOCC: CC energy");
+        {
+            TimerGuard timer("FNOCC: CC energy");
+            ccsd->compute_energy();
+        }
 #endif
 
         tstop();
