@@ -59,7 +59,7 @@ class PotentialInt : public OneBodyAOInt {
     ~PotentialInt() override;
 
     /// Set the field of charges
-    void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz);
+    virtual void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz);
 
     /// Does the method provide first derivatives?
     bool has_deriv1() override { return true; }

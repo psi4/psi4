@@ -161,11 +161,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Psi4 dies if energy does not converge. !expert -*/
     options.add_bool("DIE_IF_NOT_CONVERGED", true);
-    /*- Integral package to use for two-electron integrals. LIBINT2 computes them all. SIMINT computes the
-       non-derivative Coulomb integrals, and Libint2 the derivative, range-separated, and other integrals. LIBCINT
-       (experimental) computes the Coulomb and range-separated erf/erfc integrals, 4-center and density-fitted, with
-       first and second derivatives, and Libint2 the others (e.g., Yukawa and F12). Each package's angular momentum
-       limit applies. Requesting SIMINT or LIBCINT when it is not compiled in is an error. -*/
+    /*- Integral package to use for the integrals. LIBINT2 computes them all. SIMINT computes the
+       non-derivative Coulomb integrals, and Libint2 the derivative, range-separated, one-electron, and other
+       integrals. LIBCINT (experimental) computes the Coulomb and range-separated erf/erfc integrals, 4-center and
+       density-fitted, and the overlap, kinetic, and potential (nuclear and point-charge) integrals, all with first
+       and second derivatives, and Libint2 the others (e.g., multipoles, Yukawa, and F12). Each package's angular
+       momentum limit applies. Requesting SIMINT or LIBCINT when it is not compiled in is an error. -*/
     options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "LIBINT2 SIMINT LIBCINT");
 #ifdef USING_BrianQC
     /*- Whether to enable using the BrianQC GPU module -*/
