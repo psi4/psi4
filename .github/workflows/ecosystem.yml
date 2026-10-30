@@ -166,6 +166,16 @@ jobs:
       if: false
       run: git clone https://github.com/psi4/iomp5md.git
 
+    - name: Show stack info
+      if: github.event.pull_request.stack != null
+      run: |
+          echo "Stack base ref: ${{ github.event.pull_request.stack.base.ref }}"
+          echo "PR ${{ github.event.pull_request.stack.position }} of ${{ github.event.pull_request.stack.size }} in the stack"
+
+    - name: Run only when the stack targets master
+      if: github.event.pull_request.stack != null && startsWith(github.event.pull_request.stack.base.ref, 'master')
+      run: echo "This stack targets a release branch"
+        
     - name: Write Conda environment files
       run: |
         #

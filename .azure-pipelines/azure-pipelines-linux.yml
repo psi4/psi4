@@ -177,10 +177,6 @@ jobs:
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       # test some alternative packages
-      if [[ "${PYTHON_VER}" != "3.12" ]]; then
-        echo "  - psi4::gcp" >> env_p4env.yaml
-        echo "  - psi4::dftd3" >> env_p4env.yaml
-      fi
       if [[ "$(Agent.JobName)" == "Linux Builds icpx_conda" ]]; then
         sed -i "s;#- dpcpp;- dpcpp;g" env_p4env.yaml
         sed -i "s;#- ifx;- ifx;g" env_p4env.yaml
