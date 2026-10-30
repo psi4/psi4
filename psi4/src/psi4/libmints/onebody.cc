@@ -321,15 +321,13 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
         int p1 = pair.first;
         int p2 = pair.second;
 
-        const auto &s1 = bs1_->l2_shell(p1);
-        const auto &s2 = bs2_->l2_shell(p2);
         int ni = bs1_->shell(p1).nfunction();
         int nj = bs2_->shell(p2).nfunction();
         int i_offset = bs1_->shell_to_basis_function(p1);
         int j_offset = bs2_->shell_to_basis_function(p2);
 
         // Compute the shell
-        compute_pair(s1, s2);
+        compute_shell(p1, p2);
 
         // For each integral that we got put in its contribution
         for (int r = 0; r < nchunk_; ++r) {
