@@ -134,6 +134,7 @@ endif()
 if(TARGET cint::cint)
   target_sources(mints
     PRIVATE
+      libcint_util.cc
       libcinteri.cc
     )
 endif()

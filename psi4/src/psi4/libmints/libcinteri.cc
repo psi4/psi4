@@ -33,6 +33,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/gshell.h"
+#include "psi4/libmints/libcint_util.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -40,8 +41,6 @@
 #include "psi4/psi4-dec.h"
 
 #include <cmath>
-
-#include <libint2/shell.h>
 
 extern "C" {
 #include <cint_funcs.h>
@@ -62,54 +61,9 @@ bool is_dummy_basis(const BasisSet &bs) {
     return bs.nshell() == 1 && bs.nprimitive() == 1 && bs.shell(0).am() == 0 && bs.shell(0).exp(0) == 0.0;
 }
 
-// psi4_slot below hard-codes the Gaussian solid-harmonic ordering (psi4's default), while transform_mixed uses
-// psi4's SphericalTransform, which follows psi4_SHGSHELL_ORDERING. In a build with the Standard ordering, the
-// spherical repack would put components in the wrong slots, so stop such a build until psi4_slot follows the
-// ordering too.
-#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_GAUSSIAN
-#error "LIBCINT backend: Gaussian solid-harmonic ordering only. Teach psi4_slot Standard, or ENABLE_cint=OFF."
-#endif
-
-/// psi4 / libint2-Gaussian spherical slot for magnetic quantum number m
-/// (m == 0 -> 0, m > 0 -> 2m-1, m < 0 -> -2m). All relative signs are +1
-/// (machine-verified against libint2 in Gaussian ordering, l = 0..4).
-inline int psi4_slot(int m) { return m == 0 ? 0 : (m > 0 ? 2 * m - 1 : -2 * m); }
-
-/// Magnetic quantum number of libcint spherical slot i for an l-shell. libcint
-/// orders l >= 2 as m = -l..+l (so m = i - l), but p functions (l == 1) are the
-/// special cartesian-like order (px, py, pz) = m(+1, -1, 0). Verified against
-/// libint2 (Gaussian ordering) to ~1e-14 for l = 0..4.
-inline int libcint_m(int i, int l) {
-    if (l == 1) return i == 0 ? +1 : (i == 1 ? -1 : 0);
-    return i - l;
-}
-
-inline int ncart(int l) { return (l + 1) * (l + 2) / 2; }
-
-/// Factor converting a Libint2 contraction coefficient into the libcint coefficient
-/// describing the same function, for angular momentum l. Both conventions scale a
-/// primitive's coefficient as a^((2l+3)/4), so the ratio of the unit-normalized
-/// single-primitive coefficients (here at exponent 1) holds for every exponent.
-/// libcint's is measured with its own overlap integral (cartesian: the axial
-/// component, as Libint2 normalizes), keeping us agnostic of its l=0,1 factors.
-double libint2_to_libcint(int l, bool cart) {
-    std::vector<int> atm = {0, PTR_ENV_START, 0, 0, 0, 0};
-    std::vector<int> bas = {0, l, 1, 1, 0, PTR_ENV_START + 3, PTR_ENV_START + 4, 0};
-    std::vector<double> env(PTR_ENV_START + 5, 0.0);
-    env[PTR_ENV_START + 3] = 1.0;
-    env[PTR_ENV_START + 4] = CINTgto_norm(l, 1.0);
-    std::vector<double> ov(static_cast<size_t>(ncart(l)) * ncart(l));
-    int shls[2] = {0, 0};
-    if (cart)
-        int1e_ovlp_cart(ov.data(), nullptr, shls, atm.data(), 1, bas.data(), 1, env.data(), nullptr, nullptr);
-    else
-        int1e_ovlp_sph(ov.data(), nullptr, shls, atm.data(), 1, bas.data(), 1, env.data(), nullptr, nullptr);
-    const double libcint_unit = env[PTR_ENV_START + 4] / std::sqrt(ov[0]);
-    const libint2::Shell unit_prim(libint2::svector<double>{1.0}, {libint2::Shell::Contraction{l, !cart, {1.0}}},
-                                   {{0.0, 0.0, 0.0}});
-    const double libint2_unit = unit_prim.contr[0].coeff[0];
-    return libcint_unit / libint2_unit;
-}
+using libcint_util::libcint_m;
+using libcint_util::ncart;
+using libcint_util::psi4_slot;
 
 /// Does the libcint in use drop the integrals of diffuse primitives of high
 /// angular momentum? Its estimate of the size of a pair of primitives leaves out
@@ -295,67 +249,7 @@ void LibcintTwoElectronInt::initialize_sieve() {
 }
 
 int LibcintTwoElectronInt::append_basis(const BasisSet &bs, const std::vector<double> &coef_ratio) {
-    // Atoms: each basis contributes its own molecule's centers, so bases on
-    // different molecules (or a dummy basis) never index the wrong coordinates.
-    const int atom_start = static_cast<int>(atm_.size() / ATM_SLOTS);
-    auto mol = bs.molecule();
-    for (int a = 0; a < mol->natom(); ++a) {
-        const int coord_off = static_cast<int>(env_.size());
-        env_.push_back(mol->x(a));
-        env_.push_back(mol->y(a));
-        env_.push_back(mol->z(a));
-        atm_.push_back(static_cast<int>(mol->true_atomic_number(a)));  // CHARGE_OF
-        atm_.push_back(coord_off);                                     // PTR_COORD
-        atm_.push_back(0);                                             // NUC_MOD_OF
-        atm_.push_back(0);                                             // PTR_ZETA
-        atm_.push_back(0);
-        atm_.push_back(0);
-    }
-
-    const int start = static_cast<int>(bas_.size() / BAS_SLOTS);
-    for (int s = 0; s < bs.nshell(); ++s) {
-        const GaussianShell &sh = bs.shell(s);
-        const int nprim = sh.nprimitive();
-
-        const int exp_off = static_cast<int>(env_.size());
-        for (int p = 0; p < nprim; ++p) env_.push_back(sh.exp(p));
-
-        const int l = sh.am();
-        const int coef_off = static_cast<int>(env_.size());
-        const bool dummy = (nprim == 1 && l == 0 && sh.exp(0) == 0.0);
-        if (dummy) {
-            // Unit shell = the bare constant function "1", matching
-            // libint2::Shell::unit() (its renorm() skips alpha==0, leaving
-            // coeff=1). CINTgto_norm is singular at exp=0 and cannot be used, so
-            // it is not applied here -- but libcint's spherical transform still
-            // folds the Y_00 = 1/sqrt(4*pi) normalization into every s shell.
-            // Feed sqrt(4*pi) to cancel it, so the dummy is a true constant 1 and
-            // the DF metric (P|Q) and 3-center (Q|mn) are *identical* to the
-            // Libint2 path, not merely proportional. A global scale on the metric
-            // would otherwise change which vectors a fixed linear-dependence
-            // threshold discards when it is inverted.
-            env_.push_back(std::sqrt(4.0 * M_PI));
-        } else {
-            // Exactly the coefficients the Libint2 path uses -- normalization embedded,
-            // or deliberately not (diffuse external charges and SAP potentials; see
-            // BasisSet::negative_gaussian_normalization_to_coefficients) -- in
-            // libcint's convention. Re-deriving the normalization from the original
-            // coefficients instead would silently override such bases.
-            const auto &l2coef = bs.l2_shell(s).contr[0].coeff;
-            for (int p = 0; p < nprim; ++p) env_.push_back(l2coef[p] * coef_ratio[l]);
-        }
-
-        bas_pure_.push_back(sh.is_pure() ? 1 : 0);
-        bas_.push_back(atom_start + bs.shell_to_center(s));  // ATOM_OF
-        bas_.push_back(sh.am());                // ANG_OF
-        bas_.push_back(nprim);                  // NPRIM_OF
-        bas_.push_back(1);                      // NCTR_OF
-        bas_.push_back(0);                      // KAPPA_OF
-        bas_.push_back(exp_off);                // PTR_EXP
-        bas_.push_back(coef_off);               // PTR_COEFF
-        bas_.push_back(0);                      // RESERVE
-    }
-    return start;
+    return libcint_util::append_basis(bs, coef_ratio, atm_, bas_, env_, bas_pure_);
 }
 
 void LibcintTwoElectronInt::build_environment() {
@@ -365,7 +259,7 @@ void LibcintTwoElectronInt::build_environment() {
     int maxam = 0;
     for (const auto *b : bs) maxam = std::max(maxam, b->max_am());
     std::vector<double> coef_ratio;
-    for (int l = 0; l <= maxam; ++l) coef_ratio.push_back(libint2_to_libcint(l, cart_));
+    for (int l = 0; l <= maxam; ++l) coef_ratio.push_back(libcint_util::libint2_to_libcint(l, cart_));
 
     for (int i = 0; i < 4; ++i) {
         int start = -1;
