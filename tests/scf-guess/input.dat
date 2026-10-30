@@ -1,5 +1,8 @@
 #! Test initial SCF guesses on FH and FH+ in cc-pVTZ basis
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 refnuc       =    5.282967161430950  #TEST
 refneut_rhf  = -100.0584459442408587 #TEST
 refcat_uhf   =  -99.5312257221445549 #TEST

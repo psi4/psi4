@@ -1,5 +1,8 @@
 #! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 nucenergy =    2.6458860533     #TEST
 refenergy =  -25.10354689562797 #TEST
 

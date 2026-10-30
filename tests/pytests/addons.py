@@ -16,6 +16,8 @@ __all__ = [
     "uusing",
     "ctest_labeler",
     "ctest_runner",
+    "integral_package_combinations",
+    "integral_package_setenv",
 ]
 
 
@@ -97,6 +99,7 @@ _programs = {
     "gauxc": psi4.addons("gauxc"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
+    "cint": psi4.addons("cint"),
 }
 
 
@@ -160,6 +163,19 @@ def using(program: str) -> List:
     """
     _using(program)
     return _using_cache[program][1]
+
+
+#: For ctests that cross-check an alternate two-electron integral package against the default. The default case
+#: leaves INTEGRAL_PACKAGE alone, so a CI lane that changes the default still tests it.
+integral_package_combinations = pytest.mark.parametrize("intpkg", [
+    pytest.param(None, id="default"),
+    pytest.param("libcint", id="libcint", marks=using("cint")),
+])
+
+
+def integral_package_setenv(intpkg):
+    """Environment flags for one entry of :data:`integral_package_combinations`."""
+    return ["_PSI4_USE_LIBCINT"] if intpkg == "libcint" else None
 
 
 def ctest_labeler(labels: str):
