@@ -173,6 +173,7 @@ if(TARGET cint::cint)
     PRIVATE
       libcint_util.cc
       libcinteri.cc
+      libcintonebody.cc
     )
 endif()
 
