@@ -143,7 +143,8 @@ funcs.append({"name": "PWB6K"          , "xc_functionals": {"HYB_MGGA_XC_PWB6K" 
 funcs.append({"name": "TPSSh"          , "xc_functionals": {"HYB_MGGA_XC_TPSSH"         : {}}, "alias": ["TPSS0"]})
 funcs.append({"name": "revTPSSh"       , "xc_functionals": {"HYB_MGGA_XC_REVTPSSH"      : {}}})
 funcs.append({"name": "wB97M-V"        , "xc_functionals": {"HYB_MGGA_XC_WB97M_V"       : {}}, "alias": ["WB97MV"]})
-funcs.append({"name": "ZLP"            , "xc_functionals": {"MGGA_XC_ZLP"               : {}}})
+# MGGA_XC_ZLP (eq. 21) is shadowing the LDA (eq. 20) fctl of the same name. plus, it needs Laplacian that Psi4 can't supply
+# funcs.append({"name": "ZLP"            , "xc_functionals": {"MGGA_XC_ZLP"               : {}}})
 funcs.append({"name": "OTPSS-D"        , "xc_functionals": {"MGGA_XC_OTPSS_D"           : {}}, "dispersion": {"type": "d2", "params": {'s6': 1.0,  'alpha6': 20.0, 'sr6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010\n'}, 'alias': ['OTPSS-D2']})
 funcs.append({"name": "TPSSLYP1W"      , "xc_functionals": {"MGGA_XC_TPSSLYP1W"         : {}}})
 funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"            : {}}})
