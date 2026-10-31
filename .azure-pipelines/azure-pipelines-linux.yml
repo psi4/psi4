@@ -224,6 +224,7 @@ jobs:
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc="${ENABLE_GAUXC}" \
         -D ENABLE_OpenOrbitalOptimizer=ON \
+        -D ENABLE_molsym=ON \
         -D FORCE_PEDANTIC=ON \
         $(CMARGS) \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
