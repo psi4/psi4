@@ -110,20 +110,7 @@ void OCCWave::common_init() {
     oeprop_ = options_.get_str("OEPROP");
     // comput_s2_=options_.get_str("COMPUT_S2");
 
-    if (options_["DO_LEVEL_SHIFT"].has_changed() || options_["LEVEL_SHIFT"].has_changed()) {
-        outfile->Printf(
-            "\t'Level shifting' was removed from OCC in 1.4. Contact a developer for more information.\n\n");
-    }
-    if (options_["MP2_SOS_SCALE"].has_changed() || options_["MP2_SOS_SCALE2"].has_changed() ||
-        options_["CEPA_SOS_SCALE"].has_changed() || options_["MP2_OS_SCALE"].has_changed() ||
-        options_["CEPA_OS_SCALE"].has_changed() || options_["MP2_SS_SCALE"].has_changed() ||
-        options_["CEPA_SS_SCALE"].has_changed()) {
-        outfile->Printf(
-            "\tSpin-scaling in OCC changed in 1.4. Psi variables use canonical scaling. You can supply custom values "
-            "with OS_SCALE and SS_SCALE.\n\n");
-    }
-    if (options_["DO_SCS"].has_changed() || options_["DO_SOS"].has_changed() || options_["SCS_TYPE"].has_changed() ||
-        options_["SOS_TYPE"].has_changed()) {
+    if (options_["SCS_TYPE"].has_changed() || options_["SOS_TYPE"].has_changed()) {
         outfile->Printf(
             "\tSpin-scaling in OCC changed in 1.4. Leave options to the energy call. Just pass in the method name, "
             "like scs-mp2.\n\n");

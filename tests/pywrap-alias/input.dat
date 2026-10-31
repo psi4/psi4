@@ -20,8 +20,6 @@ set scf {
     e_convergence 8
 }
 
-set occ do_scs on
-
 banner('gold standard')
 energy('sherrill_gold_standard')
 compare_values(-5.66406119, variable('CBS TOTAL ENERGY'), 7, "[1]  Au std")  #TEST

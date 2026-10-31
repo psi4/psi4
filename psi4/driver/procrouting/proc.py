@@ -2665,8 +2665,6 @@ def run_occ_gradient(name, **kwargs):
     optstash = p4util.OptionsState(
         ['OCC', 'ORB_OPT'],
         ['OCC', 'WFN_TYPE'],
-        ['OCC', 'DO_SCS'],
-        ['OCC', 'DO_SOS'],
         ['GLOBALS', 'DERTYPE'])
 
     if core.get_global_option('SCF_TYPE') in ['CD', 'DF', 'MEM_DF', 'DISK_DF']:
