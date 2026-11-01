@@ -56,14 +56,14 @@
 namespace psi {
 namespace dlpno {
 
-/* Args: SparseMap from x to y, maximum possible y value
+/* Args: SparseMap from x to y, number of possible y indices
  * Returns: SparseMap from y to x
  */
 [[nodiscard]] constexpr SparseMap invert_map(const SparseMap& x_to_y, int ny) {
     std::vector<int> count(ny, 0);
     for (const auto& ys : x_to_y)
         for (int y : ys) {
-            if (y < 0 && y >= ny) throw PSIEXCEPTION("Cannot invert an invalid map!");
+            if (y < 0 || y >= ny) throw PSIEXCEPTION("Cannot invert an invalid map!");
             ++count[y];
         }
 
