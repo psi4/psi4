@@ -7,6 +7,7 @@ list(APPEND sources
   DirectJK.cc
   DiskDFJK.cc
   DiskJK.cc
+  gauxc_device.cc
   gauxc_int.cc
   GTFockJK.cc
   integrator_dispatcher.cc

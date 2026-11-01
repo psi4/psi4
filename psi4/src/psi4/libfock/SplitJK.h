@@ -350,6 +350,8 @@ class PSI_API snLinK : public SplitJK {
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
     bool use_gpu_; 
+    // model, index, and compute capability of the GPU in use, when use_gpu_ and known
+    std::string device_desc_;
     // what grid pruning scheme is being used?
     std::string pruning_scheme_;
     // what radial quadrature scheme is being used?

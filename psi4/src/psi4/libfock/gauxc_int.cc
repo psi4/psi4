@@ -48,62 +48,9 @@
 #include <gauxc/molgrid/defaults.hpp>
 #include <gauxc/xc_integrator/integrator_factory.hpp>
 
-#include <sstream>
-
-#if defined(GAUXC_HAS_CUDA) && defined(PSI4_HAS_CUDA_RUNTIME)
-#include <cuda_runtime.h>
-#include "psi4/libpsi4util/cuda_diagnostics.h"
-#endif
+#include "gauxc_device.h"
 
 namespace psi {
-
-namespace {
-
-#if defined(GAUXC_HAS_CUDA) && defined(PSI4_HAS_CUDA_RUNTIME)
-// Before handing the GPU to GauXC, confirm there is one and identify it. Returns a description for
-// output and error messages; throws a readable PsiException if no device is usable.
-std::string gauxc_cuda_device() {
-    using namespace cuda_diagnostics;
-    int device_count = 0;
-    cudaError_t err = cudaGetDeviceCount(&device_count);
-    if (err != cudaSuccess) {
-        throw PSIEXCEPTION(cuda_failure_message("GAUXC_USE_GPU requested, but CUDA device discovery failed", err, "", "GauXC"));
-    }
-    if (device_count == 0) {
-        throw PSIEXCEPTION("GAUXC_USE_GPU requested, but no CUDA-capable GPU was found. Set GAUXC_USE_GPU false to run GauXC on the CPU.");
-    }
-    int device_id = 0;
-    err = cudaGetDevice(&device_id);
-    if (err != cudaSuccess) {
-        throw PSIEXCEPTION(cuda_failure_message("GAUXC_USE_GPU requested, but cudaGetDevice failed", err, "", "GauXC"));
-    }
-    cudaDeviceProp props;
-    err = cudaGetDeviceProperties(&props, device_id);
-    if (err != cudaSuccess) {
-        throw PSIEXCEPTION(cuda_failure_message("GAUXC_USE_GPU requested, but cudaGetDeviceProperties failed", err, "", "GauXC"));
-    }
-    std::ostringstream desc;
-    desc << describe_cuda_device(device_id, props) << ", compute capability " << props.major << "." << props.minor;
-    return desc.str();
-}
-#endif
-
-// GauXC's own device errors (e.g., CUBLAS_STATUS_ARCH_MISMATCH, no kernel image for device) read like
-// internal faults. Which architectures a GauXC binary carries isn't exported, so explain the likely causes.
-std::string gauxc_device_failure_message(const std::string& what, const std::string& device_desc) {
-    std::ostringstream msg;
-    msg << "GauXC failed to run on the GPU";
-    if (!device_desc.empty()) msg << ": " << device_desc;
-    msg << ".\n\n" << what << "\n"
-        << "  This is almost always the GPU or the GauXC build, not the input. GauXC runs only on GPU\n"
-        << "  architectures it was compiled for (list them with `cuobjdump --list-elf libgauxc.so`;\n"
-        << "  CUDA 13 cannot target compute capability below 7.5). Run on a supported GPU, rebuild GauXC\n"
-        << "  with this compute capability in CMAKE_CUDA_ARCHITECTURES, or set GAUXC_USE_GPU false to\n"
-        << "  run GauXC on the CPU.\n";
-    return msg.str();
-}
-
-}  // namespace
 
 void GauXCBase::initialize() {
     // No VV10 support: https://github.com/wavefunction91/GauXC/pull/210
@@ -115,26 +62,9 @@ void GauXCBase::initialize() {
         throw PSIEXCEPTION("GauXC does not support omega customization.");
 
     use_gpu_ = options_.get_bool("GAUXC_USE_GPU");
-#ifndef GAUXC_HAS_DEVICE
-    if (use_gpu_) {
-        throw PSIEXCEPTION("GAUXC_USE_GPU was requested, but GauXC was not built with device support.");
-    }
-#endif
-    device_desc_.clear();
-#if defined(GAUXC_HAS_CUDA) && defined(PSI4_HAS_CUDA_RUNTIME)
-    if (use_gpu_) device_desc_ = gauxc_cuda_device();
-#endif
+    device_desc_ = use_gpu_ ? gauxc_device::check("GAUXC_USE_GPU") : std::string();
     // Device setup and the first kernel launches happen below; run them so failures get explained
-    auto on_device = [this](auto&& step) {
-        try {
-            step();
-        } catch (const PsiException&) {
-            throw;
-        } catch (const std::exception& e) {
-            if (!use_gpu_) throw;
-            throw PSIEXCEPTION(gauxc_device_failure_message(e.what(), device_desc_));
-        }
-    };
+    auto on_device = [this](auto&& step) { gauxc_device::run(use_gpu_, "GAUXC_USE_GPU", device_desc_, step); };
 
     const auto gauxc_execspace = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;
     GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("GAUXC_LOAD_BALANCER_KERNEL"));
