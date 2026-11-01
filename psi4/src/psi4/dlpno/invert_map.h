@@ -33,9 +33,14 @@ namespace dlpno {
 // a mismatch between the two is a compile error in any TU that includes both.
 using SparseMap = std::vector<std::vector<int>>;
 
-/* Args: SparseMap from x to y, number of possible y indices
- * Returns: SparseMap from y to x
- */
+/// @brief Inverts a sparse map, turning an x -> y map into the matching y -> x map. x appears in the returned list for
+/// y exactly when y appears in x_to_y[x]. Each returned list is in ascending x order, whatever the order inside the
+/// input rows.
+/// @param x_to_y Sparse map from x to y. Row x lists the y indices x maps to. Rows may be empty. Every entry must lie
+/// in [0, ny).
+/// @param ny Number of possible y indices (one more than the largest valid y). This is the size of the returned map.
+/// @return Sparse map from y to x, with ny rows. A y that no x maps to gets an empty row.
+/// @throws PSIEXCEPTION if any entry of x_to_y is negative or not less than ny.
 [[nodiscard]] inline SparseMap invert_map(const SparseMap& x_to_y, int ny) {
     std::vector<int> count(ny, 0);
     for (const auto& ys : x_to_y)
