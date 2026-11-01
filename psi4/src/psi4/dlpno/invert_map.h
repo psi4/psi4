@@ -23,6 +23,7 @@
 // libmints/matrix.h.
 #include "psi4/libpsi4util/exception.h"
 #include <iterator>
+#include <string>
 #include <vector>
 
 namespace psi {
