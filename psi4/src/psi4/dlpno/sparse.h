@@ -29,13 +29,12 @@
 #ifndef PSI4_SRC_DLPNO_SPARSE_H_
 #define PSI4_SRC_DLPNO_SPARSE_H_
 
+#include "typedefs.h"
 #include "psi4/libmints/matrix.h"
 #include <vector>
 
 namespace psi {
 namespace dlpno {
-
-using SparseMap = std::vector<std::vector<int>>;
 
 /* Args: sorted lists l1 and l2
  * Returns: sorted union of l1 and l2

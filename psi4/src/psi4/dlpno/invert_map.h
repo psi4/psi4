@@ -21,6 +21,8 @@
 // do not have to parse it (its only caller is dlpno.cc), and it can be unit-tested (test/invert_map_test.cc) without
 // linking any psi4 library. That is also why this header does not include sparse.h, which would pull in
 // libmints/matrix.h.
+
+#include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 #include <iterator>
 #include <string>
@@ -28,10 +30,6 @@
 
 namespace psi {
 namespace dlpno {
-
-// Same alias as in sparse.h. Declaring it again with the same type is legal, and
-// a mismatch between the two is a compile error in any TU that includes both.
-using SparseMap = std::vector<std::vector<int>>;
 
 /// @brief Inverts a sparse map, turning an x -> y map into the matching y -> x map. x appears in the returned list for
 /// y exactly when y appears in x_to_y[x]. Each returned list is in ascending x order, whatever the order inside the
