@@ -51,7 +51,7 @@ namespace dlpno {
 
     SparseMap y_to_x(ny);
     for (int y = 0; y < ny; ++y) y_to_x[y].reserve(count[y]);
-
+    // The indexing is safe here only because every y was range-checked in the counting loop above.
     for (int x = 0; x < std::ssize(x_to_y); ++x)  // ascending x keeps each list sorted
         for (int y : x_to_y[x]) y_to_x[y].push_back(x);
 
