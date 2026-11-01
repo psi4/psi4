@@ -39,7 +39,9 @@ using SparseMap = std::vector<std::vector<int>>;
     std::vector<int> count(ny, 0);
     for (const auto& ys : x_to_y)
         for (int y : ys) {
-            if (y < 0 || y >= ny) throw PSIEXCEPTION("Cannot invert an invalid map!");
+            if (y < 0 || y >= ny)
+                throw PSIEXCEPTION("Cannot invert an invalid map! ny = " + std::to_string(ny) +
+                                   ", y = " + std::to_string(y));
             ++count[y];
         }
 
