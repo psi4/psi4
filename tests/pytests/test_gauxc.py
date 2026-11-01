@@ -8,7 +8,7 @@ from addons import using
 
 
 GAUXC_EXEC_PARAMS = [
-    pytest.param({"use_gpu": False, "label": "Host (CPU)"}, id="cpu", marks=using("gauxc")),
+    pytest.param({"use_gpu": False, "label": "Host (CPU)"}, id="cpu", marks=using("gauxc_cpu")),
     pytest.param({"use_gpu": True, "label": "Device (GPU)"}, id="gpu", marks=[*using("gauxc_gpu"), *using("cuda")]),
 ]
 
