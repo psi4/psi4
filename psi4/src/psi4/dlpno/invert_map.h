@@ -35,7 +35,7 @@ using SparseMap = std::vector<std::vector<int>>;
 /* Args: SparseMap from x to y, number of possible y indices
  * Returns: SparseMap from y to x
  */
-[[nodiscard]] constexpr SparseMap invert_map(const SparseMap& x_to_y, int ny) {
+[[nodiscard]] SparseMap invert_map(const SparseMap& x_to_y, int ny) {
     std::vector<int> count(ny, 0);
     for (const auto& ys : x_to_y)
         for (int y : ys) {
