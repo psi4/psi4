@@ -27,6 +27,7 @@
  */
 
 #include "dlpno.h"
+#include "invert_map.h"
 #include "sparse.h"
 
 #include "psi4/lib3index/3index.h"
@@ -47,7 +48,6 @@
 #include "psi4/libqt/qt.h"
 
 #include <algorithm>
-#include <iterator>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -55,26 +55,6 @@
 
 namespace psi {
 namespace dlpno {
-
-/* Args: SparseMap from x to y, number of possible y indices
- * Returns: SparseMap from y to x
- */
-[[nodiscard]] constexpr SparseMap invert_map(const SparseMap& x_to_y, int ny) {
-    std::vector<int> count(ny, 0);
-    for (const auto& ys : x_to_y)
-        for (int y : ys) {
-            if (y < 0 || y >= ny) throw PSIEXCEPTION("Cannot invert an invalid map!");
-            ++count[y];
-        }
-
-    SparseMap y_to_x(ny);
-    for (int y = 0; y < ny; ++y) y_to_x[y].reserve(count[y]);
-
-    for (int x = 0; x < std::ssize(x_to_y); ++x)  // ascending x keeps each list sorted
-        for (int y : x_to_y[x]) y_to_x[y].push_back(x);
-
-    return y_to_x;
-}
 
 DLPNO::DLPNO(SharedWavefunction ref_wfn, Options& options) : Wavefunction(options) {
     shallow_copy(ref_wfn);
