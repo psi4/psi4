@@ -283,7 +283,7 @@ void ROHF::finalize() {
     HF::finalize();
 }
 
-void ROHF::save_density_and_energy() {
+void ROHF::save_density() {
     Da_old_->copy(Da_);
     Db_old_->copy(Db_);
     Dt_old_->copy(Dt_);

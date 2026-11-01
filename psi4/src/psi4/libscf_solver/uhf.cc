@@ -159,7 +159,7 @@ void UHF::finalize() {
     HF::finalize();
 }
 
-void UHF::save_density_and_energy() {
+void UHF::save_density() {
     Da_old_->copy(Da_);
     Db_old_->copy(Db_);
 }

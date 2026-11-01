@@ -146,7 +146,7 @@ void RHF::finalize() {
     HF::finalize();
 }
 
-void RHF::save_density_and_energy() {
+void RHF::save_density() {
     Dold_->copy(Da_);  // Save previous density
 }
 

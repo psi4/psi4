@@ -1,0 +1,226 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev51 
+
+                         Git: Rev {cghf} 826d0f6 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Friday, 27 February 2026 09:01PM
+
+    Process ID: 94311
+    Host:       
+    PSIDATADIR: ./psi4/objdir_p4docs/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶,
+                d̶f̶t̶d̶3̶, d̶f̶t̶d̶4̶, d̶k̶h̶, e̶c̶p̶i̶n̶t̶, einsums, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶,
+                g̶c̶p̶, g̶d̶m̶a̶, g̶e̶o̶m̶e̶t̶r̶i̶c̶, g̶p̶u̶_̶d̶f̶c̶c̶,
+                i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶, l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶,
+                o̶o̶o̶, o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶,
+                p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶, p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶,
+                s̶n̶s̶m̶p̶2̶, v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! cGHF non-C1 symmetries not available yet :( XFAIL this.
+
+molecule symmetric {
+0 1
+    He 0 0 0
+}
+
+set {
+    reference cghf
+    scf_type   pk
+    basis sto-3g
+}
+
+energy('scf')
+
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on dn5.dngroup.chem
+*** at Fri Feb 27 21:01:57 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry HE         line    25 file ./psi4/objdir_p4docs/stage/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             CGHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         HE           0.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:               1
+      Number of primitives:              3
+      Number of atomic orbitals:         1
+      Number of basis functions:         1
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 2 doubles for integral storage.
+  We computed 1 shell quartets total.
+  Whereas there are 1 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+
+Traceback (most recent call last):
+  File "./psi4/objdir_p4docs/stage/bin/psi4", line 388, in <module>
+    exec(content)
+    ~~~~^^^^^^^^^
+  File "<string>", line 22, in <module>
+  File "./psi4/objdir_p4docs/stage/lib/psi4/driver/driver.py", line 531, in energy
+    wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
+  File "./psi4/objdir_p4docs/stage/lib/psi4/driver/procrouting/proc.py", line 2594, in run_scf
+    scf_wfn = scf_helper(name, post_scf=False, **kwargs)
+  File "./psi4/objdir_p4docs/stage/lib/psi4/driver/procrouting/proc.py", line 1881, in scf_helper
+    e_scf = scf_wfn.compute_energy()
+  File "./psi4/objdir_p4docs/stage/lib/psi4/driver/procrouting/scf_proc/scf_iterator.py", line 82, in scf_compute_energy
+    self.initialize()
+    ~~~~~~~~~~~~~~~^^
+  File "./psi4/objdir_p4docs/stage/lib/psi4/driver/procrouting/scf_proc/scf_iterator.py", line 230, in scf_initialize
+    self.guess()
+    ~~~~~~~~~~^^
+
+RuntimeError: 
+Fatal Error: USE C1 SYMMETRY!
+Error occurred in file: ./psi4/psi4/src/psi4/libscf_solver/cghf.cc on line: 359
+The most recent 5 function calls were:
+
+psi::PsiException::PsiException(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, char const*, int)
+
+
+
+Printing out the relevant lines from the Psithon --> Python processed input file:
+    ""","symmetric")
+    core.IO.set_default_namespace("symmetric")
+    core.set_global_option("REFERENCE", "cghf")
+    core.set_global_option("SCF_TYPE", "pk")
+    core.set_global_option("BASIS", "sto-3g")
+--> energy('scf')
+
+!----------------------------------------------------------------------------------!
+!                                                                                  !
+! Fatal Error: USE C1 SYMMETRY!                                                    !
+! Error occurred in file: ./psi4/psi4/src/psi4/libscf_solver/cghf.cc  !
+!     on line: 359                                                                 !
+! The most recent 5 function calls were:                                           !
+! psi::PsiException::PsiException(std::__cxx11::basic_string<char,                 !
+!     std::char_traits<char>, std::allocator<char> >, char const*, int)            !
+!                                                                                  !
+!----------------------------------------------------------------------------------!
+
+    Psi4 stopped on: Friday, 27 February 2026 09:01PM
+    Psi4 wall time for execution: 0:00:00.05
+
+*** Psi4 encountered an error. Buy a developer more coffee!
+*** Resources and help at github.com/psi4/psi4.
