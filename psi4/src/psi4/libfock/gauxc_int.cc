@@ -416,7 +416,7 @@ void GauUV::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMat
         Dz->subtract(Dx[2*i+1]);
         SharedMatrix AO_TDMhs;
         SharedMatrix AO_TDMhz;
-        if (Dx[i]->nirrep() != 1) {
+        if (Ds->nirrep() != 1) {
             AO_TDMhs = std::make_shared<Matrix>("Ds AO temp", nbf_, nbf_);
             AO_TDMhs->remove_symmetry(Ds, USO2AO_);
             AO_TDMhz = std::make_shared<Matrix>("Dz AO temp", nbf_, nbf_);
