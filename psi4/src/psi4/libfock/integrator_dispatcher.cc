@@ -45,7 +45,7 @@ void IntegratorDispatcher::initialize() {
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + (*it)->get_name() + ":\n");
-      outfile->Printf(e.what());
+      outfile->Printf("%s", e.what());
       it = managers_.erase(it); // Erase returns the next valid iterator
     }
   }
@@ -90,7 +90,7 @@ std::map<std::string, double> IntegratorDispatcher::compute_V(std::vector<Shared
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf(e.what());
+      outfile->Printf("%s", e.what());
       timer_off(manager->get_timer_name() + ": Form V"); 
     }
     for (auto& vec: ret) { vec->zero(); }
@@ -109,7 +109,7 @@ SharedMatrix IntegratorDispatcher::compute_gradient() {
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf(e.what());
+      outfile->Printf("%s", e.what());
       timer_off(manager->get_timer_name() + ": Form gradient"); 
       continue;
     }
@@ -131,7 +131,7 @@ void IntegratorDispatcher::compute_Vx(const std::vector<SharedMatrix> Dx, std::v
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf(e.what());
+      outfile->Printf("%s", e.what());
       timer_off(manager->get_timer_name() + ": Form Vx");
       for (auto& vec: ret) { vec->zero(); }
     }
@@ -152,7 +152,7 @@ void IntegratorDispatcher::compute_Vx_triplet(const std::vector<SharedMatrix> Dx
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf(e.what());
+      outfile->Printf("%s", e.what());
       timer_off(manager->get_timer_name() + ": Form Vx");
       for (auto& vec: ret) { vec->zero(); }
     }
@@ -173,7 +173,7 @@ SharedMatrix IntegratorDispatcher::compute_hessian() {
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf(e.what());
+      outfile->Printf("%s", e.what());
       timer_off(manager->get_timer_name() + ": Form hessian"); 
       continue;
     }
@@ -195,7 +195,7 @@ std::vector<SharedMatrix> IntegratorDispatcher::compute_fock_derivatives() {
     }
     catch (const std::exception& e) {
       outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf(e.what());
+      outfile->Printf("%s", e.what());
       timer_off(manager->get_timer_name() + ": Form Fx"); 
       continue;
     }
