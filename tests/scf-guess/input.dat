@@ -1,5 +1,8 @@
 #! Test initial SCF guesses on FH and FH+ in cc-pVTZ basis
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 refnuc       =    5.282967161430950  #TEST
 refneut_rhf  = -100.0584459442408587 #TEST
 refcat_uhf   =  -99.5312257221445549 #TEST
@@ -164,5 +167,6 @@ energy('scf')
 compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAP    guess (a.u.)");             #TEST
 
 set guess sapgau
-energy('scf')
+_, wfn = energy('scf', return_wfn=True)
 compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAPGAU guess (a.u.)");             #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower().replace("auto", "libint2"), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
