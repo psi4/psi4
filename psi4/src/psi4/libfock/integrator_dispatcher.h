@@ -35,17 +35,27 @@
 
 namespace psi {
 
-class IntegratorManager;
+class DensityFunctionalIntegratorManager;
 class SuperFunctional;
 class VBase;
 
-class IntegratorDispatcher {
+/// DensityFunctionalIntegratorDispatcher stores a list of DensityFunctionalIntegratorManagers
+/// and calls them to perform the desired density functional integration, calling the next if
+/// the previous fail.
+/// A DensityFunctionalIntegratorManager performs an integration of a density functional on a
+/// grid. 'Density functional' here means that it takes in a density matrix and outputs a number.
+/// While Kohn-Sham exchange-correlation functionals are the most obvious application, the
+/// technology is not limited to this. For example, the map from a density to the x-component of
+/// the electric dipole is also a valid density functional.
+/// Ultimately, this technology should probably replace NumIntHelper.
+
+class DensityFunctionalIntegratorDispatcher {
   private:
-    std::vector<std::shared_ptr<IntegratorManager>> managers_; 
+    std::vector<std::shared_ptr<DensityFunctionalIntegratorManager>> managers_; 
     std::map<std::string, double> quad_values_;
   public:
-    IntegratorDispatcher(std::vector<std::shared_ptr<IntegratorManager>> managers) : managers_(managers) {};
-    IntegratorDispatcher(std::shared_ptr<IntegratorManager> manager) : managers_({manager}) {};
+    DensityFunctionalIntegratorDispatcher(std::vector<std::shared_ptr<DensityFunctionalIntegratorManager>> managers) : managers_(managers) {};
+    DensityFunctionalIntegratorDispatcher(std::shared_ptr<DensityFunctionalIntegratorManager> manager) : managers_({manager}) {};
     void initialize();
     void print_header() const;
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret);

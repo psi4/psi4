@@ -53,7 +53,7 @@ class BlockOPoints;
  * K-matrix-vector products
  **/
 
-class PSI_API VBase: public IntegratorManager {
+class PSI_API VBase: public DensityFunctionalIntegratorManager {
    protected:
     /// Debug flag
     int debug_;
