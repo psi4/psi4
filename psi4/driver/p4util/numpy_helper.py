@@ -616,6 +616,52 @@ core.Vector.from_serial = classmethod(_from_serial)
 core.Vector.__iter__ = _irrep_access
 core.Vector.__getitem__ = _irrep_access
 
+### ComplexMatrix (einsums TiledTensor)
+
+
+def _complexmatrix_to_array(
+    self: "core.ComplexMatrix",
+    copy: bool = True,
+) -> Union[np.ndarray, List[np.ndarray]]:
+    """
+    Converts a :class:`~psi4.core.ComplexMatrix` (einsums TiledTensor) to a NumPy
+    array via its per-tile ``array_interface`` views. Returns a single 2D array
+    for a one-block (C1) tensor, otherwise a list of per-block arrays. Copies
+    unless ``copy=False``.
+    """
+    views = self.array_interface()
+    if self.nirrep() == 1:
+        return np.array(views[0]) if copy else np.asarray(views[0])
+    return [np.array(v) if copy else np.asarray(v) for v in views]
+
+
+def _complexmatrix_from_array(
+    self: "core.ComplexMatrix",
+    arr: np.ndarray,
+    name: str = "ComplexMatrix",
+) -> "core.ComplexMatrix":
+    """
+    Builds a C1 (single-tile) :class:`~psi4.core.ComplexMatrix` from a 2D NumPy
+    array. Real input is cast to complex. Rectangular arrays are allowed
+    (TiledTensor diagonal tiles need not be square).
+    """
+    arr = np.asarray(arr, dtype=np.complex128)
+    if arr.ndim != 2:
+        raise ValidationError("ComplexMatrix.from_array: array must be 2-dimensional.")
+
+    nrows, ncols = int(arr.shape[0]), int(arr.shape[1])
+    if nrows == ncols:
+        ret = self(name, [nrows])
+    else:
+        ret = self(name, [nrows], [ncols])
+    np.asarray(ret.array_interface()[0])[:] = arr
+    return ret
+
+
+# ComplexMatrix attributes
+core.ComplexMatrix.from_array = classmethod(_complexmatrix_from_array)
+core.ComplexMatrix.to_array = _complexmatrix_to_array
+
 ### CIVector properties
 
 
