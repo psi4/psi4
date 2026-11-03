@@ -69,6 +69,9 @@ class LibXCFunctional : public Functional {
     // * Libxc needs all set at once as list c. v5.1.0, but store as richer map anyways
     std::map<std::string, double> user_tweakers_;
 
+    // Read exact-exchange parameters (omega, alpha, beta) from LibXC into psi4's conventions; no-op for non-hybrids
+    void read_hybrid_coefs();
+
    public:
     LibXCFunctional(std::string xc_name, bool unpolarized);
     ~LibXCFunctional() override;

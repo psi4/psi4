@@ -124,40 +124,8 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         }
         if (xc_functional_->info->flags & XC_FLAGS_HYB_CAM) {
             lrc_ = true;
-            double alpha, beta;
-            xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
-
-            /*
-              The values alpha and beta have a different meaning in
-              psi4 and libxc.
-
-              In libxc, alpha is the contribution from full exact
-              exchange (at all ranges), and beta is the contribution
-              from short-range only exchange, yielding alpha exact
-              exchange at the long range and alpha+beta in the short
-              range in total.
-
-              In Psi4, alpha is the amount of exchange at all ranges,
-              while beta is the difference between the amount of
-              exchange in the long range and in the short range,
-              meaning alpha+beta at the long range, and alpha only at
-              the short range.
-
-              These differences amount to the transform
-
-              SR      = LibXC_ALPHA + LibXC_BETA = Psi4_ALPHA
-              LR      = LibXC_ALPHA              = Psi4_ALPHA + Psi4_BETA
-              LR - SR =             - LibXC_BETA =              Psi4_BETA
-            */
-
-            global_exch_ = alpha + beta;
-            lr_exch_ = -1.0 * beta;
         }
-
-        if (!lrc_) {
-            // Global hybrid
-            global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
-        }
+        read_hybrid_coefs();
     }
 
     // Figure out the family
@@ -198,6 +166,12 @@ std::shared_ptr<Functional> LibXCFunctional::build_polarized() {
     // Build functional
     auto func = std::make_shared<LibXCFunctional>(xc_func_name_, false);
 
+    // Tweakers before omega: set_tweak resets all LibXC parameters, including _omega
+    // User tweakers
+    if (user_tweakers_.size()) {
+        func->set_tweak(user_tweakers_, true);
+    }
+
     // User omega
     if (user_omega_) {
         func->set_omega(omega_);
@@ -206,11 +180,6 @@ std::shared_ptr<Functional> LibXCFunctional::build_polarized() {
         // was called on this object. I can think of no justification for that,
         // but just in case...
         Functional::set_omega(omega_);
-    }
-
-    // User tweakers
-    if (user_tweakers_.size()) {
-        func->set_tweak(user_tweakers_, true);
     }
 
     func->set_alpha(alpha_);
@@ -234,14 +203,15 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     // Build functional
     auto func = std::make_shared<LibXCFunctional>(xc_func_name_, unpolarized_);
 
-    // User omega
-    if (user_omega_) {
-        func->set_omega(omega_);
-    }
-
+    // Tweakers before omega: set_tweak resets all LibXC parameters, including _omega
     // User tweakers
     if (user_tweakers_.size()) {
         func->set_tweak(user_tweakers_, true);
+    }
+
+    // User omega
+    if (user_omega_) {
+        func->set_omega(omega_);
     }
 
     func->set_alpha(alpha_);
@@ -311,6 +281,50 @@ std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& fu
 
     return params;
 }
+void LibXCFunctional::read_hybrid_coefs() {
+    int family = xc_functional_->info->family;
+    if (family != XC_FAMILY_HYB_GGA && family != XC_FAMILY_HYB_MGGA
+#ifdef XC_FAMILY_HYB_LDA
+        && family != XC_FAMILY_HYB_LDA
+#endif
+    ) {
+        return;
+    }
+
+    if (lrc_) {
+        double alpha, beta;
+        xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
+
+        /*
+          The values alpha and beta have a different meaning in
+          psi4 and libxc.
+
+          In libxc, alpha is the contribution from full exact
+          exchange (at all ranges), and beta is the contribution
+          from short-range only exchange, yielding alpha exact
+          exchange at the long range and alpha+beta in the short
+          range in total.
+
+          In Psi4, alpha is the amount of exchange at all ranges,
+          while beta is the difference between the amount of
+          exchange in the long range and in the short range,
+          meaning alpha+beta at the long range, and alpha only at
+          the short range.
+
+          These differences amount to the transform
+
+          SR      = LibXC_ALPHA + LibXC_BETA = Psi4_ALPHA
+          LR      = LibXC_ALPHA              = Psi4_ALPHA + Psi4_BETA
+          LR - SR =             - LibXC_BETA =              Psi4_BETA
+        */
+
+        global_exch_ = alpha + beta;
+        lr_exch_ = -1.0 * beta;
+    } else {
+        // Global hybrid
+        global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
+    }
+}
 void LibXCFunctional::set_tweak(std::map<std::string, double> values, bool quiet) {
     int npars = xc_func_info_get_n_ext_params(xc_functional_.get()->info);
     if (npars == 0) {
@@ -354,6 +368,9 @@ void LibXCFunctional::set_tweak(std::map<std::string, double> values, bool quiet
 
     xc_func_set_ext_params(xc_functional_.get(), tweakers_list.data());
     user_tweakers_ = tweakers_dict;
+
+    // Tweaks may change exact-exchange parameters (e.g., _omega, _alpha, _beta), so refresh the cached copies
+    read_hybrid_coefs();
 }
 std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data() {
     std::vector<std::tuple<std::string, int, double>> ret;
