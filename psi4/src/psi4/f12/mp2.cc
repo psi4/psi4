@@ -63,7 +63,6 @@ void MP2F12::common_init() {
     f12_subtype_ = options_.get_str("F12_SUBTYPE");
     f12_read_ints_ = options_.get_bool("F12_READ_INTS");
 
-    std::vector<OrbitalSpace> bs_ = {};
     // Number of orbitals, not basis functions: the two differ when linear
     // dependencies have been removed from the orbital basis.
     nobs_ = reference_wavefunction_->nmo();

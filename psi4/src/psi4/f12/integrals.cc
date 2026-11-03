@@ -112,7 +112,7 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
         }
     }
 
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
+#pragma omp parallel for schedule(guided) num_threads(nthreads_)
     for (size_t quartet_idx = 0; quartet_idx < quartets.size(); quartet_idx++) {
         size_t rank = 0;
 #ifdef _OPENMP
@@ -249,7 +249,7 @@ void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tenso
         }
     }
 
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
+#pragma omp parallel for schedule(guided) num_threads(nthreads_)
     for (size_t triplet_idx = 0; triplet_idx < triplets.size(); triplet_idx++) {
         size_t rank = 0;
 #ifdef _OPENMP
@@ -660,6 +660,7 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
     }
 
     // (A|op|B) is symmetric: exploit A >= B and copy the transposed block.
+#pragma omp parallel for collapse(2) schedule(guided) num_threads(nthreads_)
     for (size_t A = 0; A < DFBS_->nshell(); A++) {
         for (size_t B = 0; B < DFBS_->nshell(); B++) {
             if (B > A) continue;  // lower-triangle only
