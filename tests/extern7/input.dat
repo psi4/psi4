@@ -16,6 +16,9 @@
 #! Gaussian charges.  Gradients can be further derived from these
 #! expressions.
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 molecule hydrogen {
   0 2
   H 0 0 0
