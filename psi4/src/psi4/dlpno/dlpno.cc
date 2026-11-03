@@ -27,6 +27,7 @@
  */
 
 #include "dlpno.h"
+#include "invert_map.h"
 #include "sparse.h"
 
 #include "psi4/lib3index/3index.h"
@@ -1678,5 +1679,5 @@ void DLPNO::print_pao_pair_domains() {
 
 double DLPNO::compute_energy() { return 0.0; }
 
-}
-}
+}  // namespace dlpno
+}  // namespace psi
