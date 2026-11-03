@@ -36,7 +36,7 @@
 
 namespace psi {
 
-void IntegratorDispatcher::initialize() {
+void DensityFunctionalIntegratorDispatcher::initialize() {
   // Note the highly-irregular for loop.
   for (auto it = managers_.begin(); it != managers_.end();) {
     try {
@@ -50,19 +50,19 @@ void IntegratorDispatcher::initialize() {
     }
   }
   if (managers_.empty())
-      throw PSIEXCEPTION("No IntegratorManager managed to initialize.");
+      throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to initialize.");
 }
 
-void IntegratorDispatcher::print_header() const {
+void DensityFunctionalIntegratorDispatcher::print_header() const {
   outfile->Printf("  ==> Numerical Integrators <==\n\n");
   for (const auto& manager: managers_) manager->print_header();
 }
 
-void IntegratorDispatcher::set_D(std::vector<SharedMatrix> Dvec) {
+void DensityFunctionalIntegratorDispatcher::set_D(std::vector<SharedMatrix> Dvec) {
   for (const auto& manager: managers_) manager->set_D(Dvec);
 }
 
-void IntegratorDispatcher::set_grac_shift(double shift) {
+void DensityFunctionalIntegratorDispatcher::set_grac_shift(double shift) {
   // If the user requests GRAC, that's a change to the low-level numerical integration
   // that most codes don't support. Drop those that can't support it.
   // Note the highly-irregular for loop.
@@ -75,10 +75,10 @@ void IntegratorDispatcher::set_grac_shift(double shift) {
     }
   }
   if (managers_.empty())
-      throw PSIEXCEPTION("No IntegratorManager managed to set_grac_shift.");
+      throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to set_grac_shift.");
 }
 
-std::map<std::string, double> IntegratorDispatcher::compute_V(std::vector<SharedMatrix> ret) {
+std::map<std::string, double> DensityFunctionalIntegratorDispatcher::compute_V(std::vector<SharedMatrix> ret) {
   std::map<std::string, double> rmap;
   for (const auto& manager: managers_) {
     try {
@@ -95,10 +95,10 @@ std::map<std::string, double> IntegratorDispatcher::compute_V(std::vector<Shared
     }
     for (auto& vec: ret) { vec->zero(); }
   }
-  throw PSIEXCEPTION("No IntegratorManager managed to compute_V.");
+  throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_V.");
 }
 
-SharedMatrix IntegratorDispatcher::compute_gradient() {
+SharedMatrix DensityFunctionalIntegratorDispatcher::compute_gradient() {
   bool computable = false;
   SharedMatrix grad;
   for (const auto& manager: managers_) {
@@ -116,11 +116,11 @@ SharedMatrix IntegratorDispatcher::compute_gradient() {
     if (grad != nullptr) return grad;
   }
   if (computable)
-    throw PSIEXCEPTION("No IntegratorManager managed to compute_gradient.");
-  else throw PSIEXCEPTION("No IntegratorManager has compute_gradient defined.");
+    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_gradient.");
+  else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_gradient defined.");
 }
 
-void IntegratorDispatcher::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+void DensityFunctionalIntegratorDispatcher::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
   bool computable = false;
   for (const auto& manager: managers_) {
     if (manager->can_compute_Vx()) computable = true;
@@ -137,11 +137,11 @@ void IntegratorDispatcher::compute_Vx(const std::vector<SharedMatrix> Dx, std::v
     }
   }
   if (computable)
-    throw PSIEXCEPTION("No IntegratorManager managed to compute_Vx.");
-  else throw PSIEXCEPTION("No IntegratorManager has compute_Vx defined.");
+    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_Vx.");
+  else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_Vx defined.");
 }
 
-void IntegratorDispatcher::compute_Vx_triplet(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+void DensityFunctionalIntegratorDispatcher::compute_Vx_triplet(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
   bool computable = false;
   for (const auto& manager: managers_) {
     if (manager->can_compute_Vx_triplet()) computable = true;
@@ -158,11 +158,11 @@ void IntegratorDispatcher::compute_Vx_triplet(const std::vector<SharedMatrix> Dx
     }
   }
   if (computable)
-    throw PSIEXCEPTION("No IntegratorManager managed to compute_Vx_triplet.");
-  else throw PSIEXCEPTION("No IntegratorManager has compute_Vx_triplet defined.");
+    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_Vx_triplet.");
+  else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_Vx_triplet defined.");
 }
 
-SharedMatrix IntegratorDispatcher::compute_hessian() {
+SharedMatrix DensityFunctionalIntegratorDispatcher::compute_hessian() {
   bool computable = false;
   SharedMatrix hess;
   for (const auto& manager: managers_) {
@@ -180,11 +180,11 @@ SharedMatrix IntegratorDispatcher::compute_hessian() {
     if (hess != nullptr) return hess;
   }
   if (computable)
-    throw PSIEXCEPTION("No IntegratorManager managed to compute_hessian.");
-  else throw PSIEXCEPTION("No IntegratorManager has compute_hessian.");
+    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_hessian.");
+  else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_hessian.");
 }
 
-std::vector<SharedMatrix> IntegratorDispatcher::compute_fock_derivatives() {
+std::vector<SharedMatrix> DensityFunctionalIntegratorDispatcher::compute_fock_derivatives() {
   bool computable = false;
   std::vector<SharedMatrix> derivs;
   for (const auto& manager: managers_) {
@@ -202,11 +202,11 @@ std::vector<SharedMatrix> IntegratorDispatcher::compute_fock_derivatives() {
     if (!derivs.empty()) return derivs;
   }
   if (computable)
-    throw PSIEXCEPTION("No IntegratorManager managed to compute_fock_derivatives.");
-  else throw PSIEXCEPTION("No IntegratorManager has compute_fock_derivatives.");
+    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_fock_derivatives.");
+  else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_fock_derivatives.");
 }
 
-size_t IntegratorDispatcher::collocation_size() const {
+size_t DensityFunctionalIntegratorDispatcher::collocation_size() const {
   size_t size = 0;
   // n.b.: this assumes that only one manager collocates. If all collocate, sum.
   for (const auto& manager: managers_) {
@@ -215,7 +215,7 @@ size_t IntegratorDispatcher::collocation_size() const {
   return size;
 }
 
-void IntegratorDispatcher::build_collocation_cache(size_t doubles_per_integrator) {
+void DensityFunctionalIntegratorDispatcher::build_collocation_cache(size_t doubles_per_integrator) {
   for (const auto& manager: managers_) {
     if (auto collocating_integrator = dynamic_pointer_cast<VBase>(manager)) {
       collocating_integrator->build_collocation_cache(doubles_per_integrator);
@@ -223,7 +223,7 @@ void IntegratorDispatcher::build_collocation_cache(size_t doubles_per_integrator
   }
 }
 
-void IntegratorDispatcher::clear_collocation_cache() {
+void DensityFunctionalIntegratorDispatcher::clear_collocation_cache() {
   for (const auto& manager: managers_) {
     if (auto collocating_integrator = dynamic_pointer_cast<VBase>(manager)) {
       collocating_integrator->clear_collocation_cache();
@@ -231,17 +231,17 @@ void IntegratorDispatcher::clear_collocation_cache() {
   }
 }
 
-std::shared_ptr<SuperFunctional> IntegratorDispatcher::functional() {
+std::shared_ptr<SuperFunctional> DensityFunctionalIntegratorDispatcher::functional() {
   std::shared_ptr<SuperFunctional> first_functional;
   for (const auto& manager: managers_) {
     auto current_functional = manager->functional();
     if (!first_functional) first_functional = current_functional;
-    else if (first_functional != current_functional) throw PSIEXCEPTION("IntegratorManagers have differnet functionals.");
+    else if (first_functional != current_functional) throw PSIEXCEPTION("DensityFunctionalIntegratorManagers have differnet functionals.");
   }
   return first_functional;
 }
 
-std::shared_ptr<VBase> IntegratorDispatcher::psi_manager() const {
+std::shared_ptr<VBase> DensityFunctionalIntegratorDispatcher::psi_manager() const {
   for (const auto& manager: managers_) {
     if (auto vbase = dynamic_pointer_cast<VBase>(manager)) {
       return vbase;

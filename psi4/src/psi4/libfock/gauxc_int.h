@@ -36,7 +36,7 @@
 
 namespace psi {
 
-class GauXCBase : public IntegratorManager {
+class GauXCBase : public DensityFunctionalIntegratorManager {
    protected:
     std::shared_ptr<SuperFunctional> functional_;
     /// Integrator object for GauXC based integration
@@ -44,7 +44,7 @@ class GauXCBase : public IntegratorManager {
     bool use_gpu_ = false;
 
    public:
-    GauXCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
+    GauXCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : DensityFunctionalIntegratorManager(primary, options), functional_(functional) {};
     std::shared_ptr<SuperFunctional> functional() const override { return functional_; }
     void initialize() override;
     virtual ExchCXX::Spin spin() const = 0;

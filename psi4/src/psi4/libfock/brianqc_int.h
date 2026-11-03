@@ -50,7 +50,7 @@ struct BrianBlock {
     std::vector<BrianAngularPoint> angularPoints;
 };
 
-class BrianQCBase : public IntegratorManager {
+class BrianQCBase : public DensityFunctionalIntegratorManager {
    protected:
     static void initialize_named_grids();
     void grid_from_options(MolecularGrid::MolecularGridOptions const& opt, bool build_dft=true);
@@ -64,7 +64,7 @@ class BrianQCBase : public IntegratorManager {
     MolecularGrid::MolecularGridOptions grid_options_;
 
    public:
-    BrianQCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {
+    BrianQCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : DensityFunctionalIntegratorManager(primary, options), functional_(functional) {
         if (!options_.get_bool("BRIANQC_INTEGRATE")) {
             throw PSIEXCEPTION("Brian integration not enabled!");
 	}

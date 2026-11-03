@@ -33,7 +33,7 @@
 #include "psi4/libmints/petitelist.h"
 
 namespace psi {
-void IntegratorManager::set_D(std::vector<SharedMatrix> Dvec) {
+void DensityFunctionalIntegratorManager::set_D(std::vector<SharedMatrix> Dvec) {
     if (Dvec.size() > 2) {
         throw PSIEXCEPTION("VBase::set_D: Can only set up to two D vectors.");
     }
@@ -70,6 +70,6 @@ void IntegratorManager::set_D(std::vector<SharedMatrix> Dvec) {
     }
 }
 
-const std::shared_ptr<Molecule> IntegratorManager::molecule() { return primary_->molecule(); }
+const std::shared_ptr<Molecule> DensityFunctionalIntegratorManager::molecule() { return primary_->molecule(); }
 } // namespace psi
 

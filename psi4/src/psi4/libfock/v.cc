@@ -60,7 +60,7 @@
 namespace psi {
 
 VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
-    : IntegratorManager(primary, options), functional_(functional) {
+    : DensityFunctionalIntegratorManager(primary, options), functional_(functional) {
     common_init();
 }
 VBase::~VBase() {}

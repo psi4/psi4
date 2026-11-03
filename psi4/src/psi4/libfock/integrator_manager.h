@@ -39,7 +39,7 @@ class BasisSet;
 class Options;
 class SuperFunctional;
 
-class IntegratorManager {
+class DensityFunctionalIntegratorManager {
    protected:
     /// Options object, used to build grid
     Options& options_;
@@ -62,7 +62,7 @@ class IntegratorManager {
     bool can_compute_grac_ = false;
 
    public:
-    IntegratorManager(std::shared_ptr<BasisSet> primary, Options& options) : primary_(primary), options_(options) {};
+    DensityFunctionalIntegratorManager(std::shared_ptr<BasisSet> primary, Options& options) : primary_(primary), options_(options) {};
     void set_D(std::vector<SharedMatrix> Dvec);
     virtual void initialize() = 0;
     virtual void print_header() const = 0;
