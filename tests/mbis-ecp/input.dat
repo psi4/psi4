@@ -1,6 +1,6 @@
 #! MBIS regression test catching ECPs
 
-molecule mol {
+molecule mei {
   0 1
   C 0.000000 0.000000 0.000000
   I 0.000000 0.000000 2.105000
@@ -26,7 +26,9 @@ if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP
 set scf_properties ['MBIS_CHARGES', 'MBIS_VOLUME_RATIOS']
 
 try:
-    energy("mp2/def2-svp", molecule=hi)
+    energy("mp2/def2-svp", molecule=mei)
     compare_values(0, 1, "MBIS should have raised an error for ECP-containing basis sets.")
-except Exception:
-    compare_values(1, 1, "Expected error caught: MBIS correctly rejects ECP systems.")
+except RuntimeError as e:
+    # Check the message, not just the type: an unrelated RuntimeError from the SCF would
+    # otherwise satisfy this test without the ECP path ever being reached.
+    compare(True, "MBIS incompatible with ECP" in str(e), "Expected error caught: MBIS correctly rejects ECP systems.")
