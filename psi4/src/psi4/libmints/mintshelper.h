@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #ifndef _psi_src_lib_libmints_helper_h
 #define _psi_src_lib_libmints_helper_h
@@ -34,6 +37,10 @@
 #include "psi4/libpsi4util/process.h"
 
 #include <vector>
+
+#ifdef USING_cuEST
+#include <cuest.h>
+#endif
 
 namespace psi {
 
@@ -118,6 +125,26 @@ class PSI_API MintsHelper {
     SharedMatrix so_kinetic_nr();
     /// Returns the non-relativistic potential integrals in the so basis
     SharedMatrix so_potential_nr(bool include_perturbations = true);
+
+#ifdef USING_cuEST
+   private:
+    cuestAOPairList_t cuest_pair_list_;
+    cuestWorkspace_t* cuest_pair_list_ws_ptr_;
+
+    cuestOEIntPlan_t cuest_oeint_plan_;
+    cuestWorkspace_t* cuest_oeint_plan_ws_ptr_;
+
+    void cuest_initialize();
+    void cuest_finalize();
+
+    void form_S_cuest(SharedMatrix hostS);
+    void form_T_cuest(SharedMatrix hostT);
+    void form_V_cuest(SharedMatrix hostV);
+
+   public:
+    cuestAOPairList_t cuest_pair_list() { return cuest_pair_list_; };
+    cuestOEIntPlan_t cuest_oeint_plan() { return cuest_oeint_plan_; };
+#endif
 
    public:
     /// Class initialization from Wavefunction

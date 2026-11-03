@@ -26,7 +26,7 @@ def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
 
     if save_fock:
         if not self.initialized_diis_manager_:
-            storage_policy = StoragePolicy.InCore if self.scf_type() == "DIRECT" else StoragePolicy.OnDisk
+            storage_policy = StoragePolicy.InCore
             self.diis_manager_ = DIIS(max_diis_vectors, "HF DIIS vector", RemovalPolicy.LargestError, storage_policy, engines=diis_engine_helper(self))
             self.initialized_diis_manager_ = True
 

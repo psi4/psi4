@@ -645,6 +645,9 @@ if args.subparser_name in ["conda", "env"]:
         if conda_platform == "win-64" and conda.get("skip_win", False):
             continue
 
+        if conda_platform in ["osx-64", "osx-arm64"] and conda.get("skip_mac", False):
+            continue
+
         # start collecting
         aux_run = conda.get("aux_run_names", [])
         aux_bld = conda.get("aux_build_names", [])

@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+// The interface to cuEST was contributed by NVIDIA under the following terms:
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LGPL-3.0-only
 
 #ifndef libmints_cubature_H
 #define libmints_cubature_H
@@ -35,6 +38,10 @@
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
+
+#ifdef USING_cuEST
+#include <cuest.h>
+#endif
 
 #include <map>
 #include <vector>
@@ -88,7 +95,19 @@ class MolecularGrid {
     double* w_;
 
     // ==> Clean Grid Specification <== //
-
+#if USING_cuEST
+    cuestMolecularGrid_t cuest_molecular_grid_ = nullptr;
+    cuestWorkspace_t *cuest_molecular_grid_ws_ptr_ = nullptr;
+    /// Nominal quadrature size of a GPU-resident grid, summed over atoms and radial
+    /// shells as they were handed to cuEST.  A cuEST grid has no host points, so
+    /// `npoints_` is legitimately 0 for it and must stay 0 -- it is what every host
+    /// consumer loops over.  This is kept separately, purely so the grid can report
+    /// a meaningful size instead of printing "Total Points = 0".  It is a pre-
+    /// screening count: cuEST prunes on the device, so it is an upper bound on the
+    /// points actually integrated, where the host `npoints_` is a post-screening
+    /// count.  The two are therefore not directly comparable.
+    long int cuest_npoints_ = 0;
+#endif
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation_;
     /// Radial grids, per atom
@@ -145,7 +164,7 @@ class MolecularGrid {
     std::shared_ptr<Molecule> molecule() const { return molecule_; }
 
     /// Build the grid
-    void buildGridFromOptions(MolecularGridOptions const& opt);
+    void buildGridFromOptions(MolecularGridOptions const& opt, bool is_cuest = false);
 
     /// Print information about the grid
     void print(std::string out_fname = "outfile", int print = 2) const;
@@ -158,6 +177,13 @@ class MolecularGrid {
     /// Spherical grids, per atom and radial point
     const std::vector<std::vector<std::shared_ptr<SphericalGrid>>>& spherical_grids() const { return spherical_grids_; }
 
+#if USING_cuEST
+    cuestMolecularGrid_t cuest_grid() const { return cuest_molecular_grid_; }
+    /// Is this grid GPU-resident (built for cuEST) rather than host-resident?
+    bool is_cuest_grid() const { return cuest_molecular_grid_ != nullptr; }
+    /// Nominal, pre-screening quadrature size of a GPU-resident grid; see cuest_npoints_.
+    long int cuest_npoints() const { return cuest_npoints_; }
+#endif
     /// Number of grid points
     int npoints() const { return npoints_; }
     /// Maximum number of grid points in a block
@@ -218,19 +244,28 @@ class DFTGrid : public MolecularGrid {
     /// Master builder methods
     void buildGridFromOptions(std::map<std::string, int> int_opts_map,
                               std::map<std::string, std::string> str_opts_map,
-                              std::map<std::string, double> float_opts_map);
+                              std::map<std::string, double> float_opts_map, bool use_cuest = false);
     /// The Options object
     Options& options_;
 
    public:
     std::shared_ptr<BasisSet> primary() const { return primary_; }
 
-    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
+    /// The `use_cuest` flag requests a GPU-resident cuEST grid *instead of* the host grid: when
+    /// it is set, the CPU-side blocks/points are never built, so `blocks()`, `npoints()`, etc. are
+    /// empty and only `cuest_grid()` is usable. It is therefore opt-in per construction site
+    /// (currently only VBase, the sole consumer of `cuest_grid()`) rather than being read from the
+    /// global USE_CUEST option: every other DFTGrid client (MBIS and other properties, COSX,
+    /// DLPNO, THC, ZORA, ...) integrates on the host and needs a fully post-processed host grid,
+    /// even in a run where the SCF itself is cuEST-accelerated.
+    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options,
+            bool use_cuest = false);
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-            std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options& options);
+            std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options& options,
+            bool use_cuest = false);
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
             std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, 
-            std::map<std::string, double> float_opts_map, Options& options);
+            std::map<std::string, double> float_opts_map, Options& options, bool use_cuest = false);
     ~DFTGrid() override;
 };
 
@@ -439,6 +474,8 @@ class BlockOPoints {
     double* w() const { return w_; }
     /// The center of the block
     Vector3 center() const { return xc_; }
+    /// The bounding radius of the block
+    double radius() const { return R_; }
 
     /// Relevant shells, local -> global
     const std::vector<int>& shells_local_to_global() const { return shells_local_to_global_; }

@@ -181,6 +181,8 @@ _addons_ = {
     "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
     "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),
     "qcmanybody": which_import("qcmanybody", return_bool=True),
+    "cuest": _CMake_to_Py_boolean("@ENABLE_cuEST@"),
+    "pycuest": which_import("cuest", return_bool=True),
 }
 
 
