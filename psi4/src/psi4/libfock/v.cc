@@ -327,7 +327,7 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
     }
 }
 double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
-    timer_on("V: VV10");
+    timer_on(get_timer_name() + ": VV10");
     timer_on("Setup");
 
     // => VV10 Grid and Cache <=
@@ -409,14 +409,14 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     }
 
     double vv10_e = std::accumulate(vv10_exc.begin(), vv10_exc.end(), 0.0);
-    timer_off("V: VV10");
+    timer_off(get_timer_name() + ": VV10");
     return vv10_e;
 }
 SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
     /* Not yet finished, missing several components*/
     throw PSIEXCEPTION("V: Cannot compute VV10 gradient contribution.");
 
-    timer_on("V: VV10");
+    timer_on(get_timer_name() + ": VV10");
     timer_on("Setup");
 
     // => VV10 Grid and Cache <=
@@ -522,7 +522,7 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
     G->zero();
 
     double vv10_e = std::accumulate(vv10_exc.begin(), vv10_exc.end(), 0.0);
-    timer_off("V: VV10");
+    timer_off(get_timer_name() + ": VV10");
     return G;
 }
 
