@@ -186,19 +186,18 @@ std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
         (*ret[0]).copy(ao_result);
     }
 
-    std::map<std::string, double> quad_values;
-    quad_values["VV10"] = 0.0;
-    quad_values["FUNCTIONAL"] = e_xc;
-    quad_values["RHO_A"] = 0.0;
-    quad_values["RHO_AX"] = 0.0;
-    quad_values["RHO_AY"] = 0.0;
-    quad_values["RHO_AZ"] = 0.0;
-    quad_values["RHO_B"] = 0.0;
-    quad_values["RHO_BX"] = 0.0;
-    quad_values["RHO_BY"] = 0.0;
-    quad_values["RHO_BZ"] = 0.0;
+    quad_values_["VV10"] = 0.0;
+    quad_values_["FUNCTIONAL"] = e_xc;
+    quad_values_["RHO_A"] = 0.0;
+    quad_values_["RHO_AX"] = 0.0;
+    quad_values_["RHO_AY"] = 0.0;
+    quad_values_["RHO_AZ"] = 0.0;
+    quad_values_["RHO_B"] = 0.0;
+    quad_values_["RHO_BX"] = 0.0;
+    quad_values_["RHO_BY"] = 0.0;
+    quad_values_["RHO_BZ"] = 0.0;
     timer_off(get_timer_name() + ": Form V");
-    return quad_values;
+    return quad_values_;
 }
 
 std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
@@ -239,6 +238,8 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
     }
 
     quad_values_["VV10"] = 0.0;
+:a
+:q
     quad_values_["FUNCTIONAL"] = e_xc;
     quad_values_["RHO_A"] = 0.0;
     quad_values_["RHO_AX"] = 0.0;
