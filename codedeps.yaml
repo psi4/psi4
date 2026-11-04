@@ -1627,7 +1627,7 @@ data:
       cmake:
         ENABLE_OpenTrustRegion: true
         OpenTrustRegion_DIR:
-          unix: ${CONDA_PREFIX}/share/cmake/OpenTrustRegion
-          win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenTrustRegion
-          //CMAKE_INSIST_FIND_PACKAGE_OpenTrustRegion: true
-          //CMAKE_DISABLE_FIND_PACKAGE_OpenTrustRegion: true
+          unix: ${CONDA_PREFIX}/lib/cmake/OpenTrustRegion
+          win-64: ${CONDA_PREFIX}/Library/OpenTrustRegion/CMake
+        //CMAKE_INSIST_FIND_PACKAGE_OpenTrustRegion: true
+        //CMAKE_DISABLE_FIND_PACKAGE_OpenTrustRegion: true
