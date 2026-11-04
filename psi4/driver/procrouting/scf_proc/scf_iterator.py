@@ -474,6 +474,10 @@ def _run_opentrustregion(self, e_conv, d_conv):
         core.print_out("    Note: aufbau occupation differs from the one OpenTrustRegion "
                        "optimized. Reconverging.\n")
 
+    # Write orbitals after OTR call which is otherwise only done at the end of a polish.
+    if core.has_option_changed("SCF", "ORBITALS_WRITE"):
+        self.to_file(core.get_option("SCF", "ORBITALS_WRITE"))
+
     if otr_error:
         # Only running out of macro-iterations gets this far, so subject to FAIL_ON_MAXITER
         # like any other.
