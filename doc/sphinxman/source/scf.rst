@@ -1052,7 +1052,8 @@ several times larger than the |[F,P]| column of the main iteration table.
 
 OpenTrustRegion can also stop short of requested convergence: it accepts a step by comparing the energy
 change it measured against the one its model predicted, so once neither resolves in
-floating point it stops, typically near a 1.e-10 orbital gradient. The energy there is
+floating point it stops, typically at an orbital gradient between 1.e-10 and 1.e-9 as
+|scf__d_convergence| measures it, below that keyword's defaults. The energy there is
 converged as far as a double represents it, but the orbitals are not, and first-order
 iterations can still improve them. |scf__otr_max_precision_reached_handling| chooses
 between finishing with those iterations (``DIIS``, the default, returns the better of
