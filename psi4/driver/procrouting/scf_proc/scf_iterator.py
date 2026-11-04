@@ -382,6 +382,11 @@ def _run_opentrustregion(self, e_conv, d_conv):
     otr_e_conv = e_conv if e_conv is not None else core.get_option("SCF", "E_CONVERGENCE")
     for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
         occupation = _occupation(self)
+        if attempt:
+            # OpenTrustRegion's budget takes its first macro-iteration as already counted, as the
+            # handoff is. A restart's first evaluation, at the new occupation, is a J/K build no
+            # iteration has covered, so charge it here.
+            self.iteration_ += 1
         otr_error = self.opentrustregion_scf()
         if otr_error and otr_error != _OTR_MAX_ITER_ERROR:
             # A real failure, so it must not be swallowed by FAIL_ON_MAXITER, which callers
@@ -410,9 +415,12 @@ def _run_opentrustregion(self, e_conv, d_conv):
         self.set_variable("SCF ITERATION ENERGY", SCFE)
 
         # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL ENERGIES
-        # mean the same thing as for internal solver. OTR's macro-iter=0 already recorded
+        # mean the same thing as for internal solver. OTR's macro-iter=0 is already counted, and
+        # after the handoff also recorded; a restart's was only charged above, so record it here.
         otr_energies = list(self.opentrustregion_iteration_energies())
         otr_energies[-1:] = [SCFE]
+        if attempt:
+            self.iteration_energies.append(otr_energies[0])
         otr_energies = otr_energies[1:]
         self.iteration_energies.extend(otr_energies)
         self.iteration_ += len(otr_energies)
@@ -445,6 +453,11 @@ def _run_opentrustregion(self, e_conv, d_conv):
                 self.set_variable("SCF ITERATION ENERGY", SCFE)
                 core.print_out("    Note: reconverging at the aufbau occupation raised the energy; "
                                "keeping the previous solution.\n")
+            break
+        if self.iteration_ >= core.get_option("SCF", "MAXITER"):
+            core.print_out("    Note: aufbau occupation differs from the one OpenTrustRegion "
+                           "optimized, but MAXITER leaves no iteration to reconverge; accepting "
+                           "this solution.\n")
             break
         if attempt == _OTR_MAX_OCCUPATION_RESTARTS:
             core.print_out(f"    Note: occupation still moving after "
