@@ -322,6 +322,29 @@ def _occupation(wfn):
     return (tuple(na[h] for h in range(na.n())), tuple(nb[h] for h in range(nb.n())))
 
 
+def _orbital_state(wfn):
+    """Snapshot what defines the orbitals: C, orbital energies and occupation, and for ROHF the
+    orthogonalized coefficients Ct, which it keeps alongside Ca and builds its Fock matrix from."""
+    state = {"Ca": wfn.Ca().clone(), "Cb": wfn.Cb().clone(),
+             "epsilon_a": wfn.epsilon_a().clone(), "epsilon_b": wfn.epsilon_b().clone(),
+             "occupation": _occupation(wfn)}
+    if isinstance(wfn, core.ROHF):
+        state["Ct"] = wfn.Ct().clone()
+    return state
+
+
+def _restore_orbital_state(wfn, state):
+    """Put back an :py:func:`_orbital_state` snapshot. The caller rebuilds D, G and F from it."""
+    na, nb = state["occupation"]
+    wfn.force_occpi(core.Dimension(list(nb)), core.Dimension([a - b for a, b in zip(na, nb)]))
+    wfn.Ca().copy(state["Ca"])
+    wfn.Cb().copy(state["Cb"])
+    wfn.epsilon_a().copy(state["epsilon_a"])
+    wfn.epsilon_b().copy(state["epsilon_b"])
+    if "Ct" in state:
+        wfn.Ct().copy(state["Ct"])
+
+
 def _aufbau_occupation(wfn):
     """What find_occupation would assign from the current orbital energies, without assigning it.
 
@@ -622,7 +645,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     polish_budget = 0
     polish_shortfall = ""
     polish_entry_dnorm = None
-    polish_entry_C = None
+    polish_entry_state = None
 
     while True:
         self.iteration_ += 1
@@ -768,7 +791,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 # the comparison below is like for like.
                 polish_entry_dnorm = self.compute_orbital_gradient(
                     False, core.get_option("SCF", "DIIS_MAX_VECS"))
-                polish_entry_C = (self.Ca().clone(), self.Cb().clone())
+                polish_entry_state = _orbital_state(self)
                 # Measure the next energy change after the first iteration of the polish from
                 # where OpenTrustRegion finished, not from the handoff iteration before it ran.
                 SCFE_old = self.get_energies("Total Energy")
@@ -934,13 +957,13 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             polish_remaining -= 1
             if polish_remaining <= 0:
                 if Dnorm > polish_entry_dnorm:
-                    self.Ca().copy(polish_entry_C[0])
-                    self.Cb().copy(polish_entry_C[1])
+                    _restore_orbital_state(self, polish_entry_state)
                     self.form_D()
                     self.form_G()
                     self.form_F()
                     SCFE = self.compute_E()
                     self.set_energies("Total Energy", SCFE)
+                    self.set_variable("SCF ITERATION ENERGY", SCFE)
                     core.print_out(
                         f"    The first-order iterations left the orbitals worse than\n"
                         f"    OpenTrustRegion did ({Dnorm:.2e} against "
