@@ -274,7 +274,7 @@ class HF : public Wavefunction {
     bool otr_stopped_short() const { return otr_stopped_short_; }
     bool otr_stopped_short_ = false;
 
-    /// The gradient RMS and energy change OpenTrustRegion finished on, for sizing the
+    /// The orbital gradient and energy change OpenTrustRegion finished on, for sizing the
     /// first-order polish and for reporting what precision was actually reached.
     double otr_final_grad_rms() const { return otr_final_grad_rms_; }
     double otr_final_energy_delta() const { return otr_final_energy_delta_; }
@@ -287,7 +287,7 @@ class HF : public Wavefunction {
     std::string otr_callback_error_;
 
 #ifdef USING_OpenTrustRegion
-    void otr_record_iteration(OTR::c_real func, const OTR::c_real* grad);
+    void otr_record_iteration(OTR::c_real func);
     bool otr_converged() const;
     virtual OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad,
                                        OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
@@ -305,6 +305,13 @@ class HF : public Wavefunction {
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };
     int otr_n_param_;
+
+    /// The orbital gradient at the current orbitals, measured as compute_orbital_gradient in
+    /// the Python driver measures it for the first-order iterations, so that D_CONVERGENCE
+    /// means the same thing for OpenTrustRegion. Its own parameter gradient is scaled differently.
+    virtual double otr_orbital_gradient() {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
+    };
 
     /// Cached convergence quantities for OpenTrustRegion custom convergence checks
     bool otr_has_prev_func_;

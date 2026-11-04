@@ -1508,6 +1508,12 @@ int RHF::otr_n_param() {
     for (size_t i = 0, maxi = nparampi.n(); i < maxi; ++i) nparampi[i] *= (nmopi_ - nalphapi_)[i];
     return nparampi.sum();
 }
+
+double RHF::otr_orbital_gradient() {
+    // as _RHF_orbital_gradient in the Python driver
+    auto gradient = form_FDSmSDF(Fa_, Da_);
+    return options_.get_bool("DIIS_RMS_ERROR") ? gradient->rms() : gradient->absmax();
+}
 #endif
 
 }  // namespace scf

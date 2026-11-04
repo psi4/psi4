@@ -1848,6 +1848,16 @@ int UHF::otr_n_param() {
 
     return (nparampi_a + nparampi_b).sum();
 }
+
+double UHF::otr_orbital_gradient() {
+    // as _UHF_orbital_gradient in the Python driver
+    auto gradient_a = form_FDSmSDF(Fa_, Da_);
+    auto gradient_b = form_FDSmSDF(Fb_, Db_);
+    if (options_.get_bool("DIIS_RMS_ERROR")) {
+        return std::sqrt(0.5 * (std::pow(gradient_a->rms(), 2) + std::pow(gradient_b->rms(), 2)));
+    }
+    return std::max(gradient_a->absmax(), gradient_b->absmax());
+}
 #endif
 
 }  // namespace scf

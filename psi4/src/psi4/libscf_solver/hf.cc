@@ -1497,7 +1497,7 @@ extern "C" OTR::c_int otr_update_orbs_wrapper(const OTR::c_real* kappa, OTR::c_r
         auto error = host.otr_update_orbs(kappa, func, grad, h_diag, hess_x_fp);
         if (error) return error;
 
-        host.otr_record_iteration(*func, grad);
+        host.otr_record_iteration(*func);
 
         return 0;
     });
@@ -1523,16 +1523,13 @@ extern "C" void otr_logger(const char* message, void* /*context*/) {
     }
 }
 
-void HF::otr_record_iteration(OTR::c_real func, const OTR::c_real* grad) {
+void HF::otr_record_iteration(OTR::c_real func) {
     otr_iteration_energies_.push_back(func);
     otr_prev_func_ = otr_curr_func_;
     otr_has_prev_func_ = otr_has_curr_func_;
     otr_curr_func_ = func;
     otr_has_curr_func_ = true;
-
-    double grad_sq = 0.0;
-    for (int i = 0; i < otr_n_param_; ++i) grad_sq += grad[i] * grad[i];
-    otr_grad_rms_ = std::sqrt(grad_sq / static_cast<double>(otr_n_param_));
+    otr_grad_rms_ = otr_orbital_gradient();
 }
 
 bool HF::otr_converged() const {
@@ -1622,23 +1619,23 @@ int HF::opentrustregion_scf() {
     const double d_conv = options_.get_double("D_CONVERGENCE");
     const double e_delta = std::fabs(otr_curr_func_ - otr_prev_func_);
     const bool energy_met = otr_has_prev_func_ && otr_has_curr_func_ && e_delta < e_conv;
-    const bool gradient_met = state.grad_rms < d_conv;
+    const bool gradient_met = otr_grad_rms_ < d_conv;
 
     // Neither half of the test met means these orbitals are not worth the precision asked
     // for. One half met is ordinary at the floor -- the solver routinely lands just above a
     // tight D_CONVERGENCE with the energy settled far below E_CONVERGENCE, or the reverse --
     // so that case is reported but accepted.
-    otr_final_grad_rms_ = state.grad_rms;
+    otr_final_grad_rms_ = otr_grad_rms_;
     otr_final_energy_delta_ = e_delta;
     otr_stopped_short_ = state.max_precision_reached && !energy_met && !gradient_met;
     if (state.max_precision_reached && !(energy_met && gradient_met)) {
         outfile->Printf(
             "    Note: OpenTrustRegion stopped at its precision floor, short of this SCF's\n"
-            "          convergence test: |dE| %.2e against E_CONVERGENCE %.2e, gradient RMS\n"
+            "          convergence test: |dE| %.2e against E_CONVERGENCE %.2e, orbital gradient\n"
             "          %.2e against D_CONVERGENCE %.2e. It judged a further step unable to\n"
             "          lower the energy by more than the objective function resolves, so\n"
             "          these orbitals are as converged as it can make them.\n",
-            e_delta, e_conv, state.grad_rms, d_conv);
+            e_delta, e_conv, otr_grad_rms_, d_conv);
     }
 
     // Every OTR failure mode means the orbs are unconverged. Hand the code back so the

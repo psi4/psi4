@@ -1522,6 +1522,31 @@ int ROHF::otr_n_param() {
 
     return (nparampi_o_s + nparampi_os_v).sum();
 }
+
+double ROHF::otr_orbital_gradient() {
+    // as _ROHF_orbital_gradient in the Python driver
+    Dimension dim_zero(nirrep_, "Zero Dim");
+    auto doccpi = nbetapi_;
+    auto soccpi = nalphapi_ - nbetapi_;
+    auto noccpi = doccpi + soccpi;
+
+    // Only the inact-act, inact-vir, and act-vir rotations are non-redundant
+    auto MOgradient = moFeff_->get_block({dim_zero, noccpi}, {doccpi, nmopi_});
+
+    // Zero the active-active block
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = doccpi[h]; i < noccpi[h]; ++i) {
+            for (int t = 0; t < soccpi[h]; ++t) MOgradient->set(h, i, t, 0.0);
+        }
+    }
+
+    // Back transform MOgradient
+    auto Cia = Ct_->get_block({dim_zero, nmopi_}, {dim_zero, noccpi});
+    auto Cav = Ct_->get_block({dim_zero, nmopi_}, {doccpi, nmopi_});
+    auto gradient = linalg::triplet(Cia, MOgradient, Cav, false, false, true);
+
+    return options_.get_bool("DIIS_RMS_ERROR") ? gradient->rms() : gradient->absmax();
+}
 #endif
 
 }  // namespace scf

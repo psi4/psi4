@@ -99,6 +99,7 @@ class UHF : public HF {
     OTR::c_int otr_hess_x(const OTR::c_real* x, OTR::c_real* out) override;
     OTR::c_int otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) override;
     int otr_n_param() override;
+    double otr_orbital_gradient() override;
 #endif
 
     std::shared_ptr<VBase> V_potential() const override { return potential_; };

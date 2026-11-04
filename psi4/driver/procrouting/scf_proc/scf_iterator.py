@@ -281,7 +281,7 @@ def _otr_shortfall(self):
     d_conv = core.get_option("SCF", "D_CONVERGENCE")
     grad = self.opentrustregion_final_grad_rms()
     dE = self.opentrustregion_final_energy_delta()
-    text = (f"gradient RMS {grad:.2e} against D_CONVERGENCE {d_conv:.2e}, last energy change "
+    text = (f"orbital gradient {grad:.2e} against D_CONVERGENCE {d_conv:.2e}, last energy change "
             f"{dE:.2e} against E_CONVERGENCE {e_conv:.2e}")
     # Whichever criterion is further off sets how much work is left: a tight D_CONVERGENCE
     # against a loose E_CONVERGENCE leaves the gradient to travel, and the reverse happens too.
