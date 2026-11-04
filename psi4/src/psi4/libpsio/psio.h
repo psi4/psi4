@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -72,7 +72,7 @@ std::string psio_getpid();
 
 PSI_API psio_address psio_get_address(psio_address start, size_t shift);
 psio_address psio_get_global_address(psio_address entry_start, psio_address rel_address);
-void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const size_t numvols, const size_t unit);
+void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const size_t unit);
 
 int psio_tocwrite(size_t unit);
 void psio_tocprint(size_t unit);  // debug printing

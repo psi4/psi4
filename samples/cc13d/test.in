@@ -15,10 +15,12 @@ set {
   basis cc-pVDZ
 }
 
+findif_tol = 7
+
 analytic, wfn = gradient('cc2', return_wfn=True)
 
 set findif points 5
 fin_diff, wfn = gradient('cc2', dertype=0, return_wfn=True)
 
-compare_matrices(analytic, fin_diff, 7, "RHF-CC2  gradient test") #TEST
+compare_matrices(analytic, fin_diff, findif_tol, "RHF-CC2  gradient test") #TEST
 

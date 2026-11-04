@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1170,7 +1170,6 @@ void DFOCC::ccsd_canonic_triples_grad() {
                 // Compute energy
                 double value_ = 0.0;
                 double value2_ = 0.0;
-                double value3_ = 0.0;
 //#pragma omp parallel for private(value_,value2_,value3_) reduction(+:sum)
 #pragma omp parallel for
                 for (long int a = 0; a < navirA; ++a) {

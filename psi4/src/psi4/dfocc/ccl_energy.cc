@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,9 +41,7 @@ void DFOCC::mp2l_energy() {
 
     EcorrL = 0.0;
     double Eoei = 0.0;
-    double Eoo = 0.0;
     double Eov = 0.0;
-    double Evv = 0.0;
     Emp2L_old = Emp2L;
 
     if (reference_ == "RESTRICTED") {

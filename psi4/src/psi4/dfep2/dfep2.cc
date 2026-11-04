@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -63,7 +63,7 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     outfile->Printf("                            by Daniel G. A. Smith\n");
     outfile->Printf("         ---------------------------------------------------------\n\n");
 
-    module_ = "dfep2";
+    set_module("dfep2");
 
     conv_thresh_ = options_.get_double("EP2_CONVERGENCE");
     max_iter_ = options_.get_int("EP2_MAXITER");

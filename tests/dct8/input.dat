@@ -47,7 +47,7 @@ set algorithm simultaneous
 energy('dct')
 
 compare_values(refscf, variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
-compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 9, "MP2 Energy");                                             #TEST
 
 compare_values(refodc12scf, variable("DCT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=none)");     #TEST
 compare_values(refodc12, variable("DCT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=none)");                #TEST

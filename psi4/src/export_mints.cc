@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -88,7 +88,7 @@ using namespace pybind11::literals;
  * @param forced_puream Force puream or not
  **/
 std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<Molecule>& mol, py::dict& pybs,
-                                                         const int forced_puream) {
+                                                         const int forced_puream, bool skip_ghost_ecps = true) {
     std::string key = pybs["key"].cast<std::string>();
     std::string name = pybs["name"].cast<std::string>();
     std::string label = pybs["blend"].cast<std::string>();
@@ -154,6 +154,17 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
             std::string atomlabel = atominfo[0].cast<std::string>();
             std::string hash = atominfo[1].cast<std::string>();
             int ncore = atominfo[2].cast<int>();
+            bool addecpforatom = true;
+            // We do NOT want to load ECPs when atom is GHOST!
+            //
+            // The atom loop always goes over all atoms in a geometry,
+            // also for SAD guess, when the 'mol' object contains only one atom.
+            // In such case loop index 'atom' goes beyond the scope of atoms list in the 'mol' object.
+            // Therefore, calling 'mol->Z(atom)' in such case raises an error and the program crashes.
+            if (skip_ghost_ecps and !(mol->Z(atom) > 0)) {
+                // We should be here only when it is not SAD and it is GHOST
+                addecpforatom = false;
+            }
             for (int atomshells = 3; atomshells < py::len(atominfo); ++atomshells) {
                 // Each shell entry has p primitives that look like
                 // [ angmom, [ [ e1, c1, r1 ], [ e2, c2, r2 ], ...., [ ep, cp, rp ] ] ]
@@ -169,10 +180,14 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
                     coefficients.push_back(primitiveinfo[1].cast<double>());
                     ns.push_back(primitiveinfo[2].cast<int>());
                 }
-                vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns));
+                if (addecpforatom) {
+                    vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns));
+                }
             }
             basis_atom_ncore[name][atomlabel] = ncore;
-            basis_atom_ecpshell[name][atomlabel] = vec_shellinfo;
+            if (addecpforatom) {
+                basis_atom_ecpshell[name][atomlabel] = vec_shellinfo;
+            }
             totalncore += ncore;
         }
     }
@@ -508,7 +523,6 @@ void export_mints(py::module& m) {
     typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&) const;
 
     py::enum_<Matrix::SaveType>(m, "SaveType", "The layout of the matrix for saving")
-        .value("Full", Matrix::SaveType::Full)
         .value("SubBlocks", Matrix::SaveType::SubBlocks)
         .value("LowerTriangle", Matrix::SaveType::LowerTriangle)
         .export_values();
@@ -571,6 +585,8 @@ void export_mints(py::module& m) {
         .def("absmax", &Matrix::absmax, "Returns the absolute maximum value")
         .def("scale_row", &Matrix::scale_row, "Scales row m of irrep h by a", "h"_a, "m"_a, "a"_a)
         .def("scale_column", &Matrix::scale_column, "Scales column n of irrep h by a", "h"_a, "n"_a, "a"_a)
+        .def("swap_columns", &Matrix::swap_columns, "Swaps columns i and j in irrep h", "h"_a, "i"_a, "j"_a)
+        .def("sort_cols", &Matrix::sort_cols, "Permutes the columns of each irrep by sortvec", "sortvec"_a)
         .def("transform", matrix_one(&Matrix::transform), "Transform this matrix with transformer", "transformer"_a)
         .def("transform", matrix_two(&Matrix::transform), "Transform A with transformer", "a"_a, "transformer"_a)
         .def("back_transform", matrix_one(&Matrix::back_transform), "Backtransform this with transformer",
@@ -1236,13 +1252,15 @@ void export_mints(py::module& m) {
         .def("max_function_per_shell", &BasisSet::max_function_per_shell,
              "The max number of basis functions in a shell")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
-        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring")
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring",
+                    py::arg("mol"), py::arg("pybs"), py::arg("forced_puream"), py::arg("skip_ghost_ecps")=true)
         .def("compute_phi", [](BasisSet& basis, double x, double y, double z) {
             auto phi_ao = new std::vector<double>(basis.nbf());
             auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
             basis.compute_phi(phi_ao->data(), x, y, z);
             return py::array(phi_ao->size(), phi_ao->data(), capsule);
-        }, "Calculate the value of all basis functions at a given point x, y, and z");
+        }, "Calculate the value of all basis functions at a given point x, y, and z")
+        .def("negative_gaussian_normalization_to_coefficients", &BasisSet::negative_gaussian_normalization_to_coefficients, "Remove normalization from an s-function basis set and negate. Not idempotent");
 
     typedef void (OneBodyAOInt::*vecmatrix_version)(std::vector<SharedMatrix>&);
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
@@ -1446,6 +1464,8 @@ void export_mints(py::module& m) {
              "Returns petite list which transforms AO basis functions to SO's, \
               setting argument to true is for Cartesian basis, false is for Spherical Harmonic basis",
              "include_pure_transform"_a)
+        .def("cartao_to_ao_transform", &MintsHelper::cartao_to_ao_transform,
+             "Returns CartAO->AO (cartesian->basis-function) transform matrix of shape (nbf, nao). Use with petite_list1(False) to reproduce deprecated petite_list1(include_pure_transform=True).")
 
         // Integral builders
         .def("integral", &MintsHelper::integral, "Integral factory being used")
@@ -1624,28 +1644,38 @@ void export_mints(py::module& m) {
                     "Given combined basis sets, it constructs an orthogonalized \
                     space with the same span. Linearly dependent orbitals are thrown out. \
                     The first argument, combined, is the two basis sets together but unorthogonalized \
-                    The second argument, lindep_tol, is the tolerance for linear dependencies",
-                    "combined"_a, "lindep_tol"_a = 1.e-6);
+                    The second argument, lindep_tol, is the tolerance for linear dependencies \
+                    The third argument, cholesky_tol, is the tolerance for the partial Cholesky decomposition \
+                    used when the overlap is too ill conditioned for canonical orthogonalization",
+                    "combined"_a, "lindep_tol"_a = 1.e-6, "cholesky_tol"_a = 1.e-8);
 
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")
         .def(py::init<>())
         .def("setName", &ExternalPotential::setName, "Sets the name")
-        .def("addCharge", &ExternalPotential::addCharge, "Add a charge Z at (x,y,z)", "Z"_a, "x"_a, "y"_a, "z"_a)
+        .def("addCharge", &ExternalPotential::addCharge, "Add a charge Q at (x,y,z)", "Q"_a, "x"_a, "y"_a, "z"_a)
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
+        .def("getGaussians", &ExternalPotential::getGaussians,
+             "Get the vector of tuples for diffuse charges, each being a paired basis set of S Gaussian functions and a vector of charge coefficients")
+        .def("getMatrix", &ExternalPotential::getMatrix, "Get the vector one-electron potential matrix")
         .def("appendCharges", &ExternalPotential::appendCharges,
              "Append a vector of charge tuples to a current ExternalPotential")
-        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions iwth Df coefficients",
+        .def("addGaussian", &ExternalPotential::addGaussian, "Add a basis of S Gaussian functions with charge coefficients",
              "basis"_a, "coefs"_a)
+        .def("setMatrix", &ExternalPotential::setMatrix, "Add a one-electron potential matrix", "V"_a)
         .def("gradient_on_charges", &ExternalPotential::gradient_on_charges, "Get the gradient on the embedded charges")
+        .def("gradients_on_gaussians", &ExternalPotential::gradients_on_gaussians,
+             "Get the gradients on the embedded diffuse charge densities")
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
              "Compute the external potential matrix in the given basis set", "basis"_a)
+        .def("computePotentialGradients", &ExternalPotential::computePotentialGradients,
+             "Compute the gradients due to the external potential in the given basis set for the given density matrix", "basis"_a, "D"_a)
         .def("computeNuclearEnergy", &ExternalPotential::computeNuclearEnergy,
              "Compute the contribution to the nuclear repulsion energy for the given molecule")
         .def("computeExternExternInteraction", &ExternalPotential::computeExternExternInteraction,
              "Compute the interaction between this potential and other external potential")
-        .def("print_out", &ExternalPotential::py_print, "Print python print helper to the outfile");
+        .def("print_out", &ExternalPotential::py_print, "Print object summary to the outfile");
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>,
                                                               std::shared_ptr<Matrix>);
@@ -1672,12 +1702,6 @@ void export_mints(py::module& m) {
         .def("SCF_Dtot", &FCHKWriter::SCF_Dtot, py::return_value_policy::reference_internal)
         .def("set_postscf_density_label", &FCHKWriter::set_postscf_density_label,
              "Set base label for post-SCF density, e.g. ' CC Density'.", "label"_a);
-
-    py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter",
-                                                            "Writes wavefunction information in molden format")
-        .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("write", &MoldenWriter::write, "Writes wavefunction information in molden format", "filename"_a, "Ca"_a,
-             "Cb"_a, "Ea"_a, "Eb"_a, "OccA"_a, "OccB"_a, "dovirtual"_a);
 
     py::class_<MOWriter, std::shared_ptr<MOWriter>>(m, "MOWriter", "Writes the MOs")
         .def(py::init<std::shared_ptr<Wavefunction>>())
@@ -1737,9 +1761,8 @@ void export_mints(py::module& m) {
             .def("get_x4", &LS_THC_Computer::get_x4, "Returns x4 factor from LS-THC factorization")
             .def("get_Z", &LS_THC_Computer::get_Z, "Returns Z factor from LS-THC factorization");
 
-    // when psi4 requires >=v2.8.0
-    // m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
-    //    "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
+    m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
+       "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
 
     // when L2 is pure cmake
     // m.def("libint2_citation", []() {

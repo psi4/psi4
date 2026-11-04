@@ -34,5 +34,7 @@ basis 6-31g
 reference uhf
 }
 
+tol = 8
+
 uhf_hess = hessian('scf')
 

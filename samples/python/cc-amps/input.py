@@ -25,7 +25,7 @@ D = mints.mo_eri(
 D = D.swapaxes(1, 2)
 
 RHF_ccsd_corr_e = 2 * np.einsum("ijab,ijab->", tau_IjAb, D) - np.einsum("ijab,ijba->", tau_IjAb, D)
-psi4.compare_values(psi4.variable('CCSD CORRELATION ENERGY'), RHF_ccsd_corr_e, 8, "RHF CCSD CORRELATION ENERGY")
+psi4.compare_values(RHF_ccsd_corr_e, psi4.variable('CCSD CORRELATION ENERGY'), 8, "RHF CCSD CORRELATION ENERGY")
 
 # END RHF
 
@@ -67,7 +67,7 @@ E2BB = 0.5 * np.einsum("ijab,ijab->", tauijab, D_ijab)
 E2AB = np.einsum("IjAb,IjAb->", tauIjAb, D_IjAb)
 
 UHF_ccsd_corr_e = E2AA + E2BB + E2AB
-psi4.compare_values(psi4.variable("CCSD CORRELATION ENERGY"), UHF_ccsd_corr_e, 8, "UHF CCSD CORRELATION ENERGY")
+psi4.compare_values(UHF_ccsd_corr_e, psi4.variable("CCSD CORRELATION ENERGY"), 8, "UHF CCSD CORRELATION ENERGY")
 
 # END UHF
 
@@ -106,8 +106,8 @@ CO = wfn.Ca_subset("AO", "OCC")
 Co = wfn.Cb_subset("AO", "OCC")
 CV = wfn.Ca_subset("AO", "VIR")
 Cv = wfn.Cb_subset("AO", "VIR")
-fIA = psi4.core.Matrix.triplet(CO, wfn.Fa(), CV, True, False, False).to_array()
-fia = psi4.core.Matrix.triplet(Co, wfn.Fb(), Cv, True, False, False).to_array()
+fIA = psi4.core.triplet(CO, wfn.Fa(), CV, True, False, False).to_array()
+fia = psi4.core.triplet(Co, wfn.Fb(), Cv, True, False, False).to_array()
 
 mints = psi4.core.MintsHelper(wfn.basisset())
 

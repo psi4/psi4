@@ -1,0 +1,75 @@
+name: p4dev
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+    # build
+  - c-compiler
+  - cmake
+  - cxx-compiler
+  - ninja
+    # non-qc buildtime required
+  - blas-devel                # req'd with libblas
+  - eigen                     # req'd with libint
+  - libblas=*=*mkl
+  - libboost-headers          # req'd with libint
+  - llvm-openmp
+  - numpy
+  - pip                       # req'd with python; Package installer not strictly needed but needs to be tied to this python if used.
+  - pybind11
+  - python
+  - python-gil                # req'd with python; Safety of free-threading uncertain, so avoid for now.
+    # qc buildtime required
+  - gau2grid
+  #- psi4::libint              # opt'l with libint; Optionally for linux-64, an AM=7 build is available here.
+  - libint
+  - libxc-c
+  - optking>=0.5.0
+  - qcelemental>=0.50.4
+  - qcengine>=0.50.0
+  - qcmanybody>=0.7.1
+    # buildtime optional
+  - ambit
+  - armadillo                 # req'd with openorbitaloptimizer
+  - dkh
+  - exchcxx                   # req'd with gauxc
+  - fortran-compiler
+  - gauxc
+  - hdf5                      # req'd with pyeinsums; Use 1.14.3 or 1.14.6 (so far) as .4 and .5 not setting HDF5_VERSION.
+  - highfive                  # req'd with gauxc
+  - integratorxx
+  - libecpint
+  - openorbitaloptimizer>=0.3.0
+  - pcmsolver
+  - pyeinsums>=1.1.3
+  - zlib                      # req'd with pcmsolver, pyeinsums
+    # runtime required
+  - msgpack-python            # req'd with qcelemental
+  - networkx                  # req'd with qcelemental
+  - pydantic>=2.11.0,<3       # req'd with qcelemental; For Py v3.14, require Pydantic v2.12.
+  - scipy
+  - setuptools                # req'd with qcelemental; Needed for qcelemental cmake detection.
+    # runtime optional
+  - adcc
+  - basis_set_exchange
+  - cppe
+  - dftd3-python>=1.3.0
+  - dftd4-python>=4.1.0
+  - gcp-correction
+  - geometric
+  - i-pi==3.1.0
+  - postgresql                # req'd with qcfractal; Easy way to use QCFractal, but you can instead supply your own database.
+  - pyddx
+  - pygdma
+  - pylibefp
+  - pymdi=*=*nompi*
+  - qcfractal>=0.60,!=0.62
+  #- resp                      # installs package psi4 that interferes with built psi4; Later, `conda install resp -c conda-forge --no-deps`
+  - toml                      # req'd with dftd4-python; Needed for qcengine/dftd4-python interface.
+    # test
+  - h5py
+  - memory_profiler
+  - pandas
+  - pytest
+  - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.
+  - zstandard

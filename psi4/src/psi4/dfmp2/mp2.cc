@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -171,7 +171,7 @@ void DFMP2::common_init() {
 
     // copy(reference_wavefunction_);
     name_ = "DF-MP2";
-    module_ = "dfmp2";
+    set_module("dfmp2");
 
     variables_["MP2 SINGLES ENERGY"] = 0.0;
     variables_["MP2 DOUBLES ENERGY"] = 0.0;
@@ -2393,7 +2393,6 @@ void RDFMP2::form_gradient() {
     int nfvir = Cfvir_->colspi()[0];
     int nmo = nfocc + naocc + navir + nfvir;
     int nocc = nfocc + naocc;
-    int nvir = nfvir + navir;
 
     // => Tensors <= //
 

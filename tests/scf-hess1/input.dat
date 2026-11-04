@@ -29,6 +29,7 @@ set {
   guess sad
   basis sto-3g
   d_convergence 10
+  hessian_write true
 }
 
 psi4_hess, wfn = hessian('hf', return_wfn=True)
@@ -85,3 +86,7 @@ psi4_hess = hessian('scf')
 permuted_indices = [ 3, 4, 5, 0, 1, 2, 6, 7, 8 ]                       #TEST
 psi3_hess = psi3_hess[:,permuted_indices][permuted_indices,:]          #TEST
 compare_arrays(psi3_hess, psi4_hess, 1E-7, "Permuted cc-pVDZ Hessian") #TEST
+
+from pathlib import Path
+hessfile = Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".hess")
+compare(28, len(hessfile.read_text().splitlines()), "hessian file length")

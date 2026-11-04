@@ -1,6 +1,9 @@
 #! UHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
 #! This test should match RHF values exactly
 
+oopkg = os.environ.get("_PSI4_USE_OOPKG", False)
+psi4.set_options({"orbital_optimizer_package": "ooo" if oopkg else "internal"})
+
 ref_ene = -74.96590118978119
 
 molecule {

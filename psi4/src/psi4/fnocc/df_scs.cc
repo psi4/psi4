@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -51,7 +51,6 @@ namespace fnocc {
 std::tuple<double, double, SharedMatrix, SharedMatrix> DFCoupledCluster::ComputePair(const std::string& name) {
     long int v = nvirt;
     long int o = ndoccact;
-    long int rs = nmo;
 
     double ssenergy = 0.0;
     double osenergy = 0.0;

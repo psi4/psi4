@@ -21,7 +21,6 @@ set {
   write_opt_history True
 }
 
-
 try:
   thisenergy = optimize('SCF')
 except driver.p4util.exceptions.OptimizationConvergenceError:

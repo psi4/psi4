@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,7 +44,6 @@
 
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 // minimum magnitude of amplitude to include in output
@@ -98,10 +97,10 @@ void get_largest_R1_amps(dpdfile2 *R1, int namps, vector<R1_amp> &R1s);
 void get_largest_R2_amps(dpdbuf4 *R2, int namps, vector<R2_amp> &R2_stack);
 
 void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
-    int m, i, j, a, b, Gi, Gj, Ga, Gb, *frdocc, *clsdpi;
+    int m, i, j, a, b, Gi, Gj, Ga, Gb;
     char lbli[10], lblj[10], lbla[10], lblb[10];
-    frdocc = moinfo.frdocc;
-    clsdpi = moinfo.clsdpi;
+    const auto& frdocc = moinfo.frdocc;
+    const auto& clsdpi = moinfo.clsdpi;
 
     // Do RIA
     vector<R1_amp> R1_stack;
@@ -114,8 +113,8 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
             Ga = R1_stack[m].Ga;
             i = frdocc[Gi] + R1_stack[m].i + 1;
             a = frdocc[Ga] + clsdpi[Ga] + R1_stack[m].a + 1;
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
             outfile->Printf("       %3d > %3d      :    %6s > %6s : %15.10f\n", R1_stack[m].i, R1_stack[m].a, lbli,
                             lbla, R1_stack[m].value);
         }
@@ -139,10 +138,10 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
             a = frdocc[Ga] + clsdpi[Ga] + R2_stack[m].a + 1;
             b = frdocc[Gb] + clsdpi[Gb] + R2_stack[m].b + 1;
 
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
+            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb].c_str());
             outfile->Printf("      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n", R2_stack[m].i, R2_stack[m].j,
                             R2_stack[m].a, R2_stack[m].b, lbli, lblj, lbla, lblb, R2_stack[m].value);
         }
@@ -152,12 +151,12 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
 
 // ** amp_write_UHF()
 void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab, dpdbuf4 *RIjAb, int namps) {
-    int m, i, j, a, b, Gi, Gj, Ga, Gb, *frdocc, *clsdpi, *openpi;
+    int m, i, j, a, b, Gi, Gj, Ga, Gb;
     char lbli[10], lblj[10], lbla[10], lblb[10];
 
-    frdocc = moinfo.frdocc;
-    clsdpi = moinfo.clsdpi;
-    openpi = moinfo.openpi;
+    const auto& frdocc = moinfo.frdocc;
+    const auto& clsdpi = moinfo.clsdpi;
+    const auto& openpi = moinfo.openpi;
 
     // Do RIA
     vector<R1_amp> R1_stack;
@@ -170,8 +169,8 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab,
             Ga = R1_stack[m].Ga;
             i = frdocc[Gi] + R1_stack[m].i + 1;
             a = frdocc[Ga] + clsdpi[Ga] + openpi[Ga] + R1_stack[m].a + 1;
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
             outfile->Printf("       %3d > %3d      :    %6s > %6s : %15.10f\n", R1_stack[m].i, R1_stack[m].a, lbli,
                             lbla, R1_stack[m].value);
         }
@@ -188,8 +187,8 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab,
             Ga = R1_stack[m].Ga;
             i = frdocc[Gi] + R1_stack[m].i + 1;
             a = frdocc[Ga] + clsdpi[Ga] + R1_stack[m].a + 1;
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
             outfile->Printf("       %3d > %3d      :    %6s > %6s : %15.10f\n", R1_stack[m].i, R1_stack[m].a, lbli,
                             lbla, R1_stack[m].value);
         }
@@ -213,10 +212,10 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab,
             a = frdocc[Ga] + clsdpi[Ga] + openpi[Ga] + R2_stack[m].a + 1;
             b = frdocc[Gb] + clsdpi[Gb] + R2_stack[m].b + 1;
 
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
+            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb].c_str());
             outfile->Printf("      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n", R2_stack[m].i, R2_stack[m].j,
                             R2_stack[m].a, R2_stack[m].b, lbli, lblj, lbla, lblb, R2_stack[m].value);
         }
@@ -239,10 +238,10 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab,
             a = frdocc[Ga] + clsdpi[Ga] + openpi[Ga] + R2_stack[m].a + 1;
             b = frdocc[Gb] + clsdpi[Gb] + openpi[Gb] + R2_stack[m].b + 1;
 
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
+            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb].c_str());
             outfile->Printf("      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n", R2_stack[m].i, R2_stack[m].j,
                             R2_stack[m].a, R2_stack[m].b, lbli, lblj, lbla, lblb, R2_stack[m].value);
         }
@@ -265,10 +264,10 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab,
             a = frdocc[Ga] + clsdpi[Ga] + R2_stack[m].a + 1;
             b = frdocc[Gb] + clsdpi[Gb] + R2_stack[m].b + 1;
 
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
+            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb].c_str());
             outfile->Printf("      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n", R2_stack[m].i, R2_stack[m].j,
                             R2_stack[m].a, R2_stack[m].b, lbli, lblj, lbla, lblb, R2_stack[m].value);
         }
@@ -278,13 +277,13 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab,
 
 // ** amp_write_ROHF()
 void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab, dpdbuf4 *RIjAb, int namps) {
-    int m, i, j, a, b, Gi, Gj, Ga, Gb, *virtpi, *clsdpi, *openpi, *frdocc;
+    int m, i, j, a, b, Gi, Gj, Ga, Gb;
     char lbli[10], lblj[10], lbla[10], lblb[10];
 
-    virtpi = moinfo.virtpi;
-    clsdpi = moinfo.clsdpi;
-    openpi = moinfo.openpi;
-    frdocc = moinfo.frdocc;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& clsdpi = moinfo.clsdpi;
+    const auto& openpi = moinfo.openpi;
+    const auto& frdocc = moinfo.frdocc;
 
     // Do RIA
     vector<R1_amp> R1_stack;
@@ -297,8 +296,8 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab
             Ga = R1_stack[m].Ga;
             i = frdocc[Gi] + R1_stack[m].i + 1;
             a = frdocc[Ga] + clsdpi[Ga] + openpi[Ga] + R1_stack[m].a + 1;
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
             outfile->Printf("       %3d > %3d      :    %6s > %6s : %15.10f\n", R1_stack[m].i, R1_stack[m].a, lbli,
                             lbla, R1_stack[m].value);
         }
@@ -320,8 +319,8 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab
             else
                 a = frdocc[Ga] + clsdpi[Ga] + (R1_stack[m].a - (virtpi[Ga] - openpi[Ga])) + 1;
 
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
             outfile->Printf("       %3d > %3d      :    %6s > %6s : %15.10f\n", R1_stack[m].i, R1_stack[m].a, lbli,
                             lbla, R1_stack[m].value);
         }
@@ -348,10 +347,10 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab
             else
                 b = frdocc[Gb] + clsdpi[Gb] + (R2_stack[m].b - (virtpi[Gb] - openpi[Gb])) + 1;
 
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
+            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb].c_str());
             outfile->Printf("      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n", R2_stack[m].i, R2_stack[m].j,
                             R2_stack[m].a, R2_stack[m].b, lbli, lblj, lbla, lblb, R2_stack[m].value);
         }
@@ -374,10 +373,10 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab
             a = frdocc[Ga] + clsdpi[Ga] + openpi[Ga] + R2_stack[m].a + 1;
             b = frdocc[Gb] + clsdpi[Gb] + openpi[Gb] + R2_stack[m].b + 1;
 
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
+            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb].c_str());
             outfile->Printf("      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n", R2_stack[m].i, R2_stack[m].j,
                             R2_stack[m].a, R2_stack[m].b, lbli, lblj, lbla, lblb, R2_stack[m].value);
         }
@@ -408,10 +407,10 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab
             else
                 b = frdocc[Gb] + clsdpi[Gb] + (R2_stack[m].b - (virtpi[Gb] - openpi[Gb])) + 1;
 
-            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi]);
-            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj]);
-            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb]);
+            sprintf(lbli, "%d%s", i, moinfo.irr_labs_lowercase[Gi].c_str());
+            sprintf(lblj, "%d%s", j, moinfo.irr_labs_lowercase[Gj].c_str());
+            sprintf(lbla, "%d%s", a, moinfo.irr_labs_lowercase[Ga].c_str());
+            sprintf(lblb, "%d%s", b, moinfo.irr_labs_lowercase[Gb].c_str());
             outfile->Printf("      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n", R2_stack[m].i, R2_stack[m].j,
                             R2_stack[m].a, R2_stack[m].b, lbli, lblj, lbla, lblb, R2_stack[m].value);
         }

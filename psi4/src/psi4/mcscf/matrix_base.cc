@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -95,7 +95,6 @@ void MatrixBase::multiply(bool transpose_A, bool transpose_B, MatrixBase* A, Mat
         size_t k = rows_;
         size_t nca = rows_;
         size_t ncb = rows_;
-        size_t ncc = rows_;
         C_DGEMM(transa, transb, m, n, k, 1.0, A->get_matrix()[0], nca, B->get_matrix()[0], ncb, 0.0, get_matrix()[0],
                 ncb);
     }

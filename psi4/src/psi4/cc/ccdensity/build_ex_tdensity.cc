@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,7 +35,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -51,7 +50,6 @@ void ex_tdensity_rohf(const struct TD_Params& S, const struct TD_Params& U) {
     dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
     dpdfile2 LIA, Lia, RIA, Ria, Int, XIJ, Xij, R1;
     dpdbuf4 T2, L2, R2, I2;
-    dpdfile2 D, T1, L1, Z;
 
     // For generalization, may want to put an if-check here that
     // allows me to set the LHS DPD file number to either ground
@@ -499,7 +497,6 @@ void ex_tdensity_uhf(const struct TD_Params& S, const struct TD_Params& U) {
     dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
     dpdfile2 LIA, Lia, RIA, Ria, Int, XIJ, Xij, R1;
     dpdbuf4 T2, L2, R2, I2;
-    dpdfile2 D, T1, L1, Z;
 
     /* Set LHS to Excited State */
     int LHS = PSIF_CC_GL;

@@ -1,7 +1,7 @@
 #! This test case shows an example of running and analyzing a standard
 #! F-SAPT0/jun-cc-pvdz procedure for phenol dimer from the S22 database.
 
-memory 1 GB
+memory 2 GB
 
 molecule mol {
 0 1

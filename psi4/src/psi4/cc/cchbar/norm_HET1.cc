@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,16 +35,13 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
 namespace cchbar {
 
 void norm_HET1() {
-    int i;
     double dot;
-    dpdfile2 F;
     dpdbuf4 W;
 
     outfile->Printf("Dots of (HeT1)c in names \"CC3 Wxxx\" in CC3_HET1 \n");

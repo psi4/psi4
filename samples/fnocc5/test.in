@@ -20,6 +20,7 @@ set {
   cc_type               cd
   df_ints_io          save
 }
+
 en,wfn = energy('scf',return_wfn=True)
 energy('ccsd(t)',ref_wfn=wfn)
 edfccsd  = variable("CCSD CORRELATION ENERGY")

@@ -34,6 +34,8 @@ basis 6-31g
 reference uhf
 }
 
+tol = 8
+
 uhf_hess = hessian('scf')
 
-compare_arrays(rhf_hess, uhf_hess, 8, "RHF vs UHF") #TEST
+compare_arrays(rhf_hess, uhf_hess, tol, "RHF vs UHF") #TEST

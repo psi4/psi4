@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,14 +37,12 @@
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 namespace cctriples {
 
 double ET_UHF_ABB() {
-    int cnt;
     int h, nirreps;
     int Gi, Gj, Gk, Ga, Gb, Gc, Gd, Gl;
     int Gji, Gij, Gjk, Gkj, Gik, Gki, Gijk;
@@ -59,8 +57,8 @@ double ET_UHF_ABB() {
     int lc, lb, la;
     int id, jd, kd;
     int il, jl, kl;
-    int *aoccpi, *avirtpi, *aocc_off, *avir_off;
-    int *boccpi, *bvirtpi, *bocc_off, *bvir_off;
+    int *aocc_off, *avir_off;
+    int *bocc_off, *bvir_off;
     double value_c, value_d, dijk, denom, ET_ABB;
     int nrows, ncols, nlinks;
     double t_ia, t_jb, t_jc, t_kb, t_kc;
@@ -76,12 +74,12 @@ double ET_UHF_ABB() {
     int nijk, mijk;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
     aocc_off = moinfo.aocc_off;
     avir_off = moinfo.avir_off;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
     bocc_off = moinfo.bocc_off;
     bvir_off = moinfo.bvir_off;
 

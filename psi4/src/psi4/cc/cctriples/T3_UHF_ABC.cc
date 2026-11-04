@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -110,7 +110,7 @@ namespace cctriples {
 
 void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
                     dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
-                    dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega) {
+                    dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off, double omega) {
     int h;
     int i, j, k;
     int ij, ji, ik, ki, jk, kj;
@@ -118,16 +118,12 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
     int Gba, Gbd, Gabc;
     int Gi, Gj, Gk;
     int Gd, Gl;
-    int Gid, Gjd, Gkd;
     int Gab, Gcb, Gca, Gbc, Gac, Gdc, Gcd, Gad;
-    int Gla, Glb, Glc;
-    int Gil, Gjl, Gkl;
     int Gal, Gbl, Gcl;
     int a, b, c, I, J, K;
     int ab, ba, bc, ac, ca, cb;
     int cd, bd, ad;
     int id, jd, kd;
-    int la, lb, lc;
     int il, jl, kl;
     int al, bl, cl;
     int nrows, ncols, nlinks;
@@ -933,8 +929,8 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
 void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
                     dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA, dpdbuf4 *EAA,
                     dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, dpdbuf4 *DAA, dpdbuf4 *DAB, dpdfile2 *fIA,
-                    dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB, dpdfile2 *fab, int *aoccpi,
-                    int *aocc_off, int *boccpi, int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
+                    dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB, dpdfile2 *fab, Dimension const& aoccpi,
+                    int *aocc_off, Dimension const& boccpi, int *bocc_off, Dimension const& avirtpi, int *avir_off, Dimension const& bvirtpi, int *bvir_off,
                     double omega) {
     int h;
     int a, b, c;
@@ -945,14 +941,12 @@ void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
     int Gd, Gl;
     int Gad, Gbd, Gcd;
     int Gab, Gcb, Gca, Gac, Gbc, Gba;
-    int Gla, Glb, Glc;
     int Gal, Gbl, Gcl;
     int i, j, k, I, J, K;
     int ab, bc, ac;
     int dc, bd, ad, cd;
     int id, jd, kd;
     int il, jl, kl;
-    int la, lb, lc;
     int al, bl, cl;
     int nrows, ncols, nlinks;
     double dabc, denom;

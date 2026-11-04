@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -208,7 +208,9 @@ void export_functional(py::module &m) {
         .def("set_density_cutoff", &LibXCFunctional::set_density_cutoff, "docstring")
         .def("density_cutoff", &LibXCFunctional::density_cutoff, "docstring")
         .def("xclib_description", &LibXCFunctional::xclib_description, "query libxc for version and citation")
-        .def("query_libxc", &LibXCFunctional::query_libxc, "query libxc regarding functional parameters.");
+        .def("query_libxc", &LibXCFunctional::query_libxc, "query libxc regarding functional parameters.")
+        .def_static("available", &LibXCFunctional::available, "xc_name"_a,
+                    "Is a functional of this name present in the linked LibXC build? Does not build the functional.");
 
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>())
@@ -347,5 +349,9 @@ void export_functional(py::module &m) {
               "n_data)", "grid_data"_a, "D"_a)
          .def("potential_integral", &NumIntHelper::potential_integral,
               "Compute an integral \\int \\chi_\\mu(r) \\chi_\\nu(r) f(r) where f is a scalar function represented for "
-              "each block of points of the integration grid as a vector of n_points.");
+              "each block of points of the integration grid as a vector of n_points.")
+         .def("potential_gradient", &NumIntHelper::potential_gradient,
+              "Compute a Hellmann-Feynman gradient contribution 2 D \\int \\nabla \\chi_\\mu(r) \\chi_\\nu(r) f(r) "
+              "where f is a scalar function represented for each block of points of the integration grid as a vector "
+              "of n_points.");
 }

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -80,7 +80,6 @@ void og_print(struct olsen_graph *Graph);
 void CIWavefunction::form_strings() {
     int i, nlists, nirreps, ncodes;
     int irrep, code, listnum;
-    int *occs;
 
     AlphaG_ = new olsen_graph[1];
 
@@ -226,7 +225,6 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el, int nirreps,
     Odometer Ras1, Ras2, Ras3, Ras4;
     int n1, n2, n3, n4;
     int n1max, n1min;
-    int max_el_ras1;
     int *occs, *array1, *array2, *array3, *array4, **encode_tmp;
     int i, j, k;
     int maxj, drc_sym = 0, code = 0, num_el_expl;

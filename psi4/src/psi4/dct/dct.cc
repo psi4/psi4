@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -87,7 +87,7 @@ DCTSolver::DCTSolver(SharedWavefunction ref_wfn, Options &options) : Wavefunctio
         same_a_b_orbs_ = false;
         name_ = "U" + options.get_str("DCT_FUNCTIONAL");
     }
-    module_ = "dct";
+    set_module("dct");
 
     // Sets up the memory, and orbital info
     init();

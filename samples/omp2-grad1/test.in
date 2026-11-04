@@ -18,6 +18,7 @@ set {
   basis cc-pvdz
   mp2_type conv
 }
+
 grad = gradient('omp2')
 
 compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST

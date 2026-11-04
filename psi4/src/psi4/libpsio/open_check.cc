@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,12 +38,12 @@
 
 namespace psi {
 
-int PSIO::open_check(size_t unit) {
+int PSIO::open_check(size_t unit) const {
     psio_ud *this_unit;
 
     this_unit = &(psio_unit[unit]);
 
-    if (this_unit->vol[0].stream != -1)
+    if (this_unit->vol.stream != -1)
         return 1;
     else
         return 0;

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -178,7 +178,13 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     // set options
     lr_symmetric_ = true;
 
-    kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
+    // set up COSX integral tolerance
+    if (options["COSX_INTS_TOLERANCE"].has_changed() && options.get_str("SCREENING") != "NONE") {
+        kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
+    } else {
+        kscreen_ = cutoff_;
+    }
+
     dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
@@ -506,7 +512,6 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         for(size_t TAU = 0; TAU < ns_block_all; TAU++) {
             for(size_t KAPPA_ind = 0; KAPPA_ind < ns_block; KAPPA_ind++) {
-                size_t KAPPA = shell_map[KAPPA_ind];
                 if (D_block_shellp[TAU][KAPPA_ind] > dscreen_) {
                     shell_map_tau.push_back(TAU);
                     break;

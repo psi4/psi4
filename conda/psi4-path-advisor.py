@@ -69,6 +69,7 @@ def conda_list(*, name: str = None, prefix: str = None) -> Dict:
         proc = run([condaexe, "list", "--json", "--prefix", prefix], text=True, capture_output=True)
     else:
         proc = run([condaexe, "list", "--json"], text=True, capture_output=True)
+    proc.check_returncode()
     return json.loads(proc.stdout)
 
 
@@ -106,6 +107,8 @@ if pm_available:
     conda_platform_native = conda_info_dict["platform"]
     conda_prefix = conda_info_dict["active_prefix"]
     conda_prefix_short = conda_info_dict["active_prefix_name"]
+    if conda_prefix_short and (cps := Path(conda_prefix_short)).is_absolute():
+        conda_prefix_short = cps.name
     conda_host = conda_info_dict["env_vars"].get("CONDA_TOOLCHAIN_HOST", None)  # None if no compilers in env
     conda_list_struct = conda_list()
     base_prefix = conda_info_dict["conda_prefix"]  # env with conda cmd
@@ -625,7 +628,7 @@ if args.subparser_name in ["conda", "env"]:
         "test": [],
         "docs": [],
     }
-    notes = {}
+    notes = {}  # maps package name to dict with 'req', 'parents', and 'note' keys
     lapack_packages = []  # TODO: incl openmp, too?
 
     for ddep in ydict["data"]:
@@ -645,11 +648,20 @@ if args.subparser_name in ["conda", "env"]:
         # start collecting
         aux_run = conda.get("aux_run_names", [])
         aux_bld = conda.get("aux_build_names", [])
+        if isinstance(aux_run, dict):
+            aux_run = aux_run .get(conda_platform, [])
+        if isinstance(aux_bld, dict):
+            aux_bld = aux_bld.get(conda_platform, [])
 
         if isinstance(conda["name"], dict):
             primary = conda["name"][conda_platform]
         else:
             primary = conda["name"]
+
+        if conda.get("brings_psi4", False):
+            msg = f"installs package psi4 that interferes with built psi4; Later, `conda install {primary} -c {conda['channel']} --no-deps`"
+            primary = "//" + primary
+            notes[primary] = {"req": None, "parents": set(), "note": msg}
 
         if primary == "libblas":
             if args.lapack:
@@ -676,15 +688,27 @@ if args.subparser_name in ["conda", "env"]:
 
         for pkg in aux_run:
             req = "opt'l" if pkg.startswith("//") else "req'd"
-            notes[pkg] = f"{req} with {conda['name']}"
-            if note := conda.get("aux_run_names_note", {}).get(pkg, None):
-                notes[pkg] += f"; {note}"
+            additional_note = conda.get("aux_run_names_note", {}).get(pkg, "")
+            if pkg not in notes:
+                notes[pkg] = {"req": req, "parents": set(), "note": additional_note}
+            else:
+                if notes[pkg]["req"] is None:
+                    notes[pkg]["req"] = req
+                if not notes[pkg]["note"]:
+                    notes[pkg]["note"] = additional_note
+            notes[pkg]["parents"].add(conda['name'])
 
         for pkg in aux_bld:
             req = "opt'l" if pkg.startswith("//") else "req'd"
-            notes[pkg] = f"{req} with {conda['name']}"
-            if note := conda.get("aux_build_names_note", {}).get(pkg, None):
-                notes[pkg] += f"; {note}"
+            additional_note = conda.get("aux_build_names_note", {}).get(pkg, "")
+            if pkg not in notes:
+                notes[pkg] = {"req": req, "parents": set(), "note": additional_note}
+            else:
+                if notes[pkg]["req"] is None:
+                    notes[pkg]["req"] = req
+                if not notes[pkg]["note"]:
+                    notes[pkg]["note"] = additional_note
+            notes[pkg]["parents"].add(conda['name'])
 
         # sort into categories
         if use.get("test_required", None) is not None:
@@ -736,7 +760,7 @@ if args.subparser_name in ["conda", "env"]:
                 stuff["runtime required"].append(primary)
                 stuff["runtime required"].extend(aux_run)
 
-    stuff = {k: sorted(v) for k, v in stuff.items()}
+    stuff = {k: sorted(set(v)) for k, v in stuff.items()}
 
     text = []
     text.append(f"name: {args.name}")
@@ -769,11 +793,23 @@ if args.subparser_name in ["conda", "env"]:
         for pkg in sorted(stuff[category], key=lambda x: re.match(re_pkgline, x).group("pkg")):
             commentout, chnl, barepkg, constraint = re.match(re_pkgline, pkg).groups()
 
-            if note := notes.get(pkg, ""):
+            if note_info := notes.get(pkg):
+                # Build the note string from parents and additional note
+                parents = sorted(note_info["parents"])
+                req = note_info["req"]
+                additional = note_info["note"]
+
+                note_parts = []
+                if req is not None:
+                    note_parts.append(f"{req} with {', '.join(parents)}")
+                if additional:
+                    note_parts.append(additional)
+                note_str = "; ".join(note_parts)
+
                 if commentout:
-                    text.append(f"  #- {pkg[2:]:<24}  # {note}")
+                    text.append(f"  #- {pkg[2:]:<24}  # {note_str}")
                 else:
-                    text.append(f"  - {pkg:<24}  # {note}")
+                    text.append(f"  - {pkg:<24}  # {note_str}")
             else:
                 if barepkg == "python" and args.python:
                     text.append(f"  - {pkg}={args.python}")
@@ -834,6 +870,10 @@ elif args.subparser_name in ["cmake", "cache"]:
             primary = conda["name"]
         aux_run = conda.get("aux_run_names", [])
         aux_bld = conda.get("aux_build_names", [])
+        if isinstance(aux_run, dict):
+            aux_run = aux_run .get(conda_platform, [])
+        if isinstance(aux_bld, dict):
+            aux_bld = aux_bld.get(conda_platform, [])
 
         constraint_delimiter = "=|!|<|>"
         package_set = [primary, *aux_bld, *aux_run]
@@ -1067,36 +1107,115 @@ elif args.subparser_name in ["deploy"]:
     if not pm_available:
         raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
 
+    # sugg from docs CONDA_OVERRIDE_LINUX=1 and CONDA_OVERRIDE_GLIBC=2.17
+
     full_cmake_S = codedeps_yaml.parent
-    script = f"""#!/usr/bin/env bash
+    full_conda_envs = f"{full_cmake_S}/devtools/conda-envs/"
+    stable_pyver = "3.13"
+    pyver = stable_pyver.replace(".", "")
+    script = rf"""#!/usr/bin/env bash
+
+set -euo pipefail
 
 PNAME=p4dev8  # some env that doesn't exist
 
+### Core ###
+
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform linux-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/linux-64-buildrun.yaml
+mv env_p4dev.yaml {full_conda_envs}/linux-64-buildrun.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=osx-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/osx-64-buildrun.yaml
+mv env_p4dev.yaml {full_conda_envs}/osx-64-buildrun.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-arm64 --lapack accelerate --disable addons docs
 CONDA_SUBDIR=osx-arm64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/osx-arm64-buildrun.yaml
+mv env_p4dev.yaml {full_conda_envs}/osx-arm64-buildrun.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform win-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=win-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/win-64-buildrun.yaml
+mv env_p4dev.yaml {full_conda_envs}/win-64-buildrun.yaml
+
+###  Docs  ###
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --name p4docs --platform linux-64 --disable addons
 CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4docs.yaml --dry-run
-mv env_p4docs.yaml {full_cmake_S}/devtools/conda-envs/linux-64-docs.yaml
+mv env_p4docs.yaml {full_conda_envs}/linux-64-docs.yaml
 
+###  Eco  ###
+
+echo -e "dependencies:\n  - python={stable_pyver}" > temp_override.yaml
+
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform linux-64 --lapack mkl --disable docs
+CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+conda-lock -f env_p4dev.yaml -f temp_override.yaml --kind env -p linux-64
+mv conda-linux-64.lock.yml {full_conda_envs}/linux-64-buildrun-addons-py{pyver}.lock.yaml
+mv env_p4dev.yaml          {full_conda_envs}/linux-64-buildrun-addons.yaml
+
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-64 --lapack mkl --disable docs
+CONDA_OVERRIDE_OSX=13 CONDA_SUBDIR=osx-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+conda-lock -f env_p4dev.yaml -f temp_override.yaml --kind env -p osx-64
+mv conda-osx-64.lock.yml {full_conda_envs}/osx-64-buildrun-addons-py{pyver}.lock.yaml
+mv env_p4dev.yaml        {full_conda_envs}/osx-64-buildrun-addons.yaml
+
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-arm64 --lapack accelerate --disable docs
+CONDA_OVERRIDE_OSX=13 CONDA_SUBDIR=osx-arm64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+conda-lock -f env_p4dev.yaml -f temp_override.yaml --kind env -p osx-arm64
+mv conda-osx-arm64.lock.yml {full_conda_envs}/osx-arm64-buildrun-addons-py{pyver}.lock.yaml
+mv env_p4dev.yaml           {full_conda_envs}/osx-arm64-buildrun-addons.yaml
+
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform win-64 --lapack mkl --disable docs
+CONDA_SUBDIR=win-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+conda-lock -f env_p4dev.yaml -f temp_override.yaml --kind env -p win-64
+mv conda-win-64.lock.yml {full_conda_envs}/win-64-buildrun-addons-py{pyver}.lock.yaml
+mv env_p4dev.yaml        {full_conda_envs}/win-64-buildrun-addons.yaml
+
+rm temp_override.yaml
 """
 
-    with open("deps_deploy.sh", "w") as fp:
+    with open("deps_deploy_devtools.sh", "w") as fp:
         fp.write(script)
+        print("bash deps_deploy_devtools.sh")
 
+    seds = []
+    for ddep in ydict["data"]:
+        repo = ddep["repository"]
+        if repo is None:
+            continue
+
+        comment = f"  # {repo['commit_note']}" if ("commit_note" in repo) else ""
+        if repo["host"] == "github":
+            repo_url = f"https://github.com/{repo['account']}/{repo['name']}"
+            if repo.get("githttps"):
+                url = f"{repo_url}.git@{repo['commit']}#egg=proj"
+            else:
+                url = f"{repo_url}/archive/{repo['commit']}.tar.gz{comment}"
+        elif repo["host"] == "gitlab":
+            repo_url = f"https://gitlab.com/{repo['account']}/{repo['name']}"
+            url = f"{repo_url}/-/archive/{repo['commit']}/{repo['name']}-{repo['commit']}.tar.gz{comment}"
+        elif repo["host"] == "url":
+            repo_url = "/".join(repo["url"].split("/", 3)[:-1])
+            url = repo["url"]
+
+        seds.append(f"sed -i 's;{repo_url}.*;{url}  # edit in codedeps;' {full_cmake_S}/external/*/*/CMakeLists.txt")
+
+    for ddep in ydict["data"]:
+        cm = ddep["cmake"]
+        if cm is None:
+            continue
+
+        components = (" COMPONENTS " + " ".join(cm["components"])) if cm.get("components", False) else ""
+        constraint = f" {cm['constraint']}" if cm.get("constraint", False) else ""
+        fp = cm['name'] + constraint + components + " "
+
+        seds.append(f"""sed -i 's;find_python_module({cm["name"]} .*QUIET;find_python_module({fp}QUIET;' {full_cmake_S}/external/*/*/CMakeLists.txt""")
+        seds.append(f"""sed -i 's;find_package({cm["name"]} .*CONFIG;find_package({fp}CONFIG;' {full_cmake_S}/external/*/*/CMakeLists.txt""")
+        seds.append(f"""sed -i 's;find_package({cm["name"]} .*CONFIG;find_package({fp}CONFIG;' {full_cmake_S}/psi4/CMakeLists.txt""")
+
+    with open("deps_deploy_external.sh", "w") as fp:
+        fp.write("\n".join(seds))
+        print("bash deps_deploy_external.sh")
 
 
 #elif sys.platform == 'darwin':

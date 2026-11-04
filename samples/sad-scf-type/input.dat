@@ -29,6 +29,7 @@ set {
   df_basis_scf cc-pVDZ-JKfit
   df_basis_sad cc-pVDZ-JKfit
 }
+
 energy('scf')
 
 set {

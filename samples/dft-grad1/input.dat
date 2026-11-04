@@ -20,6 +20,8 @@ set {
     d_convergence         8
 }
 
+tol = 7
+
 grad = gradient('bp86-d')
 clean()
 

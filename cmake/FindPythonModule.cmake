@@ -73,8 +73,8 @@ macro(find_python_module module)
 
             if(${module}_tgtver)
                 execute_process(COMMAND "${Python_EXECUTABLE}" "-c"
-                                        "from pkg_resources import parse_version; \
-                                         print(parse_version('${${module}_VERSION}') ${_op} parse_version('${${module}_tgtver}'))"
+                                        "from packaging.version import parse; \
+                                         print(parse('${${module}_VERSION}') ${_op} parse('${${module}_tgtver}'))"
                 RESULT_VARIABLE _${module}_verenuf_status
                 OUTPUT_VARIABLE _${module}_verenuf
                 ERROR_QUIET

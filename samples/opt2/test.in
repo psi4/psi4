@@ -1,6 +1,9 @@
 #! SCF DZ allene geometry optimization, with Cartesian input, first in c2v symmetry,
 #! then in Cs symmetry from a starting point with a non-linear central bond angle.
 
+oopkg = os.environ.get("_PSI4_USE_OOPKG", False)
+psi4.set_options({"orbital_optimizer_package": "ooo" if oopkg else "internal"})
+
 nucenergy =   59.2532646680161                                                                 #TEST
 refenergy = -115.8302823663                                                                    #TEST
 
@@ -43,3 +46,4 @@ thisenergy = optimize('scf')
 
 compare_values(nucenergy, allene.nuclear_repulsion_energy(), 2, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, thisenergy, 6, "Reference energy")                                   #TEST
+compare(True, int(variable("OPTIMIZATION ITERATIONS")) < 9, f"Opt iter={int(variable('OPTIMIZATION ITERATIONS'))}")  #TEST

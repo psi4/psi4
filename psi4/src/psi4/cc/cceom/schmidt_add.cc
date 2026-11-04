@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,7 +36,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -57,7 +56,6 @@ void schmidt_add(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab, d
     int i, I;
     dpdfile2 Cme, CME, Cme2, CME2;
     dpdbuf4 CMNEF, Cmnef, CMnEf, CMNEF2, Cmnef2, CMnEf2;
-    dpdbuf4 CMnEf_buf;
     char CME_lbl[32], Cme_lbl[32], CMNEF_lbl[32], Cmnef_lbl[32], CMnEf_lbl[32];
 
     for (i = 0; i < *numCs; i++) {
@@ -130,7 +128,6 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep) {
     int i, I;
     dpdfile2 CME;
     dpdbuf4 CMnEf, CAB1, CAB2;
-    dpdfile2 R1;
     dpdbuf4 R2a, R2b;
     char CME_lbl[32], Cme_lbl[32], CMNEF_lbl[32], Cmnef_lbl[32], CMnEf_lbl[32], C0_lbl[32];
 

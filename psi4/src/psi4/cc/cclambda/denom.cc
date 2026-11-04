@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,7 +36,6 @@
 #include "cclambda.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -59,21 +58,17 @@ void denom_rhf(const struct L_Params& L_params) {
     dpdfile2 FAE, FMI;
     dpdfile2 dIA;
     dpdfile4 dIjAb;
-    dpdbuf4 d, bdIJAB, bdijab, bdIjAb;
-    double tval;
     int nirreps, L_irr;
     int h, i, j, a, b, ij, ab;
     int I, J, A, B;
     int isym, jsym, asym, bsym;
-    int *occpi, *virtpi;
     int *occ_off, *vir_off;
-    int *openpi;
     double Fii, Fjj, Faa, Fbb;
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
@@ -151,20 +146,18 @@ void denom_rhf(const struct L_Params& L_params) {
 
 void denom_uhf(const struct L_Params& L_params) {
     int nirreps, h, i, j, a, b, ij, ab, I, J, A, B, isym, jsym, asym, bsym, m, e;
-    int *aoccpi, *boccpi, *avirtpi, *bvirtpi;
     int *aocc_off, *bocc_off, *avir_off, *bvir_off, L_irr;
     dpdfile2 LFMIt, LFmit, LFaet, LFAEt;
-    dpdfile2 FMI, Fmi, FAE, Fae;
     dpdfile2 dIA, dia;
     dpdfile4 dIJAB, dijab, dIjAb;
     double Fii, Fjj, Faa, Fbb;
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    boccpi = moinfo.boccpi;
-    avirtpi = moinfo.avirtpi;
-    bvirtpi = moinfo.bvirtpi;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
     aocc_off = moinfo.aocc_off;
     bocc_off = moinfo.bocc_off;
     avir_off = moinfo.avir_off;
@@ -394,22 +387,18 @@ void denom_rohf(const struct L_Params& L_params) {
     dpdfile2 LFAEt, LFaet, LFMIt, LFmit;
     dpdfile2 dIA, dia;
     dpdfile4 dIJAB, dijab, dIjAb;
-    dpdbuf4 d, bdIJAB, bdijab, bdIjAb;
-    double tval;
     int nirreps, L_irr;
     int h, i, j, a, b, ij, ab;
     int I, J, A, B;
     int isym, jsym, asym, bsym;
-    int *occpi, *virtpi;
     int *occ_off, *vir_off;
-    int *openpi;
     double Fii, Fjj, Faa, Fbb;
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& openpi = moinfo.openpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 

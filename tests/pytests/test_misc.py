@@ -69,6 +69,7 @@ def test_xtpl_gold_fn_error():
     assert 'Replace function `energy(sherrill_gold_standard)' in str(e.value)
 
 
+@pytest.mark.extern
 def test_qmmm_class_error():
     with pytest.raises(psi4.UpgradeHelper) as e:
         psi4.QMMM()
@@ -107,6 +108,13 @@ def test_slash_in_molecule_name_plus_dfhelper():
 
     ene = psi4.energy("b3lyp/cc-pvtz", molecule=mymol)
     assert compare_values(-1.00125358, ene, 5, 'weird mol name ok as file')
+
+
+def test_timer_label_rejects_separator():
+    psi4.core.clean_timers()
+
+    with pytest.raises(RuntimeError, match="reserved separator ';'"):
+        psi4.core.timer_on("bad;label")
 
 
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>
@@ -154,29 +162,28 @@ def test_deprecated_qcdb_align_scramble():
 
 @pytest.mark.parametrize("call",
     [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies])
-def test_deprecated_dcft_calls(call):
+def TEMPLATE_test_deprecated_calls(call):
     psi4.geometry('He')
-    err_substr = "All instances of 'dcft' should be replaced with 'dct'."
+    err_substr = "All instances of 'OLD' should be replaced with 'NEW'."
 
     with pytest.raises(psi4.UpgradeHelper) as e:
-        call('dcft', basis='cc-pvdz')
+        call('OLD', basis='cc-pvdz')
     assert err_substr in str(e.value)
 
 
-def test_deprecated_dcft_options():
-    err_substr = "All instances of 'dcft' should be replaced with 'dct'."
+def TEMPLATE_test_deprecated_options():
+    err_substr = "All instances of 'OLD' should be replaced with 'NEW'."
 
     # The errors trapped below are C-side, so they're nameless, Py-side.
     with pytest.raises(Exception) as e:
-        psi4.set_options({'dcft__e_convergence': 9})
+        psi4.set_options({'OLD__e_convergence': 9})
 
     assert err_substr in str(e.value)
 
     with pytest.raises(Exception) as e:
-        psi4.set_options({'dct__dcft_functional': 'odc-06'})
+        psi4.set_options({'OLD__OLD_variant': 'string'})
 
     assert err_substr in str(e.value)
-
 
 def test_deprecated_component_dipole():
 
@@ -206,3 +213,12 @@ def test_cancelled_qcvars():
         psi4.variable("scsn-mp2 same-spin correlation energy")
 
     assert err_substr in str(e.value)
+
+
+@pytest.mark.extern
+def test_deprecated_qmmmbohr():
+    err_substr = "external_potentials"
+    with pytest.warns(FutureWarning, match=err_substr) as e:
+        Chrgfield = psi4.QMMMbohr()
+        Chrgfield.extern.addCharge(-0.5,0,0,1)
+        Chrgfield.extern.addCharge(0.5,0,0,-1)

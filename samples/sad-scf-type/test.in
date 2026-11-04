@@ -29,6 +29,7 @@ set {
   df_basis_scf cc-pVDZ-JKfit
   df_basis_sad cc-pVDZ-JKfit
 }
+
 energy('scf')
 compare_values(ref_dfhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD DF          guess (a.u.)");             #TEST
 

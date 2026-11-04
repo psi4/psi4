@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -246,7 +246,6 @@ void DCTSolver::transform_tau_R() {
  * Prints the occupation numbers from the OPDM
  */
 void DCTSolver::print_opdm_RHF() {
-    dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");

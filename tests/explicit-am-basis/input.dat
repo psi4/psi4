@@ -49,5 +49,6 @@ L=2   1   1.00
 set d_convergence 1e-10
 set e_convergence 1e-10
 set scf_type pk
+
 ene, wfn = energy('scf', return_wfn=True)
 compare_values(-128.48877555174084, ene, 8, "scf energy in general basis")  #TEST

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,7 +38,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -78,7 +77,6 @@ namespace ccdensity {
 
 void dump_RHF(struct iwlbuf *OutBuf, const struct RHO_Params& rho_params) {
     int nirreps, nmo, nfzv;
-    int h, row, col, p, q, r, s;
     dpdbuf4 G;
 
     const auto& qt_occ = moinfo.qt_occ.data();

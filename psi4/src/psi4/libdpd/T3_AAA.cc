@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -97,7 +97,7 @@
 namespace psi {
 
 void DPD::T3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *C2, dpdbuf4 *F,
-                 dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+                 dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off,
                  double omega) {
     int h;
     int i, j, k;
@@ -107,7 +107,6 @@ void DPD::T3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
     int Gd, Gl;
     int Gid, Gjd, Gkd;
     int Gab, Gcb, Gca;
-    int Gla, Glb, Glc;
     int Gil, Gjl, Gkl;
     int a, b, c, A, B, C;
     int ab;

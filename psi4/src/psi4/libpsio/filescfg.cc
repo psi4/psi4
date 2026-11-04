@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -65,7 +65,7 @@ void PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int unit, const char
     files_keywords_[fkwd] = kwdval;
 }
 
-const std::string& PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int unit) {
+const std::string& PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int unit) const {
     static std::string nullstr;
 
     const std::string fkwd = fullkwd(kwdgrp, kwd, unit);

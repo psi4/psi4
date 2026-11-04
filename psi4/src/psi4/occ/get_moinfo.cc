@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -191,7 +191,7 @@ void OCCWave::get_moinfo() {
         memset(qt2pitzerA, 0, sizeof(int) * nmo_);
         memset(pitzer2qtA, 0, sizeof(int) * nmo_);
 
-        reorder_qt(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, nmopi_, nirrep_);
+        reorder_qt(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, nmopi_);
         for (int p = 0; p < nmo_; p++) {
             int pa = pitzer2qtA[p];
             qt2pitzerA[pa] = p;
@@ -312,7 +312,6 @@ void OCCWave::get_moinfo() {
         for (int h1 = 0; h1 < nirrep_; h1++) {
             for (int h2 = 0; h2 < nirrep_; h2++) {
                 int h = h1 ^ h2;
-                int pcount = 0;
                 for (int a = 0; a < virtpiA[h1]; a++) {
                     int A = a + vir_offA[h1];
                     for (int b = 0; b < virtpiA[h2]; b++) {
@@ -541,7 +540,7 @@ void OCCWave::get_moinfo() {
         memset(pitzer2qtA, 0, sizeof(int) * nmo_);
         memset(qt2pitzerB, 0, sizeof(int) * nmo_);
         memset(pitzer2qtB, 0, sizeof(int) * nmo_);
-        reorder_qt_uhf(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, pitzer2qtB, nmopi_, nirrep_);
+        reorder_qt_uhf(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, pitzer2qtB, nmopi_);
         for (int p = 0; p < nmo_; p++) {
             int pa = pitzer2qtA[p];
             int pb = pitzer2qtB[p];

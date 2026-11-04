@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,7 +35,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -50,9 +49,7 @@ void x_Gijka_8_uhf();
 
 void x_Gijka_uhf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
-    int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
-    double value;
     dpdfile2 L1A, T1A, L1B, T1B, R1A, R1B, I1A, I1B;
     dpdbuf4 G, V, T, L, Z, Z1, Z2, Tau;
 
@@ -649,9 +646,7 @@ void x_Gijka_7_uhf() {
 
 void x_Gijka_8_uhf() {
     int h, nirreps, i, j, k, a, I, J, K, A, Isym, Jsym, Ksym, Asym, row, col;
-    int II, JJ, IIsym, JJsym;
     int L_irr, R_irr, G_irr;
-    double value;
     dpdfile2 L1A, T1A, L1B, T1B, R1A, R1B, I1A, I1B;
     dpdbuf4 G, V, T, L, Z, Z1, Z2, Tau;
 

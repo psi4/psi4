@@ -39,6 +39,10 @@ vwidths_ref = psi4.Matrix.from_list([  #TEST
  [1.13464706],     #TEST
  [0.56829083]])    #TEST
 
+vcharges_ref = psi4.Matrix.from_list([  #TEST
+ [-0.032768],      #TEST
+ [-9.231223]])     #TEST
+
 vratios_ref = psi4.Matrix.from_list([
 [0.088273],
 [1.490111]])
@@ -72,6 +76,7 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
 vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 
@@ -81,4 +86,5 @@ compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
 compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
 compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vcharges_ref, vcharges, 5, "MBIS Valence Charges")   #TEST
 compare_matrices(vratios_ref, vratios, 5, "MBIS Volume Ratios")      #TEST

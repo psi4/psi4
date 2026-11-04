@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,7 +35,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -53,12 +52,12 @@ namespace ccdensity {
 
 void Iab(const struct RHO_Params& rho_params) {
     int a, b, c, A, B, C, Ga, Gb, Gc, Gac, Gbc;
-    int *vir_off, *virtpi, nirreps, length, col;
+    int length, col;
     dpdfile2 F, D, I;
     dpdbuf4 G, Bints, Cints, Dints, Eints, Fints;
-    vir_off = moinfo.vir_off;
-    virtpi = moinfo.virtpi;
-    nirreps = moinfo.nirreps;
+    const auto& vir_off = moinfo.vir_off;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& nirreps = moinfo.nirreps;
 
     if (params.ref == 0) { /** RHF **/
         /* I'AB <-- sum_I fAI (DBI + DIB) + sum_C fAC (DBC + DCB) */

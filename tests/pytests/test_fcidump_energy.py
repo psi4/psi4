@@ -19,6 +19,7 @@ def test_fcidump_scf_energy():
                       'd_convergence': 1e-8,
                       'e_convergence': 1e-8
                      })
+
     scf_e, scf_wfn = psi4.energy('scf', return_wfn=True)
 
     psi4.fcidump(scf_wfn, fname='FCIDUMP_SCF', oe_ints=['EIGENVALUES'])
@@ -42,6 +43,7 @@ def test_fcidump_mp2_energy():
                       'd_convergence': 1e-8,
                       'e_convergence': 1e-8
                      })
+
     mp2_e, mp2_wfn = psi4.energy('mp2', return_wfn=True)
 
     psi4.fcidump(mp2_wfn, fname='FCIDUMP_MP2', oe_ints=['EIGENVALUES'])

@@ -101,6 +101,7 @@ def test_cbs_extrapolation_gradient_1_0(mtd, kw):
             assert plan3.driver == "energy"
 
 
+@uusing("qcmanybody")
 def test_nbody_dimer():
     mol = psi4.geometry(
         """
@@ -112,11 +113,11 @@ def test_nbody_dimer():
     plan = task_planner("energy", "MP2/cc-pVDZ", mol, bsse_type="cp")
 
     ghostiness = {
-        "1_((2,), (2,))": (["He"], [True]),
-        "1_((1,), (1,))": (["He"], [True]),
-        "1_((1, 2), (1, 2))": (["He", "He"], [True, True]),
-        "1_((1,), (1, 2))": (["He", "He"], [True, False]),
-        "1_((2,), (1, 2))": (["He", "He"], [False, True]),
+        '["(auto)", [2], [2]]': (["He"], [True]),
+        '["(auto)", [1], [1]]': (["He"], [True]),
+        '["(auto)", [1, 2], [1, 2]]': (["He", "He"], [True, True]),
+        '["(auto)", [1], [1, 2]]': (["He", "He"], [True, False]),
+        '["(auto)", [2], [1, 2]]': (["He", "He"], [False, True]),
     }
 
     assert isinstance(plan, ManyBodyComputer)
@@ -133,6 +134,7 @@ def test_nbody_dimer():
         assert kmol["real"] == ghostiness[k2][1]
 
 
+@uusing("qcmanybody")
 def test_nbody_dimer_gradient():
     mol = psi4.geometry(
         """
@@ -144,11 +146,11 @@ def test_nbody_dimer_gradient():
     plan = task_planner("gradient", "MP2/cc-pVDZ", mol, bsse_type="cp")
 
     ghostiness = {
-        "1_((2,), (2,))": (["He"], [True]),
-        "1_((1,), (1,))": (["He"], [True]),
-        "1_((1, 2), (1, 2))": (["He", "He"], [True, True]),
-        "1_((1,), (1, 2))": (["He", "He"], [True, False]),
-        "1_((2,), (1, 2))": (["He", "He"], [False, True]),
+        '["(auto)", [2], [2]]': (["He"], [True]),
+        '["(auto)", [1], [1]]': (["He"], [True]),
+        '["(auto)", [1, 2], [1, 2]]': (["He", "He"], [True, True]),
+        '["(auto)", [1], [1, 2]]': (["He", "He"], [True, False]),
+        '["(auto)", [2], [1, 2]]': (["He", "He"], [False, True]),
     }
 
     assert isinstance(plan, ManyBodyComputer)
@@ -165,6 +167,7 @@ def test_nbody_dimer_gradient():
         assert kmol["real"] == ghostiness[k2][1]
 
 
+@uusing("qcmanybody")
 @pytest.mark.parametrize("mtd, kw", [("mp2", {"dertype": 0}), ("mp5", {})])
 def test_nbody_dimer_gradient_1_0(mtd, kw):
     mol = psi4.geometry(
@@ -192,22 +195,22 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
     }
 
     nbody_displacements = {
-        "1_((2,), (2,))": {k: v[1] for k, v in displacements.items()},
-        "1_((1,), (1,))": {k: v[0] for k, v in displacements.items()},
-        "1_((1, 2), (1, 2))": displacements,
-        "1_((1,), (1, 2))": displacements,
-        "1_((2,), (1, 2))": displacements,
+        '["(auto)", [2], [2]]': {k: v[1] for k, v in displacements.items()},
+        '["(auto)", [1], [1]]': {k: v[0] for k, v in displacements.items()},
+        '["(auto)", [1, 2], [1, 2]]': displacements,
+        '["(auto)", [1], [1, 2]]': displacements,
+        '["(auto)", [2], [1, 2]]': displacements,
     }
 
     assert isinstance(plan, ManyBodyComputer)
     assert len(plan.task_list) == 5
 
     ghostiness = {
-        "1_((2,), (2,))": (["He"], [True]),
-        "1_((1,), (1,))": (["He"], [True]),
-        "1_((1, 2), (1, 2))": (["He", "He"], [True, True]),
-        "1_((1,), (1, 2))": (["He", "He"], [True, False]),
-        "1_((2,), (1, 2))": (["He", "He"], [False, True]),
+        '["(auto)", [2], [2]]': (["He"], [True]),
+        '["(auto)", [1], [1]]': (["He"], [True]),
+        '["(auto)", [1, 2], [1, 2]]': (["He", "He"], [True, True]),
+        '["(auto)", [1], [1, 2]]': (["He", "He"], [True, False]),
+        '["(auto)", [2], [1, 2]]': (["He", "He"], [False, True]),
     }
 
     for k2, plan2 in plan.task_list.items():
@@ -231,6 +234,7 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
             # assert plan3.keywords['E_CONVERGENCE'] == 1.e-10
 
 
+@uusing("qcmanybody")
 def test_nbody_dimer_cbs():
     mol = psi4.geometry(
         """
@@ -255,6 +259,7 @@ def test_nbody_dimer_cbs():
             assert plan3.driver == "energy"
 
 
+@uusing("qcmanybody")
 def test_nbody_dimer_cbs_gradient():
     mol = psi4.geometry(
         """
@@ -279,6 +284,7 @@ def test_nbody_dimer_cbs_gradient():
             assert plan3.driver == "gradient"
 
 
+@uusing("qcmanybody")
 @pytest.mark.parametrize("mtd, kw", [("mp2", {"dertype": 0}), ("mp5", {})])
 def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
     mol = psi4.geometry(
@@ -305,19 +311,19 @@ def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
     }
 
     nbody_displacements = {
-        "1_((2,), (2,))": {k: v[1] for k, v in displacements.items()},
-        "1_((1,), (1,))": {k: v[0] for k, v in displacements.items()},
-        "1_((1, 2), (1, 2))": displacements,
-        "1_((1,), (1, 2))": displacements,
-        "1_((2,), (1, 2))": displacements,
+        '["(auto)", [2], [2]]': {k: v[1] for k, v in displacements.items()},
+        '["(auto)", [1], [1]]': {k: v[0] for k, v in displacements.items()},
+        '["(auto)", [1, 2], [1, 2]]': displacements,
+        '["(auto)", [1], [1, 2]]': displacements,
+        '["(auto)", [2], [1, 2]]': displacements,
     }
 
     ghostiness = {
-        "1_((2,), (2,))": (["He"], [True]),
-        "1_((1,), (1,))": (["He"], [True]),
-        "1_((1, 2), (1, 2))": (["He", "He"], [True, True]),
-        "1_((1,), (1, 2))": (["He", "He"], [True, False]),
-        "1_((2,), (1, 2))": (["He", "He"], [False, True]),
+        '["(auto)", [2], [2]]': (["He"], [True]),
+        '["(auto)", [1], [1]]': (["He"], [True]),
+        '["(auto)", [1, 2], [1, 2]]': (["He", "He"], [True, True]),
+        '["(auto)", [1], [1, 2]]': (["He", "He"], [True, False]),
+        '["(auto)", [2], [1, 2]]': (["He", "He"], [False, True]),
     }
 
     assert isinstance(plan, ManyBodyComputer)

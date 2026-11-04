@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -99,7 +99,6 @@ void OCCWave::trans_ints_rmp2() {
 void OCCWave::denominators_rmp2() {
     // outfile->Printf("\n denominators is starting... \n");
     dpdbuf4 D;
-    dpdfile2 Fo, Fv;
 
     auto *aOccEvals = new double[nacooA];
     auto *aVirEvals = new double[nacvoA];

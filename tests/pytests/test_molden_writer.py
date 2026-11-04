@@ -44,6 +44,8 @@ def test_H2O_molden(inp_h2o, datadir):
         'scf_type': 'pk',
         })
     psi4.set_options(inp_h2o['options'])
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+        psi4.set_options({"d_convergence": 10})
     molden_file = f"{inp_h2o['name']}.molden"
     ref = datadir.join(f"{inp_h2o['name']}.ref")
     e, wfn = psi4.energy(inp_h2o['energy'], return_wfn=True, molecule=mol)
@@ -88,6 +90,8 @@ def test_OH_molden(inp_oh, datadir):
         'e_convergence': 11,
         'reference':inp_oh['ref']
         })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+        psi4.set_options({"d_convergence": 10})
     molden_file = f"{inp_oh['name']}.molden"
     ref = datadir.join(f"{inp_oh['name']}.ref")
     e, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
@@ -109,12 +113,17 @@ def test_H2S_molden(inp_h2s, datadir):
         'scf_type': 'pk',
         'e_convergence': 10
         })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL-TIGHT
+        tol = 2.e-7
+    else:
+        tol = 6
+        psi4.set_options({"d_convergence": 10})
     psi4.set_options(inp_h2s['options'])
     molden_file = f"{inp_h2s['name']}.molden"
     ref = datadir.join(f"{inp_h2s['name']}.ref")
     e, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
     wfn.write_molden(molden_file, do_virtual=True, use_natural=False)
-    assert psi4.compare_moldenfiles(ref, molden_file)
+    assert psi4.compare_moldenfiles(ref, molden_file, atol_exponent=tol)
 
 @pytest.mark.parametrize('inp_clfhcoh', [
     pytest.param({'name': 'sym_trivial'}, id='sym_trivial'),
@@ -134,8 +143,13 @@ def test_ClFHCOH_molden(inp_clfhcoh, datadir):
         'scf_type': 'pk',
         'e_convergence': 11
         })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL-TIGHT
+        tol = 7
+    else:
+        tol = 6
+        psi4.set_options({"d_convergence": 10})
     molden_file = f"{inp_clfhcoh['name']}.molden"
     ref = datadir.join(f"{inp_clfhcoh['name']}.ref")
     e, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
     wfn.write_molden(molden_file, do_virtual=True, use_natural=False)
-    assert psi4.compare_moldenfiles(ref, molden_file)
+    assert psi4.compare_moldenfiles(ref, molden_file, atol_exponent=tol)

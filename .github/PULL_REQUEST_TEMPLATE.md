@@ -16,12 +16,26 @@
 - [ ] Feature2
 
 ## Questions
+<!-- Any questions or decision points on which you need clarification
+     from the Psi4 team. -->
 - [ ] Question1
+
+## AI
+<!-- Briefly describe where AI contributed to the PR (tests, derivation,
+     bug-seeking, code generation, docs, etc.). No restrictions, but a
+     person should be submitting the PR and (as usual) be ready to answer
+     questions about it. -->
+- [ ] AI usage
 
 ## Checklist
 - [ ] Tests added for any new features
-- [ ] [All or relevant fraction of full tests run](http://psicode.org/psi4manual/master/build_planning.html#how-to-run-a-subset-of-tests)
+- [ ] Docstring or narrative docs/sphinxman/source updated if needed
+- Test running is well covered by CI. For running locally, see [All or relevant fraction of full tests run](http://psicode.org/psi4manual/master/build_planning.html#how-to-run-a-subset-of-tests)
 
-## Status
-- [ ] Ready for review
-- [ ] Ready for merge
+<!--
+## HOW TO GET REVIEWED!
+
+- Ready for review -- issue a PR comment with `/review-ready` as sole text to add a "review-requested" label. Expect reviewers to rm this label and add "awaiting-author-contribution". Re-add label for another cycle.
+- Priority review -- issue a PR comment with `/review-next` as sole text to add a "review-this-pr-of-mine-next" label to signal priority for attention. Adding will rm it from your other PRs.
+- Ready for merge -- use Draft/Open GitHub status to signal your view on merge readiness.
+-->

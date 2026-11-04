@@ -24,8 +24,10 @@ set {
     d_convergence         8
 }
 
+tol = 7
+
 grad = gradient('bp86-d')
-compare_matrices(ref, grad, 7, "Analytic dft gradients called by name")    #TEST
+compare_matrices(ref, grad, tol, "Analytic dft gradients called by name")    #TEST
 clean()
 
 
@@ -36,4 +38,4 @@ set {
 }
 
 grad = gradient('scf', dft_functional="bp86-d")
-compare_matrices(ref, grad, 7, "Analytic dft gradients called by options") #TEST
+compare_matrices(ref, grad, tol, "Analytic dft gradients called by options") #TEST

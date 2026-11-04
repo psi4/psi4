@@ -90,18 +90,22 @@ _programs = {
     "qcfractal": which_import("qcfractal", return_bool=True),
     "qcfractal_next": is_qcfractal_new_enough("0.49"),
     "qcportal": which_import("qcportal", return_bool=True),
+    "qcmanybody": which_import("qcmanybody", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": psi4.addons("einsums"),
+    "pyeinsums": which_import("einsums", return_bool=True),
     "gauxc": psi4.addons("gauxc"),
+    "ooo": psi4.addons("ooo"),
+    "pandas": which_import("pandas", return_bool=True),
 }
 
 
 def has_program(name):
     # Note for d3/gcp that EmpiricalDispersion is choosing between engines and which can't be globally controlled, so there's no use or truth in separate selectors
     if name == "dftd3":
-        return _programs_qcng["s-dftd3"] or _programs_qcng["dftd3"]
+        return _programs_qcng["s-dftd3"]  # or _programs_qcng["dftd3"]
     elif name == "gcp":
-        return _programs_qcng["mctc-gcp"] or _programs_qcng["gcp"]
+        return _programs_qcng["mctc-gcp"]  # or _programs_qcng["gcp"]
     elif name == "classic-dftd3":
         return _programs_qcng["dftd3"]
     elif name in _programs:
@@ -123,7 +127,10 @@ def _using(program: str) -> None:
         general = pytest.mark.addon
         particular = getattr(pytest.mark, program)
 
-        all_marks = (skip, general, particular)
+        if program == "qcmanybody":
+            all_marks = (skip, general, particular, getattr(pytest.mark, "nbody"))
+        else:
+            all_marks = (skip, general, particular)
         _using_cache[program] = [_compose_decos(all_marks), all_marks]
 
 
@@ -196,6 +203,10 @@ def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = No
         env["PYTHONPATH"] += os.pathsep + str(psiimport)
     else:
         env["PYTHONPATH"] = str(psiimport)
+
+    # On Windows, ensure UTF-8 encoding for stdout to handle section symbols and other Unicode
+    if sys.platform.startswith("win"):
+        env["PYTHONIOENCODING"] = "utf-8"
 
     if setenv:
         for ev in setenv:

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,6 +30,7 @@
     \ingroup ccresponse
     \brief Enter brief description of file here
 */
+#include <array>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -46,7 +47,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
-#define EXTERN
 #include "globals.h"
 #include "psi4/libmints/matrix.h"
 
@@ -60,16 +60,13 @@ void linresp(double *tensor, double A, double B, const char *pert_x, int x_irrep
 
 void polar(std::shared_ptr<Wavefunction> ref_wfn) {
     double ***tensor;
-    char **cartcomp, pert[32], pert_x[32], pert_y[32];
+    char pert[32], pert_x[32], pert_y[32];
     int alpha, beta, i;
     double omega_nm, omega_ev, omega_cm, *trace;
     char lbl[32];
     double value;
 
-    cartcomp = (char **)malloc(3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
+    const std::array<std::string, 3> cartcomp{"X", "Y", "Z"};
 
     tensor = (double ***)malloc(params.nomega * sizeof(double **));
     for (i = 0; i < params.nomega; i++) tensor[i] = block_matrix(3, 3);
@@ -80,7 +77,7 @@ void polar(std::shared_ptr<Wavefunction> ref_wfn) {
         sprintf(lbl, "<<Mu;Mu>_(%5.3f)", params.omega[i]);
         if (!params.restart || !psio_tocscan(PSIF_CC_INFO, lbl)) {
             for (alpha = 0; alpha < 3; alpha++) {
-                sprintf(pert, "Mu_%1s", cartcomp[alpha]);
+                sprintf(pert, "Mu_%1s", cartcomp[alpha].c_str());
                 pertbar(pert, moinfo.mu_irreps[alpha], 0);
                 compute_X(pert, moinfo.mu_irreps[alpha], params.omega[i]);
                 if (params.omega[i] != 0.0) compute_X(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
@@ -89,8 +86,8 @@ void polar(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("\n\tComputing %s tensor.\n", lbl);
             for (alpha = 0; alpha < 3; alpha++) {
                 for (beta = 0; beta < 3; beta++) {
-                    sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
-                    sprintf(pert_y, "Mu_%1s", cartcomp[beta]);
+                    sprintf(pert_x, "Mu_%1s", cartcomp[alpha].c_str());
+                    sprintf(pert_y, "Mu_%1s", cartcomp[beta].c_str());
                     linresp(&tensor[i][alpha][beta], -1.0, 0.0, pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                             pert_y, moinfo.mu_irreps[beta], params.omega[i]);
                 }
@@ -182,11 +179,6 @@ void polar(std::shared_ptr<Wavefunction> ref_wfn) {
     free(tensor);
 
     free(trace);
-
-    free(cartcomp[0]);
-    free(cartcomp[1]);
-    free(cartcomp[2]);
-    free(cartcomp);
 }
 
 // for the edification of the autodoc-er. these set py-side or through oeprop calls

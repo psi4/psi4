@@ -13,6 +13,8 @@ set {
   scf_type pk
 }
 
+tol = 0.1
+
 method = 'SVWN/sto-3g'
 
 Efd, fdwfn = freq(method, dertype=1, return_wfn=True)

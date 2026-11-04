@@ -1,10 +1,10 @@
 
 if(${ENABLE_IntegratorXX})
-    find_package(IntegratorXX CONFIG)
+    find_package(IntegratorXX CONFIG)  # edit in codedeps
 
     if(${IntegratorXX_FOUND})
         get_property(_loc TARGET IntegratorXX::IntegratorXX PROPERTY LOCATION)
-        message(STATUS "${Cyan}Found Integratxx${ColourReset}: ${_loc} (found version ${IntegratorXX_VERSION})")
+        message(STATUS "${Cyan}Found IntegratorXX${ColourReset}: ${_loc} (found version ${IntegratorXX_VERSION})")
         add_library(integratorxx_external INTERFACE)  # dummy
     else()
 
@@ -15,7 +15,7 @@ if(${ENABLE_IntegratorXX})
         include(ExternalProject)
         message(STATUS "Suitable IntegratorXX could not be located, ${Magenta}Building IntegratorXX${ColourReset} instead.")
         ExternalProject_Add(integratorxx_external
-            URL https://github.com/wavefunction91/IntegratorXX/archive/master.tar.gz
+            URL https://github.com/wavefunction91/IntegratorXX/archive/cf2917c.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -32,6 +32,7 @@ if(${ENABLE_IntegratorXX})
         set(IntegratorXX_DIR ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/cmake/IntegratorXX CACHE PATH "path to internally built IntegratorXXConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: IntegratorXX${ColourReset}")
     add_library(integratorxx_external INTERFACE)  # dummy
 endif()
 

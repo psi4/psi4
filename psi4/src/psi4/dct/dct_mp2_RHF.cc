@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -78,7 +78,6 @@ void DCTSolver::initialize_amplitudes_RHF() {
     dct_timer_off("DCTSolver::g_IJAB / D_IJAB");
 
     /* build lambda <OO|VV> for tau and G intermediates */
-    dpdbuf4 T;
     // Amplitude_IJAB = Amplitude_IjAb - Amplitude_JiAb
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
                            "Amplitude SF <OO|VV>");

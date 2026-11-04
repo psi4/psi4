@@ -1,7 +1,7 @@
 import pytest
 
 from utils import compare_values, compare
-from addons import using
+from addons import using, uusing
 
 import psi4
 
@@ -111,7 +111,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       },
-                      marks=pytest.mark.nbody,
+                      marks=using("qcmanybody"),
                       id="h2o/na+ (rhf ie)"),
     ],
 )
@@ -167,14 +167,40 @@ def test_seminum(inp, scf, mols, request):
         #SNLINK_FORCE_CARTESIAN doesnt work with symmetry currently
         molecule.reset_point_group("C1")
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+        tol = 6
+    else:
+        tol = 7e-6
+
     # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} accurate to reference (1e-6 threshold)')
+    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, tol, f'{test_id} accurate to reference (1e-6 threshold)')
 
     # is the SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
     energy_pk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
     assert compare_values(energy_pk, energy_seminum, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
+
+
+@uusing("gauxc")
+def test_snlink_force_cartesian_guard(mols):
+    """Sentinel for snLinK cartesian transform path."""
+
+    molecule = mols["h2o"]
+    molecule.reset_point_group("C1")
+
+    psi4.set_options(
+        {
+            "scf_type": "dfdirj+snlink",
+            "basis": "cc-pvdz",
+            "reference": "rhf",
+            "snlink_force_cartesian": True,
+        }
+    )
+
+    energy = psi4.energy("hf", molecule=molecule)
+    assert compare_values(-76.026788692185, energy, 6, "snlink force-cartesian sentinel energy")
+
 
 @pytest.mark.parametrize(
     "inp",
@@ -208,7 +234,7 @@ def test_seminum(inp, scf, mols, request):
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       },
-                      marks=pytest.mark.nbody,
+                      marks=using("qcmanybody"),
                       id="h2o/na+ (rhf ie)"),
     ],
 )
@@ -330,6 +356,7 @@ def test_j_algo_bp86(j_algo, k_algo, df_basis_scf, mols):
     screening = "CSAM" if any([ _ in scf_type for _ in [ "COSX", "SNLINK" ] ]) else "DENSITY"
 
     psi4.set_options({"scf_type" : scf_type, "reference": "rhf", "basis": "cc-pvdz", "df_basis_scf": df_basis_scf, "screening": screening})
+
     energy_composite = psi4.energy("bp86", molecule=molecule) 
  
     assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')

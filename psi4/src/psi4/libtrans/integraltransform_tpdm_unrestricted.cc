@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -346,7 +346,6 @@ void IntegralTransform::backtransform_tpdm_unrestricted() {
             global_dpd_->buf4_mat_irrep_init_block(&J2, h, rowsPerBucket);
             global_dpd_->buf4_mat_irrep_rd_block(&J2, h, n * rowsPerBucket, thisBucketRows);
             for (int pq = 0; pq < thisBucketRows; pq++) {
-                int PQ = n * rowsPerBucket + pq;  // The absolute pq value
                 for (int Gr = 0; Gr < nirreps_; Gr++) {
                     // Transform ( n n | a a ) -> ( n n | a n )
                     int Gs = h ^ Gr;

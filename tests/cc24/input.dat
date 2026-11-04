@@ -1,5 +1,8 @@
 #! Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
 
+oopkg = os.environ.get("_PSI4_USE_OOPKG", False)
+psi4.set_options({"orbital_optimizer_package": "ooo" if oopkg else "internal"})
+
 molecule h2o {
   1 2
   H -0.107055195862289   0.000000000000000  -1.832806614599657

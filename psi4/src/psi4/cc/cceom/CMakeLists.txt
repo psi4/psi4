@@ -30,6 +30,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_eom_params.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_moinfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_params.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/globals.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/hbar_extra.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/hbar_norms.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/local.cc

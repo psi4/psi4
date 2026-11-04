@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -27,6 +27,8 @@
  */
 
 #include "x2cint.h"
+#include "gau2grid/gau2grid.h"
+#include "zora.h"
 
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
@@ -64,6 +66,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <libint2/config.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -225,6 +228,36 @@ std::shared_ptr<PetiteList> MintsHelper::petite_list() const {
 std::shared_ptr<PetiteList> MintsHelper::petite_list(bool val) const {
     auto pt = std::make_shared<PetiteList>(basisset_, integral_, val);
     return pt;
+}
+
+SharedMatrix MintsHelper::cartao_to_ao_transform() const {
+    const int nbf = basisset_->nbf();
+    const int nao = basisset_->nao();
+    auto transform = std::make_shared<Matrix>("CartAO -> AO transform", nbf, nao);
+
+    if (!basisset_->has_puream()) {
+        for (int i = 0; i < nbf; ++i) {
+            transform->set(i, i, 1.0);
+        }
+        return transform;
+    }
+
+    auto tp = transform->pointer();
+    for (int ish = 0; ish != basisset_->nshell(); ++ish) {
+        const auto &shell = basisset_->shell(ish);
+        const int shell_pure_start = basisset_->shell_to_basis_function(ish);
+        const int shell_cart_start = basisset_->shell_to_ao_function(ish);
+
+        const SphericalTransform &st = *integral_->spherical_transform(shell.am());
+        SphericalTransformIter iter(st);
+        for (iter.first(); !iter.is_done(); iter.next()) {
+            const int pure = shell_pure_start + iter.pureindex();
+            const int cart = shell_cart_start + iter.cartindex();
+            tp[pure][cart] += iter.coef();
+        }
+    }
+
+    return transform;
 }
 
 std::shared_ptr<BasisSet> MintsHelper::basisset() const { return basisset_; }
@@ -515,7 +548,6 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
         size_t oQ = basisset_->shell(Q).function_index();
         size_t aQ = basisset_->shell(Q).ncenter();
 
-        size_t offset = nP * nQ;
         double perm = (P == Q ? 1.0 : 2.0);
 
         // Px
@@ -1349,6 +1381,8 @@ SharedMatrix MintsHelper::so_kinetic(bool include_perturbations) {
         if (options_.get_str("RELATIVISTIC") == "X2C") {
             // generate so_overlap, so_kinetic, so_potential and cache them
             compute_so_x2c_ints(include_perturbations);
+		} else if (options_.get_str("RELATIVISTIC") == "ZORA") {
+            compute_so_zora_ints(include_perturbations);
         } else {
             cached_oe_ints_[p] = so_kinetic_nr();
         }
@@ -1446,6 +1480,31 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
             potential_mat->add(dipoles[2]);
         }
     }
+}
+
+void MintsHelper::compute_so_zora_ints(bool include_perturbations) {
+    outfile->Printf(" OEINTS: Using relativistic (ZORA) kinetic integrals.\n");
+
+    if (include_perturbations && options_.get_bool("PERTURB_H")) {
+		throw PSIEXCEPTION("Perturbations of the ZORA hamiltonian are not implemented.");
+    }
+
+    ZORA zoraint(molecule_, basisset_, options_);
+	auto ao_kinetic_zora = std::make_shared<Matrix>("Kinetic", basisset_->nbf(), basisset_->nbf());
+    zoraint.compute(ao_kinetic_zora);
+
+    std::string label(PSIF_SO_S);
+    SharedMatrix so_kinetic_zora;
+
+	if (factory_->nirrep() != 1) {
+		so_kinetic_zora = factory_->create_shared_matrix(label);
+        so_kinetic_zora->apply_symmetry(ao_kinetic_zora, petite_list()->aotoso());
+    } else {
+		so_kinetic_zora = ao_kinetic_zora;
+	}
+
+    // Overwrite cached integrals
+    cached_oe_ints_[std::make_pair(PSIF_SO_T, include_perturbations)] = so_kinetic_zora;
 }
 
 void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
@@ -2121,36 +2180,43 @@ SharedMatrix MintsHelper::overlap_grad(SharedMatrix D) {
     return overlap_mat;
 }
 SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
-    double xlambda = 0.0;
-    double ylambda = 0.0;
-    double zlambda = 0.0;
-
+    int natoms = basisset_->molecule()->natom();
+    auto perturbation_gradient = std::make_shared<Matrix>("Perturbation Gradient", natoms, 3);
+    
     std::string perturb_with = options_.get_str("PERTURB_WITH");
-    if (perturb_with == "DIPOLE_X")
-        xlambda = options_.get_double("PERTURB_MAGNITUDE");
-    else if (perturb_with == "DIPOLE_Y")
-        ylambda = options_.get_double("PERTURB_MAGNITUDE");
-    else if (perturb_with == "DIPOLE_Z")
-        zlambda = options_.get_double("PERTURB_MAGNITUDE");
-    else if (perturb_with == "DIPOLE") {
-        if (options_["PERTURB_DIPOLE"].size() != 3)
-            throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
-        xlambda = options_["PERTURB_DIPOLE"][0].to_double();
-        ylambda = options_["PERTURB_DIPOLE"][1].to_double();
-        zlambda = options_["PERTURB_DIPOLE"][2].to_double();
+    
+    if (perturb_with == "DIPOLE" || perturb_with == "DIPOLE_X" ||
+        perturb_with == "DIPOLE_Y" || perturb_with == "DIPOLE_Z") {
+        double xlambda = 0.0;
+        double ylambda = 0.0;
+        double zlambda = 0.0;
+
+        if (perturb_with == "DIPOLE_X")
+            xlambda = options_.get_double("PERTURB_MAGNITUDE");
+        else if (perturb_with == "DIPOLE_Y")
+            ylambda = options_.get_double("PERTURB_MAGNITUDE");
+        else if (perturb_with == "DIPOLE_Z")
+            zlambda = options_.get_double("PERTURB_MAGNITUDE");
+        else if (perturb_with == "DIPOLE") {
+            if (options_["PERTURB_DIPOLE"].size() != 3)
+                throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
+            xlambda = options_["PERTURB_DIPOLE"][0].to_double();
+            ylambda = options_["PERTURB_DIPOLE"][1].to_double();
+            zlambda = options_["PERTURB_DIPOLE"][2].to_double();
+        } 
+
+        auto dipole_gradients = dipole_grad(D);
+        double lambdas[3] = {xlambda, ylambda, zlambda};
+        C_DGEMM('n', 't', 3 * natoms, 1, 3, 1.0, dipole_gradients->pointer()[0], 3, &lambdas[0], 3, 0.0,
+                perturbation_gradient->pointer()[0], 1);
+    } else if (perturb_with == "EMBPOT") {
+        perturbation_gradient->add(embpot_grad(D));
     } else {
         std::string msg("Gradients for a ");
         msg += perturb_with;
         msg += " perturbation are not available yet.\n";
         throw PSIEXCEPTION(msg);
     }
-
-    int natoms = basisset_->molecule()->natom();
-    auto perturbation_gradient = std::make_shared<Matrix>("Perturbation Gradient", natoms, 3);
-    auto dipole_gradients = dipole_grad(D);
-    double lambdas[3] = {xlambda, ylambda, zlambda};
-    C_DGEMM('n', 't', 3 * natoms, 1, 3, 1.0, dipole_gradients->pointer()[0], 3, &lambdas[0], 3, 0.0,
-            perturbation_gradient->pointer()[0], 1);
     return perturbation_gradient;
 }
 
@@ -2371,7 +2437,6 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         int aQ = auxiliary->shell(Q).ncenter();
         int oQ = auxiliary->shell(Q).function_index();
 
-        int ncart = cP * cQ;
         const double *Px = buffers[0];
         const double *Py = buffers[1];
         const double *Pz = buffers[2];
@@ -2422,6 +2487,118 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         gradient_contributions[kv.first] = gradient_contribution;
     }
     return gradient_contributions;
+}
+
+SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
+    // Computes skeleton (Hellman-Feynman like) derivatives for an arbitrary potential
+    int natom = molecule_->natom();
+    bool puream = basisset_->has_puream();
+
+    auto ret = std::make_shared<Matrix>("EMBPOT dervatives (i.e. Nx3)", natom, 3);
+    double **Gp = ret->pointer();
+    double **Dp = D->pointer();
+
+    FILE* input = fopen("EMBPOT", "r");
+    size_t npoints;
+    int statusvalue = fscanf(input, "%zu", &npoints);
+    if (statusvalue != 1) {
+        throw PSIEXCEPTION("MintsHelper::embpot_grad error: EOF or wrong number of inputs read from EMBPOT header, return=" +
+                           std::to_string(statusvalue) + " (expected 1)");
+    }
+    if (npoints*5*8 > Process::environment.get_memory()) {
+        throw PSIEXCEPTION("MintsHelper::embpot_grad error: Size of EMBPOT file exceeds memory allocation, " +
+                           std::to_string(npoints*5*8) + " bytes > " + std::to_string(Process::environment.get_memory()) + " bytes");
+    }
+    double x, y, z, w, v;
+    std::vector<double> xyz(npoints * 3);
+    std::vector<double> w_vec(npoints);
+    std::vector<double> v_vec(npoints);
+
+    // Pull out data
+    for (size_t k = 0; k < npoints; k++) {
+        statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+        if (statusvalue != 5) {
+            throw PSIEXCEPTION("MintsHelper::embpot_grad error: EOF or wrong number of inputs read from EMBPOT, return=" +
+                               std::to_string(statusvalue) + " (expected 5)");
+        }
+        xyz[k*3] = x;
+        xyz[k*3 + 1] = y;
+        xyz[k*3 + 2] = z;
+        w_vec[k] = w;
+        v_vec[k] = v;
+    }
+
+    // Declare tmps
+    std::vector<double> center(3, 0.0);
+
+    for (int P = 0; P < basisset_->nshell(); P++) {
+        const GaussianShell& Pshell = basisset_->shell(P);
+        Vector3 temp = Pshell.center();
+        int L = Pshell.am();
+        int nprim = Pshell.nprimitive();
+        int nP = Pshell.nfunction();
+        int oP = Pshell.function_index();
+        int atom = Pshell.ncenter();
+        const double* alpha = Pshell.exps();
+        const double* norm = Pshell.coefs();
+
+        // Copy over centerp to a double*
+        center[0] = temp[0];
+        center[1] = temp[1];
+        center[2] = temp[2];
+
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+        const int order = (int)puream ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+        const int order = (int)puream ? GG_SPHERICAL_GAUSSIAN : GG_CARTESIAN_CCA;
+#else
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
+
+        std::vector<double> phi(nP*npoints, 0.0);
+        std::vector<double> phi_x(nP*npoints, 0.0);
+        std::vector<double> phi_y(nP*npoints, 0.0);
+        std::vector<double> phi_z(nP*npoints, 0.0);
+
+        gg_collocation_deriv1(L, npoints, xyz.data(), 3,
+                              nprim, norm, alpha, center.data(), order,
+                              phi.data(), phi_x.data(), phi_y.data(), phi_z.data());
+
+        for (int Q = 0; Q < basisset_->nshell(); Q++) {
+            const GaussianShell& Qshell = basisset_->shell(Q);
+            Vector3 temp = Qshell.center();
+            int L = Qshell.am();
+            int nprim = Qshell.nprimitive();
+            int nQ = Qshell.nfunction();
+            int oQ = Qshell.function_index();
+            const double* alpha = Qshell.exps();
+            const double* norm = Qshell.coefs();
+
+            // Copy over centerp to a double*
+            center[0] = temp[0];
+            center[1] = temp[1];
+            center[2] = temp[2];
+
+            std::vector<double> phi(nQ*npoints, 0.0);
+
+            gg_collocation(L, npoints, xyz.data(), 3,
+                           nprim, norm, alpha, center.data(), order,
+                           phi.data());
+    
+            // Loop over points in EMBPOT
+            for (int k = 0; k < npoints; k++) {
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Gp[atom][0] += -2*Dp[p + oP][q + oQ]*v_vec[k]*w_vec[k]*phi[q*npoints + k]*phi_x[p*npoints + k];
+                        Gp[atom][1] += -2*Dp[p + oP][q + oQ]*v_vec[k]*w_vec[k]*phi[q*npoints + k]*phi_y[p*npoints + k];
+                        Gp[atom][2] += -2*Dp[p + oP][q + oQ]*v_vec[k]*w_vec[k]*phi[q*npoints + k]*phi_z[p*npoints + k];
+                    }
+                }
+            }
+        }
+    }
+    fclose(input);
+    return ret;
 }
 
 // TODO: DFMP2 might be able to use this, if we resolve the following:
@@ -2541,7 +2718,6 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string &aux_name, const std:
             int aN = primary->shell(N).ncenter();
             int oN = primary->shell(N).function_index();
 
-            int ncart = cP * cM * cN;
             const double *Px = buffers[0];
             const double *Py = buffers[1];
             const double *Pz = buffers[2];
@@ -2837,7 +3013,6 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
 
         GInt->compute_shell_deriv1(P, Q);
         const auto &buffers = GInt->buffers();
-        int offset = 0;
         if (aP == atom && half_der_side == "LEFT") {
             // Px
             for (int p = 0; p < nP; p++) {

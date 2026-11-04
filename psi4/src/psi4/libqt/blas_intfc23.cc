@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,6 +41,8 @@
 #include "psi4/libqt/blas_intfc23_mangle.h"
 #include "psi4/libqt/qt.h"
 
+// Fortran BLAS entry points, visible to this translation unit only.
+namespace {
 extern "C" {
 extern void F_DGBMV(char*, int*, int*, int*, int*, double*, double*, int*, double*, int*, double*, double*, int*);
 extern void F_DGEMM(char*, char*, int*, int*, int*, double*, double*, int*, double*, int*, double*, double*, int*);
@@ -65,6 +67,7 @@ extern void F_DTRMV(char*, char*, char*, int*, double*, int*, double*, int*);
 extern void F_DTRSM(char*, char*, char*, char*, int*, int*, double*, double*, int*, double*, int*);
 extern void F_DTRSV(char*, char*, char*, int*, double*, int*, double*, int*);
 }
+}  // namespace
 
 namespace psi {
 /**

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -61,7 +61,6 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     size_t size;
     int nroots, i, j;
     double *evals, **evecs, nucrep, edrc, tval;
-    double *cbuf;
     char e_label[PSIO_KEYLEN]; /* 80... */
 
     nroots = Parameters_->num_roots;

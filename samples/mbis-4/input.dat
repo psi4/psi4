@@ -21,6 +21,7 @@
 # Cl 0.5682903211811192
 
 
+
 vratios_ref = psi4.Matrix.from_list([
 [0.088273],
 [1.490111]])
@@ -54,6 +55,7 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
 vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 

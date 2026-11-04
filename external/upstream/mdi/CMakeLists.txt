@@ -1,5 +1,5 @@
 if(${ENABLE_mdi})
-    find_package(mdi 1.2.3 CONFIG QUIET)
+    find_package(mdi 1.2.3 CONFIG QUIET)  # edit in codedeps
 
     if(${mdi_FOUND})
         get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)
@@ -18,7 +18,7 @@ if(${ENABLE_mdi})
         include(ExternalProject)
         message(STATUS "Suitable mdi could not be located, ${Magenta}Building mdi${ColourReset} instead.")
         ExternalProject_Add(mdi_external
-            URL https://github.com/MolSSI-MDI/MDI_Library/archive/v1.2.3.tar.gz
+            URL https://github.com/MolSSI-MDI/MDI_Library/archive/v1.2.3.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -45,5 +45,6 @@ if(${ENABLE_mdi})
         set(mdi_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/mdi CACHE PATH "path to internally built mdiConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: mdi${ColourReset} (deferrable to runtime)")
     add_library(mdi_external INTERFACE)  # dummy
 endif()

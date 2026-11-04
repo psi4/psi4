@@ -42,3 +42,7 @@ foreach(dir_name IN LISTS _ccmodules)
 endforeach ()
 
 set_property(GLOBAL APPEND PROPERTY BINLIST cc)
+
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
+    target_precompile_headers(cc REUSE_FROM psio)
+endif()

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -551,7 +551,6 @@ void SAPT2::exch10() {
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
-    int rank = 0;
 
     double **P = block_matrix(noccA_ + noccB_, noccA_ + noccB_);
 

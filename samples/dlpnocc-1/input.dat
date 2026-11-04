@@ -1,0 +1,34 @@
+#! comparison of DF-CCSD(T) and DLPNO-CCSD(T)
+#! In the limit of zero PNO cutoffs, DF and DLPNO should exactly match
+#! There should not be enough sparsity in water to affect the other parameters
+#! The reference DF-CCSD(T) values are stored and not rerun
+#! This is also a test of the completely in core DLPNO algorithm 
+#! (hence memory is NOT toggled)
+
+
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+set t_cut_pno 0.0
+set t_cut_do 0.0
+set t_cut_mkn 0.0
+set t_cut_tno 0.0
+set t_cut_do_triples 0.0
+set t_cut_mkn_triples 0.0
+set dlpno_toggle_memory false
+
+print('   Testing DLPNO-CCSD(T) ...')
+val = energy('dlpno-ccsd(t)')
+
+# The DLPNO-CCSD(T) energy should exactly match DF-CCSD(T) with these parameters
+clean()

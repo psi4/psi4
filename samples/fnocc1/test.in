@@ -12,6 +12,7 @@ set {
   basis cc-pvdz
   freeze_core true
 }
+
 energy('qcisd(t)')
 
 refscf    = -76.02141844515494 #TEST

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -221,7 +221,7 @@ class HF : public Wavefunction {
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
 
     /** Form Fia (for DIIS) **/
-    virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
+    virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, const Dimension& noccpi);
 
     /** Performs any operations required for a incoming guess **/
     virtual void format_guess();
@@ -247,6 +247,9 @@ class HF : public Wavefunction {
     /// Frac performed current iteration?
     bool frac_performed() const { return frac_performed_; }
     void set_frac_performed(bool tf) { frac_performed_ = tf; }
+
+    /// Runs the SCF using OpenOrbitalOptimizer
+    virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
 
     /// Are we to do excited-state MOM?
     bool MOM_excited() const { return MOM_excited_; }
@@ -323,7 +326,7 @@ class HF : public Wavefunction {
     virtual double compute_E();
 
     /** Applies second-order convergence acceleration */
-    virtual int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
+    virtual int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print);
 
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();
@@ -366,8 +369,13 @@ class HF : public Wavefunction {
     /// Form the guess (guarantees C, D, and E)
     virtual void guess();
 
-    /// Compute the MO coefficients (C_) using level shift
+    /// Compute the MO coefficients (C_) using level shift, then assign the occupation
     virtual void form_C(double shift = 0.0);
+    /** Compute the MO coefficients (C_) using level shift, leaving the occupation alone.
+        form_C is this followed by find_occupation. Generally, use form_C, but this can
+        be useful when having already optimized against a particular occupation, one wants
+        the orbitals canonical without having the aufbau rule reassign underneath it. */
+    virtual void diagonalize_orbitals(double shift = 0.0);
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
 

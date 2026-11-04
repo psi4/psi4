@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -281,7 +281,6 @@ double CCMatrix::dot_product(CCMatrix* B_Matrix, CCMatrix* C_Matrix, int h) {
     double value = 0.0;
     size_t block_size = B_Matrix->get_block_sizepi(h);
     if (block_size > 0) {
-        size_t i;
         double* B_matrix = &(B_Matrix->get_matrix()[h][0][0]);
         double* C_matrix = &(C_Matrix->get_matrix()[h][0][0]);
         for (size_t i = 0; i < block_size; i++) value += B_matrix[i] * C_matrix[i];

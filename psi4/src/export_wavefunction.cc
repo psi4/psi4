@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -47,6 +47,8 @@
 
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
+
+#include "psi4/dmrg/dmrg.h"
 
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
@@ -226,6 +228,15 @@ void export_wavefunction(py::module& m) {
              "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
         .def("module", &Wavefunction::module, py::return_value_policy::copy,
              "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
+        .def("set_module_role", &Wavefunction::set_module_role, "role"_a, "module"_a,
+             "Records which module (internal or external) filled a named role.")
+        .def("module_role", &Wavefunction::module_role, "role"_a, py::return_value_policy::copy,
+             "Module that filled a named role, or an empty string if that role was never filled.")
+        .def("module_roles", &Wavefunction::module_roles, py::return_value_policy::copy,
+             "Modules that filled named roles, keyed by role. The ``qc_module`` role is the "
+             "level-of-theory module for the current energy, the same string :py:meth:`module` "
+             "returns; the others record which package did a particular job along the way, "
+             "e.g. ``orbital_optimizer``.")
         .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "id"_a, "basis"_a, "subset"_a, R"pbdoc(
             Creates OrbitalSpace with information about the requested alpha orbital space.
 
@@ -320,6 +331,11 @@ void export_wavefunction(py::module& m) {
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
+        .def("diagonalize_orbitals", &scf::HF::diagonalize_orbitals,
+             "Forms the orbital matrices from the current Fock Matrices, as :py:meth:`form_C` does, "
+             "but leaves the occupation to the caller rather than reassigning it by the aufbau rule. "
+             "Prefer form_C, which is this followed by find_occupation.",
+             "shift"_a = 0.0)
         .def("form_initial_C", &scf::HF::form_initial_C,
              "Forms the initial Orbital Matrices from the current Fock Matrices.")
         .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
@@ -396,7 +412,8 @@ void export_wavefunction(py::module& m) {
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.")
-        .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring");
+        .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring")
+        .def("openorbital_scf", &scf::HF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer");
 
     /// HF Functions
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
@@ -640,4 +657,12 @@ void export_wavefunction(py::module& m) {
                .. warning:: Symmetry free calculations only (nirreps > 1 will cause error)
                .. warning:: No checks that the amplitudes will fit in core. Do not use for proteins
         )pbdoc");
+
+#ifdef USING_CheMPS2
+        py::class_<dmrg::DMRGSolver, std::shared_ptr<dmrg::DMRGSolver>, Wavefunction>(
+          m, "DMRGSolver", "Specialized Wavefunction used by CheMPS2.")
+          .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
+          .def("occupation_a", &dmrg::DMRGSolver::occupation_a, "Returns the occupation numbers of the current alpha orbitals using the spin-averaged density.")
+          .def("occupation_b", &dmrg::DMRGSolver::occupation_b, "Returns the occupation numbers of the current beta orbitals using the spin-averaged density.");
+#endif
 }

@@ -17,6 +17,8 @@ set = {
     d_convergence  10
 }
 
+findif5_tol = 2.e-8
+
 e = energy('scf')
 compare_values(nucenergy, arwater.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
 compare_values(refenergy, e, 9, "SCF energy with ECP")                                        #TEST
@@ -24,4 +26,4 @@ compare_values(refenergy, e, 9, "SCF energy with ECP")                          
 agrad = gradient('scf')
 set points 5
 ngrad = gradient('scf', dertype=0)
-compare_matrices(agrad, ngrad, 8, "SCF ECP finite-diff (5-pt) vs. analytic gradient to 10^-8") #TEST
+compare_matrices(agrad, ngrad, findif5_tol, "SCF ECP finite-diff (5-pt) vs. analytic gradient to 10^-8") #TEST

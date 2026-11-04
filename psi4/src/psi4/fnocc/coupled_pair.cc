@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,7 +39,6 @@
 #include "psi4/lib3index/3index.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/process.h"
@@ -277,7 +276,6 @@ PsiReturnType CoupledPair::CEPAIterations() {
     outfile->Printf("   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
 
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     // zero residual
     psio->open(PSIF_DCC_R2, PSIO_OPEN_NEW);

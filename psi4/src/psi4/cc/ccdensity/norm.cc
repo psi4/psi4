@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,7 +35,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -114,8 +113,6 @@ void c_clean(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbu
     const auto& virtpi = moinfo.virtpi;
     const auto& occ_off = moinfo.occ_off;
     const auto& vir_off = moinfo.vir_off;
-    const auto& occ_sym = moinfo.occ_sym;
-    const auto& vir_sym = moinfo.vir_sym;
     const auto& openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
@@ -204,10 +201,6 @@ void c_cleanSS(dpdfile2 *CME, dpdfile2 *Cme) {
     nirreps = moinfo.nirreps;
     const auto& occpi = moinfo.occpi;
     const auto& virtpi = moinfo.virtpi;
-    const auto& occ_off = moinfo.occ_off;
-    const auto& vir_off = moinfo.vir_off;
-    const auto& occ_sym = moinfo.occ_sym;
-    const auto& vir_sym = moinfo.vir_sym;
     const auto& openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
@@ -236,12 +229,8 @@ void c_clean_CIJAB(dpdbuf4 *CMNEF) {
 
     C_irr = CMNEF->file.my_irrep;
     nirreps = moinfo.nirreps;
-    const auto& occpi = moinfo.occpi;
     const auto& virtpi = moinfo.virtpi;
-    const auto& occ_off = moinfo.occ_off;
     const auto& vir_off = moinfo.vir_off;
-    const auto& occ_sym = moinfo.occ_sym;
-    const auto& vir_sym = moinfo.vir_sym;
     const auto& openpi = moinfo.openpi;
 
     for (h = 0; h < nirreps; h++) {

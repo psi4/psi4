@@ -19,6 +19,7 @@ set {
   maxiter 500
   restricted_docc [ 2, 0, 0, 0, 0, 2, 0, 0 ]
   active          [ 1, 0, 1, 1, 0, 1, 1, 1 ]
+  orbital_optimizer_package internal
 }
 set v2rdm_casscf {
   positivity dqgt2

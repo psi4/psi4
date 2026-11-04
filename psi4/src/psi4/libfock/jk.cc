@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -57,7 +57,8 @@ namespace psi {
 
 template <class T>
 void _set_dfjk_options(std::shared_ptr<T> jk, Options& options) {
-    if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+    double cutoff = options.get_str("SCREENING") == "NONE" ? 0.0 : options.get_double("INTS_TOLERANCE");
+    if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
     if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
     if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
     if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
@@ -106,38 +107,10 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
    
         throw PSIEXCEPTION(error_message);
     }
-    
-    // exit calculation if no screening is selected for incompatible JK algo
-    bool do_no_screen = options.get_str("SCREENING") == "NONE";
-    
-    std::array<std::string, 3> cant_do_no_screen = { "PK", "DISK_DF", "DIRECT" };
-    bool is_incompatible_no_screen = std::any_of(
-        cant_do_no_screen.cbegin(),
-        cant_do_no_screen.cend(),
-        [&](std::string jk_algo) { return jk_type == jk_algo; }
-    ); 
-    is_incompatible_no_screen |= is_composite; 
-    
-    if (do_no_screen && is_incompatible_no_screen) {
-        std::string error_message = "SCREENING=NONE has not been implemented for ";
-        error_message += jk_type;
-        error_message += ".";
- 
-        throw PSIEXCEPTION(error_message);
-    }
-
-    // exit calculation for other incompatible JK + SCREENING combos 
-    std::string screening_type = options.get_str("SCREENING");
-    if (jk_type == "DFDIRJ+LINK" && ((screening_type == "SCHWARZ") || screening_type == "CSAM" )) {
-        std::string error_message = "SCREENING=";
-        error_message += screening_type;
-        error_message += " has not been implemented for ";
-        error_message += jk_type;
-        error_message += ".";
- 
-        throw PSIEXCEPTION(error_message);
-    }
    
+    // set up ERI cutoff value
+    double cutoff = options.get_str("SCREENING") == "NONE" ? 0.0 : options.get_double("INTS_TOLERANCE");
+ 
     // Throw small DF warning
     if (jk_type == "DF") {
         outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
@@ -148,8 +121,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     if (jk_type == "CD") {
         auto jk = std::make_shared<CDJK>(primary, options, options.get_double("CHOLESKY_TOLERANCE"));
-
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -177,30 +149,30 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return jk;
     } else if (jk_type == "PK") {
-        PKJK* jk = new PKJK(primary, options);
+        auto jk = std::make_shared<PKJK>(primary, options);
 
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "OUT_OF_CORE") {
-        DiskJK* jk = new DiskJK(primary, options);
+        auto jk = std::make_shared<DiskJK>(primary, options);
 
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "DIRECT") {
-        DirectJK* jk = new DirectJK(primary, options);
+        auto jk = std::make_shared<DirectJK>(primary, options);
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
 
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -208,13 +180,13 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     /// handle composite methods
     } else if (is_composite) {
         auto jk = std::make_shared<CompositeJK>(primary, auxiliary, options);
+        // INTS_TOLERANCE handling in CompositeJK::common_init() to better account for behavior when SCREENING=NONE
 
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -223,9 +195,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return jk;
 
     } else {
-        std::stringstream message;
-        message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
-        throw PSIEXCEPTION(message.str());
+        throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type '" + jk_type + "'");
     }
 }
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
@@ -237,23 +207,23 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
                                  Options& options, bool do_wK, size_t doubles) {
     std::string jk_type = options.get_str("SCF_TYPE");
     if (jk_type == "DF") {
-        // logic for MemDFJK vs DiskDFJK
-        if (options["DF_INTS_IO"].has_changed()) {
-            return build_JK(primary, auxiliary, options, "DISK_DF");
+        // Build exact estimate via Schwarz metrics
+        auto jk = build_JK(primary, auxiliary, options, "MEM_DF");
+        jk->set_do_wK(do_wK);
+        size_t memdfjk_memory = jk->memory_estimate();
 
-        } else {
-            // Build exact estimate via Schwarz metrics
-            auto jk = build_JK(primary, auxiliary, options, "MEM_DF");
-            jk->set_do_wK(do_wK);
-            if (jk->memory_estimate() < doubles) {
-                return jk;
-            }
-            jk.reset();
-
-            // Use Disk DFJK
-            return build_JK(primary, auxiliary, options, "DISK_DF");
+        if (memdfjk_memory < doubles) {
+            return jk;
         }
+        jk.reset();
 
+        outfile->Printf("  MemDFJK Memory: AOs need %.3f GiB; user supplied %.3f GiB.\n",
+                    memdfjk_memory * 8 / (1024 * 1024 * 1024.0),
+                    doubles * 8 / (1024 * 1024 * 1024.0));
+        outfile->Printf("  MemDFJK requires too much memory. DiskDFJK algorithm will be used.\n\n");
+       
+        // Use Disk DFJK
+        return build_JK(primary, auxiliary, options, "DISK_DF");
     } else {  // otherwise it has already been set
         return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
     }
@@ -357,7 +327,7 @@ void JK::compute_D() {
         for (size_t N = 0; N < C_left_.size(); ++N) {
             std::stringstream s;
             s << "D " << N << " (SO)";
-            D_.push_back(std::make_shared<Matrix>(s.str(), C_left_[N]->nirrep(), C_left_[N]->rowspi(),
+            D_.push_back(std::make_shared<Matrix>(s.str(), C_left_[N]->rowspi(),
                                                   C_right_[N]->rowspi(),
                                                   C_left_[N]->symmetry() ^ C_right_[N]->symmetry()));
         }
@@ -400,19 +370,19 @@ void JK::allocate_JK() {
         for (size_t N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
             s << "J " << N << " (SO)";
-            J_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(),
+            J_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->rowspi(), D_[N]->rowspi(),
                                                   D_[N]->symmetry()));
         }
         for (size_t N = 0; N < D_.size() && do_K_; ++N) {
             std::stringstream s;
             s << "K " << N << " (SO)";
-            K_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(),
+            K_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->rowspi(), D_[N]->rowspi(),
                                                   D_[N]->symmetry()));
         }
         for (size_t N = 0; N < D_.size() && do_wK_; ++N) {
             std::stringstream s;
             s << "wK " << N << " (SO)";
-            wK_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(),
+            wK_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->rowspi(), D_[N]->rowspi(),
                                                    D_[N]->symmetry()));
         }
     }
@@ -525,11 +495,12 @@ void JK::USO2AO() {
             int nso = AO2USO_->colspi()[h];
             int ncol = C_left_ao_[N]->colspi()[0];
             int ncolspi = C_left_[N]->colspi()[h];
-            if (nso == 0 || ncolspi == 0) continue;
-            double** Up = AO2USO_->pointer(h);
-            double** CAOp = C_left_ao_[N]->pointer();
-            double** CSOp = C_left_[N]->pointer(h);
-            C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
+            if (nso && ncolspi) {
+                auto Up = AO2USO_->pointer(h);
+                auto CAOp = C_left_ao_[N]->pointer();
+                auto CSOp = C_left_[N]->pointer(h);
+                C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
+            }
             offset += ncolspi;
         }
     }
@@ -545,18 +516,19 @@ void JK::USO2AO() {
         int offset = 0;
         int symm = D_[N]->symmetry();
         for (int h = 0; h < AO2USO_->nirrep(); ++h) {
-            // We MUST pack columns in the order in which they appear for totally symmetric C_left.
-            // This means we transform in order of h ^ symm, not in order of h.
+            // irrep h describes irrep h ^ symm orbitals.
+            // We need our orbital ordering to match that of the totally symmetric C_left.
+            // So therefore, we first pack the irrep h ^ symm elts to get irrep h orbitals
             int nao = AO2USO_->rowspi()[0];
             int nso = AO2USO_->colspi()[h ^ symm];
             int ncol = C_right_ao_[N]->colspi()[0];
-            // Remember: colspi_[h] describes not the orbitals of block h, but the orbitals that transform as h.
             int ncolspi = C_right_[N]->colspi()[h];
-            if (nso == 0 || ncolspi == 0) continue;
-            double** Up = AO2USO_->pointer(h ^ symm);
-            double** CAOp = C_right_ao_[N]->pointer();
-            double** CSOp = C_right_[N]->pointer(h ^ symm);
-            C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
+            if (nso && ncolspi) {
+                auto Up = AO2USO_->pointer(h ^ symm);
+                auto CAOp = C_right_ao_[N]->pointer();
+                auto CSOp = C_right_[N]->pointer(h ^ symm);
+                C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
+            }
             offset += ncolspi;
         }
     }

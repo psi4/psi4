@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,7 +38,6 @@ namespace psi {
 
 int DPD::file2_copy(dpdfile2 *InFile, int outfilenum, const char *label) {
     int h, row, col, my_irrep, rowtot, coltot;
-    double ***matrix;
     dpdfile2 OutFile;
 
     my_irrep = InFile->my_irrep;

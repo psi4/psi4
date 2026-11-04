@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,7 +37,6 @@
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -45,15 +44,14 @@ namespace cctriples {
 
 extern void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
                        dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
-                       dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+                       dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off, double omega);
 
 extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
                            dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
-                           dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+                           dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off, double omega);
 
 double T3_grad_UHF_BBB() {
     int h, nirreps;
-    int *occpi, *virtpi, *occ_off, *vir_off;
     int i, j, k, a, b, c, d, l;
     int I, J, K, A, B, C, D, L;
     int ij, ji, ik, ki, jk, kj;
@@ -68,10 +66,6 @@ double T3_grad_UHF_BBB() {
     int Gab, Gba, Gac, Gca, Gbc, Gcb, Gcd;
     int ncols, nrows, nlinks;
     double value_c, value_d, dijk, denom, ET;
-    double t_ia, t_ib, t_ic, t_ja, t_jb, t_jc, t_ka, t_kb, t_kc;
-    double f_ia, f_ib, f_ic, f_ja, f_jb, f_jc, f_ka, f_kb, f_kc;
-    double D_jkbc, D_jkac, D_jkba, D_ikbc, D_ikac, D_ikba, D_jibc, D_jiac, D_jiba;
-    double t_jkbc, t_jkac, t_jkba, t_ikbc, t_ikac, t_ikba, t_jibc, t_jiac, t_jiba;
     dpdbuf4 T2, Fints, Eints, Dints, S2, Gijab, Gijka, Gidab;
     dpdfile2 fIJ, fAB, fIA, T1, S1, Dab, Dij;
     dpdfile2 fij, fab, fia;
@@ -79,10 +73,10 @@ double T3_grad_UHF_BBB() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.boccpi;
-    virtpi = moinfo.bvirtpi;
-    occ_off = moinfo.bocc_off;
-    vir_off = moinfo.bvir_off;
+    const auto& occpi = moinfo.boccpi;
+    const auto& virtpi = moinfo.bvirtpi;
+    auto occ_off = moinfo.bocc_off;
+    auto vir_off = moinfo.bvir_off;
 
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));

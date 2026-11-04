@@ -50,6 +50,8 @@ set {
 }
 
 
+prop_tol = 4
+
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 
 oeprop(scf_wfn, "MULTIPOLES(7)", "ESP_AT_NUCLEI")
@@ -58,7 +60,7 @@ subs = {"X": 0, "Y": 1, "Z": 2}  #TEST
 for mpole,val in reversed(sorted(refs.items())):        #TEST
     sorder, cart = mpole.split()  #TEST
     np_index = tuple([subs[x] for x in cart])  #TEST
-    compare_values(val, variable(sorder)[np_index], 4, mpole + " array")  #TEST
+    compare_values(val, variable(sorder)[np_index], prop_tol, mpole + " array")  #TEST
 
 
 # make sure non-compressed elements accessible

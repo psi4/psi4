@@ -12,6 +12,7 @@ set {
   basis cc-pvdz
   freeze_core true
 }
+
 energy('cepa(1)')
 
 refnuc     =   8.8014655646      #TEST

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -162,7 +162,15 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
 
     // set strings
     name_ = strings["name"];
-    module_ = strings["module"];
+    set_module(strings["module"]);
+    // Roles beyond qc_module are serialized under a prefix, since the wavefunction file
+    // format carries a flat string map rather than a nested one.
+    for (const auto& kv : strings) {
+        const std::string prefix = "module_role:";
+        if (kv.first.compare(0, prefix.size(), prefix) == 0) {
+            set_module_role(kv.first.substr(prefix.size()), kv.second);
+        }
+    }
 
     // set booleans
     PCM_enabled_ = booleans["PCM_enabled"];
@@ -186,7 +194,7 @@ void Wavefunction::shallow_copy(SharedWavefunction other) { shallow_copy(other.g
 
 void Wavefunction::shallow_copy(const Wavefunction *other) {
     name_ = other->name_;
-    module_ = other->module_;
+    module_roles_ = other->module_roles_;
     basisset_ = other->basisset_;
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
@@ -262,7 +270,7 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     /// From typical constructor
     /// Some member data is not clone-able so we will copy
     name_ = other->name_;
-    module_ = other->module_;
+    module_roles_ = other->module_roles_;
     molecule_ = std::make_shared<Molecule>(other->molecule_->clone());
     basisset_ = other->basisset_;
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
@@ -351,7 +359,7 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     /// From typical constructor
     /// Some member data is not clone-able so we will copy
     wfn->name_ = name_;
-    wfn->module_ = module_;
+    wfn->module_roles_ = module_roles_;
     wfn->integral_ = std::make_shared<IntegralFactory>(wfn->basisset_, wfn->basisset_, wfn->basisset_, wfn->basisset_);
     wfn->mintshelper_ = std::make_shared<MintsHelper>(wfn->basisset_, wfn->options_);
     wfn->sobasisset_ = std::make_shared<SOBasisSet>(wfn->basisset_, wfn->integral_);
@@ -571,6 +579,7 @@ void Wavefunction::common_init() {
             } else if (perturb_with == "DX") {
                 dipole_field_type_ = dx;
             } else if (perturb_with == "SPHERE") {
+                outfile->Printf("  WARNING: Option PERTURB_WITH=SPHERE is deprecated and may be removed as soon as v1.13.\n");
                 dipole_field_type_ = sphere;
             } else {
                 outfile->Printf("Unknown PERTURB_WITH. Applying no perturbation.\n");
@@ -1362,13 +1371,6 @@ std::map<std::string, double> Wavefunction::scalar_variables() { return variable
 std::map<std::string, SharedMatrix> Wavefunction::array_variables() { return arrays_; }
 
 std::map<std::string, std::shared_ptr<ExternalPotential>> Wavefunction::potential_variables() { return potentials_; }
-
-double Wavefunction::get_variable(const std::string &key) { return scalar_variable(key); }
-SharedMatrix Wavefunction::get_array(const std::string &key) { return array_variable(key); }
-void Wavefunction::set_variable(const std::string &key, double val) { return set_scalar_variable(key, val); }
-void Wavefunction::set_array(const std::string &key, SharedMatrix val) { set_array_variable(key, val); }
-std::map<std::string, double> Wavefunction::variables() { return scalar_variables(); }
-std::map<std::string, SharedMatrix> Wavefunction::arrays() { return array_variables(); }
 
 void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
     PCM_ = pcm;

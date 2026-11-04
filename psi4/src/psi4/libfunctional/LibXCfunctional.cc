@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -50,6 +50,13 @@ std::string LibXCFunctional::xclib_description() {
     auto xclib = "   => LibXC <=\n\n    Version " + std::string(xc_version_string()) + "\n    " +
                          xc_reference() + " (" + xc_reference_doi() + ")";
     return xclib;
+}
+
+bool LibXCFunctional::available(const std::string& xc_name) {
+    // LibXC returns -1 for an unknown name; a non-negative id means the
+    // functional is present in this build. No xc_func_init, so no allocation
+    // and safe to call for names that may be absent.
+    return xc_functional_get_number(xc_name.c_str()) != -1;
 }
 
 LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
@@ -401,8 +408,6 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
     double* gamma_bbp = nullptr;
     double* tau_ap = nullptr;
     double* tau_bp = nullptr;
-    double* lapl_ap = nullptr;
-    double* lapl_bp = nullptr;
 
     if (true) {
         rho_ap = in.find("RHO_A")->second->pointer();
@@ -438,8 +443,6 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
     double* v_gamma_bb = nullptr;
     double* v_tau_a = nullptr;
     double* v_tau_b = nullptr;
-    double* v_lapl_a = nullptr;
-    double* v_lapl_b = nullptr;
 
     double* v_rho_a_rho_a = nullptr;
     double* v_rho_a_rho_b = nullptr;

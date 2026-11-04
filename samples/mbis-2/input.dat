@@ -22,6 +22,9 @@ import numpy as np
 # H 0.41407672804054413
 
 
+ [-7.558524],
+ [-0.808223]])
+
 vratios_ref = np.array([
 [1.568969],
 [0.457094]])
@@ -54,5 +57,6 @@ quadrupoles = wfn.variable("MBIS QUADRUPOLES")
 octupoles = wfn.variable("MBIS OCTUPOLES")
 avols = wfn.variable("MBIS RADIAL MOMENTS <R^3>")
 vwidths = wfn.variable("MBIS VALENCE WIDTHS")
+vcharges = wfn.variable("MBIS VALENCE CHARGES")
 vratios = wfn.variable("MBIS VOLUME RATIOS")
 

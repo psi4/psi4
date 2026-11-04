@@ -99,6 +99,8 @@ D 2 1.00
 ****
 }
 
+dip_tol = 6
+
 wfn = properties('eom-ccsd', properties=['dipole'], return_wfn=True)[1]
 
 

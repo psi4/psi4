@@ -60,18 +60,17 @@ def ie(es):
 set scf_type df
 #set df_basis_scf def2-qzvpp-jfit
 
-if d3_engine == "dftd3":
-    E, G = s2di.run_dftd3('pbeh3c', 'd3bj')
-    E, G = s2ma.run_dftd3('pbeh3c', 'd3bj')
-    E, G = s2mb.run_dftd3('pbeh3c', 'd3bj')
+E, G = s2di.run_sdftd3('pbeh3c', 'd3bj')
+E, G = s2ma.run_sdftd3('pbeh3c', 'd3bj')
+E, G = s2mb.run_sdftd3('pbeh3c', 'd3bj')
 
-    E, G = s4di.run_dftd3('pbeh3c', 'd3bj')
-    E, G = s4ma.run_dftd3('pbeh3c', 'd3bj')
-    E, G = s4mb.run_dftd3('pbeh3c', 'd3bj')
+E, G = s4di.run_sdftd3('pbeh3c', 'd3bj')
+E, G = s4ma.run_sdftd3('pbeh3c', 'd3bj')
+E, G = s4mb.run_sdftd3('pbeh3c', 'd3bj')
 
-    E, G = s16di.run_dftd3('pbeh3c', 'd3bj')
-    E, G = s16ma.run_dftd3('pbeh3c', 'd3bj')
-    E, G = s16mb.run_dftd3('pbeh3c', 'd3bj')
+E, G = s16di.run_sdftd3('pbeh3c', 'd3bj')
+E, G = s16ma.run_sdftd3('pbeh3c', 'd3bj')
+E, G = s16mb.run_sdftd3('pbeh3c', 'd3bj')
 
 E, G = s2di.run_gcp('pbeh3c')
 E, G = s2ma.run_gcp('pbeh3c')

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,7 +40,6 @@
 
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
@@ -65,8 +64,6 @@ namespace detci {
 */
 void CIWavefunction::get_parameters(Options &options) {
     int i, j, k, errcod;
-    int iopen = 0, tval;
-    char line1[133];
     double junk;
 
     /* need to figure out wheter to filter tei's */
@@ -889,10 +886,7 @@ void CIWavefunction::print_parameters() {
 */
 void CIWavefunction::set_ras_parameters() {
     int i, j, cnt;
-    int errcod;
     int tot_expl_el, nras2alp, nras2bet, betsocc;
-    int *ras1, *ras2, *ras3;
-    int *orbsym;
 
     /* If the user asked for FCI=true, then override the other keywords
        if necessary to ensure that it's really a FCI

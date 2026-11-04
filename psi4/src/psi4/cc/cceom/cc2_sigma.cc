@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,7 +37,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -56,10 +55,7 @@ void cc2_sigma(int i, int C_irr) {
     dpdbuf4 W;
     dpdbuf4 C;
     dpdfile2 S;
-    dpdbuf4 WMbEj;
-    dpdbuf4 WAmEf;
     dpdbuf4 WMnIe;
-    dpdbuf4 WAbEi;
     dpdbuf4 WMbIj;
     dpdbuf4 Z;
     dpdbuf4 Z2;

@@ -21,7 +21,7 @@ set {
   guess sad
   maxiter 500
   reference rohf
-
+  orbital_optimizer_package internal
 }
 set v2rdm_casscf {
   positivity d

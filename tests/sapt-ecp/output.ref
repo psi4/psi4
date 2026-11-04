@@ -1,38 +1,49 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.3a2.dev379 
+                               Psi4 1.10a1.dev26 
 
-                         Git: Rev {sad_fix} 336bee0 dirty
-
-
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+                         Git: Rev {ecp-bug-fix} 6732791 
 
 
-                         Additional Contributions by
-    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, and R. A. Shaw
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, and D. L. Poole
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 18 January 2019 03:16PM
+    Psi4 started on: Monday, 20 May 2024 07:42PM
 
-    Process ID: 17829
-    Host:       dx7-lehtola.chem.helsinki.fi
-    PSIDATADIR: /home/work/psi4/install.susi/share/psi4
+    Process ID: 2018077
+    Host:       lutnia
+    PSIDATADIR: /home/bartektyrcha/psi4/share/psi4
     Memory:     500.0 MiB
-    Threads:    8
+    Threads:    1
     
   ==> Input File <==
 
 --------------------------------------------------------------------------
+#! sapt0 of charged system in ECP basis set
+
 molecule {
 0 1
 H -0.803001 1.098737 0.000360
@@ -52,10 +63,12 @@ freeze_core true
 e_convergence 10
 d_convergence 10
 diis_rms_error false
+df_fitting_condition 1.e-12
+df_basis_sapt def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
 }
 
 ref_321g = -0.09561567760757009
-ref_lanl = -0.10472408365123138
+ref_lanl = -0.1039198611537151
 
 E = energy('sapt0/3-21g')
 compare_values(ref_321g, E, 8, "SAPT0 energy with Ca2+, without ECP")                               #TEST
@@ -65,22 +78,48 @@ compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")              
 
 --------------------------------------------------------------------------
 
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
-  //              Dimer HF             //
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+Scratch directory: /tmp/
+   => Loading Basis Set <=
 
-
-*** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Fri Jan 18 15:16:45 2019
+    Name: 3-21G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry H          line    21 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 3   entry O          line    90 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 4   entry CA         line   262 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
 
    => Loading Basis Set <=
 
     Name: 3-21G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry H          line    21 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
-    atoms 3   entry O          line    90 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
-    atoms 4   entry CA         line   262 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
+    atoms 1-2 entry H          line    21 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 3   entry O          line    90 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 4   entry CA         line   262 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //              Dimer HF             //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lutnia
+*** at Mon May 20 19:42:07 2024
+
+   => Loading Basis Set <=
+
+    Name: 3-21G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry H          line    21 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 3   entry O          line    90 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 4   entry CA         line   262 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
 
 
          ---------------------------------------------------------
@@ -88,7 +127,7 @@ compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")              
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        8 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -126,14 +165,14 @@ compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")              
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: 3-21G
     Blend: 3-21G
     Number of shells: 18
-    Number of basis function: 30
+    Number of basis functions: 30
     Number of Cartesian functions: 30
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -143,19 +182,9 @@ compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")              
     Name: (3-21G AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry H          line    23 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-    atoms 3   entry O          line   323 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-    atoms 4   entry CA         line  1255 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         30      30       0       0       0       0
-   -------------------------------------------------------
-    Total      30      30      14      14      14       0
-   -------------------------------------------------------
+    atoms 1-2 entry H          line    18 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 3   entry O          line   318 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry CA         line  1250 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -164,8 +193,8 @@ compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")              
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              8
-    Integrals threads:           8
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory [MiB]:              375
     Algorithm:                Core
     Integral Cache:           SAVE
@@ -175,38 +204,48 @@ compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")              
    => Auxiliary Basis Set <=
 
   Basis Set: (3-21G AUX)
-    Blend: DEF2-SVP-JKFIT
+    Blend: DEF2-UNIVERSAL-JKFIT
     Number of shells: 81
-    Number of basis function: 336
+    Number of basis functions: 336
     Number of Cartesian functions: 336
     Spherical Harmonics?: false
     Max angular momentum: 4
 
   Minimum eigenvalue in the overlap matrix is 9.5584723536E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 3.0426581415E-02.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         30      30 
+   -------------------------
+    Total      30      30
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     MAX |[F,P]|
 
-   @DF-RHF iter   0:  -714.64051842208551   -7.14641e+02   0.00000e+00 
-   @DF-RHF iter   1:  -747.78589059043065   -3.31454e+01   3.94843e-01 DIIS
-   @DF-RHF iter   2:  -747.90670129048544   -1.20811e-01   3.30859e-01 DIIS
-   @DF-RHF iter   3:  -748.34651802487519   -4.39817e-01   2.29290e-02 DIIS
-   @DF-RHF iter   4:  -748.35017002422489   -3.65200e-03   9.18271e-03 DIIS
-   @DF-RHF iter   5:  -748.35047234215369   -3.02318e-04   2.11030e-03 DIIS
-   @DF-RHF iter   6:  -748.35048440569119   -1.20635e-05   1.56682e-04 DIIS
-   @DF-RHF iter   7:  -748.35048495529998   -5.49609e-07   5.19291e-05 DIIS
-   @DF-RHF iter   8:  -748.35048502071913   -6.54192e-08   3.74769e-06 DIIS
-   @DF-RHF iter   9:  -748.35048502130110   -5.81963e-10   1.00224e-06 DIIS
-   @DF-RHF iter  10:  -748.35048502132850   -2.73985e-11   2.01549e-07 DIIS
-   @DF-RHF iter  11:  -748.35048502132975   -1.25056e-12   3.12702e-08 DIIS
-   @DF-RHF iter  12:  -748.35048502132952    2.27374e-13   6.78967e-09 DIIS
-   @DF-RHF iter  13:  -748.35048502132975   -2.27374e-13   6.69999e-10 DIIS
-   @DF-RHF iter  14:  -748.35048502132963    1.13687e-13   1.23586e-10 DIIS
-   @DF-RHF iter  15:  -748.35048502132952    1.13687e-13   2.64145e-11 DIIS
+   @DF-RHF iter SAD:  -747.67481297556583   -7.47675e+02   0.00000e+00 
+   @DF-RHF iter   1:  -748.25538797313368   -5.80575e-01   1.29172e-01 ADIIS
+   @DF-RHF iter   2:  -748.30183120389609   -4.64432e-02   1.46683e-01 ADIIS
+   @DF-RHF iter   3:  -748.34563109209273   -4.37999e-02   3.14909e-02 ADIIS/DIIS
+   @DF-RHF iter   4:  -748.35021770029800   -4.58661e-03   1.15614e-02 ADIIS/DIIS
+   @DF-RHF iter   5:  -748.35048206638226   -2.64366e-04   6.24717e-04 ADIIS/DIIS
+   @DF-RHF iter   6:  -748.35048480724572   -2.74086e-06   7.81838e-05 DIIS
+   @DF-RHF iter   7:  -748.35048501010067   -2.02855e-07   1.73414e-05 DIIS
+   @DF-RHF iter   8:  -748.35048502357176   -1.34711e-08   1.84477e-06 DIIS
+   @DF-RHF iter   9:  -748.35048502366465   -9.28821e-11   5.20637e-07 DIIS
+   @DF-RHF iter  10:  -748.35048502367056   -5.91172e-12   1.00748e-07 DIIS
+   @DF-RHF iter  11:  -748.35048502367079   -2.27374e-13   1.33744e-08 DIIS
+   @DF-RHF iter  12:  -748.35048502367101   -2.27374e-13   2.45688e-09 DIIS
+   @DF-RHF iter  13:  -748.35048502367113   -1.13687e-13   2.36769e-10 DIIS
+   @DF-RHF iter  14:  -748.35048502367090    2.27374e-13   6.03014e-11 DIIS
   Energy and wave function converged.
 
 
@@ -235,15 +274,17 @@ compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")              
     Final Occupation by Irrep:
               A 
     DOCC [    14 ]
+    NA   [    14 ]
+    NB   [    14 ]
 
-  @DF-RHF Final Energy:  -748.35048502132952
+  @DF-RHF Final Energy:  -748.35048502367090
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             49.2974008237830219
-    One-Electron Energy =               -1112.6525125931946150
-    Two-Electron Energy =                 315.0046267480821598
-    Total Energy =                       -748.3504850213295185
+    One-Electron Energy =               -1112.6525125943890089
+    Two-Electron Energy =                 315.0046267469352301
+    Total Energy =                       -748.3504850236708990
 
 Computation Completed
 
@@ -252,45 +293,53 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:    -4.4700      Y:     0.0490      Z:     0.0009
 
-  Electronic Dipole Moment: [e a0]
-     X:     5.5490      Y:     0.0829      Z:    -0.0009
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     1.0791      Y:     0.1319      Z:    -0.0000     Total:     1.0871
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     2.7427      Y:     0.3353      Z:    -0.0001     Total:     2.7632
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          5.5490368           -4.4699583            1.0790785
+ Dipole Y            :          0.0828868            0.0490174            0.1319042
+ Dipole Z            :         -0.0009006            0.0008803           -0.0000203
+ Magnitude           :                                                    1.0871104
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan 18 15:16:47 2019
+*** tstop() called on lutnia at Mon May 20 19:42:08 2024
 Module time:
-	user time   =       4.51 seconds =       0.08 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+    user time   =       0.30 seconds =       0.01 minutes
+    system time =       0.05 seconds =       0.00 minutes
+    total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.51 seconds =       0.08 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+    user time   =       0.30 seconds =       0.01 minutes
+    system time =       0.05 seconds =       0.00 minutes
+    total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer A HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
+   => Libint2 <=
 
-*** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Fri Jan 18 15:16:47 2019
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lutnia
+*** at Mon May 20 19:42:08 2024
 
    => Loading Basis Set <=
 
     Name: 3-21G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry H          line    21 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
-    atoms 3   entry O          line    90 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
-    atoms 4   entry CA         line   262 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
+    atoms 1-2 entry H          line    21 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 3   entry O          line    90 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 4   entry CA         line   262 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
 
 
          ---------------------------------------------------------
@@ -298,7 +347,7 @@ Total time:
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        8 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -336,14 +385,14 @@ Total time:
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: 3-21G
     Blend: 3-21G
     Number of shells: 18
-    Number of basis function: 30
+    Number of basis functions: 30
     Number of Cartesian functions: 30
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -353,19 +402,9 @@ Total time:
     Name: (3-21G AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry H          line    23 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-    atoms 3   entry O          line   323 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-    atoms 4   entry CA         line  1255 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         30      30       0       0       0       0
-   -------------------------------------------------------
-    Total      30      30       5       5       5       0
-   -------------------------------------------------------
+    atoms 1-2 entry H          line    18 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 3   entry O          line   318 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry CA         line  1250 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -374,8 +413,8 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              8
-    Integrals threads:           8
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory [MiB]:              375
     Algorithm:                Core
     Integral Cache:           LOAD
@@ -385,38 +424,49 @@ Total time:
    => Auxiliary Basis Set <=
 
   Basis Set: (3-21G AUX)
-    Blend: DEF2-SVP-JKFIT
+    Blend: DEF2-UNIVERSAL-JKFIT
     Number of shells: 81
-    Number of basis function: 336
+    Number of basis functions: 336
     Number of Cartesian functions: 336
     Spherical Harmonics?: false
     Max angular momentum: 4
 
   Minimum eigenvalue in the overlap matrix is 9.5584723536E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 3.0426581415E-02.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         30      30 
+   -------------------------
+    Total      30      30
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     MAX |[F,P]|
 
-   @DF-RHF iter   0:   -74.53942107792339   -7.45394e+01   0.00000e+00 
-   @DF-RHF iter   1:   -75.32415549330310   -7.84734e-01   1.15477e-01 DIIS
-   @DF-RHF iter   2:   -75.38112537364084   -5.69699e-02   1.78910e-01 DIIS
-   @DF-RHF iter   3:   -75.44945361279731   -6.83282e-02   2.95255e-02 DIIS
-   @DF-RHF iter   4:   -75.45113075270160   -1.67714e-03   4.15786e-03 DIIS
-   @DF-RHF iter   5:   -75.45116915090973   -3.83982e-05   2.85447e-04 DIIS
-   @DF-RHF iter   6:   -75.45117103826514   -1.88736e-06   9.59187e-05 DIIS
-   @DF-RHF iter   7:   -75.45117153711368   -4.98849e-07   2.99680e-05 DIIS
-   @DF-RHF iter   8:   -75.45117159585526   -5.87416e-08   2.86100e-06 DIIS
-   @DF-RHF iter   9:   -75.45117159622983   -3.74570e-10   8.05233e-07 DIIS
-   @DF-RHF iter  10:   -75.45117159624266   -1.28324e-11   1.42509e-07 DIIS
-   @DF-RHF iter  11:   -75.45117159624311   -4.54747e-13   3.24776e-08 DIIS
-   @DF-RHF iter  12:   -75.45117159624313   -1.42109e-14   3.45286e-09 DIIS
-   @DF-RHF iter  13:   -75.45117159624327   -1.42109e-13   6.76598e-10 DIIS
-   @DF-RHF iter  14:   -75.45117159624316    1.13687e-13   1.86179e-10 DIIS
-   @DF-RHF iter  15:   -75.45117159624317   -1.42109e-14   1.70062e-11 DIIS
+   @DF-RHF iter SAD:   -74.53942107843353   -7.45394e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.32415549379078   -7.84734e-01   1.15477e-01 ADIIS
+   @DF-RHF iter   2:   -75.38112537413660   -5.69699e-02   1.78910e-01 ADIIS
+   @DF-RHF iter   3:   -75.44350308207390   -6.23777e-02   3.55725e-02 ADIIS/DIIS
+   @DF-RHF iter   4:   -75.45058881828406   -7.08574e-03   1.73164e-02 ADIIS/DIIS
+   @DF-RHF iter   5:   -75.45116236202824   -5.73544e-04   1.15294e-03 ADIIS/DIIS
+   @DF-RHF iter   6:   -75.45117129097646   -8.92895e-06   9.03790e-05 DIIS
+   @DF-RHF iter   7:   -75.45117153513823   -2.44162e-07   3.39038e-05 DIIS
+   @DF-RHF iter   8:   -75.45117159607850   -6.09403e-08   3.65131e-06 DIIS
+   @DF-RHF iter   9:   -75.45117159673151   -6.53017e-10   8.24491e-07 DIIS
+   @DF-RHF iter  10:   -75.45117159675679   -2.52811e-11   1.95781e-07 DIIS
+   @DF-RHF iter  11:   -75.45117159675769   -8.95284e-13   4.47511e-08 DIIS
+   @DF-RHF iter  12:   -75.45117159675770   -1.42109e-14   5.32712e-09 DIIS
+   @DF-RHF iter  13:   -75.45117159675783   -1.27898e-13   9.81890e-10 DIIS
+   @DF-RHF iter  14:   -75.45117159675773    9.94760e-14   2.84274e-10 DIIS
+   @DF-RHF iter  15:   -75.45117159675786   -1.27898e-13   4.84989e-11 DIIS
   Energy and wave function converged.
 
 
@@ -445,15 +495,17 @@ Total time:
     Final Occupation by Irrep:
               A 
     DOCC [     5 ]
+    NA   [     5 ]
+    NB   [     5 ]
 
-  @DF-RHF Final Energy:   -75.45117159624317
+  @DF-RHF Final Energy:   -75.45117159675786
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              6.4064057897589448
-    One-Electron Energy =                -117.1937656313151166
-    Two-Electron Energy =                  35.3361882453130036
-    Total Energy =                        -75.4511715962431708
+    One-Electron Energy =                -117.1937656312075546
+    Two-Electron Energy =                  35.3361882446907458
+    Total Energy =                        -75.4511715967578596
 
 Computation Completed
 
@@ -462,45 +514,53 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:   -32.7602      Y:    -0.6004      Z:     0.0055
 
-  Electronic Dipole Moment: [e a0]
-     X:    31.7630      Y:     0.6489      Z:    -0.0053
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:    -0.9972      Y:     0.0485      Z:     0.0003     Total:     0.9984
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:    -2.5346      Y:     0.1233      Z:     0.0007     Total:     2.5376
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         31.7629980          -32.7601926           -0.9971946
+ Dipole Y            :          0.6489237           -0.6004209            0.0485029
+ Dipole Z            :         -0.0052822            0.0055406            0.0002584
+ Magnitude           :                                                    0.9983735
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan 18 15:16:49 2019
+*** tstop() called on lutnia at Mon May 20 19:42:08 2024
 Module time:
-	user time   =       2.99 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+    user time   =       0.20 seconds =       0.00 minutes
+    system time =       0.01 seconds =       0.00 minutes
+    total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.50 seconds =       0.12 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+    user time   =       0.51 seconds =       0.01 minutes
+    system time =       0.06 seconds =       0.00 minutes
+    total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer B HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
+   => Libint2 <=
 
-*** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Fri Jan 18 15:16:49 2019
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lutnia
+*** at Mon May 20 19:42:08 2024
 
    => Loading Basis Set <=
 
     Name: 3-21G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry H          line    21 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
-    atoms 3   entry O          line    90 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
-    atoms 4   entry CA         line   262 file /home/work/psi4/install.susi/share/psi4/basis/3-21g.gbs 
+    atoms 1-2 entry H          line    21 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 3   entry O          line    90 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
+    atoms 4   entry CA         line   262 file /home/bartektyrcha/psi4/share/psi4/basis/3-21g.gbs 
 
 
          ---------------------------------------------------------
@@ -508,7 +568,7 @@ Total time:
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        8 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -546,14 +606,14 @@ Total time:
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: 3-21G
     Blend: 3-21G
     Number of shells: 18
-    Number of basis function: 30
+    Number of basis functions: 30
     Number of Cartesian functions: 30
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -563,19 +623,9 @@ Total time:
     Name: (3-21G AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry H          line    23 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-    atoms 3   entry O          line   323 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-    atoms 4   entry CA         line  1255 file /home/work/psi4/install.susi/share/psi4/basis/def2-svp-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         30      30       0       0       0       0
-   -------------------------------------------------------
-    Total      30      30       9       9       9       0
-   -------------------------------------------------------
+    atoms 1-2 entry H          line    18 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 3   entry O          line   318 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry CA         line  1250 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -584,8 +634,8 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              8
-    Integrals threads:           8
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory [MiB]:              375
     Algorithm:                Core
     Integral Cache:           LOAD
@@ -595,32 +645,42 @@ Total time:
    => Auxiliary Basis Set <=
 
   Basis Set: (3-21G AUX)
-    Blend: DEF2-SVP-JKFIT
+    Blend: DEF2-UNIVERSAL-JKFIT
     Number of shells: 81
-    Number of basis function: 336
+    Number of basis functions: 336
     Number of Cartesian functions: 336
     Spherical Harmonics?: false
     Max angular momentum: 4
 
   Minimum eigenvalue in the overlap matrix is 9.5584723536E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 3.0426581415E-02.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         30      30 
+   -------------------------
+    Total      30      30
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     MAX |[F,P]|
 
-   @DF-RHF iter   0:  -627.89576173351736   -6.27896e+02   0.00000e+00 
-   @DF-RHF iter   1:  -672.75503467552460   -4.48593e+01   9.56655e-02 DIIS
-   @DF-RHF iter   2:  -672.80321523067721   -4.81806e-02   1.30316e-02 DIIS
-   @DF-RHF iter   3:  -672.80388663064048   -6.71400e-04   4.51138e-04 DIIS
-   @DF-RHF iter   4:  -672.80388765679913   -1.02616e-06   1.26595e-05 DIIS
-   @DF-RHF iter   5:  -672.80388765797181   -1.17268e-09   7.34524e-07 DIIS
-   @DF-RHF iter   6:  -672.80388765797477   -2.95586e-12   6.77475e-08 DIIS
-   @DF-RHF iter   7:  -672.80388765797500   -2.27374e-13   6.44027e-09 DIIS
-   @DF-RHF iter   8:  -672.80388765797443    5.68434e-13   2.25320e-10 DIIS
-   @DF-RHF iter   9:  -672.80388765797488   -4.54747e-13   1.84572e-11 DIIS
+   @DF-RHF iter SAD:  -673.03039154815963   -6.73030e+02   0.00000e+00 
+   @DF-RHF iter   1:  -672.80355723679554    2.26834e-01   8.09379e-03 ADIIS/DIIS
+   @DF-RHF iter   2:  -672.80388393262569   -3.26696e-04   9.00870e-04 ADIIS/DIIS
+   @DF-RHF iter   3:  -672.80388765623593   -3.72361e-06   2.07695e-05 DIIS
+   @DF-RHF iter   4:  -672.80388765895566   -2.71973e-09   6.50079e-07 DIIS
+   @DF-RHF iter   5:  -672.80388765895930   -3.63798e-12   5.81262e-08 DIIS
+   @DF-RHF iter   6:  -672.80388765895918    1.13687e-13   4.52002e-09 DIIS
+   @DF-RHF iter   7:  -672.80388765895952   -3.41061e-13   3.52867e-10 DIIS
+   @DF-RHF iter   8:  -672.80388765895941    1.13687e-13   9.57484e-12 DIIS
   Energy and wave function converged.
 
 
@@ -648,15 +708,17 @@ Total time:
     Final Occupation by Irrep:
               A 
     DOCC [     9 ]
+    NA   [     9 ]
+    NB   [     9 ]
 
-  @DF-RHF Final Energy:  -672.80388765797488
+  @DF-RHF Final Energy:  -672.80388765895941
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -911.7278522565763978
-    Two-Electron Energy =                 238.9239645986014580
-    Total Energy =                       -672.8038876579748830
+    One-Electron Energy =                -911.7278522564913601
+    Two-Electron Energy =                 238.9239645975318922
+    Total Energy =                       -672.8038876589594111
 
 Computation Completed
 
@@ -665,38 +727,49 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:    28.2902      Y:     0.6494      Z:    -0.0047
 
-  Electronic Dipole Moment: [e a0]
-     X:   -25.4572      Y:    -0.5844      Z:     0.0042
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     2.8330      Y:     0.0650      Z:    -0.0005     Total:     2.8338
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     7.2008      Y:     0.1653      Z:    -0.0012     Total:     7.2027
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :        -25.4572294           28.2902343            2.8330049
+ Dipole Y            :         -0.5844026            0.6494382            0.0650356
+ Dipole Z            :          0.0041936           -0.0046603           -0.0004667
+ Magnitude           :                                                    2.8337513
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan 18 15:16:51 2019
+*** tstop() called on lutnia at Mon May 20 19:42:08 2024
 Module time:
-	user time   =       2.40 seconds =       0.04 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+    user time   =       0.19 seconds =       0.00 minutes
+    system time =       0.02 seconds =       0.00 minutes
+    total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.91 seconds =       0.17 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+    user time   =       0.70 seconds =       0.01 minutes
+    system time =       0.08 seconds =       0.00 minutes
+    total time  =          1 seconds =       0.02 minutes
   Constructing Basis Sets for SAPT...
 
    => Loading Basis Set <=
 
-    Name: (3-21G AUX)
+    Name: DEF2-QZVPP-RI
     Role: RIFIT
     Keyword: DF_BASIS_SAPT
-    atoms 1-2 entry H          line    24 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-ri.gbs 
-    atoms 3   entry O          line   406 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-ri.gbs 
-    atoms 4   entry CA         line  1382 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-ri.gbs 
+    atoms 1-2 entry H          line    24 file /home/bartektyrcha/psi4/share/psi4/basis/def2-qzvpp-ri.gbs 
+    atoms 3   entry O          line   406 file /home/bartektyrcha/psi4/share/psi4/basis/def2-qzvpp-ri.gbs 
+    atoms 4   entry CA         line  1382 file /home/bartektyrcha/psi4/share/psi4/basis/def2-qzvpp-ri.gbs 
+
+   => Loading Basis Set <=
+
+    Name: (3-21G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_ELST
+    atoms 1-2 entry H          line    18 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 3   entry O          line   318 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry CA         line  1250 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -704,8 +777,8 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Fri Jan 18 15:16:51 2019
+*** tstart() called on lutnia
+*** at Mon May 20 19:42:08 2024
 
         SAPT0  
     Ed Hohenstein
@@ -716,6 +789,7 @@ Total time:
     NSO        =        30
     NMO        =        30
     NRI        =       452
+    NRI (Elst) =       273
     NOCC A     =         5
     NOCC B     =         9
     FOCC A     =         1
@@ -723,45 +797,47 @@ Total time:
     NVIR A     =        25
     NVIR B     =        21
 
-    Elst10,r            =    -0.093951023853 [Eh]
-    Exch10              =     0.030838056540 [Eh]
-    Exch10 (S^2)        =     0.030537163888 [Eh]
+    Elst10,r            =    -0.093950418051 [Eh]
+    Exch10              =     0.030850871078 [Eh]
+    Exch10 (S^2)        =     0.030549885127 [Eh]
+
+    Maxiter = 50
+    CPHF R converge = 1.000000E-08
 
     Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]
-       1     -74.34200409      74.342004093      99.362065780             0
-       2     -78.05231813       3.710314037      28.607698458             0
-       3     -91.50407178      13.451753648       6.427912441             0
-       4     -90.38595169      -1.118120086       2.720295833             0
-       5     -90.66734532       0.281393628       0.340353941             0
-       6     -90.65415135      -0.013193975       0.047536730             0
-       7     -90.65515778       0.001006434       0.007059382             0
-       8     -90.65503784      -0.000119942       0.001617917             0
-       9     -90.65505860       0.000020762       0.000219040             0
-      10     -90.65505660      -0.000001999       0.000026943             0
-      11     -90.65505674       0.000000142       0.000004406             0
-      12     -90.65505673      -0.000000014       0.000001344             0
-      13     -90.65505673       0.000000003       0.000000500             0
+       1     -74.34200408      74.342004081     9.936207e-02             0
+       2     -78.05231812       3.710314035     2.860770e-02             0
+       3     -91.50407176      13.451753646     6.427912e-03             0
+       4     -90.38595168      -1.118120086     2.720296e-03             0
+       5     -90.66734530       0.281393628     3.403539e-04             0
+       6     -90.65415133      -0.013193975     4.753673e-05             0
+       7     -90.65515776       0.001006434     7.059382e-06             0
+       8     -90.65503782      -0.000119942     1.617917e-06             0
+       9     -90.65505858       0.000020762     2.190405e-07             0
+      10     -90.65505658      -0.000001999     2.694320e-08             0
+      11     -90.65505673       0.000000142     4.405781e-09             0
 
     CHF Iterations converged
 
+    Maxiter = 50
+    CPHF R converge = 1.000000E-08
 
     Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]
-       1      -0.22665078       0.226650783       1.604995199             0
-       2      -0.24863100       0.021980221       0.085767143             0
-       3      -0.24826943      -0.000361574       0.005050679             0
-       4      -0.24828151       0.000012077       0.000312505             0
-       5      -0.24828110      -0.000000409       0.000021945             0
-       6      -0.24828112       0.000000020       0.000001934             0
-       7      -0.24828112      -0.000000001       0.000000047             0
+       1      -0.22665078       0.226650783     1.604995e-03             0
+       2      -0.24863100       0.021980221     8.576714e-05             0
+       3      -0.24826943      -0.000361574     5.050679e-06             0
+       4      -0.24828151       0.000012077     3.125051e-07             0
+       5      -0.24828110      -0.000000409     2.194533e-08             0
+       6      -0.24828112       0.000000020     1.933834e-09             0
 
     CHF Iterations converged
 
-    Ind20,r (A<-B)      =    -0.090655056732 [Eh]
-    Ind20,r (B<-A)      =    -0.000248281117 [Eh]
-    Ind20,r             =    -0.090903337849 [Eh]
-    Exch-Ind20,r (A<-B) =     0.049452723773 [Eh]
-    Exch-Ind20,r (B<-A) =     0.000188851627 [Eh]
-    Exch-Ind20,r        =     0.049641575400 [Eh]
+    Ind20,r (A<-B)      =    -0.090655056726 [Eh]
+    Ind20,r (B<-A)      =    -0.000248281118 [Eh]
+    Ind20,r             =    -0.090903337845 [Eh]
+    Exch-Ind20,r (A<-B) =     0.049452723747 [Eh]
+    Exch-Ind20,r (B<-A) =     0.000188851630 [Eh]
+    Exch-Ind20,r        =     0.049641575377 [Eh]
     Disp20              =    -0.000275407454 [Eh]
     Disp20 (SS)         =    -0.000137703727 [Eh]
     Disp20 (OS)         =    -0.000137703727 [Eh]
@@ -771,17 +847,17 @@ Total time:
 
     SAPT Results 
   --------------------------------------------------------------------------------------------------------
-    Electrostatics                -93.95102385 [mEh]     -58.95515754 [kcal/mol]    -246.66837914 [kJ/mol]
-      Elst10,r                    -93.95102385 [mEh]     -58.95515754 [kcal/mol]    -246.66837914 [kJ/mol]
+    Electrostatics                -93.95041805 [mEh]     -58.95477739 [kcal/mol]    -246.66678861 [kJ/mol]
+      Elst10,r                    -93.95041805 [mEh]     -58.95477739 [kcal/mol]    -246.66678861 [kJ/mol]
 
-    Exchange                       30.83805654 [mEh]      19.35117263 [kcal/mol]      80.96530629 [kJ/mol]
-      Exch10                       30.83805654 [mEh]      19.35117263 [kcal/mol]      80.96530629 [kJ/mol]
-      Exch10(S^2)                  30.53716389 [mEh]      19.16235964 [kcal/mol]      80.17531274 [kJ/mol]
+    Exchange                       30.85087108 [mEh]      19.35921388 [kcal/mol]      80.99895086 [kJ/mol]
+      Exch10                       30.85087108 [mEh]      19.35921388 [kcal/mol]      80.99895086 [kJ/mol]
+      Exch10(S^2)                  30.54988513 [mEh]      19.17034234 [kcal/mol]      80.20871235 [kJ/mol]
 
-    Induction                     -32.31279980 [mEh]     -20.27658800 [kcal/mol]     -84.83724418 [kJ/mol]
-      Ind20,r                     -90.90333785 [mEh]     -57.04270570 [kcal/mol]    -238.66668064 [kJ/mol]
-      Exch-Ind20,r                 49.64157540 [mEh]      31.15055886 [kcal/mol]     130.33393826 [kJ/mol]
-      delta HF,r (2)                8.94896265 [mEh]       5.61555884 [kcal/mol]      23.49549820 [kJ/mol]
+    Induction                     -32.32622098 [mEh]     -20.28500992 [kcal/mol]     -84.87248149 [kJ/mol]
+      Ind20,r                     -90.90333784 [mEh]     -57.04270570 [kcal/mol]    -238.66668063 [kJ/mol]
+      Exch-Ind20,r                 49.64157538 [mEh]      31.15055884 [kcal/mol]     130.33393820 [kJ/mol]
+      delta HF,r (2)                8.93554149 [mEh]       5.60713694 [kcal/mol]      23.46026094 [kJ/mol]
 
     Dispersion                     -0.18991050 [mEh]      -0.11917064 [kcal/mol]      -0.49860994 [kJ/mol]
       Disp20                       -0.27540745 [mEh]      -0.17282079 [kcal/mol]      -0.72308217 [kJ/mol]
@@ -791,48 +867,74 @@ Total time:
       Exch-Disp20 (SS)              0.04645359 [mEh]       0.02915007 [kcal/mol]       0.12196388 [kJ/mol]
       Exch-Disp20 (OS)              0.03904337 [mEh]       0.02450008 [kcal/mol]       0.10250835 [kJ/mol]
 
-  Total HF                        -95.42576711 [mEh]     -59.88057290 [kcal/mol]    -250.54031703 [kJ/mol]
-  Total SAPT0                     -95.61567761 [mEh]     -59.99974354 [kcal/mol]    -251.03892697 [kJ/mol]
+  Total HF                        -95.42576795 [mEh]     -59.88057343 [kcal/mol]    -250.54031925 [kJ/mol]
+  Total SAPT0                     -95.61567845 [mEh]     -59.99974407 [kcal/mol]    -251.03892918 [kJ/mol]
 
   Special recipe for scaled SAPT0 (see Manual):
-    Electrostatics sSAPT0         -93.95102385 [mEh]     -58.95515754 [kcal/mol]    -246.66837914 [kJ/mol]
-    Exchange sSAPT0                30.83805654 [mEh]      19.35117263 [kcal/mol]      80.96530629 [kJ/mol]
-    Induction sSAPT0              -30.83088952 [mEh]     -19.34667526 [kcal/mol]     -80.94648928 [kJ/mol]
-    Dispersion sSAPT0              -0.18735822 [mEh]      -0.11756906 [kcal/mol]      -0.49190895 [kJ/mol]
-  Total sSAPT0                    -94.13121505 [mEh]     -59.06822922 [kcal/mol]    -247.14147108 [kJ/mol]
+    Electrostatics sSAPT0         -93.95041805 [mEh]     -58.95477739 [kcal/mol]    -246.66678861 [kJ/mol]
+    Exchange sSAPT0                30.85087108 [mEh]      19.35921388 [kcal/mol]      80.99895086 [kJ/mol]
+    Induction sSAPT0              -30.84447002 [mEh]     -19.35519715 [kcal/mol]     -80.98214488 [kJ/mol]
+    Dispersion sSAPT0              -0.18735850 [mEh]      -0.11756923 [kcal/mol]      -0.49190967 [kJ/mol]
+  Total sSAPT0                    -94.13137549 [mEh]     -59.06832990 [kcal/mol]    -247.14189230 [kJ/mol]
   --------------------------------------------------------------------------------------------------------
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan 18 15:16:52 2019
+*** tstop() called on lutnia at Mon May 20 19:42:09 2024
 Module time:
-	user time   =       1.70 seconds =       0.03 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+    user time   =       0.21 seconds =       0.00 minutes
+    system time =       0.04 seconds =       0.00 minutes
+    total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      11.67 seconds =       0.19 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =          7 seconds =       0.12 minutes
+    user time   =       1.01 seconds =       0.02 minutes
+    system time =       0.12 seconds =       0.00 minutes
+    total time  =          2 seconds =       0.03 minutes
+    SAPT0 energy with Ca2+, without ECP...................................................PASSED
 
+Scratch directory: /tmp/
+   => Loading Basis Set <=
 
-Warning! sapt0 does not have an associated derived wavefunction.The returned wavefunction is the dimer SCF wavefunction.
+    Name: LANL2DZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry H          line    19 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 3   entry O          line   136 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 4   entry CA         line   319 (ECP: line  1747) file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
 
-	SAPT0 energy with Ca2+, without ECP...............................PASSED
-
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
-  //              Dimer HF             //
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
-
-
-*** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Fri Jan 18 15:16:52 2019
+    !!!  WARNING: ECP capability is in beta. Please check occupations closely.  !!!
 
    => Loading Basis Set <=
 
     Name: LANL2DZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry H          line    19 file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
-    atoms 3   entry O          line   136 file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
-    atoms 4   entry CA         line   319 (ECP: line  1747) file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
+    atoms 1-2 entry H          line    19 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 3   entry O          line   136 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 4   entry CA         line   319 (ECP: line  1747) file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+
+    !!!  WARNING: ECP capability is in beta. Please check occupations closely.  !!!
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //              Dimer HF             //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lutnia
+*** at Mon May 20 19:42:09 2024
+
+   => Loading Basis Set <=
+
+    Name: LANL2DZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry H          line    19 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 3   entry O          line   136 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 4   entry CA         line   319 (ECP: line  1747) file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
 
     !!!  WARNING: ECP capability is in beta. Please check occupations closely.  !!!
 
@@ -842,7 +944,7 @@ Warning! sapt0 does not have an associated derived wavefunction.The returned wav
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        8 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -880,14 +982,14 @@ Warning! sapt0 does not have an associated derived wavefunction.The returned wav
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: LANL2DZ
     Blend: LANL2DZ
     Number of shells: 15
-    Number of basis function: 25
+    Number of basis functions: 25
     Number of Cartesian functions: 25
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -903,19 +1005,9 @@ Warning! sapt0 does not have an associated derived wavefunction.The returned wav
     Name: (LANL2DZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry H          line    23 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-    atoms 3   entry O          line   323 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-    atoms 4   entry CA         line  1255 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         25      25       0       0       0       0
-   -------------------------------------------------------
-    Total      25      25       9       9       9       0
-   -------------------------------------------------------
+    atoms 1-2 entry H          line    18 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 3   entry O          line   318 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry CA         line  1250 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -924,8 +1016,8 @@ Warning! sapt0 does not have an associated derived wavefunction.The returned wav
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              8
-    Integrals threads:           8
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory [MiB]:              375
     Algorithm:                Core
     Integral Cache:           SAVE
@@ -935,38 +1027,48 @@ Warning! sapt0 does not have an associated derived wavefunction.The returned wav
    => Auxiliary Basis Set <=
 
   Basis Set: (LANL2DZ AUX)
-    Blend: DEF2-QZVPP-JKFIT
+    Blend: DEF2-UNIVERSAL-JKFIT
     Number of shells: 81
-    Number of basis function: 336
+    Number of basis functions: 336
     Number of Cartesian functions: 336
     Spherical Harmonics?: false
     Max angular momentum: 4
 
   Minimum eigenvalue in the overlap matrix is 3.6155256748E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 1.1026908875E-02.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         25      25 
+   -------------------------
+    Total      25      25
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     MAX |[F,P]|
 
-   @DF-RHF iter   0:  -104.53383525857801   -1.04534e+02   0.00000e+00 
-   @DF-RHF iter   1:  -110.72815625133745   -6.19432e+00   4.31263e-01 DIIS
-   @DF-RHF iter   2:  -110.64997696207078    7.81793e-02   4.20894e-01 DIIS
-   @DF-RHF iter   3:  -111.56144686368090   -9.11470e-01   2.33336e-02 DIIS
-   @DF-RHF iter   4:  -111.56456937510472   -3.12251e-03   7.05496e-03 DIIS
-   @DF-RHF iter   5:  -111.56488115780157   -3.11783e-04   2.69592e-03 DIIS
-   @DF-RHF iter   6:  -111.56490639620088   -2.52384e-05   1.48118e-04 DIIS
-   @DF-RHF iter   7:  -111.56490689130806   -4.95107e-07   3.92058e-05 DIIS
-   @DF-RHF iter   8:  -111.56490695197580   -6.06677e-08   1.21787e-05 DIIS
-   @DF-RHF iter   9:  -111.56490695458685   -2.61105e-09   1.85988e-06 DIIS
-   @DF-RHF iter  10:  -111.56490695460592   -1.90710e-11   2.10313e-07 DIIS
-   @DF-RHF iter  11:  -111.56490695460654   -6.25278e-13   3.86176e-08 DIIS
-   @DF-RHF iter  12:  -111.56490695460667   -1.27898e-13   6.91690e-09 DIIS
-   @DF-RHF iter  13:  -111.56490695460641    2.55795e-13   8.85929e-10 DIIS
-   @DF-RHF iter  14:  -111.56490695460649   -7.10543e-14   2.44576e-10 DIIS
-   @DF-RHF iter  15:  -111.56490695460649    0.00000e+00   3.21838e-11 DIIS
+   @DF-RHF iter SAD:  -111.36338770911618   -1.11363e+02   0.00000e+00 
+   @DF-RHF iter   1:  -111.48488494271513   -1.21497e-01   1.24816e-01 ADIIS
+   @DF-RHF iter   2:  -111.51511704591860   -3.02321e-02   1.29509e-01 ADIIS
+   @DF-RHF iter   3:  -111.56198586676813   -4.68688e-02   2.47504e-02 ADIIS/DIIS
+   @DF-RHF iter   4:  -111.56474387213696   -2.75801e-03   8.33434e-03 ADIIS/DIIS
+   @DF-RHF iter   5:  -111.56490200098585   -1.58129e-04   1.44345e-03 ADIIS/DIIS
+   @DF-RHF iter   6:  -111.56490690540389   -4.90442e-06   1.05470e-04 ADIIS/DIIS
+   @DF-RHF iter   7:  -111.56490697631838   -7.09145e-08   1.34276e-05 DIIS
+   @DF-RHF iter   8:  -111.56490698343410   -7.11572e-09   3.92407e-06 DIIS
+   @DF-RHF iter   9:  -111.56490698368162   -2.47525e-10   5.01984e-07 DIIS
+   @DF-RHF iter  10:  -111.56490698368653   -4.90274e-12   1.15675e-07 DIIS
+   @DF-RHF iter  11:  -111.56490698368660   -7.10543e-14   2.29128e-08 DIIS
+   @DF-RHF iter  12:  -111.56490698368657    2.84217e-14   4.77610e-09 DIIS
+   @DF-RHF iter  13:  -111.56490698368667   -9.94760e-14   4.04766e-10 DIIS
+   @DF-RHF iter  14:  -111.56490698368667    0.00000e+00   2.69476e-11 DIIS
   Energy and wave function converged.
 
 
@@ -993,15 +1095,17 @@ Warning! sapt0 does not have an associated derived wavefunction.The returned wav
     Final Occupation by Irrep:
               A 
     DOCC [     9 ]
+    NA   [     9 ]
+    NB   [     9 ]
 
-  @DF-RHF Final Energy:  -111.56490695460649
+  @DF-RHF Final Energy:  -111.56490698368667
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             27.8519033067709856
-    One-Electron Energy =                -212.0582895740553226
-    Two-Electron Energy =                  72.6414793126778449
-    Total Energy =                       -111.5649069546064851
+    One-Electron Energy =                -212.0582896611467731
+    Two-Electron Energy =                  72.6414793706891118
+    Total Energy =                       -111.5649069836866687
 
 Computation Completed
 
@@ -1010,45 +1114,53 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:   -18.6151      Y:    -0.2757      Z:     0.0032
 
-  Electronic Dipole Moment: [e a0]
-     X:    19.5883      Y:     0.4317      Z:    -0.0032
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.9732      Y:     0.1560      Z:     0.0000     Total:     0.9856
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     2.4736      Y:     0.3966      Z:     0.0000     Total:     2.5052
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         19.5882710          -18.6150755            0.9731956
+ Dipole Y            :          0.4317485           -0.2757018            0.1560467
+ Dipole Z            :         -0.0031926            0.0032104            0.0000179
+ Magnitude           :                                                    0.9856268
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan 18 15:16:54 2019
+*** tstop() called on lutnia at Mon May 20 19:42:09 2024
 Module time:
-	user time   =       4.97 seconds =       0.08 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+    user time   =       0.35 seconds =       0.01 minutes
+    system time =       0.03 seconds =       0.00 minutes
+    total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      16.69 seconds =       0.28 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =          9 seconds =       0.15 minutes
+    user time   =       1.43 seconds =       0.02 minutes
+    system time =       0.15 seconds =       0.00 minutes
+    total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer A HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
+   => Libint2 <=
 
-*** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Fri Jan 18 15:16:54 2019
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lutnia
+*** at Mon May 20 19:42:09 2024
 
    => Loading Basis Set <=
 
     Name: LANL2DZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry H          line    19 file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
-    atoms 3   entry O          line   136 file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
-    atoms 4   entry CA         line   319 (ECP: line  1747) file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
+    atoms 1-2 entry H          line    19 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 3   entry O          line   136 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 4   entry CA         line   319 (ECP: line  1747) file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
 
     !!!  WARNING: ECP capability is in beta. Please check occupations closely.  !!!
 
@@ -1058,7 +1170,7 @@ Total time:
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        8 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1096,42 +1208,26 @@ Total time:
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: LANL2DZ
     Blend: LANL2DZ
     Number of shells: 15
-    Number of basis function: 25
+    Number of basis functions: 25
     Number of Cartesian functions: 25
     Spherical Harmonics?: false
     Max angular momentum: 1
-
-  Core potential: LANL2DZ
-    Number of shells: 3
-    Number of ECP primitives: 13
-    Number of ECP core electrons: 0
-    Max angular momentum: 2
 
    => Loading Basis Set <=
 
     Name: (LANL2DZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry H          line    23 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-    atoms 3   entry O          line   323 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-    atoms 4   entry CA         line  1255 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         25      25       0       0       0       0
-   -------------------------------------------------------
-    Total      25      25       5       5       5       0
-   -------------------------------------------------------
+    atoms 1-2 entry H          line    18 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 3   entry O          line   318 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry CA         line  1250 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -1140,8 +1236,8 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              8
-    Integrals threads:           8
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory [MiB]:              375
     Algorithm:                Core
     Integral Cache:           LOAD
@@ -1151,38 +1247,49 @@ Total time:
    => Auxiliary Basis Set <=
 
   Basis Set: (LANL2DZ AUX)
-    Blend: DEF2-QZVPP-JKFIT
+    Blend: DEF2-UNIVERSAL-JKFIT
     Number of shells: 81
-    Number of basis function: 336
+    Number of basis functions: 336
     Number of Cartesian functions: 336
     Spherical Harmonics?: false
     Max angular momentum: 4
 
   Minimum eigenvalue in the overlap matrix is 3.6155256748E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 1.1026908875E-02.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         25      25 
+   -------------------------
+    Total      25      25
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     MAX |[F,P]|
 
-   @DF-RHF iter   0:   -74.97687514709595   -7.49769e+01   0.00000e+00 
-   @DF-RHF iter   1:   -75.71511631498805   -7.38241e-01   1.36104e-01 DIIS
-   @DF-RHF iter   2:   -75.74882907889740   -3.37128e-02   1.90395e-01 DIIS
-   @DF-RHF iter   3:   -75.84820681159303   -9.93777e-02   2.21711e-02 DIIS
-   @DF-RHF iter   4:   -75.84990297756099   -1.69617e-03   5.87296e-03 DIIS
-   @DF-RHF iter   5:   -75.85000038088383   -9.74033e-05   7.92992e-04 DIIS
-   @DF-RHF iter   6:   -75.85000434131295   -3.96043e-06   1.28120e-04 DIIS
-   @DF-RHF iter   7:   -75.85000474074157   -3.99429e-07   4.31378e-05 DIIS
-   @DF-RHF iter   8:   -75.85000482504412   -8.43026e-08   8.80152e-06 DIIS
-   @DF-RHF iter   9:   -75.85000482723555   -2.19143e-09   6.73919e-07 DIIS
-   @DF-RHF iter  10:   -75.85000482726014   -2.45848e-11   2.02709e-07 DIIS
-   @DF-RHF iter  11:   -75.85000482726085   -7.10543e-13   3.72672e-08 DIIS
-   @DF-RHF iter  12:   -75.85000482726083    1.42109e-14   5.73540e-09 DIIS
-   @DF-RHF iter  13:   -75.85000482726086   -2.84217e-14   9.59278e-10 DIIS
-   @DF-RHF iter  14:   -75.85000482726089   -2.84217e-14   2.57162e-10 DIIS
-   @DF-RHF iter  15:   -75.85000482726086    2.84217e-14   5.31545e-11 DIIS
+   @DF-RHF iter SAD:   -74.97866484763463   -7.49787e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.71632104657192   -7.37656e-01   1.36230e-01 ADIIS
+   @DF-RHF iter   2:   -75.74992137270812   -3.36003e-02   1.90096e-01 ADIIS
+   @DF-RHF iter   3:   -75.84687503965934   -9.69537e-02   2.23799e-02 ADIIS/DIIS
+   @DF-RHF iter   4:   -75.85058623018996   -3.71119e-03   1.03053e-02 ADIIS/DIIS
+   @DF-RHF iter   5:   -75.85080610077536   -2.19871e-04   5.63938e-04 ADIIS/DIIS
+   @DF-RHF iter   6:   -75.85081030893087   -4.20816e-06   1.06175e-04 ADIIS/DIIS
+   @DF-RHF iter   7:   -75.85081055329702   -2.44366e-07   3.58852e-05 DIIS
+   @DF-RHF iter   8:   -75.85081061786862   -6.45716e-08   5.70369e-06 DIIS
+   @DF-RHF iter   9:   -75.85081061900796   -1.13934e-09   7.88030e-07 DIIS
+   @DF-RHF iter  10:   -75.85081061903570   -2.77396e-11   2.95697e-07 DIIS
+   @DF-RHF iter  11:   -75.85081061903644   -7.38964e-13   6.54219e-08 DIIS
+   @DF-RHF iter  12:   -75.85081061903654   -9.94760e-14   5.93869e-09 DIIS
+   @DF-RHF iter  13:   -75.85081061903661   -7.10543e-14   1.12977e-09 DIIS
+   @DF-RHF iter  14:   -75.85081061903659    1.42109e-14   2.36207e-10 DIIS
+   @DF-RHF iter  15:   -75.85081061903655    4.26326e-14   4.84343e-11 DIIS
   Energy and wave function converged.
 
 
@@ -1193,31 +1300,33 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A    -20.624304     2A     -1.233406     3A     -0.546402  
-       4A     -0.500484     5A     -0.499679  
+       1A    -20.624692     2A     -1.233347     3A     -0.546438  
+       4A     -0.500857     5A     -0.499679  
 
     Virtual:                                                              
 
-       6A      0.048797     7A      0.067895     8A      0.071554  
-       9A      0.088005    10A      0.157003    11A      0.170707  
-      12A      0.274843    13A      0.275481    14A      0.310291  
-      15A      0.891194    16A      0.996384    17A      1.005223  
-      18A      1.069745    19A      1.148764    20A      1.630743  
-      21A      1.953477    22A      2.841862    23A      2.842148  
-      24A      2.894806    25A      6.004657  
+       6A      0.046208     7A      0.067755     8A      0.070593  
+       9A      0.071546    10A      0.155146    11A      0.164844  
+      12A      0.273335    13A      0.274050    14A      0.307186  
+      15A      0.783474    16A      0.891220    17A      0.994070  
+      18A      1.006102    19A      1.146235    20A      1.173419  
+      21A      1.272513    22A      1.645086    23A      2.053206  
+      24A      2.053571    25A      2.103866  
 
     Final Occupation by Irrep:
               A 
     DOCC [     5 ]
+    NA   [     5 ]
+    NB   [     5 ]
 
-  @DF-RHF Final Energy:   -75.85000482726086
+  @DF-RHF Final Energy:   -75.85081061903655
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              6.4064057897589448
-    One-Electron Energy =                -117.7042699472998635
-    Two-Electron Energy =                  35.4478593302800462
-    Total Energy =                        -75.8500048272608751
+    One-Electron Energy =                -117.7044056490275068
+    Two-Electron Energy =                  35.4471892402320066
+    Total Energy =                        -75.8508106190365510
 
 Computation Completed
 
@@ -1226,45 +1335,53 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:   -32.7602      Y:    -0.6004      Z:     0.0055
 
-  Electronic Dipole Moment: [e a0]
-     X:    31.7078      Y:     0.6686      Z:    -0.0053
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:    -1.0524      Y:     0.0682      Z:     0.0003     Total:     1.0546
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:    -2.6750      Y:     0.1734      Z:     0.0007     Total:     2.6806
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         31.7001052          -32.7601926           -1.0600874
+ Dipole Y            :          0.6682278           -0.6004209            0.0678070
+ Dipole Z            :         -0.0052572            0.0055406            0.0002834
+ Magnitude           :                                                    1.0622538
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan 18 15:16:56 2019
+*** tstop() called on lutnia at Mon May 20 19:42:09 2024
 Module time:
-	user time   =       3.51 seconds =       0.06 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+    user time   =       0.21 seconds =       0.00 minutes
+    system time =       0.00 seconds =       0.00 minutes
+    total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      20.20 seconds =       0.34 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =         11 seconds =       0.18 minutes
+    user time   =       1.65 seconds =       0.03 minutes
+    system time =       0.15 seconds =       0.00 minutes
+    total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer B HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
+   => Libint2 <=
 
-*** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Fri Jan 18 15:16:56 2019
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lutnia
+*** at Mon May 20 19:42:09 2024
 
    => Loading Basis Set <=
 
     Name: LANL2DZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry H          line    19 file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
-    atoms 3   entry O          line   136 file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
-    atoms 4   entry CA         line   319 (ECP: line  1747) file /home/work/psi4/install.susi/share/psi4/basis/lanl2dz.gbs 
+    atoms 1-2 entry H          line    19 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 3   entry O          line   136 file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
+    atoms 4   entry CA         line   319 (ECP: line  1747) file /home/bartektyrcha/psi4/share/psi4/basis/lanl2dz.gbs 
 
     !!!  WARNING: ECP capability is in beta. Please check occupations closely.  !!!
 
@@ -1274,7 +1391,7 @@ Total time:
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        8 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1312,14 +1429,14 @@ Total time:
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: LANL2DZ
     Blend: LANL2DZ
     Number of shells: 15
-    Number of basis function: 25
+    Number of basis functions: 25
     Number of Cartesian functions: 25
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -1335,19 +1452,9 @@ Total time:
     Name: (LANL2DZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry H          line    23 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-    atoms 3   entry O          line   323 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-    atoms 4   entry CA         line  1255 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         25      25       0       0       0       0
-   -------------------------------------------------------
-    Total      25      25       4       4       4       0
-   -------------------------------------------------------
+    atoms 1-2 entry H          line    18 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 3   entry O          line   318 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry CA         line  1250 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -1356,8 +1463,8 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              8
-    Integrals threads:           8
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory [MiB]:              375
     Algorithm:                Core
     Integral Cache:           LOAD
@@ -1367,32 +1474,42 @@ Total time:
    => Auxiliary Basis Set <=
 
   Basis Set: (LANL2DZ AUX)
-    Blend: DEF2-QZVPP-JKFIT
+    Blend: DEF2-UNIVERSAL-JKFIT
     Number of shells: 81
-    Number of basis function: 336
+    Number of basis functions: 336
     Number of Cartesian functions: 336
     Spherical Harmonics?: false
     Max angular momentum: 4
 
   Minimum eigenvalue in the overlap matrix is 3.6155256748E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 1.1026908875E-02.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         25      25 
+   -------------------------
+    Total      25      25
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     MAX |[F,P]|
 
-   @DF-RHF iter   0:   -32.68876592698563   -3.26888e+01   0.00000e+00 
-   @DF-RHF iter   1:   -35.59251026237357   -2.90374e+00   8.95631e-02 DIIS
-   @DF-RHF iter   2:   -35.61029001773977   -1.77798e-02   5.45281e-03 DIIS
-   @DF-RHF iter   3:   -35.61046726110530   -1.77243e-04   2.32048e-04 DIIS
-   @DF-RHF iter   4:   -35.61046747448135   -2.13376e-07   6.35124e-06 DIIS
-   @DF-RHF iter   5:   -35.61046747475717   -2.75818e-10   5.49984e-07 DIIS
-   @DF-RHF iter   6:   -35.61046747475888   -1.70530e-12   6.39694e-08 DIIS
-   @DF-RHF iter   7:   -35.61046747475890   -2.13163e-14   4.13908e-09 DIIS
-   @DF-RHF iter   8:   -35.61046747475891   -1.42109e-14   1.98055e-10 DIIS
-   @DF-RHF iter   9:   -35.61046747475888    2.84217e-14   6.97632e-12 DIIS
+   @DF-RHF iter SAD:   -36.21394596007175   -3.62139e+01   0.00000e+00 
+   @DF-RHF iter   1:   -35.60922177959774    6.04724e-01   1.68980e-02 ADIIS/DIIS
+   @DF-RHF iter   2:   -35.61045354781413   -1.23177e-03   1.67646e-03 ADIIS/DIIS
+   @DF-RHF iter   3:   -35.61046745947635   -1.39117e-05   7.33996e-05 DIIS
+   @DF-RHF iter   4:   -35.61046747500177   -1.55254e-08   1.52836e-06 DIIS
+   @DF-RHF iter   5:   -35.61046747501381   -1.20366e-11   1.13726e-07 DIIS
+   @DF-RHF iter   6:   -35.61046747501388   -7.10543e-14   5.53124e-09 DIIS
+   @DF-RHF iter   7:   -35.61046747501388    0.00000e+00   3.76167e-10 DIIS
+   @DF-RHF iter   8:   -35.61046747501387    7.10543e-15   2.33186e-11 DIIS
   Energy and wave function converged.
 
 
@@ -1419,15 +1536,17 @@ Total time:
     Final Occupation by Irrep:
               A 
     DOCC [     4 ]
+    NA   [     4 ]
+    NB   [     4 ]
 
-  @DF-RHF Final Energy:   -35.61046747475888
+  @DF-RHF Final Energy:   -35.61046747501387
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                 -54.3510785735892838
-    Two-Electron Energy =                  18.7406110988303993
-    Total Energy =                        -35.6104674747588845
+    One-Electron Energy =                 -54.3510785737472304
+    Two-Electron Energy =                  18.7406110987333570
+    Total Energy =                        -35.6104674750138770
 
 Computation Completed
 
@@ -1436,38 +1555,49 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:    14.1451      Y:     0.3247      Z:    -0.0023
 
-  Electronic Dipole Moment: [e a0]
-     X:   -11.3176      Y:    -0.2597      Z:     0.0019
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     2.8276      Y:     0.0650      Z:    -0.0005     Total:     2.8283
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     7.1869      Y:     0.1652      Z:    -0.0012     Total:     7.1888
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :        -11.3175590           14.1451172            2.8275582
+ Dipole Y            :         -0.2597225            0.3247191            0.0649966
+ Dipole Z            :          0.0018643           -0.0023301           -0.0004658
+ Magnitude           :                                                    2.8283052
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan 18 15:16:58 2019
+*** tstop() called on lutnia at Mon May 20 19:42:10 2024
 Module time:
-	user time   =       2.73 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+    user time   =       0.28 seconds =       0.00 minutes
+    system time =       0.04 seconds =       0.00 minutes
+    total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      22.93 seconds =       0.38 minutes
-	system time =       0.40 seconds =       0.01 minutes
-	total time  =         13 seconds =       0.22 minutes
+    user time   =       1.93 seconds =       0.03 minutes
+    system time =       0.19 seconds =       0.00 minutes
+    total time  =          3 seconds =       0.05 minutes
   Constructing Basis Sets for SAPT...
 
    => Loading Basis Set <=
 
-    Name: (LANL2DZ AUX)
+    Name: DEF2-QZVPP-RI
     Role: RIFIT
     Keyword: DF_BASIS_SAPT
-    atoms 1-2 entry H          line    24 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-ri.gbs 
-    atoms 3   entry O          line   406 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-ri.gbs 
-    atoms 4   entry CA         line  1382 file /home/work/psi4/install.susi/share/psi4/basis/def2-qzvpp-ri.gbs 
+    atoms 1-2 entry H          line    24 file /home/bartektyrcha/psi4/share/psi4/basis/def2-qzvpp-ri.gbs 
+    atoms 3   entry O          line   406 file /home/bartektyrcha/psi4/share/psi4/basis/def2-qzvpp-ri.gbs 
+    atoms 4   entry CA         line  1382 file /home/bartektyrcha/psi4/share/psi4/basis/def2-qzvpp-ri.gbs 
+
+   => Loading Basis Set <=
+
+    Name: (LANL2DZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_ELST
+    atoms 1-2 entry H          line    18 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 3   entry O          line   318 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry CA         line  1250 file /home/bartektyrcha/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -1475,8 +1605,8 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Fri Jan 18 15:16:58 2019
+*** tstart() called on lutnia
+*** at Mon May 20 19:42:10 2024
 
         SAPT0  
     Ed Hohenstein
@@ -1487,6 +1617,7 @@ Total time:
     NSO        =        25
     NMO        =        25
     NRI        =       452
+    NRI (Elst) =       273
     NOCC A     =         5
     NOCC B     =         4
     FOCC A     =         1
@@ -1494,100 +1625,99 @@ Total time:
     NVIR A     =        20
     NVIR B     =        21
 
-    Elst10,r            =    -0.093432492882 [Eh]
-    Exch10              =     0.024177842348 [Eh]
-    Exch10 (S^2)        =     0.023962065039 [Eh]
+    Elst10,r            =    -0.098045959291 [Eh]
+    Exch10              =     0.033320241087 [Eh]
+    Exch10 (S^2)        =     0.032974756057 [Eh]
+
+    Maxiter = 50
+    CPHF R converge = 1.000000E-08
 
     Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]
-       1     -45.11328489      45.113284892      96.657007640             0
-       2     -44.34471662      -0.768568269      23.703776627             0
-       3     -54.88951215      10.544795528       5.931630019             0
-       4     -54.22736339      -0.662148761       2.402304149             0
-       5     -54.39448175       0.167118363       0.473375851             0
-       6     -54.38119966      -0.013282093       0.077616035             0
-       7     -54.38234075       0.001141084       0.008888874             0
-       8     -54.38229080      -0.000049947       0.000967141             0
-       9     -54.38229369       0.000002894       0.000261106             0
-      10     -54.38229320      -0.000000492       0.000050723             0
-      11     -54.38229325       0.000000053       0.000005544             0
-      12     -54.38229325      -0.000000003       0.000001054             0
-      13     -54.38229325       0.000000001       0.000000507             0
+       1     -58.87330623      58.873306233     9.660969e-02             0
+       2     -60.64744554       1.774139305     2.704418e-02             0
+       3     -73.86647291      13.219027375     6.615063e-03             0
+       4     -72.93570824      -0.930764676     2.587350e-03             0
+       5     -73.14991393       0.214205694     4.344811e-04             0
+       6     -73.13882935      -0.011084579     7.300493e-05             0
+       7     -73.13973820       0.000908844     9.581978e-06             0
+       8     -73.13969085      -0.000047341     8.663931e-07             0
+       9     -73.13969268       0.000001822     2.346629e-07             0
+      10     -73.13969240      -0.000000277     6.997742e-08             0
+      11     -73.13969245       0.000000046     6.550943e-09             0
 
     CHF Iterations converged
 
+    Maxiter = 50
+    CPHF R converge = 1.000000E-08
 
     Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]
-       1      -0.23996588       0.239965877       1.607636090             0
-       2      -0.26108576       0.021119880       0.069832552             0
-       3      -0.26079534      -0.000290419       0.003749193             0
-       4      -0.26080299       0.000007652       0.000255641             0
-       5      -0.26080270      -0.000000288       0.000018055             0
-       6      -0.26080272       0.000000015       0.000000947             0
+       1      -0.24127851       0.241278515     1.610855e-03             0
+       2      -0.26253931       0.021260794     6.974796e-05             0
+       3      -0.26224921      -0.000290101     3.738093e-06             0
+       4      -0.26225684       0.000007633     2.547847e-07             0
+       5      -0.26225655      -0.000000287     1.804145e-08             0
+       6      -0.26225657       0.000000015     9.490934e-10             0
 
     CHF Iterations converged
 
-    Ind20,r (A<-B)      =    -0.054382293251 [Eh]
-    Ind20,r (B<-A)      =    -0.000260802716 [Eh]
-    Ind20,r             =    -0.054643095967 [Eh]
-    Exch-Ind20,r (A<-B) =     0.012519426723 [Eh]
-    Exch-Ind20,r (B<-A) =     0.000156022050 [Eh]
-    Exch-Ind20,r        =     0.012675448774 [Eh]
-    Disp20              =    -0.000325706224 [Eh]
-    Disp20 (SS)         =    -0.000162853112 [Eh]
-    Disp20 (OS)         =    -0.000162853112 [Eh]
-    Exch-Disp20         =     0.000036275159 [Eh]
-    Exch-Disp20 (SS)    =     0.000021203777 [Eh]
-    Exch-Disp20 (OS)    =     0.000015071382 [Eh]
+    Ind20,r (A<-B)      =    -0.073139692446 [Eh]
+    Ind20,r (B<-A)      =    -0.000262256569 [Eh]
+    Ind20,r             =    -0.073401949015 [Eh]
+    Exch-Ind20,r (A<-B) =     0.030903943588 [Eh]
+    Exch-Ind20,r (B<-A) =     0.000161580804 [Eh]
+    Exch-Ind20,r        =     0.031065524392 [Eh]
+    Disp20              =    -0.000353121398 [Eh]
+    Disp20 (SS)         =    -0.000176560699 [Eh]
+    Disp20 (OS)         =    -0.000176560699 [Eh]
+    Exch-Disp20         =     0.000062149881 [Eh]
+    Exch-Disp20 (SS)    =     0.000026219477 [Eh]
+    Exch-Disp20 (OS)    =     0.000035930404 [Eh]
 
     SAPT Results 
   --------------------------------------------------------------------------------------------------------
-    Electrostatics                -93.43249288 [mEh]     -58.62977444 [kcal/mol]    -245.30697627 [kJ/mol]
-      Elst10,r                    -93.43249288 [mEh]     -58.62977444 [kcal/mol]    -245.30697627 [kJ/mol]
+    Electrostatics                -98.04595929 [mEh]     -61.52476832 [kcal/mol]    -257.41963065 [kJ/mol]
+      Elst10,r                    -98.04595929 [mEh]     -61.52476832 [kcal/mol]    -257.41963065 [kJ/mol]
 
-    Exchange                       24.17784235 [mEh]      15.17182513 [kcal/mol]      63.47891634 [kJ/mol]
-      Exch10                       24.17784235 [mEh]      15.17182513 [kcal/mol]      63.47891634 [kJ/mol]
-      Exch10(S^2)                  23.96206504 [mEh]      15.03642282 [kcal/mol]      62.91239309 [kJ/mol]
+    Exchange                       33.32024109 [mEh]      20.90876695 [kcal/mol]      87.48228092 [kJ/mol]
+      Exch10                       33.32024109 [mEh]      20.90876695 [kcal/mol]      87.48228092 [kJ/mol]
+      Exch10(S^2)                  32.97475606 [mEh]      20.69197182 [kcal/mol]      86.57521010 [kJ/mol]
 
-    Induction                     -35.18000205 [mEh]     -22.07578458 [kcal/mol]     -92.36508266 [kJ/mol]
-      Ind20,r                     -54.64309597 [mEh]     -34.28906040 [kcal/mol]    -143.46542870 [kJ/mol]
-      Exch-Ind20,r                 12.67544877 [mEh]       7.95396419 [kcal/mol]      33.27938617 [kJ/mol]
-      delta HF,r (2)                6.78764514 [mEh]       4.25931163 [kcal/mol]      17.82095986 [kJ/mol]
+    Induction                     -38.90317143 [mEh]     -24.41210863 [kcal/mol]    -102.14026252 [kJ/mol]
+      Ind20,r                     -73.40194901 [mEh]     -46.06041840 [kcal/mol]    -192.71679059 [kJ/mol]
+      Exch-Ind20,r                 31.06552439 [mEh]      19.49391086 [kcal/mol]      81.56252305 [kJ/mol]
+      delta HF,r (2)                3.43325319 [mEh]       2.15439890 [kcal/mol]       9.01400501 [kJ/mol]
 
-    Dispersion                     -0.28943106 [mEh]      -0.18162073 [kcal/mol]      -0.75990116 [kJ/mol]
-      Disp20                       -0.32570622 [mEh]      -0.20438374 [kcal/mol]      -0.85514157 [kJ/mol]
-      Exch-Disp20                   0.03627516 [mEh]       0.02276301 [kcal/mol]       0.09524042 [kJ/mol]
-      Disp20 (SS)                  -0.16285311 [mEh]      -0.10219187 [kcal/mol]      -0.42757079 [kJ/mol]
-      Disp20 (OS)                  -0.16285311 [mEh]      -0.10219187 [kcal/mol]      -0.42757079 [kJ/mol]
-      Exch-Disp20 (SS)              0.02120378 [mEh]       0.01330557 [kcal/mol]       0.05567051 [kJ/mol]
-      Exch-Disp20 (OS)              0.01507138 [mEh]       0.00945743 [kcal/mol]       0.03956991 [kJ/mol]
+    Dispersion                     -0.29097152 [mEh]      -0.18258738 [kcal/mol]      -0.76394561 [kJ/mol]
+      Disp20                       -0.35312140 [mEh]      -0.22158702 [kcal/mol]      -0.92712010 [kJ/mol]
+      Exch-Disp20                   0.06214988 [mEh]       0.03899964 [kcal/mol]       0.16317449 [kJ/mol]
+      Disp20 (SS)                  -0.17656070 [mEh]      -0.11079351 [kcal/mol]      -0.46356005 [kJ/mol]
+      Disp20 (OS)                  -0.17656070 [mEh]      -0.11079351 [kcal/mol]      -0.46356005 [kJ/mol]
+      Exch-Disp20 (SS)              0.02621948 [mEh]       0.01645297 [kcal/mol]       0.06883923 [kJ/mol]
+      Exch-Disp20 (OS)              0.03593040 [mEh]       0.02254667 [kcal/mol]       0.09433526 [kJ/mol]
 
-  Total HF                       -104.43465259 [mEh]     -65.53373389 [kcal/mol]    -274.19314259 [kJ/mol]
-  Total SAPT0                    -104.72408365 [mEh]     -65.71535462 [kcal/mol]    -274.95304375 [kJ/mol]
+  Total HF                       -103.62888964 [mEh]     -65.02811000 [kcal/mol]    -272.07761226 [kJ/mol]
+  Total SAPT0                    -103.91986115 [mEh]     -65.21069739 [kcal/mol]    -272.84155787 [kJ/mol]
 
   Special recipe for scaled SAPT0 (see Manual):
-    Electrostatics sSAPT0         -93.43249288 [mEh]     -58.62977444 [kcal/mol]    -245.30697627 [kJ/mol]
-    Exchange sSAPT0                24.17784235 [mEh]      15.17182513 [kcal/mol]      63.47891634 [kJ/mol]
-    Induction sSAPT0              -34.83448375 [mEh]     -21.85896857 [kcal/mol]     -91.45792448 [kJ/mol]
-    Dispersion sSAPT0              -0.28844224 [mEh]      -0.18100024 [kcal/mol]      -0.75730501 [kJ/mol]
-  Total sSAPT0                   -104.37757653 [mEh]     -65.49791812 [kcal/mol]    -274.04328941 [kJ/mol]
+    Electrostatics sSAPT0         -98.04595929 [mEh]     -61.52476832 [kcal/mol]    -257.41963065 [kJ/mol]
+    Exchange sSAPT0                33.32024109 [mEh]      20.90876695 [kcal/mol]      87.48228092 [kJ/mol]
+    Induction sSAPT0              -37.91646069 [mEh]     -23.79293829 [kcal/mol]     -99.54965383 [kJ/mol]
+    Dispersion sSAPT0              -0.28899750 [mEh]      -0.18134867 [kcal/mol]      -0.75876283 [kJ/mol]
+  Total sSAPT0                   -102.93117639 [mEh]     -64.59028833 [kcal/mol]    -270.24576638 [kJ/mol]
   --------------------------------------------------------------------------------------------------------
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan 18 15:16:59 2019
+*** tstop() called on lutnia at Mon May 20 19:42:10 2024
 Module time:
-	user time   =       1.56 seconds =       0.03 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+    user time   =       0.18 seconds =       0.00 minutes
+    system time =       0.02 seconds =       0.00 minutes
+    total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      24.55 seconds =       0.41 minutes
-	system time =       0.68 seconds =       0.01 minutes
-	total time  =         14 seconds =       0.23 minutes
+    user time   =       2.21 seconds =       0.04 minutes
+    system time =       0.21 seconds =       0.00 minutes
+    total time  =          3 seconds =       0.05 minutes
+    SAPT0 energy with Ca2+, with ECP......................................................PASSED
 
-
-Warning! sapt0 does not have an associated derived wavefunction.The returned wavefunction is the dimer SCF wavefunction.
-
-	SAPT0 energy with Ca2+, with ECP..................................PASSED
-
-    Psi4 stopped on: Friday, 18 January 2019 03:16PM
-    Psi4 wall time for execution: 0:00:13.81
+    Psi4 stopped on: Monday, 20 May 2024 07:42PM
+    Psi4 wall time for execution: 0:00:02.72
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,7 +39,6 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
-#define EXTERN
 #include "globals.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
@@ -49,7 +48,6 @@ double **Build_R();
 double **Build_U();
 
 void analyze(const char *pert, int irrep, double omega) {
-    FILE *efile;
     dpdbuf4 T2;
     dpdfile2 T1;
     char lbl[32];

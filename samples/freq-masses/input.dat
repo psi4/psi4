@@ -24,7 +24,6 @@ mH = 1.007825032230
 mu_plain = mO * mH / (mO + mH)
 mu_weird = mO * 1000. / (mO + 1000.)
 
-
 ene, wfn = frequencies('hf/cc-pvdz', molecule=plain, return_wfn=True, dertype=2)
 masses = [plain.mass(iat) for iat in range(plain.natom())]
 p_freq = wfn.frequencies().np[0]

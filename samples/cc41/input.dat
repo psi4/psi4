@@ -16,6 +16,9 @@ set {
   omega [589, 355, nm]
 }
 
+optrot_tol = 3
+
+
 wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
 
 

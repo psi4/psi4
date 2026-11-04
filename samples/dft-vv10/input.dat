@@ -24,6 +24,10 @@ set DFT_VV10_RADIAL_POINTS 20
 set E_CONVERGENCE 1.e-12
 set D_CONVERGENCE 1.e-10
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    dft_tol = 9
+else:
+    dft_tol = 5e-9
 
 scf_e, scf_wfn = energy("VV10", return_wfn=True)
 

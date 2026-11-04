@@ -1023,6 +1023,11 @@ def test_hessian_vs_cfour(scf_type, subject, dertype, request):
         }
         if subject in ['hooh']:
             toldict["omega"] = 2.0
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-RELAX
+        if scf_type == "pk":
+            toldict["IR_intensity"] = 1.e-1
+            toldict["omega"] = 2.e-1
+            toldict["svd"] = 2.e-5
 
     verbose = 2
     forgive = ['gamma'] if subject in ['co2', 'ch4', 'nh3'] else []  # since Psi can't classify degen symmetries

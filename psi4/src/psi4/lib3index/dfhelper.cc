@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -259,13 +259,13 @@ void DFHelper::AO_core(bool set_AO_core=true) {
         } else if (subalgo_ == "INCORE") {
             if (memory_ < required_core_size_) {
                 throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
-	        } else {
+            } else {
                 AO_core_ = true;
 
-	        if (print_lvl_ > 0) {
+                if (print_lvl_ > 0) {
                     outfile->Printf("  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.\n");
                 }
-	    }
+            }
         } else {
             throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
         }
@@ -316,13 +316,16 @@ void DFHelper::prepare_sparsity() {
     auto rifactory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(screen_threads);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->sieve_initialized())) eri.front()->initialize_sieve();
 #pragma omp parallel num_threads(screen_threads) if (nbf_ > 1000)
     {
         int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        if (rank) eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+        if (rank) {
+            eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+        }
     }
 
     // => For each shell pair and basis pair, store the max (mn|mn)-type integral for screening. <=
@@ -422,8 +425,9 @@ void DFHelper::prepare_AO() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->sieve_initialized())) eri.front()->initialize_sieve();
     for(int rank = 1; rank < nthreads_; rank++) {
-	eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     // gather blocking info
@@ -493,6 +497,7 @@ void DFHelper::prepare_AO_wK() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->sieve_initialized())) eri.front()->initialize_sieve();
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -512,6 +517,7 @@ void DFHelper::prepare_AO_core() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->sieve_initialized())) eri.front()->initialize_sieve();
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -588,7 +594,10 @@ void DFHelper::prepare_AO_wK_core() {
     std::vector<std::shared_ptr<TwoBodyAOInt>> weri(nthreads_);
 
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->sieve_initialized())) eri.front()->initialize_sieve();
+
     weri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+    if (!(weri.front()->sieve_initialized())) weri.front()->initialize_sieve();
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -1218,7 +1227,6 @@ void DFHelper::compute_sparse_pQq_blocking_p(const size_t start, const size_t st
                                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
-    size_t block_size = end - begin + 1;
     size_t startind = big_skips_[begin];
     //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
     //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
@@ -1276,7 +1284,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
                                                   std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
-    size_t block_size = end - begin + 1;
     size_t startind = symm_big_skips_[begin];
     //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
     //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
@@ -1343,7 +1350,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
 ) {
     size_t begin = pshell_aggs_[start];
     size_t end = pshell_aggs_[stop + 1] - 1;
-    size_t block_size = end - begin + 1;
     size_t startind = symm_big_skips_[begin];
     //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
     //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
@@ -1851,7 +1857,6 @@ void DFHelper::transform() {
     timer_on("DFH: transform()");
     // outfile->Printf("\n     ==> DFHelper:--Begin Transformations <==\n\n");
 
-    size_t nthreads = nthreads_;
 
     // reset tranposes (in case the transpose() function was called)
     tsizes_.clear();
@@ -1876,6 +1881,7 @@ void DFHelper::transform() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthread);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->sieve_initialized())) eri.front()->initialize_sieve();
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -1884,7 +1890,9 @@ void DFHelper::transform() {
 #endif
         std::vector<double> Cp(nbf_ * wtmp);
         C_buffers[rank] = Cp;
-        if (rank) eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+        if (rank) {
+            eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+        }
     }
 
     // allocate in-core transformed integrals if necessary

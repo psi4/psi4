@@ -24,6 +24,9 @@ refs['dft'] = {}  #TEST
 refs['dft']['d'] = -155.2455137399915 #TEST 
 refs['dft']['muncp'] =-77.62306905309855  #TEST
 refs['dft']['mcp'] =-77.62335197195613  #TEST
+refs['3b'] = {}  #TEST
+refs['3b']['d'] = 0.000005399  #TEST
+refs['3b']['m'] = 0.000000221  #TEST
 
 # S22-9 monomer, all fctl
 refs2 = {}  #TEST
@@ -90,18 +93,16 @@ print('  Part I: -D correction from Py-side')  #TEST
 fctl = 'b3lyp'
 der = 0
 hasD3M = True
-if d3_engine == "dftd3":
-    try:
-        for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
-            E = eeee.run_dftd3(fctl, dlvl, dertype=der)
-            compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
-            E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
-            compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
-            E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
-            compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
-    except qcdb.Dftd3Error as e:
-        print("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
-        hasD3M = False
+for dlvl in ['d3zero', 'd3bj', 'd3mzero', 'd3mbj']:
+    # in contrast to classic dftd3, dftd3-python
+    # * can't run d2
+    # * runs d3 w/3-body corrections by default (psi4 aliases d3bj -> d3bj2b are valid here; d3bjatm to get w/3-body)
+    E = eeee.run_sdftd3(fctl, dlvl, dertype=der)
+    compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
+    E = mAuncp.run_sdftd3(fctl, dlvl, dertype=der)
+    compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
+    E = mBcp.run_sdftd3(fctl, dlvl, dertype=der)
+    compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
 
 #hasD3M = False  # temporary until fctl released into superfunctionals list
 # why have the hasD3M switch, you ask? why not just try catch throughout to
@@ -134,16 +135,15 @@ compare_values(refs['d3bj']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, '
 compare_values(refs['dft']['mcp'] + refs['d3bj']['m'], variable('DFT TOTAL ENERGY'), 7, 'Ethene -D3(BJ) (calling dftd3 -bj)')  #TEST
 #compare_values(refs['dft']['mcp'] + refs['d3bj']['m'], variable('B3LYP-D3(BJ) TOTAL ENERGY'), 7, 'Ethene -D3(BJ) (calling dftd3 -bj)')  #TEST
 
-if hasD3M:
-    energy('b3lyp-d3m', molecule=mBuncp)
-    compare_values(refs['d3mzero']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
-    compare_values(refs['dft']['muncp'] + refs['d3mzero']['m'], variable('DFT TOTAL ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
-    #compare_values(refs['dft']['muncp'] + refs['d3mzero']['m'], variable('B3LYP-D3M TOTAL ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
-    
-    energy('b3lyp-d3mbj', molecule=mBcp)
-    compare_values(refs['d3mbj']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
-    compare_values(refs['dft']['mcp'] + refs['d3mbj']['m'], variable('DFT TOTAL ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
-    #compare_values(refs['dft']['mcp'] + refs['d3mbj']['m'], variable('B3LYP-D3M(BJ) TOTAL ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
+energy('b3lyp-d3m', molecule=mBuncp)
+compare_values(refs['d3mzero']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
+compare_values(refs['dft']['muncp'] + refs['d3mzero']['m'], variable('DFT TOTAL ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
+#compare_values(refs['dft']['muncp'] + refs['d3mzero']['m'], variable('B3LYP-D3M TOTAL ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
+
+energy('b3lyp-d3mbj', molecule=mBcp)
+compare_values(refs['d3mbj']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
+compare_values(refs['dft']['mcp'] + refs['d3mbj']['m'], variable('DFT TOTAL ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
+#compare_values(refs['dft']['mcp'] + refs['d3mbj']['m'], variable('B3LYP-D3M(BJ) TOTAL ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
 
 
 # <<<  Part 3  >>>
@@ -178,27 +178,54 @@ qmAcp.update_geometry()
 qmBcp.update_geometry()
 
 print('  Part III: -D correction from Py-side on Py-mol')  #TEST
-levels = ['d2', 'd3zero', 'd3bj']
-if d3_engine == "dftd3":
-    if hasD3M:
-        levels.extend(['d3mzero', 'd3mbj'])
-    for dlvl in levels:
-            E = qeeee.run_dftd3(fctl, dlvl, dertype=der)
-            compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
-            E = qmAuncp.run_dftd3(fctl, dlvl, dertype=der)
-            compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
-            E = qmBcp.run_dftd3(fctl, dlvl, dertype=der)
-            compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
+for dlvl in ['d3zero', 'd3bj', 'd3mzero', 'd3mbj']:
+    E = qeeee.run_sdftd3(fctl, dlvl, dertype=der)
+    compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
+    E = qmAuncp.run_sdftd3(fctl, dlvl, dertype=der)
+    compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
+    E = qmBcp.run_sdftd3(fctl, dlvl, dertype=der)
+    compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
 
+# s-dftd3 v1.3.0 switches 3-body to False. QCEngine v0.50.0rc4 compensates. Some logic keeps the test working in the gap.
+from dftd3 import __version__ as d3ver
+from qcengine import __version__ as qcngver
+nu_qcng = qcel.util.parse_version(qcngver) >= qcel.util.parse_version("0.50.0rc4")
+atm_false = qcel.util.parse_version(d3ver) >= qcel.util.parse_version("1.3.0")
+badatm = atm_false and not nu_qcng
+
+for dlvl in ['d3zeroatm']:
+    s9 = 1.0
+    E, atres = qeeee.run_sdftd3(fctl, dlvl, dertype=der, return_dict=True)
+    if badatm:
+        compare_values(refs[dlvl[:-3]]['d'], E, 7, 'EXPECTED FAIL dimer ' + dlvl)  #TEST
+    else:
+        compare_values(refs[dlvl[:-3]]['d'] + refs['3b']['d'], E, 7, 'dimer ' + dlvl)  #TEST
+    compare_values(s9, atres["input_data"]["specification"]["extras"]["info"]["dashparams"]["s9"], 9, f"atm s9={s9}")
+    if nu_qcng:
+        compare_values(s9, atres["input_data"]["specification"]["keywords"]["params_tweaks"]["s9"], 9, f"atm s9={s9}")
+for dlvl in ['d3zeroatm']:
+    # note empty first param
+    s9 = 0.5
+    E, atres = qeeee.run_sdftd3("", dlvl, dertype=der, dashparam={'alpha6': 14.0, 's6': 1.0, 's8': 1.703, 's9': s9, 'sr6': 1.261, 'sr8': 1.0}, return_dict=True)
+    compare_values(refs[dlvl[:-3]]['d'] + s9 * refs['3b']['d'], E, 7, 'dimer ' + dlvl + f'-mod {s9}')  #TEST
+    compare_values(s9, atres["input_data"]["specification"]["extras"]["info"]["dashparams"]["s9"], 9, f"atm-mod s9={s9}")
+    if nu_qcng:
+        compare_values(s9, atres["input_data"]["specification"]["keywords"]["params_tweaks"]["s9"], 9, f"atm-mod s9={s9}")
+for dlvl in ['d3zero2b']:
+    s9 = 0.0
+    E, atres = qeeee.run_sdftd3(fctl, dlvl, dertype=der, return_dict=True)
+    compare_values(refs[dlvl[:-2]]['d'], E, 7, 'dimer ' + dlvl)  #TEST
+    if nu_qcng:
+        compare_values(s9, atres["input_data"]["specification"]["extras"]["info"]["dashparams"]["s9"], 9, f"2b s9={s9}")
+        compare_values(s9, atres["input_data"]["specification"]["keywords"]["params_tweaks"]["s9"], 9, f"2b s9={s9}")
 
 # <<<  Part 4  >>>
 
 print('  Part IV: -D correction from C-side, all functionals')  #TEST
 set freeze_core false
-if hasD3M:
-    for fl in ['blyp', 'b3lyp', 'b2plyp', 'bp86', 'pbe', 'pbe0', 'b97', 'wpbe']:
-        energy(fl + '-d3mbj', molecule=mBuncp)
-        compare_values(refs2['dft'][fl] + refs2['dash'][fl + '-d3mbj'], variable('CURRENT ENERGY'), 5, fl + '-d3mbj')  #TEST
-        energy(fl + '-d3mzero', molecule=mBuncp)
-        compare_values(refs2['dft'][fl] + refs2['dash'][fl + '-d3mzero'], variable('CURRENT ENERGY'), 5, fl + '-d3m')  #TEST
+for fl in ['blyp', 'b3lyp', 'b2plyp', 'bp86', 'pbe', 'pbe0', 'b97', 'wpbe']:
+    energy(fl + '-d3mbj', molecule=mBuncp)
+    compare_values(refs2['dft'][fl] + refs2['dash'][fl + '-d3mbj'], variable('CURRENT ENERGY'), 5, fl + '-d3mbj')  #TEST
+    energy(fl + '-d3mzero', molecule=mBuncp)
+    compare_values(refs2['dft'][fl] + refs2['dash'][fl + '-d3mzero'], variable('CURRENT ENERGY'), 5, fl + '-d3m')  #TEST
 

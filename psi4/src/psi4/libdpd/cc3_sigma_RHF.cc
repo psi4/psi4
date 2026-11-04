@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,8 +56,8 @@ namespace psi {
 */
 
 void DPD::cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
-                        int do_doubles, dpdfile2 *FME, dpdbuf4 *WmAEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, int *occpi,
-                        int *occ_off, int *virtpi, int *vir_off, double omega, std::string out, int newtrips) {
+                        int do_doubles, dpdfile2 *FME, dpdbuf4 *WmAEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, Dimension const& occpi,
+                        int *occ_off, Dimension const& virtpi, int *vir_off, double omega, std::string out, int newtrips) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int h, nirreps;
     int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
@@ -73,9 +73,7 @@ void DPD::cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int do_s
     int da, di, dj, dk;
     int Gad, Gdi, Gdj, Gdk, Glc, Gli, Glk, cnt;
     int nlinks;
-    double value, F_val, t_val, E_val;
     double dijk, denom, *tvect, **Z;
-    double value_ia, value_ka, denom_ia, denom_ka;
     dpdfile2 fIJ, fIJ2, fAB, fAB2, SIA_inc;
     dpdbuf4 SIjAb_inc, buf4_tmp;
     double ***W3, ***W3a;

@@ -18,6 +18,8 @@ set {
     gdma_origin   [ 0.000000,  0.000000,  0.117176 ]
 }
 
+dma_tol = 6
+
 energy, wfn = energy('scf', return_wfn=True)
 
 gdma(wfn)

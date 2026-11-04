@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,7 +56,6 @@ void SAPT0::read_all(SAPTDFInts *ints) {
     ints->BpMat_ = std::make_shared<Matrix>(nri, ints->ij_length_);
     ints->B_p_ = ints->BpMat_->pointer();
 
-    long int tot_i = ints->i_length_ + ints->i_start_;
 
     if (!ints->active_ && !ints->dress_disk_) {
         psio_->read_entry(ints->filenum_, ints->label_, (char *)&(ints->B_p_[0][0]),

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,7 +32,7 @@ chemical methods.
 from qcelemental.util import which
 
 from . import interface_cfour, proc, proc_data, sapt
-from .dft import build_superfunctional_from_dictionary, functionals
+from .dft import build_superfunctional_from_dictionary, functional_available, functionals
 
 # never import wrappers or aliases into this file
 
@@ -66,6 +66,7 @@ procedures = {
         'custom-scs-omp2' : proc.run_occ,
         'dlpno-mp2'     : proc.run_dlpnomp2,
         'scs-dlpno-mp2' : proc.run_dlpnomp2,
+        'mp2-f12'       : proc.run_mp2f12,
         'mp2.5'         : proc.select_mp2p5,
         'custom-scs-mp2.5' : proc.run_occ,
         'omp2.5'        : proc.select_omp2p5,
@@ -164,6 +165,9 @@ procedures = {
         'cepa(3)'       : proc.run_cepa,
         'acpf'          : proc.run_cepa,
         'aqcc'          : proc.run_cepa,
+        'dlpno-ccsd'    : proc.run_dlpnoccsd,
+        'dlpno-ccsd(t0)': proc.run_dlpnoccsd_t,
+        'dlpno-ccsd(t)' : proc.run_dlpnoccsd_t,
         'efp'           : proc.run_efp,
         'dmrg-scf'      : proc.run_dmrgscf,
         'dmrg-caspt2'   : proc.run_dmrgscf,
@@ -273,6 +277,13 @@ if which("dmrcc", return_bool=True):
 
 # Integrate DFT with driver routines
 for key in functionals:
+    # Only register functionals whose LibXC dependencies are present in the
+    # linked LibXC build. A functional referencing a method missing from this
+    # LibXC (e.g. renamed or added between versions) cannot be built, so it is
+    # not an available method -- skip it rather than aborting `import psi4`.
+    if not functional_available(functionals[key]):
+        continue
+
     ssuper = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]
 
     # Energy

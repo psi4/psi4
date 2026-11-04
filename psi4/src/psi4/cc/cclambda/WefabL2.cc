@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,7 +39,6 @@
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -116,7 +115,6 @@ void WefabL2(int L_irr) {
     dpdbuf4 tau_a, tau_s, tau;
     dpdbuf4 B_a, B_s;
     dpdbuf4 S, A;
-    int h;
     double **B_diag, **tau_diag;
     int ij, Gc, C, c, cc;
     int nbuckets, rows_per_bucket, rows_left, m, row_start, ab, cd, dc, d;

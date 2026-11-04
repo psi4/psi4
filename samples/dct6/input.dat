@@ -24,6 +24,11 @@ set {
     reference   uhf 
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    dct_tol = 10
+else:
+    dct_tol = 8
+
 set dct_functional dc-06
 energy('dct')
 

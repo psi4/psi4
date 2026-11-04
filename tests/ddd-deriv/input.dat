@@ -17,7 +17,8 @@ molecule h2o {
 set basis cc-pVDZ
 ans = -76.0266327341067125
 
-largs = {"protocols": {"stdout": False}, "tag": "test1"}
+largs_old = {"protocols": {"stdout": False}, "tag": "test1", "priority": 2}
+largs = {"protocols": {"stdout": False}, "compute_tag": "test1", "compute_priority": "low"}
 
 energy('scf', **largs)
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
@@ -26,7 +27,8 @@ gradient('scf', **largs)
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient')  #TEST
 
 if distributed:
-    plan = gradient('scf', dertype=0, return_plan=True, **largs)
+    # check old tags/priority are passing through and QCF's warnings show
+    plan = gradient('scf', dertype=0, return_plan=True, **largs_old)
     plan.compute(client)
     snowflake.await_results()
     plan.get_psi_results(client)

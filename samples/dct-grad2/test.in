@@ -34,6 +34,9 @@ set {
     reference rhf
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+    psi4.set_options({"d_convergence": 8e-9})
+
 set dct_functional odc-12
 set ao_basis disk
 grad = gradient('dct')

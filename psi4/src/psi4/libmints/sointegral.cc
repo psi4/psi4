@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -136,7 +136,6 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
 
             int nao1 = b1_->naofunction(ish);
             int nao2 = b2_->naofunction(jsh);
-            int nao = nao1 * nao2;
 
             // loop through the AO shells that make up this SO shell
             // by the end of these 4 for loops we will have our final integral in buffer_
@@ -205,7 +204,6 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
             const SOTransform &t2 = b2_->sotrans(jsh);
             int nao2 = b2_->naofunction(jsh);
 
-            int nao12 = nao1 * nao2;
 
             // loop through the AO shells that make up this SO shell
             // by the end of these 4 for loops we will have our final integral in buffer_

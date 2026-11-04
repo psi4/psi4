@@ -15,6 +15,8 @@ set {
   basis cc-pVDZ
 }
 
+findif_tol = 7
+
 analytic, wfn = gradient('cc2', return_wfn=True)
 
 set findif points 5

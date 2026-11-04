@@ -14,6 +14,13 @@ set {
   roots_per_irrep [2, 2]
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    ein_tol = 1.e-6
+    noein_tol = 1.e-4
+else:
+    ein_tol = 2.e-4
+    noein_tol = 2.e-4
+
 wfn = properties('eom-ccsd', properties=['oscillator_strength'], return_wfn=True)[1]
 
 ### ccdensity checks

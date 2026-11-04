@@ -13,6 +13,8 @@ set {
   scf_type pk
 }
 
+tol = 0.1
+
 method = 'SVWN/sto-3g'
 
 Efd, fdwfn = freq(method, dertype=1, return_wfn=True)
@@ -20,4 +22,4 @@ Ean, anwfn = freq(method, return_wfn=True)
 fdwfn.frequencies().print_out()
 anwfn.frequencies().print_out()
 
-compare_arrays(fdwfn.frequencies(), anwfn.frequencies(), f"{method} frequencies, Analytic vs. Finite Difference", atol=0.1)  #TEST
+compare_arrays(fdwfn.frequencies(), anwfn.frequencies(), f"{method} frequencies, Analytic vs. Finite Difference", atol=tol)  #TEST

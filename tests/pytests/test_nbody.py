@@ -1,10 +1,16 @@
+import pprint
+import sys
 import re
 import pytest
 import numpy as np
 from qcelemental.testing import compare, compare_values
+from addons import uusing
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.nbody]
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+_sch_name = {1: "qcschema_output", 2: "qcschema_atomic_result"}
+_ispy314 = sys.version_info >= (3, 14)
 
 _tot_cp_ene = -155.40761029
 _ie_cp_ene = -0.00172611
@@ -57,30 +63,52 @@ _ie_uncp_grad = np.array(
      [ 0.           ,   0.            ,  0.000044919089]])
 
 
+_SEC_A = chr(0xA7) + "A"
+
+
+def _normalize_nbody_text(s: str) -> str:
+    """Normalize section symbol encoding on Windows to handle mojibake patterns."""
+    return (
+        s.replace("\ufffdA", "§A")   # '�A' -> '§A' (replacement char mojibake)
+         .replace("Â§", "§")         # Windows cp1252 double-encoding
+         .replace("\xa7", "§")       # Direct byte representation
+    )
+
+
 _stdouts = {
-    "cp_T": r"""
+    "cp_T": rf"""
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
-\s*        n-Body     Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
+\s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*             1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN   2     -155.4076102\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*           {_SEC_A}\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN {_SEC_A}\s+2     -155.407610\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
+\s*
+\s*MC Legend: {_SEC_A}: "\(auto\)"
+\s*
 """,
-    "cp_F": r"""
+    "cp_F": rf"""
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
-\s*        n-Body     Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
+\s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*             1  N/A                         0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN   2  N/A                        -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*           {_SEC_A}\s+1        N/A                   0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN {_SEC_A}\s+2        N/A                  -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
+\s*
+\s*MC Legend: {_SEC_A}: "\(auto\)"
+\s*
 """,
-    "uncp": r"""
+    "uncp": rf"""
 \s*   ==> N-Body: Non-Counterpoise Corrected \(NoCP\) energies <==
-\s*        n-Body     Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
+\s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*             1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN   2     -155.4088716\d\d\d\d\d       -0.0029874\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d       -0.0029874\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d
+\s*           {_SEC_A}\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN {_SEC_A}\s+2     -155.408871\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d
+\s*
+\s*MC Legend: {_SEC_A}: "\(auto\)"
+\s*
 """,
 }
 _stdouts["cpuncp"] = _stdouts["cp_T"] + _stdouts["uncp"]
+_stdouts["uncpcp"] = _stdouts["uncp"] + _stdouts["cp_T"]
 
 
 @pytest.mark.parametrize("driver,bsse_type,return_total_data,nbody_number,return_result,stdoutkey", [
@@ -93,9 +121,10 @@ _stdouts["cpuncp"] = _stdouts["cp_T"] + _stdouts["uncp"]
     ("energy",   ["cp", "nocp"], True , 5, _tot_cp_ene,   "cpuncp"),   # return CP tot         5
     ("energy",   ["cp", "nocp"], False, 5, _ie_cp_ene,    "cpuncp"),   # return CP IE          5
     ("energy",   ["cp", "nocp"], None , 5, _ie_cp_ene,    "cpuncp"),   # return CP IE          5
-    ("energy",   ["nocp", "cp"], True , 5, _tot_uncp_ene, "cpuncp"),   # return tot            5
-    ("energy",   ["nocp", "cp"], False, 5, _ie_uncp_ene,  "cpuncp"),   # return IE             5
-    ("energy",   ["nocp", "cp"], None , 5, _ie_uncp_ene,  "cpuncp"),   # return IE             5
+    ("energy",   ["nocp", "cp"], True , 5, _tot_uncp_ene, "uncpcp"),   # return tot            5
+    ("energy",   ["nocp", "cp"], False, 5, _ie_uncp_ene,  "uncpcp"),   # return IE             5
+    ("energy",   ["nocp", "cp"], None , 5, _ie_uncp_ene,  "uncpcp"),   # return IE             5
+    ("energy",   ["ssfc"],       None , 3, _ie_cp_ene,    "cp_F"),     # return CP IE          3
     ("gradient", ["cp"],         True , 5, _tot_cp_grad,   "cp_T"),    # return CP tot G       5
     ("gradient", ["cp"],         False, 3, _ie_cp_grad,    "cp_F"),    # return CP IE G        3
     ("gradient", ["cp"],         None , 5, _tot_cp_grad,   "cp_T"),    # return CP tot G       5
@@ -105,10 +134,12 @@ _stdouts["cpuncp"] = _stdouts["cp_T"] + _stdouts["uncp"]
     ("gradient", ["cp", "nocp"], True , 5, _tot_cp_grad,   "cpuncp"),  # return CP tot G       5
     ("gradient", ["cp", "nocp"], False, 5, _ie_cp_grad,    "cpuncp"),  # return CP IE G        5
     ("gradient", ["cp", "nocp"], None , 5, _tot_cp_grad,   "cpuncp"),  # return CP tot G       5
-    ("gradient", ["nocp", "cp"], True , 5, _tot_uncp_grad, "cpuncp"),  # return tot G          5
-    ("gradient", ["nocp", "cp"], False, 5, _ie_uncp_grad,  "cpuncp"),  # return IE G           5
-    ("gradient", ["nocp", "cp"], None , 5, _tot_uncp_grad, "cpuncp"),  # return tot G          5
+    ("gradient", ["nocp", "cp"], True , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
+    ("gradient", ["nocp", "cp"], False, 5, _ie_uncp_grad,  "uncpcp"),  # return IE G           5
+    ("gradient", ["nocp", "cp"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
+    ("gradient", ["nocp", "ssfc"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
 ])
+@uusing("qcmanybody")
 def test_nbody_number(driver, bsse_type, return_total_data, nbody_number, return_result, stdoutkey):
 
     eneyne = psi4.geometry("""
@@ -125,7 +156,10 @@ H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 """)
 
-    atin = {
+    # nbody_number arbitrarily chosen to split among QCSchema v1/v2
+    if nbody_number == 3:
+      schver = 1
+      atin = {
         "driver": driver,
         "model": {
             "method": "mp2",
@@ -138,11 +172,41 @@ H   0.000000   0.000000   3.963929
                 "return_total_data": return_total_data,
             },
         },
-    }
+      }
+    else:
+      schver = 2
+      atin = {
+       "molecule": eneyne.to_schema(dtype=3),
+       "specification": {
+        "driver": driver,
+        "model": {
+            "method": "mp2",
+            "basis": "cc-pvdz",
+        },
+        "keywords": {
+            "function_kwargs": {
+                "bsse_type": bsse_type,
+                "return_total_data": return_total_data,
+            },
+        },
+       },
+      }
+
+    if _ispy314 and schver == 1:
+        pytest.skip(reason="Py314+QCSk1")
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-MATCH
+        if schver == 1:
+            atin["keywords"].update({"d_convergence": 5e-10})
+        elif schver == 2:
+            atin["specification"]["keywords"].update({"d_convergence": 5e-10})
 
     ret = psi4.schema_wrapper.run_qcschema(atin)
 
+    assert ret.success, pprint.pprint(ret.dict(), width=200)
+    assert ret.schema_version == schver
+    assert ret.schema_name == _sch_name[schver]
+
     assert compare_values(return_result, ret.return_result, atol=1.e-6, label="manybody")
     assert compare(nbody_number, ret.extras["qcvars"]["NBODY NUMBER"], label="nbody number")
-    assert re.search(_stdouts[stdoutkey], ret.stdout, re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"
-
+    assert re.search(_stdouts[stdoutkey], _normalize_nbody_text(ret.stdout), re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"

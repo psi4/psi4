@@ -20,6 +20,7 @@ set {
   cc_type cd
   docc 5
 }
+
 energy('ccsd(t)')
 edfccsd  = variable("CCSD CORRELATION ENERGY")
 edfccsdt = variable("CCSD(T) CORRELATION ENERGY")

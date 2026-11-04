@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -385,7 +385,6 @@ void FISAPT::partition() {
         for (int ind = 0; ind < link_orbs.size(); ind++) {
             int a = link_orbs[ind];
             int A1 = link_atoms[ind].first;
-            int A2 = link_atoms[ind].second;
             std::string type = link_types[ind];
 
             if (type == "AC") {
@@ -826,13 +825,15 @@ void FISAPT::nuclear() {
 }
 
 
-void FISAPT::coulomb() {
+void FISAPT::coulomb(std::shared_ptr<JK> jk) {
     outfile->Printf("  ==> Coulomb Integrals <==\n\n");
 
     // => Global JK Object <= //
+    // Reuse the passed JK object //
+    jk_ = jk;
 
-    jk_ = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, doubles_);
-    jk_->set_memory(doubles_);
+    //jk_ = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, doubles_);
+    //jk_->set_memory(doubles_);
 
     // => Build J and K for embedding <= //
 
@@ -854,8 +855,8 @@ void FISAPT::coulomb() {
 
     jk_->set_do_J(true);
     jk_->set_do_K(true);
-    jk_->initialize();
-    jk_->print_header();
+    //jk_->initialize();
+    //jk_->print_header();
 
     jk_->compute();
 
@@ -6665,7 +6666,6 @@ void FISAPT::find() {
                                       (scalars_["Ind20,u (B<-A)"] + scalars_["Exch-Ind20,u (B<-A)"]));
 
         double sIndHF = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"] + dHF;
-        double sIndSAPT0 = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"];
 
         double sSdelta = sIndHF / IndSAPT0;
 

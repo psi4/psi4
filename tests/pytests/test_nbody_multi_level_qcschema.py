@@ -1,12 +1,17 @@
 #! Multilevel computation of water trimer energy (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+import sys
 import copy
 import pprint
 
 import pytest
+from addons import uusing
 
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.nbody]
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+_sch_name = {1: "qcschema_output", 2: "qcschema_atomic_result"}
+_ispy314 = sys.version_info >= (3, 14)
 
 @pytest.fixture
 def base_schema():
@@ -26,6 +31,7 @@ def base_schema():
     """)
 
     _base_schema = {
+      1: {
         'schema_name': 'qcschema_input',
         'schema_version': 1,
         'molecule': h2o_trimer.to_schema(dtype=2),
@@ -38,40 +44,73 @@ def base_schema():
             'basis': '(auto)',
         },
         'driver': 'energy',
+      },
+      2: {
+        'schema_name': 'qcschema_atomic_input',
+        'schema_version': 2,
+        'molecule': h2o_trimer.to_schema(dtype=3),
+        'specification': {
+          'keywords': {
+              'function_kwargs': {
+              },
+              'cc_type': 'df',
+          },
+          'model': {
+              'basis': '(auto)',
+          },
+          'driver': 'energy',
+        },
+      },
     }
 
     return _base_schema
 
 
+@pytest.mark.parametrize("schver", [pytest.param(1, marks=[pytest.mark.skipif(_ispy314, reason="Py314+QCSk1")]), pytest.param(2)])
 @pytest.mark.parametrize("inp,expected", [
     # Compute 1-body contribution with ccsd(t) and 2-body contribution with mp2
     pytest.param({'method': '', 'kfk': {'bsse_type': ['nocp', 'cp', 'vmfc'], 'return_total_data': True, 'levels': {1: 'mp2/sto-3g', 2: 'scf/sto-3g'}}},
-                 {'2NOCP': -225.019408434635, '2CP': -225.000173661598, '2VMFC': -224.998744381484},
+                 #{'2NOCP': -225.019408434635, '2CP': -225.000173661598, '2VMFC': -224.998744381484},
+                 {'NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -225.019408434635,
+                  'CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -225.000173661598,
+                  'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -224.998744381484},
                  id='nbody-multilevel'),
     # Compute 1-body contribution with ccsd(t) and estimate all higher order contributions with scf
     pytest.param({'method': '', 'kfk': {'bsse_type': 'nocp', 'return_total_data': True, 'levels': {1: 'mp2/sto-3g', 'supersystem': 'scf/sto-3g'}}},
-                 {'1NOCP': -224.998373505116, '3NOCP': -225.023509855159},
+                 #{'1NOCP': -224.998373505116, '3NOCP': -225.023509855159},
+                 {'NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY': -224.998373505116,
+                  'NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY': -225.023509855159},
                  id='nbody-multilevel-supersys'),
     # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
     pytest.param({'method': 'scf/sto-3g', 'kfk': {'bsse_type': 'vmfc', 'return_total_data': True, 'levels': None, 'max_nbody': 2,
                                                   'embedding_charges': {i: [j for j in [-0.834, 0.417, 0.417]] for i in range(1, 4)}}},
-                 {'1': -224.940138148882, '2': -224.943882712817},
-                 id='nbody-embedded'),
+                 #{'1': -224.940138148882, '2': -224.943882712817},
+                 {'VMFC-CORRECTED TOTAL ENERGY THROUGH 1-BODY': -224.940138148882,
+                  'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -224.943882712817},
+                 id='nbody-embedded', marks=pytest.mark.extern),
 ])
-def test_nbody_levels(inp, expected, base_schema):
+@uusing("qcmanybody")
+def test_nbody_levels(inp, expected, base_schema, monkeypatch, schver):
+    monkeypatch.setenv("QCMANYBODY_EMBEDDING_CHARGES", "1")
     # reference for nbody-multilevel generated with this larger fitting basis for sto-3g. fails otherwise by 3.e-5
     basfams = psi4.driver.qcdb.basislist.load_basis_families()
     for fam in basfams:
         if fam.ornate == "STO-3G":
             fam.add_rifit("def2-qzvpp-ri")
 
-    jin = copy.deepcopy(base_schema)
-    jin['model']['method'] = inp['method']
-    jin['keywords']['function_kwargs'] = inp['kfk']
+    jin = copy.deepcopy(base_schema[schver])
+    if schver == 1:
+        jin['model']['method'] = inp['method']
+        jin['keywords']['function_kwargs'] = inp['kfk']
+    elif schver == 2:
+        jin['specification']['model']['method'] = inp['method']
+        jin['specification']['keywords']['function_kwargs'] = inp['kfk']
 
     otp = psi4.schema_wrapper.run_qcschema(jin)
-    pprint.pprint(otp)
+
+    assert otp.success, pprint.pprint(otp.dict(), width=200)
+    assert otp.schema_version == schver
+    assert otp.schema_name == _sch_name[schver]
 
     for b, v in expected.items():
         assert psi4.compare_values(v, otp.extras["qcvars"][b], 6, b)
-

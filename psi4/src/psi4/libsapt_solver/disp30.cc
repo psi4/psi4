@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -86,7 +86,6 @@ double SAPT2p3::disp30_1(int ampfile, const char *amplabel, int AAintfile, const
                 for (int s = 0; s < nvirB; s++, bs++) {
                     int ab = a * aoccB + b;
                     int rs = r * nvirB + s;
-                    int sr = s * nvirA + r;
                     tRSAB[rs][ab] = tARBS[ar][bs];
                 }
             }

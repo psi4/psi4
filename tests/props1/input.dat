@@ -21,8 +21,11 @@ lambdas = [pert, -pert, 2.0*pert, -2.0*pert]
 set {
     basis        sto-3g
     e_convergence   10
+    d_convergence   5e-9
     scf_type pk
 }
+
+findif5_tol = 8
 
 energies = []
 for l in lambdas:
@@ -53,4 +56,4 @@ print_out("5 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_5point, 
 
 compare_values(ref_3pt, dm_z_3point, 8, "Z dipole, using 3 point formula")     #TEST
 compare_values(ref_5pt, dm_z_5point, 8, "Z dipole, using 5 point formula")     #TEST
-compare_values(ref_5pt, analytic, 8, "Z dipole, analytic vs. 5 point formula") #TEST
+compare_values(ref_5pt, analytic, findif5_tol, "Z dipole, analytic vs. 5 point formula") #TEST

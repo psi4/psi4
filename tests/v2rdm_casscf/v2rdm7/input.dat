@@ -31,6 +31,7 @@ set {
   maxiter 500
   restricted_docc [ 18 ]
   active          [ 6  ]
+  orbital_optimizer_package internal
 }
 
 energy ('hf')

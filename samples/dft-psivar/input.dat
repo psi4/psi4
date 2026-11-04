@@ -23,6 +23,8 @@ set dft_spherical_points 302
 set scf e_convergence 8
 set scf d_convergence 8
 
+tol = 6
+
 
 
 

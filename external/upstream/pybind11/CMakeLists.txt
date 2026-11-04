@@ -1,11 +1,11 @@
 
 if(${Python_NumPy_VERSION} GREATER_EQUAL "2")
-        find_package(pybind11 2.12.0 CONFIG QUIET)
+        find_package(pybind11 2.12.0 CONFIG QUIET)  # edit in codedeps
 else()
     if(${Python_VERSION_MINOR} GREATER_EQUAL "11")
-        find_package(pybind11 2.10.1 CONFIG QUIET)
+        find_package( pybind11 2.10.1 CONFIG QUIET)
     else()
-        find_package(pybind11 2.6.2 CONFIG QUIET)
+        find_package( pybind11 2.6.2 CONFIG QUIET)
     endif()
 endif()
 
@@ -25,7 +25,7 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable pybind11 could not be located, ${Magenta}Building pybind11${ColourReset} instead.")
     ExternalProject_Add(pybind11_external
-        URL https://github.com/pybind/pybind11/archive/v2.13.1.tar.gz
+        URL https://github.com/pybind/pybind11/archive/v2.13.1.tar.gz  # edit in codedeps
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

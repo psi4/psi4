@@ -1,6 +1,9 @@
 #! UHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
 #! This test should match RHF values exactly
 
+oopkg = os.environ.get("_PSI4_USE_OOPKG", False)
+psi4.set_options({"orbital_optimizer_package": "ooo" if oopkg else "internal"})
+
 psi3_hess = np.array([                                                                                    #TEST
     [ 0.6349786,-0.0002790,-0.0000000,-0.3185355, 0.2164913, 0.0000000,-0.3164431,-0.2162124, 0.0000000], #TEST
     [-0.0002790, 0.8039939,-0.0000000, 0.3373248,-0.4009174,-0.0000000,-0.3370458,-0.4030765, 0.0000000], #TEST

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -137,8 +137,6 @@ std::vector<SharedMatrix> IntegralTransform::compute_fock_like_matrices(SharedMa
                     int rssym = rsym ^ ssym;
                     int qrsym = qsym ^ rsym;
                     int pssym = psym ^ ssym;
-                    int prsym = psym ^ rsym;
-                    int qssym = qsym ^ ssym;
                     double value = J.matrix[h][pq][rs];
                     for (int N = 0; N < nmats; ++N) {
                         SharedMatrix D = Dmats[N];

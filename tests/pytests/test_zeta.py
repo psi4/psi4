@@ -248,4 +248,6 @@ def test_zeta(scftype, zeta, der, request):
     else:
         print(ans.np)
 
-    assert compare_values(ref[scftype][der][zeta], ans, 6, f"Hartree--Fock {scftype} {der} {zeta}-zeta")
+    tol = 6
+
+    assert psi4.compare_values(ref[scftype][der][zeta], ans, tol, f"Hartree--Fock {scftype} {der} {zeta}-zeta")

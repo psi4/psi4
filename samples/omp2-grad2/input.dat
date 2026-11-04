@@ -13,6 +13,7 @@ set {
   guess gwh
   mp2_type conv
 }
+
 grad = gradient('omp2')
 
 

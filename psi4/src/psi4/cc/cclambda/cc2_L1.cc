@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,7 +36,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
@@ -50,15 +49,12 @@ void cc2_L1_build(const struct L_Params& L_params) {
     dpdfile2 newLIA, newLia, LIA, Lia;
     dpdfile2 dIA, dia, Fme, FME;
     dpdfile2 Fae, FAE, Fmi, FMI;
-    dpdfile2 GMI, Gmi, Gae, XIA, Xia;
     dpdfile2 GAE, G, GAI, Gai;
     dpdbuf4 WMBEJ, Wmbej, WMbEj, WmBeJ;
     dpdbuf4 WMBIJ, Wmbij, WMbIj, WmBiJ;
     dpdbuf4 LIJAB, Lijab, LIjAb, LiJaB, L2;
-    dpdbuf4 WMNIE, Wmnie, WMnIe, WmNiE;
     dpdbuf4 WAMEF, Wamef, WAmEf, WaMeF, W;
     dpdbuf4 Z, D, E;
-    dpdfile2 XLD;
     int L_irr;
     L_irr = L_params.irrep;
 

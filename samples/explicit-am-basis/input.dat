@@ -49,4 +49,5 @@ L=2   1   1.00
 set d_convergence 1e-10
 set e_convergence 1e-10
 set scf_type pk
+
 ene, wfn = energy('scf', return_wfn=True)

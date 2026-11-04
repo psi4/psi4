@@ -41,6 +41,7 @@ if(${ENABLE_libefp})
                        -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=C)
@@ -48,5 +49,6 @@ if(${ENABLE_libefp})
         set(libefp_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/libefp CACHE PATH "path to internally built libefpConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: libefp${ColourReset} (deferrable to runtime)")
     add_library(libefp_external INTERFACE)  # dummy
 endif()

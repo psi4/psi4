@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -71,6 +71,8 @@ summarized in the table below.
    | Mulliken atomic charges            | MULLIKEN_CHARGES      |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | L\ |o_dots|\ wdin atomic charges   | LOWDIN_CHARGES        |                                                                                   |
+   +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+   | L\ |o_dots|\ wdin atomic spins     | LOWDIN_SPINS          | Scalar spin population: the fractional number of unpaired electrons [e].          |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Wiberg bond indices                | WIBERG_LOWDIN_INDICES | Uses (L\ |o_dots|\ wdin) symmetrically orthogonalized orbitals                    |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
@@ -195,3 +197,7 @@ algorithm is controlled by |globals__mbis_maxiter| and |globals__mbis_d_converge
 that the density is partitioned on a molecular quadrature grid, the details of which can be
 controlled with the keywords |globals__mbis_radial_points|, |globals__mbis_spherical_points|, and 
 |globals__mbis_pruning_scheme|. (Associated Paper: [Verstraelen:2016]_)
+
+.. note::
+   MBIS is not supported for basis sets that use effective core potentials (ECPs).
+   Please use all-electron basis sets for MBIS calculations. See `this issue at denspart <https://github.com/theochem/denspart/issues/19>`_

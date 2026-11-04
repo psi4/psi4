@@ -31,7 +31,6 @@ scf_dtz = gradient('SCF/cc-pV[23]Z')
 # We do not currently test at this high of angular momentum
 # scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
 
-
 # MP2 TESTS
 mp2_dtz = gradient('MP2/cc-pV[DT]Z')
 

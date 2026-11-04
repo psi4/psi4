@@ -28,6 +28,7 @@ def _build_system(basis):
 
 
 @pytest.mark.parametrize("basis,jk_type,estimate,name",[
+    # Note that MEM_DF and DISK_DF use nthreads in their mem estimate, so ref valid for -n1 only
 
     # Zero temps
     ["cc-pvdz", "DIRECT",  0, "DirectJK"],

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -74,7 +74,6 @@ PsiReturnType CoupledCluster::triples() {
     long int oo = o * o;
     long int vo = v * o;
     long int vv = v * v;
-    long int ooo = o * o * o;
     long int voo = v * o * o;
     long int vvo = v * v * o;
     long int vvv = v * v * v;

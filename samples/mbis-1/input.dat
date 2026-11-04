@@ -32,6 +32,7 @@ vratios_ref = psi4.Matrix.from_list([
 # H 0.3577956925992588
 
 
+
 molecule mol {
   0 1
   O
@@ -61,6 +62,7 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
 
 
 oeprop(wfn, "MBIS_VOLUME_RATIOS", title='H20 SCF')

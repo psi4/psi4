@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -499,7 +499,11 @@ def _to_serial(self: Union[core.Matrix, core.Vector]) -> Dict[str, Any]:
 
     for view in self.nph:
         json_data["shape"].append(view.shape)
-        json_data["data"].append(view.tostring())
+        try:
+            json_data["data"].append(view.tobytes())
+        except AttributeError:
+            # numpy v1
+            json_data["data"].append(view.tostring())
 
     if len(json_data["shape"][0]) == 1:
         json_data["type"] = "vector"
@@ -694,7 +698,9 @@ core.Dimension.__iter__ = _dimension_iter
 # General functions for NumPy array manipulation
 def block_diagonal_array(*args: List[np.ndarray]) -> np.ndarray:
     """
-    Convert square NumPy array to a single block diagonal array. Mimic of SciPy's :func:`scipy.linalg.block_diag`.
+    Convert square NumPy array to a single block diagonal array. Mimic of SciPy's
+    `scipy.linalg.block_diag
+    <https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.block_diag.html>`_.
 
     Parameters
     ----------

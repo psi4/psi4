@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -28,7 +28,6 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
@@ -295,7 +294,6 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params) {
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     if (t2_on_disk) {
         psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
@@ -407,7 +405,6 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params) {
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IAJB, "E2iajb", (char*)&tempt[0], o * o * v * v * sizeof(double));

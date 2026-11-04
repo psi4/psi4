@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -120,7 +120,7 @@ void CIWavefunction::common_init() {
     if (Parameters_->bendazzoli) form_ov();
 
     name_ = "CIWavefunction";
-    module_ = "detci";
+    set_module("detci");
 
     // Init H0 block
     H0block_init(CIblks_->vectlen);
@@ -684,7 +684,6 @@ void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec, Sha
 
     // Figure out phase
     if (!Parameters_->Ms0) {
-        int phase = 1;
     } else {
         int phase = ((int)Parameters_->S % 2) ? -1 : 1;
     }
