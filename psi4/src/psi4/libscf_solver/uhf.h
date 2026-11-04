@@ -43,7 +43,7 @@ class UHF : public HF {
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
 
     // Should be unrestricted-type.
-    std::shared_ptr<IntegratorDispatcher> potential_;
+    std::shared_ptr<DensityFunctionalIntegratorDispatcher> potential_;
 
     double compute_initial_E() override;
 
@@ -104,7 +104,7 @@ class UHF : public HF {
     double otr_orbital_gradient() override;
 #endif
 
-    std::shared_ptr<IntegratorDispatcher> V_potential() const override { return potential_; };
+    std::shared_ptr<DensityFunctionalIntegratorDispatcher> V_potential() const override { return potential_; };
 
     /// Hessian-vector computers and solvers
     std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x) override;
