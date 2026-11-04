@@ -555,7 +555,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         # per-iteration from Python (EFP/PCM/DDX/PE) or through form_C (MOM) would stop being
         # applied thereafter. The GRAC shift splices its potential into V_xc outside the kernel
         # cphf_Hx differentiates, so the Hessian never sees it.
-        # SOSCF in general already refused for CUHF, meta/VV10, FRAC, sn-LinK, IncFock.
+        # SOSCF in general is refused for CUHF, meta/VV10 and FRAC above, and for sn-LinK and
+        # IncFock in proc.scf_helper.
         pcm_enabled = core.get_option('SCF', 'PCM')
         ddx_enabled = core.get_option('SCF', 'DDX')
         pe_enabled = core.get_option('SCF', 'PE')

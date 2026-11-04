@@ -1022,7 +1022,7 @@ then hands the orbitals to the second-order package, which carries the calculati
 to convergence.
 
 Lowering |scf__soscf_start| from default 3 hands over sooner, from a point the first-order
-iterations have had less time to settle occpuancy. This matters to OpenTrustRegion because
+iterations have had less time to settle occupancy. This matters to OpenTrustRegion because
 it then holds that assignment
 fixed: start at 1 and it can converge against one the aufbau rule later disagrees with,
 which |PSIfour| reports in the output before reconverging. The internal second-order code
@@ -1063,7 +1063,7 @@ the result (``WARN``); all three report the precision reached.
 Microiterations are a separate matter. They solve the trust-region subproblem
 within a macro-iteration, so they set how well each step is computed rather than
 how tightly the SCF finishes. The cap is *not* taken from |scf__soscf_max_iter|;
-it is presently unadjustible at 50.
+it is presently fixed at 50.
 |scf__soscf_print| turns on microiteration detail for both codes;
 |scf__otr_print| allows further control for OpenTrustRegion.
 The settings with no |PSIfour| counterpart are exposed

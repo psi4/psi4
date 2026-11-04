@@ -1575,9 +1575,10 @@ int HF::opentrustregion_scf() {
     settings.stability = false;
     // otr_converged() decides macro-iteration convergence (the usual Psi4 E_/D_CONV check).
     // Supplying that callback *replaces* OpenTrustRegion's own gradient criterion rather than
-    // racing it, so conv_tol no longer decides when the SCF stops. It still sets how tightly
-    // OpenTrustRegion's stability check must converge -- forced at the first macro-iteration
-    // even with stability off -- so keep it in step with what Psi4 asked for.
+    // racing it, so conv_tol no longer decides when the SCF stops. Its one remaining use is the
+    // step off a saddle point, which aims for a gradient ten times max(conv_tol, the current
+    // one), so keep it in step with what Psi4 asked for. The stability check has a conv_tol of
+    // its own in stability_settings.
     settings.conv_tol =
         0.01 * std::min(options_.get_double("D_CONVERGENCE"), options_.get_double("E_CONVERGENCE"));
     // Hand OTR the remaining iter budget after first-order. The +1 is for OTR's macro-iter 1, the already counted handoff.

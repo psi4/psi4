@@ -1684,8 +1684,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             reporting the shortfall in the output. -*/
         options.add_str("OTR_MAX_PRECISION_REACHED_HANDLING", "DIIS", "DIIS FAIL WARN");
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, verbosity of the
-            solver's own printing: 0 macro-iterations only, 1 the default table, 2 or more
-            adds microiteration detail. Unset, this follows |scf__soscf_print| ; setting it
+            solver's own printing: 0 only warnings and errors, 1 the iteration table, 2 or
+            more adds microiteration detail. Unset, this follows |scf__soscf_print| ; setting it
             overrides that. -*/
         options.add_int("OTR_PRINT", 1);
         /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
