@@ -659,6 +659,8 @@ void export_mints(py::module& m) {
         .def("load", matrix_load_psio2(&Matrix::load),
              "Load a matrix from a PSIO object from fileno and with toc position of the name of the matrix", "psio"_a,
              "fileno"_a, "savetype"_a = Matrix::SaveType::LowerTriangle)
+        .def("apply_symmetry", matrix_two(&Matrix::apply_symmetry), "Apply symmetry from a matrix A with PetiteList::aotoso()",
+             "a"_a, "transformer"_a)
         // should this take Petite List's sotoao() function as a default transfomer argument? has to be set C++ side
         // first i think
         .def("remove_symmetry", &Matrix::remove_symmetry, "Remove symmetry from a matrix A with PetiteList::sotoao()",

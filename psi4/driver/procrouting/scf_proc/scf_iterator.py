@@ -140,11 +140,7 @@ def scf_initialize(self):
     # Figure out how large the DFT collocation matrices are
     vbase = self.V_potential()
     if vbase:
-        collocation_size = vbase.grid().collocation_size()
-        if vbase.functional().ansatz() == 1:
-            collocation_size *= 4  # First derivs
-        elif vbase.functional().ansatz() == 2:
-            collocation_size *= 10  # Second derivs
+        collocation_size = vbase.collocation_size()
     else:
         collocation_size = 0
 

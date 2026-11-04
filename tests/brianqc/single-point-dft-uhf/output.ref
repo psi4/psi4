@@ -1,0 +1,296 @@
+ tid: 0x0 [2026.04.07-13:22:56.788] [INFO] Begin brianAPIInit
+ tid: 0x0 [2026.04.07-13:22:56.788] [INFO] Detected compatible BrianQC interface version 5
+ tid: 0x0 [2026.04.07-13:22:56.788] [INFO] Reading config from /home/jpmisiewicz/brian_files/1.5.0/config.json
+ tid: 0x0 [2026.04.07-13:22:56.789] [INFO] Setting Brian root dir to /home/jpmisiewicz/brian_files/1.5.0
+ tid: 0x0 [2026.04.07-13:22:56.790] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/10603610112-1715011099_kernel_g_v1_5_0_125b6af99d_CUDA_Tesla_V100.db
+ tid: 0x0 [2026.04.07-13:22:56.790] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/6953332736-1715010260_kernel_g_v1_5_0_125b6af99d_CUDA_GeForce_RTX_2080_Ti.db
+ tid: 0x0 [2026.04.07-13:22:56.791] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/13035212800-1715010745_kernel_g_v1_5_0_125b6af99d_CUDA_Tesla_A100.db
+ tid: 0x0 [2026.04.07-13:22:56.792] [INFO] Found kernel DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/467988480-1715023474_kernel_g_v1_5_0_14e7bbc887_CUDA_GeForce_RTX_4090.db
+ tid: 0x0 [2026.04.07-13:22:56.792] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18874368-1715009708_dft_kernel_v1_5_0_125b6af99d_CUDA_Tesla_V100.db
+ tid: 0x0 [2026.04.07-13:22:56.793] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18759680-1715009628_dft_kernel_v1_5_0_125b6af99d_CUDA_GeForce_RTX_2080_Ti.db
+ tid: 0x0 [2026.04.07-13:22:56.794] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/18714624-1715009665_dft_kernel_v1_5_0_125b6af99d_CUDA_Tesla_A100.db
+ tid: 0x0 [2026.04.07-13:22:56.795] [INFO] Found DFT DB in config: /home/jpmisiewicz/brian_files/1.5.0/integrators/12394496-1716812243_dft_kernel_v1_5_0_c0ea4e0e4a_CUDA_GeForce_RTX_4090.db
+ tid: 0x0 [2026.04.07-13:22:56.795] [INFO] No MM DBs specified in config, using the default: /home/jpmisiewicz/brian_files/1.5.0/integrators/mm.db
+ tid: 0x0 [2026.04.07-13:22:56.795] [WARNING] MM features will not be available, because the MM DB does not exist: /home/jpmisiewicz/brian_files/1.5.0/integrators/mm.db
+ tid: 0x0 [2026.04.07-13:22:56.795] [INFO] Start BrianQC module initialization
+ tid: 0x0 [2026.04.07-13:22:56.807] [INFO] GPU 0# NVIDIA_A30_GPU-19b29a7c-eeb4-cfc4-64ae-a706ebd2346d
+ tid: 0x0 [2026.04.07-13:22:56.809] [SYSTEM] BrianQC version: v1_5_1_7f6b4fa0eb licensed to: Trial User
+ tid: 0x0 [2026.04.07-13:22:56.818] [SYSTEM] Visit us at: https://brianqc.com
+ tid: 0x0 [2026.04.07-13:22:56.829] [SYSTEM] BrianQC copyright Streamnovation Ltd. 2013-2022
+ tid: 0x0 [2026.04.07-13:22:56.838] [SYSTEM] Contributors: Gy. Cserey, B. Czetenyi, A. Jasz, G. Kis, I. Ladjanszki, A. Rak, G. J. Tornai, A. Vas
+ tid: 0x0 [2026.04.07-13:22:57.061] [INFO] Signing in to license server: license.brainqc.com 443
+ tid: 0x0 [2026.04.07-13:22:57.082] [INFO] Scratch dir is disabled, storing everything in memory
+ tid: 0x0 [2026.04.07-13:22:57.283] [INFO] Detected device: CPU
+ tid: 0x0 [2026.04.07-13:22:57.283] [INFO] Detected device: CUDA NVIDIA A30#0000:61:00.0
+ tid: 0x0 [2026.04.07-13:22:57.368] [INFO] Allocating 3 threads for GPU: CUDA NVIDIA A30#0000:61:00.0 on node 0
+ tid: 0x0 [2026.04.07-13:23:00.327] [INFO] Used GPU count: 1
+ tid: 0x0 [2026.04.07-13:23:00.490] [INFO] End BrianQC module initialization
+ tid: 0x0 [2026.04.07-13:23:00.498] [INFO] End brianAPIInit
+ tid: 0x0 [2026.04.07-13:23:00.564] [INFO] Re-init GPU for small molecule mode
+ tid: 0x0 [2026.04.07-13:23:00.676] [INFO] Detected device: CPU
+ tid: 0x0 [2026.04.07-13:23:00.676] [INFO] Detected device: CUDA NVIDIA A30#0000:61:00.0
+ tid: 0x0 [2026.04.07-13:23:00.779] [INFO] Allocating 1 threads for GPU: CUDA NVIDIA A30#0000:61:00.0 on node 0
+ tid: 0x0 [2026.04.07-13:23:00.779] [INFO] Used GPU count: 1
+    Reference energy......................................................................PASSED
+ tid: 0x0 [2026.04.07-13:23:12.596] [INFO] Begin brianAPIRelease
+ tid: 0x0 [2026.04.07-13:23:12.800] [INFO] End brianAPIRelease
+   ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     0.057496049252    15.994914619570
+         H            0.000000000000     0.000000000000    -0.912504025348     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =     18.89752  C =     18.89752 [cm^-1]
+  Rotational constants: A = ************  B = 566533.37758  C = 566533.37758 [MHz]
+  Nuclear repulsion =    4.364347793587273
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-09
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 4
+    Number of basis functions: 6
+    Number of Cartesian functions: 6
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => LibXC <=
+
+    Version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+
+   => Composite Functional: B3LYP <= 
+
+    B3LYP Hyb-GGA Exchange-Correlation Functional
+
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch.,  J. Phys. Chem. 98, 11623 (1994) (10.1021/j100096a001)
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
+
+   => Correlation Functionals <=
+
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
+
+   => LibXC Density Thresholds  <==
+
+    XC_HYB_GGA_XC_B3LYP:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    Blocking Scheme        =         OCTREE
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =           5758
+    Total Blocks           =             66
+    Max Points             =            250
+    Max Functions          =              6
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Screening Type:           CSAM
+    Screening Cutoff:        1E-12
+    Incremental Fock:           No
+
+  Cached 100.0% of DFT collocation blocks in 0.001 [GiB].
+
+  BrianQC enabled, using Canonical Orthogonalization with cutoff of 1.0000000000E-07.
+  Overall, 0 of 6 possible MOs eliminated.
+
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A          6       6 
+   -------------------------
+    Total       6       6
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UKS iter SAD:   -74.14213382461541   -7.41421e+01   0.00000e+00 
+   @UKS iter   1:   -74.61847622510152   -4.76342e-01   4.03407e-02 ADIIS/DIIS
+   @UKS iter   2:   -74.65263895842621   -3.41627e-02   1.38600e-02 ADIIS/DIIS
+   @UKS iter   3:   -74.65811190429750   -5.47295e-03   2.28191e-03 ADIIS/DIIS
+   @UKS iter   4:   -74.65827579163384   -1.63887e-04   1.75216e-04 ADIIS/DIIS
+   @UKS iter   5:   -74.65827778225369   -1.99062e-06   3.30878e-05 DIIS
+   @UKS iter   6:   -74.65827788386819   -1.01615e-07   5.77453e-06 DIIS
+   @UKS iter   7:   -74.65827789953217   -1.56640e-08   5.39285e-06 DIIS
+   @UKS iter   8:   -74.65827778052372    1.19008e-07   5.30436e-06 DIIS
+   @UKS iter   9:   -74.65827656581143    1.21471e-06   4.09608e-06 DIIS
+   @UKS iter  10:   -74.65827828560884   -1.71980e-06   6.24105e-06 DIIS
+   @UKS iter  11:   -74.65827559741498    2.68819e-06   9.05574e-07 DIIS
+   @UKS iter  12:   -74.65827554933020    4.80848e-08   1.39145e-07 DIIS
+   @UKS iter  13:   -74.65827554840291    9.27287e-10   2.73776e-08 DIIS
+   @UKS iter  14:   -74.65827554837055    3.23581e-11   1.14535e-08 DIIS
+   @UKS iter  15:   -74.65827554836990    6.53699e-13   2.87816e-09 DIIS
+   @UKS iter  16:   -74.65827554836982    8.52651e-14   1.39588e-10 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Nalpha   =    0.0000000000 ; deviation = -5.000e+00
+      Nbeta    =    0.0000000000 ; deviation = -4.000e+00
+      Ntotal   =    0.0000000000 ; deviation = -9.000e+00 
+
+   @Spin Contamination Metric:   9.948001116E-04
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.509948001E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -18.869840     2A     -0.923150     3A     -0.343438  
+       4A     -0.259002     5A     -0.171236  
+
+    Alpha Virtual:                                                        
+
+       6A      0.371810  
+
+    Beta Occupied:                                                        
+
+       1A    -18.852805     2A     -0.851304     3A     -0.312593  
+       4A     -0.139838  
+
+    Beta Virtual:                                                         
+
+       5A      0.024108     6A      0.392430  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     1 ]
+    NA   [     5 ]
+    NB   [     4 ]
+
+  @UKS Final Energy:   -74.65827554836982
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              4.3643477935872728
+    One-Electron Energy =                -112.1031365252746070
+    Two-Electron Energy =                  40.3540089750976918
+    DFT Exchange-Correlation Energy =      -7.2734957917801744
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -74.6582755483698151
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 2.0000000
+  HONO-1 :    4  A 1.9995025
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0004975
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :          0.3774922           -0.8551684           -0.4776762
+ Magnitude           :                                                    0.4776762
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on fal001 at Tue Apr  7 13:23:12 2026
+Module time:
+	user time   =       1.78 seconds =       0.03 minutes
+	system time =       2.83 seconds =       0.05 minutes
+	total time  =         12 seconds =       0.20 minutes
+Total time:
+	user time   =       1.78 seconds =       0.03 minutes
+	system time =       2.83 seconds =       0.05 minutes
+	total time  =         12 seconds =       0.20 minutes
+    Reference energy......................................................................PASSED
+
+    Psi4 stopped on: Tuesday, 07 April 2026 01:23PM
+    Psi4 wall time for execution: 0:00:15.83
+
+*** Psi4 exiting successfully. Buy a developer a beer!
+Releasing the BrianQC module

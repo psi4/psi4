@@ -50,15 +50,16 @@
 #include "coordentry.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <iomanip>
+#include <list>
+#include <map>
 #include <memory>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
-#include <cstdio>
-#include <iomanip>
-#include <cstdlib>
-#include <cmath>
-#include <map>
-#include <list>
 
 using namespace psi;
 

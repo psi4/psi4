@@ -458,10 +458,17 @@ void Matrix::release() {
 }
 
 void Matrix::copy_from(double ***c) {
+    // n.b. This cannot be refactored to use the inner copy-from.
+    // We'd need to pass c[h][0][0], which is not valid for an empty irrep.
     for (int h = 0; h < nirrep_; ++h) {
         size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
         if (size) memcpy(&(matrix_[h][0][0]), &(c[h][0][0]), size);
     }
+}
+
+void Matrix::copy_from(const double *const data, int h) {
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
+        if (size) memcpy(&(matrix_[h][0][0]), data, size);
 }
 
 // Sets all elements of matrix to val
@@ -2668,19 +2675,37 @@ void Matrix::transform(const Matrix &a, const Matrix &transformer) {
     transform(transformer, a, transformer);
 }
 
-void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transformer) {
+void Matrix::apply_symmetry(const Matrix &a, const Matrix &transformer) {
+
     // Check dimensions of the two matrices and symmetry
-    if (a->nirrep() > 1) {
+    if (a.nirrep() > 1) {
         throw PSIEXCEPTION("Matrix::apply_symmetry: first matrix must have no symmetry.\n");
     }
-    if (a->nrow() != transformer->rowdim(0) || a->ncol() != transformer->ncol()) {
-        a->print();
-        transformer->print();
+    if (a.nrow() != transformer.rowdim(0) || a.ncol() != transformer.ncol()) {
+        a.print();
+        transformer.print();
         throw PSIEXCEPTION("Matrix::apply_symmetry: simple to regular. Sizes are not compatible.\n");
+    }
+    if (nirrep() != transformer.nirrep()) {
+        throw PSIEXCEPTION("Matrix::apply_symmetry: target matrix and transformer need same number of irreps.");
+    }
+    if (colspi() != transformer.colspi()) {
+        throw PSIEXCEPTION("Matrix::apply_symmetry: target matrix's colspi must match transformer's colspi");
+    }
+    if (rowspi() != transformer.colspi()) {
+        throw PSIEXCEPTION("Matrix::apply_symmetry: target matrix's rowspi must match transformer's colspi");
+    }
+    if (transformer.symmetry()) {
+        throw PSIEXCEPTION("Matrix::apply_symmetry: transformer must be totally symmetric");
+    }
+    for (size_t h = 0; h < transformer.nirrep(); h++) {
+        if (transformer.rowdim(0) != transformer.rowdim(h)) {
+            throw PSIEXCEPTION("Matrix::apply_symmetry: all transformer rows need same number of AOs");
+	}
     }
 
     // Create temporary matrix of proper size.
-    Matrix temp(nirrep(), a->nrow(), transformer->colspi());
+    Matrix temp(nirrep(), a.nrow(), transformer.colspi());
 
     char ta = 'n';
     char tb = 'n';
@@ -2692,13 +2717,13 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     for (int h = 0; h < nirrep_; ++h) {
         m = temp.rowdim(h);
         n = temp.coldim(h ^ symmetry());
-        k = a->ncol();
+        k = a.ncol();
         nca = k;
         ncb = n;
         ncc = n;
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[0][0][0]), nca, &(transformer->matrix_[h ^ symmetry()][0][0]),
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(a.matrix_[0][0][0]), nca, &(transformer.matrix_[h ^ symmetry()][0][0]),
                     ncb, 0.0, &(temp.matrix_[h ^ symmetry()][0][0]), ncc);
         }
     }
@@ -2708,16 +2733,19 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     for (int h = 0; h < nirrep_; ++h) {
         m = rowdim(h);
         n = coldim(h ^ symmetry());
-        k = transformer->rowdim(h);
+        k = transformer.rowdim(h);
         nca = m;
         ncb = n;
         ncc = n;
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer->matrix_[h][0][0]), nca, &(temp.matrix_[h ^ symmetry()][0][0]),
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer.matrix_[h][0][0]), nca, &(temp.matrix_[h ^ symmetry()][0][0]),
                     ncb, 0.0, &(matrix_[h][0][0]), ncc);
         }
     }
+}
+void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transformer) {
+    apply_symmetry(*a, *transformer);
 }
 
 void Matrix::remove_symmetry(const SharedMatrix &a, const SharedMatrix &SO2AO) {
