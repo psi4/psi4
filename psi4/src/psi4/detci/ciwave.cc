@@ -475,7 +475,6 @@ void CIWavefunction::cleanup_ci() {
         delete H0block_;
 
         // CalcInfo free
-        free_int_matrix(CalcInfo_->ras_opi);
         for (int i = 0; i < 4; i++) {
             free_int_matrix(CalcInfo_->ras_orbs[i]);
         };
