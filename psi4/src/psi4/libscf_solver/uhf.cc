@@ -1237,7 +1237,7 @@ std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void UHF::setup_potential() {
     if (functional_->needs_xc()) {
-        std::vector<std::shared_ptr<IntegratorManager>> managers;
+        std::vector<std::shared_ptr<DensityFunctionalIntegratorManager>> managers;
         for (auto integrator: options_.get_string_vector("DFT_XC_INTEGRATOR_PACKAGES")) {
             std::ranges::transform(integrator, integrator.begin(), [](unsigned char c){
                 return std::toupper(c);
@@ -1260,7 +1260,7 @@ void UHF::setup_potential() {
             }
         }
         if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but requested DFT.");
-        potential_ = std::make_shared<IntegratorDispatcher>(managers);
+        potential_ = std::make_shared<DensityFunctionalIntegratorDispatcher>(managers);
         potential_->initialize();
     } else {
         potential_ = nullptr;

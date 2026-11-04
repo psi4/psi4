@@ -94,7 +94,7 @@ class ROHF : public HF {
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) override;
     bool stability_analysis() override;
 
-    std::shared_ptr<IntegratorDispatcher> V_potential() const override { return nullptr; };
+    std::shared_ptr<DensityFunctionalIntegratorDispatcher> V_potential() const override { return nullptr; };
 
     std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };

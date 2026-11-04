@@ -238,8 +238,6 @@ std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
     }
 
     quad_values_["VV10"] = 0.0;
-:a
-:q
     quad_values_["FUNCTIONAL"] = e_xc;
     quad_values_["RHO_A"] = 0.0;
     quad_values_["RHO_AX"] = 0.0;
