@@ -175,7 +175,7 @@ void VBase::set_D(std::vector<SharedMatrix> Dvec) {
 }
 void VBase::initialize() {
     timer_on("V: Grid");
-    grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, options_);
+    if (!grid_) grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, options_);
     timer_off("V: Grid");
 
     for (size_t i = 0; i < num_threads_; i++) {

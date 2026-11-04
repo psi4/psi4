@@ -116,6 +116,9 @@ class PSI_API VBase {
     std::shared_ptr<SuperFunctional> functional() const { return functional_; }
     std::vector<std::shared_ptr<PointFunctions>> properties() const { return point_workers_; }
     std::shared_ptr<DFTGrid> grid() const { return grid_; }
+    /// Adopt a grid built for the same molecule, basis and options instead of building one.
+    /// Must be called before initialize(), which builds a grid only when none is set.
+    void set_grid(std::shared_ptr<DFTGrid> grid) { grid_ = grid; }
     std::shared_ptr<BlockOPoints> get_block(int block);
     size_t nblocks();
     std::map<std::string, double>& quadrature_values() { return quad_values_; }
