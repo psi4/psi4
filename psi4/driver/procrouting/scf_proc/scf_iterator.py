@@ -799,7 +799,13 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             if self.iteration_ > core.get_option('SCF', 'MAXITER'):
                 raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
 
-            if otr_soscf:
+            # Already converged, there is nothing to hand off, so this falls through to the
+            # "conv" branch below, as for the internal code.
+            if otr_soscf and not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
+                # With no iteration left, OTR could only re-evaluate this state, so fail as any SCF
+                # would.
+                if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
+                    raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
                 # Hand the rest of the SCF to OpenTrustRegion. It owns the remaining
                 # iterations, so this returns rather than continuing the first-order loop.
                 # Print this iteration before handing over: OpenTrustRegion restarts the
