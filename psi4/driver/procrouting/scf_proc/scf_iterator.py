@@ -758,6 +758,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 polish_entry_dnorm = self.compute_orbital_gradient(
                     False, core.get_option("SCF", "DIIS_MAX_VECS"))
                 polish_entry_C = (self.Ca().clone(), self.Cb().clone())
+                # Measure the next energy change after the first iteration of the polish from 
+                # where OpenTrustRegion finished, not from the handoff iteration before it ran.
+                SCFE_old = self.get_energies("Total Energy")
                 if self.initialized_diis_manager_:
                     self.diis_manager_.reset_subspace()
                 core.print_out("    Finishing with first-order iterations, which converge on\n"
