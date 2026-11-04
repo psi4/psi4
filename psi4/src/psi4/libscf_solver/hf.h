@@ -258,9 +258,11 @@ class HF : public Wavefunction {
     /// second-order handoff point rather than finishing the SCF itself.
     virtual bool openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
 
-    /// Runs the SCF using OpenTrustRegion. Returns the solver's error code (0 on success)
-    /// rather than throwing, so the driver can honour FAIL_ON_MAXITER.
-    int opentrustregion_scf();
+    /// Runs the SCF using OpenTrustRegion to the energy and orbital-gradient thresholds given,
+    /// which are the driver's E_/D_CONVERGENCE unless iterations() was handed others. Returns
+    /// the solver's error code (0 on success) rather than throwing, so the driver can honour
+    /// FAIL_ON_MAXITER.
+    int opentrustregion_scf(double e_conv, double d_conv);
 
     /// Total energy at each OpenTrustRegion macro-iteration, so the Python driver can
     /// report SCF ITERATIONS / SCF TOTAL ENERGIES the same way the internal solver does.
@@ -319,6 +321,8 @@ class HF : public Wavefunction {
     double otr_prev_func_;
     double otr_curr_func_;
     double otr_grad_rms_;
+    double otr_e_conv_;
+    double otr_d_conv_;
 #endif
 
     /// Are we to do excited-state MOM?

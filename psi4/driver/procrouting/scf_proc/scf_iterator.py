@@ -275,10 +275,8 @@ _OTR_MAX_ITER_ERROR = 102
 _OTR_NEEDS_POLISH = object()
 
 
-def _otr_shortfall(self):
+def _otr_shortfall(self, e_conv, d_conv):
     """How far OpenTrustRegion finished from this SCF's thresholds, as text and as orders."""
-    e_conv = core.get_option("SCF", "E_CONVERGENCE")
-    d_conv = core.get_option("SCF", "D_CONVERGENCE")
     _, grad, dE = self.otr_outcome_
     text = (f"orbital gradient {grad:.2e} against D_CONVERGENCE {d_conv:.2e}, last energy change "
             f"{dE:.2e} against E_CONVERGENCE {e_conv:.2e}")
@@ -289,7 +287,7 @@ def _otr_shortfall(self):
     return text, max(e_orders, d_orders)
 
 
-def _otr_polish_budget(self):
+def _otr_polish_budget(self, e_conv, d_conv):
     """First-order iterations to allow after OpenTrustRegion stops at its precision floor.
 
     Three per order of magnitude the further-off criterion is short, which is generous
@@ -297,7 +295,7 @@ def _otr_polish_budget(self):
     attempt and capped so a polish going nowhere fails quickly. MAXITER still applies and
     can cut this shorter.
     """
-    _, orders = _otr_shortfall(self)
+    _, orders = _otr_shortfall(self, e_conv, d_conv)
     return min(_OTR_POLISH_MAX_ITER, max(3, 3 * math.ceil(orders)))
 
 
@@ -379,7 +377,6 @@ def _run_opentrustregion(self, e_conv, d_conv):
     # earlier soscf can reach the branch.
     SCFE_prev_attempt = None
     prev_attempt = None
-    otr_e_conv = e_conv if e_conv is not None else core.get_option("SCF", "E_CONVERGENCE")
     for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
         occupation = _occupation(self)
         if attempt:
@@ -387,7 +384,7 @@ def _run_opentrustregion(self, e_conv, d_conv):
             # handoff is. A restart's first evaluation, at the new occupation, is a J/K build no
             # iteration has covered, so charge it here.
             self.iteration_ += 1
-        otr_error = self.opentrustregion_scf()
+        otr_error = self.opentrustregion_scf(e_conv, d_conv)
         if otr_error and otr_error != _OTR_MAX_ITER_ERROR:
             # A real failure, so it must not be swallowed by FAIL_ON_MAXITER, which callers
             # such as run_qchf set False to tolerate a deliberately truncated SCF. Raise before
@@ -437,12 +434,12 @@ def _run_opentrustregion(self, e_conv, d_conv):
         if _aufbau_occupation(self) == occupation:
             # The occupation OpenTrustRegion optimized is the aufbau one. Done.
             break
-        if SCFE_prev_attempt is not None and SCFE >= SCFE_prev_attempt - otr_e_conv:
+        if SCFE_prev_attempt is not None and SCFE >= SCFE_prev_attempt - e_conv:
             # Reconverging didn't lower the energy. Degenerate orbitals in different irreps --
             # singlet O2's pi*, say -- let the aufbau assignment flip back and forth without
             # changing the solution, so stop rather than oscillate. Where the energy actually
             # rose, the previous attempt is the better solution, so return that one.
-            if SCFE > SCFE_prev_attempt + otr_e_conv:
+            if SCFE > SCFE_prev_attempt + e_conv:
                 state, self.otr_outcome_ = prev_attempt
                 _restore_orbital_state(self, state)
                 self.form_D()
@@ -494,7 +491,7 @@ def _run_opentrustregion(self, e_conv, d_conv):
             # measurable here, so let the caller finish the SCF with them.
             return _OTR_NEEDS_POLISH
         if handling == "FAIL":
-            shortfall, _ = _otr_shortfall(self)
+            shortfall, _ = _otr_shortfall(self, e_conv, d_conv)
             raise SCFConvergenceError(
                 "SCF to the requested precision", self.iteration_, self, 0.0, 0.0,
                 "OpenTrustRegion stopped at its floating-point precision floor: a further\n"
@@ -509,6 +506,11 @@ def _run_opentrustregion(self, e_conv, d_conv):
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
+    # The thresholds this SCF converges to: those handed to iterations(), else the options.
+    if e_conv is None:
+        e_conv = core.get_option("SCF", "E_CONVERGENCE")
+    if d_conv is None:
+        d_conv = core.get_option("SCF", "D_CONVERGENCE")
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
     diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
@@ -823,8 +825,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 # DIIS subspace, whose vectors predate the orbitals OpenTrustRegion returned.
                 otr_soscf = False
                 soscf_enabled = False
-                polish_shortfall, _ = _otr_shortfall(self)
-                polish_budget = _otr_polish_budget(self)
+                polish_shortfall, _ = _otr_shortfall(self, e_conv, d_conv)
+                polish_budget = _otr_polish_budget(self, e_conv, d_conv)
                 polish_remaining = polish_budget
                 # Keep what OpenTrustRegion converged. First-order iterations usually
                 # improve on it, but from a solution this close they can also wander off
@@ -1017,9 +1019,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     "first-order iterations that followed did not reach the thresholds either.\n\n"
                     "Where OpenTrustRegion stopped: " + polish_shortfall + ".\n"
                     f"After {polish_budget} first-order iterations: last energy change "
-                    f"{abs(Ediff):.2e} against E_CONVERGENCE "
-                    f"{core.get_option('SCF', 'E_CONVERGENCE'):.2e}, Dnorm {Dnorm:.2e} against "
-                    f"D_CONVERGENCE {core.get_option('SCF', 'D_CONVERGENCE'):.2e}.\n\n"
+                    f"{abs(Ediff):.2e} against E_CONVERGENCE {e_conv:.2e}, Dnorm {Dnorm:.2e} "
+                    f"against D_CONVERGENCE {d_conv:.2e}.\n\n"
                     "A second-order and a first-order method have both failed to reach the\n"
                     "thresholds within the iterations allowed, so this request is past what\n"
                     "this system and basis support. Loosen D_CONVERGENCE and E_CONVERGENCE.")

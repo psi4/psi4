@@ -416,7 +416,8 @@ void export_wavefunction(py::module& m) {
         .def("openorbital_scf", &scf::HF::openorbital_scf,
              "Runs the SCF with OpenOrbitalOptimizer. Returns whether it stopped at the "
              "second-order handoff point rather than finishing the SCF itself.")
-        .def("opentrustregion_scf", &scf::HF::opentrustregion_scf, "Runs SCF with OpenTrustRegion")
+        .def("opentrustregion_scf", &scf::HF::opentrustregion_scf, "e_conv"_a, "d_conv"_a,
+             "Runs SCF with OpenTrustRegion to these energy and orbital-gradient thresholds")
         .def("opentrustregion_stopped_short", &scf::HF::otr_stopped_short,
              "Whether OpenTrustRegion stopped at its floating-point precision floor with "
              "neither half of this SCF's convergence test met.")

@@ -1535,14 +1535,12 @@ void HF::otr_record_iteration(OTR::c_real func) {
 bool HF::otr_converged() const {
     if (!(otr_has_prev_func_ && otr_has_curr_func_)) return false;
 
-    const double e_conv = options_.get_double("E_CONVERGENCE");
-    const double d_conv = options_.get_double("D_CONVERGENCE");
     const double e_delta = std::fabs(otr_curr_func_ - otr_prev_func_);
-    return (e_delta < e_conv) && (otr_grad_rms_ < d_conv);
+    return (e_delta < otr_e_conv_) && (otr_grad_rms_ < otr_d_conv_);
 }
 #endif
 
-int HF::opentrustregion_scf() {
+int HF::opentrustregion_scf(double e_conv, double d_conv) {
 #ifndef USING_OpenTrustRegion
     throw PSIEXCEPTION("OpenTrustRegion support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenTrustRegion=ON`.\n");
 #else
@@ -1553,6 +1551,8 @@ int HF::opentrustregion_scf() {
     otr_final_grad_rms_ = 0.0;
     otr_final_energy_delta_ = 0.0;
     otr_callback_error_.clear();
+    otr_e_conv_ = e_conv;
+    otr_d_conv_ = d_conv;
     otr_has_prev_func_ = false;
     otr_has_curr_func_ = false;
     otr_prev_func_ = 0.0;
@@ -1579,8 +1579,7 @@ int HF::opentrustregion_scf() {
     // step off a saddle point, which aims for a gradient ten times max(conv_tol, the current
     // one), so keep it in step with what Psi4 asked for. The stability check has a conv_tol of
     // its own in stability_settings.
-    settings.conv_tol =
-        0.01 * std::min(options_.get_double("D_CONVERGENCE"), options_.get_double("E_CONVERGENCE"));
+    settings.conv_tol = 0.01 * std::min(d_conv, e_conv);
     // Hand OTR the remaining iter budget after first-order. The +1 is for OTR's macro-iter 1, the already counted handoff.
     settings.n_macro = std::max(1, options_.get_int("MAXITER") - iteration_ + 1);
     // n_micro: leave at OTR default (50). SOSCF_MAX_ITER for internal SOSCF default (5) isn't a clean map.
@@ -1616,8 +1615,6 @@ int HF::opentrustregion_scf() {
 
     // OpenTrustRegion stops once the objective function stops resolving, reporting success
     // whether or not the requested thresholds were met.
-    const double e_conv = options_.get_double("E_CONVERGENCE");
-    const double d_conv = options_.get_double("D_CONVERGENCE");
     const double e_delta = std::fabs(otr_curr_func_ - otr_prev_func_);
     const bool energy_met = otr_has_prev_func_ && otr_has_curr_func_ && e_delta < e_conv;
     const bool gradient_met = otr_grad_rms_ < d_conv;
