@@ -2,6 +2,9 @@
 #! Note: MPQC4 does not use robust DF for DF-MP2-F12
 #! MP2 convergence requires that e_conv and d_conv are 1e-10
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 ref_df_scf            =  -76.059551121528784      # TEST
 ref_df_mp2_corl       =  -0.24110853689574918     # TEST
 ref_df_f12_corl       =  -0.055279195185694963    # TEST
@@ -45,4 +48,5 @@ compare_values(ref_df_scf, variable('CURRENT REFERENCE ENERGY') - variable("F12 
 compare_values(ref_df_mp2f12_corl, variable('CURRENT CORRELATION ENERGY') + variable("F12 CABS CORRECTION ENERGY"), 6, 'df-mp2-f12 corl')   #TEST
 compare_values(ref_df_mp2f12_total, variable('CURRENT ENERGY'), 6, 'df-mp2-f12 tot')               #TEST
 compare_values(ref_df_mp2f12_total, val, 6, 'df-mp2-f12 return')                                   #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
 clean()
