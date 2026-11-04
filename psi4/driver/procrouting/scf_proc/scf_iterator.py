@@ -611,6 +611,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
+    # Whether Dnorm holds a measured gradient yet. A fresh SCF has none until its first
+    # first-order iteration.
+    dnorm_measured = self.iteration_ > 0
     scf_iter_post_screening = 0
     polish_remaining = None
     polish_budget = 0
@@ -714,6 +717,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         status = []
 
         # Check if we are doing SOSCF
+        if (soscf_enabled and not dnorm_measured
+                and self.iteration_ >= core.get_option('SCF', 'SOSCF_START')):
+            # Measure the gradient if it has not been measured yet, only relevant for SOSCF_START=1
+            Dnorm = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
+            dnorm_measured = True
         if (soscf_enabled and (self.iteration_ >= core.get_option('SCF', 'SOSCF_START'))
                 and (Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
             Dnorm = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
@@ -758,7 +766,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 polish_entry_dnorm = self.compute_orbital_gradient(
                     False, core.get_option("SCF", "DIIS_MAX_VECS"))
                 polish_entry_C = (self.Ca().clone(), self.Cb().clone())
-                # Measure the next energy change after the first iteration of the polish from 
+                # Measure the next energy change after the first iteration of the polish from
                 # where OpenTrustRegion finished, not from the handoff iteration before it ran.
                 SCFE_old = self.get_energies("Total Energy")
                 if self.initialized_diis_manager_:
@@ -809,6 +817,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 add_to_diis_subspace = self.diis_enabled_ and self.iteration_ >= self.diis_start_
 
                 Dnorm = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
+                dnorm_measured = True
 
                 if add_to_diis_subspace:
                     for engine_used in self.diis(Dnorm):
