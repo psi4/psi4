@@ -48,6 +48,11 @@ if(TARGET simint::simint)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_simint)
 endif()
 
+if(TARGET cint::cint)
+  target_link_libraries(psi4_optional_deps INTERFACE cint::cint)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_cint)
+endif()
+
 if(TARGET dkh::dkh)
   target_link_libraries(psi4_optional_deps INTERFACE dkh::dkh)
   # USING_dkh provided by dkh::dkh target itself
