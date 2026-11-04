@@ -77,7 +77,7 @@ class MolecularGrid {
     /// Maximum number of functions in a block
     int max_functions_;
     // The total collocation size
-    size_t collocation_size_;
+    size_t collocation_size_ = 0;
     /// Full x points.
     double* x_;
     /// Full y points.

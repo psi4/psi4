@@ -429,7 +429,7 @@ def _np_read(
     filename: str,
     prefix: str = "",
 ) -> Union[core.Matrix, core.Vector]:
-    """Reads the data from a NumPy compressed or uncompressed file using :func:`numpy.load`.
+    """Reads the data from a NumPy compressed or uncompressed file using :py:func:`numpy.load`.
 
     Parameters
     ----------
