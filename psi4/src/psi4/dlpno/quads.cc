@@ -1529,7 +1529,11 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx],
                 l = ijkl_list[l_idx];
             const size_t occupied_permutation = quadruplet_key(i, j, k, l, naocc);
-            if (!computed_terms_12.insert(occupied_permutation).second) return;
+            // Insert this occupied ordering if absent. The returned pair holds an iterator
+            // to the stored key (.first) and a bool (.second): true if inserted, false if
+            // already present. An existing key means we already built terms 1 and 2 for it.
+            const bool first_occurrence = computed_terms_12.insert(occupied_permutation).second;
+            if (!first_occurrence) return;
 
             Tensor<double, 4> gamma_ijkl_perm("gamma_ijkl_perm_12", nqno_ijkl, nqno_ijkl,
                                                nqno_ijkl, nqno_ijkl);
@@ -1592,7 +1596,8 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             const size_t occupied_permutation =
                 quadruplet_key(ijkl_list[i_idx], ijkl_list[j_idx], ijkl_list[k_idx],
                                 ijkl_list[l_idx], naocc);
-            if (!computed_term_3.insert(occupied_permutation).second) return;
+            const bool first_occurrence = computed_term_3.insert(occupied_permutation).second;
+            if (!first_occurrence) return;
 
             Tensor<double, 4> gamma_ijkl_perm("gamma_ijkl_perm_3", nqno_ijkl, nqno_ijkl,
                                                nqno_ijkl, nqno_ijkl);
@@ -1630,7 +1635,8 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             const size_t occupied_permutation =
                 quadruplet_key(ijkl_list[i_idx], ijkl_list[j_idx], ijkl_list[k_idx],
                                 ijkl_list[l_idx], naocc);
-            if (!computed_terms_45.insert(occupied_permutation).second) return;
+            const bool first_occurrence = computed_terms_45.insert(occupied_permutation).second;
+            if (!first_occurrence) return;
 
             Tensor<double, 4> gamma_ijkl_perm("gamma_ijkl_perm_45", nqno_ijkl, nqno_ijkl,
                                                nqno_ijkl, nqno_ijkl);
@@ -1711,7 +1717,8 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             const size_t occupied_permutation =
                 quadruplet_key(ijkl_list[i_idx], ijkl_list[j_idx], ijkl_list[k_idx],
                                 ijkl_list[l_idx], naocc);
-            if (!counted_term_6.insert(occupied_permutation).second) return;
+            const bool first_occurrence = counted_term_6.insert(occupied_permutation).second;
+            if (!first_occurrence) return;
             ++theta_use_count[i_idx * n_occupied_positions + j_idx];
             ++theta_use_count[k_idx * n_occupied_positions + l_idx];
         });
@@ -1722,7 +1729,8 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
             const size_t occupied_permutation =
                 quadruplet_key(ijkl_list[i_idx], ijkl_list[j_idx], ijkl_list[k_idx],
                                 ijkl_list[l_idx], naocc);
-            if (!computed_term_6.insert(occupied_permutation).second) return;
+            const bool first_occurrence = computed_term_6.insert(occupied_permutation).second;
+            if (!first_occurrence) return;
 
             Tensor<double, 4> gamma_ijkl_perm("gamma_ijkl_perm_6", nqno_ijkl, nqno_ijkl,
                                                nqno_ijkl, nqno_ijkl);
