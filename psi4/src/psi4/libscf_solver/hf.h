@@ -281,6 +281,11 @@ class HF : public Wavefunction {
     double otr_final_grad_rms_ = 0.0;
     double otr_final_energy_delta_ = 0.0;
 
+    /// The message of a C++ exception a callback caught rather than let unwind through
+    /// OpenTrustRegion's Fortran frames, for the driver to report. Empty if none was raised.
+    const std::string& otr_callback_error() const { return otr_callback_error_; }
+    std::string otr_callback_error_;
+
 #ifdef USING_OpenTrustRegion
     void otr_record_iteration(OTR::c_real func, const OTR::c_real* grad);
     bool otr_converged() const;

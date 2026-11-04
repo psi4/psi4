@@ -424,6 +424,9 @@ void export_wavefunction(py::module& m) {
              "The gradient RMS OpenTrustRegion finished on.")
         .def("opentrustregion_final_energy_delta", &scf::HF::otr_final_energy_delta,
              "The last macro-iteration energy change OpenTrustRegion finished on.")
+        .def("opentrustregion_callback_error", &scf::HF::otr_callback_error,
+             "The message of the C++ exception a callback into Psi4 raised during the last "
+             "OpenTrustRegion run, or empty if none did.")
         .def("opentrustregion_iteration_energies", &scf::HF::otr_iteration_energies,
              "Total energy at each OpenTrustRegion macro-iteration");
 

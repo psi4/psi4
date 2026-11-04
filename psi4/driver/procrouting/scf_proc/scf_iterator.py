@@ -263,13 +263,11 @@ def scf_initialize(self):
     core.print_out("  ==> Iterations <==\n\n")
 
 
-#: OpenTrustRegion numbers its solver and stability-check failures below 1000 and its
-#: callback failures above. The former all mean the orbitals are not converged -- the
-#: macro-iterations ran out, a line search could not descend along an unstable mode, or the
-#: solver reached the limit of the precision it can deliver and ground to a halt there -- so
-#: they are ordinary non-convergence and subject to FAIL_ON_MAXITER. The latter mean a
-#: callback into psi4 failed, which is a genuine error and must not be swallowed.
-_OTR_CALLBACK_ERROR_FLOOR = 1000
+#: OpenTrustRegion's error code for running out of macro-iterations which is subject to
+#: FAIL_ON_MAXITER. Every other code is a real failure: an invalid setting, a numerical
+#: breakdown inside the solver, or a callback into psi4 that raised (from 1100 up) whose
+#: message opentrustregion_callback_error() then holds.
+_OTR_MAX_ITER_ERROR = 102
 
 
 #: Returned by :py:func:`_run_opentrustregion` when OpenTrustRegion stopped at its precision
@@ -362,6 +360,17 @@ def _run_opentrustregion(self, e_conv, d_conv):
     for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
         occupation = _occupation(self)
         otr_error = self.opentrustregion_scf()
+        if otr_error and otr_error != _OTR_MAX_ITER_ERROR:
+            # A real failure, so it must not be swallowed by FAIL_ON_MAXITER, which callers
+            # such as run_qchf set False to tolerate a deliberately truncated SCF. Raise before
+            # rebuilding from orbitals the failure may have left half-updated.
+            core.print_out(f"    OpenTrustRegion solver failed with error {otr_error}.\n")
+            callback_error = self.opentrustregion_callback_error()
+            if callback_error:
+                raise PsiException(f"OpenTrustRegion solver failed with error {otr_error}, raised "
+                                   f"in a callback into Psi4:\n{callback_error}")
+            raise PsiException(f"OpenTrustRegion solver failed with error {otr_error}. See the "
+                               f"output file for the solver's own message.")
 
         # OTR's last call to Psi4 is often a Hessian-vector product (cphf_Hx reuses JK)
         # so rebuild from converged orbs lest compute_E return garbage.
@@ -388,7 +397,7 @@ def _run_opentrustregion(self, e_conv, d_conv):
         self.form_D()
 
         if otr_error:
-            # The solver gave up. Reported below; nothing here can improve on it.
+            # Out of macro-iterations. Reported below; nothing here can improve on it.
             break
         if _aufbau_occupation(self) == occupation:
             # The occupation OpenTrustRegion optimized is the aufbau one. Done.
@@ -412,16 +421,10 @@ def _run_opentrustregion(self, e_conv, d_conv):
                        "optimized. Reconverging.\n")
 
     if otr_error:
+        # Only running out of macro-iterations gets this far, so subject to FAIL_ON_MAXITER
+        # like any other.
         core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
-        if otr_error < _OTR_CALLBACK_ERROR_FLOOR:
-            # Ordinary non-convergence, so subject to FAIL_ON_MAXITER like any other.
-            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
-        # A callback into psi4 failed. That is a real error, not a converged-or-not question,
-        # so it must not be swallowed by FAIL_ON_MAXITER, which callers such as run_qchf set
-        # False to tolerate a deliberately truncated SCF.
-        raise PsiException(
-            f"OpenTrustRegion solver failed with error {otr_error}. See the output file for "
-            f"the solver's own message.")
+        raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
 
     if self.opentrustregion_stopped_short():
         # OpenTrustRegion stopped where the objective function stops resolving, short of both

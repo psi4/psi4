@@ -30,6 +30,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdio>
+#include <exception>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -1458,49 +1459,68 @@ bool HF::stability_analysis() {
 
 #ifdef USING_OpenTrustRegion
 namespace {
-/// Recover the wavefunction from the opaque context OpenTrustRegion hands back to every
-/// callback. It is whatever opentrustregion_scf() put in solver_settings_type::context, so a
-/// null here means the solver was entered without one rather than anything the solver did.
-HF& otr_host(void* context) {
-    if (!context) throw PSIEXCEPTION("OpenTrustRegion called back without a host context!\n");
-    return *static_cast<HF*>(context);
+/// Run a callback body for OpenTrustRegion on the wavefunction it hands back as the opaque
+/// context, which is whatever opentrustregion_scf() put in solver_settings_type::context. A
+/// C++ exception must not unwind through the solver's Fortran frames, so it is caught here,
+/// its message kept on the wavefunction for the driver to report, and the solver told the
+/// callback failed. OpenTrustRegion then stops with an error code from 1100 up that names the
+/// failing callback.
+template <typename Body>
+OTR::c_int otr_guarded(void* context, Body&& body) {
+    // No context means the solver was entered without one, leaving nowhere to run the callback
+    // or keep a message.
+    if (!context) return 1;
+    HF& host = *static_cast<HF*>(context);
+    try {
+        return body(host);
+    } catch (const std::exception& e) {
+        host.otr_callback_error_ = e.what();
+    } catch (...) {
+        host.otr_callback_error_ = "unknown exception";
+    }
+    return 1;
 }
 }  // namespace
 
 extern "C" OTR::c_int otr_obj_func_wrapper(const OTR::c_real* kappa, OTR::c_real* func, void* context) {
-    return otr_host(context).otr_obj_func(kappa, func);
+    return otr_guarded(context, [&](HF& host) { return host.otr_obj_func(kappa, func); });
 }
 
 extern "C" OTR::c_int otr_hess_x_wrapper(const OTR::c_real* x, OTR::c_real* hess_x, void* context) {
-    return otr_host(context).otr_hess_x(x, hess_x);
+    return otr_guarded(context, [&](HF& host) { return host.otr_hess_x(x, hess_x); });
 }
 
 extern "C" OTR::c_int otr_update_orbs_wrapper(const OTR::c_real* kappa, OTR::c_real* func,
                                               OTR::c_real* grad, OTR::c_real* h_diag,
                                               OTR::hess_x_fp* hess_x_fp, void* context) {
-    HF& host = otr_host(context);
-    auto error = host.otr_update_orbs(kappa, func, grad, h_diag, hess_x_fp);
-    if (error) return error;
+    return otr_guarded(context, [&](HF& host) -> OTR::c_int {
+        auto error = host.otr_update_orbs(kappa, func, grad, h_diag, hess_x_fp);
+        if (error) return error;
 
-    host.otr_record_iteration(*func, grad);
+        host.otr_record_iteration(*func, grad);
 
-    return 0;
+        return 0;
+    });
 }
 
 extern "C" OTR::c_int otr_conv_check_wrapper(OTR::c_bool* converged, void* context) {
-    HF& host = otr_host(context);
+    return otr_guarded(context, [&](HF& host) -> OTR::c_int {
+        if (!(host.otr_has_prev_func_ && host.otr_has_curr_func_)) {
+            *converged = false;
+            return 0;
+        }
 
-    if (!(host.otr_has_prev_func_ && host.otr_has_curr_func_)) {
-        *converged = false;
+        *converged = host.otr_converged();
         return 0;
-    }
-
-    *converged = host.otr_converged();
-    return 0;
+    });
 }
 
 extern "C" void otr_logger(const char* message, void* /*context*/) {
-    outfile->Printf(" %s\n", message);
+    // Nothing may propagate into the Fortran caller, and a lost log line is not worth failing over.
+    try {
+        outfile->Printf(" %s\n", message);
+    } catch (...) {
+    }
 }
 
 void HF::otr_record_iteration(OTR::c_real func, const OTR::c_real* grad) {
@@ -1535,6 +1555,7 @@ int HF::opentrustregion_scf() {
     otr_stopped_short_ = false;
     otr_final_grad_rms_ = 0.0;
     otr_final_energy_delta_ = 0.0;
+    otr_callback_error_.clear();
     otr_has_prev_func_ = false;
     otr_has_curr_func_ = false;
     otr_prev_func_ = 0.0;
