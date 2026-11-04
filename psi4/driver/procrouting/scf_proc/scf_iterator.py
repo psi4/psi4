@@ -279,8 +279,7 @@ def _otr_shortfall(self):
     """How far OpenTrustRegion finished from this SCF's thresholds, as text and as orders."""
     e_conv = core.get_option("SCF", "E_CONVERGENCE")
     d_conv = core.get_option("SCF", "D_CONVERGENCE")
-    grad = self.opentrustregion_final_grad_rms()
-    dE = self.opentrustregion_final_energy_delta()
+    _, grad, dE = self.otr_outcome_
     text = (f"orbital gradient {grad:.2e} against D_CONVERGENCE {d_conv:.2e}, last energy change "
             f"{dE:.2e} against E_CONVERGENCE {e_conv:.2e}")
     # Whichever criterion is further off sets how much work is left: a tight D_CONVERGENCE
@@ -379,6 +378,7 @@ def _run_opentrustregion(self, e_conv, d_conv):
     # at the rule's answer. The default |scf__soscf_start| usually leaves nothing to move, but
     # earlier soscf can reach the branch.
     SCFE_prev_attempt = None
+    prev_attempt = None
     otr_e_conv = e_conv if e_conv is not None else core.get_option("SCF", "E_CONVERGENCE")
     for attempt in range(_OTR_MAX_OCCUPATION_RESTARTS + 1):
         occupation = _occupation(self)
@@ -394,6 +394,10 @@ def _run_opentrustregion(self, e_conv, d_conv):
                                    f"in a callback into Psi4:\n{callback_error}")
             raise PsiException(f"OpenTrustRegion solver failed with error {otr_error}. See the "
                                f"output file for the solver's own message.")
+        # What this run finished on.
+        self.otr_outcome_ = (self.opentrustregion_stopped_short(),
+                             self.opentrustregion_final_grad_rms(),
+                             self.opentrustregion_final_energy_delta())
 
         # OTR's last call to Psi4 is often a Hessian-vector product (cphf_Hx reuses JK)
         # so rebuild from converged orbs lest compute_E return garbage.
@@ -428,7 +432,19 @@ def _run_opentrustregion(self, e_conv, d_conv):
         if SCFE_prev_attempt is not None and SCFE >= SCFE_prev_attempt - otr_e_conv:
             # Reconverging didn't lower the energy. Degenerate orbitals in different irreps --
             # singlet O2's pi*, say -- let the aufbau assignment flip back and forth without
-            # changing the solution, so stop rather than oscillate and keep what was converged.
+            # changing the solution, so stop rather than oscillate. Where the energy actually
+            # rose, the previous attempt is the better solution, so return that one.
+            if SCFE > SCFE_prev_attempt + otr_e_conv:
+                state, self.otr_outcome_ = prev_attempt
+                _restore_orbital_state(self, state)
+                self.form_D()
+                self.form_G()
+                self.form_F()
+                SCFE = self.compute_E()
+                self.set_energies("Total Energy", SCFE)
+                self.set_variable("SCF ITERATION ENERGY", SCFE)
+                core.print_out("    Note: reconverging at the aufbau occupation raised the energy; "
+                               "keeping the previous solution.\n")
             break
         if attempt == _OTR_MAX_OCCUPATION_RESTARTS:
             core.print_out(f"    Note: occupation still moving after "
@@ -436,7 +452,9 @@ def _run_opentrustregion(self, e_conv, d_conv):
                            f"accepting the last solution.\n")
             break
         # Committing to the aufbau assignment, so rebuild the density at it before handing
-        # the orbitals back to OpenTrustRegion for another attempt.
+        # the orbitals back to OpenTrustRegion for another attempt. Keep this attempt's
+        # solution first, in case the next one ends higher.
+        prev_attempt = (_orbital_state(self), self.otr_outcome_)
         self.find_occupation()
         self.form_D()
         SCFE_prev_attempt = SCFE
@@ -449,7 +467,7 @@ def _run_opentrustregion(self, e_conv, d_conv):
         core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
         raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
 
-    if self.opentrustregion_stopped_short():
+    if self.otr_outcome_[0]:
         # OpenTrustRegion stopped where the objective function stops resolving, short of both
         # criteria. Its step acceptance compares the measured against the predicted energy
         # change, so it cannot verify progress it cannot measure.
