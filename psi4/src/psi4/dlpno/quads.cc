@@ -50,6 +50,7 @@
 #include <array>
 #include <cstring>
 #include <ctime>
+#include <limits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -2617,7 +2618,11 @@ DLPNOCCSDTQ::DLPNOCCSDTQ(SharedWavefunction ref_wfn, Options& options)
     : DLPNOCCSDT_Q(ref_wfn, options),
       disk_qno_integrals_(options.get_bool("DLPNO_CCSDTQ_DISK_INTS")),
       extrapolate_t4_(options.get_bool("EXTRAPOLATE_T4")),
-      quadruples_damping_ratio_(options.get_double("QUADRUPLES_DAMPING_RATIO")) {}
+      ccsdtq_damping_(options.get_double("DLPNO_CCSDTQ_DAMPING")) {
+    if (ccsdtq_damping_ < 0.0 || ccsdtq_damping_ >= 1.0) {
+        throw PSIEXCEPTION("DLPNO_CCSDTQ_DAMPING must satisfy 0 <= DLPNO_CCSDTQ_DAMPING < 1.");
+    }
+}
 DLPNOCCSDTQ::~DLPNOCCSDTQ() {}
 
 void DLPNOCCSDTQ::print_header() {
@@ -2629,28 +2634,28 @@ void DLPNOCCSDTQ::print_header() {
     outfile->Printf("             DOI: 10.1021/acs.jctc.5c01910\n\n");
     print_pno_convergence();
     outfile->Printf("  Full-quadruples orbital thresholds:\n");
-    outfile->Printf("    T_CUT_QNO_FULL              = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
-    outfile->Printf("    T_CUT_QNO_STRONG            = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
-    outfile->Printf("    T_CUT_QNO_WEAK              = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
-    outfile->Printf("    MIN_QNOS                    = %6d   \n", options_.get_int("MIN_QNOS"));
-    outfile->Printf("    T_CUT_XPNO                  = %6.3e \n", options_.get_double("T_CUT_XPNO"));
-    outfile->Printf("    T_CUT_XPNO_DIAG_SCALE       = %6.3e \n", options_.get_double("T_CUT_XPNO_DIAG_SCALE"));
-    outfile->Printf("    T_CUT_TRACE_XPNO            = %6.3e \n", options_.get_double("T_CUT_TRACE_XPNO"));
-    outfile->Printf("    MIN_PNOS                    = %6d   \n", options_.get_int("MIN_PNOS"));
+    outfile->Printf("    T_CUT_QNO_FULL               = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
+    outfile->Printf("    T_CUT_QNO_STRONG             = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
+    outfile->Printf("    T_CUT_QNO_WEAK               = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
+    outfile->Printf("    MIN_QNOS                     = %6d   \n", options_.get_int("MIN_QNOS"));
+    outfile->Printf("    T_CUT_XPNO                   = %6.3e \n", options_.get_double("T_CUT_XPNO"));
+    outfile->Printf("    T_CUT_XPNO_DIAG_SCALE        = %6.3e \n", options_.get_double("T_CUT_XPNO_DIAG_SCALE"));
+    outfile->Printf("    T_CUT_TRACE_XPNO             = %6.3e \n", options_.get_double("T_CUT_TRACE_XPNO"));
+    outfile->Printf("    MIN_PNOS                     = %6d   \n", options_.get_int("MIN_PNOS"));
     outfile->Printf("\n  Quadruplet domains and local density fitting:\n");
-    outfile->Printf("    T_CUT_DO_QUADS              = %6.3e \n", options_.get_double("T_CUT_DO_QUADS"));
-    outfile->Printf("    T_CUT_MKN_QUADS             = %6.3e \n", options_.get_double("T_CUT_MKN_QUADS"));
+    outfile->Printf("    T_CUT_DO_QUADS               = %6.3e \n", options_.get_double("T_CUT_DO_QUADS"));
+    outfile->Printf("    T_CUT_MKN_QUADS              = %6.3e \n", options_.get_double("T_CUT_MKN_QUADS"));
     outfile->Printf("\n  Iterative solver settings:\n");
-    outfile->Printf("    E_CONVERGENCE               = %6.3e \n", options_.get_double("E_CONVERGENCE"));
-    outfile->Printf("    R_CONVERGENCE               = %6.3e \n", options_.get_double("R_CONVERGENCE"));
-    outfile->Printf("    DLPNO_MAXITER               = %6d   \n", options_.get_int("DLPNO_MAXITER"));
-    outfile->Printf("    DIIS_MAX_VECS               = %6d   \n", options_.get_int("DIIS_MAX_VECS"));
-    outfile->Printf("    DLPNO_QUADS_MICROITERATIONS = %6d   \n", options_.get_int("DLPNO_QUADS_MICROITERATIONS"));
-    outfile->Printf("    QUADRUPLES_DAMPING_RATIO     = %6.3e \n", quadruples_damping_ratio_);
+    outfile->Printf("    E_CONVERGENCE                = %6.3e \n", options_.get_double("E_CONVERGENCE"));
+    outfile->Printf("    R_CONVERGENCE                = %6.3e \n", options_.get_double("R_CONVERGENCE"));
+    outfile->Printf("    DLPNO_MAXITER                = %6d   \n", options_.get_int("DLPNO_MAXITER"));
+    outfile->Printf("    DIIS_MAX_VECS                = %6d   \n", options_.get_int("DIIS_MAX_VECS"));
+    outfile->Printf("    DLPNO_CCSDTQ_MICROITERATIONS = %6d   \n", options_.get_int("DLPNO_CCSDTQ_MICROITERATIONS"));
+    outfile->Printf("    DLPNO_CCSDTQ_DAMPING         = %6.3e \n", ccsdtq_damping_);
     outfile->Printf("\n  Memory controls:\n");
-    outfile->Printf("    DLPNO_TOGGLE_MEMORY         = %6s   \n", toggle_memory_ ? "TRUE" : "FALSE");
-    outfile->Printf("    DLPNO_CCSDTQ_DISK_INTS      = %6s   \n", disk_qno_integrals_ ? "TRUE" : "FALSE");
-    outfile->Printf("    EXTRAPOLATE_T4              = %6s   \n\n", extrapolate_t4_ ? "TRUE" : "FALSE");
+    outfile->Printf("    DLPNO_TOGGLE_MEMORY          = %6s   \n", toggle_memory_ ? "TRUE" : "FALSE");
+    outfile->Printf("    DLPNO_CCSDTQ_DISK_INTS       = %6s   \n", disk_qno_integrals_ ? "TRUE" : "FALSE");
+    outfile->Printf("    EXTRAPOLATE_T4               = %6s   \n\n", extrapolate_t4_ ? "TRUE" : "FALSE");
     outfile->Printf("  These are the requested memory controls; the memory estimator may\n");
     outfile->Printf("  enable disk-backed QNO integrals or disable T4 DIIS below.\n\n");
     outfile->Printf("  Lower-rank PNO/TNO thresholds and disk settings were reported by\n");
@@ -5569,20 +5574,22 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
     int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, e_weak = 0.0, r_curr1 = 1.0, r_curr2 = 1.0, r_curr3 = 1.0, r_curr4 = 1.0;
     bool e_converged = false, r_converged = false;
-    const int n_microiterations = options_.get_int("DLPNO_QUADS_MICROITERATIONS");
+    const int n_microiterations = options_.get_int("DLPNO_CCSDTQ_MICROITERATIONS");
     
     DIISManager diis = DIISManager(options_.get_int("DIIS_MAX_VECS"), "LCCSDTQ DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
 
-    while (!(e_converged && r_converged)) {
-        // RMS of residual per LMO orbital, for assessing convergence
-        std::vector<double> R_ia_rms(naocc, 0.0);
-        // RMS of residual per LMO pair, for assessing convergence
-        std::vector<double> R_iajb_rms(n_lmo_pairs, 0.0);
-        // RMS of residual per LMO triplet, for assessing convergence
-        std::vector<double> R_iajbkc_rms(n_lmo_triplets, 0.0);
-        // RMS of residual per LMO quadruplet, for assessing convergence
-        std::vector<double> R_iajbkcld_rms(n_lmo_quadruplets, 0.0);
+    // RMS of the most recent residual per LMO orbital, pair, triplet, and quadruplet. These are
+    // used to assess convergence and, when DLPNO_CCSDTQ_DAMPING is nonzero, to damp an
+    // amplitude update only if its residual grew since that block's previous update. They
+    // persist across macroiterations (T3/T4 are updated once per macroiteration, T1/T2 once
+    // per microiteration) and start at infinity so the first update is never damped.
+    const double no_previous_residual = std::numeric_limits<double>::infinity();
+    std::vector<double> R_ia_rms(naocc, no_previous_residual);
+    std::vector<double> R_iajb_rms(n_lmo_pairs, no_previous_residual);
+    std::vector<double> R_iajbkc_rms(n_lmo_triplets, no_previous_residual);
+    std::vector<double> R_iajbkcld_rms(n_lmo_quadruplets, no_previous_residual);
 
+    while (!(e_converged && r_converged)) {
         std::time_t time_start = std::time(nullptr);
 
         for (int miter = 0; miter < n_microiterations; ++miter) {
@@ -5713,7 +5720,7 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
 
                     const double residual_rms = rmsd(R_iajbkcld[ijkl], zero_tensor);
                     double alpha = (fabs(residual_rms) > fabs(R_iajbkcld_rms[ijkl]))
-                                       ? quadruples_damping_ratio_
+                                       ? ccsdtq_damping_
                                        : 0.0;
 
                     for (int a = 0; a < n_qno_[ijkl]; ++a) {
@@ -5760,7 +5767,7 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
                 for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
                     int ijk = sorted_triplets_[ijk_sorted];
                     auto &[i, j, k] = ijk_to_i_j_k_[ijk];
-                    double alpha = (fabs(R_iajbkc[ijk]->rms()) > fabs(R_iajbkc_rms[ijk])) ? quadruples_damping_ratio_ : 0.0;
+                    double alpha = (fabs(R_iajbkc[ijk]->rms()) > fabs(R_iajbkc_rms[ijk])) ? ccsdtq_damping_ : 0.0;
 
                     for (int a_ijk = 0; a_ijk < n_tno_[ijk]; ++a_ijk) {
                         for (int b_ijk = 0; b_ijk < n_tno_[ijk]; ++b_ijk) {
@@ -5790,7 +5797,7 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
     #pragma omp parallel for schedule(dynamic, 1) reduction(+ : r_curr2)
             for (int ij = 0; ij < n_lmo_pairs; ++ij) {
                 auto &[i, j] = ij_to_i_j_[ij];
-                double alpha = (fabs(R_iajb[ij]->rms()) > fabs(R_iajb_rms[ij])) ? quadruples_damping_ratio_ : 0.0;
+                double alpha = (fabs(R_iajb[ij]->rms()) > fabs(R_iajb_rms[ij])) ? ccsdtq_damping_ : 0.0;
 
                 for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                     for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
@@ -5817,7 +5824,7 @@ void DLPNOCCSDTQ::lccsdtq_iterations() {
     #pragma omp parallel for reduction(+ : r_curr1)
             for (int i = 0; i < naocc; ++i) {
                 int ii = i_j_to_ij_[i][i];
-                double alpha = (fabs(R_ia[i]->rms()) > fabs(R_ia_rms[i])) ? quadruples_damping_ratio_ : 0.0;
+                double alpha = (fabs(R_ia[i]->rms()) > fabs(R_ia_rms[i])) ? ccsdtq_damping_ : 0.0;
 
                 for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
                     (*T_ia_[i])(a_ii, 0) -= (1.0 - alpha) * (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));

@@ -2774,9 +2774,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_TNO_FULL", 1.0e-7);
         /*- Number of T1/T2 microiteration updates per full-triples iteration
             (increase this value for systems with strong multireference character) !expert -*/
-        options.add_int("DLPNO_TRIPLES_MICROITERATIONS", 3);
-        /*- Damping factor on triples amplitude updates in CCSDT iterations !expert -*/
-        options.add_double("TRIPLES_DAMPING_RATIO", 0.0);
+        options.add_int("DLPNO_CCSDT_MICROITERATIONS", 3);
+        /*- Damping for amplitude updates in DLPNO-CCSDT iterations: the fraction (0 <= x < 1) of
+            the previous amplitude retained. Applied to a T1, T2, or T3 block only when its
+            residual grew since that block's previous update. Experimental; zero (the default)
+            disables damping. !expert -*/
+        options.add_double("DLPNO_CCSDT_DAMPING", 0.0);
 
         /*- SUBSECTION DLPNO-CCSDT(Q) Specific Options -*/
 
@@ -2821,9 +2824,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_TRACE_XPNO", 0.0);
         /*- Number of T1/T2 microiteration updates per full-quadruples iteration
             (increase this value for systems with strong multireference character) !expert -*/
-        options.add_int("DLPNO_QUADS_MICROITERATIONS", 3);
-        /*- Damping factor applied to quadruples-amplitude updates in CCSDTQ iterations !expert -*/
-        options.add_double("QUADRUPLES_DAMPING_RATIO", 0.0);
+        options.add_int("DLPNO_CCSDTQ_MICROITERATIONS", 3);
+        /*- Damping for amplitude updates in DLPNO-CCSDTQ iterations: the fraction (0 <= x < 1) of
+            the previous amplitude retained. Applied to a T1, T2, T3, or T4 block only when its
+            residual grew since that block's previous update. Experimental; zero (the default)
+            disables damping. !expert -*/
+        options.add_double("DLPNO_CCSDTQ_DAMPING", 0.0);
 
         /*- SUBSECTION Memory Control Options -*/
 

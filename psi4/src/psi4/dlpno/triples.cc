@@ -48,6 +48,7 @@
 
 #include <ctime>
 #include <algorithm>
+#include <limits>
 #include <array>
 #include <unordered_map>
 #include <utility>
@@ -1759,31 +1760,31 @@ void DLPNOCCSDT::print_header() {
     print_pno_convergence();
     outfile->Printf("  Inherited CCSD parameters are reported in the preceding DLPNO-CCSD header.\n");
     outfile->Printf("  Full-triples and inherited triples parameters:\n");
-    outfile->Printf("    T_CUT_TNO                  = %6.3e \n", t_cut_tno);
-    outfile->Printf("    T_CUT_TNO_FULL             = %6.3e \n", t_cut_tno_full);
-    outfile->Printf("    T_CUT_TNO_STRONG           = %6.3e \n", t_cut_tno_full);
-    outfile->Printf("    T_CUT_TNO_WEAK             = %6.3e \n", t_cut_tno_full);
-    outfile->Printf("    T_CUT_TNO_PRE              = %6.3e \n", options_.get_double("T_CUT_TNO_PRE"));
-    outfile->Printf("    T_CUT_TRIPLES_WEAK         = %6.3e \n", options_.get_double("T_CUT_TRIPLES_WEAK"));
-    outfile->Printf("    T_CUT_DO_TRIPLES           = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES"));
-    outfile->Printf("    T_CUT_DO_TRIPLES_PRE       = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES_PRE"));
-    outfile->Printf("    T_CUT_MKN_TRIPLES          = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES"));
-    outfile->Printf("    T_CUT_MKN_TRIPLES_PRE      = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES_PRE"));
-    outfile->Printf("    F_CUT_T                    = %6.3e \n", options_.get_double("F_CUT_T"));
-    outfile->Printf("    T_CUT_ITER                 = %6.3e \n", options_.get_double("T_CUT_ITER"));
-    outfile->Printf("    MIN_TNOS                   = %6d   \n", options_.get_int("MIN_TNOS"));
-    outfile->Printf("    TRIPLES_MAX_WEAK_PAIRS     = %6d   \n", options_.get_int("TRIPLES_MAX_WEAK_PAIRS"));
-    outfile->Printf("    TRIPLES_MICROITERATIONS    = %6d   \n", options_.get_int("DLPNO_TRIPLES_MICROITERATIONS"));
-    outfile->Printf("    TRIPLES_DAMPING_RATIO      = %6.3e \n", options_.get_double("TRIPLES_DAMPING_RATIO"));
-    outfile->Printf("    E_CONVERGENCE              = %6.3e \n", options_.get_double("E_CONVERGENCE"));
-    outfile->Printf("    R_CONVERGENCE              = %6.3e \n", options_.get_double("R_CONVERGENCE"));
-    outfile->Printf("    DLPNO_MAXITER              = %6d   \n", options_.get_int("DLPNO_MAXITER"));
-    outfile->Printf("    DIIS_MAX_VECS              = %6d   \n", options_.get_int("DIIS_MAX_VECS"));
-    outfile->Printf("    DLPNO_TOGGLE_MEMORY        = %6s   \n",
+    outfile->Printf("    T_CUT_TNO                   = %6.3e \n", t_cut_tno);
+    outfile->Printf("    T_CUT_TNO_FULL              = %6.3e \n", t_cut_tno_full);
+    outfile->Printf("    T_CUT_TNO_STRONG            = %6.3e \n", t_cut_tno_full);
+    outfile->Printf("    T_CUT_TNO_WEAK              = %6.3e \n", t_cut_tno_full);
+    outfile->Printf("    T_CUT_TNO_PRE               = %6.3e \n", options_.get_double("T_CUT_TNO_PRE"));
+    outfile->Printf("    T_CUT_TRIPLES_WEAK          = %6.3e \n", options_.get_double("T_CUT_TRIPLES_WEAK"));
+    outfile->Printf("    T_CUT_DO_TRIPLES            = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES"));
+    outfile->Printf("    T_CUT_DO_TRIPLES_PRE        = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES_PRE"));
+    outfile->Printf("    T_CUT_MKN_TRIPLES           = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES"));
+    outfile->Printf("    T_CUT_MKN_TRIPLES_PRE       = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES_PRE"));
+    outfile->Printf("    F_CUT_T                     = %6.3e \n", options_.get_double("F_CUT_T"));
+    outfile->Printf("    T_CUT_ITER                  = %6.3e \n", options_.get_double("T_CUT_ITER"));
+    outfile->Printf("    MIN_TNOS                    = %6d   \n", options_.get_int("MIN_TNOS"));
+    outfile->Printf("    TRIPLES_MAX_WEAK_PAIRS      = %6d   \n", options_.get_int("TRIPLES_MAX_WEAK_PAIRS"));
+    outfile->Printf("    DLPNO_CCSDT_MICROITERATIONS = %6d   \n", options_.get_int("DLPNO_CCSDT_MICROITERATIONS"));
+    outfile->Printf("    DLPNO_CCSDT_DAMPING         = %6.3e \n", options_.get_double("DLPNO_CCSDT_DAMPING"));
+    outfile->Printf("    E_CONVERGENCE               = %6.3e \n", options_.get_double("E_CONVERGENCE"));
+    outfile->Printf("    R_CONVERGENCE               = %6.3e \n", options_.get_double("R_CONVERGENCE"));
+    outfile->Printf("    DLPNO_MAXITER               = %6d   \n", options_.get_int("DLPNO_MAXITER"));
+    outfile->Printf("    DIIS_MAX_VECS               = %6d   \n", options_.get_int("DIIS_MAX_VECS"));
+    outfile->Printf("    DLPNO_TOGGLE_MEMORY         = %6s   \n",
                     options_.get_bool("DLPNO_TOGGLE_MEMORY") ? "TRUE" : "FALSE");
-    outfile->Printf("    DLPNO_CCSDT_DISK_INTS      = %6s   \n", disk_ints_ ? "TRUE" : "FALSE");
-    outfile->Printf("    WRITE_TRIPLES_INTERMEDIATES= %6s   \n", write_intermediates_ ? "TRUE" : "FALSE");
-    outfile->Printf("    WRITE_TRIPLES_AMPLITUDES   = %6s   \n\n", write_amplitudes_ ? "TRUE" : "FALSE");
+    outfile->Printf("    DLPNO_CCSDT_DISK_INTS       = %6s   \n", disk_ints_ ? "TRUE" : "FALSE");
+    outfile->Printf("    WRITE_TRIPLES_INTERMEDIATES = %6s   \n", write_intermediates_ ? "TRUE" : "FALSE");
+    outfile->Printf("    WRITE_TRIPLES_AMPLITUDES    = %6s   \n\n", write_amplitudes_ ? "TRUE" : "FALSE");
 }
 
 void DLPNOCCSDT::estimate_memory() {
@@ -3518,18 +3519,21 @@ void DLPNOCCSDT::lccsdt_iterations() {
     int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, e_weak = 0.0, r_curr1 = 1.0, r_curr2 = 1.0, r_curr3 = 1.0;
     bool e_converged = false, r_converged = false;
-    const int n_microiterations = options_.get_int("DLPNO_TRIPLES_MICROITERATIONS");
+    const int n_microiterations = options_.get_int("DLPNO_CCSDT_MICROITERATIONS");
 
     DIISManager diis = DIISManager(options_.get_int("DIIS_MAX_VECS"), "LCCSDT DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
-    while (!(e_converged && r_converged)) {
-        // RMS of residual per LMO orbital, for assessing convergence
-        std::vector<double> R_ia_rms(naocc, 0.0);
-        // RMS of residual per LMO pair, for assessing convergence
-        std::vector<double> R_iajb_rms(n_lmo_pairs, 0.0);
-        // RMS of residual per LMO triplet, for assessing convergence
-        std::vector<double> R_iajbkc_rms(n_lmo_triplets, 0.0);
+    // RMS of the most recent residual per LMO orbital, pair, and triplet. These are used to
+    // assess convergence and, when DLPNO_CCSDT_DAMPING is nonzero, to damp an amplitude
+    // update only if its residual grew since that block's previous update. They persist
+    // across macroiterations (T3 is updated once per macroiteration, T1/T2 once per
+    // microiteration) and start at infinity so the first update is never damped.
+    const double no_previous_residual = std::numeric_limits<double>::infinity();
+    std::vector<double> R_ia_rms(naocc, no_previous_residual);
+    std::vector<double> R_iajb_rms(n_lmo_pairs, no_previous_residual);
+    std::vector<double> R_iajbkc_rms(n_lmo_triplets, no_previous_residual);
 
+    while (!(e_converged && r_converged)) {
         std::time_t time_start = std::time(nullptr);
 
         for (int miter = 0; miter < n_microiterations; ++miter) {
@@ -3631,7 +3635,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
                 for (int ijk_sorted = 0; ijk_sorted < n_lmo_triplets; ++ijk_sorted) {
                     int ijk = sorted_triplets_[ijk_sorted];
                     auto &[i, j, k] = ijk_to_i_j_k_[ijk];
-                    double alpha = (fabs(R_iajbkc[ijk]->rms()) > fabs(R_iajbkc_rms[ijk])) ? damping_ratio_ : 0.0;
+                    double alpha = (fabs(R_iajbkc[ijk]->rms()) > fabs(R_iajbkc_rms[ijk])) ? ccsdt_damping_ : 0.0;
 
                     for (int a_ijk = 0; a_ijk < n_tno_[ijk]; ++a_ijk) {
                         for (int b_ijk = 0; b_ijk < n_tno_[ijk]; ++b_ijk) {
@@ -3661,7 +3665,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
     #pragma omp parallel for schedule(dynamic, 1) reduction(+ : r_curr2)
             for (int ij = 0; ij < n_lmo_pairs; ++ij) {
                 auto &[i, j] = ij_to_i_j_[ij];
-                double alpha = (fabs(R_iajb[ij]->rms()) > fabs(R_iajb_rms[ij])) ? damping_ratio_ : 0.0;
+                double alpha = (fabs(R_iajb[ij]->rms()) > fabs(R_iajb_rms[ij])) ? ccsdt_damping_ : 0.0;
 
                 for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                     for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
@@ -3688,7 +3692,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
     #pragma omp parallel for reduction(+ : r_curr1)
             for (int i = 0; i < naocc; ++i) {
                 int ii = i_j_to_ij_[i][i];
-                double alpha = (fabs(R_ia[i]->rms()) > fabs(R_ia_rms[i])) ? damping_ratio_ : 0.0;
+                double alpha = (fabs(R_ia[i]->rms()) > fabs(R_ia_rms[i])) ? ccsdt_damping_ : 0.0;
 
                 for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
                     (*T_ia_[i])(a_ii, 0) -= (1.0 - alpha) * (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
@@ -3799,7 +3803,10 @@ double DLPNOCCSDT::compute_energy() {
         psio_->open(PSIF_DLPNO_QAB_PNO, PSIO_OPEN_OLD);
     }
 
-    damping_ratio_ = options_.get_double("TRIPLES_DAMPING_RATIO");
+    ccsdt_damping_ = options_.get_double("DLPNO_CCSDT_DAMPING");
+    if (ccsdt_damping_ < 0.0 || ccsdt_damping_ >= 1.0) {
+        throw PSIEXCEPTION("DLPNO_CCSDT_DAMPING must satisfy 0 <= DLPNO_CCSDT_DAMPING < 1.");
+    }
 
     int n_lmo_triplets = ijk_to_i_j_k_.size();
 

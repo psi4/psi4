@@ -551,8 +551,8 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
 
     // Write expensive integrals (q_{ijk}| m_{ijk} a_{ijk}) and (q_{ijk} | a_{ijk} b_{ijk}) to disk?
     bool disk_ints_;
-    // Damping ratio (how much of the original triples amplitude to keep)
-    double damping_ratio_;
+    /// DLPNO_CCSDT_DAMPING: fraction of the previous T1/T2/T3 amplitude retained when damping is activated
+    double ccsdt_damping_;
 
     // Singles Amplitudes
     std::vector<einsums::Tensor<double, 2>> T_n_ijk_;
@@ -753,8 +753,8 @@ class DLPNOCCSDTQ : public DLPNOCCSDT_Q {
     /// Recompute one XPNO-projected T4 block at a time instead of retaining the
     /// complete [kl][mn] bank when the memory estimator selects low-memory mode.
     bool stream_xpno_t4_ = false;
-    /// Fraction of the preceding T4 amplitude retained when damping is activated.
-    double quadruples_damping_ratio_ = 0.0;
+    /// DLPNO_CCSDTQ_DAMPING: fraction of the previous T1/T2/T3/T4 amplitude retained when damping is activated
+    double ccsdtq_damping_ = 0.0;
     /// Local CCSDTQ correlation energy.
     double e_lccsdtq_ = 0.0;
 
