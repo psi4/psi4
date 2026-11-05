@@ -2233,51 +2233,37 @@ void DLPNOCCSDT::compute_R_ia_triples(std::vector<SharedMatrix>& R_ia, std::vect
         std::array<const Tensor<double, 2>*, 3> K_ovov_list = {
             &K_cache[2], &K_cache[1], &K_cache[0]};
 
-        // Each diagonal-pair overlap is independent of the T3 column
-        // permutation. Cache the three transforms locally instead of rebuilding
-        // them in every contribution.
-        std::array<SharedMatrix, 3> S_ijk_diag;
-        const std::array<int, 3> output_lmos = {i, j, k};
-        for (int output_idx = 0; output_idx < 3; ++output_idx) {
-            const int ii = i_j_to_ij_[output_lmos[output_idx]][output_lmos[output_idx]];
-            auto S = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk],
-                                             lmopair_to_paos_[ii]);
-            S_ijk_diag[output_idx] =
-                linalg::triplet(X_tno_[ijk], S, X_pno_[ii], true, false, false);
-        }
-
         for (int perm_idx = 0; perm_idx < P_S.size(); ++perm_idx) {
             auto &[i, j, k] = P_S[perm_idx];
-            const Tensor<double, 3>* U_ijk = &U_iajbkc_[ijk];
             Tensor<double, 3> U_ijk_permuted;
-            if (perm_idx == 1) {
+            if (perm_idx != 0) {
                 U_ijk_permuted = Tensor<double, 3>(
                     "U_ijk R1 permutation", ntno_ijk, ntno_ijk, ntno_ijk);
-                permute(Indices{index::b, index::a, index::c},
-                        &U_ijk_permuted,
-                        Indices{index::a, index::b, index::c},
-                        U_iajbkc_[ijk]);
-                U_ijk = &U_ijk_permuted;
-            } else if (perm_idx == 2) {
-                U_ijk_permuted = Tensor<double, 3>(
-                    "U_ijk R1 permutation", ntno_ijk, ntno_ijk, ntno_ijk);
-                permute(Indices{index::c, index::a, index::b},
-                        &U_ijk_permuted,
-                        Indices{index::a, index::b, index::c},
-                        U_iajbkc_[ijk]);
-                U_ijk = &U_ijk_permuted;
+                if (perm_idx == 1) {
+                    permute(Indices{index::b, index::a, index::c}, &U_ijk_permuted,
+                            Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+                } else {
+                    permute(Indices{index::c, index::a, index::b}, &U_ijk_permuted,
+                            Indices{index::a, index::b, index::c}, U_iajbkc_[ijk]);
+                }
             }
+            // Use the stored U for the identity permutation and the permuted workspace
+            // for the other two. Binding by reference avoids copying the selected tensor.
+            const auto& U_ijk = (perm_idx == 0) ? U_iajbkc_[ijk] : U_ijk_permuted;
 
             Tensor<double, 1> R_ia_cont("R_ia_cont", n_tno_[ijk]);
             einsum(0.0, Indices{index::a}, &R_ia_cont, prefactor,
-                   Indices{index::a, index::b, index::c}, *U_ijk,
+                   Indices{index::a, index::b, index::c}, U_ijk,
                    Indices{index::b, index::c}, *K_ovov_list[perm_idx]);
 
             auto R_ia_psi = std::make_shared<Matrix>(n_tno_[ijk], 1);
             ::memcpy(R_ia_psi->get_pointer(), &(R_ia_cont)(0), n_tno_[ijk] * sizeof(double));
 
-            R_ia_buffer[thread][i]->add(
-                linalg::doublet(S_ijk_diag[perm_idx], R_ia_psi, true, false));
+            const int ii = i_j_to_ij_[i][i];
+            auto S_ijk_ii = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk],
+                                                    lmopair_to_paos_[ii]);
+            S_ijk_ii = linalg::triplet(X_tno_[ijk], S_ijk_ii, X_pno_[ii], true, false, false);
+            R_ia_buffer[thread][i]->add(linalg::doublet(S_ijk_ii, R_ia_psi, true, false));
         }
 
     } // end ijk
@@ -2394,6 +2380,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
         auto S_ijk = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], triplet_ext_domain);
         S_ijk = linalg::doublet(X_tno_[ijk], S_ijk, true, false);
 
+        // Reuse each triplet-to-pair overlap across residual terms and permutations.
         std::unordered_map<int, SharedMatrix> tno_to_pno_overlap;
         auto overlap_for_pair = [&](int pair) -> SharedMatrix {
             auto found = tno_to_pno_overlap.find(pair);
@@ -2415,7 +2402,6 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
             auto &[i, j, k] = P_S[idx];
             int ij = i_j_to_ij_[i][j];
 
-            const Tensor<double, 3>* U_ijk = &U_iajbkc_[ijk];
             Tensor<double, 3> U_ijk_permuted;
             if (idx != 0) {
                 U_ijk_permuted = Tensor<double, 3>(
@@ -2437,8 +2423,10 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                             Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 }
-                U_ijk = &U_ijk_permuted;
             }
+            // For the identity permutation, read the stored U. Otherwise the workspace
+            // holds U in the requested column order. Bind by reference to avoid a copy.
+            const auto& U_ijk = (idx == 0) ? U_iajbkc_[ijk] : U_ijk_permuted;
 
             // (T1-dressed Fock Matrix) F_kc = [2.0 * (kc|ld) - (kd|lc)] t_{ld}
             Tensor<double, 1> Fkc("Fkc", ntno_ijk);
@@ -2453,7 +2441,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                    Indices{index::l, index::d}, T_n_ijk_[ijk]);
 
             einsum(0.0, Indices{index::a, index::b}, &R_iajb_cont_a,
-                   prefactor, Indices{index::a, index::b, index::c}, *U_ijk,
+                   prefactor, Indices{index::a, index::b, index::c}, U_ijk,
                    Indices{index::c}, Fkc);
             ::memcpy(psi_buffer->get_pointer(), R_iajb_cont_a.data(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));
 
@@ -2480,7 +2468,6 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
             auto &[i, j, k] = perms[idx];
             int ij = i_j_to_ij_[i][j];
 
-            const Tensor<double, 3>* U_ijk = &U_iajbkc_[ijk];
             Tensor<double, 3> U_ijk_permuted;
             if (idx != 0) {
                 U_ijk_permuted = Tensor<double, 3>(
@@ -2511,8 +2498,10 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                             Indices{index::a, index::b, index::c},
                             U_iajbkc_[ijk]);
                 }
-                U_ijk = &U_ijk_permuted;
             }
+            // For the identity permutation, read the stored U. Otherwise the workspace
+            // holds U in the requested column order. Bind by reference to avoid a copy.
+            const auto& U_ijk = (idx == 0) ? U_iajbkc_[ijk] : U_ijk_permuted;
 
             // (T1-dressed integral g_jlkc)
             // (jl|kc)_t1 = (jl|kc) + (jd|kc)t_{l}^{d}
@@ -2528,12 +2517,12 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                        Indices{index::l, index::d}, T_n_ijk_[ijk]);
             }
 
-            auto contract_u3_terms = [&]() {
+            {
                 // The (jl|kc) contraction is a GEMM after explicitly packing
                 // U3 in the requested occupied-column order.
                 einsum(0.0, Indices{index::l, index::a, index::b},
                        &R_iajb_cont_b, prefactor,
-                       Indices{index::a, index::b, index::c}, *U_ijk,
+                       Indices{index::a, index::b, index::c}, U_ijk,
                        Indices{index::l, index::c}, g_jlkc);
 
                 // Direct DF form of U_3^{abc}(db|kc): for each auxiliary
@@ -2546,7 +2535,7 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                     q_kc = (*q_kv_list[idx])(q, All);
                     Tensor<double, 2> U_ab("U_ab", ntno_ijk, ntno_ijk);
                     einsum(0.0, Indices{index::a, index::b}, &U_ab, 1.0,
-                           Indices{index::a, index::b, index::c}, *U_ijk,
+                           Indices{index::a, index::b, index::c}, U_ijk,
                            Indices{index::c}, q_kc);
                     auto q_db = q_vv_[ijk](q, All, All);
                     einsum(1.0, Indices{index::a, index::d},
@@ -2563,15 +2552,14 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
                 // finish with one GEMM over l.
                 Tensor<double, 2> U_al("U_al", ntno_ijk, nlmo_ijk);
                 einsum(0.0, Indices{index::a, index::l}, &U_al, 1.0,
-                       Indices{index::a, index::b, index::c}, *U_ijk,
+                       Indices{index::a, index::b, index::c}, U_ijk,
                        Indices{index::l, index::b, index::c},
                        *K_kvov_list[idx]);
                 einsum(1.0, Indices{index::a, index::d},
                        &R_iajb_cont_a, -prefactor,
                        Indices{index::a, index::l}, U_al,
                        Indices{index::l, index::d}, T_n_ijk_[ijk]);
-            };
-            contract_u3_terms();
+            }
 
             // Copy into a Psi4 Matrix for the subsequent Matrix-based basis transformation.
             ::memcpy(psi_buffer->get_pointer(), R_iajb_cont_a.data(), n_tno_[ijk] * n_tno_[ijk] * sizeof(double));

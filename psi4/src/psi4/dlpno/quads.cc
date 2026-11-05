@@ -1541,9 +1541,9 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
 
             // Canonical Eq. (19), term 1; DLPNO Algorithm 2:
             // (i'a|be) t_{j'k'l'}^{ecd}.
-            // The m=j slice of the term-2 T_mkl block is exactly the required
-            // T_jkl amplitude.  Column symmetry supplies the reversed (l,k)
-            // orientation through labels, eliminating a second T3 projection.
+            // The m=j slice of the term-2 T_mkl block supplies T_jkl.
+            // The representative guard enforces k_idx < l_idx, so its
+            // last two indices already have the required (c,d) order.
             const int j_ijkl =
                 std::find(lmoquadruplet_to_lmos_[ijkl].begin(),
                           lmoquadruplet_to_lmos_[ijkl].end(), j) -
@@ -1555,18 +1555,10 @@ double DLPNOCCSDT_Q::compute_gamma_ijkl(bool store_amplitudes) {
                 T_mkl_list[kl_position](j_ijkl, All, All, All);
             permute(Indices{index::e, index::c, index::d}, &T_jkl,
                     Indices{index::e, index::c, index::d}, T_jkl_view);
-            if (k_idx <= l_idx) {
-                einsum(0.0, Indices{index::a, index::b, index::c, index::d},
-                       &gamma_ijkl_perm, 1.0, Indices{index::a, index::b, index::e},
-                       energy_intermediates.K_iabe[i_idx],
-                       Indices{index::e, index::c, index::d}, T_jkl);
-            } else {
-                einsum(0.0, Indices{index::a, index::b, index::c, index::d},
-                       &gamma_ijkl_perm, 1.0,
-                       Indices{index::a, index::b, index::e},
-                       energy_intermediates.K_iabe[i_idx],
-                       Indices{index::e, index::d, index::c}, T_jkl);
-            }
+            einsum(0.0, Indices{index::a, index::b, index::c, index::d},
+                   &gamma_ijkl_perm, 1.0, Indices{index::a, index::b, index::e},
+                   energy_intermediates.K_iabe[i_idx],
+                   Indices{index::e, index::c, index::d}, T_jkl);
 
             // Canonical Eq. (19), term 2; DLPNO Algorithm 2:
             // -(i'a|j'm) t_{mk'l'}^{bcd}.
@@ -1835,7 +1827,6 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
     const int nqno_ijkl = n_qno_[ijkl];
 
     double quadruplet_energy = 0.0;
-    std::unordered_map<size_t, double> e_perm_energy;
 
     // Materialize an oriented view of a packed pair tensor only when the requested
     // occupied order is reversed. Column symmetry supplies X_ji(a,b) = X_ij(b,a).
@@ -1909,13 +1900,10 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
                 Indices{index::m, index::b, index::a, index::c}, T_ijm_pair);
 
         for (size_t perm_idx : pair_permutation_schedule[scheduled_pair]) {
-        auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
-        int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
-        const size_t ijkl_idx = quadruplet_key(i, j, k, l, naocc);
-
-        if (!e_perm_energy.count(ijkl_idx)) {
-            // Set up e_perm_energy
-            e_perm_energy[ijkl_idx] = 0.0;
+            auto &[i_idx, j_idx, k_idx, l_idx] = quadruple_permutations_[perm_idx];
+            int i = ijkl_list[i_idx], j = ijkl_list[j_idx], k = ijkl_list[k_idx], l = ijkl_list[l_idx];
+            const size_t ijkl_idx = quadruplet_key(i, j, k, l, naocc);
+            double perm_energy = 0.0;
 
             // Get quadruples amplitude
             Tensor<double, 4> T_ijkl = quadruples_permuter(T4, i, j, k, l);
@@ -1975,7 +1963,7 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
             einsum(0.0, Indices{index::a, index::c}, &q5_reduced, 1.0,
                    Indices{index::a, index::c, index::b, index::d}, T_buffer,
                    Indices{index::b, index::d}, U_kl);
-            e_perm_energy[ijkl_idx] -=
+            perm_energy -=
                 2.0 * linear_algebra::dot(q5_reduced, L_ij);
 
             if (evaluate_q5_cross) {
@@ -1985,7 +1973,7 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
                 einsum(0.0, Indices{index::c, index::d}, &q5_reduced, 1.0,
                        Indices{index::c, index::d, index::a, index::b}, T_buffer,
                        Indices{index::a, index::b}, U_kl);
-                e_perm_energy[ijkl_idx] +=
+                perm_energy +=
                     q5_cross_multiplicity *
                     linear_algebra::dot(q5_reduced, K_ij);
             }
@@ -1994,7 +1982,7 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
                 einsum(0.0, Indices{index::a, index::b}, &q5_reduced, 1.0,
                        Indices{index::a, index::b, index::c, index::d}, T_ijkl,
                        Indices{index::c, index::d}, U_kl);
-                e_perm_energy[ijkl_idx] +=
+                perm_energy +=
                     q5_pair_multiplicity *
                     linear_algebra::dot(q5_reduced, L_ij);
             }
@@ -2062,7 +2050,7 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
             permute(Indices{index::m, index::d}, &K_kl_T, Indices{index::d, index::m},
                     intermediates.K_iajm[k_idx * n_occupied_positions + l_idx]);
 
-            e_perm_energy[ijkl_idx] += 2.0 * (linear_algebra::dot(alpha_ijm_buffer, K_lk_T) + linear_algebra::dot(beta_ijm_buffer, K_kl_T));
+            perm_energy += 2.0 * (linear_algebra::dot(alpha_ijm_buffer, K_lk_T) + linear_algebra::dot(beta_ijm_buffer, K_kl_T));
 
             // 2 - P_{kl} contributions
             int k_ijkl = std::find(lmoquadruplet_to_lmos_[ijkl].begin(), lmoquadruplet_to_lmos_[ijkl].end(), k) - lmoquadruplet_to_lmos_[ijkl].begin();
@@ -2104,11 +2092,10 @@ double DLPNOCCSDT_Q::compute_quadruplet_energy(
             permute(Indices{index::e, index::c, index::d}, &g_ldce_T,
                     Indices{index::d, index::c, index::e}, intermediates.K_iabe[l_idx]);
 
-            e_perm_energy[ijkl_idx] += -4.0 * linear_algebra::dot(T_ijk_bar, g_ldce_T) + 2.0 * linear_algebra::dot(T_ijl_bar, g_kdce_T);
-            e_perm_energy[ijkl_idx] += -4.0 * linear_algebra::dot(T_ijl_tilde, g_kdce_T) + 2.0 * linear_algebra::dot(T_ijk_tilde, g_ldce_T);
+            perm_energy += -4.0 * linear_algebra::dot(T_ijk_bar, g_ldce_T) + 2.0 * linear_algebra::dot(T_ijl_bar, g_kdce_T);
+            perm_energy += -4.0 * linear_algebra::dot(T_ijl_tilde, g_kdce_T) + 2.0 * linear_algebra::dot(T_ijk_tilde, g_ldce_T);
 
-            quadruplet_energy += e_perm_energy[ijkl_idx];
-        }
+            quadruplet_energy += perm_energy;
         }
     }
         
@@ -2937,52 +2924,54 @@ void DLPNOCCSDTQ::estimate_memory() {
         size_t r2;
         size_t diis;
         size_t iteration;
+
+        // The XPNO build, integral build, and CC iterations run in separate phases.
+        // Either build can need more memory than the iterations, so report the
+        // largest phase estimate and use it for the 90% memory check.
+        size_t overall_peak_words() const { return std::max({xpno, integral, iteration}); }
     };
 
     auto memory_peaks = [&]() {
-        const size_t common_resident =
+        MemoryPeaks peaks{};
+        peaks.common_resident =
             ccsdt_resident_memory_doubles_ + inherited_supplemental_memory +
             qno_basis_memory + quadruples_amplitude_memory + xpno_basis_memory +
             always_in_core_df_memory + in_core_disk_eligible_df_memory;
         // XPNOs are built before the full-quadruples DF integrals. Include the
         // completed XPNO storage as a conservative upper bound for parallel tasks.
-        const size_t xpno_peak =
+        peaks.xpno =
             ccsdt_resident_memory_doubles_ + inherited_supplemental_memory +
             qno_basis_memory + quadruples_amplitude_memory + xpno_basis_memory +
             nthreads * xpno_transform_workspace_per_thread;
-        const size_t iteration_resident =
-            common_resident + projected_quadruplet_singles_memory + lower_rank_residual_memory +
+        peaks.iteration_resident =
+            peaks.common_resident + projected_quadruplet_singles_memory + lower_rank_residual_memory +
             quadruples_residual_memory + thread_accumulation_buffers;
         const size_t effective_integral_workspace =
             disk_qno_integrals_ ? disk_integral_workspace_per_thread
                                 : integral_workspace_per_thread;
-        const size_t integral_peak =
-            common_resident + nthreads * effective_integral_workspace;
-        const size_t spin_peak = iteration_resident + nthreads * spin_workspace_per_thread;
+        peaks.integral = peaks.common_resident + nthreads * effective_integral_workspace;
+        peaks.spin = peaks.iteration_resident + nthreads * spin_workspace_per_thread;
         const size_t xpno_t4_resident =
             stream_xpno_t4_ ? 0 : xpno_projected_t4_memory;
         const size_t effective_quadruples_workspace =
             quadruples_workspace_per_thread +
             (stream_xpno_t4_ ? xpno_stream_workspace_per_thread : 0);
-        const size_t r4_peak =
-            iteration_resident + xpno_t4_resident + delta_l_memory +
+        peaks.r4 =
+            peaks.iteration_resident + xpno_t4_resident + delta_l_memory +
             delta_m_memory +
             nthreads * std::max(delta_lm_workspace_per_thread,
                                 effective_quadruples_workspace);
-        const size_t r3_peak =
-            iteration_resident +
+        peaks.r3 =
+            peaks.iteration_resident +
             std::max(ccsdt_iteration_workspace_doubles_, nthreads * triples_t4_workspace_per_thread);
-        const size_t r2_peak =
-            iteration_resident +
+        peaks.r2 =
+            peaks.iteration_resident +
             std::max(ccsd_iteration_workspace_doubles_, nthreads * doubles_t4_workspace_per_thread);
         // Besides the caller's solution/error vectors, the on-disk DIIS dot
         // products can load two stored error vectors simultaneously.
-        const size_t diis_peak = iteration_resident + 4 * iteration_vector_words();
-        const size_t iteration_peak =
-            std::max({spin_peak, r4_peak, r3_peak, r2_peak, diis_peak});
-        return MemoryPeaks{common_resident, xpno_peak, integral_peak,
-                           iteration_resident, spin_peak, r4_peak, r3_peak,
-                           r2_peak, diis_peak, iteration_peak};
+        peaks.diis = peaks.iteration_resident + 4 * iteration_vector_words();
+        peaks.iteration = std::max({peaks.spin, peaks.r4, peaks.r3, peaks.r2, peaks.diis});
+        return peaks;
     };
 
     const double DOUBLES_TO_GB = 1.0e-9 * sizeof(double);
@@ -3041,14 +3030,15 @@ void DLPNOCCSDTQ::estimate_memory() {
         print_memory_line("Estimated R3-construction peak", peaks.r3);
         print_memory_line("Estimated R2-construction peak", peaks.r2);
         print_memory_line("Estimated DIIS peak", peaks.diis);
-        print_memory_line("Estimated DLPNO-CCSDTQ peak", peaks.iteration);
+        print_memory_line("Estimated iteration peak", peaks.iteration);
+        print_memory_line("Estimated DLPNO-CCSDTQ peak", peaks.overall_peak_words());
         outfile->Printf("    %-52s : %8.3f [GB]\n\n", "Total memory given", memory_ * BYTES_TO_GB);
     };
 
     print_estimate("DLPNO-CCSDTQ Memory Requirements");
 
     auto peaks = memory_peaks();
-    size_t required_memory = std::max({peaks.xpno, peaks.integral, peaks.iteration});
+    size_t required_memory = peaks.overall_peak_words();
     if (toggle_memory_ && !disk_qno_integrals_ &&
         required_memory * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total required memory is more than 90%% of available memory.\n");
@@ -3058,7 +3048,7 @@ void DLPNOCCSDTQ::estimate_memory() {
         disk_qno_integrals_ = true;
         in_core_disk_eligible_df_memory = 0;
         peaks = memory_peaks();
-        required_memory = std::max({peaks.xpno, peaks.integral, peaks.iteration});
+        required_memory = peaks.overall_peak_words();
         print_estimate("Updated DLPNO-CCSDTQ Memory Requirements");
     }
 
@@ -3070,7 +3060,7 @@ void DLPNOCCSDTQ::estimate_memory() {
             "    Switching the XPNO T_mnkl bank to block-streamed projection...\n");
         stream_xpno_t4_ = true;
         peaks = memory_peaks();
-        required_memory = std::max({peaks.xpno, peaks.integral, peaks.iteration});
+        required_memory = peaks.overall_peak_words();
         print_estimate("Updated DLPNO-CCSDTQ Memory Requirements");
     }
 
@@ -3080,7 +3070,7 @@ void DLPNOCCSDTQ::estimate_memory() {
         outfile->Printf("    Removing T4/R4 blocks from the flattened DIIS vectors...\n");
         extrapolate_t4_ = false;
         peaks = memory_peaks();
-        required_memory = std::max({peaks.xpno, peaks.integral, peaks.iteration});
+        required_memory = peaks.overall_peak_words();
         print_estimate("Updated DLPNO-CCSDTQ Memory Requirements");
     }
 

@@ -3313,6 +3313,7 @@ Scratch directory: /tmp/
     Estimated R3-construction peak                       :    0.057 [GB]
     Estimated R2-construction peak                       :    0.040 [GB]
     Estimated DIIS peak                                  :    0.080 [GB]
+    Estimated iteration peak                             :    0.209 [GB]
     Estimated DLPNO-CCSDTQ peak                          :    0.209 [GB]
     Total memory given                                   :    2.000 [GB]
 
