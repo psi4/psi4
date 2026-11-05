@@ -1,0 +1,141 @@
+#! regression test of DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ, including C2v-to-C1 reference casting
+#! and agreement of every DLPNO stage between serial and 4-thread runs
+
+ref_scf                   =    -76.0267872755965             #TEST
+
+ref_dlpnoccsdt_corl       =     -0.214499682682              #TEST
+ref_dlpnoccsdt_tot        =    -76.241286958276              #TEST
+ref_dlpnoccsdt_q_corl     =     -0.214981281550              #TEST
+ref_dlpnoccsdt_q_tot      =    -76.241768557100              #TEST
+ref_dlpnoccsdtq_tot       =    -76.241742918936              #TEST
+ref_dlpnoccsdtq_corl      =     -0.214955643341              #TEST
+
+# DLPNO stage energies that must not depend on the number of OpenMP threads
+threaded_stages = ['MP2 CORRELATION ENERGY', 'CCSD CORRELATION ENERGY',      #TEST
+                   'CCSD(T) CORRELATION ENERGY', 'CCSDT CORRELATION ENERGY',  #TEST
+                   'CCSDT(Q) CORRELATION ENERGY']                             #TEST
+
+memory 2 GB
+
+molecule h2o {
+0 1
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set mp2_type df
+set cc_type  df
+set nat_orbs False
+# Match the tighter SCF reference used automatically by post-SCF energy calls;
+# the explicit C2v SCF below otherwise retains the looser standalone default.
+set e_convergence 1.0e-8
+set d_convergence 1.0e-8
+set r_convergence 1.0e-8
+# DLPNO-CCSDT and higher ignore PNO_CONVERGENCE and always start from the same
+# default thresholds. A deliberately LOOSE preset here must not change the
+# reference energies below.
+set pno_convergence loose
+# Preserve the historical high-order regression dipole-prescreening domain.
+set t_cut_pre 1.0e-8
+set write_quadruples_intermediates false
+
+# Algorithm 5 is a Jacobi iteration.  Exercise the immutable old/new T4
+# generations in both storage modes and with different OpenMP schedules before
+# the full CCSDTQ regression.  The two answers must be storage- and
+# thread-count independent.
+print('   Testing in-core/disk DLPNO-CCSDT(Q) Jacobi equivalence ...')
+set_num_threads(1)
+val_q_incore, wfn_q_serial = energy('dlpno-ccsdt(q)', return_wfn=True)
+compare_values(ref_dlpnoccsdt_corl, variable('CCSDT CORRELATION ENERGY'), 6,  #TEST
+               'standalone ccsdt corl before (q)')  #TEST
+compare_values(ref_dlpnoccsdt_tot, variable('CCSDT TOTAL ENERGY'), 6,  #TEST
+               'standalone ccsdt total before (q)')  #TEST
+compare_values(ref_dlpnoccsdt_q_tot, val_q_incore, 6,  #TEST
+               'in-core standalone ccsdt(q) total')  #TEST
+clean()
+
+# Multithreading regression. The integral transforms, PNO construction, LMP2, LCCSD,
+# (T), CCSDT, and (Q) kernels are all OpenMP-parallel, so repeat the identical in-core
+# calculation on 4 threads: a race condition shows up as a disagreement with the serial
+# stage energies. The 1.0e-8 tolerance matches E_CONVERGENCE/R_CONVERGENCE. CI runners
+# with fewer than 4 cores are oversubscribed, which only varies thread interleaving more.
+print('   Testing serial/4-thread in-core DLPNO-CCSDT(Q) equivalence ...')
+set_num_threads(4)
+compare_integers(4, get_num_threads(), 'in-core ccsdt(q) runs on 4 threads')  #TEST
+val_q_threaded, wfn_q_threaded = energy('dlpno-ccsdt(q)', return_wfn=True)
+for stage in threaded_stages:  #TEST
+    compare_values(wfn_q_serial.variable(stage), wfn_q_threaded.variable(stage), 8,  #TEST
+                   f'in-core {stage}: 1 vs 4 threads')  #TEST
+compare_values(val_q_incore, val_q_threaded, 8, 'in-core ccsdt(q) total: 1 vs 4 threads')  #TEST
+clean()
+
+set_options({
+    'WRITE_QIA_PNO': True,
+    'WRITE_QAB_PNO': True,
+    'WRITE_TRIPLES_AMPLITUDES': True,
+    'WRITE_QUADRUPLES_INTERMEDIATES': True,
+})
+set_num_threads(2)
+val_q_disk = energy('dlpno-ccsdt(q)')
+compare_values(val_q_incore, val_q_disk, 8, 'ccsdt(q) Jacobi storage/thread equivalence')  #TEST
+clean()
+
+print('   Testing DLPNO-CCSDTQ from a supplied higher-symmetry SCF reference ...')
+molecule h2o_c2v {
+0 1
+O
+H 1 0.957
+H 1 0.957 2 104.5
+}
+
+scf_energy, sym_ref_wfn = energy('scf', molecule=h2o_c2v, return_wfn=True)
+compare_integers(4, sym_ref_wfn.nirrep(), 'C2v SCF reference irreps')                    #TEST
+compare_values(ref_scf, scf_energy, 7, 'C2v scf ref')                                    #TEST
+
+# Serial baseline for the full-quadruples iterations (and, with the WRITE_* options above,
+# the disk-backed lower-order stages), run from the same supplied reference wavefunction.
+set_num_threads(1)
+val_tq_serial, wfn_tq_serial = energy('dlpno-ccsdtq', ref_wfn=sym_ref_wfn, return_wfn=True)
+clean()
+
+set_num_threads(4)
+compare_integers(4, get_num_threads(), 'ccsdtq runs on 4 threads')  #TEST
+val, dlpno_wfn = energy('dlpno-ccsdtq', ref_wfn=sym_ref_wfn, return_wfn=True)
+for stage in threaded_stages + ['CCSDTQ CORRELATION ENERGY']:  #TEST
+    compare_values(wfn_tq_serial.variable(stage), dlpno_wfn.variable(stage), 8,  #TEST
+                   f'disk-backed {stage}: 1 vs 4 threads')  #TEST
+compare_values(val_tq_serial, val, 8, 'ccsdtq total: 1 vs 4 threads')  #TEST
+c1_ref_wfn = dlpno_wfn.reference_wavefunction()
+compare_integers(1, c1_ref_wfn.nirrep(), 'CCSDTQ C1 reference irreps')                   #TEST
+compare_strings('c1', c1_ref_wfn.get_basisset('DF_BASIS_CC').molecule().schoenflies_symbol(),  #TEST
+                'CCSDTQ C1 auxiliary basis point group')                                  #TEST
+for accessor in ('frzcpi', 'frzvpi', 'nalphapi', 'nbetapi', 'nsopi', 'nmopi'):
+    source_dimension = getattr(sym_ref_wfn, accessor)()
+    c1_dimension = getattr(c1_ref_wfn, accessor)()
+    compare_integers(1, c1_dimension.n(), f'CCSDTQ C1 {accessor}')                        #TEST
+    compare_integers(source_dimension.sum(), c1_dimension[0],  #TEST
+                     f'CCSDTQ C1 {accessor} total')                                       #TEST
+compare_integers(4, sym_ref_wfn.nirrep(), 'supplied C2v reference remains unchanged')    #TEST
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                 #TEST
+compare_values(ref_dlpnoccsdt_corl, variable('CCSDT CORRELATION ENERGY'), 6, 'ccsdt corl')          #TEST
+compare_values(ref_dlpnoccsdt_tot, variable('CCSDT TOTAL ENERGY'), 6, 'ccsdt tot')                  #TEST
+compare_values(ref_dlpnoccsdt_q_corl, variable('CCSDT(Q) CORRELATION ENERGY'), 6, 'ccsdt(q) corl')  #TEST
+compare_values(ref_dlpnoccsdt_q_tot, variable('CCSDT(Q) TOTAL ENERGY'), 6, 'ccsdt(q) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 6, 'scf ref')                         #TEST
+compare_values(ref_dlpnoccsdtq_corl, variable('CURRENT CORRELATION ENERGY'), 6, 'ccsdtq corl')   #TEST
+compare_values(ref_dlpnoccsdtq_tot, variable('CURRENT ENERGY'), 6, 'ccsdtq tot')                 #TEST
+compare_values(ref_dlpnoccsdtq_corl, variable('CCSDTQ CORRELATION ENERGY'), 6, 'ccsdtq corl')   #TEST
+compare_values(ref_dlpnoccsdtq_tot, variable('CCSDTQ TOTAL ENERGY'), 6, 'ccsdtq tot')                 #TEST
+compare_values(ref_dlpnoccsdtq_tot - ref_dlpnoccsdt_tot,  #TEST
+               variable('Q CORRECTION ENERGY'), 6, 'ccsdtq - ccsdt')                    #TEST
+compare_values(ref_dlpnoccsdtq_tot - ref_dlpnoccsdt_q_tot,  #TEST
+               variable('CCSDTQ TOTAL ENERGY') - variable('CCSDT(Q) TOTAL ENERGY'),  #TEST
+               6, 'ccsdtq - ccsdt(q)')                                                  #TEST
+compare_values(ref_dlpnoccsdtq_tot, val, 6, 'ccsdtq return')                                     #TEST
+clean()

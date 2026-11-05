@@ -62,6 +62,15 @@ def _get_raw_views(self, copy=False):
         return tuple(self.array_interface())
 
 
+def _vector_from_dims(cls, name, dims):
+    # A single block may be larger than the int-sized entries in a Dimension.
+    if isinstance(dims, core.Dimension):
+        return cls(name, dims)
+    if len(dims) == 1:
+        return cls(name, dims[0])
+    return cls(name, core.Dimension.from_list(dims))
+
+
 def _find_dim(arr, ndim):
     """
     Helper function to help deal with zero or sized arrays
@@ -153,13 +162,7 @@ def array_to_matrix(
             ret = self(name, sdim1, sdim2)
 
         elif arr_type == core.Vector:
-            sdim1 = core.Dimension(irreps)
-
-            for i in range(irreps):
-                d1 = _find_dim(arr[i], 1)
-                sdim1[i] = d1[0]
-
-            ret = self(name, sdim1)
+            ret = _vector_from_dims(self, name, [_find_dim(block, 1)[0] for block in arr])
         else:
             raise ValidationError("Array_to_Matrix: type '%s' is not recognized." % str(arr_type))
 
@@ -213,12 +216,11 @@ def array_to_matrix(
                 if dim2 is not None:
                     raise ValidationError("Array_to_Matrix: If dim2 should not be supplied for 1D vectors.")
 
-                dim1 = core.Dimension.from_list(dim1)
-                ret = self(name, dim1)
+                ret = _vector_from_dims(self, name, dim1)
 
                 start1 = 0
                 for num, interface in enumerate(ret.nph):
-                    d1 = dim1[num]
+                    d1 = ret.dim(num)
                     if (d1 == 0):
                         continue
 
@@ -465,8 +467,7 @@ def _np_read(
         dim2 = core.Dimension.from_list(data[prefix + "Dim2"])
         ret = self(str(data[prefix + "Name"]), dim1, dim2)
     elif arr_type == core.Vector:
-        dim1 = core.Dimension.from_list(data[prefix + "Dim"])
-        ret = self(str(data[prefix + "Name"]), dim1)
+        ret = _vector_from_dims(self, str(data[prefix + "Name"]), data[prefix + "Dim"])
 
     for h in range(data[prefix + "Irreps"]):
         ret.nph[h][:] = ret_data[h]
@@ -529,8 +530,7 @@ def _from_serial(self, json_data: Dict[str, Any]) -> Union[core.Matrix, core.Vec
     """
 
     if json_data["type"] == "vector":
-        dim1 = core.Dimension.from_list([x[0] for x in json_data["shape"]])
-        ret = self("Vector from JSON", dim1)
+        ret = _vector_from_dims(self, "Vector from JSON", [x[0] for x in json_data["shape"]])
     elif json_data["type"] == "matrix":
         dim1 = core.Dimension.from_list([x[0] for x in json_data["shape"]])
         dim2 = core.Dimension.from_list([x[1] for x in json_data["shape"]])
