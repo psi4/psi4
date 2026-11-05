@@ -29,9 +29,13 @@
 #pragma once
 
 #include <algorithm>
+#include <concepts>
+#include <cstddef>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "psi4/libpsi4util/exception.h"
@@ -62,7 +66,7 @@ template <class T>
 T get_block(const T& self, const Slice& slice) {
     // check if slice is within bounds
     for (int h = 0; h < self.nirrep(); h++) {
-        if (slice.end()[h] > self.dimpi()[h]) {
+        if (static_cast<size_t>(slice.end()[h]) > self.block_size(h)) {
             std::string msg =
                 "Invalid call to Vector::get_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
             throw PSIEXCEPTION(msg);
@@ -85,69 +89,74 @@ T get_block(const T& self, const Slice& slice) {
 template <class T>
 class IrreppedVector {
    protected:
-    /// Actual data, of size dimpi_.sum()
+    /// Contiguous storage for all irreps.
     std::vector<T> v_;
-    /// Pointer offsets into v_, of size dimpi_.n()
+    /// One pointer per irrep (null for an empty block).
     std::vector<T*> vector_;
-    /// Dimensions per irrep
+    /// Legacy int dimensions. Empty for a flat vector whose length only fits in size_t.
     Dimension dimpi_;
     /// Name
     std::string name_;
 
-    /// Allocates vector_
-    void alloc() {
-        if (vector_.size()) release();
+    template <std::integral I>
+    static size_t checked_length(I length) {
+        if constexpr (std::is_signed_v<I>) {
+            if (length < 0) throw PSIEXCEPTION("Vector length cannot be negative.");
+        }
+        if constexpr (std::numeric_limits<I>::digits > std::numeric_limits<size_t>::digits) {
+            if (length > static_cast<I>(std::numeric_limits<size_t>::max()))
+                throw PSIEXCEPTION("Vector length does not fit in size_t.");
+        }
+        return static_cast<size_t>(length);
+    }
 
-        int total = dimpi_.sum();
-        v_.resize(total);
-
-        release();
-
+    void alloc(const Dimension& dims) {
+        if (dims.n() > std::numeric_limits<int>::max()) throw PSIEXCEPTION("Too many Vector irreps.");
+        size_t total = 0;
+        for (int length : dims.blocks()) {
+            const auto n = checked_length(length);
+            if (n > v_.max_size() - total) throw PSIEXCEPTION("Vector exceeds the maximum allocation size.");
+            total += n;
+        }
+        v_.assign(total, T{});
+        dimpi_ = dims;
         assign_pointer_offsets();
-    };
-
-    /// Releases vector_
-    void release() {
-        std::fill(vector_.begin(), vector_.end(), (T *) 0);
-        std::fill(v_.begin(), v_.end(), 0);
-    };
+    }
 
     /// Assign pointer offsets in vector_ from v_.
     void assign_pointer_offsets() {
-        // Resize just to be sure it's the correct size
-        vector_.resize(dimpi_.n(), 0);
+        // A nonempty flat vector with no representable Dimension still has exactly one irrep.
+        if (!dimpi_.n() && !v_.empty()) {
+            vector_.assign(1, v_.data());
+            return;
+        }
+        vector_.resize(dimpi_.n());
 
         size_t offset = 0;
         for (int h = 0; h < nirrep(); ++h) {
-            if (dimpi_[h])
-                vector_[h] = &(v_[0]) + offset;
-            else
-                vector_[h] = nullptr;
+            vector_[h] = dimpi_[h] ? v_.data() + offset : nullptr;
             offset += dimpi_[h];
         }
     };
 
-   public:
-    explicit IrreppedVector(int dim) : dimpi_(1) {
-        dimpi_[0] = dim;
-        alloc();
-    };
+    IrreppedVector(const std::string& name, size_t length)
+        : v_(length), dimpi_(length <= std::numeric_limits<int>::max() ? 1 : 0), name_(name) {
+        if (dimpi_.n()) dimpi_[0] = static_cast<int>(length);
+        assign_pointer_offsets();
+    }
 
-    explicit IrreppedVector(const std::string & name, int dim) : dimpi_(1) {
-        dimpi_[0] = dim;
-        alloc();
-        name_ = name;
-    };
+   public:
+    explicit IrreppedVector(int dim) : IrreppedVector("", checked_length(dim)) {}
+
+    explicit IrreppedVector(const std::string& name, int dim) : IrreppedVector(name, checked_length(dim)) {}
 
     explicit IrreppedVector(const Dimension &dimpi) {
-        dimpi_ = dimpi;
-        alloc();
+        alloc(dimpi);
         name_ = dimpi.name();
     };
 
     explicit IrreppedVector(const std::string &name, const Dimension &dimpi) {
-        dimpi_ = dimpi;
-        alloc();
+        alloc(dimpi);
         name_ = name;
     };
 
@@ -157,13 +166,18 @@ class IrreppedVector {
         copy(vector);
     }
 
-    ~IrreppedVector() { release(); }
+    IrreppedVector& operator=(const IrreppedVector& other) {
+        if (this != &other) {
+            copy(other);
+            name_ = other.name_;
+        }
+        return *this;
+    }
 
     /// Re-initialize the vector. Should usually prefer creating new object.
     void init(const Dimension &v) {
+        alloc(v);
         name_ = v.name();
-        dimpi_ = v;
-        alloc();
     };
 
     /// Copy IrreppedVector's data into this.
@@ -175,78 +189,87 @@ class IrreppedVector {
 
     IrreppedVector<T> clone() const { return IrreppedVector<T>(*this) ; }
 
-    T &operator()(int i) { return vector_[0][i]; }
-    const T &operator()(int i) const { return vector_[0][i]; }
-    T &operator[](int i) { return vector_[0][i]; }
-    const T &operator[](int i) const { return vector_[0][i]; }
+    T &operator()(size_t i) { return vector_[0][i]; }
+    const T &operator()(size_t i) const { return vector_[0][i]; }
+    T &operator[](size_t i) { return vector_[0][i]; }
+    const T &operator[](size_t i) const { return vector_[0][i]; }
 
     /// Returns a pointer to irrep h
     T *pointer(int h = 0) { return vector_[h]; }
     const T *pointer(int h = 0) const { return vector_[h]; }
 
     // Exploit contiguous memory storage to handle elements across all irreps.
-    T get(int m) const {
-        if (m >= dimpi_.sum()) {
-            throw PSIEXCEPTION("Cannot get element " + std::to_string(m) +  " since there are only " + std::to_string(dimpi_.sum()) +  " elements.");
+    T get(size_t m) const {
+        if (m >= size()) {
+            throw PSIEXCEPTION("Cannot get element " + std::to_string(m) +  " since there are only " + std::to_string(size()) +  " elements.");
         }
         return v_[m];
     }
-    T get(int h, int m) const {
-        if (h >= nirrep()) {
-            throw PSIEXCEPTION("Cannot get an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");
-        }
-        if (m >= dim(h)) {
-            throw PSIEXCEPTION("Cannot get element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(dim(h)) +  " elements.");
+    T get(int h, size_t m) const {
+        if (m >= block_size(h)) {
+            throw PSIEXCEPTION("Cannot get element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(block_size(h)) +  " elements.");
         }
         return vector_[h][m];
     }
 
     // Exploit contiguous memory storage to handle elements across all irreps.
-    void set(int m, T val) {
-        if (m >= dimpi_.sum()) {
-            throw PSIEXCEPTION("Cannot set element " + std::to_string(m) +  " since there are only " + std::to_string(dimpi_.sum()) +  " elements.");
+    void set(size_t m, T val) {
+        if (m >= size()) {
+            throw PSIEXCEPTION("Cannot set element " + std::to_string(m) +  " since there are only " + std::to_string(size()) +  " elements.");
         }
         v_[m] = val;
     }
-    void set(int h, int m, T val) {
-        if (h >= nirrep()) {
-            throw PSIEXCEPTION("Cannot set an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");
-        }
-        if (m >= dim(h)) {
-            throw PSIEXCEPTION("Cannot set element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(dim(h)) +  " elements.");
+    void set(int h, size_t m, T val) {
+        if (m >= block_size(h)) {
+            throw PSIEXCEPTION("Cannot set element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(block_size(h)) +  " elements.");
         }
         vector_[h][m] = val;
     }
 
     // Exploit contiguous memory storage to handle elements across all irreps.
-    void add(int m, T val) {
-        if (m >= dimpi_.sum()) {
-            throw PSIEXCEPTION("Cannot add to element " + std::to_string(m) +  " since there are only " + std::to_string(dimpi_.sum()) +  " elements.");
+    void add(size_t m, T val) {
+        if (m >= size()) {
+            throw PSIEXCEPTION("Cannot add to element " + std::to_string(m) +  " since there are only " + std::to_string(size()) +  " elements.");
         }
         v_[m] += val;
     }
-    void add(int h, int m, T val) {
-        if (h >= nirrep()) {
-            throw PSIEXCEPTION("Cannot add to an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");
-        }
-        if (m >= dim(h)) {
-            throw PSIEXCEPTION("Cannot add to element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(dim(h)) +  " elements.");
+    void add(int h, size_t m, T val) {
+        if (m >= block_size(h)) {
+            throw PSIEXCEPTION("Cannot add to element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(block_size(h)) +  " elements.");
         }
         vector_[h][m] += val;
     }
 
     void zero() { std::fill(v_.begin(), v_.end(), 0); }
 
-    int dim(int h = 0) const { return dimpi_[h]; }
-    const Dimension &dimpi() const { return dimpi_; }
-    int nirrep() const { return dimpi_.n(); }
+    /// Total number of elements, including all irreps.
+    size_t size() const { return v_.size(); }
+    size_t block_size(int h = 0) const {
+        if (h < 0 || h >= nirrep()) throw PSIEXCEPTION("Vector irrep index is out of range.");
+        return nirrep() == 1 ? size() : static_cast<size_t>(dimpi_[h]);
+    }
+    /// Legacy int-sized shape accessors; never return a truncated length.
+    int dim(int h = 0) const {
+        auto n = block_size(h);
+        if (n > std::numeric_limits<int>::max()) throw PSIEXCEPTION("Vector::dim: use block_size() for lengths above INT_MAX.");
+        return static_cast<int>(n);
+    }
+    const Dimension &dimpi() const {
+        if (vector_.size() != dimpi_.n()) throw PSIEXCEPTION("Vector length exceeds the int range of Dimension; use block_size().");
+        return dimpi_;
+    }
+    int nirrep() const { return static_cast<int>(vector_.size()); }
 
     // Getter and setter for name, used in print functions
     std::string name() const { return name_; }
     void set_name(const std::string &name) { name_ = name; }
 
     void sort(std::function<bool(int, T, T)> func) {
-        sort(func, Slice(Dimension(nirrep()), dimpi_));
+        for (int h = 0; h < nirrep(); ++h) {
+            const size_t n = block_size(h);
+            if (n > 1)
+                std::stable_sort(pointer(h), pointer(h) + n, std::bind(func, h, std::placeholders::_1, std::placeholders::_2));
+        }
     }
     void sort(std::function<bool(int, T, T)> func, Slice slice) {
         for (int h = 0; h < nirrep(); h++) {
@@ -255,10 +278,10 @@ class IrreppedVector {
     }
 
     void sort(const IrreppedVector<int>& idxs) {
-        auto orig = clone();
-        if (dimpi_ != idxs.dimpi()) {
+        if (dimpi() != idxs.dimpi()) {
             throw PSIEXCEPTION("Indexing vector and vector to sort must have the same dimension.");
         }
+        auto orig = clone();
         // WARNING! Function also requires each irrepped block to be a permutation of 0, 1, 2...
         for (int h = 0; h < nirrep(); h++) {
             for (int i = 0; i < dimpi_[h]; i++) {
@@ -270,10 +293,10 @@ class IrreppedVector {
     void print(const std::string& out, const std::string& fmt) const {
         const auto printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
         printer->Printf("\n # %s #\n", name_.c_str());
-        const std::string temp_str = "   %4d: " + fmt + "\n"; 
+        const std::string temp_str = "   %4zu: " + fmt + "\n";
         for (int h = 0; h < nirrep(); ++h) {
             printer->Printf(" Irrep: %d\n", h + 1);
-            for (int i = 0; i < dimpi_[h]; ++i) printer->Printf(temp_str.c_str(), i + 1, vector_[h][i]);
+            for (size_t i = 0; i < block_size(h); ++i) printer->Printf(temp_str.c_str(), i + 1, vector_[h][i]);
             printer->Printf("\n");
         }
     }
@@ -282,7 +305,7 @@ class IrreppedVector {
     void set_block(const Slice &slice, const IrreppedVector<T>& block) {
         // check if slice is within bounds
         for (int h = 0; h < nirrep(); h++) {
-            if (slice.end()[h] > dimpi_[h]) {
+            if (static_cast<size_t>(slice.end()[h]) > block_size(h)) {
                 std::string msg =
                     "Invalid call to get_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
                 throw PSIEXCEPTION(msg);
@@ -311,6 +334,14 @@ class PSI_API Vector final : public IrreppedVector<double> {
    public:
     explicit Vector(int dim) : IrreppedVector<double>(dim) {};
     explicit Vector(const std::string& name, int dim) : IrreppedVector<double>(name, dim) {};
+    /// Construct one contiguous irrep, including lengths above INT_MAX.
+    explicit Vector(size_t dim) : Vector("", dim) {}
+    explicit Vector(const std::string& name, size_t dim) : IrreppedVector<double>(name, dim) {}
+    // Keep calls with other integral types unambiguous between int and size_t.
+    template <std::integral I>
+    explicit Vector(I dim) : Vector(checked_length(dim)) {}
+    template <std::integral I>
+    explicit Vector(const std::string& name, I dim) : Vector(name, checked_length(dim)) {}
     explicit Vector(const Dimension &dimpi) : IrreppedVector<double>(dimpi) {};
     explicit Vector(const std::string& name, const Dimension &dimpi) : IrreppedVector<double>(name, dimpi) {};
     Vector(const Vector& vector) : IrreppedVector<double>(vector) {};
@@ -323,8 +354,8 @@ class PSI_API Vector final : public IrreppedVector<double> {
     Vector get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
 
     /// Adds other elt/vector to this
-    void add(int m, double val) { IrreppedVector<double>::add(m, val); }
-    void add(int h, int m, double val) { IrreppedVector<double>::add(h, m, val); }
+    void add(size_t m, double val) { IrreppedVector<double>::add(m, val); }
+    void add(int h, size_t m, double val) { IrreppedVector<double>::add(h, m, val); }
     void add(const Vector &other);
 
     /// Subtracts other vector from this

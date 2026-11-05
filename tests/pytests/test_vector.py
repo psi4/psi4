@@ -2,6 +2,10 @@
 Tests for Vector class.
 """
 
+import os
+import sys
+
+import numpy as np
 import pytest
 
 from psi4.core import Dimension, Vector, IntVector, Slice
@@ -27,6 +31,68 @@ def test_constructors(tested_class):
     # named 1-irrep vector
     v2 = tested_class("v2", int_d)
     check_dense_vec(v2, int_d, "v2")
+
+
+@pytest.mark.parametrize("named", [False, True])
+def test_flat_vector_does_not_narrow_length(named):
+    # Too large to store even one byte per entry. A cast to 32-bit int on a
+    # 64-bit host would turn this into an apparently valid seven-element vector.
+    args = ("wide", sys.maxsize + 8) if named else (sys.maxsize + 8,)
+    with pytest.raises((ValueError, MemoryError)):
+        Vector(*args)
+
+
+def test_vector_size_and_wide_index():
+    v = Vector(Dimension([2, 0, 3]))
+    assert v.size() == 5
+    if sys.maxsize > 2**32:
+        with pytest.raises(RuntimeError):
+            v.set(2**32 + 1, 3.0)
+    assert v.get(1) == 0
+
+
+@pytest.mark.skipif(os.getenv("PSI4_TEST_LARGE_VECTOR") != "1", reason="allocates a 16 GiB vector")
+def test_flat_vector_above_int_max():
+    from psi4.driver.procrouting.diis import template_helper
+
+    n = int(np.iinfo(np.intc).max) + 3
+    v = Vector("large flat vector", n)
+    assert v.nirrep() == 1 and v.dim() == v.size() == n
+    assert v.np.shape == (n,)
+    assert template_helper(v) == [[n]]  # The on-disk DIIS reconstruction must keep the full length.
+    with pytest.raises(RuntimeError, match="Dimension"):
+        v.dimpi()
+    v.np[-1] = 3.0
+    v.add(0, n - 1, 1.0)
+    assert v.get(n - 1) == 4.0
+    assert v.vector_dot(v) == 16.0
+
+
+@pytest.mark.parametrize("dims", [3, Dimension([1, 0, 2])], ids=["flat", "symmetry"])
+def test_disk_diis_vector_round_trip(dims):
+    from psi4.driver.procrouting.diis import DIIS, StoragePolicy
+
+    def vec(values):
+        v = Vector("DIIS vector", dims)
+        for i, value in enumerate(values):
+            v.set(i, value)
+        return v
+
+    manager = DIIS(2, "Vector shape round trip", storage_policy=StoragePolicy.OnDisk)
+    try:
+        e1, e2 = vec([1, 0, 0]), vec([0, 2, 0])
+        t1, t2 = vec([1, 2, 3]), vec([6, 7, 8])
+        manager.set_error_vector_size(e1)
+        manager.set_vector_size(t1)
+        manager.add_entry(e1, t1)
+        manager.add_entry(e2, t2)
+        restored = manager.load_quantity("target", 0, 0)
+        assert restored.dimpi() == t1.dimpi()
+        manager.extrapolate(t1)
+        # Orthogonal errors with squared norms 1 and 4 give DIIS weights 4/5 and 1/5.
+        assert [t1.get(i) for i in range(3)] == pytest.approx([2, 3, 4])
+    finally:
+        manager.delete_diis_file()
 
 def check_block_vec(v, exp_nirrep, exp_d, exp_name=None):
     assert v.nirrep() == exp_nirrep

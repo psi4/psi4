@@ -45,6 +45,11 @@ namespace psi {
 void Vector::gemv(bool transa, double alpha, const Matrix& A, const Vector& X, double beta) {
     char trans = transa ? 't' : 'n';
 
+    // Matrix block dimensions are still int-sized.
+    if ((nirrep() == 1 && size() > std::numeric_limits<int>::max()) ||
+        (X.nirrep() == 1 && X.size() > std::numeric_limits<int>::max()))
+        throw PSIEXCEPTION("Vector::gemv: a flat vector above INT_MAX cannot match a Matrix block.");
+
     for (int h = 0; h < nirrep(); ++h) {
         C_DGEMV(trans, A.rowspi(h), A.colspi(h), alpha, A.get_pointer(h), A.colspi(h), &(X.vector_[h][0]), 1, beta,
                 &(vector_[h][0]), 1);
@@ -101,9 +106,10 @@ void Vector::save(psi::PSIO *const psio, size_t fileno) const {
         str += " Irrep " + std::to_string(h);
 
         // Write the sub-blocks
-        if (dimpi_[h] > 0)
+        const size_t n = block_size(h);
+        if (n > 0)
             psio->write_entry(fileno, const_cast<char *>(str.c_str()), (char *)vector_[h],
-                              sizeof(double) * dimpi_[h]);
+                              sizeof(double) * n);
     }
     if (!already_open) psio->close(fileno, 1);  // Close and keep
 }
@@ -122,9 +128,10 @@ void Vector::load(psi::PSIO *const psio, size_t fileno) {
         str += " Irrep " + std::to_string(h);
 
         // Read the sub-blocks
-        if (dimpi_[h] > 0)
+        const size_t n = block_size(h);
+        if (n > 0)
             psio->read_entry(fileno, str.c_str(), (char *)vector_[h],
-                             sizeof(double) * dimpi_[h]);
+                             sizeof(double) * n);
     }
 
     if (!already_open) psio->close(fileno, 1);  // Close and keep

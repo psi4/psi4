@@ -43,7 +43,8 @@ def template_helper(*args):
     template = []
     for arg in args:
         if isinstance(arg, core.Vector):
-            template.append([arg.dimpi()])
+            # On disk we reconstruct a flat vector from its full length; Dimension stores C++ ints.
+            template.append([arg.dim() if arg.nirrep() == 1 else arg.dimpi()])
         elif isinstance(arg, (core.Matrix, core.dpdfile2, core.dpdbuf4)):
             template.append([arg.rowdim(), arg.coldim()])
         elif isinstance(arg, float):
