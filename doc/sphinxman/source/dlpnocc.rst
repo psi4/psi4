@@ -113,6 +113,25 @@ used for DLPNO-CCSD(T) are applied to full triples, perturbative quadruples, and
 quadruples, with local natural-orbital spaces constructed for each significant occupied
 orbital tuple.
 
+DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ do not use |dlpno__pno_convergence|.
+These methods are intended for benchmark-quality calculations, so every higher-order
+computation starts from the same PNO, domain, and pair thresholds, listed in
+:ref:`the table below <table:dlpno_post_ccsdt_defaults>`. They correspond to the
+``VERY_TIGHT`` coupled-cluster preset with |dlpno__t_cut_pairs| tightened to ``1.0e-8``.
+If |dlpno__pno_convergence| is set, it has no effect on these calculations and a warning is
+printed in the output. To tighten or loosen a threshold, set the corresponding
+option directly (for example, ``set t_cut_pno 1.0e-9``).
+
+.. _`table:dlpno_post_ccsdt_defaults`:
+
+.. table:: Default PNO thresholds for DLPNO-CCSDT and higher methods
+
+   +-----------+-------------+--------------+----------+-----------+-------------+---------------+
+   | T_CUT_PNO | T_CUT_TRACE | T_CUT_ENERGY | T_CUT_DO | T_CUT_MKN | T_CUT_PAIRS | T_CUT_PNO_MP2 |
+   +===========+=============+==============+==========+===========+=============+===============+
+   | 1.0e-8    | 0.999       | 0.997        | 5e-3     | 1e-4      | 1.0e-8      | 1.0e-10       |
+   +-----------+-------------+--------------+----------+-----------+-------------+---------------+
+
 .. note::
 
    For DLPNO-CCSDT and higher methods, |PSIfour| sets
@@ -210,8 +229,6 @@ An example input file for a DLPNO-CCSDT computation is::
    set basis cc-pvdz
    set scf_type df
    set freeze_core true
-   set pno_convergence very_tight
-   set t_cut_pairs 1.0e-8
    set t_cut_tno_full 1.0e-7
 
    energy('dlpno-ccsdt')
@@ -251,8 +268,6 @@ An example input file for an iterative DLPNO-CCSDT(Q) computation is::
    set basis cc-pvdz
    set scf_type df
    set freeze_core true
-   set pno_convergence very_tight
-   set t_cut_pairs 1.0e-8
    set t_cut_tno_full 1.0e-7
    set t_cut_qno 3.33e-7
 
@@ -407,8 +422,6 @@ An example input file for a DLPNO-CCSDTQ computation is::
    set basis cc-pvdz
    set scf_type df
    set freeze_core true
-   set pno_convergence very_tight
-   set t_cut_pairs 1.0e-8
    set t_cut_tno_full 1.0e-7
    set t_cut_qno 3.33e-7
    set t_cut_qno_full 3.33e-6
@@ -612,6 +625,10 @@ as well as the percentage energy recovery of the PNOs compared to the non-trunca
    | Very_Tight               | 1.0e-8     | 0.999       | 0.997        | 5e-3     | 1e-4      | 1e-6        | Benchmarking, Focal Point |
    +--------------------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
 
+These presets apply to DLPNO-CCSD and DLPNO-CCSD(T). DLPNO-CCSDT and higher methods ignore
+|dlpno__pno_convergence|. Their defaults are given in
+:ref:`the post-CCSD(T) defaults table <table:dlpno_post_ccsdt_defaults>`.
+
 Practical Advice
 ----------------
 
@@ -645,10 +662,10 @@ Practical Advice
   Einsums tensor library enabled (``ENABLE_Einsums=ON``). DLPNO-MP2, DLPNO-CCSD,
   and DLPNO-CCSD(T) remain available when Einsums support is disabled.
 
-* For higher-order calculations, the recommended starting settings are
-  |dlpno__pno_convergence| ``VERY_TIGHT`` and |dlpno__t_cut_pairs| = ``1.0e-8``.
-  These values are applied automatically by the higher-order drivers. Custom thresholds should be
-  validated carefully for the intended application.
+* Higher-order calculations ignore |dlpno__pno_convergence| and always start from the
+  thresholds in :ref:`the post-CCSD(T) defaults table <table:dlpno_post_ccsdt_defaults>`.
+  Individual thresholds can be tightened by setting the corresponding options explicitly.
+  Custom thresholds should be validated carefully for the intended application.
 
 * DLPNO-CCSDT(Q) is particularly useful in composite or focal-point schemes, where the
   higher-order correction is formed as the difference between DLPNO-CCSDT(Q) and a canonical

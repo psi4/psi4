@@ -105,7 +105,7 @@ void DLPNOCCSD_T::print_header() {
     outfile->Printf("                    by Andy Jiang              \n");
     outfile->Printf("               DOI: 10.1063/5.0219963          \n");
     outfile->Printf("   --------------------------------------------\n\n");
-    outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
+    print_pno_convergence();
     outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
     outfile->Printf("    ALGORITHM    = %6s   \n", triples_algorithm.c_str());
     outfile->Printf("    T_CUT_TNO (T0)             = %6.3e \n", t_cut_tno);
@@ -1756,7 +1756,7 @@ void DLPNOCCSDT::print_header() {
     outfile->Printf("                   by Andy Jiang               \n");
     outfile->Printf("              DOI: 10.1021/acs.jctc.4c01716   \n");
     outfile->Printf("   --------------------------------------------\n\n");
-    outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
+    print_pno_convergence();
     outfile->Printf("  Inherited CCSD parameters are reported in the preceding DLPNO-CCSD header.\n");
     outfile->Printf("  Full-triples and inherited triples parameters:\n");
     outfile->Printf("    T_CUT_TNO                  = %6.3e \n", t_cut_tno);

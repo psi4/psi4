@@ -3009,7 +3009,7 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("                   by Andy Jiang               \n");
     outfile->Printf("              DOI: 10.1063/5.0219963           \n");
     outfile->Printf("   --------------------------------------------\n\n");
-    outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
+    print_pno_convergence();
     outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
     outfile->Printf("    T_CUT_PNO        = %6.4e \n", T_CUT_PNO_);
     outfile->Printf("    T_DIAG_SCALE     = %6.4e \n", T_CUT_PNO_DIAG_SCALE_);
@@ -3033,9 +3033,14 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("    F_CUT            = %6.4e \n", options_.get_double("F_CUT"));
     outfile->Printf("    INTS_TOL (AO)    = %6.4e \n", options_.get_double("DLPNO_AO_INTS_TOL"));
     outfile->Printf("    MIN_PNOS         = %6d   \n", options_.get_int("MIN_PNOS"));
-    const bool post_ccsd_t = algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q ||
-                             algorithm_ == DLPNOMethod::CCSDTQ;
-    if (post_ccsd_t && options_["T_CUT_PAIRS_MP2"].has_changed()) {
+    if (is_post_ccsd_t() && options_["PNO_CONVERGENCE"].has_changed()) {
+        outfile->Printf(
+            "\n    WARNING: PNO_CONVERGENCE = %s is ignored for DLPNO-CCSDT and higher methods.\n"
+            "             These methods always start from the post-CCSD(T) defaults listed above.\n"
+            "             Set the individual T_CUT_* options to change those thresholds.\n",
+            options_.get_str("PNO_CONVERGENCE").c_str());
+    }
+    if (is_post_ccsd_t() && options_["T_CUT_PAIRS_MP2"].has_changed()) {
         outfile->Printf(
             "\n    WARNING: T_CUT_PAIRS_MP2 does not define a separate weak-pair interval for\n"
             "             DLPNO-CCSDT and higher methods. Its value is overridden by\n"

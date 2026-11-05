@@ -2653,7 +2653,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Auxiliary basis set for density-fitted coupled cluster computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_CC", "");
-        /*- General convergence criteria for DLPNO methods -*/
+        /*- General convergence criteria for DLPNO-MP2, DLPNO-CCSD, and DLPNO-CCSD(T).
+            Ignored by DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ, which always start from
+            one fixed set of thresholds; set the individual T_CUT_* options to change them. -*/
         options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT VERY_TIGHT");
         /*- Convergence criteria for the Foster-Boys orbital localization -*/
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);

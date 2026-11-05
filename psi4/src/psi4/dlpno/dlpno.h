@@ -231,6 +231,15 @@ class DLPNO : public Wavefunction {
 
     void common_init();
 
+    /// Is this a DLPNO-CCSDT, DLPNO-CCSDT(Q), or DLPNO-CCSDTQ computation?
+    /// These methods ignore PNO_CONVERGENCE and use one fixed set of default thresholds.
+    bool is_post_ccsd_t() const {
+        return algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q ||
+               algorithm_ == DLPNOMethod::CCSDTQ;
+    }
+    /// Print the PNO_CONVERGENCE level (or note that it is unused) in a method header
+    void print_pno_convergence();
+
     // Helper functions
     void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B);
     /// Factor A once and solve A X = B for several right-hand-side blocks.

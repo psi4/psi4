@@ -122,8 +122,7 @@ void DLPNOCCSDT_Q::print_header() {
     outfile->Printf("                   by Andy Jiang               \n");
     outfile->Printf("              DOI: 10.1063/5.0257672          \n");
     outfile->Printf("   --------------------------------------------\n\n");
-    outfile->Printf("  DLPNO convergence set to %s.\n\n",
-                    options_.get_str("PNO_CONVERGENCE").c_str());
+    print_pno_convergence();
     outfile->Printf("  Inherited CCSD and CCSDT parameters are reported in the preceding headers.\n");
     outfile->Printf("  Quadruples parameters:\n");
     outfile->Printf("    T_CUT_QNO                       = %6.3e \n", t_cut_qno);
@@ -2628,7 +2627,7 @@ void DLPNOCCSDTQ::print_header() {
     outfile->Printf("   --------------------------------------------\n\n");
     outfile->Printf("  Reference: J. Chem. Theory Comput. 22, 2825--2845 (2026)\n");
     outfile->Printf("             DOI: 10.1021/acs.jctc.5c01910\n\n");
-    outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
+    print_pno_convergence();
     outfile->Printf("  Full-quadruples orbital thresholds:\n");
     outfile->Printf("    T_CUT_QNO_FULL              = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));
     outfile->Printf("    T_CUT_QNO_STRONG            = %6.3e \n", options_.get_double("T_CUT_QNO_FULL"));

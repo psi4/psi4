@@ -30,10 +30,11 @@ set nat_orbs False
 set e_convergence 1.0e-8
 set d_convergence 1.0e-8
 set r_convergence 1.0e-8
-set pno_convergence very_tight
-# Preserve the historical high-order regression domain while allowing an
-# explicitly selected PNO_CONVERGENCE preset to control production inputs.
-set t_cut_pairs 1.0e-8
+# DLPNO-CCSDT and higher ignore PNO_CONVERGENCE and always start from the same
+# default thresholds. A deliberately LOOSE preset here must not change the
+# reference energies below.
+set pno_convergence loose
+# Preserve the historical high-order regression dipole-prescreening domain.
 set t_cut_pre 1.0e-8
 set write_quadruples_intermediates false
 
