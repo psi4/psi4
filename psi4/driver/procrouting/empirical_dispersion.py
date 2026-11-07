@@ -32,6 +32,7 @@ from typing import Dict, List, Union
 import numpy as np
 import qcengine as qcng
 from qcelemental.models.v2 import AtomicInput
+from qcelemental.util import parse_version
 
 from psi4 import core
 
@@ -382,11 +383,21 @@ class EmpiricalDispersion():
         else:
             return self.disp.compute_gradient(molecule)
 
+    def _analytic_hessian_available(self) -> bool:
+        """Whether the engine can compute the full dispersion Hessian analytically.
+        Only s-dftd3 at dftd3-python >=1.6.0 (as reported by QCEngine) qualifies, and not for -3c methods.
+
+        """
+        if self.engine != "s-dftd3" or self.fctldash in ['hf3c', 'pbeh3c', 'r2scan3c', 'b973c']:
+            return False
+        return parse_version(qcng.get_program(self.engine).get_version()) >= parse_version("1.6.0")
+
     def compute_hessian(self,
                         molecule: core.Molecule,
                         wfn: core.Wavefunction = None) -> core.Matrix:
         """Compute dispersion Hessian based on engine, dispersion level, and parameters in `self`.
-        Uses finite difference, as no dispersion engine has analytic second derivatives.
+        Uses analytic second derivatives for engine s-dftd3 at dftd3-python >=1.6.0 (excepting -3c methods,
+        whose gCP part lacks them). Otherwise, uses finite difference of gradients.
 
         Parameters
         ----------
@@ -401,12 +412,49 @@ class EmpiricalDispersion():
             (3*nat, 3*nat) dispersion Hessian [Eh/a0/a0].
 
         """
+        if self._analytic_hessian_available():
+            resi = AtomicInput(
+                **{
+                    "specification": {
+                        'driver': 'hessian',
+                        'model': {
+                            'method': self.fctldash,
+                            'basis': '(auto)',
+                        },
+                        'keywords': {
+                            'level_hint': self.dashlevel,
+                            'params_tweaks': self.dashparams,
+                            'dashcoeff_supplement': self.dashcoeff_supplement,
+                            'apply_qcengine_aliases': True,  # for s-dftd3
+                            'verbose': 1,
+                        },
+                    },
+                    'molecule': molecule.to_schema(dtype=3),
+                    'provenance': p4util.provenance_stamp(__name__),
+                })
+            jobrec = qcng.compute(
+                resi,
+                self.engine,
+                raise_error=True,
+                return_version=2,
+                task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
+
+            core.print_out("\n\n   Analytical Dispersion Hessian computed by engine s-dftd3.\n\n")
+
+            H = np.asarray(jobrec.extras['qcvars']['DISPERSION CORRECTION HESSIAN']).reshape(3 * molecule.natom(), -1)
+            if wfn is not None:
+                for k, qca in jobrec.extras['qcvars'].items():
+                    if "CURRENT" not in k:
+                        wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
+                wfn.set_variable('DISPERSION CORRECTION HESSIAN', H)
+            return core.Matrix.from_array(H)
+
         from psi4.driver.driver_findif import assemble_hessian_from_gradients, hessian_from_gradients_geometries
 
         optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)
 
-        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by any engine.\n")
+        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by this engine and level.\n")
         core.print_out("       Computing the Hessian through finite difference of gradients.\n\n")
 
         # Setup the molecule
@@ -418,7 +466,8 @@ class EmpiricalDispersion():
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
 
-        findif_meta_dict = hessian_from_gradients_geometries(molclone, -1)
+        # no rotational projection since the dispersion gradient alone is nonzero, even at a stationary point
+        findif_meta_dict = hessian_from_gradients_geometries(molclone, -1, r_project=False)
         for displacement in findif_meta_dict["displacements"].values():
             geom_array = np.reshape(displacement["geometry"], (-1, 3))
             molclone.set_geometry(core.Matrix.from_array(geom_array))

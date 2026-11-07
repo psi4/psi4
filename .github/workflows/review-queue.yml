@@ -8,7 +8,7 @@ jobs:
   manage-labels:
     # Trigger if comment is on a PR and contains either of our slash commands
     if: |
-      github.event.issue.pull_request && 
+      github.event.issue.pull_request &&
       (contains(github.event.comment.body, '/review-ready') || contains(github.event.comment.body, '/review-next'))
     runs-on: ubuntu-latest
     permissions:
@@ -23,6 +23,15 @@ jobs:
 
       - name: Install PyGithub
         run: python -m pip install PyGithub==2.9.1
+
+      - name: Diagnose GitHub token
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Event: $GITHUB_EVENT_NAME"
+          echo "Repository: $GITHUB_REPOSITORY"
+          gh api repos/$GITHUB_REPOSITORY \
+            --jq '{full_name, permissions}'
 
       - name: Process Label Commands
         env:
@@ -52,7 +61,7 @@ jobs:
 
           # --- CONFIGURATION ---
           # Add usernames here who are allowed to have up to 2 queue labels
-          EXTRA_PR_USERS = ["loriab", "susilehtola", "JonathonMisiewicz"] 
+          EXTRA_PR_USERS = ["loriab", "susilehtola", "JonathonMisiewicz"]
 
           current_pr = repo.get_pull(current_pr_num)
 
@@ -106,12 +115,12 @@ jobs:
               while current_total > max_allowed and user_labeled_prs:
                   bumped_pr = user_labeled_prs.pop(0)
                   print(f"Bumping queue label from PR #{bumped_pr.number}")
-                  
+
                   bumped_pr.remove_from_labels(QUEUE_LABEL)
                   bumped_pr.create_comment(
                       f"🔄 @{commenter} added a new review priority. This PR has been bumped off the priority list to stay within your limit of {max_allowed}."
                   )
-                  
+
                   current_total -= 1
 
               # Add label to the current PR if it isn't there already
