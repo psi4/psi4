@@ -4,7 +4,7 @@ from utils import compare_values
 
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.dlpno]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.dlpno, pytest.mark.quick]
 
 
 # Two water molecules ~10 Angstrom apart (O--O along z, second monomer rotated 90 deg).
