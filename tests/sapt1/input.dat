@@ -1,6 +1,9 @@
 #! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
 #! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 Eref = [ 85.1890645313,  -0.00359915058,  0.00362911158,  #TEST
          -0.00083137117,      -0.00150542374, -0.00230683391 ] #TEST
 
