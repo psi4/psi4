@@ -27,8 +27,9 @@ set {
   qc_module occ
 }
 
-grad = gradient('mp2')
+grad, wfn = gradient('mp2', return_wfn=True)
 
 compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
 
 

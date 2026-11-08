@@ -41,7 +41,7 @@ set {
     df_basis_elst cc-pvdz-ri
 }
 
-energy('sapt0', molecule=ethene_ethyne)
+_, wfn = energy('sapt0', molecule=ethene_ethyne, return_wfn=True)
 
 Eelst = psi4.variable("SAPT ELST ENERGY")
 Eexch = psi4.variable("SAPT EXCH ENERGY")
@@ -55,3 +55,4 @@ compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch")                                
 compare_values(Eref[3], Eind, 6, "SAPT0 Eind")                                                   #TEST
 compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")                                                 #TEST
 compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                                   #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), wfn.module_role("coulomb_eri_integrals"), "coulomb_eri_integrals module role")  #TEST
