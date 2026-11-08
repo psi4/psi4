@@ -37,7 +37,9 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <algorithm>
 #include <cstdio>
+#include <cstring>
 #include <cstdlib>
 #include <cmath>
 
@@ -204,6 +206,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
     }
 #endif
 
+    if (!incore) note_ooc_sort("buf4_sort", index);
+
     /* Init input and output buffers and read in all blocks of the input */
     if (incore) {
         for (h = 0; h < nirreps; h++) {
@@ -246,59 +250,9 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                         }
                     }
                 }
-            } else { /* out-of-core pqsr -> pqrs */
-
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
-                    rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree(), 2LL * InBuf->params->coltot[Grs],
-                                                                 InBuf->params->rowtot[Gpq],
-                                                                 "buf4_sort (pqsr): not enough memory for one row");
-
-                    nbuckets = (int)ceil(((double)InBuf->params->rowtot[Gpq]) / ((double)rows_per_bucket));
-                    if (nbuckets == 1)
-                        rows_left = rows_per_bucket;
-                    else
-                        rows_left = InBuf->params->rowtot[Gpq] % rows_per_bucket;
-
-                    buf4_mat_irrep_init_block(InBuf, Gpq, rows_per_bucket);
-                    buf4_mat_irrep_init_block(&OutBuf, Gpq, rows_per_bucket);
-
-                    for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
-                        buf4_mat_irrep_rd_block(InBuf, Gpq, n * rows_per_bucket, rows_per_bucket);
-
-                        for (pq = 0; pq < rows_per_bucket; pq++) {
-                            for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                r = OutBuf.params->colorb[Grs][rs][0];
-                                s = OutBuf.params->colorb[Grs][rs][1];
-
-                                sr = InBuf->params->colidx[s][r];
-
-                                OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][pq][sr];
-                            }
-                        }
-
-                        buf4_mat_irrep_wrt_block(&OutBuf, Gpq, n * rows_per_bucket, rows_per_bucket);
-                    }
-                    if (rows_left) {
-                        buf4_mat_irrep_rd_block(InBuf, Gpq, n * rows_per_bucket, rows_left);
-
-                        for (pq = 0; pq < rows_left; pq++) {
-                            for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                r = OutBuf.params->colorb[Grs][rs][0];
-                                s = OutBuf.params->colorb[Grs][rs][1];
-
-                                sr = InBuf->params->colidx[s][r];
-
-                                OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][pq][sr];
-                            }
-                        }
-
-                        buf4_mat_irrep_wrt_block(&OutBuf, Gpq, n * rows_per_bucket, rows_left);
-                    }
-
-                    buf4_mat_irrep_close_block(InBuf, Gpq, rows_per_bucket);
-                    buf4_mat_irrep_close_block(&OutBuf, Gpq, rows_per_bucket);
-                }
+            } else {
+                buf4_sort_ooc_pairs(InBuf, &OutBuf, SortPair::PQ, SortPair::SR, false, 1.0,
+                                    "buf4_sort (pqsr): not enough memory for one row");
             }
 
 #ifdef DPD_TIMER
@@ -353,6 +307,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 
                 for (Gpq = 0; Gpq < nirreps; Gpq++) {
                     Grs = Gpq ^ my_irrep;
+                    /* an empty or zero-width block has no elements to sort (and a null block matrix) */
+                    if (!OutBuf.params->rowtot[Gpq] || !OutBuf.params->coltot[Grs]) continue;
 
                     out_rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree(), 2LL * OutBuf.params->coltot[Grs],
                                                                      OutBuf.params->rowtot[Gpq],
@@ -583,6 +539,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             } else {
                 for (Gpq = 0; Gpq < nirreps; Gpq++) {
                     Grs = Gpq ^ my_irrep;
+                    /* an empty or zero-width block has no elements to sort (and a null block matrix) */
+                    if (!OutBuf.params->rowtot[Gpq] || !OutBuf.params->coltot[Grs]) continue;
 
                     /* determine how many rows of OutBuf we can store in half of the core */
                     out_rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree(), 2LL * OutBuf.params->coltot[Grs],
@@ -903,97 +861,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                     }
                 }
             } else {
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
-
-                    /* determine how many rows of OutBuf/InBuf we can store in half the core */
-                    rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree(), 2LL * OutBuf.params->coltot[Grs],
-                                                                 OutBuf.params->rowtot[Gpq],
-                                                                 "buf4_sort (qprs): not enough memory for one row");
-                    nbuckets = (int)ceil((double)OutBuf.params->rowtot[Gpq] / (double)rows_per_bucket);
-                    if (nbuckets == 1)
-                        rows_left = rows_per_bucket;
-                    else
-                        rows_left = OutBuf.params->rowtot[Gpq] % rows_per_bucket;
-
-                    /* allocate space for the bucket of rows */
-                    buf4_mat_irrep_init_block(&OutBuf, Gpq, rows_per_bucket);
-                    buf4_mat_irrep_init_block(InBuf, Gpq, rows_per_bucket);
-
-                    for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
-                        out_row_start = n * rows_per_bucket;
-
-                        for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
-                            in_row_start = m * rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
-                            for (pq = 0; pq < rows_per_bucket; pq++) {
-                                /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
-                                if (qp >= 0 && qp < rows_per_bucket) {
-                                    C_DCOPY(OutBuf.params->coltot[Grs], InBuf->matrix[Gpq][qp], 1,
-                                            OutBuf.matrix[Gpq][pq], 1);
-                                }
-                            }
-                        }
-
-                        if (rows_left) {
-                            in_row_start = m * rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
-                            for (pq = 0; pq < rows_per_bucket; pq++) {
-                                /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
-                                if (qp >= 0 && qp < rows_left) {
-                                    C_DCOPY(OutBuf.params->coltot[Grs], InBuf->matrix[Gpq][qp], 1,
-                                            OutBuf.matrix[Gpq][pq], 1);
-                                }
-                            }
-                        }
-
-                        buf4_mat_irrep_wrt_block(&OutBuf, Gpq, out_row_start, rows_per_bucket);
-
-                    } /* n */
-                    if (rows_left) {
-                        out_row_start = n * rows_per_bucket;
-
-                        for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
-                            in_row_start = m * rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
-                            for (pq = 0; pq < rows_left; pq++) {
-                                /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
-                                if (qp >= 0 && qp < rows_per_bucket) {
-                                    C_DCOPY(OutBuf.params->coltot[Grs], InBuf->matrix[Gpq][qp], 1,
-                                            OutBuf.matrix[Gpq][pq], 1);
-                                }
-                            }
-                        }
-
-                        if (rows_left) {
-                            in_row_start = m * rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
-                            for (pq = 0; pq < rows_left; pq++) {
-                                /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
-                                if (qp >= 0 && qp < rows_left) {
-                                    C_DCOPY(OutBuf.params->coltot[Grs], InBuf->matrix[Gpq][qp], 1,
-                                            OutBuf.matrix[Gpq][pq], 1);
-                                }
-                            }
-                        }
-                    }
-
-                    buf4_mat_irrep_wrt_block(&OutBuf, Gpq, out_row_start, rows_left);
-                    buf4_mat_irrep_close_block(InBuf, Gpq, rows_per_bucket);
-                    buf4_mat_irrep_close_block(&OutBuf, Gpq, rows_per_bucket);
-                } /* Gpq */
+                buf4_sort_ooc_pairs(InBuf, &OutBuf, SortPair::QP, SortPair::RS, false, 1.0,
+                                    "buf4_sort (qprs): not enough memory for one row");
             }
 #ifdef DPD_TIMER
             timer_off("qprs");
@@ -1027,117 +896,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                     }
                 }
             } else {
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
-
-                    /* determine how many rows of OutBuf/InBuf we can store in half the core */
-                    rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree(), 2LL * OutBuf.params->coltot[Grs],
-                                                                 OutBuf.params->rowtot[Gpq],
-                                                                 "buf4_sort (qpsr): not enough memory for one row");
-                    nbuckets = (int)ceil((double)OutBuf.params->rowtot[Gpq] / (double)rows_per_bucket);
-                    if (nbuckets == 1)
-                        rows_left = rows_per_bucket;
-                    else
-                        rows_left = OutBuf.params->rowtot[Gpq] % rows_per_bucket;
-
-                    /* allocate space for the bucket of rows */
-                    buf4_mat_irrep_init_block(&OutBuf, Gpq, rows_per_bucket);
-                    buf4_mat_irrep_init_block(InBuf, Gpq, rows_per_bucket);
-
-                    for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
-                        out_row_start = n * rows_per_bucket;
-
-                        for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
-                            in_row_start = m * rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
-
-                            for (pq = 0; pq < rows_per_bucket; pq++) {
-                                /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
-                                if (qp >= 0 && qp < rows_per_bucket) {
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        sr = InBuf->params->colidx[s][r];
-                                        OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][qp][sr];
-                                    }
-                                }
-                            }
-                        }
-                        if (rows_left) {
-                            in_row_start = m * rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
-
-                            for (pq = 0; pq < rows_per_bucket; pq++) {
-                                /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
-                                if (qp >= 0 && qp < rows_left) {
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        sr = InBuf->params->colidx[s][r];
-                                        OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][qp][sr];
-                                    }
-                                }
-                            }
-                        }
-
-                        buf4_mat_irrep_wrt_block(&OutBuf, Gpq, out_row_start, rows_per_bucket);
-
-                    } /* n */
-                    if (rows_left) {
-                        out_row_start = n * rows_per_bucket;
-
-                        for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
-                            in_row_start = m * rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
-
-                            for (pq = 0; pq < rows_left; pq++) {
-                                /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
-                                if (qp >= 0 && qp < rows_per_bucket) {
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        sr = InBuf->params->colidx[s][r];
-                                        OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][qp][sr];
-                                    }
-                                }
-                            }
-                        }
-                        if (rows_left) {
-                            in_row_start = m * rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
-
-                            for (pq = 0; pq < rows_left; pq++) {
-                                /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
-                                if (qp >= 0 && qp < rows_left) {
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        sr = InBuf->params->colidx[s][r];
-                                        OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][qp][sr];
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    buf4_mat_irrep_wrt_block(&OutBuf, Gpq, out_row_start, rows_left);
-
-                    buf4_mat_irrep_close_block(InBuf, Gpq, rows_per_bucket);
-                    buf4_mat_irrep_close_block(&OutBuf, Gpq, rows_per_bucket);
-
-                } /* Gpq */
+                buf4_sort_ooc_pairs(InBuf, &OutBuf, SortPair::QP, SortPair::SR, false, 1.0,
+                                    "buf4_sort (qpsr): not enough memory for one row");
             }
 
 #ifdef DPD_TIMER
@@ -1633,74 +1393,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                     }
                 }
             } else {
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
-
-                    out_rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree() - OutBuf.params->coltot[Grs],
-                                                                     2LL * OutBuf.params->coltot[Grs],
-                                                                     OutBuf.params->rowtot[Gpq],
-                                                                     "buf4_sort (rspq): not enough memory for one row");
-                    out_nbuckets = (int)ceil((double)OutBuf.params->rowtot[Gpq] / (double)out_rows_per_bucket);
-                    if (out_nbuckets == 1)
-                        out_rows_left = out_rows_per_bucket;
-                    else
-                        out_rows_left = OutBuf.params->rowtot[Gpq] % out_rows_per_bucket;
-
-                    in_rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree() - InBuf->params->coltot[Gpq],
-                                                                    2LL * InBuf->params->coltot[Gpq],
-                                                                    InBuf->params->rowtot[Grs],
-                                                                    "buf4_sort (rspq): not enough memory for one row");
-                    in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grs] / (double)in_rows_per_bucket);
-                    if (in_nbuckets == 1)
-                        in_rows_left = in_rows_per_bucket;
-                    else
-                        in_rows_left = InBuf->params->rowtot[Grs] % in_rows_per_bucket;
-
-#ifdef DPD_DEBUG
-                    outfile->Printf(stdout, "Gpq = %d\n", Gpq);
-                    outfile->Printf(stdout, "OutBuf.rowtot[Gpq]  = %d\n", OutBuf.params->rowtot[Gpq]);
-                    outfile->Printf(stdout, "OutBuf.coltot[Grs]  = %d\n", OutBuf.params->coltot[Grs]);
-                    outfile->Printf(stdout, "out_nbuckets        = %d\n", out_nbuckets);
-                    outfile->Printf(stdout, "out_rows_per_bucket = %lld\n",
-                                    static_cast<long long>(out_rows_per_bucket));
-                    outfile->Printf(stdout, "out_rows_left       = %d\n", out_rows_left);
-                    outfile->Printf(stdout, "InBuf.rowtot[Grs]   = %d\n", InBuf->params->rowtot[Grs]);
-                    outfile->Printf(stdout, "InBuf.coltot[Gpq]   = %d\n", InBuf->params->coltot[Gpq]);
-                    outfile->Printf(stdout, "in_nbuckets         = %d\n", in_nbuckets);
-                    outfile->Printf(stdout, "in_rows_per_bucket  = %lld\n",
-                                    static_cast<long long>(in_rows_per_bucket));
-                    outfile->Printf(stdout, "in_rows_left        = %d\n", in_rows_left);
-                    fflush(stdout);
-#endif
-
-                    buf4_mat_irrep_init_block(&OutBuf, Gpq, out_rows_per_bucket);
-                    buf4_mat_irrep_init_block(InBuf, Grs, in_rows_per_bucket);
-
-                    for (n = 0; n < out_nbuckets; n++) {
-                        out_row_start = n * out_rows_per_bucket;
-
-                        for (m = 0; m < in_nbuckets; m++) {
-                            in_row_start = m * in_rows_per_bucket;
-                            buf4_mat_irrep_rd_block(InBuf, Grs, in_row_start,
-                                                    (m == in_nbuckets - 1 ? in_rows_left : in_rows_per_bucket));
-
-                            for (pq = 0; pq < (n == out_nbuckets - 1 ? out_rows_left : out_rows_per_bucket); pq++) {
-                                PQ = pq + n * out_rows_per_bucket;
-                                for (RS = 0; RS < (m == in_nbuckets - 1 ? in_rows_left : in_rows_per_bucket); RS++) {
-                                    rs = RS + m * in_rows_per_bucket;
-                                    OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grs][RS][PQ];
-                                }
-                            }
-                        }
-
-                        buf4_mat_irrep_wrt_block(&OutBuf, Gpq, out_row_start,
-                                                 (n == out_nbuckets - 1 ? out_rows_left : out_rows_per_bucket));
-                    }
-
-                    buf4_mat_irrep_close_block(&OutBuf, Gpq, out_rows_per_bucket);
-                    buf4_mat_irrep_close_block(InBuf, Grs, in_rows_per_bucket);
-
-                } /* Gpq */
+                buf4_sort_ooc_pairs(InBuf, &OutBuf, SortPair::RS, SortPair::PQ, false, 1.0,
+                                    "buf4_sort (rspq): not enough memory for one row");
             }
 
 #ifdef DPD_TIMER
@@ -1961,6 +1655,94 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 #ifdef DPD_TIMER
     timer_off("buf4_sort");
 #endif
+
+    return 0;
+}
+
+void DPD::note_ooc_sort(const char *function, enum indices index) {
+    static const char *names[] = {"pqrs", "pqsr", "prqs", "prsq", "psqr", "psrq", "qprs", "qpsr",
+                                  "qrps", "qrsp", "qspr", "qsrp", "rqps", "rqsp", "rpqs", "rpsq",
+                                  "rsqp", "rspq", "sqrp", "sqpr", "srqp", "srpq", "spqr", "sprq"};
+    if (ooc_sort_noted_) return;
+    ooc_sort_noted_ = true;
+    outfile->Printf("\n  DPD: not enough memory for an in-core %s (%s); using out-of-core sorts.\n\n", function,
+                    names[index]);
+}
+
+namespace {
+inline int sort_pair_index(int **idx, DPD::SortPair which, int p, int q, int r, int s) {
+    switch (which) {
+        case DPD::SortPair::PQ:
+            return idx[p][q];
+        case DPD::SortPair::QP:
+            return idx[q][p];
+        case DPD::SortPair::RS:
+            return idx[r][s];
+        default:
+            return idx[s][r];
+    }
+}
+}  // namespace
+
+int DPD::buf4_sort_ooc_pairs(dpdbuf4 *InBuf, dpdbuf4 *OutBuf, SortPair row_from, SortPair col_from, bool accumulate,
+                             double alpha, const char *caller) {
+    const int nirreps = OutBuf->params->nirreps;
+    const int my_irrep = OutBuf->file.my_irrep;
+    const bool in_block_is_pq = (row_from == SortPair::PQ || row_from == SortPair::QP);
+
+    for (int Gpq = 0; Gpq < nirreps; Gpq++) {
+        const int Grs = Gpq ^ my_irrep;
+        const int out_rows = OutBuf->params->rowtot[Gpq];
+        const int out_cols = OutBuf->params->coltot[Grs];
+        /* an empty or zero-width output block has no elements (and a null block matrix) */
+        if (!out_rows || !out_cols) continue;
+
+        const int Gin = in_block_is_pq ? Gpq : Grs;
+        const int in_rows = InBuf->params->rowtot[Gin];
+        const int in_cols = InBuf->params->coltot[Gin ^ InBuf->file.my_irrep];
+
+        /* half the free core for a bucket of output rows, the rest for a bucket of input rows */
+        const int out_rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree() / 2, out_cols, out_rows, caller);
+        buf4_mat_irrep_init_block(OutBuf, Gpq, out_rows_per_bucket);
+        const int in_rows_per_bucket = dpd_rows_per_bucket_or_die(dpd_memfree(), in_cols, in_rows, caller);
+        buf4_mat_irrep_init_block(InBuf, Gin, in_rows_per_bucket);
+
+        for (int out_start = 0; out_start < out_rows; out_start += out_rows_per_bucket) {
+            const int nout = std::min(out_rows_per_bucket, out_rows - out_start);
+            if (accumulate)
+                buf4_mat_irrep_rd_block(OutBuf, Gpq, out_start, nout);
+            else
+                std::memset(OutBuf->matrix[Gpq][0], 0, sizeof(double) * nout * static_cast<size_t>(out_cols));
+
+            for (int in_start = 0; in_start < in_rows; in_start += in_rows_per_bucket) {
+                const int nin = std::min(in_rows_per_bucket, in_rows - in_start);
+                buf4_mat_irrep_rd_block(InBuf, Gin, in_start, nin);
+
+                for (int pq = 0; pq < nout; pq++) {
+                    const int p = OutBuf->params->roworb[Gpq][out_start + pq][0];
+                    const int q = OutBuf->params->roworb[Gpq][out_start + pq][1];
+                    for (int rs = 0; rs < out_cols; rs++) {
+                        const int r = OutBuf->params->colorb[Grs][rs][0];
+                        const int s = OutBuf->params->colorb[Grs][rs][1];
+                        /* is this element's input row in the current input bucket? */
+                        const int row = sort_pair_index(InBuf->params->rowidx, row_from, p, q, r, s) - in_start;
+                        if (row < 0 || row >= nin) continue;
+                        const int col = sort_pair_index(InBuf->params->colidx, col_from, p, q, r, s);
+                        if (col < 0) continue;
+                        const double value = InBuf->matrix[Gin][row][col];
+                        if (accumulate)
+                            OutBuf->matrix[Gpq][pq][rs] += alpha * value;
+                        else
+                            OutBuf->matrix[Gpq][pq][rs] = value;
+                    }
+                }
+            }
+            buf4_mat_irrep_wrt_block(OutBuf, Gpq, out_start, nout);
+        }
+
+        buf4_mat_irrep_close_block(InBuf, Gin, in_rows_per_bucket);
+        buf4_mat_irrep_close_block(OutBuf, Gpq, out_rows_per_bucket);
+    }
 
     return 0;
 }

@@ -308,6 +308,10 @@ class PSI_API DPD {
     // Assumes the entry and the File and the main dpd object all match. Caller must guarantee that..
     dpd_file4_cache_entry* file4_cache_del_raw(dpd_file4_cache_entry *entry, dpdfile4& File);
 
+    // Whether this DPD has already noted (once, in the output) that a buf4 sort ran out of core.
+    bool ooc_sort_noted_ = false;
+    void note_ooc_sort(const char *function, enum indices index);
+
    public:
     // These used to live in the dpd_data struct
     int nirreps;
@@ -415,6 +419,13 @@ class PSI_API DPD {
     int buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const char *label);
     int buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const char *label,
                        double alpha);
+    // Which orbital pair of an output element (pq,rs) indexes an input row or column.
+    enum class SortPair { PQ, QP, RS, SR };
+    // Out-of-core sort (accumulate = false) or sort-and-add (true, scaled by alpha) for the permutations in which each
+    // output block draws on a single input block: input row from row_from, input column from col_from, both mapped
+    // through the input's rowidx/colidx exactly as the in-core sorts do. Output and input are bucketed independently.
+    int buf4_sort_ooc_pairs(dpdbuf4 *InBuf, dpdbuf4 *OutBuf, SortPair row_from, SortPair col_from, bool accumulate,
+                            double alpha, const char *caller);
     int buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha);
     int buf4_axpbycz(dpdbuf4 *FileA, dpdbuf4 *FileB, dpdbuf4 *FileC, double a, double b, double c);
     int buf4_dirprd(dpdbuf4 *BufA, dpdbuf4 *BufB);

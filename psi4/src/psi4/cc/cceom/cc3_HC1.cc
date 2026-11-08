@@ -1322,7 +1322,7 @@ void HC1_Wabei(int i, int C_irr) {
         */
         global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, rspq, 28, 24, "WaBeI (Ba,Ie) 1");
         global_dpd_->buf4_close(&Z);
-        global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, C_irr, 28, 24, 28, 24, 0, "WaBeI (Ba,Ie)");
+        global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, C_irr, 28, 24, 28, 24, 0, "WaBeI (Ba,Ie) 1");
         global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, qpsr, 29, 25, "WaBeI (aB,eI)");
         global_dpd_->buf4_close(&Z);
 
