@@ -42,6 +42,8 @@ grad, wfn = gradient("mp2", return_wfn=True)
 compare_matrices(ref, grad, 7, "Analytic gradients, vs. 5 point numerical values") #TEST
 
 roles = wfn.module_roles()
+print(f"{roles=}")
 compare("dfmp2", wfn.module(), "primary")
 compare("dfmp2", roles.pop("qc_module"), "qc_module")
+compare(psi4.get_global_option("INTEGRAL_PACKAGE").lower().replace("auto", "libint2"), roles.pop("coulomb_eri_integrals"), "coulomb_eri_integrals")
 compare(0, len(roles), "all modules asserted")
