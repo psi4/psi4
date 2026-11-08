@@ -60,6 +60,14 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
     rowtot = Buf->params->rowtot[irrep];
     coltot = Buf->params->coltot[irrep ^ all_buf_irrep];
 
+    /* Nothing to fill: zero rows requested, or zero-width rows (whose block matrix is null) */
+    if (num_pq <= 0 || !coltot) {
+#ifdef DPD_TIMER
+        timer_off("buf4_rd_bk");
+#endif
+        return 0;
+    }
+
     const auto& b_perm_pq = Buf->params->perm_pq;
     const auto& b_perm_rs = Buf->params->perm_rs;
     const auto& f_perm_pq = Buf->file.params->perm_pq;
