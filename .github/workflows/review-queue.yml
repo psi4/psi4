@@ -24,15 +24,6 @@ jobs:
       - name: Install PyGithub
         run: python -m pip install PyGithub==2.9.1
 
-      - name: Diagnose GitHub token
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "Event: $GITHUB_EVENT_NAME"
-          echo "Repository: $GITHUB_REPOSITORY"
-          gh api repos/$GITHUB_REPOSITORY \
-            --jq '{full_name, permissions}'
-
       - name: Process Label Commands
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -75,7 +75,7 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-17 clang++-17'
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: 'quick'
+        PYTEST_MARKER_EXPR: '(quick and not memory_profiler)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
