@@ -234,6 +234,9 @@ int ras_set(Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdo
     // Now it's time to work out the RAS spaces...
     if (options["ACTIVE"].has_changed()) {
         // If we're in this case, our job is easy.
+        if (options["ACTIVE"].size() != nirreps) {
+            throw InputException("ras_set(): Wrong size of array", "ACTIVE", __FILE__, __LINE__);
+        }
         options.fill_int_array("ACTIVE", ras_opi[1]);
     } else {
         // Work out RAS1
