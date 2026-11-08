@@ -29,7 +29,9 @@
 #ifndef _psi4_libmints_libcinteri_h
 #define _psi4_libmints_libcinteri_h
 
+#include <cstdint>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "psi4/libmints/twobody.h"
@@ -98,11 +100,12 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     std::vector<double> env_;
     /// libcint CINTOpt* for each kernel (held opaquely so the header stays free
     /// of <cint.h>): (ab|cd), and when deriv_ allows, ip1, ipip1, ipvip1, ip1ip2.
-    void *opt_;
-    void *opt_ip1_;
-    void *opt_ipip1_;
-    void *opt_ipvip1_;
-    void *opt_ip1ip2_;
+    /// libcint only reads them while computing, so clones share them.
+    std::shared_ptr<void> opt_;
+    std::shared_ptr<void> opt_ip1_;
+    std::shared_ptr<void> opt_ipip1_;
+    std::shared_ptr<void> opt_ipvip1_;
+    std::shared_ptr<void> opt_ip1ip2_;
 
     /// Global libcint bas-index of shell 0 of each of the four psi4 bases.
     int bas_start_[4];
@@ -113,6 +116,11 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     std::vector<double> target_store_;
     /// Scratch for libcint's (col-major) output before repack into target_.
     std::vector<double> cint_buf_;
+    /// libcint's working memory, which it would otherwise allocate and free on every call. libcint never checks the
+    /// size of what it is handed, so cache_sizes_ keeps libcint's own count of what each kind of quartet needs, keyed
+    /// by kernel and by each slot's angular momentum and number of primitives.
+    std::vector<double> cache_;
+    std::unordered_map<uint64_t, size_t> cache_sizes_;
     /// Derivative buffers (12 or 78 quartet-sized blocks), a block of zeros for
     /// the buffers Libint2 leaves empty, and a sink for redundant components.
     std::vector<double> deriv_store_;
@@ -140,10 +148,10 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     /// own, rather than TwoBodyAOInt::pure_transform's from the IntegralFactory, since the
     /// sieve's quartets come from one basis, not bs1_..bs4_, and the factory's stop at l=8.
     std::vector<SphericalTransform> sph_trans_;
-    /// Scratch for transform_mixed, as large as a cartesian quartet block.
-    std::vector<double> mixed_scratch_;
 
     void common_init();
+    /// Size the quartet buffers and, for a mix, the solid-harmonic transforms.
+    void allocate_buffers();
 
     /// Build the libcint atm/bas/env arrays from the four psi4 basis sets.
     void build_environment();
@@ -167,8 +175,9 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
                     double *const *out);
 
     /// Transform a row-major cartesian quartet in psi4 center order, in place, for the
-    /// spherical shells among the libcint bas indices g (mixed_ only).
-    void transform_mixed(double *data, const int g[4], const int l[4]);
+    /// spherical shells among the libcint bas indices g (mixed_ only). scratch must hold
+    /// as many doubles as the cartesian quartet.
+    void transform_mixed(double *data, double *scratch, const int g[4], const int l[4]);
     /// Number of psi4 functions of the shell at libcint bas index g, of angular momentum l.
     int nfunction(int g, int l) const;
 
@@ -186,7 +195,7 @@ class LibcintTwoElectronInt : public TwoBodyAOInt {
     LibcintTwoElectronInt(const IntegralFactory *integral, int deriv = 0, double omega = 0.0,
                           bool use_shell_pairs = false, bool needs_exchange = false);
     LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs);
-    ~LibcintTwoElectronInt() override;
+    ~LibcintTwoElectronInt() override = default;
 
     void initialize_sieve() override;
 

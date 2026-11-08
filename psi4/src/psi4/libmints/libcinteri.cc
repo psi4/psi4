@@ -158,13 +158,7 @@ bool libcint_drops_diffuse_pairs() {
 
 LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, int deriv, double omega,
                                              bool use_shell_pairs, bool needs_exchange)
-    : TwoBodyAOInt(integral, deriv),
-      opt_(nullptr),
-      opt_ip1_(nullptr),
-      opt_ipip1_(nullptr),
-      opt_ipvip1_(nullptr),
-      opt_ip1ip2_(nullptr),
-      omega_(omega) {
+    : TwoBodyAOInt(integral, deriv), omega_(omega) {
     if (deriv_ < 0 || deriv_ > 2)
         throw PSIEXCEPTION("LIBCINT backend: only first and second integral derivatives are implemented.");
 
@@ -201,17 +195,20 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const IntegralFactory *integral, in
     timer_off("LibcintTwoElectronInt::LibcintTwoElectronInt");
 }
 
+// A clone, one per thread, shares the optimizers and keeps what TwoBodyAOInt copied: the sieve and the shell-pair
+// blocks, as Libint2's clones do. Only the buffers are its own.
 LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
     : TwoBodyAOInt(rhs),
       atm_(rhs.atm_),
       bas_(rhs.bas_),
       env_(rhs.env_),
-      opt_(nullptr),
-      opt_ip1_(nullptr),
-      opt_ipip1_(nullptr),
-      opt_ipvip1_(nullptr),
-      opt_ip1ip2_(nullptr),
+      opt_(rhs.opt_),
+      opt_ip1_(rhs.opt_ip1_),
+      opt_ipip1_(rhs.opt_ipip1_),
+      opt_ipvip1_(rhs.opt_ipvip1_),
+      opt_ip1ip2_(rhs.opt_ip1ip2_),
       basis_starts_(rhs.basis_starts_),
+      cache_sizes_(rhs.cache_sizes_),
       active_(rhs.active_),
       omega_(rhs.omega_),
       cart_(rhs.cart_),
@@ -221,15 +218,7 @@ LibcintTwoElectronInt::LibcintTwoElectronInt(const LibcintTwoElectronInt &rhs)
     bas_start_[1] = rhs.bas_start_[1];
     bas_start_[2] = rhs.bas_start_[2];
     bas_start_[3] = rhs.bas_start_[3];
-    common_init();
-}
-
-LibcintTwoElectronInt::~LibcintTwoElectronInt() {
-    for (void *opt : {opt_, opt_ip1_, opt_ipip1_, opt_ipvip1_, opt_ip1ip2_}) {
-        if (!opt) continue;
-        CINTOpt *o = static_cast<CINTOpt *>(opt);
-        CINTdel_optimizer(&o);
-    }
+    allocate_buffers();
 }
 
 void LibcintTwoElectronInt::common_init() {
@@ -241,7 +230,10 @@ void LibcintTwoElectronInt::common_init() {
     auto make_opt = [&](CINTOptimizerFunction *f) {
         CINTOpt *o = nullptr;
         f(&o, atm_.data(), natm, bas_.data(), nbas, env_.data());
-        return static_cast<void *>(o);
+        return std::shared_ptr<void>(o, [](void *p) {
+            CINTOpt *q = static_cast<CINTOpt *>(p);
+            if (q) CINTdel_optimizer(&q);
+        });
     };
     opt_ = make_opt(int2e_optimizer);
     if (deriv_ >= 1) opt_ip1_ = make_opt(int2e_ip1_optimizer);
@@ -251,6 +243,12 @@ void LibcintTwoElectronInt::common_init() {
         opt_ip1ip2_ = make_opt(int2e_ip1ip2_optimizer);
     }
 
+    allocate_buffers();
+    setup_sieve();
+    create_blocks();
+}
+
+void LibcintTwoElectronInt::allocate_buffers() {
     // Size scratch for the largest quartet block we may compute. This must
     // cover not only the factory's (bs1,bs2,bs3,bs4) block but also the Schwarz
     // sieve, which computes (MN|MN) over a single basis -- so a block up to
@@ -269,7 +267,6 @@ void LibcintTwoElectronInt::common_init() {
     const size_t nbuf = deriv_ >= 2 ? 78 : (deriv_ == 1 ? 12 : 1);
     target_store_.assign(std::max(sieve_blk, quartet_size_), 0.0);
     if (mixed_) {
-        mixed_scratch_.assign(std::max(sieve_blk, quartet_size_), 0.0);
         sph_trans_.clear();
         for (int l = 0; l <= maxam; ++l) sph_trans_.emplace_back(l);
     }
@@ -282,9 +279,6 @@ void LibcintTwoElectronInt::common_init() {
     target_full_ = target_store_.data();
     source_full_ = nullptr;
     buffers_.assign(nbuf, target_full_);
-
-    setup_sieve();
-    create_blocks();
 }
 
 void LibcintTwoElectronInt::initialize_sieve() {
@@ -423,26 +417,26 @@ bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int 
     switch (kernel) {
         case Kernel::ERI:
             f = cart_ ? int2e_cart : int2e_sph;
-            opt = opt_;
+            opt = opt_.get();
             break;
         case Kernel::IP1:
             f = cart_ ? int2e_ip1_cart : int2e_ip1_sph;
-            opt = opt_ip1_;
+            opt = opt_ip1_.get();
             ncomp = 3;
             break;
         case Kernel::IPIP1:
             f = cart_ ? int2e_ipip1_cart : int2e_ipip1_sph;
-            opt = opt_ipip1_;
+            opt = opt_ipip1_.get();
             ncomp = 9;
             break;
         case Kernel::IPVIP1:
             f = cart_ ? int2e_ipvip1_cart : int2e_ipvip1_sph;
-            opt = opt_ipvip1_;
+            opt = opt_ipvip1_.get();
             ncomp = 9;
             break;
         case Kernel::IP1IP2:
             f = cart_ ? int2e_ip1ip2_cart : int2e_ip1ip2_sph;
-            opt = opt_ip1ip2_;
+            opt = opt_ip1ip2_.get();
             ncomp = 9;
             break;
     }
@@ -459,8 +453,36 @@ bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int 
 
     const int nbas = static_cast<int>(bas_.size() / BAS_SLOTS);
     const int natm = static_cast<int>(atm_.size() / ATM_SLOTS);
+
+    // Hand libcint its working memory, sized by libcint itself: a null out makes it return the size instead. The
+    // size depends only on the kernel and on each slot's angular momentum and number of primitives, so ask once
+    // per kind of quartet. The base is aligned to 64 bytes, since qcint aligns what it takes from the cache to its
+    // SIMD width and counts on an aligned start, as its own allocation has.
+    uint64_t key = static_cast<uint64_t>(kernel);
+    bool keyed = true;
+    for (int t = 0; t < 4; ++t) {
+        const int lt = bas_[shls[t] * BAS_SLOTS + ANG_OF], pt = bas_[shls[t] * BAS_SLOTS + NPRIM_OF];
+        keyed = keyed && pt < 256;
+        key = (key << 13) | (static_cast<uint64_t>(lt) << 8) | static_cast<uint64_t>(pt & 255);
+    }
+    const auto known = keyed ? cache_sizes_.find(key) : cache_sizes_.end();
+    size_t need;
+    if (known != cache_sizes_.end()) {
+        need = known->second;
+    } else {
+        need = f(nullptr, nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(), nullptr, nullptr);
+        if (keyed) cache_sizes_.emplace(key, need);
+    }
+    double *cache = nullptr;  // libcint reports 0 when the size overflows its int; it then allocates for itself
+    if (need > 0) {
+        constexpr size_t align = 8;  // doubles: 64 bytes
+        if (cache_.size() < need + align) cache_.resize(need + align);
+        const auto addr = reinterpret_cast<std::uintptr_t>(cache_.data());
+        cache = cache_.data() + ((align - (addr / sizeof(double)) % align) % align);
+    }
+
     const bool nonzero = f(cint_buf_.data(), nullptr, shls, atm_.data(), natm, bas_.data(), nbas, env_.data(),
-                           static_cast<CINTOpt *>(opt), nullptr);
+                           static_cast<CINTOpt *>(opt), cache);
     if (!nonzero) {
         for (int c = 0; c < ncomp; ++c) std::fill(out[c], out[c] + nint, 0.0);
         return false;
@@ -489,21 +511,22 @@ bool LibcintTwoElectronInt::run_kernel(Kernel kernel, const int g[4], const int 
                 }
             }
         }
-        if (mixed_) transform_mixed(dst, g, l);
+        // The component just repacked frees its nint doubles of cint_buf_ for scratch.
+        if (mixed_) transform_mixed(dst, cint_buf_.data() + c * nint, g, l);
     }
     return true;
 }
 
-void LibcintTwoElectronInt::transform_mixed(double *data, const int g[4], const int l[4]) {
+void LibcintTwoElectronInt::transform_mixed(double *data, double *scratch, const int g[4], const int l[4]) {
     // data holds a row-major cartesian quartet in psi4 center order. Transform, one
     // index at a time, each shell psi4 wants spherical, using psi4's solid harmonics
     // (the same cartesian -> Gaussian-ordered spherical transform the Libint2 path
     // effectively applies, given libcint cartesians normalized like libint2's).
-    // Alternate between data and mixed_scratch_, which is as large.
+    // Alternate between data and scratch, which is as large.
     size_t d[4];
     for (int k = 0; k < 4; ++k) d[k] = ncart(l[k]);
     double *in = data;
-    double *out = mixed_scratch_.data();
+    double *out = scratch;
     for (int k = 0; k < 4; ++k) {
         if (!bas_pure_[g[k]] || l[k] == 0) continue;
         const size_t np = 2 * l[k] + 1;
