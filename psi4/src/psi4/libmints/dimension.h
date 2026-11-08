@@ -91,7 +91,8 @@ class PSI_API Dimension {
     const std::vector<int>& blocks() const { return blocks_; }
 
     /// @brief Copy the block data
-    void copy(const Dimension& other) { blocks_ = other.blocks(); }
+    void copy(const std::vector<int>& blocks) { blocks_ = blocks; }
+    void copy(const Dimension& other) { copy(other.blocks()); }
 
     /// @brief Casting operator to int*
     PSI_DEPRECATED(

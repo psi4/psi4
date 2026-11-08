@@ -162,13 +162,13 @@ int ras_set(Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdo
         if (options["DOCC"].size() != nirreps) {
             throw InputException("ras_set(): Wrong size of array", "DOCC", __FILE__, __LINE__);
         }
-        options.fill_int_array("DOCC", docc);
+        docc.copy(options.get_int_vector("DOCC"));
     }
     if (options["SOCC"].has_changed()) {
         if (options["SOCC"].size() != nirreps) {
             throw InputException("ras_set(): Wrong size of array", "SOCC", __FILE__, __LINE__);
         }
-        options.fill_int_array("SOCC", socc);
+        socc.copy(options.get_int_vector("SOCC"));
     }
 
     // Now we'll take the spaces we do need to fill, if explicit.
@@ -176,28 +176,28 @@ int ras_set(Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdo
         if (options["FROZEN_DOCC"].size() != nirreps) {
             throw InputException("ras_set(): Wrong size of array", "FROZEN_DOCC", __FILE__, __LINE__);
         }
-        options.fill_int_array("FROZEN_DOCC", frdocc);
+        frdocc.copy(options.get_int_vector("FROZEN_DOCC"));
         parsed_frozen_docc = true;
     }
     if (options["RESTRICTED_DOCC"].has_changed()) {
         if (options["RESTRICTED_DOCC"].size() != nirreps) {
             throw InputException("ras_set(): Wrong size of array", "RESTRICTED_DOCC", __FILE__, __LINE__);
         }
-        options.fill_int_array("RESTRICTED_DOCC", restrdocc);
+        restrdocc.copy(options.get_int_vector("RESTRICTED_DOCC"));
         parsed_restr_docc = true;
     }
     if (options["FROZEN_UOCC"].has_changed()) {
         if (options["FROZEN_UOCC"].size() != nirreps) {
             throw InputException("ras_set(): Wrong size of array", "FROZEN_UOCC", __FILE__, __LINE__);
         }
-        options.fill_int_array("FROZEN_UOCC", fruocc);
+        fruocc.copy(options.get_int_vector("FROZEN_UOCC"));
         parsed_frozen_uocc = true;
     }
     if (options["RESTRICTED_UOCC"].has_changed()) {
         if (options["RESTRICTED_UOCC"].size() != nirreps) {
             throw InputException("ras_set(): Wrong size of array", "RESTRICTED_UOCC", __FILE__, __LINE__);
         }
-        options.fill_int_array("RESTRICTED_UOCC", restruocc);
+        restruocc.copy(options.get_int_vector("RESTRICTED_UOCC"));
         parsed_restr_uocc = true;
     }
     for (size_t i = 0; i < ras_opi.size(); i++) {
@@ -206,7 +206,7 @@ int ras_set(Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdo
             if (options[tag].size() != nirreps) {
                 throw InputException("ras_set(): Wrong size of array", tag, __FILE__, __LINE__);
             }
-            options.fill_int_array(tag, ras_opi[i]);
+            ras_opi[i].copy(options.get_int_vector(tag));
             parsed_ras[i] = true;
         }
     }
@@ -237,7 +237,7 @@ int ras_set(Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdo
         if (options["ACTIVE"].size() != nirreps) {
             throw InputException("ras_set(): Wrong size of array", "ACTIVE", __FILE__, __LINE__);
         }
-        options.fill_int_array("ACTIVE", ras_opi[1]);
+        ras_opi[1].copy(options.get_int_vector("ACTIVE"));
     } else {
         // Work out RAS1
         if (!parsed_ras[0]) {
