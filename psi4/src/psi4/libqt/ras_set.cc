@@ -245,7 +245,7 @@ int ras_set(Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdo
             if (ras_type == 1) ras_opi[0] += socc;
         }
         // Work out RAS2
-        if (!parsed_ras[1] and ras_type == 1) ras_opi[1] += socc;
+        if (!parsed_ras[1] and ras_type == 0) ras_opi[1] += socc;
         // All remaining spaces default to zero, except...
         // If RAS3 isn't fixed, dump all remaining orbitals there.
         if (!parsed_ras[2]) {
