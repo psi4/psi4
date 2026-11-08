@@ -104,6 +104,32 @@ def test_memory_pressure_and_blocking(molecule, method, options, squeezed, trigg
     assert compare_values(e_ample, e_squeezed, 9, f"{method} energy: squeezed vs ample memory")
 
 
+@pytest.mark.fnocc
+def test_fnocc_lowmemory_triples_thread_fallback(tmp_path, restore_memory_and_threads):
+    """Low-memory (T) that cannot afford its requested threads must fall back to fewer, not more.
+
+    Ethene/STO-3G with frozen core has o = v = 6, so one-thread low-memory (T) needs 8*(2o^2v^2 + o^3v + ov + 5o^3)
+    = 40032 bytes and each further thread 8*5o^3 = 8640 bytes. Squeezing to 7 bytes over the one-thread minimum
+    leaves room for no extra thread (and puts T2 on disk). The old fallback, leftover / 5 * o^3, asked for 217 threads
+    here; that is wrong but cheap, so a regression fails the assertion rather than exhausting the machine.
+    """
+    psi4.set_num_threads(4)
+    psi4.geometry(_molecules["ethene"])
+    psi4.set_options({**_common_options, **fnocc_conv, "basis": "sto-3g", "triples_low_memory": True})
+
+    ample = 2 * 1024**3
+    e_ample, out_ample = _run("ccsd(t)", tmp_path / "ample.out", ample, ample)
+    e_squeezed, out_squeezed = _run("ccsd(t)", tmp_path / "squeezed.out", 40032 + 7, ample)
+
+    assert "Not enough memory for requested threading" not in out_ample
+    assert "Not enough memory for requested threading" in out_squeezed
+    assert re.search(fnocc_t2_on_disk, out_squeezed)
+    threads = re.search(r"Attempting to proceed with (\d+) threads", out_squeezed)
+    assert threads and int(threads.group(1)) == 1, f"fallback chose {threads and threads.group(1)} threads, expected 1"
+
+    assert compare_values(e_ample, e_squeezed, 9, "ccsd(t) energy: low-memory (T) thread fallback vs ample memory")
+
+
 @pytest.mark.cc
 def test_dpd_32_gib_memory_accounting(tmp_path, restore_memory_and_threads):
     """A large configured budget must not overflow DPD's internal word counts on LLP64 platforms."""

@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <algorithm>
 #include <array>
 #include <cinttypes>
 #include <ctime>
@@ -148,9 +149,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
             return Failure;
         }
 
+        // each extra thread needs 5 o^3 doubles of scratch
         int64_t mem_leftover = memory - min_memory_reqd;
-        auto extra_threads = (int)(mem_leftover / 5L * ooo);
-        nthreads = 1 + extra_threads;
+        int64_t extra_threads = mem_leftover / (8L * 5L * ooo);
+        nthreads = 1 + (int)std::min<int64_t>(extra_threads, nthreads - 1);
         outfile->Printf("        Attempting to proceed with %d threads\n", nthreads);
     }
 
@@ -184,13 +186,8 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 
     double *tempt = (double *)malloc(vvoo * sizeof(double));
 
-    if (t2_on_disk) {
-        // CDS // tb = (double*)malloc((int64_t)o*o*v*v*sizeof(double));
-        tb = (double *)malloc(vvoo * sizeof(double));
-        psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
-        psio->read_entry(PSIF_DCC_T2, "t2", (char *)&tb[0], vvoo * sizeof(double));
-        psio->close(PSIF_DCC_T2, 1);
-    }
+    // When T2 is on disk, the caller has already allocated tb and read "t2" into it (as for triples()).
+    // tb is overwritten with E2iajb below, so a second call (MP4 triples) reads "first" into it again.
     if (ccmethod == 2) {
         psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
         psio->read_entry(PSIF_DCC_T2, "first", (char *)&tb[0], vvoo * sizeof(double));
@@ -499,6 +496,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
         delete[] name;
         delete[] space;
         free(E2ijak);
+        free(tempt);
         for (int i = 0; i < nthreads; i++) free(Z4[i]);
         free(Z4);
         free(etrip);
@@ -538,6 +536,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 
     // free memory:
     free(E2ijak);
+    free(tempt);
     for (int i = 0; i < nthreads; i++) {
         free(E2abci[i]);
         free(Z[i]);
