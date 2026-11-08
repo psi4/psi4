@@ -571,6 +571,16 @@ inline int dpd_rows_per_bucket(int64_t available_words, int64_t words_per_row, i
     return rows > max_rows ? max_rows : static_cast<int>(rows);
 }
 
+// As dpd_rows_per_bucket, but always safe to divide by: an empty block gets 1 (so zero buckets and no remainder),
+// and a block of which not even one row fits raises a DPD error naming the caller instead of returning 0.
+inline int dpd_rows_per_bucket_or_die(int64_t available_words, int64_t words_per_row, int max_rows,
+                                      const char *caller) {
+    if (max_rows <= 0) return 1;
+    const int rows = dpd_rows_per_bucket(available_words, words_per_row, max_rows);
+    if (!rows) global_dpd_->dpd_error(caller, "outfile");
+    return rows;
+}
+
 }  // Namespace psi
 
 #endif /* _psi_src_lib_libdpd_dpd_h */

@@ -291,7 +291,8 @@ void X2_build(const char *pert, int irrep, double omega) {
         global_dpd_->buf4_mat_irrep_rd(&S, 0);
 
         rows_per_bucket =
-            dpd_rows_per_bucket(dpd_memfree(), B_s.params->coltot[0] + moinfo.nvirt, B_s.params->rowtot[0]);
+            dpd_rows_per_bucket_or_die(dpd_memfree(), B_s.params->coltot[0] + moinfo.nvirt, B_s.params->rowtot[0],
+                                       "ccresponse X2: not enough memory for one row of B(+) <ab|cc>");
         nbuckets = (int)ceil((double)B_s.params->rowtot[0] / (double)rows_per_bucket);
         rows_left = B_s.params->rowtot[0] % rows_per_bucket;
 

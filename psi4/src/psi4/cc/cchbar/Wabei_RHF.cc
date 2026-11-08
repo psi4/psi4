@@ -620,7 +620,8 @@ void ZFW(dpdbuf4 *Z, dpdbuf4 *F, dpdbuf4 *W, double alpha, double beta) {
 
         /* how many rows of F/W can we store in half the remaining core? */
         rows_per_bucket =
-            dpd_rows_per_bucket(dpd_memfree(), 2LL * F->params->coltot[Gea], F->params->rowtot[Gib]);
+            dpd_rows_per_bucket_or_die(dpd_memfree(), 2LL * F->params->coltot[Gea], F->params->rowtot[Gib],
+                                       "cchbar ZFW: not enough memory for one row of F and W");
         nbuckets = (int)ceil((double)F->params->rowtot[Gib] / (double)rows_per_bucket);
         rows_left = F->params->rowtot[Gib] % rows_per_bucket;
 
