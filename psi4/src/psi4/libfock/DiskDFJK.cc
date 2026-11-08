@@ -471,6 +471,8 @@ void DiskDFJK::preiterations() {
         else
             initialize_wK_disk();
     }
+
+    report_integrals_claim();
 }
 
 void DiskDFJK::compute_JK() {
@@ -514,6 +516,16 @@ void DiskDFJK::postiterations() {
     Qmn_.reset();
     Qlmn_.reset();
     Qrmn_.reset();
+    report_integrals_claim();
+}
+void DiskDFJK::report_integrals_claim() {
+    // Measure the blocks rather than recompute their intended sizes: the same members
+    // hold the whole (Q|mn) in the core subalgorithm and one disk chunk otherwise.
+    size_t held = 0;
+    for (const auto& block : {Qmn_, Qlmn_, Qrmn_}) {
+        if (block) held += (size_t)block->nrow() * (size_t)block->ncol();
+    }
+    integrals_claim_.set(held);
 }
 void DiskDFJK::initialize_JK_core() {
     size_t three_memory = ((size_t)auxiliary_->nbf()) * n_function_pairs_;

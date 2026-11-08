@@ -32,6 +32,7 @@
 #include <ctime>
 #include <functional>
 #include <set>
+#include "psi4/mcscf/block_matrix.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -187,7 +188,6 @@ void FISAPT::partition() {
     auto QF = std::make_shared<Matrix>("QF", 3, na);
     double** QFp = QF->pointer();
     double** Qp = matrices_["Qocc"]->pointer();
-
     for (int ind = 0; ind < indA.size(); ind++) {
         for (int a = 0; a < na; a++) {
             QFp[0][a] += Qp[indA[ind]][a];
@@ -290,7 +290,6 @@ void FISAPT::partition() {
     } else {
         throw PSIEXCEPTION("FISAPT: Unrecognized FISAPT_LINK_SELECTION option.");
     }
-
     outfile->Printf("    Total Link Bonds = %zu\n\n", link_orbs.size());
 
     if (link_orbs.size()) {
@@ -473,6 +472,7 @@ void FISAPT::partition() {
         QBvals.push_back(std::pair<double, int>(QFp[1][a], a));
     }
     std::sort(QBvals.begin(), QBvals.end(), std::greater<std::pair<double, int> >());
+
     for (int ind = 0; ind < RB2; ind++) {
         int a = QBvals[ind].second;
         orbsB.push_back(a);
@@ -507,9 +507,6 @@ void FISAPT::partition() {
     matrices_["LoccC"]->set_name("LoccC");
     matrices_["LoccL"]->set_name("LoccL");
 
-    // matrices_["LoccA"]->print();
-    // matrices_["LoccB"]->print();
-    // matrices_["LoccC"]->print();
 
     // => Summary <= //
 
@@ -558,6 +555,7 @@ void FISAPT::kinetic() {
     matrices_["T"] = std::make_shared<Matrix>("T", nm, nm);
     Tint->compute(matrices_["T"]);
 }
+
 
 void FISAPT::nuclear() {
     outfile->Printf("  ==> Nuclear Integrals <==\n\n");
@@ -676,144 +674,17 @@ void FISAPT::nuclear() {
         }
     }
 
-    // => External potential <= //
-
-    std::vector<std::shared_ptr<ExternalPotential>> pot_list;
-    std::vector<int> pot_ids;
-
-    // this is where any "external potential C" goes... any common potential felt by all subsystems
-
-    if (reference_->has_potential_variable("C")) {
-        
-        pot_list.push_back(reference_->potential_variable("C"));
-        pot_ids.push_back(2); // code 2 == C
-
-        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
-            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
-
-        std::shared_ptr<Matrix> V_extern = reference_->potential_variable("C")->computePotentialMatrix(primary_);
-
-        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
-            // Attempt to apply symmetry. No error checking is performed.
-            std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
-            V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
-            V_extern = V_extern_sym;
-        }
-
-        if (reference_->get_print()) {
-            reference_->potential_variable("C")->set_print(reference_->get_print());
-            outfile->Printf("  External Potential C:\n");
-            reference_->potential_variable("C")->print();
-        }
-
-        if (reference_->get_print() > 3) V_extern->print();
-
-
-        // Save external potential to add to one-electron SCF potential
-        matrices_["VE"] = V_extern;
-
-    }
-
-    std::vector<std::string> subsystem_labels = {"A", "B"};
-    std::vector<int> potential_ids = {0, 1};
-
-    for (int i=0; i<2; i++) {
-        if (reference_->has_potential_variable(subsystem_labels[i])) {
-            
-            pot_list.push_back(reference_->potential_variable(subsystem_labels[i]));
-            pot_ids.push_back(potential_ids[i]);
-
-            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
-                throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
-
-            std::shared_ptr<Matrix> V_extern = reference_->potential_variable(subsystem_labels[i])->computePotentialMatrix(primary_);
-
-            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
-                // Attempt to apply symmetry. No error checking is performed.
-                std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
-                V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
-                V_extern = V_extern_sym;
-            }
-
-            if (reference_->get_print()) {
-                reference_->potential_variable(subsystem_labels[i])->set_print(reference_->get_print());
-                outfile->Printf("  External Potential " + subsystem_labels[i] + ":\n");
-                reference_->potential_variable(subsystem_labels[i])->print();
-            }
-            if (reference_->get_print() > 3) V_extern->print();
-
-            matrices_["V" + subsystem_labels[i]]->add(V_extern);
-            matrices_["V" + subsystem_labels[i] + "_extern"] = V_extern;
-        }
-    }
 
     // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
     // repulsion energy.  
     // Apparently, we were using C full strength, but the others I think get scaled by 0.5 because Rob counts
     // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
-
-    if (pot_list.size() > 0) { 
-
-        for (int A = 0; A < mol->nfragments(); A++) {
-            outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
-        }
-
-        // First compute mol-extern interaction
-        // a maximum of 3 external potentials and 3 fragments
-        auto extern_mol_IE_mat = std::make_shared<Matrix>("extern_mol_IE", 3, 3);
-        auto extern_mol_IE_matp = extern_mol_IE_mat->pointer();
-
-        std::vector<int> none;
-        std::vector<int> frag_list(1);
-        double Enuc_extern;
-        char frag = '@'; // Next characters are 'A', 'B', 'C'
-        for (int p = 0; p < pot_list.size(); p++) {
-            for (int A = 0; A < mol->nfragments(); A++) {
-                frag++;
-                frag_list[0] = A;
-                auto mol_frag = mol->extract_subsets(frag_list, none);
-                Enuc_extern = pot_list[p]->computeNuclearEnergy(mol_frag);
-                Etot += Enuc_extern;
-
-                Enucsp[A][pot_ids[p]] += Enuc_extern * 0.5;
-                Enucsp[pot_ids[p]][A] += Enuc_extern * 0.5;
-
-                extern_mol_IE_matp[pot_ids[p]][A] = Enuc_extern;
-
-            } // end frag loop
-        } // end pot loop
-    
-        for (int A = 0; A < mol->nfragments(); A++) {
-            outfile->Printf("       Updated Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
-        }
-
-        outfile->Printf("\n");
-
-        matrices_["extern_mol_IE"] = extern_mol_IE_mat; // save interaction energy between external potential and molecule
-
-        // Now compute extern-extern interaction
-        // We store the interaction energy between the external potentials in A, B, and C.
-        auto extern_extern_IE_mat = std::make_shared<Matrix>("extern_extern_IE", 3, 3);
-        double** extern_extern_IE_matp = extern_extern_IE_mat->pointer();
-        double extern_extern_IE = 0.0;
-        for (int p1 = 0; p1 < pot_list.size(); p1++) {
-            for (int p2 = p1+1; p2 < pot_list.size(); p2++) {
-
-                double IE = pot_list[p1]->computeExternExternInteraction(pot_list[p2]);
-                // store half the interaction so that Eij + Eji = Etotal
-                extern_extern_IE_matp[pot_ids[p1]][pot_ids[p2]] = IE * 0.5;
-                extern_extern_IE_matp[pot_ids[p2]][pot_ids[p1]] = IE * 0.5;
-                extern_extern_IE += IE;
-
-                outfile->Printf("    Interaction Energy between External Potentials %c and %c: %24.16E [Eh]\n",
-                                'A'+pot_ids[p1], 'A'+pot_ids[p2], IE);
-            }
-        }
-
-        outfile->Printf("\n");
-        matrices_["extern_extern_IE"] = extern_extern_IE_mat;
-
-    }
+    matrices_["Enucs"] = Enucs;
+    Etot += psi::sapt_nuclear_external_potential_matrix(
+        reference_,
+        matrices_,
+        options_
+    );
 
     // => Print <= //
 
@@ -1243,9 +1114,6 @@ void FISAPT::unify() {
         vectors_["ZA"] = ZA;
         vectors_["ZB"] = ZB;
         vectors_["ZC"] = ZC;
-        vectors_["ZA"]->print();
-        vectors_["ZB"]->print();
-        vectors_["ZC"]->print();
         for (int i = 0; i < nlink; i++) {
           link_orbs.push_back(0);
           for (int k = 0; k < nm; k++) {
@@ -2387,16 +2255,13 @@ void FISAPT::elst() {
     for (int k = 0; k < Elst10_terms.size(); k++) {
         Elst10 += Elst10_terms[k];
     }
-    // for (int k = 0; k < Elst10_terms.size(); k++) {
-    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf [Eh]\n",k+1,Elst10_terms[k]);
-    //}
 
     scalars_["Elst10,r"] = Elst10;
     outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n", Elst10);
 
     // External potential interactions
     if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
-        // Add the interaction between the external potenitals in A and B
+        // Add the interaction between the external potentials in A and B
         // Multiply by 2 to get the full A-B + B-A interaction energy
         scalars_["Extern-Extern"] = matrices_["extern_extern_IE"]->get(0, 1)*2.0; 
         outfile->Printf("    Extern-Extern       = %18.12lf [Eh]\n", scalars_["Extern-Extern"]);
@@ -4283,7 +4148,7 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_avg(std::map<std::string, std
 // Compute total dispersion contribution
 // This definition is NOT appropriate for the SAOn/SIAOn ISAPT variants, but it is not called in an ISAPT workflow (FISAPT::fdisp is).
 void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
-                  bool do_print) {
+              bool do_print) {
     if (do_print) {
         outfile->Printf("  ==> Dispersion <==\n\n");
     }
@@ -5385,6 +5250,9 @@ void FISAPT::flocalize() {
         int nf = matrices_["Cfocc0A"]->colspi()[0];
         int na = matrices_["Caocc0A"]->colspi()[0];
         int nm = nf + na;
+        outfile->Printf("    Number of frozen core orbitals: %d\n", nf);
+        outfile->Printf("    Number of active occupied orbitals: %d\n", na);
+        outfile->Printf("    Total number of occupied orbitals: %d\n\n", nm);
 
         std::vector<int> ranges;
         ranges.push_back(0);
@@ -5768,8 +5636,15 @@ void FISAPT::felst() {
     }
 
 
-    // Prepare DFHelper object for the next module
+    // Prepare DFHelper object for the next module.  clear_spaces() drops the
+    // spaces and the transformation order but not the transformations
+    // themselves, so without this the next transform() would rebuild the order
+    // from the transformations registered here and recompute them against
+    // whatever spaces the next module binds to the same labels -- redundant
+    // work whose output is appended to, and then discarded from, the scratch
+    // file this pass already wrote.
     dfh_->clear_spaces();
+    dfh_->clear_transformations();
 
     // => Summation <= //
 
@@ -6005,8 +5880,15 @@ void FISAPT::fexch() {
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
 
-    // Prepare DFHelper object for the next module
+    // Prepare DFHelper object for the next module.  clear_spaces() drops the
+    // spaces and the transformation order but not the transformations
+    // themselves, so without this the next transform() would rebuild the order
+    // from the transformations registered here and recompute them against
+    // whatever spaces the next module binds to the same labels -- redundant
+    // work whose output is appended to, and then discarded from, the scratch
+    // file this pass already wrote.
     dfh_->clear_spaces();
+    dfh_->clear_transformations();
 }
 
 // Compute fragment-fragment partitioning of induction contribution
@@ -6314,6 +6196,7 @@ void FISAPT::find() {
 
         K_O->transpose_this();
     }
+
     double** wATp = wAT->pointer();
     double** uATp = uAT->pointer();
     double** wBTp = wBT->pointer();
@@ -6650,9 +6533,14 @@ void FISAPT::find() {
 
     if (ind_scale) {
         double dHF = 0.0;
-        if (scalars_["HF"] != 0.0) {
+        // When coming from SAPT(DFT), we want a dHF from SAPT0 terms, so check it this scalar, 'SAPT0 dHF' exists, and if not, compute, but log that we're doing so.
+        if (scalars_.find("SAPT0 dHF") != scalars_.end()) {
+            dHF = scalars_["SAPT0 dHF"];
+            outfile->Printf("    Using SAPT0 dHF for induction scaling: %11.3E [Eh]\n", dHF);
+        } else if (scalars_["HF"] != 0.0) {
             dHF = scalars_["HF"] - scalars_["Elst10,r"] - scalars_["Exch10"] - scalars_["Ind20,r"] -
                   scalars_["Exch-Ind20,r"];
+            outfile->Printf("    No provided dHF correction found; using (HF - Elst10,r - Exch10 - Ind20,r - Exch-Ind20,r) for induction scaling: %11.3E [Eh]\n", dHF);
         }
         double IndHF = scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"] + dHF;
         double IndSAPT0 = scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"];
@@ -6838,6 +6726,13 @@ void FISAPT::fdisp() {
 
     bool parperp = options_.get_bool("FISAPT_EXCH_PARPERP");
 
+    // The blocked kernel covers everything but the extra parallel/perpendicular
+    // link-orbital term, which stays on the pair loop.
+    bool blocked = options_.get_str("FISAPT_FDISP_ALGORITHM") == "BLOCKED" &&
+                   !(na1 != na && parperp);
+
+    timer_on("F-SAPT Disp Setup");
+
     std::shared_ptr<Matrix> Caocc_A = matrices_["Caocc0A"];
     std::shared_ptr<Matrix> Caocc_B = matrices_["Caocc0B"];
     std::shared_ptr<Matrix> Cavir_A = matrices_["Cvir0A"];
@@ -6926,6 +6821,7 @@ void FISAPT::fdisp() {
     std::shared_ptr<Matrix> Sbr = linalg::triplet(Caocc_B, S, Cavir_A, true, false, false);
 
     std::shared_ptr<Matrix> Qbr(Jbr->clone());
+
     Qbr->zero();
     Qbr->add(Jbr);
     Qbr->add(Kbr);
@@ -7023,6 +6919,7 @@ void FISAPT::fdisp() {
     dfh->add_space("s3", Cs[9]);
     dfh->add_space("a4", Cs[10]);
     dfh->add_space("b4", Cs[11]);
+
 
     dfh->add_transformation("Aar", "r", "a");
     dfh->add_transformation("Abs", "s", "b");
@@ -7125,25 +7022,45 @@ void FISAPT::fdisp() {
     // => Blocking ... figure out how big a tensor slice to handle at a time <= //
 
     long int overhead = 0L;
-    overhead += 5L * nT * na * nb; // Tab, Vab, T2ab, V2ab, and Iab work arrays below
     if ((link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") && parperp) {
         overhead += 4L * na * ns + 4L * nb * nr + 4L * na * nr + 4L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
     }
     else {
         overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
     }
-    // the next few matrices allocated here don't take too much room (but might if large numbers of threads)
-    overhead += 2L * na * nb * (nT + 1); // E_disp20 and E_exch_disp20 thread work and final matrices
-    overhead += 1L * sna * snb * (nT + 1); // sE_exch_disp20 thread work and final matrices
     overhead += 1L * (nA + nfa + na) * (nB + nfb + nb); // Disp_AB
     overhead += 1L * (snA + snfa + sna) * (snB + snfb + snb); // sDisp_AB
     // account for a few of the smaller matrices already defined, but not exhaustively
     overhead += 12L * nn * nn; // D, V, J, K, P, and C matrices for A and B (neglecting C)
+
+    // Edge, in virtual orbitals, of the blocked kernel's (r,s) compute block.  Its
+    // five work arrays are halved until they take at most a quarter of what is left,
+    // so a small memory budget shrinks the block rather than the DF blocking.
+    int blk_r = 1;
+    int blk_s = 1;
+    if (blocked) {
+        int edge = std::max(1, options_.get_int("FISAPT_FDISP_BLOCK"));
+        blk_r = std::min(edge, nr);
+        blk_s = std::min(edge, ns);
+        while ((blk_r > 1 || blk_s > 1) && 4L * 5L * blk_r * blk_s * na * nb > doubles_ - overhead) {
+            blk_r = std::max(1, blk_r / 2);
+            blk_s = std::max(1, blk_s / 2);
+        }
+        overhead += 5L * blk_r * blk_s * na * nb; // V, T, I, T2, V2 block work arrays below
+        overhead += 2L * na * nb + 1L * sna * snb; // E_disp20, E_exch_disp20, sE_exch_disp20
+        overhead += 2L * na * nr + 2L * nb * ns; // Qbr, Sbr, SAbs, Qbs transposed for the kernel
+    } else {
+        overhead += 5L * nT * na * nb; // Tab, Vab, T2ab, V2ab, and Iab work arrays below
+        // the next few matrices allocated here don't take too much room (but might if large numbers of threads)
+        overhead += 2L * na * nb * (nT + 1); // E_disp20 and E_exch_disp20 thread work and final matrices
+        overhead += 1L * sna * snb * (nT + 1); // sE_exch_disp20 thread work and final matrices
+    }
     long int rem = doubles_ - overhead;
 
     outfile->Printf("    %ld doubles - %ld overhead leaves %ld for dispersion\n", doubles_, overhead, rem);
     
     if (rem < 0L) {
+        timer_off("F-SAPT Disp Setup");
         throw PSIEXCEPTION("Too little static memory for DFTSAPT::mp2_terms");
     }
 
@@ -7161,6 +7078,7 @@ void FISAPT::fdisp() {
     int max_r = (max_r_l > nr ? nr : (int) max_r_l);
     int max_s = (max_s_l > ns ? ns : (int) max_s_l);
     if (max_r < 1 || max_s < 1) {
+        timer_off("F-SAPT Disp Setup");
         throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
     }
     int nrblocks = (nr / max_r);
@@ -7169,7 +7087,14 @@ void FISAPT::fdisp() {
     if (ns % max_s) nsblocks++;
     outfile->Printf("    Processing a single (r,s) pair requires %ld doubles\n", cost_r * 2L);
     outfile->Printf("    %d values of r processed in %d blocks of %d\n", nr, nrblocks, max_r);
-    outfile->Printf("    %d values of s processed in %d blocks of %d\n\n", ns, nsblocks, max_s);
+    outfile->Printf("    %d values of s processed in %d blocks of %d\n", ns, nsblocks, max_s);
+    if (blocked) {
+        // The compute block never exceeds the DF block that feeds it.
+        blk_r = std::min(blk_r, max_r);
+        blk_s = std::min(blk_s, max_s);
+        outfile->Printf("    (r,s) contracted in compute blocks of %d x %d\n", blk_r, blk_s);
+    }
+    outfile->Printf("\n");
 
     // => Tensor Slices <= //
 
@@ -7189,7 +7114,7 @@ void FISAPT::fdisp() {
     std::vector<std::shared_ptr<Matrix> > T2ab;
     std::vector<std::shared_ptr<Matrix> > V2ab;
     std::vector<std::shared_ptr<Matrix> > Iab;
-    for (int t = 0; t < nT; t++) {
+    for (int t = 0; t < (blocked ? 0 : nT); t++) {
         Tab.push_back(std::make_shared<Matrix>("Tab", na, nb));
         Vab.push_back(std::make_shared<Matrix>("Vab", na, nb));
         T2ab.push_back(std::make_shared<Matrix>("T2ab", na, nb));
@@ -7270,7 +7195,7 @@ void FISAPT::fdisp() {
     std::vector<std::shared_ptr<Matrix> > E_exch_disp20_threads;
     std::vector<std::shared_ptr<Matrix> > sE_exch_disp20_threads;
     std::vector<std::shared_ptr<Matrix> > par_E_exch_disp20_threads;
-    for (int t = 0; t < nT; t++) {
+    for (int t = 0; t < (blocked ? 0 : nT); t++) {
         E_disp20_threads.push_back(std::make_shared<Matrix>("E_disp20", na, nb));
         E_exch_disp20_threads.push_back(std::make_shared<Matrix>("E_exch_disp20", na, nb));
         sE_exch_disp20_threads.push_back(std::make_shared<Matrix>("sE_exch_disp20", sna, snb));
@@ -7286,6 +7211,14 @@ void FISAPT::fdisp() {
     if (options_.get_bool("SSAPT0_SCALE")) {
         scale = sSAPT0_scale_;
     }
+
+    // Energy targets of the blocked kernel; the pair loop accumulates into the per-thread
+    // matrices above instead.
+    auto E_disp20_blk = std::make_shared<Matrix>("E_disp20", blocked ? na : 0, blocked ? nb : 0);
+    auto E_exch_disp20_blk = std::make_shared<Matrix>("E_exch_disp20", blocked ? na : 0, blocked ? nb : 0);
+
+    timer_off("F-SAPT Disp Setup");
+    timer_on("F-SAPT Disp Compute");
 
     // ==> Master Loop <== //
 
@@ -7462,6 +7395,173 @@ void FISAPT::fdisp() {
             }
         }
     }
+    else if (blocked) {
+        // => Blocked (r,s) kernel <= //
+        //
+        // A single (r,s) pair does O(na nb nQ) work with na and nb in the tens, so the pair
+        // loop below spends most of its time in a dozen tiny single-threaded BLAS calls per
+        // pair.  Here a blk_r x blk_s block of pairs is held as one row-major matrix,
+        //
+        //     V[(r,a),(s,b)] = sum_Q Aar[(r,a),Q] Abs[(s,b),Q] ,
+        //
+        // which is how the DF slices already sit in memory, so each DF contraction becomes
+        // one large threaded GEMM over the block.  The (s,a) x (r,b) half of the
+        // exchange-dispersion kernel comes out of its GEMMs in that layout; it is permuted
+        // into the (r,a) x (s,b) one together with the rank-one V,J,K terms, so a block
+        // takes three MO -> LO transforms (T, V of Disp20, V of Exch-Disp20) where the
+        // pair loop takes four per pair.
+        const size_t blk_size = (size_t)blk_r * blk_s * na * nb;
+        // Uninitialized: every array is written in full before it is read, and leaving
+        // first touch to the threaded kernels spreads the pages over the sockets.
+        std::unique_ptr<double[]> Vw(new double[blk_size]);
+        std::unique_ptr<double[]> Tw(new double[blk_size]);
+        std::unique_ptr<double[]> Iw(new double[blk_size]);
+        std::unique_ptr<double[]> T2w(new double[blk_size]);
+        std::unique_ptr<double[]> V2w(new double[blk_size]);
+        double* V = Vw.get();
+        double* T = Tw.get();
+        double* I = Iw.get();
+        double* T2 = T2w.get();
+        double* V2 = V2w.get();
+
+        // The rank-one terms read Qbr, Sbr, SAbs and Qbs along b; transposed once here so
+        // those reads are contiguous.
+        SharedMatrix QbrT = Qbr->transpose();
+        SharedMatrix SbrT = Sbr->transpose();
+        SharedMatrix SAbsT = SAbs->transpose();
+        SharedMatrix QbsT = Qbs->transpose();
+        double** QbrTp = QbrT->pointer();
+        double** SbrTp = SbrT->pointer();
+        double** SAbsTp = SAbsT->pointer();
+        double** QbsTp = QbsT->pointer();
+
+        double** E_dispp = E_disp20_blk->pointer();
+        double** E_exchp = E_exch_disp20_blk->pointer();
+
+        // Y[(r,a),(s,b)] = sum_a'b' UA[a',a] X[(r,a'),(s,b')] UB[b',b], through I.  With b
+        // the fastest index, X is a (nrb na nsb) x nb matrix, so the b' contraction is a
+        // single GEMM; the a' contraction is one GEMM per r.
+        auto to_lo = [&](double* X, double* Y, int nrb, int nsb) {
+            int N = nsb * nb;
+            C_DGEMM('N', 'N', nrb * na * nsb, nb, nb, 1.0, X, nb, UBp[0], nb, 0.0, I, nb);
+            for (int r = 0; r < nrb; r++) {
+                C_DGEMM('T', 'N', na, N, na, 1.0, UAp[0], na, I + (size_t)r * na * N, N, 0.0, Y + (size_t)r * na * N,
+                        N);
+            }
+        };
+
+        // E[a][b] += c sum_rs T2[(r,a),(s,b)] V2[(r,a),(s,b)]; each thread owns rows of E.
+        auto accumulate = [&](double** E, double c, int nrb, int nsb) {
+            size_t N = (size_t)nsb * nb;
+#pragma omp parallel for schedule(static)
+            for (int a = 0; a < na; a++) {
+                double* Ea = E[a];
+                for (int r = 0; r < nrb; r++) {
+                    const double* t = T2 + ((size_t)r * na + a) * N;
+                    const double* v = V2 + ((size_t)r * na + a) * N;
+                    for (int s = 0; s < nsb; s++) {
+                        for (int b = 0; b < nb; b++) {
+                            Ea[b] += c * t[s * nb + b] * v[s * nb + b];
+                        }
+                    }
+                }
+            }
+        };
+
+        for (size_t rstart = 0; rstart < nr; rstart += max_r) {
+            size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
+
+            dfh->fill_tensor("Aar", Aar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Far", Dar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Bbr", Bbr, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Cbr", Cbr, {rstart, rstart + nrblock});
+
+            for (size_t sstart = 0; sstart < ns; sstart += max_s) {
+                size_t nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
+
+                dfh->fill_tensor("Abs", Abs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Fbs", Dbs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Bas", Bas, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Cas", Cas, {sstart, sstart + nsblock});
+
+                for (int r0 = 0; r0 < (int)nrblock; r0 += blk_r) {
+                    int nrb = std::min(blk_r, (int)nrblock - r0);
+                    for (int s0 = 0; s0 < (int)nsblock; s0 += blk_s) {
+                        int nsb = std::min(blk_s, (int)nsblock - s0);
+                        int M = nrb * na;
+                        int N = nsb * nb;
+                        int Ms = nsb * na;
+                        int Nr = nrb * nb;
+                        // First (global) r and s of this compute block.
+                        int rg0 = (int)rstart + r0;
+                        int sg0 = (int)sstart + s0;
+
+                        // => Amplitudes, Disp20 <= //
+
+                        C_DGEMM('N', 'T', M, N, nQ, 1.0, Aarp[r0 * na], nQ, Absp[s0 * nb], nQ, 0.0, V, N);
+
+#pragma omp parallel for collapse(2) schedule(static)
+                        for (int r = 0; r < nrb; r++) {
+                            for (int a = 0; a < na; a++) {
+                                const double* v = V + ((size_t)r * na + a) * N;
+                                double* t = T + ((size_t)r * na + a) * N;
+                                double ear = eap[a] - erp[rg0 + r];
+                                for (int s = 0; s < nsb; s++) {
+                                    double ears = ear - esp[sg0 + s];
+                                    for (int b = 0; b < nb; b++) {
+                                        t[s * nb + b] = v[s * nb + b] / (ears + ebp[b]);
+                                    }
+                                }
+                            }
+                        }
+
+                        to_lo(T, T2, nrb, nsb);
+                        to_lo(V, V2, nrb, nsb);
+                        accumulate(E_dispp, 4.0, nrb, nsb);
+
+                        // => Exch-Disp20 <= //
+
+                        // (r,a) x (s,b) half: Aar.Fbs + Far.Abs
+                        C_DGEMM('N', 'T', M, N, nQ, 1.0, Aarp[r0 * na], nQ, Dbsp[s0 * nb], nQ, 0.0, V, N);
+                        C_DGEMM('N', 'T', M, N, nQ, 1.0, Darp[r0 * na], nQ, Absp[s0 * nb], nQ, 1.0, V, N);
+
+                        // (s,a) x (r,b) half: Bas.Bbr + Cas.Cbr, into T (spent once T2 is formed)
+                        double* W = T;
+                        C_DGEMM('N', 'T', Ms, Nr, nQ, 1.0, Basp[s0 * na], nQ, Bbrp[r0 * nb], nQ, 0.0, W, Nr);
+                        C_DGEMM('N', 'T', Ms, Nr, nQ, 1.0, Casp[s0 * na], nQ, Cbrp[r0 * nb], nQ, 1.0, W, Nr);
+
+                        // V += W permuted to (r,a) x (s,b), plus the rank-one V,J,K terms
+#pragma omp parallel for collapse(2) schedule(static)
+                        for (int r = 0; r < nrb; r++) {
+                            for (int a = 0; a < na; a++) {
+                                int rg = rg0 + r;
+                                double* v = V + ((size_t)r * na + a) * N;
+                                double qar = Qarp[a][rg];
+                                double sbar = SBarp[a][rg];
+                                const double* qbr = QbrTp[rg];
+                                const double* sbr = SbrTp[rg];
+                                for (int s = 0; s < nsb; s++) {
+                                    int sg = sg0 + s;
+                                    const double* w = W + ((size_t)s * na + a) * Nr + (size_t)r * nb;
+                                    double sas = Sasp[a][sg];
+                                    double qas = Qasp[a][sg];
+                                    const double* sabs = SAbsTp[sg];
+                                    const double* qbs = QbsTp[sg];
+                                    double* vs = v + (size_t)s * nb;
+                                    for (int b = 0; b < nb; b++) {
+                                        vs[b] += w[b] + sas * qbr[b] + qas * sbr[b] + qar * sabs[b] + sbar * qbs[b];
+                                    }
+                                }
+                            }
+                        }
+
+                        to_lo(V, V2, nrb, nsb);
+                        accumulate(E_exchp, -2.0, nrb, nsb);
+                    }
+                }
+            }
+        }
+    }
     else {
         for (size_t rstart = 0; rstart < nr; rstart += max_r) {
             size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
@@ -7556,12 +7656,27 @@ void FISAPT::fdisp() {
         }
     }
 
+    timer_off("F-SAPT Disp Compute");
+
     auto E_disp20 = std::make_shared<Matrix>("E_disp20", na, nb);
     auto E_exch_disp20 = std::make_shared<Matrix>("E_exch_disp20", na, nb);
     double** E_disp20p = E_disp20->pointer();
     double** E_exch_disp20p = E_exch_disp20->pointer();
 
-    for (int t = 0; t < nT; t++) {
+    if (blocked) {
+        E_disp20->add(E_disp20_blk);
+        E_exch_disp20->add(E_exch_disp20_blk);
+        Disp20 = 0.0;
+        ExchDisp20 = 0.0;
+        for (int a = 0; a < na; a++) {
+            for (int b = 0; b < nb; b++) {
+                Disp20 += E_disp20p[a][b];
+                ExchDisp20 += E_exch_disp20p[a][b];
+            }
+        }
+        sExchDisp20 = scale * ExchDisp20;
+    }
+    for (int t = 0; t < (blocked ? 0 : nT); t++) {
         E_disp20->add(E_disp20_threads[t]);
         E_exch_disp20->add(E_exch_disp20_threads[t]);
     }
@@ -8101,6 +8216,200 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
     return s;
 }
 
+// method for updating/setting matrices_, if key exists, update it, else create it
+void FISAPT::set_matrix(std::map<std::string, std::shared_ptr<Matrix>> update_matrices) {
+    for (const auto& pair : update_matrices) {
+        const std::string& key = pair.first;
+        const std::shared_ptr<Matrix>& matrix = pair.second;
+        // outfile->Printf(" Setting matrix %s\n", key.c_str());
+        matrices_[key] = matrix;
+    }
+}
+
+// method for updating/setting vector_, if key exists, update it, else create it
+void FISAPT::set_vector(std::map<std::string, std::shared_ptr<Vector>> update_vector) {
+    for (const auto& pair : update_vector) {
+        const std::string& key = pair.first;
+        const std::shared_ptr<Vector>& vec = pair.second;
+        // outfile->Printf(" Setting vector %s\n", key.c_str());
+        vectors_[key] = vec;
+    }
+}
+
+// method for updating/setting scalars_, if key exists, update it, else create it
+void FISAPT::set_scalar(std::map<std::string, double> update_scalars) {
+    for (const auto& pair : update_scalars) {
+        const std::string& key = pair.first;
+        const double& val = pair.second;
+        // outfile->Printf(" Setting scalar %s\n", key.c_str());
+        scalars_[key] = val;
+    }
+}
+
 }  // Namespace fisapt
 
+double sapt_nuclear_external_potential_matrix(
+    std::shared_ptr<Wavefunction> reference_,
+    std::map<std::string, std::shared_ptr<Matrix>>& matrices_,
+    Options& options_
+) {
+    // => External potential <= //
+    // for every key in matrices_ print matrix name
+    double** Enucsp = matrices_["Enucs"]->pointer();
+
+    std::shared_ptr<BasisSet> primary_ = reference_->basisset();
+    std::shared_ptr<Molecule> mol = reference_->molecule();
+    std::vector<std::shared_ptr<ExternalPotential>> pot_list;
+    std::vector<int> pot_ids;
+    double Etot = 0.0;
+
+
+    // this is where any "external potential C" goes... any common potential felt by all subsystems
+
+    if (reference_->has_potential_variable("C")) {
+        pot_list.push_back(reference_->potential_variable("C"));
+        pot_ids.push_back(2); // code 2 == C
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+        std::shared_ptr<Matrix> V_extern = reference_->potential_variable("C")->computePotentialMatrix(primary_);
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+            // Attempt to apply symmetry. No error checking is performed.
+            std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+            V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
+            V_extern = V_extern_sym;
+        }
+
+        if (reference_->get_print()) {
+            reference_->potential_variable("C")->set_print(reference_->get_print());
+            outfile->Printf("  External Potential C:\n");
+            reference_->potential_variable("C")->print();
+        }
+
+        if (reference_->get_print() > 3) V_extern->print();
+
+
+        // Save external potential to add to one-electron SCF potential
+        matrices_["VE"] = V_extern;
+    }
+
+    std::vector<std::string> subsystem_labels = {"A", "B"};
+    std::vector<int> potential_ids = {0, 1};
+
+    for (int i=0; i<2; i++) {
+        if (reference_->has_potential_variable(subsystem_labels[i])) {
+            outfile->Printf("  External Potential %s:\n", subsystem_labels[i].c_str());
+            
+            pot_list.push_back(reference_->potential_variable(subsystem_labels[i]));
+            pot_ids.push_back(potential_ids[i]);
+
+            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+                throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+            std::shared_ptr<Matrix> V_extern = reference_->potential_variable(subsystem_labels[i])->computePotentialMatrix(primary_);
+            // if (matrices_["V" + subsystem_labels[i]]) {
+            //     V_extern = matrices_["V" + subsystem_labels[i]];
+            // }
+            // V_extern->ncol()
+
+            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+                // Attempt to apply symmetry. No error checking is performed.
+                std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+                V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
+                V_extern = V_extern_sym;
+            }
+
+            if (reference_->get_print()) {
+                reference_->potential_variable(subsystem_labels[i])->set_print(reference_->get_print());
+                outfile->Printf("  External Potential " + subsystem_labels[i] + ":\n");
+                reference_->potential_variable(subsystem_labels[i])->print();
+            }
+            if (reference_->get_print() > 3) V_extern->print();
+
+            matrices_["V" + subsystem_labels[i]]->add(V_extern);
+            matrices_["V" + subsystem_labels[i] + "_extern"] = V_extern;
+        } else{
+            outfile->Printf("  No External Potential %s\n", subsystem_labels[i].c_str());
+        }
+    }
+    // matrices_["VA"]->print();
+
+    // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
+    // repulsion energy.  
+    // Apparently, we were using C full strength, but the others I think get scaled by 0.5 because Rob counts
+    // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
+
+    if (pot_list.size() > 0) { 
+
+        for (int A = 0; A < mol->nfragments(); A++) {
+            outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
+        }
+
+        // First compute mol-extern interaction
+        // a maximum of 3 external potentials and 3 fragments
+        auto extern_mol_IE_mat = std::make_shared<Matrix>("extern_mol_IE", 3, 3);
+        auto extern_mol_IE_matp = extern_mol_IE_mat->pointer();
+
+        std::vector<int> none;
+        std::vector<int> frag_list(1);
+        double Enuc_extern;
+        char frag = '@'; // Next characters are 'A', 'B', 'C'
+        for (int p = 0; p < pot_list.size(); p++) {
+            for (int A = 0; A < mol->nfragments(); A++) {
+                frag++;
+                frag_list[0] = A;
+                auto mol_frag = mol->extract_subsets(frag_list, none);
+                Enuc_extern = pot_list[p]->computeNuclearEnergy(mol_frag);
+                Etot += Enuc_extern;
+
+                Enucsp[A][pot_ids[p]] += Enuc_extern * 0.5;
+                Enucsp[pot_ids[p]][A] += Enuc_extern * 0.5;
+
+                extern_mol_IE_matp[pot_ids[p]][A] = Enuc_extern;
+
+            } // end frag loop
+        } // end pot loop
+
+        for (int A = 0; A < mol->nfragments(); A++) {
+            outfile->Printf("       Updated Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
+        }
+
+        outfile->Printf("\n");
+
+        matrices_["extern_mol_IE"] = extern_mol_IE_mat; // save interaction energy between external potential and molecule
+
+        // Now compute extern-extern interaction
+        // We store the interaction energy between the external potentials in A, B, and C.
+        auto extern_extern_IE_mat = std::make_shared<Matrix>("extern_extern_IE", 3, 3);
+        double** extern_extern_IE_matp = extern_extern_IE_mat->pointer();
+        double extern_extern_IE = 0.0;
+        for (int p1 = 0; p1 < pot_list.size(); p1++) {
+            for (int p2 = p1+1; p2 < pot_list.size(); p2++) {
+
+                double IE = pot_list[p1]->computeExternExternInteraction(pot_list[p2]);
+                // store half the interaction so that Eij + Eji = Etotal
+                extern_extern_IE_matp[pot_ids[p1]][pot_ids[p2]] = IE * 0.5;
+                extern_extern_IE_matp[pot_ids[p2]][pot_ids[p1]] = IE * 0.5;
+                extern_extern_IE += IE;
+
+                outfile->Printf("    Interaction Energy between External Potentials %c and %c: %24.16E [Eh]\n",
+                                'A'+pot_ids[p1], 'A'+pot_ids[p2], IE);
+            }
+        }
+
+        outfile->Printf("\n");
+        outfile->Printf("    Total Interaction Energy between External Potentials: %24.16E [Eh]\n", extern_extern_IE);
+        matrices_["extern_extern_IE"] = extern_extern_IE_mat;
+    }
+    // matrices_["VE"]->print();
+    // for (auto const& x : matrices_) {
+    //     std::string key = x.first;
+    //     std::shared_ptr<Matrix> matrix = x.second;
+    //     outfile->Printf("  Matrix %s\n", key.c_str());
+    // }
+    outfile->Printf("       Total Nuclear Repulsion: %24.16E [Eh]\n", Etot);
+    return Etot;
+}
 }  // Namespace psi

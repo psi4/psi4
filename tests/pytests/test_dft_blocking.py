@@ -156,3 +156,86 @@ def test_dft_block_scheme_distantpoints():
             P = psi4.variable("XC GRID TOTAL POINTS")
             XC = wfn.variable("DFT XC ENERGY")
             assert psi4.compare_integers(ref[f"{YN}"], P, f" scheme={S}; distant points={YN} ")
+
+
+def _collocation_size_from_blocks(grid):
+    """Rebuild the total collocation size from the Python BlockOPoints API.
+
+    This is the same quantity the grid accumulates internally, summed here in
+    Python (arbitrary precision) so it cannot itself overflow.
+    """
+    return sum(len(b.functions_local_to_global()) * b.npoints() for b in grid.blocks())
+
+
+def _build_grid(mol, basis):
+    wfn = psi4.core.Wavefunction.build(mol, basis)
+    func = psi4.driver.dft.build_superfunctional("PBE0", True)[0]
+    Vpot = psi4.core.VBase.build(wfn.basisset(), func, "RV")
+    Vpot.initialize()
+    return Vpot
+
+
+@pytest.mark.parametrize("scheme", ["OCTREE", "NAIVE", "ATOMIC"])
+def test_collocation_size_consistency(scheme):
+    """MolecularGrid.collocation_size() must agree with the sum over blocks."""
+
+    mol = psi4.geometry(
+        """
+    0 1
+    O  -1.551007  -0.114520   0.000000
+    H  -1.934259   0.762503   0.000000
+    H  -0.599677   0.040712   0.000000
+    no_com
+    no_reorient
+    symmetry c1
+    """
+    )
+    psi4.set_options({"DFT_BLOCK_SCHEME": scheme})
+
+    Vpot = _build_grid(mol, "def2-SVP")
+    assert Vpot.grid().collocation_size() == _collocation_size_from_blocks(Vpot.grid())
+
+
+@pytest.mark.long
+def test_collocation_size_no_int32_overflow():
+    """The collocation size must survive crossing INT32_MAX.
+
+    ``GridBlocker::collocation_size()`` used to return ``int`` while both the
+    member it reads and the ``MolecularGrid`` member it feeds are ``size_t``,
+    so past 2**31 the value wrapped. The corrupted number drives the
+    collocation-cache memory budget in ``scf_initialize`` and the block stride
+    in ``VBase::build_collocation_cache``, so a negative wrap silently disabled
+    the cache and a positive wrap silently blew past the memory budget.
+
+    Benzene with aug-cc-pVQZ on a (974, 500) grid is the cheapest system found
+    that clears the threshold; the grid alone is built here, no SCF.
+    """
+    mol = psi4.geometry(
+        """
+    0 1
+    C  0.000  1.396  0.000
+    C  1.209  0.698  0.000
+    C  1.209 -0.698  0.000
+    C  0.000 -1.396  0.000
+    C -1.209 -0.698  0.000
+    C -1.209  0.698  0.000
+    H  0.000  2.479  0.000
+    H  2.147  1.239  0.000
+    H  2.147 -1.239  0.000
+    H  0.000 -2.479  0.000
+    H -2.147 -1.239  0.000
+    H -2.147  1.239  0.000
+    no_com
+    no_reorient
+    symmetry c1
+    """
+    )
+    psi4.set_options({"DFT_SPHERICAL_POINTS": 974, "DFT_RADIAL_POINTS": 500})
+
+    Vpot = _build_grid(mol, "aug-cc-pvqz")
+    ref = _collocation_size_from_blocks(Vpot.grid())
+
+    # Guard the guard: if grid defaults ever shrink this below the wrap point
+    # the test stops testing anything, so fail loudly instead of passing quietly.
+    assert ref > 2**31, f"system no longer exceeds INT32_MAX ({ref}); enlarge it"
+    assert Vpot.grid().collocation_size() == ref

@@ -428,7 +428,8 @@ functional information overrides any user-specified dispersion parameters.
 
 .. autofunction:: qcdb.Molecule.run_dftd4
 
-.. autoclass:: psi4.driver.procrouting.empirical_dispersion.EmpiricalDispersion
+For the Python-side dispersion helper, see
+:class:`psi4.driver.EmpiricalDispersion`.
 
 .. autofunction:: qcdb.Molecule.run_dftd3
 
@@ -562,4 +563,3 @@ functional information overrides any user-specified dispersion parameters.
 .. comment compare_values(ref_pbe_d2[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D (alias)')
 .. comment eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
 .. comment compare_values(ref_pbe_d2[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')
-

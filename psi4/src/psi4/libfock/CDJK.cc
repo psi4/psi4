@@ -120,7 +120,8 @@ void CDJK::initialize_JK_core() {
 
     /// Kinda silly to check for memory after you perform CD.
     /// Most likely redundant as cholesky also checks for memory.
-    if (memory_ < ((size_t)sizeof(double) * three_memory + (size_t)sizeof(double) * ncholesky_ * nbf * nbf))
+    /// memory_ is in doubles, as are the sizes it is compared against.
+    if (memory_ < three_memory + ncholesky_ * nbf * nbf)
         throw PSIEXCEPTION("Not enough memory for CD.");
 
     std::shared_ptr<Matrix> L = Ch->L();

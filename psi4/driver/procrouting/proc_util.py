@@ -214,7 +214,6 @@ def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[c
     """
 
     # Shifting to C1 so we need to copy the active molecule
-    sapt_dimer = sapt_dimer.clone()
     if sapt_dimer.schoenflies_symbol() != 'c1':
         core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
         sapt_dimer.reset_point_group('c1')
@@ -266,6 +265,7 @@ def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[c
 
 def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
     from .sapt import fisapt_proc
+    from .empirical_disp import edisp_interaction_energy
 
     sapt_dimer = dimer_wfn.molecule()
     sapt_dimer, monomerA, monomerB = prepare_sapt_molecule(sapt_dimer, "dimer")
@@ -280,16 +280,29 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
 
     save_pair = (saptd_name == "FISAPT0")
 
-    from .proc import build_functional_and_disp
-    _, _disp_functor = build_functional_and_disp('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
+    if 'd4' in disp_name.lower() and not disp_name.lower().endswith('(s)'):
+        result = edisp_interaction_energy.sapt_dft_d4_interaction_energy(
+            sapt_dimer=sapt_dimer,
+            monomerA=monomerA,
+            monomerB=monomerB,
+            dimer_wfn=dimer_wfn,
+            dftd4_functional_name='hf-d4bjeeqtwo',
+            d4_type='intermolecular',
+            data={},
+        )
+        disp_interaction_energy = result['D4 IE']
+    else:
+        from .proc import build_functional_and_disp
+        core.print_out("   | Supermolecular Dispersion Interaction Energy E_IE = E_IJ - E_I - E_J |\n")
+        _, _disp_functor = build_functional_and_disp('hf-' + disp_name.replace("(s)", ""), restricted=True, save_pairwise_disp=save_pair, **kwargs)
 
-    ## Dimer dispersion
-    dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
-    ## Monomer dispersion
-    mon_disp_energy = _disp_functor.compute_energy(monomerA)
-    mon_disp_energy += _disp_functor.compute_energy(monomerB)
+        ## Dimer dispersion
+        dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
+        ## Monomer dispersion
+        mon_disp_energy = _disp_functor.compute_energy(monomerA)
+        mon_disp_energy += _disp_functor.compute_energy(monomerB)
 
-    disp_interaction_energy = dimer_disp_energy - mon_disp_energy
+        disp_interaction_energy = dimer_disp_energy - mon_disp_energy
     core.set_variable(saptd_name + "-D DISP ENERGY", disp_interaction_energy)
     core.set_variable("SAPT DISP ENERGY", disp_interaction_energy)
     core.set_variable("DISPERSION CORRECTION ENERGY", disp_interaction_energy)
@@ -335,8 +348,9 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
         # by QCEngine v0.26.0, dftd3 interface corrected to match s-dftd3 and dftd4, so file dropped here changes, and fsapt.py script compensates
         core.print_out("\n  Warning: Use the `Empirical_Disp.dat` file only with `fsapt.py` from Psi4 v1.7.0 or later.\n")
         pw_disp.name = 'Empirical_Disp'
-        filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
         core.set_variable("FSAPT_" + pw_disp.name.upper(), pw_disp)
-        fisapt_proc._drop(pw_disp, filepath)
+        if core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
+            filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+            fisapt_proc._drop(pw_disp, filepath)
 
     return dimer_wfn
