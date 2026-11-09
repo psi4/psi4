@@ -117,6 +117,37 @@ def test_timer_label_rejects_separator():
         psi4.core.timer_on("bad;label")
 
 
+def test_timer_error_releases_lock():
+    # A timer error must release the timer lock, else the next timer call deadlocks. Run in a subprocess so a
+    #   regression times out instead of hanging the test session.
+    import os, subprocess, sys
+
+    script = """
+import psi4
+c = psi4.core
+c.clean_timers()
+c.timer_on("outer")
+for bad in (lambda: c.timer_off("never_on"), lambda: c.timer_on("outer")):
+    try:
+        bad()
+    except RuntimeError:
+        pass
+    else:
+        raise SystemExit("timer error not raised")
+    c.timer_on("after")
+    c.timer_off("after")
+print("timers usable after errors")
+"""
+    env = dict(os.environ, PYTHONPATH=os.pathsep.join([os.path.dirname(os.path.dirname(psi4.__file__))] +
+                                                      os.environ.get("PYTHONPATH", "").split(os.pathsep)))
+    try:
+        proc = subprocess.run([sys.executable, "-c", script], env=env, capture_output=True, text=True, timeout=120)
+    except subprocess.TimeoutExpired:
+        pytest.fail("timer call after a timer error deadlocked")
+    assert proc.returncode == 0, proc.stderr
+    assert "timers usable after errors" in proc.stdout
+
+
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>
 
 @uusing("networkx")
