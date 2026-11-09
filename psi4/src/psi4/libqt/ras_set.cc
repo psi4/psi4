@@ -129,8 +129,8 @@ namespace psi {
 ** Returns: 1 for success, 0 otherwise
 ** \ingroup QT
 */
-int ras_set(Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdocc, Dimension& fruocc, Dimension& restrdocc,
-            Dimension& restruocc, std::vector<Dimension>& ras_opi, Dimension& core_guess, int *order, int ras_type, bool is_mcscf,
+int ras_set(const Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdocc, Dimension& fruocc, Dimension& restrdocc,
+            Dimension& restruocc, std::vector<Dimension>& ras_opi, const Dimension& core_guess, int *order, int ras_type, bool is_mcscf,
             Options &options) {
     // Initialize variables
     int point, tmpi, cnt = 0;
