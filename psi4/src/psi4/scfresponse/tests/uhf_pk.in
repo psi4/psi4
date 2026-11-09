@@ -1,0 +1,152 @@
+# 
+# frequency-dependent polarizability and hyperpolarizability (SHG, OR, POCKELS)
+# UHF / cc-pVDZ / PK
+#
+
+sys.path.insert(0, './../..')
+import scf_response
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  scf_type pk
+  basis cc-pvdz
+  omega [0.15]
+  reference uhf
+  e_convergence 1e-10
+  d_convergence 1e-10
+}
+
+en, wfn = energy('scf', return_wfn = True)
+
+set {
+    property 'POLARIZABILITY'
+}
+energy('scf_response', ref_wfn = wfn)
+
+print('')
+print('    ==> POLARIZABILITY <==')
+print('')
+compare_values( 3.254034947502, psi4.variable("ALPHA(XX)"), 8, "ALPHA(XX)")
+compare_values( 0.000000000000, psi4.variable("ALPHA(XY)"), 8, "ALPHA(XY)")
+compare_values( 0.000000000000, psi4.variable("ALPHA(XZ)"), 8, "ALPHA(XZ)")
+compare_values( 7.039276015530, psi4.variable("ALPHA(YY)"), 8, "ALPHA(YY)")
+compare_values( 0.000000000000, psi4.variable("ALPHA(YZ)"), 8, "ALPHA(YZ)")
+compare_values( 5.260735941938, psi4.variable("ALPHA(ZZ)"), 8, "ALPHA(ZZ)")
+
+set {
+    property 'SHG'
+}
+energy('scf_response', ref_wfn = wfn)
+
+
+print('')
+print('    ==> SHG <==')
+print('')
+compare_values(  0.000000000000, psi4.variable("BETA(XXX)"), 8, "BETA(XXX)")
+compare_values( -0.000000000001, psi4.variable("BETA(XXY)"), 8, "BETA(XXY)")
+compare_values( 18.027922079474, psi4.variable("BETA(XXZ)"), 8, "BETA(XXZ)")
+compare_values( -0.000000000001, psi4.variable("BETA(XYX)"), 8, "BETA(XYX)")
+compare_values(  0.000000000000, psi4.variable("BETA(XYY)"), 8, "BETA(XYY)")
+compare_values( -0.000000000000, psi4.variable("BETA(XYZ)"), 8, "BETA(XYZ)")
+compare_values( 18.027922079474, psi4.variable("BETA(XZX)"), 8, "BETA(XZX)")
+compare_values( -0.000000000000, psi4.variable("BETA(XZY)"), 8, "BETA(XZY)")
+compare_values(  0.000000000000, psi4.variable("BETA(XZZ)"), 8, "BETA(XZZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXX)"), 8, "BETA(YXX)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXY)"), 8, "BETA(YXY)")
+compare_values( -0.000000000000, psi4.variable("BETA(YXZ)"), 8, "BETA(YXZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YYX)"), 8, "BETA(YYX)")
+compare_values( -0.000000000002, psi4.variable("BETA(YYY)"), 8, "BETA(YYY)")
+compare_values( 27.319249419335, psi4.variable("BETA(YYZ)"), 8, "BETA(YYZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(YZX)"), 8, "BETA(YZX)")
+compare_values( 27.319249419335, psi4.variable("BETA(YZY)"), 8, "BETA(YZY)")
+compare_values( -0.000000000001, psi4.variable("BETA(YZZ)"), 8, "BETA(YZZ)")
+compare_values(  3.018910729284, psi4.variable("BETA(ZXX)"), 8, "BETA(ZXX)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZXY)"), 8, "BETA(ZXY)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZXZ)"), 8, "BETA(ZXZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZYX)"), 8, "BETA(ZYX)")
+compare_values( 30.100236718100, psi4.variable("BETA(ZYY)"), 8, "BETA(ZYY)")
+compare_values( -0.000000000001, psi4.variable("BETA(ZYZ)"), 8, "BETA(ZYZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZZX)"), 8, "BETA(ZZX)")
+compare_values( -0.000000000001, psi4.variable("BETA(ZZY)"), 8, "BETA(ZZY)")
+compare_values( 22.230676741206, psi4.variable("BETA(ZZZ)"), 8, "BETA(ZZZ)")
+
+set {
+    property 'OR'
+}
+energy('scf_response', ref_wfn = wfn)
+
+print('')
+print('    ==> OR <==')
+print('')
+compare_values(  0.000000000000, psi4.variable("BETA(XXX)"), 8, "BETA(XXX)")
+compare_values(  0.000000000000, psi4.variable("BETA(XXY)"), 8, "BETA(XXY)")
+compare_values(  2.899408570996, psi4.variable("BETA(XXZ)"), 8, "BETA(XXZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(XYX)"), 8, "BETA(XYX)")
+compare_values(  0.000000000000, psi4.variable("BETA(XYY)"), 8, "BETA(XYY)")
+compare_values( -0.000000000000, psi4.variable("BETA(XYZ)"), 8, "BETA(XYZ)")
+compare_values(  2.899408570996, psi4.variable("BETA(XZX)"), 8, "BETA(XZX)")
+compare_values( -0.000000000000, psi4.variable("BETA(XZY)"), 8, "BETA(XZY)")
+compare_values(  0.000000000000, psi4.variable("BETA(XZZ)"), 8, "BETA(XZZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXX)"), 8, "BETA(YXX)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXY)"), 8, "BETA(YXY)")
+compare_values( -0.000000000000, psi4.variable("BETA(YXZ)"), 8, "BETA(YXZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YYX)"), 8, "BETA(YYX)")
+compare_values( -0.000000000001, psi4.variable("BETA(YYY)"), 8, "BETA(YYY)")
+compare_values( 19.155031271386, psi4.variable("BETA(YYZ)"), 8, "BETA(YYZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(YZX)"), 8, "BETA(YZX)")
+compare_values( 19.155031271386, psi4.variable("BETA(YZY)"), 8, "BETA(YZY)")
+compare_values( -0.000000000000, psi4.variable("BETA(YZZ)"), 8, "BETA(YZZ)")
+compare_values(  4.328567440858, psi4.variable("BETA(ZXX)"), 8, "BETA(ZXX)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZXY)"), 8, "BETA(ZXY)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZXZ)"), 8, "BETA(ZXZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZYX)"), 8, "BETA(ZYX)")
+compare_values( 18.786513667611, psi4.variable("BETA(ZYY)"), 8, "BETA(ZYY)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZYZ)"), 8, "BETA(ZYZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZZX)"), 8, "BETA(ZZX)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZZY)"), 8, "BETA(ZZY)")
+compare_values( 12.699179630195, psi4.variable("BETA(ZZZ)"), 8, "BETA(ZZZ)")
+
+set {
+    property 'POCKELS'
+}
+energy('scf_response', ref_wfn = wfn)
+
+print('')
+print('    ==> POCKELS <==')
+print('')
+compare_values(  0.000000000000, psi4.variable("BETA(XXX)"), 8, "BETA(XXX)")
+compare_values(  0.000000000000, psi4.variable("BETA(XXY)"), 8, "BETA(XXY)")
+compare_values(  4.328567440858, psi4.variable("BETA(XXZ)"), 8, "BETA(XXZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(XYX)"), 8, "BETA(XYX)")
+compare_values(  0.000000000000, psi4.variable("BETA(XYY)"), 8, "BETA(XYY)")
+compare_values( -0.000000000000, psi4.variable("BETA(XYZ)"), 8, "BETA(XYZ)")
+compare_values(  2.899408570996, psi4.variable("BETA(XZX)"), 8, "BETA(XZX)")
+compare_values( -0.000000000000, psi4.variable("BETA(XZY)"), 8, "BETA(XZY)")
+compare_values(  0.000000000000, psi4.variable("BETA(XZZ)"), 8, "BETA(XZZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXX)"), 8, "BETA(YXX)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXY)"), 8, "BETA(YXY)")
+compare_values( -0.000000000000, psi4.variable("BETA(YXZ)"), 8, "BETA(YXZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YYX)"), 8, "BETA(YYX)")
+compare_values( -0.000000000001, psi4.variable("BETA(YYY)"), 8, "BETA(YYY)")
+compare_values( 18.786513667611, psi4.variable("BETA(YYZ)"), 8, "BETA(YYZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(YZX)"), 8, "BETA(YZX)")
+compare_values( 19.155031271386, psi4.variable("BETA(YZY)"), 8, "BETA(YZY)")
+compare_values( -0.000000000000, psi4.variable("BETA(YZZ)"), 8, "BETA(YZZ)")
+compare_values(  2.899408570996, psi4.variable("BETA(ZXX)"), 8, "BETA(ZXX)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZXY)"), 8, "BETA(ZXY)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZXZ)"), 8, "BETA(ZXZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZYX)"), 8, "BETA(ZYX)")
+compare_values( 19.155031271386, psi4.variable("BETA(ZYY)"), 8, "BETA(ZYY)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZYZ)"), 8, "BETA(ZYZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZZX)"), 8, "BETA(ZZX)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZZY)"), 8, "BETA(ZZY)")
+compare_values( 12.699179630195, psi4.variable("BETA(ZZZ)"), 8, "BETA(ZZZ)")
+

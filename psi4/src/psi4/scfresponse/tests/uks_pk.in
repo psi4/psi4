@@ -1,0 +1,36 @@
+# 
+# frequency-dependent polarizability
+# UKS / cc-pVDZ / PK
+#
+
+sys.path.insert(0, './../..')
+import scf_response
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  scf_type pk
+  basis cc-pvdz
+  property "POLARIZABILITY"
+  omega [0.15]
+  reference uks
+}
+
+en, wfn = energy('pbe', return_wfn = True)
+
+energy('scf_response', ref_wfn = wfn)
+
+compare_values(  3.741730219280, psi4.variable("ALPHA(XX)"), 8, "ALPHA(XX)")
+compare_values( -0.000000000000, psi4.variable("ALPHA(XY)"), 8, "ALPHA(XY)")
+compare_values( -0.000000000000, psi4.variable("ALPHA(XZ)"), 8, "ALPHA(XZ)")
+compare_values(  7.520054653505, psi4.variable("ALPHA(YY)"), 8, "ALPHA(YY)")
+compare_values(  0.000000000000, psi4.variable("ALPHA(YZ)"), 8, "ALPHA(YZ)")
+compare_values(  5.886831735888, psi4.variable("ALPHA(ZZ)"), 8, "ALPHA(ZZ)")
+

@@ -1,0 +1,1540 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.10 
+
+                         Git: Rev {HEAD} f2492db dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Wednesday, 23 September 2026 09:34AM
+
+    Process ID: 83791
+    Host:       Alberts-MacBook-Pro.local
+    PSIDATADIR: /Users/deprince/software/psi4/v1.10/psi4/install/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶,
+                d̶f̶t̶d̶3̶, d̶f̶t̶d̶4̶, d̶k̶h̶, e̶c̶p̶i̶n̶t̶, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶,
+                g̶a̶u̶x̶c̶, g̶c̶p̶, g̶d̶m̶a̶, g̶e̶o̶m̶e̶t̶r̶i̶c̶, g̶p̶u̶_̶d̶f̶c̶c̶,
+                i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶, l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶,
+                o̶o̶o̶, o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶,
+                p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶, p̶s̶i̶x̶a̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+# 
+# frequency-dependent polarizability and hyperpolarizability (SHG, OR, POCKELS)
+# UHF / cc-pVDZ / DF
+#
+
+sys.path.insert(0, './../..')
+import scf_response
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  scf_type df
+  basis cc-pvdz
+  omega [0.15]
+  reference uhf
+  e_convergence 1e-10
+  d_convergence 1e-10
+}
+
+en, wfn = energy('scf', return_wfn = True)
+
+set {
+    property 'POLARIZABILITY'
+}
+energy('scf_response', ref_wfn = wfn)
+
+print('')
+print('    ==> POLARIZABILITY <==')
+print('')
+compare_values(  3.253823917921, psi4.variable("ALPHA(XX)"), 8, "ALPHA(XX)")
+compare_values(  0.000000000000, psi4.variable("ALPHA(XY)"), 8, "ALPHA(XY)")
+compare_values( -0.000000000000, psi4.variable("ALPHA(XZ)"), 8, "ALPHA(XZ)")
+compare_values(  7.038845240481, psi4.variable("ALPHA(YY)"), 8, "ALPHA(YY)")
+compare_values( -0.000000000001, psi4.variable("ALPHA(YZ)"), 8, "ALPHA(YZ)")
+compare_values(  5.260454069225, psi4.variable("ALPHA(ZZ)"), 8, "ALPHA(ZZ)")
+
+set {
+    property 'SHG'
+}
+energy('scf_response', ref_wfn = wfn)
+
+
+print('')
+print('    ==> SHG <==')
+print('')
+compare_values( -0.000000000000, psi4.variable("BETA(XXX)"), 8, "BETA(XXX)")
+compare_values( -0.000000000005, psi4.variable("BETA(XXY)"), 8, "BETA(XXY)")
+compare_values( 18.037455091851, psi4.variable("BETA(XXZ)"), 8, "BETA(XXZ)")
+compare_values( -0.000000000005, psi4.variable("BETA(XYX)"), 8, "BETA(XYX)")
+compare_values( -0.000000000000, psi4.variable("BETA(XYY)"), 8, "BETA(XYY)")
+compare_values(  0.000000000000, psi4.variable("BETA(XYZ)"), 8, "BETA(XYZ)")
+compare_values( 18.037455091851, psi4.variable("BETA(XZX)"), 8, "BETA(XZX)")
+compare_values(  0.000000000000, psi4.variable("BETA(XZY)"), 8, "BETA(XZY)")
+compare_values( -0.000000000000, psi4.variable("BETA(XZZ)"), 8, "BETA(XZZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(YXX)"), 8, "BETA(YXX)")
+compare_values( -0.000000000000, psi4.variable("BETA(YXY)"), 8, "BETA(YXY)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXZ)"), 8, "BETA(YXZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(YYX)"), 8, "BETA(YYX)")
+compare_values( -0.000000000018, psi4.variable("BETA(YYY)"), 8, "BETA(YYY)")
+compare_values( 27.321897161181, psi4.variable("BETA(YYZ)"), 8, "BETA(YYZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YZX)"), 8, "BETA(YZX)")
+compare_values( 27.321897161181, psi4.variable("BETA(YZY)"), 8, "BETA(YZY)")
+compare_values( -0.000000000013, psi4.variable("BETA(YZZ)"), 8, "BETA(YZZ)")
+compare_values(  3.019789827498, psi4.variable("BETA(ZXX)"), 8, "BETA(ZXX)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZXY)"), 8, "BETA(ZXY)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZXZ)"), 8, "BETA(ZXZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZYX)"), 8, "BETA(ZYX)")
+compare_values( 30.104479294693, psi4.variable("BETA(ZYY)"), 8, "BETA(ZYY)")
+compare_values( -0.000000000014, psi4.variable("BETA(ZYZ)"), 8, "BETA(ZYZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZZX)"), 8, "BETA(ZZX)")
+compare_values( -0.000000000014, psi4.variable("BETA(ZZY)"), 8, "BETA(ZZY)")
+compare_values( 22.236226937632, psi4.variable("BETA(ZZZ)"), 8, "BETA(ZZZ)")
+
+set {
+    property 'OR'
+}
+energy('scf_response', ref_wfn = wfn)
+
+print('')
+print('    ==> OR <==')
+print('')
+compare_values( -0.000000000000, psi4.variable("BETA(XXX)"), 8, "BETA(XXX)")
+compare_values( -0.000000000000, psi4.variable("BETA(XXY)"), 8, "BETA(XXY)")
+compare_values(  2.900064488483, psi4.variable("BETA(XXZ)"), 8, "BETA(XXZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(XYX)"), 8, "BETA(XYX)")
+compare_values( -0.000000000000, psi4.variable("BETA(XYY)"), 8, "BETA(XYY)")
+compare_values(  0.000000000000, psi4.variable("BETA(XYZ)"), 8, "BETA(XYZ)")
+compare_values(  2.900064488483, psi4.variable("BETA(XZX)"), 8, "BETA(XZX)")
+compare_values(  0.000000000000, psi4.variable("BETA(XZY)"), 8, "BETA(XZY)")
+compare_values( -0.000000000000, psi4.variable("BETA(XZZ)"), 8, "BETA(XZZ)")
+compare_values( -0.000000000001, psi4.variable("BETA(YXX)"), 8, "BETA(YXX)")
+compare_values( -0.000000000000, psi4.variable("BETA(YXY)"), 8, "BETA(YXY)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXZ)"), 8, "BETA(YXZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(YYX)"), 8, "BETA(YYX)")
+compare_values( -0.000000000011, psi4.variable("BETA(YYY)"), 8, "BETA(YYY)")
+compare_values( 19.157017728109, psi4.variable("BETA(YYZ)"), 8, "BETA(YYZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YZX)"), 8, "BETA(YZX)")
+compare_values( 19.157017728109, psi4.variable("BETA(YZY)"), 8, "BETA(YZY)")
+compare_values( -0.000000000008, psi4.variable("BETA(YZZ)"), 8, "BETA(YZZ)")
+compare_values(  4.329696364628, psi4.variable("BETA(ZXX)"), 8, "BETA(ZXX)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZXY)"), 8, "BETA(ZXY)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZXZ)"), 8, "BETA(ZXZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZYX)"), 8, "BETA(ZYX)")
+compare_values( 18.788257246409, psi4.variable("BETA(ZYY)"), 8, "BETA(ZYY)")
+compare_values( -0.000000000008, psi4.variable("BETA(ZYZ)"), 8, "BETA(ZYZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZZX)"), 8, "BETA(ZZX)")
+compare_values( -0.000000000008, psi4.variable("BETA(ZZY)"), 8, "BETA(ZZY)")
+compare_values( 12.701418398585, psi4.variable("BETA(ZZZ)"), 8, "BETA(ZZZ)")
+
+set {
+    property 'POCKELS'
+}
+energy('scf_response', ref_wfn = wfn)
+
+print('')
+print('    ==> POCKELS <==')
+print('')
+compare_values( -0.000000000000, psi4.variable("BETA(XXX)"), 8, "BETA(XXX)")
+compare_values( -0.000000000001, psi4.variable("BETA(XXY)"), 8, "BETA(XXY)")
+compare_values(  4.329696364628, psi4.variable("BETA(XXZ)"), 8, "BETA(XXZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(XYX)"), 8, "BETA(XYX)")
+compare_values( -0.000000000000, psi4.variable("BETA(XYY)"), 8, "BETA(XYY)")
+compare_values(  0.000000000000, psi4.variable("BETA(XYZ)"), 8, "BETA(XYZ)")
+compare_values(  2.900064488483, psi4.variable("BETA(XZX)"), 8, "BETA(XZX)")
+compare_values(  0.000000000000, psi4.variable("BETA(XZY)"), 8, "BETA(XZY)")
+compare_values( -0.000000000000, psi4.variable("BETA(XZZ)"), 8, "BETA(XZZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(YXX)"), 8, "BETA(YXX)")
+compare_values( -0.000000000000, psi4.variable("BETA(YXY)"), 8, "BETA(YXY)")
+compare_values(  0.000000000000, psi4.variable("BETA(YXZ)"), 8, "BETA(YXZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(YYX)"), 8, "BETA(YYX)")
+compare_values( -0.000000000011, psi4.variable("BETA(YYY)"), 8, "BETA(YYY)")
+compare_values( 18.788257246409, psi4.variable("BETA(YYZ)"), 8, "BETA(YYZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(YZX)"), 8, "BETA(YZX)")
+compare_values( 19.157017728109, psi4.variable("BETA(YZY)"), 8, "BETA(YZY)")
+compare_values( -0.000000000008, psi4.variable("BETA(YZZ)"), 8, "BETA(YZZ)")
+compare_values(  2.900064488483, psi4.variable("BETA(ZXX)"), 8, "BETA(ZXX)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZXY)"), 8, "BETA(ZXY)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZXZ)"), 8, "BETA(ZXZ)")
+compare_values(  0.000000000000, psi4.variable("BETA(ZYX)"), 8, "BETA(ZYX)")
+compare_values( 19.157017728109, psi4.variable("BETA(ZYY)"), 8, "BETA(ZYY)")
+compare_values( -0.000000000008, psi4.variable("BETA(ZYZ)"), 8, "BETA(ZYZ)")
+compare_values( -0.000000000000, psi4.variable("BETA(ZZX)"), 8, "BETA(ZZX)")
+compare_values( -0.000000000008, psi4.variable("BETA(ZZY)"), 8, "BETA(ZZY)")
+compare_values( 12.701418398585, psi4.variable("BETA(ZZZ)"), 8, "BETA(ZZZ)")
+--------------------------------------------------------------------------
+
+Scratch directory: /Users/deprince/psi4_scratch/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  5, 4, 3
+    Auxiliary basis highest AM E, G, H:  6, 5, 4
+    Onebody   basis highest AM E, G, H:  6, 5, 4
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on Alberts-MacBook-Pro.local
+*** at Wed Sep 23 09:34:31 2026
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /Users/deprince/software/psi4/v1.10/psi4/install/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /Users/deprince/software/psi4/v1.10/psi4/install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     0.115720000000    15.994914619570
+         H            0.000000000000     0.748790000000    -0.462880000000     1.007825032230
+         H            0.000000000000    -0.748790000000    -0.462880000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     26.09303  B =     14.91631  C =      9.49081 [cm^-1]
+  Rotational constants: A = 782249.32526  B = 447179.60802  C = 284527.17939 [MHz]
+  Nuclear repulsion =    9.300756822429312
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /Users/deprince/software/psi4/v1.10/psi4/install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /Users/deprince/software/psi4/v1.10/psi4/install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis functions: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.3424699456E-02.
+  Reciprocal condition number of the overlap matrix is 8.9562812635E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter SAD:   -76.51837814036401   -7.65184e+01   0.00000e+00 
+   @DF-UHF iter   1:   -75.93204807540926    5.86330e-01   1.84860e-02 ADIIS/DIIS
+   @DF-UHF iter   2:   -76.01286594063637   -8.08179e-02   8.38539e-03 ADIIS/DIIS
+   @DF-UHF iter   3:   -76.02627681354572   -1.34109e-02   1.73203e-03 ADIIS/DIIS
+   @DF-UHF iter   4:   -76.02700676862875   -7.29955e-04   2.46448e-04 ADIIS/DIIS
+   @DF-UHF iter   5:   -76.02703189702645   -2.51284e-05   4.76446e-05 DIIS
+   @DF-UHF iter   6:   -76.02703275981861   -8.62792e-07   5.75688e-06 DIIS
+   @DF-UHF iter   7:   -76.02703278175774   -2.19391e-08   9.61572e-07 DIIS
+   @DF-UHF iter   8:   -76.02703278224018   -4.82444e-10   9.13827e-08 DIIS
+   @DF-UHF iter   9:   -76.02703278224276   -2.57216e-12   5.52948e-09 DIIS
+   @DF-UHF iter  10:   -76.02703278224271    4.26326e-14   1.60397e-09 DIIS
+   @DF-UHF iter  11:   -76.02703278224270    1.42109e-14   2.72942e-10 DIIS
+   @DF-UHF iter  12:   -76.02703278224273   -2.84217e-14   2.81312e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   2.664535259E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                2.664535259E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -20.548437     2A     -1.342275     3A     -0.705424  
+       4A     -0.568399     5A     -0.493919  
+
+    Alpha Virtual:                                                        
+
+       6A      0.187417     7A      0.257807     8A      0.797698  
+       9A      0.864412    10A      1.162778    11A      1.200471  
+      12A      1.252696    13A      1.444241    14A      1.479273  
+      15A      1.678074    16A      1.865522    17A      1.947218  
+      18A      2.479521    19A      2.518454    20A      3.295554  
+      21A      3.350692    22A      3.525301    23A      3.879484  
+      24A      4.159773  
+
+    Beta Occupied:                                                        
+
+       1A    -20.548437     2A     -1.342275     3A     -0.705424  
+       4A     -0.568399     5A     -0.493919  
+
+    Beta Virtual:                                                         
+
+       6A      0.187417     7A      0.257807     8A      0.797698  
+       9A      0.864412    10A      1.162778    11A      1.200471  
+      12A      1.252696    13A      1.444241    14A      1.479273  
+      15A      1.678074    16A      1.865522    17A      1.947218  
+      18A      2.479521    19A      2.518454    20A      3.295554  
+      21A      3.350692    22A      3.525301    23A      3.879484  
+      24A      4.159773  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+    SOCC [     0 ]
+    NA   [     5 ]
+    NB   [     5 ]
+
+  @DF-UHF Final Energy:   -76.02703278224273
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.3007568224293120
+    One-Electron Energy =                -123.3386719226742230
+    Two-Electron Energy =                  38.0108823180021815
+    Total Energy =                        -76.0270327822427419
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 2.0000000
+  HONO-1 :    4  A 2.0000000
+  HONO-0 :    5  A 2.0000000
+  LUNO+0 :    6  A 0.0000000
+  LUNO+1 :    7  A 0.0000000
+  LUNO+2 :    8  A 0.0000000
+  LUNO+3 :    9  A 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.8043973            0.0000000           -0.8043973
+ Magnitude           :                                                    0.8043973
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on Alberts-MacBook-Pro.local at Wed Sep 23 09:34:32 2026
+Module time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+Scratch directory: /Users/deprince/psi4_scratch/
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  1
+      Integral cutoff                 1.00e-12
+      Number of functions per irrep: [  24 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 21643 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+Reading options from the SCF_RESPONSE block
+Calling plugin scf_response.so.
+
+
+Plugins that use gradients: set Da, Db, and Lagrangian for gradient theory on the wavefunction. The old way of passing these will stop working as soon as 1.8.    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     0.115720000000    15.994914619570
+         H            0.000000000000     0.748790000000    -0.462880000000     1.007825032230
+         H            0.000000000000    -0.748790000000    -0.462880000000     1.007825032230
+
+  -AO BASIS SET INFORMATION:
+    Name                   = CC-PVDZ
+    Blend                  = CC-PVDZ
+    Total number of shells = 12
+    Number of primitives   = 32
+    Number of AO           = 25
+    Number of SO           = 24
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     17s 4p 1d // 3s 2p 1d 
+       2     H     4s 1p // 2s 1p 
+       3     H     4s 1p // 2s 1p 
+
+  ==> AO Basis Functions <==
+
+    [ CC-PVDZ ]
+    spherical
+    ****
+    O   1
+    S   8 1.00
+                     11720.00000000           0.00071000
+                      1759.00000000           0.00547000
+                       400.80000000           0.02783700
+                       113.70000000           0.10480000
+                        37.03000000           0.28306200
+                        13.27000000           0.44871900
+                         5.02500000           0.27095200
+                         1.01300000           0.01545800
+    S   8 1.00
+                     11720.00000000          -0.00016000
+                      1759.00000000          -0.00126300
+                       400.80000000          -0.00626700
+                       113.70000000          -0.02571600
+                        37.03000000          -0.07092400
+                        13.27000000          -0.16541100
+                         5.02500000          -0.11695500
+                         1.01300000           0.55736800
+    S   1 1.00
+                         0.30230000           1.00000000
+    P   3 1.00
+                        17.70000000           0.04301800
+                         3.85400000           0.22891300
+                         1.04600000           0.50872800
+    P   1 1.00
+                         0.27530000           1.00000000
+    D   1 1.00
+                         1.18500000           1.00000000
+    ****
+    H   2
+    S   3 1.00
+                        13.01000000           0.01968500
+                         1.96200000           0.13797700
+                         0.44460000           0.47814800
+    S   1 1.00
+                         0.12200000           1.00000000
+    P   1 1.00
+                         0.72700000           1.00000000
+    ****
+    H   3
+    S   3 1.00
+                        13.01000000           0.01968500
+                         1.96200000           0.13797700
+                         0.44460000           0.47814800
+    S   1 1.00
+                         0.12200000           1.00000000
+    P   1 1.00
+                         0.72700000           1.00000000
+    ****
+
+
+
+        *******************************************
+        *                                         *
+        *                                         *
+        *    Unrestricted TDDFT Response          *
+        *                                         *
+        *                                         *
+        *******************************************
+
+
+    No. basis functions:               24
+    No. alpha electrons:                5
+    No. beta electrons:                 5
+    Omega:                 0.150000000000
+    d_convergence:              1.000e-10
+    maxiter:                           50
+
+
+    ==> First-Order Response Equations <==
+
+     Iter                 dX/Y 
+        0       0.641134591139
+        1       0.417871586338
+        2       0.296386998887
+        3       0.129452725795
+        4       0.053733294945
+        5       0.029470948838
+        6       0.061584783372
+        7       1.240971911710
+        8       0.002746974670
+        9       0.002132957304
+       10       0.001371848603
+       11       0.014878773508
+       12       0.001152837833
+       13       0.003045465884
+       14       0.001483958769
+       15       0.000006429534
+       16       0.000001243529
+       17       0.000001558870
+       18       0.000000262484
+       19       0.000000132807
+       20       0.000000052716
+       21       0.000000012025
+       22       0.000000003221
+       23       0.000000000885
+       24       0.000000000204
+       25       0.000000000051
+
+    First-order response equations converged!
+
+
+    ==> Polarizability <==
+
+    omega:   0.15000000
+
+
+    ALPHA(XX)       3.253823917921
+    ALPHA(XY)       0.000000000000
+    ALPHA(XZ)      -0.000000000000
+    ALPHA(YY)       7.038845240481
+    ALPHA(YZ)      -0.000000000001
+    ALPHA(ZZ)       5.260454069225
+    ALPHA(XX).............................................................................PASSED
+    ALPHA(XY).............................................................................PASSED
+    ALPHA(XZ).............................................................................PASSED
+    ALPHA(YY).............................................................................PASSED
+    ALPHA(YZ).............................................................................PASSED
+    ALPHA(ZZ).............................................................................PASSED
+
+Scratch directory: /Users/deprince/psi4_scratch/
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  1
+      Integral cutoff                 1.00e-12
+      Number of functions per irrep: [  24 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 21643 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+Reading options from the SCF_RESPONSE block
+Calling plugin scf_response.so.
+
+
+Plugins that use gradients: set Da, Db, and Lagrangian for gradient theory on the wavefunction. The old way of passing these will stop working as soon as 1.8.    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     0.115720000000    15.994914619570
+         H            0.000000000000     0.748790000000    -0.462880000000     1.007825032230
+         H            0.000000000000    -0.748790000000    -0.462880000000     1.007825032230
+
+  -AO BASIS SET INFORMATION:
+    Name                   = CC-PVDZ
+    Blend                  = CC-PVDZ
+    Total number of shells = 12
+    Number of primitives   = 32
+    Number of AO           = 25
+    Number of SO           = 24
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     17s 4p 1d // 3s 2p 1d 
+       2     H     4s 1p // 2s 1p 
+       3     H     4s 1p // 2s 1p 
+
+  ==> AO Basis Functions <==
+
+    [ CC-PVDZ ]
+    spherical
+    ****
+    O   1
+    S   8 1.00
+                     11720.00000000           0.00071000
+                      1759.00000000           0.00547000
+                       400.80000000           0.02783700
+                       113.70000000           0.10480000
+                        37.03000000           0.28306200
+                        13.27000000           0.44871900
+                         5.02500000           0.27095200
+                         1.01300000           0.01545800
+    S   8 1.00
+                     11720.00000000          -0.00016000
+                      1759.00000000          -0.00126300
+                       400.80000000          -0.00626700
+                       113.70000000          -0.02571600
+                        37.03000000          -0.07092400
+                        13.27000000          -0.16541100
+                         5.02500000          -0.11695500
+                         1.01300000           0.55736800
+    S   1 1.00
+                         0.30230000           1.00000000
+    P   3 1.00
+                        17.70000000           0.04301800
+                         3.85400000           0.22891300
+                         1.04600000           0.50872800
+    P   1 1.00
+                         0.27530000           1.00000000
+    D   1 1.00
+                         1.18500000           1.00000000
+    ****
+    H   2
+    S   3 1.00
+                        13.01000000           0.01968500
+                         1.96200000           0.13797700
+                         0.44460000           0.47814800
+    S   1 1.00
+                         0.12200000           1.00000000
+    P   1 1.00
+                         0.72700000           1.00000000
+    ****
+    H   3
+    S   3 1.00
+                        13.01000000           0.01968500
+                         1.96200000           0.13797700
+                         0.44460000           0.47814800
+    S   1 1.00
+                         0.12200000           1.00000000
+    P   1 1.00
+                         0.72700000           1.00000000
+    ****
+
+
+
+        *******************************************
+        *                                         *
+        *                                         *
+        *    Unrestricted TDDFT Response          *
+        *                                         *
+        *                                         *
+        *******************************************
+
+
+    No. basis functions:               24
+    No. alpha electrons:                5
+    No. beta electrons:                 5
+    Omega:                 0.150000000000
+    d_convergence:              1.000e-10
+    maxiter:                           50
+
+
+    ==> First-Order Response Equations <==
+
+     Iter                 dX/Y 
+        0       0.641134591139
+        1       0.417871586338
+        2       0.296386998887
+        3       0.129452725795
+        4       0.053733294945
+        5       0.029470948838
+        6       0.061584783372
+        7       1.240971911710
+        8       0.002746974670
+        9       0.002132957304
+       10       0.001371848603
+       11       0.014878773508
+       12       0.001152837833
+       13       0.003045465884
+       14       0.001483958769
+       15       0.000006429534
+       16       0.000001243529
+       17       0.000001558870
+       18       0.000000262484
+       19       0.000000132807
+       20       0.000000052716
+       21       0.000000012025
+       22       0.000000003221
+       23       0.000000000885
+       24       0.000000000204
+       25       0.000000000051
+
+    First-order response equations converged!
+
+
+    ==> Polarizability <==
+
+    omega:   0.15000000
+
+
+    ALPHA(XX)       3.253823917921
+    ALPHA(XY)       0.000000000000
+    ALPHA(XZ)      -0.000000000000
+    ALPHA(YY)       7.038845240481
+    ALPHA(YZ)      -0.000000000001
+    ALPHA(ZZ)       5.260454069225
+
+
+        *******************************************
+        *                                         *
+        *                                         *
+        *    Unrestricted TDDFT Response          *
+        *                                         *
+        *                                         *
+        *******************************************
+
+
+    No. basis functions:               24
+    No. alpha electrons:                5
+    No. beta electrons:                 5
+    Omega:                -0.300000000000
+    d_convergence:              1.000e-10
+    maxiter:                           50
+
+
+    ==> First-Order Response Equations <==
+
+     Iter                 dX/Y 
+        0       0.722384507274
+        1       0.544547619123
+        2       0.461337554563
+        3       0.355123658718
+        4       0.262896949095
+        5       0.213171497683
+        6       0.237358548678
+        7       0.216120866717
+        8       0.142517392450
+        9       0.063075158733
+       10       0.026274380449
+       11       0.027091808537
+       12       0.069863206950
+       13       0.035620805758
+       14       0.008116584690
+       15       0.009988677221
+       16       0.006259430644
+       17       0.001343952973
+       18       0.001164539025
+       19       0.000424048879
+       20       0.000031271019
+       21       0.000016294609
+       22       0.000004994238
+       23       0.000002004190
+       24       0.000001360161
+       25       0.000000280744
+       26       0.000000123386
+       27       0.000000096254
+       28       0.000000031187
+       29       0.000000006512
+       30       0.000000001734
+       31       0.000000001125
+       32       0.000000000702
+       33       0.000000000245
+       34       0.000000000089
+
+    First-order response equations converged!
+
+
+    ==> Polarizability <==
+
+    omega:  -0.30000000
+
+
+    ALPHA(XX)       5.848670524024
+    ALPHA(XY)       0.000000000000
+    ALPHA(XZ)      -0.000000000000
+    ALPHA(YY)       8.498028470128
+    ALPHA(YZ)      -0.000000000001
+    ALPHA(ZZ)       6.713629220910
+
+    ==>  Hyperpolarizability <==
+
+    type:           SHG
+    omega:   0.15000000
+
+    BETA(XXX)      -0.000000000000
+    BETA(XXY)      -0.000000000005
+    BETA(XXZ)      18.037455091851
+    BETA(XYX)      -0.000000000005
+    BETA(XYY)      -0.000000000000
+    BETA(XYZ)       0.000000000000
+    BETA(XZX)      18.037455091851
+    BETA(XZY)       0.000000000000
+    BETA(XZZ)      -0.000000000000
+    BETA(YXX)      -0.000000000000
+    BETA(YXY)      -0.000000000000
+    BETA(YXZ)       0.000000000000
+    BETA(YYX)      -0.000000000000
+    BETA(YYY)      -0.000000000018
+    BETA(YYZ)      27.321897161181
+    BETA(YZX)       0.000000000000
+    BETA(YZY)      27.321897161181
+    BETA(YZZ)      -0.000000000013
+    BETA(ZXX)       3.019789827498
+    BETA(ZXY)       0.000000000000
+    BETA(ZXZ)      -0.000000000000
+    BETA(ZYX)       0.000000000000
+    BETA(ZYY)      30.104479294693
+    BETA(ZYZ)      -0.000000000014
+    BETA(ZZX)      -0.000000000000
+    BETA(ZZY)      -0.000000000014
+    BETA(ZZZ)      22.236226937632
+    BETA(XXX).............................................................................PASSED
+    BETA(XXY).............................................................................PASSED
+    BETA(XXZ).............................................................................PASSED
+    BETA(XYX).............................................................................PASSED
+    BETA(XYY).............................................................................PASSED
+    BETA(XYZ).............................................................................PASSED
+    BETA(XZX).............................................................................PASSED
+    BETA(XZY).............................................................................PASSED
+    BETA(XZZ).............................................................................PASSED
+    BETA(YXX).............................................................................PASSED
+    BETA(YXY).............................................................................PASSED
+    BETA(YXZ).............................................................................PASSED
+    BETA(YYX).............................................................................PASSED
+    BETA(YYY).............................................................................PASSED
+    BETA(YYZ).............................................................................PASSED
+    BETA(YZX).............................................................................PASSED
+    BETA(YZY).............................................................................PASSED
+    BETA(YZZ).............................................................................PASSED
+    BETA(ZXX).............................................................................PASSED
+    BETA(ZXY).............................................................................PASSED
+    BETA(ZXZ).............................................................................PASSED
+    BETA(ZYX).............................................................................PASSED
+    BETA(ZYY).............................................................................PASSED
+    BETA(ZYZ).............................................................................PASSED
+    BETA(ZZX).............................................................................PASSED
+    BETA(ZZY).............................................................................PASSED
+    BETA(ZZZ).............................................................................PASSED
+
+Scratch directory: /Users/deprince/psi4_scratch/
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  1
+      Integral cutoff                 1.00e-12
+      Number of functions per irrep: [  24 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 21643 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+Reading options from the SCF_RESPONSE block
+Calling plugin scf_response.so.
+
+
+Plugins that use gradients: set Da, Db, and Lagrangian for gradient theory on the wavefunction. The old way of passing these will stop working as soon as 1.8.    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     0.115720000000    15.994914619570
+         H            0.000000000000     0.748790000000    -0.462880000000     1.007825032230
+         H            0.000000000000    -0.748790000000    -0.462880000000     1.007825032230
+
+  -AO BASIS SET INFORMATION:
+    Name                   = CC-PVDZ
+    Blend                  = CC-PVDZ
+    Total number of shells = 12
+    Number of primitives   = 32
+    Number of AO           = 25
+    Number of SO           = 24
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     17s 4p 1d // 3s 2p 1d 
+       2     H     4s 1p // 2s 1p 
+       3     H     4s 1p // 2s 1p 
+
+  ==> AO Basis Functions <==
+
+    [ CC-PVDZ ]
+    spherical
+    ****
+    O   1
+    S   8 1.00
+                     11720.00000000           0.00071000
+                      1759.00000000           0.00547000
+                       400.80000000           0.02783700
+                       113.70000000           0.10480000
+                        37.03000000           0.28306200
+                        13.27000000           0.44871900
+                         5.02500000           0.27095200
+                         1.01300000           0.01545800
+    S   8 1.00
+                     11720.00000000          -0.00016000
+                      1759.00000000          -0.00126300
+                       400.80000000          -0.00626700
+                       113.70000000          -0.02571600
+                        37.03000000          -0.07092400
+                        13.27000000          -0.16541100
+                         5.02500000          -0.11695500
+                         1.01300000           0.55736800
+    S   1 1.00
+                         0.30230000           1.00000000
+    P   3 1.00
+                        17.70000000           0.04301800
+                         3.85400000           0.22891300
+                         1.04600000           0.50872800
+    P   1 1.00
+                         0.27530000           1.00000000
+    D   1 1.00
+                         1.18500000           1.00000000
+    ****
+    H   2
+    S   3 1.00
+                        13.01000000           0.01968500
+                         1.96200000           0.13797700
+                         0.44460000           0.47814800
+    S   1 1.00
+                         0.12200000           1.00000000
+    P   1 1.00
+                         0.72700000           1.00000000
+    ****
+    H   3
+    S   3 1.00
+                        13.01000000           0.01968500
+                         1.96200000           0.13797700
+                         0.44460000           0.47814800
+    S   1 1.00
+                         0.12200000           1.00000000
+    P   1 1.00
+                         0.72700000           1.00000000
+    ****
+
+
+
+        *******************************************
+        *                                         *
+        *                                         *
+        *    Unrestricted TDDFT Response          *
+        *                                         *
+        *                                         *
+        *******************************************
+
+
+    No. basis functions:               24
+    No. alpha electrons:                5
+    No. beta electrons:                 5
+    Omega:                 0.000000000000
+    d_convergence:              1.000e-10
+    maxiter:                           50
+
+
+    ==> First-Order Response Equations <==
+
+     Iter                 dX/Y 
+        0       0.438285023716
+        1       0.274092622234
+        2       0.183361498738
+        3       0.060150172419
+        4       0.016101101672
+        5       0.007118485184
+        6       0.004955385776
+        7       0.003831456788
+        8       0.002044692424
+        9       0.000492531591
+       10       0.000073691924
+       11       0.000083238809
+       12       0.000281863840
+       13       0.000090353388
+       14       0.000061148086
+       15       0.000014036406
+       16       0.000000288731
+       17       0.000000743238
+       18       0.000000745336
+       19       0.000000013334
+       20       0.000000003473
+       21       0.000000000438
+       22       0.000000000069
+
+    First-order response equations converged!
+
+
+    ==> Polarizability <==
+
+    omega:   0.00000000
+
+
+    ALPHA(XX)       3.044109088818
+    ALPHA(XY)       0.000000000000
+    ALPHA(XZ)      -0.000000000000
+    ALPHA(YY)       6.692747399339
+    ALPHA(YZ)      -0.000000000001
+    ALPHA(ZZ)       4.978220889880
+
+
+        *******************************************
+        *                                         *
+        *                                         *
+        *    Unrestricted TDDFT Response          *
+        *                                         *
+        *                                         *
+        *******************************************
+
+
+    No. basis functions:               24
+    No. alpha electrons:                5
+    No. beta electrons:                 5
+    Omega:                 0.150000000000
+    d_convergence:              1.000e-10
+    maxiter:                           50
+
+
+    ==> First-Order Response Equations <==
+
+     Iter                 dX/Y 
+        0       0.641134591139
+        1       0.417871586338
+        2       0.296386998887
+        3       0.129452725795
+        4       0.053733294945
+        5       0.029470948838
+        6       0.061584783372
+        7       1.240971911710
+        8       0.002746974670
+        9       0.002132957304
+       10       0.001371848603
+       11       0.014878773508
+       12       0.001152837833
+       13       0.003045465884
+       14       0.001483958769
+       15       0.000006429534
+       16       0.000001243529
+       17       0.000001558870
+       18       0.000000262484
+       19       0.000000132807
+       20       0.000000052716
+       21       0.000000012025
+       22       0.000000003221
+       23       0.000000000885
+       24       0.000000000204
+       25       0.000000000051
+
+    First-order response equations converged!
+
+
+    ==> Polarizability <==
+
+    omega:   0.15000000
+
+
+    ALPHA(XX)       3.253823917921
+    ALPHA(XY)       0.000000000000
+    ALPHA(XZ)      -0.000000000000
+    ALPHA(YY)       7.038845240481
+    ALPHA(YZ)      -0.000000000001
+    ALPHA(ZZ)       5.260454069225
+
+    ==>  Hyperpolarizability <==
+
+    type:            OR
+    omega:   0.15000000
+
+    BETA(XXX)      -0.000000000000
+    BETA(XXY)      -0.000000000000
+    BETA(XXZ)       2.900064488483
+    BETA(XYX)      -0.000000000000
+    BETA(XYY)      -0.000000000000
+    BETA(XYZ)       0.000000000000
+    BETA(XZX)       2.900064488483
+    BETA(XZY)       0.000000000000
+    BETA(XZZ)      -0.000000000000
+    BETA(YXX)      -0.000000000001
+    BETA(YXY)      -0.000000000000
+    BETA(YXZ)       0.000000000000
+    BETA(YYX)      -0.000000000000
+    BETA(YYY)      -0.000000000011
+    BETA(YYZ)      19.157017728109
+    BETA(YZX)       0.000000000000
+    BETA(YZY)      19.157017728109
+    BETA(YZZ)      -0.000000000008
+    BETA(ZXX)       4.329696364628
+    BETA(ZXY)       0.000000000000
+    BETA(ZXZ)      -0.000000000000
+    BETA(ZYX)       0.000000000000
+    BETA(ZYY)      18.788257246409
+    BETA(ZYZ)      -0.000000000008
+    BETA(ZZX)      -0.000000000000
+    BETA(ZZY)      -0.000000000008
+    BETA(ZZZ)      12.701418398585
+    BETA(XXX).............................................................................PASSED
+    BETA(XXY).............................................................................PASSED
+    BETA(XXZ).............................................................................PASSED
+    BETA(XYX).............................................................................PASSED
+    BETA(XYY).............................................................................PASSED
+    BETA(XYZ).............................................................................PASSED
+    BETA(XZX).............................................................................PASSED
+    BETA(XZY).............................................................................PASSED
+    BETA(XZZ).............................................................................PASSED
+    BETA(YXX).............................................................................PASSED
+    BETA(YXY).............................................................................PASSED
+    BETA(YXZ).............................................................................PASSED
+    BETA(YYX).............................................................................PASSED
+    BETA(YYY).............................................................................PASSED
+    BETA(YYZ).............................................................................PASSED
+    BETA(YZX).............................................................................PASSED
+    BETA(YZY).............................................................................PASSED
+    BETA(YZZ).............................................................................PASSED
+    BETA(ZXX).............................................................................PASSED
+    BETA(ZXY).............................................................................PASSED
+    BETA(ZXZ).............................................................................PASSED
+    BETA(ZYX).............................................................................PASSED
+    BETA(ZYY).............................................................................PASSED
+    BETA(ZYZ).............................................................................PASSED
+    BETA(ZZX).............................................................................PASSED
+    BETA(ZZY).............................................................................PASSED
+    BETA(ZZZ).............................................................................PASSED
+
+Scratch directory: /Users/deprince/psi4_scratch/
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  1
+      Integral cutoff                 1.00e-12
+      Number of functions per irrep: [  24 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 21643 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+Reading options from the SCF_RESPONSE block
+Calling plugin scf_response.so.
+
+
+Plugins that use gradients: set Da, Db, and Lagrangian for gradient theory on the wavefunction. The old way of passing these will stop working as soon as 1.8.    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     0.115720000000    15.994914619570
+         H            0.000000000000     0.748790000000    -0.462880000000     1.007825032230
+         H            0.000000000000    -0.748790000000    -0.462880000000     1.007825032230
+
+  -AO BASIS SET INFORMATION:
+    Name                   = CC-PVDZ
+    Blend                  = CC-PVDZ
+    Total number of shells = 12
+    Number of primitives   = 32
+    Number of AO           = 25
+    Number of SO           = 24
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     17s 4p 1d // 3s 2p 1d 
+       2     H     4s 1p // 2s 1p 
+       3     H     4s 1p // 2s 1p 
+
+  ==> AO Basis Functions <==
+
+    [ CC-PVDZ ]
+    spherical
+    ****
+    O   1
+    S   8 1.00
+                     11720.00000000           0.00071000
+                      1759.00000000           0.00547000
+                       400.80000000           0.02783700
+                       113.70000000           0.10480000
+                        37.03000000           0.28306200
+                        13.27000000           0.44871900
+                         5.02500000           0.27095200
+                         1.01300000           0.01545800
+    S   8 1.00
+                     11720.00000000          -0.00016000
+                      1759.00000000          -0.00126300
+                       400.80000000          -0.00626700
+                       113.70000000          -0.02571600
+                        37.03000000          -0.07092400
+                        13.27000000          -0.16541100
+                         5.02500000          -0.11695500
+                         1.01300000           0.55736800
+    S   1 1.00
+                         0.30230000           1.00000000
+    P   3 1.00
+                        17.70000000           0.04301800
+                         3.85400000           0.22891300
+                         1.04600000           0.50872800
+    P   1 1.00
+                         0.27530000           1.00000000
+    D   1 1.00
+                         1.18500000           1.00000000
+    ****
+    H   2
+    S   3 1.00
+                        13.01000000           0.01968500
+                         1.96200000           0.13797700
+                         0.44460000           0.47814800
+    S   1 1.00
+                         0.12200000           1.00000000
+    P   1 1.00
+                         0.72700000           1.00000000
+    ****
+    H   3
+    S   3 1.00
+                        13.01000000           0.01968500
+                         1.96200000           0.13797700
+                         0.44460000           0.47814800
+    S   1 1.00
+                         0.12200000           1.00000000
+    P   1 1.00
+                         0.72700000           1.00000000
+    ****
+
+
+
+        *******************************************
+        *                                         *
+        *                                         *
+        *    Unrestricted TDDFT Response          *
+        *                                         *
+        *                                         *
+        *******************************************
+
+
+    No. basis functions:               24
+    No. alpha electrons:                5
+    No. beta electrons:                 5
+    Omega:                 0.000000000000
+    d_convergence:              1.000e-10
+    maxiter:                           50
+
+
+    ==> First-Order Response Equations <==
+
+     Iter                 dX/Y 
+        0       0.438285023716
+        1       0.274092622234
+        2       0.183361498738
+        3       0.060150172419
+        4       0.016101101672
+        5       0.007118485184
+        6       0.004955385776
+        7       0.003831456788
+        8       0.002044692424
+        9       0.000492531591
+       10       0.000073691924
+       11       0.000083238809
+       12       0.000281863840
+       13       0.000090353388
+       14       0.000061148086
+       15       0.000014036406
+       16       0.000000288731
+       17       0.000000743238
+       18       0.000000745336
+       19       0.000000013334
+       20       0.000000003473
+       21       0.000000000438
+       22       0.000000000069
+
+    First-order response equations converged!
+
+
+    ==> Polarizability <==
+
+    omega:   0.00000000
+
+
+    ALPHA(XX)       3.044109088818
+    ALPHA(XY)       0.000000000000
+    ALPHA(XZ)      -0.000000000000
+    ALPHA(YY)       6.692747399339
+    ALPHA(YZ)      -0.000000000001
+    ALPHA(ZZ)       4.978220889880
+
+
+        *******************************************
+        *                                         *
+        *                                         *
+        *    Unrestricted TDDFT Response          *
+        *                                         *
+        *                                         *
+        *******************************************
+
+
+    No. basis functions:               24
+    No. alpha electrons:                5
+    No. beta electrons:                 5
+    Omega:                 0.150000000000
+    d_convergence:              1.000e-10
+    maxiter:                           50
+
+
+    ==> First-Order Response Equations <==
+
+     Iter                 dX/Y 
+        0       0.641134591139
+        1       0.417871586338
+        2       0.296386998887
+        3       0.129452725795
+        4       0.053733294945
+        5       0.029470948838
+        6       0.061584783372
+        7       1.240971911710
+        8       0.002746974670
+        9       0.002132957304
+       10       0.001371848603
+       11       0.014878773508
+       12       0.001152837833
+       13       0.003045465884
+       14       0.001483958769
+       15       0.000006429534
+       16       0.000001243529
+       17       0.000001558870
+       18       0.000000262484
+       19       0.000000132807
+       20       0.000000052716
+       21       0.000000012025
+       22       0.000000003221
+       23       0.000000000885
+       24       0.000000000204
+       25       0.000000000051
+
+    First-order response equations converged!
+
+
+    ==> Polarizability <==
+
+    omega:   0.15000000
+
+
+    ALPHA(XX)       3.253823917921
+    ALPHA(XY)       0.000000000000
+    ALPHA(XZ)      -0.000000000000
+    ALPHA(YY)       7.038845240481
+    ALPHA(YZ)      -0.000000000001
+    ALPHA(ZZ)       5.260454069225
+
+    ==>  Hyperpolarizability <==
+
+    type:       POCKELS
+    omega:   0.15000000
+
+    BETA(XXX)      -0.000000000000
+    BETA(XXY)      -0.000000000001
+    BETA(XXZ)       4.329696364628
+    BETA(XYX)      -0.000000000000
+    BETA(XYY)      -0.000000000000
+    BETA(XYZ)       0.000000000000
+    BETA(XZX)       2.900064488483
+    BETA(XZY)       0.000000000000
+    BETA(XZZ)      -0.000000000000
+    BETA(YXX)      -0.000000000000
+    BETA(YXY)      -0.000000000000
+    BETA(YXZ)       0.000000000000
+    BETA(YYX)      -0.000000000000
+    BETA(YYY)      -0.000000000011
+    BETA(YYZ)      18.788257246409
+    BETA(YZX)       0.000000000000
+    BETA(YZY)      19.157017728109
+    BETA(YZZ)      -0.000000000008
+    BETA(ZXX)       2.900064488483
+    BETA(ZXY)       0.000000000000
+    BETA(ZXZ)      -0.000000000000
+    BETA(ZYX)       0.000000000000
+    BETA(ZYY)      19.157017728109
+    BETA(ZYZ)      -0.000000000008
+    BETA(ZZX)      -0.000000000000
+    BETA(ZZY)      -0.000000000008
+    BETA(ZZZ)      12.701418398585
+    BETA(XXX).............................................................................PASSED
+    BETA(XXY).............................................................................PASSED
+    BETA(XXZ).............................................................................PASSED
+    BETA(XYX).............................................................................PASSED
+    BETA(XYY).............................................................................PASSED
+    BETA(XYZ).............................................................................PASSED
+    BETA(XZX).............................................................................PASSED
+    BETA(XZY).............................................................................PASSED
+    BETA(XZZ).............................................................................PASSED
+    BETA(YXX).............................................................................PASSED
+    BETA(YXY).............................................................................PASSED
+    BETA(YXZ).............................................................................PASSED
+    BETA(YYX).............................................................................PASSED
+    BETA(YYY).............................................................................PASSED
+    BETA(YYZ).............................................................................PASSED
+    BETA(YZX).............................................................................PASSED
+    BETA(YZY).............................................................................PASSED
+    BETA(YZZ).............................................................................PASSED
+    BETA(ZXX).............................................................................PASSED
+    BETA(ZXY).............................................................................PASSED
+    BETA(ZXZ).............................................................................PASSED
+    BETA(ZYX).............................................................................PASSED
+    BETA(ZYY).............................................................................PASSED
+    BETA(ZYZ).............................................................................PASSED
+    BETA(ZZX).............................................................................PASSED
+    BETA(ZZY).............................................................................PASSED
+    BETA(ZZZ).............................................................................PASSED
+
+    Psi4 stopped on: Wednesday, 23 September 2026 09:34AM
+    Psi4 wall time for execution: 0:00:01.39
+
+*** Psi4 exiting successfully. Buy a developer a beer!
