@@ -1048,7 +1048,7 @@ iterations: a macro-iteration converges when the energy change is under
 both required. OpenTrustRegion applies that same test through a callback function,
 with the gradient measured as for the first-order iterations. Its own iteration table
 prints the RMS of its parameter gradient instead, which is scaled differently and runs
-several times larger than the |[F,P]| column of the main iteration table.
+several times larger than the ``|[F,P]|`` column of the main iteration table.
 
 OpenTrustRegion can also stop short of requested convergence: it accepts a step by comparing the energy
 change it measured against the one its model predicted, so once neither resolves in
