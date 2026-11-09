@@ -34,6 +34,10 @@ H  0.000000 -0.922832 -1.237695
 """,
 }
 _molecules["ethene_c1"] = "symmetry c1\n" + _molecules["ethene"]
+_molecules["h2o"] = "O\nH 1 0.96\nH 1 0.96 2 104.5"
+_molecules["h2o+"] = "1 2\n" + _molecules["h2o"]
+_molecules["ch2"] = "0 3\nC\nH 1 1.1\nH 1 1.1 2 109.0"
+_molecules["n2"] = "N\nN 1 1.1"
 
 _common_options = {
     "basis": "cc-pvdz",
@@ -48,9 +52,14 @@ fnocc_tiled = r"v\(ab,cd\) diagrams will be evaluated in\s+(?:[2-9]|[1-9]\d+) bl
 fnocc_multifile_sort = r"Number of \(ab\|cd\) temporary files:\s+(?:[3-9]|[1-9]\d+)\n"
 fnocc_t2_on_disk = r"T2 will be stored on disk"
 fnocc_highmem_t = r"\(T\) algorithm:.*\(high-memory\)"
+dpd_ooc_sort = r"DPD: not enough memory for an in-core buf4_sort"
+dpd_cache_evict = r"DPD: memory is full; writing cached files to disk"
+libtrans_tei_buckets = r"Sorting File: SO Ints \(nn\|nn\) nbuckets = (?:[2-9]|[1-9]\d+)"
+libtrans_tpdm_buckets = r"Sorting File: MO TPDM \(AA\|AA\) nbuckets = (?:[2-9]|[1-9]\d+)"
 
 fnocc_conv = {"qc_module": "fnocc", "scf_type": "pk", "cc_type": "conv", "mp_type": "conv"}
 fnocc_df = {"qc_module": "fnocc", "scf_type": "disk_df", "df_ints_io": "save", "cc_type": "df"}  # fnocc DF-CC wants C1
+cc_conv = {"qc_module": "ccenergy", "scf_type": "pk", "cc_type": "conv"}
 
 pressure_cases = [
     # fnocc: CCSD tiles v(ab,cd) and v(ab,ci) and sorts integrals into many files; below ~1.6 MB T2 goes to disk
@@ -64,6 +73,21 @@ pressure_cases = [
     pytest.param("ethene", "fno-ccsd(t)", fnocc_conv, 1_500_000, [fnocc_t2_on_disk], id="fnocc-fno-ccsd_t_-t2disk", marks=pytest.mark.fnocc),
     # fnocc DF-CCSD: T2 goes to disk only within one T2's worth (~0.46 MB here) below the in-core requirement
     pytest.param("ethene_c1", "ccsd(t)", fnocc_df, 8_800_000, [fnocc_t2_on_disk], id="fnocc-dfccsd_t_-t2disk", marks=[pytest.mark.fnocc, pytest.mark.df]),
+    # ccenergy/cceom: buf4 sorts run out of core, and libtrans transforms the integrals in buckets. At these squeezes a
+    # transform bucket count once divided the rows evenly, dropping the last bucket (PSIO_ERROR 17, block start address).
+    pytest.param("h2o", "ccsd", {**cc_conv, "basis": "cc-pvtz"}, 1_000_000, [dpd_ooc_sort, libtrans_tei_buckets], id="ccenergy-ccsd-ooc_sort-trans_buckets", marks=pytest.mark.cc),
+    pytest.param("h2o+", "eom-ccsd", {**cc_conv, "basis": "cc-pvtz", "reference": "rohf", "roots_per_irrep": [1, 0, 0, 0]}, 3_500_000, [dpd_ooc_sort], id="cceom-rohf-eom_ccsd-ooc_sort-trans_buckets", marks=pytest.mark.cc),
+    # cceom: out-of-core sorts, including qpsr
+    pytest.param("ch2", "eom-ccsd", {**cc_conv, "basis": "cc-pvtz", "reference": "uhf", "roots_per_irrep": [1, 0, 0, 1]}, 3_000_000, [dpd_ooc_sort], id="cceom-uhf-eom_ccsd-ooc_sort", marks=pytest.mark.cc),
+]  # yapf: disable
+
+gradient_cases = [
+    # ccenergy CCSD gradient: out-of-core sorts (incl. buf4_sort_axpy) and a TPDM presort in buckets, whose map once
+    # missed the (q,p) half of packed pairs (segfault)
+    pytest.param("n2", "ccsd", {**cc_conv, "basis": "cc-pvtz", "freeze_core": False}, 3_000_000, [dpd_ooc_sort, libtrans_tpdm_buckets], id="ccenergy-ccsd-ooc_sort-tpdm_buckets", marks=pytest.mark.cc),
+    # cceom EOM-CCSD gradient: the DPD cache evicts to disk, where one label once held two differently shaped buffers
+    # (PSIO_ERROR 18, write into next entry)
+    pytest.param("h2o+", "eom-ccsd", {**cc_conv, "basis": "cc-pvdz", "reference": "rohf", "roots_per_irrep": [1, 0, 0, 0], "freeze_core": False}, 1_250_000, [dpd_cache_evict], id="cceom-rohf-eom_ccsd-cache_evict", marks=pytest.mark.cc),
 ]  # yapf: disable
 
 
@@ -75,16 +99,16 @@ def restore_memory_and_threads():
     psi4.core.set_num_threads(nthreads)
 
 
-def _run(method, outfile, memory, ample):
+def _run(method, outfile, memory, ample, driver=psi4.energy):
     psi4.core.set_output_file(str(outfile.with_suffix(".scf.out")), False)
     psi4.core.set_memory_bytes(ample)
     _, ref_wfn = psi4.energy("scf", return_wfn=True)
 
     psi4.core.set_output_file(str(outfile), False)
     psi4.core.set_memory_bytes(memory)
-    energy = psi4.energy(method, ref_wfn=ref_wfn)
+    result = driver(method, ref_wfn=ref_wfn)
     psi4.core.set_output_file(str(outfile.with_suffix(".after")), False)  # flushes outfile; closing would leave none open
-    return energy, outfile.read_text()
+    return result, outfile.read_text()
 
 
 @pytest.mark.parametrize("molecule,method,options,squeezed,triggers", pressure_cases)
@@ -128,6 +152,23 @@ def test_fnocc_lowmemory_triples_thread_fallback(tmp_path, restore_memory_and_th
     assert threads and int(threads.group(1)) == 1, f"fallback chose {threads and threads.group(1)} threads, expected 1"
 
     assert compare_values(e_ample, e_squeezed, 9, "ccsd(t) energy: low-memory (T) thread fallback vs ample memory")
+
+
+@pytest.mark.parametrize("molecule,method,options,squeezed,triggers", gradient_cases)
+def test_memory_pressure_gradient(molecule, method, options, squeezed, triggers, tmp_path, restore_memory_and_threads):
+    psi4.set_num_threads(1)
+    psi4.geometry(_molecules[molecule])
+    psi4.set_options({**_common_options, **options})
+
+    ample = 2 * 1024**3
+    g_ample, out_ample = _run(method, tmp_path / "ample.out", ample, ample, driver=psi4.gradient)
+    g_squeezed, out_squeezed = _run(method, tmp_path / "squeezed.out", squeezed, ample, driver=psi4.gradient)
+
+    missing = [pat for pat in triggers if not re.search(pat, out_squeezed)]
+    assert not missing, f"squeezed run ({squeezed} bytes) did not take the blocked path: {missing}"
+    assert any(not re.search(pat, out_ample) for pat in triggers), "ample run already took every blocked path"
+
+    assert compare_values(g_ample, g_squeezed, 8, f"{method} gradient: squeezed vs ample memory")
 
 
 @pytest.mark.cc
