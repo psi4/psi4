@@ -48,6 +48,7 @@
 #include "psi4/libmints/dimension.h"
 
 namespace psi {
+class Dimension;
 class Options;
 class Wavefunction;
 
@@ -65,8 +66,8 @@ void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dimension co
 PSI_API
 void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimension const& frozen_docc,
                     Dimension const& frozen_uocc, int* order_alpha, int* order_beta, Dimension const& orbspi);
-int ras_set3(int nirreps, int nmo, int* orbspi, int* docc, int* socc, int* frdocc, int* fruocc, int* restrdocc,
-             int* restruocc, int** ras_opi, int* core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
+int ras_set(const Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdocc, Dimension& fruocc, Dimension& restrdocc,
+            Dimension& restruocc, std::vector<Dimension>& ras_opi, const Dimension& core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
 void newmm_rking(double** A, int transa, double** B, int transb, double** C, int num_rows, int num_links, int num_cols,
                  double alpha, double beta);
 double dot_block(double** A, double** B, int rows, int cols, double alpha);
