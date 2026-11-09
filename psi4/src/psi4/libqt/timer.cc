@@ -946,6 +946,25 @@ std::time_t timer_start, timer_end;
 bool skip_timers;
 static omp_lock_t lock_timer;
 
+// Holds lock_timer for its scope, so a timer error thrown while the lock is held (e.g., "Timer X is not on")
+// releases it instead of deadlocking the next timer call in the process.
+class TimerLock {
+   public:
+    TimerLock() { omp_set_lock(&lock_timer); }
+    ~TimerLock() { unlock(); }
+    void unlock() {
+        if (locked_) {
+            locked_ = false;
+            omp_unset_lock(&lock_timer);
+        }
+    }
+    TimerLock(const TimerLock &) = delete;
+    TimerLock &operator=(const TimerLock &) = delete;
+
+   private:
+    bool locked_ = true;
+};
+
 void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, int align_key_width) {
     std::string key = timer.get_key();
     if (key.length() < align_key_width) {
@@ -1013,7 +1032,7 @@ void timer_init() {
 */
 void timer_done() {
     extern std::time_t timer_start, timer_end;
-    omp_set_lock(&lock_timer);
+    TimerLock lock;
     extern Timer_Structure root_timer;
     root_timer.turn_off();
 
@@ -1050,7 +1069,7 @@ void timer_done() {
 
     printer->Printf("\n**************************************************************************************\n");
 
-    omp_unset_lock(&lock_timer);
+    lock.unlock();
     omp_destroy_lock(&lock_timer);
 }
 
@@ -1088,10 +1107,9 @@ void stop_skip_timers() {
 */
 PSI_API void timer_on(const std::string &key) {
     validate_timer_label(key);
-    omp_set_lock(&lock_timer);
+    TimerLock lock;
     extern bool skip_timers;
     if (skip_timers) {
-        omp_unset_lock(&lock_timer);
         return;
     }
     extern Timer_Structure parallel_timer;
@@ -1111,7 +1129,6 @@ PSI_API void timer_on(const std::string &key) {
         ser_on_timers.push_back(top_timer_ptr);
         top_timer_ptr->turn_on();
     }
-    omp_unset_lock(&lock_timer);
 }
 
 /*!
@@ -1125,10 +1142,9 @@ PSI_API void timer_on(const std::string &key) {
 */
 PSI_API void timer_off(const std::string &key) {
     validate_timer_label(key);
-    omp_set_lock(&lock_timer);
+    TimerLock lock;
     extern bool skip_timers;
     if (skip_timers) {
-        omp_unset_lock(&lock_timer);
         return;
     }
     extern Timer_Structure parallel_timer;
@@ -1183,7 +1199,6 @@ PSI_API void timer_off(const std::string &key) {
             parent_ptr = on_child_ptr;
         }
     }
-    omp_unset_lock(&lock_timer);
 }
 
 /*!
@@ -1197,10 +1212,9 @@ PSI_API void timer_off(const std::string &key) {
 */
 void parallel_timer_on(const std::string &key, int thread_rank) {
     validate_timer_label(key);
-    omp_set_lock(&lock_timer);
+    TimerLock lock;
     extern bool skip_timers;
     if (skip_timers) {
-        omp_unset_lock(&lock_timer);
         return;
     }
     extern std::list<Timer_Structure *> ser_on_timers;
@@ -1227,7 +1241,6 @@ void parallel_timer_on(const std::string &key, int thread_rank) {
             top_timer_ptr->turn_on(thread_rank);
         }
     }
-    omp_unset_lock(&lock_timer);
 }
 
 /*!
@@ -1241,10 +1254,9 @@ void parallel_timer_on(const std::string &key, int thread_rank) {
 */
 void parallel_timer_off(const std::string &key, int thread_rank) {
     validate_timer_label(key);
-    omp_set_lock(&lock_timer);
+    TimerLock lock;
     extern bool skip_timers;
     if (skip_timers) {
-        omp_unset_lock(&lock_timer);
         return;
     }
     extern std::vector<std::list<Timer_Structure *>> par_on_timers;
@@ -1307,7 +1319,6 @@ void parallel_timer_off(const std::string &key, int thread_rank) {
         parallel_timer.get_parent()->merge_move_all(&parallel_timer);
         parallel_timer.set_parent(nullptr);
     }
-    omp_unset_lock(&lock_timer);
 }
 
 /*!
@@ -1373,13 +1384,12 @@ void timer_to_records_helper(const Timer_Structure& timer, const std::string& pa
 ** \ingroup QT
 */
 PSI_API std::vector<TimerRecord> get_timer_records() {
-    omp_set_lock(&lock_timer);
+    TimerLock lock;
     extern Timer_Structure root_timer;
     std::vector<TimerRecord> result;
     std::vector<std::string> empty_path;
     std::string empty_parent_id = "";
     timer_to_records_helper(root_timer, empty_parent_id, empty_path, 0, result);
-    omp_unset_lock(&lock_timer);
     return result;
 }
 

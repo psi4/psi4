@@ -619,8 +619,8 @@ void ZFW(dpdbuf4 *Z, dpdbuf4 *F, dpdbuf4 *W, double alpha, double beta) {
         global_dpd_->buf4_mat_irrep_rd(Z, Gib);
 
         /* how many rows of F/W can we store in half the remaining core? */
-        rows_per_bucket = dpd_memfree() / (2 * F->params->coltot[Gea]);
-        if (rows_per_bucket > F->params->rowtot[Gib]) rows_per_bucket = F->params->rowtot[Gib];
+        rows_per_bucket =
+            dpd_rows_per_bucket(dpd_memfree(), 2LL * F->params->coltot[Gea], F->params->rowtot[Gib]);
         nbuckets = (int)ceil((double)F->params->rowtot[Gib] / (double)rows_per_bucket);
         rows_left = F->params->rowtot[Gib] % rows_per_bucket;
 

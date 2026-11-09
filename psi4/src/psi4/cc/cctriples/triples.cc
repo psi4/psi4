@@ -98,7 +98,7 @@ void test_abc_loops_BBB();
 
 PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options) {
     double ETAAA, ETAAB, ETABB, ETBBB, ET;
-    long int memory;
+    int64_t memory;
     int **cachelist, *cachefiles;
 
     init_io();

@@ -103,9 +103,10 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index, int 
     long int rowtot, coltot, core_total, maxrows;
     bool incore;
     int Grow, Gcol;
-    int out_rows_per_bucket, out_nbuckets, out_rows_left, out_row_start, n;
-    int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
-    int rows_per_bucket, nbuckets, rows_left, row_start;
+    int64_t out_rows_per_bucket, in_rows_per_bucket, rows_per_bucket;
+    int out_nbuckets, out_rows_left, out_row_start, n;
+    int in_nbuckets, in_rows_left, in_row_start, m;
+    int nbuckets, rows_left, row_start;
 
     nirreps = InBuf->params->nirreps;
     my_irrep = InBuf->file.my_irrep;

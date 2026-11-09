@@ -29,6 +29,10 @@
 #ifndef CCSD_H
 #define CCSD_H
 
+#include <cstdint>
+#include <string>
+#include <utility>
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libpsio/psio.hpp"
@@ -36,11 +40,30 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
 
-PSI_API long int Position(long int i, long int j);
+PSI_API int64_t Position(int64_t i, int64_t j);
 
 namespace psi {
 namespace fnocc {
+
+/// timer_on for the guard's lifetime; timer_off runs even when an exception (e.g., not enough memory or
+/// nonconvergence) unwinds the scope, else the next fnocc call in this process dies on "timer is already on"
+class TimerGuard {
+   public:
+    explicit TimerGuard(std::string key) : key_(std::move(key)) { timer_on(key_); }
+    ~TimerGuard() {
+        try {
+            timer_off(key_);
+        } catch (...) {  // never throw from a destructor, possibly mid-unwind
+        }
+    }
+    TimerGuard(const TimerGuard &) = delete;
+    TimerGuard &operator=(const TimerGuard &) = delete;
+
+   private:
+    std::string key_;
+};
 
 std::tuple<SharedMatrix, SharedMatrix> spin_adapt(SharedMatrix ss, SharedMatrix os);
 
@@ -73,7 +96,7 @@ class CoupledCluster : public Wavefunction {
     void DefineTasks();
     void DefineLinearTasks();
     void DefineQuadraticTasks();
-    long int ncctasks, nqtasks, nltasks;
+    int64_t ncctasks, nqtasks, nltasks;
 
     /// task parameters - not used currently
     struct CCTaskParams {
@@ -155,12 +178,12 @@ class CoupledCluster : public Wavefunction {
     double emp4_q_os, emp4_q_ss, emp4_q;
 
     /// Update t1
-    void UpdateT1(long int iter);
-    void UpdateT1_mp4(long int iter);
+    void UpdateT1(int64_t iter);
+    void UpdateT1_mp4(int64_t iter);
 
     /// Update t2
-    void UpdateT2(long int iter);
-    void UpdateT2_mp4(long int iter);
+    void UpdateT2(int64_t iter);
+    void UpdateT2_mp4(int64_t iter);
 
     /// evaluate energy
     double CheckEnergy();
@@ -175,21 +198,21 @@ class CoupledCluster : public Wavefunction {
     void TwoJminusK(CCTaskParams params);
 
     /// DIIS functions
-    void DIIS(double *c, long int nvec, long int n, int replace_diis_iter);
-    void DIISOldVector(long int iter, int diis_iter, int replace_diis_iter);
+    void DIIS(double *c, int64_t nvec, int64_t n, int replace_diis_iter);
+    void DIISOldVector(int64_t iter, int diis_iter, int replace_diis_iter);
     double DIISErrorVector(int diis_iter, int replace_diis_iter, int iter);
     void DIISNewAmplitudes(int diis_iter, int &replace_diis_iter);
-    long int maxdiis;
+    int64_t maxdiis;
     double *diisvec;
 
     /// basic parameters
-    long int ndoccact, ndocc, nvirt, nso, nmotemp, nmo, nfzc, nfzv, nvirt_no;
+    int64_t ndoccact, ndocc, nvirt, nso, nmotemp, nmo, nfzc, nfzv, nvirt_no;
 
     /// available memory
-    long int memory;
+    int64_t memory;
 
     /// maximum number of iterations
-    long int maxiter;
+    int64_t maxiter;
 
     /// energy convergence
     double e_conv;
@@ -214,9 +237,9 @@ class CoupledCluster : public Wavefunction {
 
     /// define tiling
     void DefineTilingCPU();
-    long int ovtilesize, lastovtile, lastov2tile, ov2tilesize;
-    long int tilesize, lasttile, maxelem;
-    long int ntiles, novtiles, nov2tiles;
+    int64_t ovtilesize, lastovtile, lastov2tile, ov2tilesize;
+    int64_t tilesize, lasttile, maxelem;
+    int64_t ntiles, novtiles, nov2tiles;
 };
 
 // DF CC class
@@ -255,8 +278,8 @@ class PSI_API DFCoupledCluster : public CoupledCluster {
 
     ///  3-index integrals for density fitting.
     bool ischolesky_;
-    long int nQ;
-    long int nQ_scf;
+    int64_t nQ;
+    int64_t nQ_scf;
     double *Qov, *Qvv, *Qoo;
     void ThreeIndexIntegrals();
 

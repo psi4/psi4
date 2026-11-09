@@ -51,8 +51,8 @@ namespace fnocc {
 
 void DFCoupledCluster::CCResidual() {
     bool timer = options_.get_bool("CC_TIMINGS");
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     double start;
 

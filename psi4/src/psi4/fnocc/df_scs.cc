@@ -49,8 +49,8 @@ namespace psi {
 namespace fnocc {
 
 std::tuple<double, double, SharedMatrix, SharedMatrix> DFCoupledCluster::ComputePair(const std::string& name) {
-    long int v = nvirt;
-    long int o = ndoccact;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
 
     double ssenergy = 0.0;
     double osenergy = 0.0;
@@ -72,15 +72,15 @@ std::tuple<double, double, SharedMatrix, SharedMatrix> DFCoupledCluster::Compute
     // The sum over i, j gives the "Coulomb-like" part of the (i, j) energy and the "Exchnge-like"
     // part of the (j, i) pair energy. For this reason, we need sum over both i, j and also add to the
     // i, j and j, i pair energies.
-    for (long int i = 0; i < o; i++) {
-        for (long int j = 0; j < o; j++) {
+    for (int64_t i = 0; i < o; i++) {
+        for (int64_t j = 0; j < o; j++) {
             double pair_os = 0;
             double pair_ss = 0;
-            for (long int a = 0; a < v; a++) {
-                for (long int b = 0; b < v; b++) {
-                    long int ijab = a * v * o * o + b * o * o + i * o + j;
-                    long int iajb = i * v * v * o + a * v * o + j * v + b;
-                    long int jaib = iajb + (i - j) * v * (1 - v * o);
+            for (int64_t a = 0; a < v; a++) {
+                for (int64_t b = 0; b < v; b++) {
+                    int64_t ijab = a * v * o * o + b * o * o + i * o + j;
+                    int64_t iajb = i * v * v * o + a * v * o + j * v + b;
+                    int64_t jaib = iajb + (i - j) * v * (1 - v * o);
 
                     pair_os += integrals[iajb] * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
                     pair_ss += integrals[iajb] * (tb[ijab] - tb[b * o * o * v + a * o * o + i * o + j]);
