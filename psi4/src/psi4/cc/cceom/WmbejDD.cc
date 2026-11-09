@@ -144,9 +144,9 @@ void WmbejDD(int i, int C_irr) {
         global_dpd_->buf4_axpy(&S2temp, &S2, 1);
         global_dpd_->buf4_close(&S2temp);
         /* S2(IA,JB) --> S2(IJ,AB) */
-        global_dpd_->buf4_sort(&S2, PSIF_EOM_TMP, prqs, 0, 5, "SIJAB");
+        global_dpd_->buf4_sort(&S2, PSIF_EOM_TMP, prqs, 0, 5, "SIJAB (IJ,AB)");
         global_dpd_->buf4_close(&S2);
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "SIJAB");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "SIJAB (IJ,AB)");
         global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 5, 2, 7, 0, SIJAB_lbl);
         global_dpd_->buf4_axpy(&S2, &SIJAB, 1.0);
         global_dpd_->buf4_close(&SIJAB);
@@ -186,9 +186,9 @@ void WmbejDD(int i, int C_irr) {
         global_dpd_->buf4_axpy(&S2temp, &S2, 1);
         global_dpd_->buf4_close(&S2temp);
         /* S2(ia,jb) --> S2(ij,ab) */
-        global_dpd_->buf4_sort(&S2, PSIF_EOM_TMP, prqs, 0, 5, "Sijab");
+        global_dpd_->buf4_sort(&S2, PSIF_EOM_TMP, prqs, 0, 5, "Sijab (ij,ab)");
         global_dpd_->buf4_close(&S2);
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "Sijab");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "Sijab (ij,ab)");
         global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 0, 5, 2, 7, 0, Sijab_lbl);
         global_dpd_->buf4_axpy(&S2, &Sijab, 1.0);
         global_dpd_->buf4_close(&Sijab);
@@ -297,9 +297,9 @@ void WmbejDD(int i, int C_irr) {
         global_dpd_->buf4_axpy(&S2temp, &S2, 1);
         global_dpd_->buf4_close(&S2temp);
         /* S2(IA,JB) --> S2(IJ,AB) */
-        global_dpd_->buf4_sort(&S2, PSIF_EOM_TMP, prqs, 0, 5, "SIJAB");
+        global_dpd_->buf4_sort(&S2, PSIF_EOM_TMP, prqs, 0, 5, "SIJAB (IJ,AB)");
         global_dpd_->buf4_close(&S2);
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "SIJAB");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "SIJAB (IJ,AB)");
         global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 5, 2, 7, 0, SIJAB_lbl);
         global_dpd_->buf4_axpy(&S2, &SIJAB, 1.0);
         global_dpd_->buf4_close(&SIJAB);
@@ -339,9 +339,9 @@ void WmbejDD(int i, int C_irr) {
         global_dpd_->buf4_axpy(&S2temp, &S2, 1);
         global_dpd_->buf4_close(&S2temp);
         /* S2(ia,jb) --> S2(ij,ab) */
-        global_dpd_->buf4_sort(&S2, PSIF_EOM_TMP, prqs, 10, 15, "Sijab");
+        global_dpd_->buf4_sort(&S2, PSIF_EOM_TMP, prqs, 10, 15, "Sijab (ij,ab)");
         global_dpd_->buf4_close(&S2);
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 10, 15, 10, 15, 0, "Sijab");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 10, 15, 10, 15, 0, "Sijab (ij,ab)");
         global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 15, 12, 17, 0, Sijab_lbl);
         global_dpd_->buf4_axpy(&S2, &Sijab, 1.0);
         global_dpd_->buf4_close(&Sijab);

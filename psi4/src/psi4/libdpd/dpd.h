@@ -311,6 +311,8 @@ class PSI_API DPD {
     // Whether this DPD has already noted (once, in the output) that a buf4 sort ran out of core.
     bool ooc_sort_noted_ = false;
     void note_ooc_sort(const char *function, enum indices index);
+    // Whether this DPD has already noted (once, in the output) that it evicted cached files to make room.
+    bool cache_evict_noted_ = false;
 
    public:
     // These used to live in the dpd_data struct

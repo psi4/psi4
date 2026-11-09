@@ -135,7 +135,7 @@ void WmnefDD(int i, int C_irr) {
         global_dpd_->buf4_close(&CMnEf);
         global_dpd_->buf4_close(&D);
 
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "SIJAB");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "SIJAB (I>J,AB)");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, H_IRR, 2, 5, 2, 7, 0, "tIJAB");
         global_dpd_->contract244(&X, &T2, &S2, 0, 2, 1, 1.0, 0.0);
         global_dpd_->buf4_close(&T2);
@@ -165,7 +165,7 @@ void WmnefDD(int i, int C_irr) {
         global_dpd_->buf4_close(&CMnEf);
         global_dpd_->buf4_close(&D);
 
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "Sijab");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "Sijab (i>j,ab)");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, H_IRR, 2, 5, 2, 7, 0, "tijab");
         global_dpd_->contract244(&X, &T2, &S2, 0, 2, 1, 1.0, 0.0);
         global_dpd_->file2_close(&X);
@@ -227,7 +227,7 @@ void WmnefDD(int i, int C_irr) {
            global_dpd_->file2_mat_close(&X);
          */
 
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "SIJAB");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "SIJAB (IJ,A>B)");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, H_IRR, 0, 7, 2, 7, 0, "tIJAB");
         global_dpd_->contract244(&X, &T2, &S2, 0, 0, 0, 1.0, 0.0);
         global_dpd_->buf4_close(&T2);
@@ -255,7 +255,7 @@ void WmnefDD(int i, int C_irr) {
         global_dpd_->contract442(&D, &CMnEf, &X, 0, 0, 1.0, 1.0);
         global_dpd_->buf4_close(&D);
         global_dpd_->buf4_close(&CMnEf);
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "Sijab");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "Sijab (ij,a>b)");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, H_IRR, 0, 7, 2, 7, 0, "tijab");
         global_dpd_->contract244(&X, &T2, &S2, 0, 0, 0, 1.0, 0.0);
         global_dpd_->buf4_close(&T2);
@@ -305,7 +305,7 @@ void WmnefDD(int i, int C_irr) {
         global_dpd_->buf4_close(&CMnEf);
         global_dpd_->buf4_close(&D);
 
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "SIJAB");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "SIJAB (I>J,AB)");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, H_IRR, 2, 5, 2, 7, 0, "tIJAB");
         global_dpd_->contract244(&X, &T2, &S2, 0, 2, 1, 1.0, 0.0);
         global_dpd_->buf4_close(&T2);
@@ -335,7 +335,7 @@ void WmnefDD(int i, int C_irr) {
         global_dpd_->buf4_close(&CMnEf);
         global_dpd_->buf4_close(&D);
 
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 12, 15, 12, 15, 0, "Sijab");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 12, 15, 12, 15, 0, "Sijab (i>j,ab)");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, H_IRR, 12, 15, 12, 17, 0, "tijab");
         global_dpd_->contract244(&X, &T2, &S2, 0, 2, 1, 1.0, 0.0);
         global_dpd_->file2_close(&X);
@@ -382,7 +382,7 @@ void WmnefDD(int i, int C_irr) {
         global_dpd_->buf4_close(&D);
         global_dpd_->buf4_close(&CMnEf);
 
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "SIJAB");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "SIJAB (IJ,A>B)");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, H_IRR, 0, 7, 2, 7, 0, "tIJAB");
         global_dpd_->contract244(&X, &T2, &S2, 0, 0, 0, 1.0, 0.0);
         global_dpd_->buf4_close(&T2);
@@ -410,7 +410,7 @@ void WmnefDD(int i, int C_irr) {
         global_dpd_->contract442(&D, &CMnEf, &X, 0, 0, 1.0, 1.0);
         global_dpd_->buf4_close(&D);
         global_dpd_->buf4_close(&CMnEf);
-        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "Sijab");
+        global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "Sijab (ij,a>b)");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, H_IRR, 10, 17, 12, 17, 0, "tijab");
         global_dpd_->contract244(&X, &T2, &S2, 0, 0, 0, 1.0, 0.0);
         global_dpd_->buf4_close(&T2);

@@ -88,6 +88,10 @@ double **DPD::dpd_block_matrix(size_t n, size_t m) {
     //    while((dpd_main.memory - dpd_main.memused - size) < 0) {
     while ((dpd_main.memory - dpd_main.memused) < size) {
         /* Delete cache entries until there's enough memory or no more cache */
+        if (!cache_evict_noted_) {
+            cache_evict_noted_ = true;
+            outfile->Printf("\n  DPD: memory is full; writing cached files to disk to make room.\n\n");
+        }
 
         /* Priority-based cache */
         if (dpd_main.cachetype == 1) {
