@@ -54,7 +54,7 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index, int p
     int h, nirreps, row, col, all_buf_irrep, r_irrep;
     int p, q, r, s, P, Q, R, S, pq, rs, sr, pr, qs, qp, rq, qr, ps, sp, rp, sq;
     int Gp, Gq, Gr, Gs, Gpq, Grs, Gpr, Gqs, Grq, Gqr, Gps, Gsp, Grp, Gsq;
-    int memoryd, rows_per_bucket, nbuckets, rows_left, n;
+    int rows_per_bucket, nbuckets, rows_left, n;
     dpdbuf4 OutBuf;
     bool incore;
 
@@ -85,12 +85,10 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index, int p
                 /* p->p; q->q; s->r; r->s = pqsr */
 
                 /* select algorithm for certain simple cases */
-                memoryd = dpd_memfree() / 2; /* use half the memory for each buf4 in the sort */
                 if (InBuf->params->rowtot[h] && InBuf->params->coltot[h ^ all_buf_irrep]) {
-                    rows_per_bucket = memoryd / InBuf->params->coltot[h ^ all_buf_irrep];
-
-                    /* enough memory for the whole matrix? */
-                    if (rows_per_bucket > InBuf->params->rowtot[h]) rows_per_bucket = InBuf->params->rowtot[h];
+                    rows_per_bucket =
+                        dpd_rows_per_bucket(dpd_memfree(), 2LL * InBuf->params->coltot[h ^ all_buf_irrep],
+                                            InBuf->params->rowtot[h]);
 
                     if (!rows_per_bucket) dpd_error("buf4_sort_pqsr: Not enough memory for one row!", "outfile");
 

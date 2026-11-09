@@ -33,6 +33,7 @@
 #ifndef _psi_src_lib_libdpd_dpd_h
 #define _psi_src_lib_libdpd_dpd_h
 
+#include <cstdint>
 #include <cstdio>
 #include <string>
 #include "psi4/psifiles.h"
@@ -245,10 +246,10 @@ struct thread_data {
 };
 
 struct dpd_gbl {
-    long int memory;    /* Total memory requested by the user */
-    long int memused;   /* Total memory used (cache + other) */
-    long int memcache;  /* Total memory in cache (locked and unlocked) */
-    long int memlocked; /* Total memory locked in the cache */
+    int64_t memory;    /* Total memory requested by the user */
+    int64_t memused;   /* Total memory used (cache + other) */
+    int64_t memcache;  /* Total memory in cache (locked and unlocked) */
+    int64_t memlocked; /* Total memory locked in the cache */
 
     // The default C'tor will zero everything out properly
     dpd_gbl()
@@ -307,6 +308,12 @@ class PSI_API DPD {
     // Assumes the entry and the File and the main dpd object all match. Caller must guarantee that..
     dpd_file4_cache_entry* file4_cache_del_raw(dpd_file4_cache_entry *entry, dpdfile4& File);
 
+    // Whether this DPD has already noted (once, in the output) that a buf4 sort ran out of core.
+    bool ooc_sort_noted_ = false;
+    void note_ooc_sort(const char *function, enum indices index);
+    // Whether this DPD has already noted (once, in the output) that it evicted cached files to make room.
+    bool cache_evict_noted_ = false;
+
    public:
     // These used to live in the dpd_data struct
     int nirreps;
@@ -327,17 +334,17 @@ class PSI_API DPD {
     std::vector<DPDMOSpace> moSpaces;
 
     PSI_DEPRECATED("DPD construction via a vector of int* is being deprecated and will be removed as soon as 1.12.")
-    DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+    DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
-    DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+    DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<DPDMOSpace> &moSpaces);
-    DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+    DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays);
     DPD();
 
     ~DPD();
 
-    int init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+    int init(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
              dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
 
     void dpd_error(const char *caller, std::string out_fname);
@@ -414,6 +421,13 @@ class PSI_API DPD {
     int buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const char *label);
     int buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const char *label,
                        double alpha);
+    // Which orbital pair of an output element (pq,rs) indexes an input row or column.
+    enum class SortPair { PQ, QP, RS, SR };
+    // Out-of-core sort (accumulate = false) or sort-and-add (true, scaled by alpha) for the permutations in which each
+    // output block draws on a single input block: input row from row_from, input column from col_from, both mapped
+    // through the input's rowidx/colidx exactly as the in-core sorts do. Output and input are bucketed independently.
+    int buf4_sort_ooc_pairs(dpdbuf4 *InBuf, dpdbuf4 *OutBuf, SortPair row_from, SortPair col_from, bool accumulate,
+                            double alpha, const char *caller);
     int buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha);
     int buf4_axpbycz(dpdbuf4 *FileA, dpdbuf4 *FileB, dpdbuf4 *FileC, double a, double b, double c);
     int buf4_dirprd(dpdbuf4 *BufA, dpdbuf4 *BufB);
@@ -555,13 +569,32 @@ extern PSI_API DPD *global_dpd_; // The currently active DPD object.
 extern PSI_API int dpd_default; // index of global_dpd_ within dpd_list.
 extern DPD *dpd_list[2]; // The array of selectable DPD objects.
 extern PSI_API int dpd_set_default(int dpd_num); // Set the default DPD to be idx dpd_num of dpd_list.
-extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+extern int dpd_init(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
-extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+extern int dpd_init(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays);
 extern int dpd_close(int dpd_num);
-extern long int PSI_API dpd_memfree();
-extern void dpd_memset(long int memory);
+extern int64_t PSI_API dpd_memfree();
+extern void dpd_memset(int64_t memory);
+
+// Compute in DPD words without narrowing, then clamp to the int-sized matrix dimension.
+inline int dpd_rows_per_bucket(int64_t available_words, int64_t words_per_row, int max_rows) {
+    if (available_words <= 0 || words_per_row <= 0 || max_rows <= 0) return 0;
+    const int64_t rows = available_words / words_per_row;
+    return rows > max_rows ? max_rows : static_cast<int>(rows);
+}
+
+// As dpd_rows_per_bucket, but always safe to divide by: an empty block gets 1 (so zero buckets and no remainder),
+// zero-width rows all fit, and a block of which not even one row fits raises a DPD error naming the caller instead
+// of returning 0.
+inline int dpd_rows_per_bucket_or_die(int64_t available_words, int64_t words_per_row, int max_rows,
+                                      const char *caller) {
+    if (max_rows <= 0) return 1;
+    if (words_per_row <= 0) return max_rows;
+    const int rows = dpd_rows_per_bucket(available_words, words_per_row, max_rows);
+    if (!rows) global_dpd_->dpd_error(caller, "outfile");
+    return rows;
+}
 
 }  // Namespace psi
 

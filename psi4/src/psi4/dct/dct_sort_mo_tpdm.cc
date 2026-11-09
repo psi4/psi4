@@ -126,6 +126,8 @@ void DCTSolver::presort_mo_tpdm_AB() {
             int p = I.params->roworb[h][row][0];
             int q = I.params->roworb[h][row][1];
             bucketMap[p][q] = nBuckets - 1;
+            /* in a packed (p>=q) row space (q,p) is the same row; readers look either pair up */
+            if (q < nump && p < numq && I.params->rowidx[q][p] == row) bucketMap[q][p] = nBuckets - 1;
         }
     }
 
@@ -277,6 +279,8 @@ void DCTSolver::presort_mo_tpdm_AA() {
             int p = I.params->roworb[h][row][0];
             int q = I.params->roworb[h][row][1];
             bucketMap[p][q] = nBuckets - 1;
+            /* in a packed (p>=q) row space (q,p) is the same row; readers look either pair up */
+            if (q < nump && p < numq && I.params->rowidx[q][p] == row) bucketMap[q][p] = nBuckets - 1;
         }
     }
 

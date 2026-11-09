@@ -60,6 +60,14 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
     rowtot = Buf->params->rowtot[irrep];
     coltot = Buf->params->coltot[irrep ^ all_buf_irrep];
 
+    /* Nothing to fill: zero rows requested, or zero-width rows (whose block matrix is null) */
+    if (num_pq <= 0 || !coltot) {
+#ifdef DPD_TIMER
+        timer_off("buf4_rd_bk");
+#endif
+        return 0;
+    }
+
     const auto& b_perm_pq = Buf->params->perm_pq;
     const auto& b_perm_rs = Buf->params->perm_rs;
     const auto& f_perm_pq = Buf->file.params->perm_pq;
@@ -218,7 +226,12 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
                 for (rs = 0; rs < coltot; rs++) {
                     filers = rs;
 
-                    value = Buf->file.matrix[irrep][filerow][filers];
+                    /* no file row (e.g., p == q of an antisymmetric file): zero, as in buf4_mat_irrep_rd. When the
+                       file is in core, filerow is then negative and must not be dereferenced. */
+                    if (filepq >= 0)
+                        value = Buf->file.matrix[irrep][filerow][filers];
+                    else
+                        value = 0;
 
                     /* assign the value, keeping track of the sign */
                     Buf->matrix[irrep][pq][rs] = permute * value;

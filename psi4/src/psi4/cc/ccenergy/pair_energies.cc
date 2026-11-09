@@ -65,7 +65,7 @@ void CCEnergyWavefunction::pair_energies(std::vector<double>& epair_aa, std::vec
         if (naa) {
             global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
             global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 0, 5, 1, "tauIjAb");
-            global_dpd_->buf4_init(&E, PSIF_CC_TMP0, 0, 2, 2, 2, 2, 0, "E <ij|kl>");
+            global_dpd_->buf4_init(&E, PSIF_CC_TMP0, 0, 2, 2, 2, 2, 0, "E <ij|kl> (i>j,k>l)");
             global_dpd_->contract444(&D, &tau, &E, 0, 0, 1.0, 0.0);
 
             // dpd_buf4_print(&E, outfile, 1);

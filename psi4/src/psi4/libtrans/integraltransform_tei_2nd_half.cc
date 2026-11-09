@@ -85,7 +85,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
     int thisBucketRows;
     size_t rowsPerBucket;
     size_t rowsLeft;
-    size_t memFree;
+    int64_t memFree = 0;
     dpdbuf4 J, K;
 
     double **TMP = block_matrix(nso_, nso_);
@@ -132,12 +132,13 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
     for (int h = 0; h < nirreps_; h++) {
         if (J.params->coltot[h] && J.params->rowtot[h]) {
-            memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
-            rowsPerBucket = memFree / (2 * J.params->coltot[h]);
-            if (rowsPerBucket > J.params->rowtot[h]) rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
+            memFree = dpd_memfree() - J.params->coltot[h] - K.params->coltot[h];
+            rowsPerBucket = dpd_rows_per_bucket_or_die(memFree, 2LL * J.params->coltot[h], J.params->rowtot[h],
+                                                       "IntegralTransform: not enough memory for one row");
             nBuckets =
                 static_cast<int>(ceil(static_cast<double>(J.params->rowtot[h]) / static_cast<double>(rowsPerBucket)));
-            rowsLeft = static_cast<size_t>(J.params->rowtot[h] % rowsPerBucket);
+            /* rows in the last bucket, never 0 (rowtot % rowsPerBucket is 0 when the rows divide evenly) */
+            rowsLeft = static_cast<size_t>(J.params->rowtot[h] - (nBuckets - 1) * rowsPerBucket);
         } else {
             nBuckets = 0;
             rowsPerBucket = 0;
@@ -145,7 +146,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
         }
 
         if (print_ > 1) {
-            outfile->Printf("\th = %d; memfree         = %lu\n", h, memFree);
+            outfile->Printf("\th = %d; memfree         = %lld\n", h, static_cast<long long>(memFree));
             outfile->Printf("\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
             outfile->Printf("\th = %d; rows_left       = %lu\n", h, rowsLeft);
             outfile->Printf("\th = %d; nbuckets        = %d\n", h, nBuckets);
@@ -249,12 +250,13 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
         for (int h = 0; h < nirreps_; h++) {
             if (J.params->coltot[h] && J.params->rowtot[h]) {
-                memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
-                rowsPerBucket = memFree / (2 * J.params->coltot[h]);
-                if (rowsPerBucket > J.params->rowtot[h]) rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
+                memFree = dpd_memfree() - J.params->coltot[h] - K.params->coltot[h];
+                rowsPerBucket = dpd_rows_per_bucket_or_die(memFree, 2LL * J.params->coltot[h], J.params->rowtot[h],
+                                                           "IntegralTransform: not enough memory for one row");
                 nBuckets = static_cast<int>(
                     ceil(static_cast<double>(J.params->rowtot[h]) / static_cast<double>(rowsPerBucket)));
-                rowsLeft = static_cast<size_t>(J.params->rowtot[h] % rowsPerBucket);
+                /* rows in the last bucket, never 0 (rowtot % rowsPerBucket is 0 when the rows divide evenly) */
+                rowsLeft = static_cast<size_t>(J.params->rowtot[h] - (nBuckets - 1) * rowsPerBucket);
             } else {
                 nBuckets = 0;
                 rowsPerBucket = 0;
@@ -262,7 +264,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
             }
 
             if (print_ > 1) {
-                outfile->Printf("\th = %d; memfree         = %lu\n", h, memFree);
+                outfile->Printf("\th = %d; memfree         = %lld\n", h, static_cast<long long>(memFree));
                 outfile->Printf("\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
                 outfile->Printf("\th = %d; rows_left       = %lu\n", h, rowsLeft);
                 outfile->Printf("\th = %d; nbuckets        = %d\n", h, nBuckets);
@@ -367,12 +369,13 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
 
         for (int h = 0; h < nirreps_; h++) {
             if (J.params->coltot[h] && J.params->rowtot[h]) {
-                memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
-                rowsPerBucket = memFree / (2 * J.params->coltot[h]);
-                if (rowsPerBucket > J.params->rowtot[h]) rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
+                memFree = dpd_memfree() - J.params->coltot[h] - K.params->coltot[h];
+                rowsPerBucket = dpd_rows_per_bucket_or_die(memFree, 2LL * J.params->coltot[h], J.params->rowtot[h],
+                                                           "IntegralTransform: not enough memory for one row");
                 nBuckets = static_cast<int>(
                     ceil(static_cast<double>(J.params->rowtot[h]) / static_cast<double>(rowsPerBucket)));
-                rowsLeft = static_cast<size_t>(J.params->rowtot[h] % rowsPerBucket);
+                /* rows in the last bucket, never 0 (rowtot % rowsPerBucket is 0 when the rows divide evenly) */
+                rowsLeft = static_cast<size_t>(J.params->rowtot[h] - (nBuckets - 1) * rowsPerBucket);
             } else {
                 nBuckets = 0;
                 rowsPerBucket = 0;
@@ -380,7 +383,7 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
             }
 
             if (print_ > 1) {
-                outfile->Printf("\th = %d; memfree         = %lu\n", h, memFree);
+                outfile->Printf("\th = %d; memfree         = %lld\n", h, static_cast<long long>(memFree));
                 outfile->Printf("\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
                 outfile->Printf("\th = %d; rows_left       = %lu\n", h, rowsLeft);
                 outfile->Printf("\th = %d; nbuckets        = %d\n", h, nBuckets);

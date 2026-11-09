@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <cinttypes>
 #include <ctime>
 #ifdef _OPENMP
 #include <omp.h>
@@ -67,9 +68,10 @@ double DFCoupledCluster::compute_energy() {
 
     // WriteBanner();
     AllocateMemory();
-    timer_on("FNOCC: CCSD");
-    status = CCSDIterations();
-    timer_off("FNOCC: CCSD");
+    {
+        TimerGuard timer("FNOCC: CCSD");
+        status = CCSDIterations();
+    }
 
     // free some memory!
     free(Fij);
@@ -110,8 +112,8 @@ double DFCoupledCluster::compute_energy() {
     name_ = "DF-CCSD";
 
     if (options_.get_bool("COMPUTE_TRIPLES")) {
-        long int o = ndoccact;
-        long int v = nvirt;
+        int64_t o = ndoccact;
+        int64_t v = nvirt;
 
         if (!isLowMemory) {
             // write (ov|vv) integrals, formerly E2abci, for (t)
@@ -122,18 +124,18 @@ double DFCoupledCluster::compute_energy() {
             auto psio = std::make_shared<PSIO>();
             psio->open(PSIF_DCC_ABCI, PSIO_OPEN_NEW);
             psio_address addr2 = PSIO_ZERO;
-            for (long int i = 0; i < o; i++) {
+            for (int64_t i = 0; i < o; i++) {
 #pragma omp parallel for schedule(static)
-                for (long int q = 0; q < nQ; q++) {
-                    for (long int b = 0; b < v; b++) {
+                for (int64_t q = 0; q < nQ; q++) {
+                    for (int64_t b = 0; b < v; b++) {
                         tempq[q * v + b] = Qov[q * o * v + i * v + b];
                     }
                 }
                 F_DGEMM('n', 't', v, v * v, nQ, 1.0, tempq.data(), v, Qvv, v * v, 0.0, Z.data(), v);
 #pragma omp parallel for schedule(static)
-                for (long int a = 0; a < v; a++) {
-                    for (long int b = 0; b < v; b++) {
-                        for (long int c = 0; c < v; c++) {
+                for (int64_t a = 0; a < v; a++) {
+                    for (int64_t b = 0; b < v; b++) {
+                        for (int64_t c = 0; c < v; c++) {
                             Z2[a * v * v + b * v + c] = Z[a * v * v + c * v + b];
                         }
                     }
@@ -147,18 +149,18 @@ double DFCoupledCluster::compute_energy() {
             std::vector<double> temp2(o * v * v);
             auto psio = std::make_shared<PSIO>();
             psio->open(PSIF_DCC_ABCI4, PSIO_OPEN_NEW);
-            for (long int a = 0; a < v; a++) {
+            for (int64_t a = 0; a < v; a++) {
 #pragma omp parallel for schedule(static)
-                for (long int q = 0; q < nQ; q++) {
-                    for (long int c = 0; c < v; c++) {
+                for (int64_t q = 0; q < nQ; q++) {
+                    for (int64_t c = 0; c < v; c++) {
                         temp1[q * v + c] = Qvv[q * v * v + a * v + c];
                     }
                 }
                 F_DGEMM('n', 't', o * v, v, nQ, 1.0, Qov, o * v, temp1.data(), v, 0.0, temp2.data(), o * v);
 #pragma omp parallel for schedule(static)
-                for (long int b = 0; b < v; b++) {
-                    for (long int i = 0; i < o; i++) {
-                        for (long int c = 0; c < v; c++) {
+                for (int64_t b = 0; b < v; b++) {
+                    for (int64_t i = 0; i < o; i++) {
+                        for (int64_t c = 0; c < v; c++) {
                             temp1[b * o * v + i * v + c] = temp2[c * o * v + i * v + b];
                         }
                     }
@@ -174,10 +176,10 @@ double DFCoupledCluster::compute_energy() {
 
         // write (oo|ov) integrals, formerly E2ijak, for (t)
         F_DGEMM('n', 't', o * o, o * v, nQ, 1.0, Qoo, o * o, Qov, o * v, 0.0, temp1.data(), o * o);
-        for (long int i = 0; i < o; i++) {
-            for (long int j = 0; j < o; j++) {
-                for (long int k = 0; k < o; k++) {
-                    for (long int a = 0; a < v; a++) {
+        for (int64_t i = 0; i < o; i++) {
+            for (int64_t j = 0; j < o; j++) {
+                for (int64_t k = 0; k < o; k++) {
+                    for (int64_t a = 0; a < v; a++) {
                         temp2[j * o * o * v + i * o * v + k * v + a] = temp1[i * o * o * v + a * o * o + j * o + k];
                     }
                 }
@@ -272,8 +274,8 @@ void DFCoupledCluster::WriteBanner() {
 
 ===================================================================*/
 PsiReturnType DFCoupledCluster::CCSDIterations() {
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     // int iter              = 0;
     iter = 0;
@@ -416,10 +418,10 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     Matrix T(o, o);
     auto eigvec = std::make_shared<Matrix>(o, o);
     auto eigval = std::make_shared<Vector>(o);
-    for (long int i = 0; i < o; i++) {
-        for (long int j = 0; j < o; j++) {
+    for (int64_t i = 0; i < o; i++) {
+        for (int64_t j = 0; j < o; j++) {
             double dum = 0.0;
-            for (long int a = 0; a < v; a++) {
+            for (int64_t a = 0; a < v; a++) {
                 dum += t1[a * o + i] * t1[a * o + j];
             }
             T.set(i, j, dum);
@@ -503,8 +505,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 }
 
 double DFCoupledCluster::CheckEnergy() {
-    long int v = nvirt;
-    long int o = ndoccact;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
 
     // df (ia|bj) formerly E2klcd
     F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
@@ -517,13 +519,13 @@ double DFCoupledCluster::CheckEnergy() {
         tb = tempv;
     }
     double energy = 0.0;
-    for (long int i = 0; i < o; i++) {
-        for (long int j = 0; j < o; j++) {
-            for (long int a = 0; a < v; a++) {
-                for (long int b = 0; b < v; b++) {
-                    long int ijab = a * v * o * o + b * o * o + i * o + j;
-                    long int iajb = i * v * v * o + a * v * o + j * v + b;
-                    long int jaib = j * v * v * o + a * v * o + i * v + b;
+    for (int64_t i = 0; i < o; i++) {
+        for (int64_t j = 0; j < o; j++) {
+            for (int64_t a = 0; a < v; a++) {
+                for (int64_t b = 0; b < v; b++) {
+                    int64_t ijab = a * v * o * o + b * o * o + i * o + j;
+                    int64_t iajb = i * v * v * o + a * v * o + j * v + b;
+                    int64_t jaib = j * v * v * o + a * v * o + i * v + b;
                     energy += (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
                 }
             }
@@ -562,8 +564,8 @@ void DFCoupledCluster::AllocateMemory() {
         }
     }
 
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     /*========================================================
        ccsd memory requirements:
@@ -587,21 +589,21 @@ void DFCoupledCluster::AllocateMemory() {
     ========================================================*/
 
     // for the df version, the dimension of the large buffer:
-    long int nQmax = nQ > nQ_scf ? nQ : nQ_scf;
+    int64_t nQmax = nQ > nQ_scf ? nQ : nQ_scf;
 
-    long int dim = 2L * v * v * v;
+    int64_t dim = 2L * v * v * v;
     if (2 * nQmax * o * v > dim) dim = 2 * nQmax * o * v;
     if (o * o * v * v > dim) dim = o * o * v * v;
     if (nQmax * v * v > dim) dim = nQmax * v * v;
     if (nQmax * nso * nso > dim) dim = nQmax * nso * nso;
 
-    long int tempvdim = o * o * v * v + o * v;
+    int64_t tempvdim = o * o * v * v + o * v;
     if (nQ * o * v > tempvdim) tempvdim = nQ * o * v;
     if (nso * nso > tempvdim) tempvdim = nso * nso;
 
     double total_memory =
         dim + tempvdim + (o * (o + 1) * v * (v + 1) + o * v) + o * o * v * v + 2. * o * v + 2. * v * v;
-    long int max = nvirt * nvirt * nQmax > (nfzv + ndocc + nvirt) * ndocc * nQmax
+    int64_t max = nvirt * nvirt * nQmax > (nfzv + ndocc + nvirt) * ndocc * nQmax
                        ? nvirt * nvirt * nQmax
                        : (nfzv + ndocc + nvirt) * ndocc * nQmax;
     double df_memory = nQ * (o * o + o * v) + max;
@@ -622,7 +624,7 @@ void DFCoupledCluster::AllocateMemory() {
         } else {
             outfile->Printf("\n");
             outfile->Printf("        error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",
-                            total_memory + df_memory - size_of_t2 - available_memory);
+                            (total_memory + df_memory - size_of_t2 - available_memory) * 1024.);  // GiB -> mb
             outfile->Printf("\n");
 
             throw PsiException("not enough memory (ccsd).", __FILE__, __LINE__);
@@ -652,11 +654,11 @@ void DFCoupledCluster::AllocateMemory() {
     outfile->Printf("        Use frozen natural orbitals?        %5s\n", options_.get_bool("NAT_ORBS") ? "yes" : "no");
     outfile->Printf("        r_convergence:                  %5.3le\n", r_conv);
     outfile->Printf("        e_convergence:                  %5.3le\n", e_conv);
-    outfile->Printf("        Number of DIIS vectors:             %5li\n", maxdiis);
-    outfile->Printf("        Number of frozen core orbitals:     %5li\n", nfzc);
-    outfile->Printf("        Number of active occupied orbitals: %5li\n", ndoccact);
-    outfile->Printf("        Number of active virtual orbitals:  %5li\n", nvirt);
-    outfile->Printf("        Number of frozen virtual orbitals:  %5li\n", nfzv);
+    outfile->Printf("        Number of DIIS vectors:             %5" PRId64 "\n", maxdiis);
+    outfile->Printf("        Number of frozen core orbitals:     %5" PRId64 "\n", nfzc);
+    outfile->Printf("        Number of active occupied orbitals: %5" PRId64 "\n", ndoccact);
+    outfile->Printf("        Number of active virtual orbitals:  %5" PRId64 "\n", nvirt);
+    outfile->Printf("        Number of frozen virtual orbitals:  %5" PRId64 "\n", nfzv);
     outfile->Printf("\n");
 
     // allocate some memory for 3-index tensors
@@ -721,13 +723,13 @@ void DFCoupledCluster::AllocateMemory() {
 
 ================================================================*/
 void DFCoupledCluster::UpdateT1() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
 #pragma omp parallel for schedule(static)
-    for (long int a = o; a < rs; a++) {
-        for (long int i = 0; i < o; i++) {
+    for (int64_t a = o; a < rs; a++) {
+        for (int64_t i = 0; i < o; i++) {
             double dia = -eps[i] + eps[a];
             double tnew = -w1[(a - o) * o + i] / dia;
             w1[(a - o) * o + i] = tnew + t1[(a - o) * o + i];
@@ -739,8 +741,8 @@ void DFCoupledCluster::UpdateT1() {
     C_DCOPY(o * v, w1, 1, t1, 1);
 }
 void DFCoupledCluster::UpdateT2() {
-    long int v = nvirt;
-    long int o = ndoccact;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
 
     auto psio = std::make_shared<PSIO>();
 
@@ -756,15 +758,15 @@ void DFCoupledCluster::UpdateT2() {
     psio->close(PSIF_DCC_R2, 1);
 
 #pragma omp parallel for schedule(static)
-    for (long int a = 0; a < v; a++) {
+    for (int64_t a = 0; a < v; a++) {
         double da = eps[a + o];
-        for (long int b = 0; b < v; b++) {
+        for (int64_t b = 0; b < v; b++) {
             double dab = da + eps[b + o];
-            for (long int i = 0; i < o; i++) {
+            for (int64_t i = 0; i < o; i++) {
                 double dabi = dab - eps[i];
-                for (long int j = 0; j < o; j++) {
-                    long int iajb = a * v * o * o + i * v * o + b * o + j;
-                    long int ijab = a * v * o * o + b * o * o + i * o + j;
+                for (int64_t j = 0; j < o; j++) {
+                    int64_t iajb = a * v * o * o + i * v * o + b * o + j;
+                    int64_t ijab = a * v * o * o + b * o * o + i * o + j;
 
                     double dijab = dabi - eps[j];
 
@@ -792,12 +794,12 @@ void DFCoupledCluster::UpdateT2() {
  *  Use Vabcd1
  */
 void DFCoupledCluster::Vabcd1() {
-    long int o = ndoccact;
-    long int v = nvirt;
-    long int oov = o * o * v;
-    long int oo = o * o;
-    long int otri = o * (o + 1) / 2;
-    long int vtri = v * (v + 1) / 2;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
+    int64_t oov = o * o * v;
+    int64_t oo = o * o;
+    int64_t otri = o * (o + 1) / 2;
+    int64_t vtri = v * (v + 1) / 2;
 
     auto psio = std::make_shared<PSIO>();
 
@@ -809,11 +811,11 @@ void DFCoupledCluster::Vabcd1() {
     }
 
 #pragma omp parallel for schedule(static)
-    for (long int i = 0; i < o; i++) {
-        for (long int j = i; j < o; j++) {
-            long int ij = Position(i, j);
-            for (long int a = 0; a < v; a++) {
-                for (long int b = a; b < v; b++) {
+    for (int64_t i = 0; i < o; i++) {
+        for (int64_t j = i; j < o; j++) {
+            int64_t ij = Position(i, j);
+            for (int64_t a = 0; a < v; a++) {
+                for (int64_t b = a; b < v; b++) {
                     tempt[Position(a, b) * otri + ij] =
                         (tb[a * oov + b * oo + i * o + j] + tb[b * oov + a * oo + i * o + j]);
                     tempt[Position(a, b) * otri + ij + vtri * otri] =
@@ -843,18 +845,18 @@ void DFCoupledCluster::Vabcd1() {
     double time1 = 0.0;
     double time2 = 0.0;
     double time3 = 0.0;
-    for (long int a = 0; a < v; a++) {
+    for (int64_t a = 0; a < v; a++) {
         double start1 = omp_get_wtime();
         int nb = v - a;
         F_DGEMM('t', 'n', v, v * nb, nQ, 1.0, Qvv + a * v * nQ, nQ, Qvv + a * v * nQ, nQ, 0.0, Vcdb, v);
 
 #pragma omp parallel for schedule(static)
-        for (long int b = a; b < v; b++) {
-            long int cd = 0;
-            long int ind1 = (b - a) * vtri;
-            long int ind2 = (b - a) * v * v;
-            for (long int c = 0; c < v; c++) {
-                for (long int d = 0; d <= c; d++) {
+        for (int64_t b = a; b < v; b++) {
+            int64_t cd = 0;
+            int64_t ind1 = (b - a) * vtri;
+            int64_t ind2 = (b - a) * v * v;
+            for (int64_t c = 0; c < v; c++) {
+                for (int64_t d = 0; d <= c; d++) {
                     Vp[ind1 + cd] = Vcdb[ind2 + d * v + c] + Vcdb[ind2 + c * v + d];
                     cd++;
                 }
@@ -865,12 +867,12 @@ void DFCoupledCluster::Vabcd1() {
         double start2 = omp_get_wtime();
         F_DGEMM('n', 'n', otri, nb, vtri, 0.5, tempt, otri, Vp, vtri, 0.0, Abij, otri);
 #pragma omp parallel for schedule(static)
-        for (long int b = a; b < v; b++) {
-            long int cd = 0;
-            long int ind1 = (b - a) * vtri;
-            long int ind2 = (b - a) * v * v;
-            for (long int c = 0; c < v; c++) {
-                for (long int d = 0; d <= c; d++) {
+        for (int64_t b = a; b < v; b++) {
+            int64_t cd = 0;
+            int64_t ind1 = (b - a) * vtri;
+            int64_t ind2 = (b - a) * v * v;
+            for (int64_t c = 0; c < v; c++) {
+                for (int64_t d = 0; d <= c; d++) {
                     Vm[ind1 + cd] = Vcdb[ind2 + d * v + c] - Vcdb[ind2 + c * v + d];
                     cd++;
                 }
@@ -882,9 +884,9 @@ void DFCoupledCluster::Vabcd1() {
         // contribute to residual
         double start3 = omp_get_wtime();
 #pragma omp parallel for schedule(static)
-        for (long int b = a; b < v; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
+        for (int64_t b = a; b < v; b++) {
+            for (int64_t i = 0; i < o; i++) {
+                for (int64_t j = 0; j < o; j++) {
                     int sg = (i > j) ? 1 : -1;
                     tempv[a * oo * v + b * oo + i * o + j] +=
                         Abij[(b - a) * otri + Position(i, j)] + sg * Sbij[(b - a) * otri + Position(i, j)];

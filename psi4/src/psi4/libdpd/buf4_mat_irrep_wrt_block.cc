@@ -73,6 +73,9 @@ int DPD::buf4_mat_irrep_wrt_block(dpdbuf4 *Buf, int irrep, int start_pq, int num
         throw PSIEXCEPTION("Cannot write antisymmetrized buffer back to original DPD file!");
     }
 
+    /* Nothing to write: zero rows requested, or zero-width file rows */
+    if (num_pq <= 0 || !coltot) return 0;
+
     const auto& AllPolicy = dpdparams4::DiagPolicy::All;
     if ((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_peq == f_peq) && (b_res == f_res))
         method = 12;

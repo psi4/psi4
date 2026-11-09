@@ -30,9 +30,11 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
+#include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <cmath>
+#include <limits>
 #include "dpd.h"
 
 namespace psi {
@@ -56,25 +58,28 @@ int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const std::string& label) {
     int h, row, col, my_irrep;
     long int rowtot, coltot;
     int nbuckets, n;
-    long int memoryd, rows_per_bucket, rows_left, size;
+    long int size;
+    int rows_per_bucket, rows_left;
     dpdbuf4 OutBuf;
     bool incore;
 
     my_irrep = InBuf->file.my_irrep;
 
+    // The file4 block I/O routines form byte counts in long, so keep each buffer within that limit.
+    const int64_t max_buffer_words =
+        static_cast<int64_t>(std::numeric_limits<long>::max()) / static_cast<int64_t>(sizeof(double));
+
     buf4_init(&OutBuf, outfilenum, InBuf->file.my_irrep, InBuf->params->pqnum, InBuf->params->rsnum,
               InBuf->params->pqnum, InBuf->params->rsnum, 0, label);
 
     for (h = 0; h < InBuf->params->nirreps; h++) {
-        memoryd = dpd_memfree() / 2; /* use half the memory for each buf4 */
-
         rowtot = InBuf->params->rowtot[h];
         coltot = InBuf->params->coltot[h ^ my_irrep];
 
         if (rowtot && coltot) {
-            rows_per_bucket = memoryd / coltot;
-            /* enough memory for the whole matrix? */
-            if (rows_per_bucket > rowtot) rows_per_bucket = rowtot;
+            const int64_t available_words = std::min(dpd_memfree(), 2 * max_buffer_words);
+            rows_per_bucket =
+                dpd_rows_per_bucket(available_words, 2LL * coltot, static_cast<int>(rowtot));
 
             if (!rows_per_bucket) dpd_error("buf4_scmcopy: Not enough memory for one row!", "outfile");
 

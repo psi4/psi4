@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <exception>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -89,15 +90,16 @@ double ET_RHF() {
 
     nthreads = params.nthreads;
 
-    long int mem_avail = dpd_memfree();
+    int64_t mem_avail = dpd_memfree();
     // Find the size of 4 abc-blocks of the largest irrep
-    long int max_a = 0;
+    int64_t max_a = 0;
     for (h = 0; h < nirreps; ++h)
         if (virtpi[h] > max_a) max_a = virtpi[h];
-    long int thread_mem_estimate = 4 * max_a * max_a * max_a;
+    int64_t thread_mem_estimate = 4 * max_a * max_a * max_a;
 
-    outfile->Printf("    Memory available in words               : %15ld\n", mem_avail);
-    outfile->Printf("    Approx. words needed per explicit thread: %15ld\n", thread_mem_estimate);
+    outfile->Printf("    Memory available in words               : %15lld\n", static_cast<long long>(mem_avail));
+    outfile->Printf("    Approx. words needed per explicit thread: %15lld\n",
+                    static_cast<long long>(thread_mem_estimate));
 
     // subtract at least 1/2 for non-abc quantities (mainly 2 ijab's + other buffers)
     double tval = (double)mem_avail / (double)thread_mem_estimate;
@@ -232,14 +234,23 @@ double ET_RHF() {
                                     thread_data_array[thread].first_ijk, thread_data_array[thread].last_ijk);
                 }
 
+                /* an exception (e.g., DPD out of memory) cannot leave an OpenMP region: keep the first one and
+                   rethrow it afterwards, rather than letting it terminate the process */
+                std::exception_ptr thread_error = nullptr;
 #pragma omp parallel num_threads(nthreads)
                 {
                     int ithread = 0;
 #ifdef _OPENMP
                     ithread = omp_get_thread_num();
 #endif
-                    if (ijk_part[ithread]) ET_RHF_thread(&thread_data_array[ithread]);
+                    try {
+                        if (ijk_part[ithread]) ET_RHF_thread(&thread_data_array[ithread]);
+                    } catch (...) {
+#pragma omp critical(cctriples_thread_error)
+                        if (!thread_error) thread_error = std::current_exception();
+                    }
                 }
+                if (thread_error) std::rethrow_exception(thread_error);
 
                 for (thread = 0; thread < nthreads; ++thread) ET += ET_array[thread];
 

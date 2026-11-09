@@ -36,9 +36,10 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <string>
+
 namespace psi {
 namespace fnocc {
-typedef long int size_t;
 struct integral {
     size_t ind;
     double val;
@@ -174,7 +175,11 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
             break;
         }
     }
-    if (nfiles == 0) throw PsiException("how is this possible? (ab|cd)", __FILE__, __LINE__);
+    if (nfiles == 0)
+        throw PsiException("how is this possible? (ab|cd) (memory = " + std::to_string(memory) + " bytes, maxelem = " +
+                               std::to_string(maxelem) + ", o = " + std::to_string(o) + ", v = " + std::to_string(v) +
+                               ")",
+                           __FILE__, __LINE__);
 
     // how many (ab|ci) files?
     size_t ov3filesize;
@@ -191,14 +196,16 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
     if (ov3nfiles == 0) throw PsiException("how is this possible (ab|ci)?", __FILE__, __LINE__);
 
     struct integral *integralbuffer;
-    size_t nelem = maxelem / (5 + 3 * ov3nfiles + 2 * nfiles) - 20;
+    // tiny systems leave fewer than 20 per bucket; then flush after every integral
+    size_t nelem = maxelem / (5 + 3 * ov3nfiles + 2 * nfiles);
+    nelem = (nelem > 20) ? nelem - 20 : 1;
     if ((nelem + 20) * (5 + 3 * ov3nfiles + 2 * nfiles) > maxelem)
         integralbuffer = new integral[(nelem + 20) * (5 + 3 * ov3nfiles + 2 * nfiles)];
     else
         integralbuffer = new integral[maxelem];
 
-    outfile->Printf("        Number of (ab|cd) temporary files:            %5li\n", 2 * nfiles);
-    outfile->Printf("        Number of (ab|ci) temporary files:            %5li\n", 3 * ov3nfiles);
+    outfile->Printf("        Number of (ab|cd) temporary files:            %5zu\n", 2 * nfiles);
+    outfile->Printf("        Number of (ab|ci) temporary files:            %5zu\n", 3 * ov3nfiles);
     outfile->Printf("        Starting temporary file number:               %5i\n", PSIF_DCC_SORT_START);
     outfile->Printf("\n");
 
@@ -762,7 +769,7 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
 void klcd_terms_incore(double val, size_t pq, size_t rs, size_t p, size_t q, size_t r, size_t s, size_t o, size_t v,
                        double *klcd) {
     size_t k, l, c, d;
-    long int ind;
+    int64_t ind;
     if (p < o) {
         k = p;
         c = q - o;
@@ -2034,7 +2041,7 @@ void SortBlockNew(size_t nelem, size_t blockdim, struct integral *buffer, double
             }
         }
         lastbin = blockdim - (nbins - 1) * binsize;
-        outfile->Printf("  %5li files, %5li %5li\n", nbins, blockdim, binsize);
+        outfile->Printf("  %5zu files, %5zu %5zu\n", nbins, blockdim, binsize);
 
         // new integral buffers to hold rough sorted ints
         struct integral **buffer2;
@@ -2044,15 +2051,15 @@ void SortBlockNew(size_t nelem, size_t blockdim, struct integral *buffer, double
             psio->open(PSIF_DCC_SORT_START + i, PSIO_OPEN_NEW);
         }
         // count elements in buffer2
-        size_t *buffer2_count = (size_t *)malloc(nbins * sizeof(long int));
+        size_t *buffer2_count = (size_t *)malloc(nbins * sizeof(size_t));
         // total elements from buffer2 written to disk
-        size_t *buffer2_total = (size_t *)malloc(nbins * sizeof(long int));
+        size_t *buffer2_total = (size_t *)malloc(nbins * sizeof(size_t));
         // array of addresses
         auto *addr = new psio_address[nbins];
         // bucketsize is binsize / nbins
         size_t bucketsize = binsize / nbins;
         if (bucketsize * nbins < binsize) bucketsize++;
-        printf("%5li %5li\n", binsize, bucketsize);
+        printf("%5zu %5zu\n", binsize, bucketsize);
         for (size_t i = 0; i < nbins; i++) {
             addr[i] = PSIO_ZERO;
             buffer2_count[i] = 0;
@@ -2278,13 +2285,13 @@ void SortBlock(size_t nelem, size_t blockdim, struct integral *buffer, double *t
  * ordering than the efficient default routine.  this function writes the
  * integrals to disk in the proper ordering.
  */
-void Sort_OV3_LowMemory(long int memory, long int o, long int v) {
+void Sort_OV3_LowMemory(int64_t memory, int64_t o, int64_t v) {
     outfile->Printf("\n");
     outfile->Printf("\n");
     outfile->Printf("        ==> Resort (ov|vv) integrals for low-memory (T) computation <==\n");
     outfile->Printf("\n");
 
-    long int maxelem = memory / 8 / 2;
+    int64_t maxelem = memory / 8 / 2;
     auto *tmp = new double[maxelem];
     auto *tmp2 = new double[maxelem];
 
@@ -2359,7 +2366,9 @@ void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, i
 
     outfile->Printf("        CC integral sort will use %7.2lf mb\n", maxelem * (sizeof(double)) / 1024. / 1024.);
     if (maxelem < o * o * v * v) {
-        throw PsiException("out of memory: o^2v^2 won't fit in core.", __FILE__, __LINE__);
+        throw PsiException("out of memory: o^2v^2 won't fit in core (memory = " + std::to_string(memory) +
+                               " bytes, o = " + std::to_string(o) + ", v = " + std::to_string(v) + ").",
+                           __FILE__, __LINE__);
     }
 
     auto *klcd = new double[o * o * v * v];
