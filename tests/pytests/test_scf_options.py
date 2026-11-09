@@ -340,3 +340,52 @@ def test_soscf_maxiter_budget(soopkg):
     psi4.set_options({**common, "maxiter": maxiter - 1})
     with pytest.raises(psi4.SCFConvergenceError):
         psi4.energy("scf")
+
+
+@pytest.mark.scf
+@uusing("otr")
+def test_otr_precision_floor_polish():
+    """OpenTrustRegion stops where the energy stops resolving; DIIS finishes the job.
+
+    Asked for more precision than the objective function can resolve, OpenTrustRegion stops
+    short of the thresholds and reports success. OTR_MAX_PRECISION_REACHED_HANDLING = DIIS
+    hands the orbitals to first-order iterations, which converge on the orbital gradient
+    instead and are not held to the same limit. Nothing in the regular suite reaches that
+    floor, so ask for a threshold tight enough to put it there on purpose.
+    """
+    # methyloxirane, geometry as in cc31 (Pederson et al., CPL)
+    psi4.geometry("""
+0 1
+C     0.210991841737     0.047663662717     0.483960886619
+C    -0.960965312103     0.688519555303    -0.115848688934
+C     1.558206749694     0.047460114159    -0.180267436891
+O    -0.815251456906    -0.734986972268    -0.138532905591
+H     0.223550547304    -0.045637654519     1.567373484970
+H    -1.759483315918     1.063259112311     0.516330435381
+H    -0.862256972568     1.177986074652    -1.079897880020
+H     2.088617117792    -0.883541600456     0.026321487274
+H     2.169362364888     0.872235726981     0.192209317060
+H     1.455347299576     0.149768052462    -1.260354487995
+noreorient
+""")
+    psi4.set_options({"basis": "sto-3g", "scf_type": "pk", "reference": "rhf",
+                      "soscf": True, "second_order_orbital_optimizer_package": "otr",
+                      "e_convergence": 1.0e-13, "d_convergence": 1.0e-13,
+                      "otr_max_precision_reached_handling": "diis"})
+
+    e, wfn = psi4.energy("scf", return_wfn=True)
+
+    # the floor was reached, so the polish is what finished this SCF
+    assert wfn.opentrustregion_stopped_short(), \
+        "expected OpenTrustRegion to stop at its precision floor for d_convergence 1e-13"
+    assert compare_values(-189.513417237103, e, 9, "SCF energy after the first-order polish")
+
+    # and it took a run of them, not a single step: OpenTrustRegion stops around a 1e-9
+    # orbital gradient here and the polish carries it the remaining four orders
+    assert int(psi4.variable("SCF ITERATIONS")) >= 10, \
+        f'only {int(psi4.variable("SCF ITERATIONS"))} iterations; expected a multi-step polish'
+
+    # FAIL declines to finish it, so the same request becomes non-convergence
+    psi4.set_options({"otr_max_precision_reached_handling": "fail"})
+    with pytest.raises(psi4.SCFConvergenceError):
+        psi4.energy("scf")
