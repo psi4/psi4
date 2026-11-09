@@ -22,6 +22,7 @@ foreach(dir
   opentrustregion
   optking
   simint
+  cint
   libxc
   brianqc
   ddx
