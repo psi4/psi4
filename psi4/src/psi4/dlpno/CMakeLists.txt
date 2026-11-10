@@ -12,3 +12,7 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
 endif()
 
 target_link_libraries(dlpno PUBLIC diis)
+
+# test/ contains a standalone unit test for invert_map. It links no psi4
+# library, so unlike the libpsio and libiwl tests it is built on every platform.
+add_subdirectory(test)
