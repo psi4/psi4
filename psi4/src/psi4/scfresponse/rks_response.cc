@@ -643,7 +643,7 @@ void RKSResponseSolver::build_Au_Bu(int N, int L, double *u, double *ABu){
         // LRC functional?
         // a <- a
         if (is_x_lrc_) {
-            double beta = 1.0 - x_alpha_;
+            double beta = x_beta_;
             sa->axpy(-beta,jk_->wK()[count]);
         }
 
