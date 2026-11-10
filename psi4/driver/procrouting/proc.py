@@ -3412,6 +3412,10 @@ def run_scf_property(name, **kwargs):
         optstash_jk.restore()
 
     # Run frequency-dependent polarizabilities and hyperpolarizabilities
+    if len(scfresponse_properties) and isinstance(scf_wfn, (core.ROHF, core.CUHF)):
+        raise ValidationError(f"SCF response: {type(scf_wfn).__name__} references are not supported for "
+                              f"{', '.join(p for p in properties if p.upper() in scfresponse_types or p.upper() == 'DIPOLE_POLARIZABILITIES')}; "
+                              "use RHF/RKS or UHF/UKS.")
     for prop in scfresponse_properties:
         core.scfresponse(scf_wfn, prop)
     if len(scfresponse_properties) and not len(linear_response):

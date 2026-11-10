@@ -120,7 +120,7 @@ void KSResponseSolver::common_init() {
 
     // ensure running in c1 symmetry
     if ( reference_wavefunction_->nirrep() > 1 ) {
-        throw PsiException("scf_response only works with c1 symmetry for now.",__FILE__,__LINE__);
+        throw PsiException("SCF response: only C1 symmetry is supported; add 'symmetry c1' to the molecule.",__FILE__,__LINE__);
     }
 
     // restricted vs unrestricted follows the reference orbitals, not the REFERENCE keyword
@@ -128,7 +128,7 @@ void KSResponseSolver::common_init() {
     restricted_ = reference_wavefunction_->same_a_b_orbs();
     std::string reference = options_.get_str("REFERENCE");
     if ( reference == "ROHF" || reference == "ROKS" || reference == "CUHF" || (restricted_ && nalpha_ != nbeta_) ) {
-        throw PsiException("scf_response: ROHF, ROKS, and CUHF references are not supported; use RHF/RKS or UHF/UKS.",__FILE__,__LINE__);
+        throw PsiException("SCF response: ROHF, ROKS, and CUHF references are not supported; use RHF/RKS or UHF/UKS.",__FILE__,__LINE__);
     }
 
     // get primary basis:
@@ -139,6 +139,19 @@ void KSResponseSolver::common_init() {
     // even for RHF, which a restricted (RV) potential would reject.
     psi::scf::HF* scfwfn = (psi::scf::HF*)reference_wavefunction_.get();
     std::shared_ptr<SuperFunctional> functional = scfwfn->functional();
+
+    // unsupported functional features: stop before any work (VBase::compute_Vx has no kernel for
+    // them, and it throws only after turning a timer on, which breaks later calls in the process)
+    if ( functional->is_meta() ) {
+        throw PsiException("SCF response: meta-GGA functionals are not supported (no meta-GGA XC kernel).",__FILE__,__LINE__);
+    }
+    if ( functional->needs_vv10() ) {
+        throw PsiException("SCF response: VV10 nonlocal correlation is not supported (no VV10 XC kernel).",__FILE__,__LINE__);
+    }
+    if ( options_.get_bool("WCOMBINE") ) {
+        throw PsiException("SCF response: WCOMBINE = true is not supported.",__FILE__,__LINE__);
+    }
+
     if ( functional->needs_xc() ) {
         potential_ = (std::shared_ptr<VBase>)VBase::build_V(primary,functional,options_,(restricted_ ? "RV" : "UV"));
         potential_->initialize();
@@ -225,10 +238,25 @@ void KSResponseSolver::compute_properties(const std::string& property){
             }else if (units == "EV" || units == "ev" || units == "eV") {
                 tmp_omega /= pc_hartree2ev;
             }else {
-                throw PsiException("Error in unit for input field frequencies, should be au, Hz, nm, or eV", __FILE__, __LINE__);
+                throw PsiException("SCF response: unknown unit for OMEGA; use au, Hz, nm, or eV.", __FILE__, __LINE__);
             }
             omega.push_back(tmp_omega);
     
+        }
+    }
+
+    // check the request before doing any work
+    if ( property != "POLARIZABILITY" && !is_hf_ ) {
+        throw PsiException("SCF response: hyperpolarizabilities are only available for Hartree-Fock; DFT would need "
+                           "the third-order XC kernel, which is not implemented.", __FILE__, __LINE__);
+    }
+    if ( property == "HYPERPOLARIZABILITY" ) {
+        for (auto my_omega: omega) {
+            if (fabs(my_omega) > 1e-14) {
+                throw PsiException("SCF response: SCF_DIPOLE_HYPERPOLARIZABILITY is the static hyperpolarizability, but OMEGA "
+                                   "is nonzero. For frequency-dependent ones use SCF_SHG, SCF_OPTICAL_RECTIFICATION, or SCF_POCKELS.",
+                                   __FILE__, __LINE__);
+            }
         }
     }
 
@@ -253,9 +281,6 @@ void KSResponseSolver::compute_properties(const std::string& property){
         }
     }else if ( property == "HYPERPOLARIZABILITY" ) {
         for (auto my_omega: omega) {
-            if (fabs(my_omega) > 1e-14) {
-                throw PsiException("For frequency-dependent hyperpolarizabilities, use PROPERTY = SHG, OR, or POCKELS", __FILE__, __LINE__);
-            }
             std::vector<std::vector<double>> amps = first_order_response(omega_a, omega_b, my_omega);
             compute_polarizability(amps[0], amps[1], my_omega);
             compute_hyperpolarizability(amps, amps, amps, "STATIC", my_omega);
@@ -308,7 +333,7 @@ void KSResponseSolver::compute_properties(const std::string& property){
             }
         }
     }else {
-        throw PsiException("unsupported PROPERTY for scf_response",__FILE__,__LINE__);
+        throw PsiException("SCF response: unknown property type.",__FILE__,__LINE__);
     }
 }
 
