@@ -1515,10 +1515,16 @@ extern "C" OTR::c_int otr_conv_check_wrapper(OTR::c_bool* converged, void* conte
     });
 }
 
-extern "C" void otr_logger(const char* message, void* /*context*/) {
+extern "C" void otr_logger(const char* message, void* context) {
     // Nothing may propagate into the Fortran caller, and a lost log line is not worth failing over.
+    // Keep OpenTrustRegion's own table aside rather than interleaving printing it;
+    // opentrustregion_scf() prints it once the solve is over.
     try {
-        outfile->Printf(" %s\n", message);
+        if (context) {
+            static_cast<HF*>(context)->otr_log_ += std::string(" ") + message + "\n";
+        } else {
+            outfile->Printf(" %s\n", message);
+        }
     } catch (...) {
     }
 }
@@ -1530,6 +1536,29 @@ void HF::otr_record_iteration(OTR::c_real func) {
     otr_curr_func_ = func;
     otr_has_curr_func_ = true;
     otr_grad_rms_ = otr_orbital_gradient();
+
+    // Report the macro iteration as the driver reports every other SCF iteration, so the table
+    // reads continuously and matches what SCF ITERATIONS counts. OpenTrustRegion advances its
+    // own macro counter only after the callback returns, so count the calls instead of reading
+    // it. Macro 0 re-evaluates the point the run started from: on the first run that is the
+    // handoff, which the driver has already printed, but on a restart it is the new occupation,
+    // which nothing has reported yet.
+    const int macro = otr_macro_calls_++;
+    if (macro == 0 && !otr_restart_) return;
+
+    std::string status = "OTR";
+    if (macro == 0) {
+        status = "Restart";
+    } else if (otr_state_ && otr_state_->micro_iteration > 0) {
+        status += ", nmicro=" + std::to_string(static_cast<int>(otr_state_->micro_iteration));
+    }
+    const double delta_e = otr_has_prev_func_ ? otr_curr_func_ - otr_prev_func_
+                                              : otr_curr_func_ - otr_restart_prev_func_;
+    std::string reference = options_.get_str("REFERENCE");
+    if (options_.get_str("SCF_TYPE").ends_with("DF")) reference = "DF-" + reference;
+
+    outfile->Printf("   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(),
+                    iteration_ + macro, otr_curr_func_, delta_e, otr_grad_rms_, status.c_str());
 }
 
 bool HF::otr_converged() const {
@@ -1540,7 +1569,7 @@ bool HF::otr_converged() const {
 }
 #endif
 
-int HF::opentrustregion_scf(double e_conv, double d_conv) {
+int HF::opentrustregion_scf(double e_conv, double d_conv, bool restart) {
 #ifndef USING_OpenTrustRegion
     throw PSIEXCEPTION("OpenTrustRegion support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenTrustRegion=ON`.\n");
 #else
@@ -1553,6 +1582,9 @@ int HF::opentrustregion_scf(double e_conv, double d_conv) {
     otr_callback_error_.clear();
     otr_e_conv_ = e_conv;
     otr_d_conv_ = d_conv;
+    // Only the restart's first printed row reads this; the convergence test starts fresh below.
+    otr_restart_ = restart && otr_has_curr_func_;
+    otr_restart_prev_func_ = otr_curr_func_;
     otr_has_prev_func_ = false;
     otr_has_curr_func_ = false;
     otr_prev_func_ = 0.0;
@@ -1608,15 +1640,34 @@ int HF::opentrustregion_scf(double e_conv, double d_conv) {
     // argument of every callback, which is how they reach the orbitals without a global.
     settings.context = this;
 
-    // call the Fortran solver, asking for the end state so the stopping reason is available
+    // call the Fortran solver, asking for the end state so the stopping reason is available.
+    // OTR refreshes it before each callback, so the macro iters can report their micro counts as they go.
     OTR::solver_state_type state{};
+    otr_log_.clear();
+    otr_macro_calls_ = 0;
+    otr_state_ = &state;
     auto error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, otr_n_param_,
                              &settings, &state);
+    otr_state_ = nullptr;
+
+    // Now that the SCF rows are done, print OTR's own table carrying the trust radius, level
+    // shift and step size, which are useful for diagnosis.
+    if (!otr_log_.empty()) {
+        outfile->Printf(
+            "\n  ==> OpenTrustRegion Macro Iterations <==\n\n"
+            "  Its gradient RMS is taken over the orbital rotation parameters, unlike RMS |[F,P]| above.\n\n%s\n",
+            otr_log_.c_str());
+    }
 
     // OpenTrustRegion stops once the objective function stops resolving, reporting success
     // whether or not the requested thresholds were met.
-    const double e_delta = std::fabs(otr_curr_func_ - otr_prev_func_);
-    const bool energy_met = otr_has_prev_func_ && otr_has_curr_func_ && e_delta < e_conv;
+    // A run that took a single macro iteration has no second point to measure the energy
+    // change against -- except on a restart, where the previous run's final energy is the
+    // baseline. Without either, the energy criterion is unmeasured rather than met.
+    const bool have_delta = otr_has_prev_func_ || otr_restart_;
+    const double baseline = otr_has_prev_func_ ? otr_prev_func_ : otr_restart_prev_func_;
+    const double e_delta = have_delta ? std::fabs(otr_curr_func_ - baseline) : 0.0;
+    const bool energy_met = have_delta && e_delta < e_conv;
     const bool gradient_met = otr_grad_rms_ < d_conv;
 
     // Neither half of the test met means these orbitals are not worth the precision asked

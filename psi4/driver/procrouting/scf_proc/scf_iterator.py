@@ -384,7 +384,7 @@ def _run_opentrustregion(self, e_conv, d_conv):
             # handoff is. A restart's first evaluation, at the new occupation, is a J/K build no
             # iteration has covered, so charge it here.
             self.iteration_ += 1
-        otr_error = self.opentrustregion_scf(e_conv, d_conv)
+        otr_error = self.opentrustregion_scf(e_conv, d_conv, bool(attempt))
         if otr_error and otr_error != _OTR_MAX_ITER_ERROR:
             # A real failure, so it must not be swallowed by FAIL_ON_MAXITER, which callers
             # such as run_qchf set False to tolerate a deliberately truncated SCF. Raise before

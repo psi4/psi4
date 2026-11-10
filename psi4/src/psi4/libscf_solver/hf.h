@@ -262,7 +262,7 @@ class HF : public Wavefunction {
     /// which are the driver's E_/D_CONVERGENCE unless iterations() was handed others. Returns
     /// the solver's error code (0 on success) rather than throwing, so the driver can honour
     /// FAIL_ON_MAXITER.
-    int opentrustregion_scf(double e_conv, double d_conv);
+    int opentrustregion_scf(double e_conv, double d_conv, bool restart = false);
 
     /// Total energy at each OpenTrustRegion macro-iteration, so the Python driver can
     /// report SCF ITERATIONS / SCF TOTAL ENERGIES the same way the internal solver does.
@@ -289,6 +289,22 @@ class HF : public Wavefunction {
     std::string otr_callback_error_;
 
 #ifdef USING_OpenTrustRegion
+    /// OpenTrustRegion's iteration log in its own format, held back for printing.
+    std::string otr_log_;
+    /// The solver state, refreshed by OTR before each callback, so a macro iteration
+    /// can report its microiteration count as internal SOSCF does. Null outside a solve.
+    const OTR::solver_state_type* otr_state_ = nullptr;
+    /// How many times OTR has called back with a new point this solve. Its own macro counter
+    /// is only advanced after the callback returns, so this is what says which macro
+    /// iteration the callback is reporting.
+    int otr_macro_calls_ = 0;
+    /// Whether this run is an occupation restart, whose first macro iteration is a J/K build
+    /// no row has reported yet. On the first run that point is the handoff, already printed.
+    bool otr_restart_ = false;
+    /// The energy the previous run finished on. A restart has no earlier point of its own, so
+    /// this is the baseline both its first row and the end-of-run energy test measure against.
+    double otr_restart_prev_func_ = 0.0;
+
     void otr_record_iteration(OTR::c_real func);
     bool otr_converged() const;
     virtual OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad,

@@ -1687,8 +1687,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("OTR_MAX_PRECISION_REACHED_HANDLING", "DIIS", "DIIS FAIL WARN");
         /*- For |globals__second_order_orbital_optimizer_package| = `OTR`, verbosity of the
             solver's own printing: 0 only warnings and errors, 1 the iteration table, 2 or
-            more adds microiteration detail. Unset, this follows |scf__soscf_print| ; setting it
-            overrides that. -*/
+            more adds microiteration detail. The table follows the SCF iteration rows, which
+            report the same macro iterations in Psi4's format. Unset, this follows
+            |scf__soscf_print| ; setting it overrides that. -*/
         options.add_int("OTR_PRINT", 1);
         /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
             performed. CHECK will print out the analysis of the wavefunction stability at the end of

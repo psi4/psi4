@@ -96,6 +96,13 @@ that code, and how the first- and second-order packages combine.
 Settings with a genuine |PSIfour| counterpart reuse that keyword; the rest are
 exposed as ``OTR_*`` keywords, each defaulting to OpenTrustRegion's own default.
 
+Each OpenTrustRegion macro-iteration prints as an ordinary SCF iteration row,
+labelled ``OTR, nmicro=N`` as the internal second-order code labels its own.
+OpenTrustRegion's table follows those rows, carrying the trust radius, level
+shift and step size; its gradient RMS is taken over the orbital rotation
+parameters and so does not match the :math:`\mathrm{RMS}\ |[F,P]|` of the rows
+above. |scf__otr_print| ``0`` suppresses that table.
+
 .. include:: autodir_options_c/globals__second_order_orbital_optimizer_package.rst
 .. include:: autodir_options_c/globals__orbital_optimizer_package.rst
 .. include:: autodir_options_c/scf__soscf.rst
