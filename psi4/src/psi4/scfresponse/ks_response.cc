@@ -222,15 +222,21 @@ static std::string frequency_label(double omega) {
     return std::to_string(std::lround(nm)) + "NM";
 }
 
+/*- Process::environment.globals["SCF DIPOLE POLARIZABILITY @ xNM"] -*/
+/*- Process::environment.arrays["SCF DIPOLE POLARIZABILITY TENSOR @ xNM"] -*/
 void KSResponseSolver::store_polarizability(SharedMatrix alpha, double omega) {
     std::string at = " @ " + frequency_label(omega);
     double isotropic = alpha->trace() / 3.0;
-    Process::environment.globals["SCF DIPOLE POLARIZABILITY" + at] = isotropic;
-    Process::environment.arrays["SCF DIPOLE POLARIZABILITY TENSOR" + at] = alpha->clone();
+    Process::environment.globals["SCF DIPOLE POLARIZABILITY" + at] = isotropic;  // no-autodoc
+    Process::environment.arrays["SCF DIPOLE POLARIZABILITY TENSOR" + at] = alpha->clone();  // no-autodoc
     reference_wavefunction_->set_scalar_variable("SCF DIPOLE POLARIZABILITY" + at, isotropic);
     reference_wavefunction_->set_array_variable("SCF DIPOLE POLARIZABILITY TENSOR" + at, alpha->clone());
 }
 
+/*- Process::environment.arrays["SCF DIPOLE HYPERPOLARIZABILITY TENSOR"] -*/
+/*- Process::environment.arrays["SCF SHG HYPERPOLARIZABILITY TENSOR @ xNM"] -*/
+/*- Process::environment.arrays["SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR @ xNM"] -*/
+/*- Process::environment.arrays["SCF POCKELS HYPERPOLARIZABILITY TENSOR @ xNM"] -*/
 void KSResponseSolver::store_hyperpolarizability(SharedMatrix beta, const std::string& type, double omega) {
     std::string key;
     if (type == "STATIC") {
@@ -244,7 +250,7 @@ void KSResponseSolver::store_hyperpolarizability(SharedMatrix beta, const std::s
     } else {
         throw PsiException("SCF response: unknown hyperpolarizability type " + type, __FILE__, __LINE__);
     }
-    Process::environment.arrays[key] = beta->clone();
+    Process::environment.arrays[key] = beta->clone();  // no-autodoc
     reference_wavefunction_->set_array_variable(key, beta->clone());
 }
 
