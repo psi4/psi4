@@ -92,6 +92,7 @@ class KSResponseSolver: public Wavefunction {
 
     // hybrid alpha?
     double x_alpha_;
+    double x_beta_;
 
     // MO-basis dipole integrals
     std::vector<std::shared_ptr<Matrix>> mua_;
