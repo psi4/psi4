@@ -99,7 +99,7 @@ std::vector<std::vector<double>> RKSResponseSolver::first_order_response(std::ve
 
     // dimension of the problem
     int oa = nalpha_;
-    int va = nso_ - oa;
+    int va = nmo_ - oa;
 
     int N = oa*va;
 
@@ -276,7 +276,7 @@ void RKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector
 
     // dimension of the problem
     int oa = nalpha_;
-    int va = nso_ - oa;
+    int va = nmo_ - oa;
 
     int N = oa*va;
 
@@ -317,7 +317,7 @@ void RKSResponseSolver::compute_hyperpolarizability(
 
     // dimension of the problem
     int oa = nalpha_;
-    int va = nso_ - oa;
+    int va = nmo_ - oa;
 
     int N = oa*va;
 
@@ -534,7 +534,7 @@ void RKSResponseSolver::compute_hyperpolarizability(
 void RKSResponseSolver::build_Au_Bu(int N, int L, double *u, double *ABu){
 
     int oa = nalpha_;
-    int va = nso_ - oa;
+    int va = nmo_ - oa;
 
     double ** cap = Ca_->pointer();
 

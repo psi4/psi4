@@ -100,8 +100,8 @@ std::vector<std::vector<double>> UKSResponseSolver::first_order_response(std::ve
     // dimension of the problem
     int oa = nalpha_;
     int ob = nbeta_;
-    int va = nso_ - oa;
-    int vb = nso_ - ob;
+    int va = nmo_ - oa;
+    int vb = nmo_ - ob;
 
     int N = oa*va+ob*vb;
 
@@ -301,8 +301,8 @@ void UKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector
     // dimension of the problem
     int oa = nalpha_;
     int ob = nbeta_;
-    int va = nso_ - oa;
-    int vb = nso_ - ob;
+    int va = nmo_ - oa;
+    int vb = nmo_ - ob;
 
     int N = oa*va+ob*vb;
 
@@ -350,8 +350,8 @@ void UKSResponseSolver::compute_hyperpolarizability(
     // dimension of the problem
     int oa = nalpha_;
     int ob = nbeta_;
-    int va = nso_ - oa;
-    int vb = nso_ - ob;
+    int va = nmo_ - oa;
+    int vb = nmo_ - ob;
 
     int N = oa*va+ob*vb;
 
@@ -704,8 +704,8 @@ void UKSResponseSolver::build_Au_Bu(int N, int L, double *u, double *ABu){
 
     int oa = nalpha_;
     int ob = nbeta_;
-    int va = nso_ - oa;
-    int vb = nso_ - ob;
+    int va = nmo_ - oa;
+    int vb = nmo_ - ob;
 
     double ** cap = Ca_->pointer();
     double ** cbp = Cb_->pointer();
