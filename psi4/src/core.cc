@@ -172,6 +172,9 @@ std::shared_ptr<PsiOutStream> outfile;
 namespace dct {
 SharedWavefunction dct(SharedWavefunction, Options&);
 }
+namespace scf_response {
+SharedWavefunction scf_response(SharedWavefunction, Options&, const std::string&);
+}
 namespace detci {
 SharedWavefunction detci(SharedWavefunction, Options&);
 }
@@ -352,6 +355,11 @@ PsiReturnType py_psi_mrcc_generate_input(SharedWavefunction ref_wfn, const py::d
 PsiReturnType py_psi_mrcc_load_densities(SharedWavefunction ref_wfn, const py::dict& level) {
     py_psi_prepare_options_for_module("MRCC");
     return mrcc::mrcc_load_ccdensities(ref_wfn, Process::environment.options, level);
+}
+
+SharedWavefunction py_psi_scfresponse(SharedWavefunction ref_wfn, const std::string& property) {
+    py_psi_prepare_options_for_module("SCFRESPONSE");
+    return scf_response::scf_response(ref_wfn, Process::environment.options, property);
 }
 
 SharedWavefunction py_psi_dct(SharedWavefunction ref_wfn) {
@@ -1388,6 +1396,9 @@ PYBIND11_MODULE(core, core) {
     core.def("scfgrad", py_psi_scfgrad, "ref_wfn"_a, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     core.def("scfhess", py_psi_scfhess, "ref_wfn"_a, "Run scfhess, which is a specialized DF-SCF hessian program.");
     core.def("dct", py_psi_dct, "ref_wfn"_a, "Runs the density cumulant (functional) theory code.");
+    core.def("scfresponse", py_psi_scfresponse, "ref_wfn"_a, "property"_a,
+             "Runs the SCF response code for frequency-dependent dipole polarizabilities and first "
+             "hyperpolarizabilities. ``property`` is one of POLARIZABILITY, HYPERPOLARIZABILITY, SHG, OR, POCKELS, ALL.");
     core.def("dfmp2", py_psi_dfmp2, "ref_wfn"_a, "Runs the DF-MP2 code.");
     core.def("dlpno", py_psi_dlpno, "Runs the DLPNO codes.");
     core.def("f12", py_psi_f12, "Runs the F12 codes.");
