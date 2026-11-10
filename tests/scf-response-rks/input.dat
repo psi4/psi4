@@ -18,6 +18,7 @@ set {
   reference rks
   e_convergence 1e-10
   d_convergence 1e-10
+  solver_convergence 1e-10
   cholesky_tolerance 1e-12
   omega [0.15]
 }
