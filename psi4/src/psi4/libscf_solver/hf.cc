@@ -1655,7 +1655,7 @@ int HF::opentrustregion_scf(double e_conv, double d_conv, bool restart) {
     // shift and step size, which are useful for diagnosis.
     if (!otr_log_.empty()) {
         outfile->Printf(
-            "\n  ==> OpenTrustRegion Macro Iterations <==\n\n"
+            "\n  ==> OpenTrustRegion Iterations <==\n\n"
             "  Its gradient RMS is taken over the orbital rotation parameters, unlike RMS |[F,P]| above.\n\n%s\n",
             otr_log_.c_str());
     }
