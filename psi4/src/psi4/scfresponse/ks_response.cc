@@ -173,6 +173,7 @@ void KSResponseSolver::common_init() {
         x_omega_ = options_.get_double("DFT_OMEGA");
     }
     x_alpha_     = functional->x_alpha();
+    x_beta_      = functional->x_beta();
     needs_xc_    = functional->needs_xc();
 
     jk_->set_do_J(true);

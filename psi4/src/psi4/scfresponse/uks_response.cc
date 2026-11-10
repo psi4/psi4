@@ -866,7 +866,7 @@ void UKSResponseSolver::build_Au_Bu(int N, int L, double *u, double *ABu){
         // a <- a
         // b <- b
         if (is_x_lrc_) {
-            double beta = 1.0 - x_alpha_;
+            double beta = x_beta_;
             sa->axpy(-beta,jk_->wK()[count]);
             sb->axpy(-beta,jk_->wK()[count+1]);
         }
