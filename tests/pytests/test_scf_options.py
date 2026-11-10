@@ -410,11 +410,12 @@ O 1 1.158
 symmetry c1
 """)
     # the SCF of dfmp2-grad2, whose D_CONVERGENCE is tight enough that OpenTrustRegion hits
-    # its floor and the first-order iterations cannot finish the job inside their budget
+    # its floor around iteration 7. Its polish converges at iteration 15, so stop two short
+    # of that: MAXITER is what ends a polish, and this is a polish ended by it.
     psi4.set_options({"basis": "cc-pvdz", "df_basis_scf": "cc-pvdz-jkfit",
                       "scf_type": "df", "guess": "sad", "reference": "uhf",
                       "soscf": True, "second_order_orbital_optimizer_package": "otr",
-                      "e_convergence": 1.0e-10, "d_convergence": 1.0e-10,
+                      "e_convergence": 1.0e-10, "d_convergence": 1.0e-10, "maxiter": 13,
                       "otr_max_precision_reached_handling": "diis"})
 
     with pytest.raises(psi4.SCFConvergenceError) as exc:

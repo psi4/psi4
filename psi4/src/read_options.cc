@@ -1681,7 +1681,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             the measured against the predicted energy change, so once neither can be resolved it
             cannot verify further progress and stops, reporting success. `DIIS` finishes the job
             with first-order iterations, which converge on the orbital gradient instead and are
-            not subject to that limit, and fails if they cannot reach the thresholds either.
+            not subject to that limit, and fails if they cannot reach the thresholds within
+            |scf__maxiter| either.
             `FAIL` treats the shortfall as non-convergence at once. `WARN` accepts the orbitals,
             reporting the shortfall in the output. -*/
         options.add_str("OTR_MAX_PRECISION_REACHED_HANDLING", "DIIS", "DIIS FAIL WARN");
