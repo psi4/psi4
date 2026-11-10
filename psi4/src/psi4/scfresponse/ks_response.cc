@@ -118,11 +118,6 @@ void KSResponseSolver::common_init() {
     // memory is from process::environment
     memory_ = Process::environment.get_memory();
 
-    // check SCF type
-    if ( options_.get_str("SCF_TYPE") != "DF" && options_.get_str("SCF_TYPE") != "CD" && options_.get_str("SCF_TYPE") != "PK") {
-        throw PsiException("invalid SCF_TYPE for scf_response",__FILE__,__LINE__);
-    }
-
     // ensure running in c1 symmetry
     if ( reference_wavefunction_->nirrep() > 1 ) {
         throw PsiException("scf_response only works with c1 symmetry for now.",__FILE__,__LINE__);
@@ -149,28 +144,6 @@ void KSResponseSolver::common_init() {
         potential_->initialize();
     }
 
-    if ( options_.get_str("SCF_TYPE") == "DF" ) {
-
-        // get auxiliary basis:
-        std::shared_ptr<BasisSet> auxiliary = reference_wavefunction_->get_basisset("DF_BASIS_SCF");
-
-        jk_ = (std::shared_ptr<DiskDFJK>)(new DiskDFJK(primary,auxiliary,options_));
-
-    }else if ( options_.get_str("SCF_TYPE") == "CD" ) {
-
-        jk_ = (std::shared_ptr<CDJK>)(new CDJK(primary,options_,options_.get_double("CHOLESKY_TOLERANCE")));
-
-    }else if ( options_.get_str("SCF_TYPE") == "PK" ) {
-
-        jk_ = (std::shared_ptr<PKJK>)(new PKJK(primary,options_));
-    }
-
-    // memory for jk (say, 80% of what is available)
-    jk_->set_memory(0.8 * memory_);
-
-    // integral cutoff
-    jk_->set_cutoff(options_.get_double("INTS_TOLERANCE"));
-
     is_hf_ = functional->name() == "HF" ? true : false;
 
     is_x_lrc_    = functional->is_x_lrc();
@@ -183,12 +156,28 @@ void KSResponseSolver::common_init() {
     x_beta_      = functional->x_beta();
     needs_xc_    = functional->needs_xc();
 
+    // JK object: reuse the one the SCF built (kept when SAVE_JK is on, which properties() sets),
+    // so every SCF_TYPE works and the response uses the same integrals as the SCF. Otherwise
+    // build one the same way the SCF does.
+    if ( scfwfn->jk() ) {
+        jk_ = scfwfn->jk();
+    } else {
+        std::shared_ptr<BasisSet> auxiliary = reference_wavefunction_->basisset_exists("DF_BASIS_SCF")
+                                            ? reference_wavefunction_->get_basisset("DF_BASIS_SCF")
+                                            : BasisSet::zero_ao_basis_set();
+        // memory for jk in doubles (80% of what is available)
+        size_t jk_doubles = (size_t)(0.8 * memory_ / sizeof(double));
+        jk_ = JK::build_JK(primary, auxiliary, options_, is_x_lrc_, jk_doubles);
+        jk_->set_memory(jk_doubles);
+        jk_->set_cutoff(options_.get_double("INTS_TOLERANCE"));
+        jk_->set_do_J(true);
+        jk_->set_do_K(is_x_hybrid_);
+        jk_->set_do_wK(is_x_lrc_);
+        jk_->set_omega(x_omega_);
+        jk_->initialize();
+    }
+    // the response products always need J
     jk_->set_do_J(true);
-    jk_->set_do_K(is_x_hybrid_);
-    jk_->set_do_wK(is_x_lrc_);
-    jk_->set_omega(x_omega_);
-
-    jk_->initialize();
 
     // dipole integrals
     std::shared_ptr<MintsHelper> mints (new MintsHelper(reference_wavefunction_));

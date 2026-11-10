@@ -1,0 +1,35 @@
+#! Water/cc-pVDZ, HF and B3LYP: the scfresponse module runs with every SCF_TYPE by reusing the
+#! SCF's own JK object. Static alpha is checked against Psi4's built-in CPSCF/CPKS solver for
+#! SCF_TYPE DIRECT, MEM_DF, DISK_DF, and OUT_OF_CORE.
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  e_convergence 1e-10
+  d_convergence 1e-10
+  solver_convergence 1e-10
+}
+
+XYZ = "XYZ"
+for method in ["scf", "b3lyp"]:
+    for scf_type in ["direct", "mem_df", "disk_df", "out_of_core"]:
+        if method == "b3lyp" and scf_type in ["disk_df", "out_of_core"]:
+            continue
+        set_options({"scf_type": scf_type})
+        core.revoke_global_option_changed("OMEGA")
+        properties(method, properties=['DIPOLE_POLARIZABILITIES'])
+        builtin = {p + q: variable(f"DIPOLE POLARIZABILITY {p}{q}") for p in XYZ for q in XYZ}
+
+        set_options({"omega": [0.0]})
+        properties(method, properties=['DIPOLE_POLARIZABILITIES'])
+        for i, p in enumerate(XYZ):
+            for q in XYZ[i:]:
+                compare_values(builtin[p + q], variable(f"ALPHA({p}{q})"), 1.e-8, f"{method}/{scf_type}: static alpha {p}{q} vs built-in")  #TEST
