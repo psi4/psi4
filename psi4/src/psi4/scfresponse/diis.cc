@@ -223,28 +223,12 @@ void DIIS::Extrapolate(double * vector){
         diis_iter_++;
     }
     else {
-        // If we already have maxdiis_ vectors, choose the one with
-        // the largest error as the one to replace.
-        std::shared_ptr<PSIO> psio(new PSIO());
-        psio->open(PSIF_DCC_EVEC,PSIO_OPEN_OLD);
-        int jmax   = 1;
-        double max = -1.0e99;
-        char * evector   = (char*)malloc(1000*sizeof(char));
-        for (int j = 1; j <= maxdiis_; j++){
-            sprintf(evector,"evector%i",j);
-            psio->read_entry(PSIF_DCC_EVEC,evector,(char*)tmp1_,dimdiis_*sizeof(double));
-            double nrm = C_DNRM2(dimdiis_,tmp1_,1);
-            if ( nrm > max ) {
-                max  = nrm;
-                jmax = j;
-            }
-        }
-        psio->close(PSIF_DCC_EVEC,1);
-        replace_diis_iter_ = jmax;
-        free(evector);
+        // If we already have maxdiis_ vectors, replace them in round-robin
+        // (oldest-first) order. Replacing the vector with the largest error
+        // can overwrite the newest vector over and over and freeze the subspace.
+        if (replace_diis_iter_ < maxdiis_) replace_diis_iter_++;
+        else                               replace_diis_iter_ = 1;
     }
-    //else if (replace_diis_iter_ < maxdiis_) replace_diis_iter_++;
-    //else                                    replace_diis_iter_ = 1;
 }
 // Perform DIIS extrapolation.
 void DIIS::Extrapolate(double * vector1, double * vector2){
