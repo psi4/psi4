@@ -2632,6 +2632,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         than one element is given, then the units must be specified as the final
         element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
         options.add("OMEGA", new ArrayType());
+        /*- Convergence threshold for the response equations (norm of the change in the response
+        vectors between iterations, over all three field directions). -*/
+        options.add_double("SOLVER_CONVERGENCE", 1.0E-6);
+        /*- Maximum number of iterations for the response equations. -*/
+        options.add_int("SOLVER_MAXITER", 100);
     }
     if (name == "DFEP2" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs density-fitted EP2 computations for RHF reference wavefunctions. -*/
