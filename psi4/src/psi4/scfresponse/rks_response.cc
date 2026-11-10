@@ -66,7 +66,7 @@ RKSResponseSolver::RKSResponseSolver(std::shared_ptr<Wavefunction> reference_wav
 
     // apparently compute_Vx wants me to set the density, and it should 
     // be done here to respect the difference between rks and uks
-    potential_->set_D({Da_});
+    if ( potential_ ) potential_->set_D({Da_});
 }
 
 RKSResponseSolver::~RKSResponseSolver() {

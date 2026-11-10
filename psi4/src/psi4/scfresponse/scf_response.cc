@@ -39,13 +39,13 @@ namespace psi {
 namespace scf_response {
 
 SharedWavefunction scf_response(SharedWavefunction ref_wfn, Options& options, const std::string& property) {
-    // response properties
-    if ( options.get_str("REFERENCE") == "UKS" || options.get_str("REFERENCE") == "UHF" ) {
-        std::shared_ptr<UKSResponseSolver> uks (new UKSResponseSolver((std::shared_ptr<Wavefunction>)ref_wfn, options));
-        uks->compute_properties(property);
-    }else if ( options.get_str("REFERENCE") == "RHF" || options.get_str("REFERENCE") == "RKS" ) {
+    // restricted vs unrestricted follows the reference orbitals, not the REFERENCE keyword
+    if ( ref_wfn->same_a_b_orbs() ) {
         std::shared_ptr<RKSResponseSolver> rks (new RKSResponseSolver((std::shared_ptr<Wavefunction>)ref_wfn, options));
         rks->compute_properties(property);
+    }else {
+        std::shared_ptr<UKSResponseSolver> uks (new UKSResponseSolver((std::shared_ptr<Wavefunction>)ref_wfn, options));
+        uks->compute_properties(property);
     }
 
     return ref_wfn;
