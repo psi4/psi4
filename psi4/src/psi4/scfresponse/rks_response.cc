@@ -231,7 +231,7 @@ std::vector<std::vector<double>> RKSResponseSolver::first_order_response(std::ve
 
     outfile->Printf("\n");
     if ( iter > maxiter && options_.get_bool("FAIL_ON_MAXITER") ){
-        throw PsiException("Maximum number of iterations exceeded!",__FILE__,__LINE__);
+        throw PsiException("SCF response: the response equations did not converge within SOLVER_MAXITER iterations.",__FILE__,__LINE__);
     } else if ( iter > maxiter ) {
         outfile->Printf("    First-order response equations did not converge!\n");
     } else {
@@ -312,7 +312,7 @@ void RKSResponseSolver::compute_hyperpolarizability(
     std::string type, double omega) {
 
     if ( !is_hf_ ) {
-        throw PsiException("DFT hyperpolarizbalities are not supported", __FILE__, __LINE__);
+        throw PsiException("SCF response: DFT hyperpolarizabilities are not supported.", __FILE__, __LINE__);
     }
 
     // dimension of the problem
