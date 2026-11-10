@@ -389,3 +389,46 @@ noreorient
     psi4.set_options({"otr_max_precision_reached_handling": "fail"})
     with pytest.raises(psi4.SCFConvergenceError):
         psi4.energy("scf")
+
+
+@pytest.mark.scf
+@uusing("otr")
+def test_otr_polish_keeps_its_improvement():
+    """A polish that runs out of iterations keeps its orbitals when they are the better ones.
+
+    The polish is allowed to end short, and when it does, whichever of the two solutions has
+    the smaller orbital gradient is the one left behind. Both have to be measured the same
+    way for that comparison to mean anything, and OpenTrustRegion's cannot be measured after
+    the driver diagonalizes: that makes the density a projector onto eigenvectors of the
+    current Fock matrix, so the commutator falls to roundoff however unconverged the orbitals
+    are, and the comparison then throws the polish's work away every time.
+    """
+    psi4.geometry("""
+0 2
+N
+O 1 1.158
+symmetry c1
+""")
+    # the SCF of dfmp2-grad2, whose D_CONVERGENCE is tight enough that OpenTrustRegion hits
+    # its floor and the first-order iterations cannot finish the job inside their budget
+    psi4.set_options({"basis": "cc-pvdz", "df_basis_scf": "cc-pvdz-jkfit",
+                      "scf_type": "df", "guess": "sad", "reference": "uhf",
+                      "soscf": True, "second_order_orbital_optimizer_package": "otr",
+                      "e_convergence": 1.0e-10, "d_convergence": 1.0e-10,
+                      "otr_max_precision_reached_handling": "diis"})
+
+    with pytest.raises(psi4.SCFConvergenceError) as exc:
+        psi4.energy("scf")
+
+    # the SCF is unconverged on its orbital gradient, so the gradient it reports has to be a
+    # real measure of these orbitals -- above D_CONVERGENCE, not the roundoff of a density
+    # built from the eigenvectors of its own Fock matrix
+    assert exc.value.d_conv > 1.0e-10, \
+        f"reported Dnorm {exc.value.d_conv:.2e} is below the D_CONVERGENCE it failed to reach"
+
+    # and the polish improved on where OpenTrustRegion stopped, so its orbitals are the ones
+    # kept; an equal value would mean OpenTrustRegion's were restored over better ones
+    otr_entry_dnorm = exc.value.wfn.otr_outcome_[3]
+    assert exc.value.d_conv < otr_entry_dnorm, \
+        (f"polish ended at {exc.value.d_conv:.2e} against OpenTrustRegion's "
+         f"{otr_entry_dnorm:.2e}; the better orbitals were not the ones kept")

@@ -277,7 +277,7 @@ _OTR_NEEDS_POLISH = object()
 
 def _otr_shortfall(self, e_conv, d_conv):
     """How far OpenTrustRegion finished from this SCF's thresholds, as text and as orders."""
-    _, grad, dE = self.otr_outcome_
+    _, grad, dE, _ = self.otr_outcome_
     # A run of a single macro-iteration had no earlier point to measure the energy change
     # against, and reports NaN rather than a number for it.
     dE_text = "unmeasured" if math.isnan(dE) else f"{dE:.2e}"
@@ -405,16 +405,21 @@ def _run_opentrustregion(self, e_conv, d_conv):
                                    f"in a callback into Psi4:\n{callback_error}")
             raise PsiException(f"OpenTrustRegion solver failed with error {otr_error}. See the "
                                f"output file for the solver's own message.")
-        # What this run finished on.
-        self.otr_outcome_ = (self.opentrustregion_stopped_short(),
-                             self.opentrustregion_final_grad_rms(),
-                             self.opentrustregion_final_energy_delta())
-
         # OTR's last call to Psi4 is often a Hessian-vector product (cphf_Hx reuses JK)
         # so rebuild from converged orbs lest compute_E return garbage.
         self.form_D()
         self.form_G()
         self.form_F()
+
+        # What this run finished on. The orbital gradient has to be measured here, where F
+        # and D are each other's and the measure means what it does in the first-order loop.
+        # After the diagonalization below, D is the projector onto eigenvectors of this F,
+        # which sends the commutator to roundoff whether or not the orbitals are converged.
+        self.otr_outcome_ = (self.opentrustregion_stopped_short(),
+                             self.opentrustregion_final_grad_rms(),
+                             self.opentrustregion_final_energy_delta(),
+                             self.compute_orbital_gradient(
+                                 False, core.get_option("SCF", "DIIS_MAX_VECS")))
 
         SCFE = self.compute_E()
         self.set_energies("Total Energy", SCFE)
@@ -840,10 +845,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 # Keep what OpenTrustRegion converged. First-order iterations usually
                 # improve on it, but from a solution this close they can also wander off
                 # -- a pinned-occupation ROHF will -- and the better orbitals should be
-                # the ones left behind. Measure its gradient the way this loop does, so
-                # the comparison below is like for like.
-                polish_entry_dnorm = self.compute_orbital_gradient(
-                    False, core.get_option("SCF", "DIIS_MAX_VECS"))
+                # the ones left behind. _run_opentrustregion measured its gradient the way
+                # this loop does, so the comparison below is like for like.
+                polish_entry_dnorm = self.otr_outcome_[3]
                 polish_entry_state = _orbital_state(self)
                 # Measure the next energy change after the first iteration of the polish from
                 # where OpenTrustRegion finished, not from the handoff iteration before it ran.
