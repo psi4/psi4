@@ -3385,7 +3385,7 @@ def run_scf_property(name, **kwargs):
     if len(oe_properties):
         proc_util.oeprop_validator(oe_properties)
 
-    if len(linear_response):
+    if len(linear_response) or len(scfresponse_properties):
         optstash_jk = p4util.OptionsState(["SAVE_JK"])
         core.set_global_option("SAVE_JK", True)
 
@@ -3414,6 +3414,8 @@ def run_scf_property(name, **kwargs):
     # Run frequency-dependent polarizabilities and hyperpolarizabilities
     for prop in scfresponse_properties:
         core.scfresponse(scf_wfn, prop)
+    if len(scfresponse_properties) and not len(linear_response):
+        optstash_jk.restore()
 
     core.tstop()
     optstash.restore()

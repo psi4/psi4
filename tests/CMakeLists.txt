@@ -100,7 +100,7 @@ foreach(test_name aediis-1
                   stability2 stability3 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-response3
                   scf-response-rhf scf-response-uhf scf-response-rks scf-response-uks
                   scf-response-lindep scf-response-lrc scf-response-uhf-open-shell
-                  scf-response-dft-reference
+                  scf-response-dft-reference scf-response-scf-types
                   scf-cholesky-basis scf-auto-cholesky
                   tu4-h2o-freq tu5-sapt x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2 zora
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-hess2 scf-hess3 scf-hess4 scf-hess5 scf-freq1 dft-jk scf-coverage
