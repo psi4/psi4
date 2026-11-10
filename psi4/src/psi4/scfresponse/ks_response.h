@@ -70,6 +70,12 @@ class KSResponseSolver: public Wavefunction {
         std::string type, double omega
     ){ throw PsiException("KSResponseSolver::compute_hyperpolarizability is not implemented.", __FILE__, __LINE__); }
 
+    // Store results as Psi4 variables (globally and on the reference wavefunction):
+    // SCF DIPOLE POLARIZABILITY [TENSOR] @ xNM, and the hyperpolarizability tensors
+    // SCF DIPOLE / SHG / OPTICAL RECTIFICATION / POCKELS HYPERPOLARIZABILITY TENSOR [@ xNM].
+    void store_polarizability(SharedMatrix alpha, double omega);
+    void store_hyperpolarizability(SharedMatrix beta, const std::string& type, double omega);
+
     std::shared_ptr<VBase> potential_;
 
     // restricted (RHF/RKS) or unrestricted (UHF/UKS) reference, taken from the orbitals

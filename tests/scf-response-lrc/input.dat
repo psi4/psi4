@@ -23,7 +23,32 @@ set {
   solver_convergence 1e-10
 }
 
+import numpy as np
+
 XYZ = "XYZ"
+
+
+def wavelength_label(omega):
+    """Wavelength label used in the result names: nearest nm, or INF NM for a static field."""
+    if abs(omega) < 1.e-14:
+        return "INF NM"
+    c = psi4.constants
+    return f"{round(c.c * c.h * 1.e9 / (c.hartree2J * abs(omega)))}NM"
+
+
+def alpha_tensor(omega):
+    """SCF dipole polarizability tensor (3 x 3) at frequency omega (au)."""
+    return np.asarray(variable(f"SCF DIPOLE POLARIZABILITY TENSOR @ {wavelength_label(omega)}"))
+
+
+def beta_tensor(kind, omega=0.0):
+    """SCF first hyperpolarizability tensor (3 x 3 x 3): kind STATIC, SHG, OR, or POCKELS."""
+    names = {"STATIC": "SCF DIPOLE HYPERPOLARIZABILITY TENSOR",
+             "SHG": "SCF SHG HYPERPOLARIZABILITY TENSOR",
+             "OR": "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR",
+             "POCKELS": "SCF POCKELS HYPERPOLARIZABILITY TENSOR"}
+    name = names[kind] if kind == "STATIC" else f"{names[kind]} @ {wavelength_label(omega)}"
+    return np.asarray(variable(name))
 
 # static polarizability: built-in CPKS solver vs the scfresponse module
 properties('cam-b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
@@ -32,11 +57,11 @@ set omega [0.0]
 properties('cam-b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
 for i, p in enumerate(XYZ):
     for q in XYZ[i:]:
-        compare_values(builtin[p + q], variable(f"ALPHA({p}{q})"), 1.e-8, f"static alpha {p}{q} vs built-in CPKS")  #TEST
+        compare_values(builtin[p + q], alpha_tensor(0.0)[XYZ.index(p), XYZ.index(q)], 1.e-8, f"static alpha {p}{q} vs built-in CPKS")  #TEST
 
 # frequency-dependent polarizability vs an independent reference
 ref_alpha = {'XX': 3.315434328379144, 'XY': -3.909678404039402e-15, 'XZ': -1.6703974968154878e-15, 'YY': 7.135440077862648, 'YZ': -3.9073936158961246e-15, 'ZZ': 5.388574572102372}  #TEST
 set omega [0.1]
 properties('cam-b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
 for pq, value in ref_alpha.items():  #TEST
-    compare_values(value, variable(f"ALPHA({pq})"), 1.e-6, f"alpha(0.1) {pq} vs reference")  #TEST
+    compare_values(value, alpha_tensor(0.1)[XYZ.index(pq[0]), XYZ.index(pq[1])], 1.e-6, f"alpha(0.1) {pq} vs reference")  #TEST

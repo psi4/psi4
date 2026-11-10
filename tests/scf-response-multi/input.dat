@@ -1,0 +1,68 @@
+#! Water/cc-pVDZ RHF: one properties() call with two frequencies (OMEGA [0.05, 0.1, au]) and
+#! four response properties must keep every result in its own variable (named by wavelength),
+#! and each must equal the same quantity computed in a separate single-frequency run.
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  scf_type pk
+  e_convergence 1e-10
+  d_convergence 1e-10
+  solver_convergence 1e-10
+}
+
+import numpy as np
+
+XYZ = "XYZ"
+
+
+def wavelength_label(omega):
+    """Wavelength label used in the result names: nearest nm, or INF NM for a static field."""
+    if abs(omega) < 1.e-14:
+        return "INF NM"
+    c = psi4.constants
+    return f"{round(c.c * c.h * 1.e9 / (c.hartree2J * abs(omega)))}NM"
+
+
+def alpha_tensor(omega):
+    """SCF dipole polarizability tensor (3 x 3) at frequency omega (au)."""
+    return np.asarray(variable(f"SCF DIPOLE POLARIZABILITY TENSOR @ {wavelength_label(omega)}"))
+
+
+def beta_tensor(kind, omega=0.0):
+    """SCF first hyperpolarizability tensor (3 x 3 x 3): kind STATIC, SHG, OR, or POCKELS."""
+    names = {"STATIC": "SCF DIPOLE HYPERPOLARIZABILITY TENSOR",
+             "SHG": "SCF SHG HYPERPOLARIZABILITY TENSOR",
+             "OR": "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR",
+             "POCKELS": "SCF POCKELS HYPERPOLARIZABILITY TENSOR"}
+    name = names[kind] if kind == "STATIC" else f"{names[kind]} @ {wavelength_label(omega)}"
+    return np.asarray(variable(name))
+
+
+props = ['DIPOLE_POLARIZABILITIES', 'SCF_SHG', 'SCF_OPTICAL_RECTIFICATION', 'SCF_POCKELS']
+kinds = ["SHG", "OR", "POCKELS"]
+
+# separate single-frequency runs
+single = {}
+for w in [0.05, 0.1]:
+    set_options({"omega": [w]})
+    properties('scf', properties=props)
+    single[w] = {"alpha": alpha_tensor(w), **{k: beta_tensor(k, w) for k in kinds}}
+    clean_variables()
+
+# one run with both frequencies and all properties
+set_options({"omega": [0.05, 0.1, "au"]})
+properties('scf', properties=props)
+for w in [0.05, 0.1]:
+    compare_arrays(single[w]["alpha"], alpha_tensor(w), 1.e-8, f"alpha @ {wavelength_label(w)} kept")  #TEST
+    for k in kinds:
+        compare_arrays(single[w][k], beta_tensor(k, w), 1.e-8, f"{k} beta @ {wavelength_label(w)} kept")  #TEST
+compare(1, int(abs(alpha_tensor(0.05)[2, 2] - alpha_tensor(0.1)[2, 2]) > 1.e-3), "frequencies give different alpha")  #TEST

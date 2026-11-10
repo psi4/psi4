@@ -53,4 +53,4 @@ expect_error("scf", h2o_c2v, {}, ["DIPOLE_POLARIZABILITIES"], "only C1 symmetry 
 core.clean_options()
 set_options({"basis": "cc-pvdz", "scf_type": "pk", "reference": "uks", "omega": [0.1]})
 properties("pbe", properties=["DIPOLE_POLARIZABILITIES"], molecule=h2o)
-compare(1, int(variable("ALPHA(XX)") > 0), "calculation after errors still works")  #TEST
+compare(1, int(variable("SCF DIPOLE POLARIZABILITY @ 456NM") > 0), "calculation after errors still works")  #TEST
