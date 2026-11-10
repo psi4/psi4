@@ -1,8 +1,9 @@
-#! UKS-PBE/cc-pVDZ water at omega = 0.15 au: dipole polarizability
-#! for SCF_TYPE PK, DF, and CD. Ported from the scf_response plugin's own tests
-#! (edeprince3/scf_response, tests/uks_{pk,df,cd}.in); reference values are the plugin's.
-#! The plugin's DFT reference values were generated with the default (1e-6) convergence,
-#! so they are compared to 1e-6 here while the calculation itself is converged tightly.
+#! UKS-PBE/cc-pVDZ water: static dipole polarizability and alpha(omega = 0.1 au) for SCF_TYPE PK, DF, and CD.
+#! DFT grid (99, 590) to match the reference (PySCF grid level 6) to ~3e-8 relative.
+#! Static alpha is checked against Psi4's built-in CPSCF/CPKS solver. All other reference values come
+#! from an independent TDHF/TDDFT response code built on PySCF 2.14 (beta from the second-order density,
+#! not this module's 2n+1 formula); DF references use cc-pVDZ-JKFIT. The two codes' integrals differ at
+#! ~5e-8 relative, hence atol 1e-6 for alpha and 1e-5 for beta. Supersedes the plugin's original values.
 
 molecule {
 O  0.00000   0.00000   0.11572
@@ -20,7 +21,8 @@ set {
   d_convergence 1e-10
   solver_convergence 1e-10
   cholesky_tolerance 1e-12
-  omega [0.15]
+  dft_radial_points 99
+  dft_spherical_points 590
 }
 
 import numpy as np
@@ -51,27 +53,34 @@ def beta_tensor(kind, omega=0.0):
     return np.asarray(variable(name))
 
 
-def element(label, kind, omega):
-    """Tensor element named like ALPHA(XY) or BETA(XXZ) in the plugin's original tests."""
-    idx = tuple(XYZ.index(c) for c in label[label.index('(') + 1:-1])
-    return (alpha_tensor(omega) if label.startswith('ALPHA') else beta_tensor(kind, omega))[idx]
-
-
-ref_vals = {  #TEST
+ref = {  #TEST
     'pk': {  #TEST
-        'POLARIZABILITY': {'ALPHA(XX)': 3.74173021928, 'ALPHA(XY)': -0.0, 'ALPHA(XZ)': -0.0, 'ALPHA(YY)': 7.520054653505, 'ALPHA(YZ)': 0.0, 'ALPHA(ZZ)': 5.886831735888},  #TEST
+        'alpha_static': np.array([[3.2994385223394014, -8.189976320674554e-15, -1.1107507100096452e-15], [-8.179857620292197e-15, 7.079464509871042, 4.7972942953958925e-14], [-1.1035334201188237e-15, 4.867136863213242e-14, 5.404245777282712]]),  #TEST
+        'alpha': np.array([[3.4598817505605632, -9.661074852174046e-15, -1.1579248573761488e-15], [-9.64943880470881e-15, 7.2653996650707935, 5.351595723946784e-14], [-1.146916084908067e-15, 5.422717937112234e-14, 5.598808174033109]]),  #TEST
     },  #TEST
     'df': {  #TEST
-        'POLARIZABILITY': {'ALPHA(XX)': 3.741968752207, 'ALPHA(XY)': 0.0, 'ALPHA(XZ)': -0.0, 'ALPHA(YY)': 7.519914828766, 'ALPHA(YZ)': -2e-12, 'ALPHA(ZZ)': 5.887024898072},  #TEST
+        'alpha_static': np.array([[3.2996280095722397, 1.1958587241349058e-14, -1.1539111435815272e-15], [1.1955409104403512e-14, 7.079343380025994, -1.2276349529013743e-14], [-1.1446860677094688e-15, -1.0930996880014355e-14, 5.4044343160268795]]),  #TEST
+        'alpha': np.array([[3.4600892263262084, 1.3812387716465132e-14, -1.1313633837793333e-15], [1.3808593763812565e-14, 7.265270521155597, -1.3767781275296664e-14], [-1.1201266085270335e-15, -1.2170309762944808e-14, 5.598999278719875]]),  #TEST
     },  #TEST
     'cd': {  #TEST
-        'POLARIZABILITY': {'ALPHA(XX)': 3.74173021928, 'ALPHA(XY)': -0.0, 'ALPHA(XZ)': -0.0, 'ALPHA(YY)': 7.520054653505, 'ALPHA(YZ)': 0.0, 'ALPHA(ZZ)': 5.886831735888},  #TEST
+        'alpha_static': np.array([[3.2994385223394405, -2.3312516923674945e-15, -7.252787828525019e-16], [-2.3330057587498665e-15, 7.079464509871008, 4.517772128526936e-15], [-7.22200655600397e-16, 5.0513302451516616e-15, 5.404245777282749]]),  #TEST
+        'alpha': np.array([[3.4598817505606183, -2.531101808599768e-15, -7.457660700531028e-16], [-2.5339284975156337e-15, 7.26539966507076, 4.276595866559766e-15], [-7.412304200976588e-16, 5.176987658432175e-15, 5.598808174033152]]),  #TEST
     },  #TEST
 }  #TEST
 
+w = 0.1
 for scf_type in ['pk', 'df', 'cd']:
     set_options({'scf_type': scf_type})
 
+    # static alpha: built-in solver (OMEGA unset) and this module (OMEGA [0.0])
+    core.revoke_global_option_changed('OMEGA')
     properties('pbe', properties=['DIPOLE_POLARIZABILITIES'])
-    for label, value in ref_vals[scf_type]['POLARIZABILITY'].items():  #TEST
-        compare_values(value, element(label, 'POLARIZABILITY', 0.15), 1e-06, f'{scf_type} {label}')  #TEST
+    builtin = np.array([[variable(f'DIPOLE POLARIZABILITY {p}{q}') for q in XYZ] for p in XYZ])
+    set_options({'omega': [0.0]})
+    properties('pbe', properties=['DIPOLE_POLARIZABILITIES'])
+    compare_arrays(builtin, alpha_tensor(0.0), 1.e-8, f'{scf_type}: static alpha vs built-in solver')  #TEST
+    compare_arrays(ref[scf_type]['alpha_static'], alpha_tensor(0.0), 1.e-6, f'{scf_type}: static alpha vs reference')  #TEST
+
+    set_options({'omega': [w]})
+    properties('pbe', properties=['DIPOLE_POLARIZABILITIES'])
+    compare_arrays(ref[scf_type]['alpha'], alpha_tensor(w), 1.e-6, f'{scf_type}: alpha({w}) vs reference')  #TEST
