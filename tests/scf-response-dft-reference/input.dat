@@ -19,7 +19,32 @@ set {
   solver_convergence 1e-10
 }
 
+import numpy as np
+
 XYZ = "XYZ"
+
+
+def wavelength_label(omega):
+    """Wavelength label used in the result names: nearest nm, or INF NM for a static field."""
+    if abs(omega) < 1.e-14:
+        return "INF NM"
+    c = psi4.constants
+    return f"{round(c.c * c.h * 1.e9 / (c.hartree2J * abs(omega)))}NM"
+
+
+def alpha_tensor(omega):
+    """SCF dipole polarizability tensor (3 x 3) at frequency omega (au)."""
+    return np.asarray(variable(f"SCF DIPOLE POLARIZABILITY TENSOR @ {wavelength_label(omega)}"))
+
+
+def beta_tensor(kind, omega=0.0):
+    """SCF first hyperpolarizability tensor (3 x 3 x 3): kind STATIC, SHG, OR, or POCKELS."""
+    names = {"STATIC": "SCF DIPOLE HYPERPOLARIZABILITY TENSOR",
+             "SHG": "SCF SHG HYPERPOLARIZABILITY TENSOR",
+             "OR": "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR",
+             "POCKELS": "SCF POCKELS HYPERPOLARIZABILITY TENSOR"}
+    name = names[kind] if kind == "STATIC" else f"{names[kind]} @ {wavelength_label(omega)}"
+    return np.asarray(variable(name))
 properties('b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
 builtin = {p + q: variable(f"DIPOLE POLARIZABILITY {p}{q}") for p in XYZ for q in XYZ}
 
@@ -27,4 +52,4 @@ set omega [0.0]
 properties('b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
 for i, p in enumerate(XYZ):
     for q in XYZ[i:]:
-        compare_values(builtin[p + q], variable(f"ALPHA({p}{q})"), 1.e-8, f"static alpha {p}{q} vs built-in CPKS")  #TEST
+        compare_values(builtin[p + q], alpha_tensor(0.0)[XYZ.index(p), XYZ.index(q)], 1.e-8, f"static alpha {p}{q} vs built-in CPKS")  #TEST

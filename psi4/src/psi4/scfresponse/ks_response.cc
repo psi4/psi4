@@ -26,7 +26,11 @@
  * @END LICENSE
  */
 
+#include <cmath>
+#include <string>
+
 #include <psi4/psi4-dec.h>
+#include <psi4/libpsi4util/process.h>
 #include <psi4/physconst.h>
 #include <psi4/liboptions/liboptions.h>
 #include <psi4/libpsio/psio.hpp>
@@ -208,6 +212,40 @@ void KSResponseSolver::common_init() {
         mub_.push_back(tmp); 
         mub_[i]->transform(Cb_); 
     }
+}
+
+// Wavelength label used in variable names, as for the CC response properties:
+// the wavelength in nm rounded to the nearest integer, or "INF NM" for a static field.
+static std::string frequency_label(double omega) {
+    if (std::fabs(omega) < 1.0e-14) return "INF NM";
+    double nm = (pc_c * pc_h * 1e9) / (pc_hartree2J * std::fabs(omega));
+    return std::to_string(std::lround(nm)) + "NM";
+}
+
+void KSResponseSolver::store_polarizability(SharedMatrix alpha, double omega) {
+    std::string at = " @ " + frequency_label(omega);
+    double isotropic = alpha->trace() / 3.0;
+    Process::environment.globals["SCF DIPOLE POLARIZABILITY" + at] = isotropic;
+    Process::environment.arrays["SCF DIPOLE POLARIZABILITY TENSOR" + at] = alpha->clone();
+    reference_wavefunction_->set_scalar_variable("SCF DIPOLE POLARIZABILITY" + at, isotropic);
+    reference_wavefunction_->set_array_variable("SCF DIPOLE POLARIZABILITY TENSOR" + at, alpha->clone());
+}
+
+void KSResponseSolver::store_hyperpolarizability(SharedMatrix beta, const std::string& type, double omega) {
+    std::string key;
+    if (type == "STATIC") {
+        key = "SCF DIPOLE HYPERPOLARIZABILITY TENSOR";
+    } else if (type == "SHG") {
+        key = "SCF SHG HYPERPOLARIZABILITY TENSOR @ " + frequency_label(omega);
+    } else if (type == "OR") {
+        key = "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR @ " + frequency_label(omega);
+    } else if (type == "POCKELS") {
+        key = "SCF POCKELS HYPERPOLARIZABILITY TENSOR @ " + frequency_label(omega);
+    } else {
+        throw PsiException("SCF response: unknown hyperpolarizability type " + type, __FILE__, __LINE__);
+    }
+    Process::environment.arrays[key] = beta->clone();
+    reference_wavefunction_->set_array_variable(key, beta->clone());
 }
 
 void KSResponseSolver::compute_properties(const std::string& property){
