@@ -1765,6 +1765,36 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the SCF stage, (3,).
 
+.. psivar:: SCF DIPOLE POLARIZABILITY @ xNM
+
+   The isotropic dipole polarizability in atomic units [(e^2 a0^2)/E_h] at the
+   SCF level for a given (x) wavelength, (x) rounded to nearest integer
+   (``INF`` for a static field). See :ref:`sec:scfresponse`.
+
+.. psivar:: SCF DIPOLE POLARIZABILITY TENSOR @ xNM
+
+   The dipole polarizability tensor in atomic units [(e^2 a0^2)/E_h] at the
+   SCF level for a given (x) wavelength, (x) rounded to nearest integer
+   (``INF`` for a static field), (3, 3). See :ref:`sec:scfresponse`.
+
+.. psivar:: SCF DIPOLE HYPERPOLARIZABILITY TENSOR
+
+   The static first hyperpolarizability tensor in atomic units
+   [(e^3 a0^3)/E_h^2] at the Hartree--Fock level, (3, 3, 3), with
+   :math:`\beta_{ijk} = \partial^2 \mu_i / \partial F_j \partial F_k`.
+   See :ref:`sec:scfresponse`.
+
+.. psivar:: SCF SHG HYPERPOLARIZABILITY TENSOR @ xNM
+   SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR @ xNM
+   SCF POCKELS HYPERPOLARIZABILITY TENSOR @ xNM
+
+   The frequency-dependent first hyperpolarizability tensor in atomic units
+   [(e^3 a0^3)/E_h^2] at the Hartree--Fock level, (3, 3, 3), for
+   second-harmonic generation :math:`\beta(-2\omega;\omega,\omega)`,
+   optical rectification :math:`\beta(0;\omega,-\omega)`, or the Pockels
+   effect :math:`\beta(-\omega;\omega,0)`, for a given (x) wavelength of the
+   incident field, (x) rounded to nearest integer. See :ref:`sec:scfresponse`.
+
 .. psivar:: SCF QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the SCF stage, (3, 3).
