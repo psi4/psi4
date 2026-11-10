@@ -128,19 +128,26 @@ void KSResponseSolver::common_init() {
         throw PsiException("scf_response only works with c1 symmetry for now.",__FILE__,__LINE__);
     }
 
+    // restricted vs unrestricted follows the reference orbitals, not the REFERENCE keyword
+    // (a DFT calculation with the default REFERENCE RHF produces an RKS wavefunction)
+    restricted_ = reference_wavefunction_->same_a_b_orbs();
+    std::string reference = options_.get_str("REFERENCE");
+    if ( reference == "ROHF" || reference == "ROKS" || reference == "CUHF" || (restricted_ && nalpha_ != nbeta_) ) {
+        throw PsiException("scf_response: ROHF, ROKS, and CUHF references are not supported; use RHF/RKS or UHF/UKS.",__FILE__,__LINE__);
+    }
+
     // get primary basis:
     std::shared_ptr<BasisSet> primary = reference_wavefunction_->get_basisset("ORBITAL");
 
-    // determine the DFT functional and initialize the potential object
+    // determine the DFT functional and initialize the potential object. The potential is only
+    // needed for the XC kernel; for Hartree-Fock Psi4 builds a polarized placeholder functional
+    // even for RHF, which a restricted (RV) potential would reject.
     psi::scf::HF* scfwfn = (psi::scf::HF*)reference_wavefunction_.get();
     std::shared_ptr<SuperFunctional> functional = scfwfn->functional();
-    potential_ = (std::shared_ptr<VBase>)VBase::build_V(primary,functional,options_,(options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
-
-    // initialize potential object
-    potential_->initialize();
-
-    // apparently compute_Vx wants me to set the density (but this should be done in the uks/rks derived class)
-    //potential_->set_D({Da_,Db_});
+    if ( functional->needs_xc() ) {
+        potential_ = (std::shared_ptr<VBase>)VBase::build_V(primary,functional,options_,(restricted_ ? "RV" : "UV"));
+        potential_->initialize();
+    }
 
     if ( options_.get_str("SCF_TYPE") == "DF" ) {
 

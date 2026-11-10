@@ -1,0 +1,30 @@
+#! Water/cc-pVDZ B3LYP with the default REFERENCE (RHF), i.e. an RKS wavefunction: the scfresponse
+#! module must pick the restricted solver and XC potential from the wavefunction, not from the
+#! REFERENCE keyword. Static alpha is checked against Psi4's built-in CPKS solver.
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  scf_type pk
+  e_convergence 1e-10
+  d_convergence 1e-10
+  solver_convergence 1e-10
+}
+
+XYZ = "XYZ"
+properties('b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
+builtin = {p + q: variable(f"DIPOLE POLARIZABILITY {p}{q}") for p in XYZ for q in XYZ}
+
+set omega [0.0]
+properties('b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
+for i, p in enumerate(XYZ):
+    for q in XYZ[i:]:
+        compare_values(builtin[p + q], variable(f"ALPHA({p}{q})"), 1.e-8, f"static alpha {p}{q} vs built-in CPKS")  #TEST

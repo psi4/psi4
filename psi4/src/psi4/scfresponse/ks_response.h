@@ -72,6 +72,9 @@ class KSResponseSolver: public Wavefunction {
 
     std::shared_ptr<VBase> potential_;
 
+    // restricted (RHF/RKS) or unrestricted (UHF/UKS) reference, taken from the orbitals
+    bool restricted_;
+
     // jk object
     std::shared_ptr<JK> jk_;
 
