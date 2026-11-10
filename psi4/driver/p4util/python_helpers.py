@@ -1072,6 +1072,8 @@ def plump_qcvar(
         reshaper = (3, )
     elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
         reshaper = (3, 3, 3)
+    elif "HYPERPOLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 3, 3)
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         reshaper = tuple([3] * _multipole_order.index(p[0]))
@@ -1117,6 +1119,8 @@ def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
         reshaper = (1, 3)
     elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
         reshaper = (3, 3, 3)
+    elif "HYPERPOLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 9)
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         val = _multipole_compressor(val, _multipole_order.index(p[0]))
@@ -1153,6 +1157,8 @@ def _qcvar_reshape_get(key: str, val: core.Matrix) -> Union[core.Matrix, np.ndar
     elif key.upper().endswith("DIPOLE") or "DIPOLE -" in key.upper():
         reshaper = (3, )
     elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 3, 3)
+    elif "HYPERPOLARIZABILITY TENSOR" in key.upper():
         reshaper = (3, 3, 3)
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]

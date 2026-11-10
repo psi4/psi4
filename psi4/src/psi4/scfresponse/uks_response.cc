@@ -306,6 +306,7 @@ void UKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector
 
     int N = oa*va+ob*vb;
 
+    auto alpha_tensor = std::make_shared<Matrix>("Dipole polarizability tensor", 3, 3);
     std::vector<std::string> dir {"X", "Y", "Z"};
     for (int p = 0; p < 3; p++) {
         for (int q = p; q < 3; q++) {
@@ -326,14 +327,11 @@ void UKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector
             }
             outfile->Printf("    ALPHA(%s%s) %20.12lf\n", dir[p].c_str(), dir[q].c_str(), alpha);
 
-            // add polarizabilities to psi variables
-            std::string label = "ALPHA(";
-            label += dir[p] + dir[q] + ")";
-            std::transform(label.begin(), label.end(), label.begin(),
-                [](unsigned char c) { return std::toupper(c); });
-            Process::environment.globals[label] = alpha;
+            alpha_tensor->set(p, q, alpha);
+            alpha_tensor->set(q, p, alpha);
         }
     }
+    store_polarizability(alpha_tensor, omega);
 }
 
 void UKSResponseSolver::compute_hyperpolarizability(
@@ -390,6 +388,8 @@ void UKSResponseSolver::compute_hyperpolarizability(
         build_Au_Bu(N, 1, &amps_wz[1].data()[p*N], &AY_wz[p*2*nmo_*nmo_]);
     }
 
+    // beta(p, q, r) stored as a 3 x 9 matrix, element (p, 3 q + r)
+    auto beta_tensor = std::make_shared<Matrix>("Dipole hyperpolarizability tensor", 3, 9);
     std::vector<std::string> dir {"X", "Y", "Z"};
     for (int p = 0; p < 3; p++) {
         for (int q = 0; q < 3; q++) {
@@ -680,15 +680,12 @@ void UKSResponseSolver::compute_hyperpolarizability(
                 beta *= -1;
                 outfile->Printf("    BETA(%s%s%s) %20.12lf\n", dir[p].c_str(), dir[q].c_str(), dir[r].c_str(), beta);
 
-                // add hyperpolarizabilities to psi variables
-                std::string label = "BETA(";
-                label += dir[p] + dir[q] + dir[r] + ")";
-                std::transform(label.begin(), label.end(), label.begin(),
-                    [](unsigned char c) { return std::toupper(c); });
-                Process::environment.globals[label.c_str()] = beta;
+                beta_tensor->set(p, 3 * q + r, beta);
             }
         }
     }
+
+    store_hyperpolarizability(beta_tensor, type, omega);
 
     free(AX_wx);
     free(AY_wx);

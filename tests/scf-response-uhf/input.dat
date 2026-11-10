@@ -21,6 +21,40 @@ set {
   omega [0.15]
 }
 
+import numpy as np
+
+XYZ = "XYZ"
+
+
+def wavelength_label(omega):
+    """Wavelength label used in the result names: nearest nm, or INF NM for a static field."""
+    if abs(omega) < 1.e-14:
+        return "INF NM"
+    c = psi4.constants
+    return f"{round(c.c * c.h * 1.e9 / (c.hartree2J * abs(omega)))}NM"
+
+
+def alpha_tensor(omega):
+    """SCF dipole polarizability tensor (3 x 3) at frequency omega (au)."""
+    return np.asarray(variable(f"SCF DIPOLE POLARIZABILITY TENSOR @ {wavelength_label(omega)}"))
+
+
+def beta_tensor(kind, omega=0.0):
+    """SCF first hyperpolarizability tensor (3 x 3 x 3): kind STATIC, SHG, OR, or POCKELS."""
+    names = {"STATIC": "SCF DIPOLE HYPERPOLARIZABILITY TENSOR",
+             "SHG": "SCF SHG HYPERPOLARIZABILITY TENSOR",
+             "OR": "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR",
+             "POCKELS": "SCF POCKELS HYPERPOLARIZABILITY TENSOR"}
+    name = names[kind] if kind == "STATIC" else f"{names[kind]} @ {wavelength_label(omega)}"
+    return np.asarray(variable(name))
+
+
+def element(label, kind, omega):
+    """Tensor element named like ALPHA(XY) or BETA(XXZ) in the plugin's original tests."""
+    idx = tuple(XYZ.index(c) for c in label[label.index('(') + 1:-1])
+    return (alpha_tensor(omega) if label.startswith('ALPHA') else beta_tensor(kind, omega))[idx]
+
+
 ref_vals = {  #TEST
     'pk': {  #TEST
         'POLARIZABILITY': {'ALPHA(XX)': 3.254034947502, 'ALPHA(XY)': 0.0, 'ALPHA(XZ)': 0.0, 'ALPHA(YY)': 7.03927601553, 'ALPHA(YZ)': 0.0, 'ALPHA(ZZ)': 5.260735941938},  #TEST
@@ -47,9 +81,9 @@ for scf_type in ['pk', 'df', 'cd']:
 
     properties('scf', properties=['DIPOLE_POLARIZABILITIES'])
     for label, value in ref_vals[scf_type]['POLARIZABILITY'].items():  #TEST
-        compare_values(value, variable(label), 1e-08, f'{scf_type} {label}')  #TEST
+        compare_values(value, element(label, 'POLARIZABILITY', 0.15), 1e-08, f'{scf_type} {label}')  #TEST
 
     for prop, name in [('SHG', 'SCF_SHG'), ('OR', 'SCF_OPTICAL_RECTIFICATION'), ('POCKELS', 'SCF_POCKELS')]:
         properties('scf', properties=[name])
         for label, value in ref_vals[scf_type][prop].items():  #TEST
-            compare_values(value, variable(label), 1e-08, f'{scf_type} {prop} {label}')  #TEST
+            compare_values(value, element(label, prop, 0.15), 1e-08, f'{scf_type} {prop} {label}')  #TEST
