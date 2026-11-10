@@ -1,0 +1,36 @@
+#! SOSCF with meta-GGA functionals, RKS water and UKS triplet O2: the
+#! second-order iterations need the meta-GGA rotated potential (Vx).
+#! Each SOSCF energy is checked against plain DIIS on the same system,
+#! and SOSCF must need no more iterations than DIIS: second-order steps
+#! built on an incomplete Vx do not converge quadratically.
+
+molecule h2o {
+0 1
+O
+H 1 0.96
+H 1 0.96 2 104.5
+}
+
+molecule o2 {
+0 3
+O
+O 1 1.2
+}
+
+set {
+    basis cc-pvdz
+    scf_type df
+    e_convergence 10
+    d_convergence 8
+}
+
+for name, mol, ref in (("RKS", h2o, "rks"), ("UKS", o2, "uks")):
+    for func in ("tpss", "r2scan", "m06-l"):
+        set_options({"reference": ref, "soscf": False})
+        e_diis = energy(func, molecule=mol)
+        n_diis = variable("SCF ITERATIONS")
+        set_options({"soscf": True})
+        e_so = energy(func, molecule=mol)
+        n_so = variable("SCF ITERATIONS")
+        compare_values(e_diis, e_so, 8, f"{name} {func} SOSCF energy")  #TEST
+        compare_integers(True, n_so <= n_diis, f"{name} {func} SOSCF iterations ({n_so:.0f} vs DIIS {n_diis:.0f})")  #TEST
