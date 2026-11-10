@@ -74,8 +74,8 @@ UKSResponseSolver::~UKSResponseSolver() {
 
 std::vector<std::vector<double>> UKSResponseSolver::first_order_response(std::vector<std::shared_ptr<Matrix>> op_a, std::vector<std::shared_ptr<Matrix>> op_b, double omega) {
 
-    double d_convergence = options_.get_double("D_CONVERGENCE");
-    int maxiter = options_.get_int("MAXITER");
+    double d_convergence = options_.get_double("SOLVER_CONVERGENCE");
+    int maxiter = options_.get_int("SOLVER_MAXITER");
 
     outfile->Printf("\n");
     outfile->Printf("\n");
@@ -93,8 +93,8 @@ std::vector<std::vector<double>> UKSResponseSolver::first_order_response(std::ve
     outfile->Printf("    No. alpha electrons:            %5i\n",nalpha_);
     outfile->Printf("    No. beta electrons:             %5i\n",nbeta_);
     outfile->Printf("    Omega:           %20.12lf\n",omega);
-    outfile->Printf("    d_convergence:             %10.3le\n",d_convergence);
-    outfile->Printf("    maxiter:                        %5i\n",maxiter);
+    outfile->Printf("    solver_convergence:        %10.3le\n",d_convergence);
+    outfile->Printf("    solver_maxiter:                 %5i\n",maxiter);
     outfile->Printf("\n");
 
     // dimension of the problem
@@ -232,9 +232,9 @@ std::vector<std::vector<double>> UKSResponseSolver::first_order_response(std::ve
             }
         }
 
-        err = C_DDOT(N, X_error, 1, X_error, 1);
+        err = C_DDOT(3*N, X_error, 1, X_error, 1);
         if ( have_Y ) {
-            err += C_DDOT(N, Y_error, 1, Y_error, 1);
+            err += C_DDOT(3*N, Y_error, 1, Y_error, 1);
         }
         err = sqrt(err);
 
@@ -251,7 +251,7 @@ std::vector<std::vector<double>> UKSResponseSolver::first_order_response(std::ve
         iter++;
         if ( iter > maxiter ) break;
 
-    }while(err > options_.get_double("D_CONVERGENCE"));
+    }while(err > d_convergence);
 
     outfile->Printf("\n");
     if ( iter > maxiter && options_.get_bool("FAIL_ON_MAXITER") ){
