@@ -82,7 +82,7 @@ std::vector<std::vector<double>> RKSResponseSolver::first_order_response(std::ve
     outfile->Printf( "        *******************************************\n");
     outfile->Printf( "        *                                         *\n");
     outfile->Printf( "        *                                         *\n");
-    outfile->Printf( "        *    Unrestricted TDDFT Response          *\n");
+    outfile->Printf( "        *    Restricted TDDFT Response            *\n");
     outfile->Printf( "        *                                         *\n");
     outfile->Printf( "        *                                         *\n");
     outfile->Printf( "        *******************************************\n");
@@ -267,13 +267,6 @@ std::vector<std::vector<double>> RKSResponseSolver::first_order_response(std::ve
 
 void RKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector<double>Y, double omega){
 
-    outfile->Printf("\n");
-    outfile->Printf("    ==> Polarizability <==\n");
-    outfile->Printf("\n");
-    outfile->Printf("    omega: %12.8lf\n", omega);
-    outfile->Printf("\n");
-    outfile->Printf("\n");
-
     // dimension of the problem
     int oa = nalpha_;
     int va = nmo_ - oa;
@@ -281,7 +274,6 @@ void RKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector
     int N = oa*va;
 
     auto alpha_tensor = std::make_shared<Matrix>("Dipole polarizability tensor", 3, 3);
-    std::vector<std::string> dir {"X", "Y", "Z"};
     for (int p = 0; p < 3; p++) {
         for (int q = p; q < 3; q++) {
             double alpha = 0.0;
@@ -293,7 +285,6 @@ void RKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector
                 }
             }
             alpha *= 2.0;
-            outfile->Printf("    ALPHA(%s%s) %20.12lf\n", dir[p].c_str(), dir[q].c_str(), alpha);
 
             alpha_tensor->set(p, q, alpha);
             alpha_tensor->set(q, p, alpha);
@@ -318,13 +309,6 @@ void RKSResponseSolver::compute_hyperpolarizability(
     int va = nmo_ - oa;
 
     int N = oa*va;
-
-    outfile->Printf("\n");
-    outfile->Printf("    ==>  Hyperpolarizability <==\n");
-    outfile->Printf("\n");
-    outfile->Printf("    type:  %12s\n", type.c_str());
-    outfile->Printf("    omega: %12.8lf\n", omega);
-    outfile->Printf("\n");
 
     int L = 1;
 
@@ -356,7 +340,6 @@ void RKSResponseSolver::compute_hyperpolarizability(
 
     // beta(p, q, r) stored as a 3 x 9 matrix, element (p, 3 q + r)
     auto beta_tensor = std::make_shared<Matrix>("Dipole hyperpolarizability tensor", 3, 9);
-    std::vector<std::string> dir {"X", "Y", "Z"};
     for (int p = 0; p < 3; p++) {
         for (int q = 0; q < 3; q++) {
             for (int r = 0; r < 3; r++) {
@@ -509,7 +492,6 @@ void RKSResponseSolver::compute_hyperpolarizability(
                 }
 
                 beta *= -2;
-                outfile->Printf("    BETA(%s%s%s) %20.12lf\n", dir[p].c_str(), dir[q].c_str(), dir[r].c_str(), beta);
 
                 beta_tensor->set(p, 3 * q + r, beta);
             }

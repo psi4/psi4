@@ -291,13 +291,6 @@ std::vector<std::vector<double>> UKSResponseSolver::first_order_response(std::ve
 
 void UKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector<double>Y, double omega){
 
-    outfile->Printf("\n");
-    outfile->Printf("    ==> Polarizability <==\n");
-    outfile->Printf("\n");
-    outfile->Printf("    omega: %12.8lf\n", omega);
-    outfile->Printf("\n");
-    outfile->Printf("\n");
-
     // dimension of the problem
     int oa = nalpha_;
     int ob = nbeta_;
@@ -307,7 +300,6 @@ void UKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector
     int N = oa*va+ob*vb;
 
     auto alpha_tensor = std::make_shared<Matrix>("Dipole polarizability tensor", 3, 3);
-    std::vector<std::string> dir {"X", "Y", "Z"};
     for (int p = 0; p < 3; p++) {
         for (int q = p; q < 3; q++) {
             double alpha = 0.0;
@@ -325,7 +317,6 @@ void UKSResponseSolver::compute_polarizability(std::vector<double>X, std::vector
                     alpha += mub_[p]->pointer()[i][a+ob] * Y[q*N+ia];
                 }
             }
-            outfile->Printf("    ALPHA(%s%s) %20.12lf\n", dir[p].c_str(), dir[q].c_str(), alpha);
 
             alpha_tensor->set(p, q, alpha);
             alpha_tensor->set(q, p, alpha);
@@ -352,13 +343,6 @@ void UKSResponseSolver::compute_hyperpolarizability(
     int vb = nmo_ - ob;
 
     int N = oa*va+ob*vb;
-
-    outfile->Printf("\n");
-    outfile->Printf("    ==>  Hyperpolarizability <==\n");
-    outfile->Printf("\n");
-    outfile->Printf("    type:  %12s\n", type.c_str());
-    outfile->Printf("    omega: %12.8lf\n", omega);
-    outfile->Printf("\n");
 
     int L = 1;
 
@@ -390,7 +374,6 @@ void UKSResponseSolver::compute_hyperpolarizability(
 
     // beta(p, q, r) stored as a 3 x 9 matrix, element (p, 3 q + r)
     auto beta_tensor = std::make_shared<Matrix>("Dipole hyperpolarizability tensor", 3, 9);
-    std::vector<std::string> dir {"X", "Y", "Z"};
     for (int p = 0; p < 3; p++) {
         for (int q = 0; q < 3; q++) {
             for (int r = 0; r < 3; r++) {
@@ -678,7 +661,6 @@ void UKSResponseSolver::compute_hyperpolarizability(
                 }
 
                 beta *= -1;
-                outfile->Printf("    BETA(%s%s%s) %20.12lf\n", dir[p].c_str(), dir[q].c_str(), dir[r].c_str(), beta);
 
                 beta_tensor->set(p, 3 * q + r, beta);
             }

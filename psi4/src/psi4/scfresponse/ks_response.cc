@@ -222,11 +222,33 @@ static std::string frequency_label(double omega) {
     return std::to_string(std::lround(nm)) + "NM";
 }
 
+// Frequency line for the output file: omega in au and the wavelength in nm.
+static void print_frequency(double omega) {
+    if (std::fabs(omega) < 1.0e-14) {
+        outfile->Printf("    omega = 0 (static field)\n\n");
+    } else {
+        double nm = (pc_c * pc_h * 1e9) / (pc_hartree2J * std::fabs(omega));
+        outfile->Printf("    omega = %.8f au (%.2f nm)\n\n", omega, nm);
+    }
+}
+
 /*- Process::environment.globals["SCF DIPOLE POLARIZABILITY @ xNM"] -*/
 /*- Process::environment.arrays["SCF DIPOLE POLARIZABILITY TENSOR @ xNM"] -*/
 void KSResponseSolver::store_polarizability(SharedMatrix alpha, double omega) {
     std::string at = " @ " + frequency_label(omega);
     double isotropic = alpha->trace() / 3.0;
+
+    const char* xyz = "XYZ";
+    outfile->Printf("\n    ==> Dipole Polarizability <==\n\n");
+    print_frequency(omega);
+    outfile->Printf("    %6s%20s%20s%20s\n", "", "X", "Y", "Z");
+    for (int p = 0; p < 3; p++) {
+        outfile->Printf("    %6c", xyz[p]);
+        for (int q = 0; q < 3; q++) outfile->Printf("%20.12f", alpha->get(p, q));
+        outfile->Printf("\n");
+    }
+    outfile->Printf("\n    Isotropic polarizability: %20.12f au\n", isotropic);
+
     Process::environment.globals["SCF DIPOLE POLARIZABILITY" + at] = isotropic;  // no-autodoc
     Process::environment.arrays["SCF DIPOLE POLARIZABILITY TENSOR" + at] = alpha->clone();  // no-autodoc
     reference_wavefunction_->set_scalar_variable("SCF DIPOLE POLARIZABILITY" + at, isotropic);
@@ -249,6 +271,24 @@ void KSResponseSolver::store_hyperpolarizability(SharedMatrix beta, const std::s
         key = "SCF POCKELS HYPERPOLARIZABILITY TENSOR @ " + frequency_label(omega);
     } else {
         throw PsiException("SCF response: unknown hyperpolarizability type " + type, __FILE__, __LINE__);
+    }
+
+    std::string title = type == "STATIC" ? "static, beta(0;0,0)"
+                      : type == "SHG"    ? "second-harmonic generation, beta(-2w;w,w)"
+                      : type == "OR"     ? "optical rectification, beta(0;w,-w)"
+                                         : "Pockels effect, beta(-w;w,0)";
+    const char* xyz = "XYZ";
+    outfile->Printf("\n    ==> First Hyperpolarizability: %s <==\n\n", title.c_str());
+    print_frequency(omega);
+    outfile->Printf("    beta(i,j,k); i is the induced dipole, j and k the field directions\n\n");
+    for (int p = 0; p < 3; p++) {
+        outfile->Printf("    i = %c %20s%20s%20s\n", xyz[p], "k = X", "k = Y", "k = Z");
+        for (int q = 0; q < 3; q++) {
+            outfile->Printf("    j = %c ", xyz[q]);
+            for (int r = 0; r < 3; r++) outfile->Printf("%20.12f", beta->get(p, 3 * q + r));
+            outfile->Printf("\n");
+        }
+        outfile->Printf("\n");
     }
     Process::environment.arrays[key] = beta->clone();  // no-autodoc
     reference_wavefunction_->set_array_variable(key, beta->clone());
