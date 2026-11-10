@@ -1,0 +1,42 @@
+#! RKS-PBE/cc-pVDZ water at omega = 0.15 au: dipole polarizability
+#! for SCF_TYPE PK, DF, and CD. Ported from the scf_response plugin's own tests
+#! (edeprince3/scf_response, tests/rks_{pk,df,cd}.in); reference values are the plugin's.
+#! The plugin's DFT reference values were generated with the default (1e-6) convergence,
+#! so they are compared to 1e-6 here while the calculation itself is converged tightly.
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  reference rks
+  e_convergence 1e-10
+  d_convergence 1e-10
+  cholesky_tolerance 1e-12
+  omega [0.15]
+}
+
+ref_vals = {  #TEST
+    'pk': {  #TEST
+        'POLARIZABILITY': {'ALPHA(XX)': 3.74173021928, 'ALPHA(XY)': -0.0, 'ALPHA(XZ)': -0.0, 'ALPHA(YY)': 7.520054653505, 'ALPHA(YZ)': 0.0, 'ALPHA(ZZ)': 5.886831735888},  #TEST
+    },  #TEST
+    'df': {  #TEST
+        'POLARIZABILITY': {'ALPHA(XX)': 3.741968752207, 'ALPHA(XY)': 0.0, 'ALPHA(XZ)': -0.0, 'ALPHA(YY)': 7.519914828766, 'ALPHA(YZ)': -2e-12, 'ALPHA(ZZ)': 5.887024898072},  #TEST
+    },  #TEST
+    'cd': {  #TEST
+        'POLARIZABILITY': {'ALPHA(XX)': 3.74173021928, 'ALPHA(XY)': -0.0, 'ALPHA(XZ)': -0.0, 'ALPHA(YY)': 7.520054653505, 'ALPHA(YZ)': 0.0, 'ALPHA(ZZ)': 5.886831735888},  #TEST
+    },  #TEST
+}  #TEST
+
+for scf_type in ['pk', 'df', 'cd']:
+    set_options({'scf_type': scf_type})
+
+    properties('pbe', properties=['DIPOLE_POLARIZABILITIES'])
+    for label, value in ref_vals[scf_type]['POLARIZABILITY'].items():  #TEST
+        compare_values(value, variable(label), 1e-06, f'{scf_type} {label}')  #TEST

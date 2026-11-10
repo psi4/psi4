@@ -1,27 +1,29 @@
-/* 
- *  @BEGIN LICENSE
- * 
- *  Hilbert: a space for quantum chemistry plugins to Psi4 
- * 
- *  Copyright (c) 2020 by its authors (LICENSE).
- * 
- *  The copyrights for code used from other parties are included in
- *  the corresponding files.
- * 
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- * 
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- * 
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see http://www.gnu.org/licenses/.
- * 
- *  @END LICENSE
+/*
+ * @BEGIN LICENSE
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2026 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This file is part of Psi4.
+ *
+ * Psi4 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * Psi4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along
+ * with Psi4; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
  */
 
 #include <psi4/psi4-dec.h>
@@ -198,7 +200,7 @@ void KSResponseSolver::common_init() {
     }
 }
 
-void KSResponseSolver::compute_properties(){
+void KSResponseSolver::compute_properties(const std::string& property){
 
     int n_omega = 0;
     std::vector<double> omega;
@@ -247,12 +249,12 @@ void KSResponseSolver::compute_properties(){
         omega_b[i]->scale(-1);
     }
     
-    if ( options_.get_str("PROPERTY") == "POLARIZABILITY" ) {
+    if ( property == "POLARIZABILITY" ) {
         for (auto my_omega: omega) {
             std::vector<std::vector<double>> amps = first_order_response(omega_a, omega_b, my_omega);
             compute_polarizability(amps[0], amps[1], my_omega);
         }
-    }else if ( options_.get_str("PROPERTY") == "HYPERPOLARIZABILITY" ) {
+    }else if ( property == "HYPERPOLARIZABILITY" ) {
         for (auto my_omega: omega) {
             if (fabs(my_omega) > 1e-14) {
                 throw PsiException("For frequency-dependent hyperpolarizabilities, use PROPERTY = SHG, OR, or POCKELS", __FILE__, __LINE__);
@@ -261,7 +263,7 @@ void KSResponseSolver::compute_properties(){
             compute_polarizability(amps[0], amps[1], my_omega);
             compute_hyperpolarizability(amps, amps, amps, "STATIC", my_omega);
         }
-    }else if ( options_.get_str("PROPERTY") == "SHG" ) {
+    }else if ( property == "SHG" ) {
         for (auto my_omega: omega) {
             std::vector<std::vector<double>> amps_pw = first_order_response(omega_a, omega_b, my_omega);
             compute_polarizability(amps_pw[0], amps_pw[1], my_omega);
@@ -269,7 +271,7 @@ void KSResponseSolver::compute_properties(){
             compute_polarizability(amps_mtw[0], amps_mtw[1], -2 * my_omega);
             compute_hyperpolarizability(amps_mtw, amps_pw, amps_pw, "SHG", my_omega);
         }
-    }else if ( options_.get_str("PROPERTY") == "OR" ) {
+    }else if ( property == "OR" ) {
         for (auto my_omega: omega) {
             std::vector<std::vector<double>> amps_0 = first_order_response(omega_a, omega_b, 0.0);
             compute_polarizability(amps_0[0], amps_0[1], 0.0);
@@ -278,7 +280,7 @@ void KSResponseSolver::compute_properties(){
             std::vector<std::vector<double>> amps_mw = {amps_pw[1], amps_pw[0]};
             compute_hyperpolarizability(amps_0, amps_pw, amps_mw, "OR", my_omega);
         }
-    }else if ( options_.get_str("PROPERTY") == "POCKELS" ) {
+    }else if ( property == "POCKELS" ) {
         for (auto my_omega: omega) {
             std::vector<std::vector<double>> amps_0 = first_order_response(omega_a, omega_b, 0.0);
             compute_polarizability(amps_0[0], amps_0[1], 0.0);
@@ -287,7 +289,7 @@ void KSResponseSolver::compute_properties(){
             std::vector<std::vector<double>> amps_mw = {amps_pw[1], amps_pw[0]};
             compute_hyperpolarizability(amps_mw, amps_pw, amps_0, "POCKELS", my_omega);
         }
-    }else if ( options_.get_str("PROPERTY") == "ALL" ) {
+    }else if ( property == "ALL" ) {
         for (auto my_omega: omega) {
             if (fabs(my_omega) < 1e-14) {
                 std::vector<std::vector<double>> amps = first_order_response(omega_a, omega_b, my_omega);
