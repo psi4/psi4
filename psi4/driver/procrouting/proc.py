@@ -3341,16 +3341,26 @@ def run_scf_property(name, **kwargs):
     properties = kwargs.pop('properties')
 
     # What response do we need?
-    response_list_vals = list(response.scf_response.property_dicts)
+    scfresponse_types = response.scf_response.scfresponse_property_types
+    response_list_vals = list(response.scf_response.property_dicts) + list(scfresponse_types)
     oeprop_list_vals = core.OEProp.valid_methods
+
+    # With frequencies given through OMEGA, dipole polarizabilities are frequency dependent
+    # and are computed by the scfresponse module instead of the static CPSCF solver.
+    dynamic_polarizability = core.has_global_option_changed("OMEGA") and len(core.get_global_option("OMEGA")) > 0
 
     oe_properties = []
     linear_response = []
+    scfresponse_properties = []
     unknown_property = []
     for prop in properties:
 
         prop = prop.upper()
-        if prop in response_list_vals:
+        if prop in scfresponse_types:
+            scfresponse_properties.append(scfresponse_types[prop])
+        elif prop == "DIPOLE_POLARIZABILITIES" and dynamic_polarizability:
+            scfresponse_properties.append("POLARIZABILITY")
+        elif prop in response_list_vals:
             linear_response.append(prop)
         elif (prop in oeprop_list_vals) or ("MULTIPOLE(" in prop):
             oe_properties.append(prop)
@@ -3400,6 +3410,10 @@ def run_scf_property(name, **kwargs):
                                                             max_iter = core.get_global_option("SOLVER_MAXITER"),
                                                             print_lvl = (core.get_global_option("PRINT") + 1))
         optstash_jk.restore()
+
+    # Run frequency-dependent polarizabilities and hyperpolarizabilities
+    for prop in scfresponse_properties:
+        core.scfresponse(scf_wfn, prop)
 
     core.tstop()
     optstash.restore()

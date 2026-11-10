@@ -2620,6 +2620,19 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do compute one-particle density matrix? -*/
         options.add_bool("ONEPDM", false);
     }
+    if (name == "SCFRESPONSE" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Computes SCF (Hartree--Fock and Kohn--Sham) frequency-dependent dipole
+            polarizabilities and Hartree--Fock first hyperpolarizabilities (static, second-harmonic
+            generation, optical rectification, and Pockels effect). Run through
+            ``properties('scf', properties=[...])``. -*/
+
+        /*- Array that specifies the desired frequencies of the incident
+        radiation field. If only one element is
+        given, the units will be assumed to be atomic units.  If more
+        than one element is given, then the units must be specified as the final
+        element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
+        options.add("OMEGA", new ArrayType());
+    }
     if (name == "DFEP2" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs density-fitted EP2 computations for RHF reference wavefunctions. -*/
 

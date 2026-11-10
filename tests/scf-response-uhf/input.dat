@@ -1,0 +1,54 @@
+#! UHF/cc-pVDZ water at omega = 0.15 au: dipole polarizability and SHG, optical rectification, and Pockels first hyperpolarizabilities
+#! for SCF_TYPE PK, DF, and CD. Ported from the scf_response plugin's own tests
+#! (edeprince3/scf_response, tests/uhf_{pk,df,cd}.in); reference values are the plugin's.
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  reference uhf
+  e_convergence 1e-10
+  d_convergence 1e-10
+  cholesky_tolerance 1e-12
+  omega [0.15]
+}
+
+ref_vals = {  #TEST
+    'pk': {  #TEST
+        'POLARIZABILITY': {'ALPHA(XX)': 3.254034947502, 'ALPHA(XY)': 0.0, 'ALPHA(XZ)': 0.0, 'ALPHA(YY)': 7.03927601553, 'ALPHA(YZ)': 0.0, 'ALPHA(ZZ)': 5.260735941938},  #TEST
+        'SHG': {'BETA(XXX)': 0.0, 'BETA(XXY)': -1e-12, 'BETA(XXZ)': 18.027922079474, 'BETA(XYX)': -1e-12, 'BETA(XYY)': 0.0, 'BETA(XYZ)': -0.0, 'BETA(XZX)': 18.027922079474, 'BETA(XZY)': -0.0, 'BETA(XZZ)': 0.0, 'BETA(YXX)': 0.0, 'BETA(YXY)': 0.0, 'BETA(YXZ)': -0.0, 'BETA(YYX)': 0.0, 'BETA(YYY)': -2e-12, 'BETA(YYZ)': 27.319249419335, 'BETA(YZX)': -0.0, 'BETA(YZY)': 27.319249419335, 'BETA(YZZ)': -1e-12, 'BETA(ZXX)': 3.018910729284, 'BETA(ZXY)': -0.0, 'BETA(ZXZ)': 0.0, 'BETA(ZYX)': -0.0, 'BETA(ZYY)': 30.1002367181, 'BETA(ZYZ)': -1e-12, 'BETA(ZZX)': 0.0, 'BETA(ZZY)': -1e-12, 'BETA(ZZZ)': 22.230676741206},  #TEST
+        'OR': {'BETA(XXX)': 0.0, 'BETA(XXY)': 0.0, 'BETA(XXZ)': 2.899408570996, 'BETA(XYX)': 0.0, 'BETA(XYY)': 0.0, 'BETA(XYZ)': -0.0, 'BETA(XZX)': 2.899408570996, 'BETA(XZY)': -0.0, 'BETA(XZZ)': 0.0, 'BETA(YXX)': 0.0, 'BETA(YXY)': 0.0, 'BETA(YXZ)': -0.0, 'BETA(YYX)': 0.0, 'BETA(YYY)': -1e-12, 'BETA(YYZ)': 19.155031271386, 'BETA(YZX)': -0.0, 'BETA(YZY)': 19.155031271386, 'BETA(YZZ)': -0.0, 'BETA(ZXX)': 4.328567440858, 'BETA(ZXY)': -0.0, 'BETA(ZXZ)': 0.0, 'BETA(ZYX)': -0.0, 'BETA(ZYY)': 18.786513667611, 'BETA(ZYZ)': -0.0, 'BETA(ZZX)': 0.0, 'BETA(ZZY)': -0.0, 'BETA(ZZZ)': 12.699179630195},  #TEST
+        'POCKELS': {'BETA(XXX)': 0.0, 'BETA(XXY)': 0.0, 'BETA(XXZ)': 4.328567440858, 'BETA(XYX)': 0.0, 'BETA(XYY)': 0.0, 'BETA(XYZ)': -0.0, 'BETA(XZX)': 2.899408570996, 'BETA(XZY)': -0.0, 'BETA(XZZ)': 0.0, 'BETA(YXX)': 0.0, 'BETA(YXY)': 0.0, 'BETA(YXZ)': -0.0, 'BETA(YYX)': 0.0, 'BETA(YYY)': -1e-12, 'BETA(YYZ)': 18.786513667611, 'BETA(YZX)': -0.0, 'BETA(YZY)': 19.155031271386, 'BETA(YZZ)': -0.0, 'BETA(ZXX)': 2.899408570996, 'BETA(ZXY)': -0.0, 'BETA(ZXZ)': 0.0, 'BETA(ZYX)': -0.0, 'BETA(ZYY)': 19.155031271386, 'BETA(ZYZ)': -0.0, 'BETA(ZZX)': 0.0, 'BETA(ZZY)': -0.0, 'BETA(ZZZ)': 12.699179630195},  #TEST
+    },  #TEST
+    'df': {  #TEST
+        'POLARIZABILITY': {'ALPHA(XX)': 3.253823917921, 'ALPHA(XY)': 0.0, 'ALPHA(XZ)': -0.0, 'ALPHA(YY)': 7.038845240481, 'ALPHA(YZ)': -1e-12, 'ALPHA(ZZ)': 5.260454069225},  #TEST
+        'SHG': {'BETA(XXX)': -0.0, 'BETA(XXY)': -5e-12, 'BETA(XXZ)': 18.037455091851, 'BETA(XYX)': -5e-12, 'BETA(XYY)': -0.0, 'BETA(XYZ)': 0.0, 'BETA(XZX)': 18.037455091851, 'BETA(XZY)': 0.0, 'BETA(XZZ)': -0.0, 'BETA(YXX)': -0.0, 'BETA(YXY)': -0.0, 'BETA(YXZ)': 0.0, 'BETA(YYX)': -0.0, 'BETA(YYY)': -1.8e-11, 'BETA(YYZ)': 27.321897161181, 'BETA(YZX)': 0.0, 'BETA(YZY)': 27.321897161181, 'BETA(YZZ)': -1.3e-11, 'BETA(ZXX)': 3.019789827498, 'BETA(ZXY)': 0.0, 'BETA(ZXZ)': -0.0, 'BETA(ZYX)': 0.0, 'BETA(ZYY)': 30.104479294693, 'BETA(ZYZ)': -1.4e-11, 'BETA(ZZX)': -0.0, 'BETA(ZZY)': -1.4e-11, 'BETA(ZZZ)': 22.236226937632},  #TEST
+        'OR': {'BETA(XXX)': -0.0, 'BETA(XXY)': -0.0, 'BETA(XXZ)': 2.900064488483, 'BETA(XYX)': -0.0, 'BETA(XYY)': -0.0, 'BETA(XYZ)': 0.0, 'BETA(XZX)': 2.900064488483, 'BETA(XZY)': 0.0, 'BETA(XZZ)': -0.0, 'BETA(YXX)': -1e-12, 'BETA(YXY)': -0.0, 'BETA(YXZ)': 0.0, 'BETA(YYX)': -0.0, 'BETA(YYY)': -1.1e-11, 'BETA(YYZ)': 19.157017728109, 'BETA(YZX)': 0.0, 'BETA(YZY)': 19.157017728109, 'BETA(YZZ)': -8e-12, 'BETA(ZXX)': 4.329696364628, 'BETA(ZXY)': 0.0, 'BETA(ZXZ)': -0.0, 'BETA(ZYX)': 0.0, 'BETA(ZYY)': 18.788257246409, 'BETA(ZYZ)': -8e-12, 'BETA(ZZX)': -0.0, 'BETA(ZZY)': -8e-12, 'BETA(ZZZ)': 12.701418398585},  #TEST
+        'POCKELS': {'BETA(XXX)': -0.0, 'BETA(XXY)': -1e-12, 'BETA(XXZ)': 4.329696364628, 'BETA(XYX)': -0.0, 'BETA(XYY)': -0.0, 'BETA(XYZ)': 0.0, 'BETA(XZX)': 2.900064488483, 'BETA(XZY)': 0.0, 'BETA(XZZ)': -0.0, 'BETA(YXX)': -0.0, 'BETA(YXY)': -0.0, 'BETA(YXZ)': 0.0, 'BETA(YYX)': -0.0, 'BETA(YYY)': -1.1e-11, 'BETA(YYZ)': 18.788257246409, 'BETA(YZX)': 0.0, 'BETA(YZY)': 19.157017728109, 'BETA(YZZ)': -8e-12, 'BETA(ZXX)': 2.900064488483, 'BETA(ZXY)': 0.0, 'BETA(ZXZ)': -0.0, 'BETA(ZYX)': 0.0, 'BETA(ZYY)': 19.157017728109, 'BETA(ZYZ)': -8e-12, 'BETA(ZZX)': -0.0, 'BETA(ZZY)': -8e-12, 'BETA(ZZZ)': 12.701418398585},  #TEST
+    },  #TEST
+    'cd': {  #TEST
+        'POLARIZABILITY': {'ALPHA(XX)': 3.254034947502, 'ALPHA(XY)': 0.0, 'ALPHA(XZ)': 0.0, 'ALPHA(YY)': 7.03927601553, 'ALPHA(YZ)': 0.0, 'ALPHA(ZZ)': 5.260735941938},  #TEST
+        'SHG': {'BETA(XXX)': 0.0, 'BETA(XXY)': -1e-12, 'BETA(XXZ)': 18.027922079474, 'BETA(XYX)': -1e-12, 'BETA(XYY)': 0.0, 'BETA(XYZ)': -0.0, 'BETA(XZX)': 18.027922079474, 'BETA(XZY)': -0.0, 'BETA(XZZ)': 0.0, 'BETA(YXX)': 0.0, 'BETA(YXY)': 0.0, 'BETA(YXZ)': -0.0, 'BETA(YYX)': 0.0, 'BETA(YYY)': -2e-12, 'BETA(YYZ)': 27.319249419335, 'BETA(YZX)': -0.0, 'BETA(YZY)': 27.319249419335, 'BETA(YZZ)': -1e-12, 'BETA(ZXX)': 3.018910729284, 'BETA(ZXY)': -0.0, 'BETA(ZXZ)': 0.0, 'BETA(ZYX)': -0.0, 'BETA(ZYY)': 30.1002367181, 'BETA(ZYZ)': -1e-12, 'BETA(ZZX)': 0.0, 'BETA(ZZY)': -1e-12, 'BETA(ZZZ)': 22.230676741206},  #TEST
+        'OR': {'BETA(XXX)': 0.0, 'BETA(XXY)': 0.0, 'BETA(XXZ)': 2.899408570996, 'BETA(XYX)': 0.0, 'BETA(XYY)': 0.0, 'BETA(XYZ)': -0.0, 'BETA(XZX)': 2.899408570996, 'BETA(XZY)': -0.0, 'BETA(XZZ)': 0.0, 'BETA(YXX)': 0.0, 'BETA(YXY)': 0.0, 'BETA(YXZ)': -0.0, 'BETA(YYX)': 0.0, 'BETA(YYY)': -1e-12, 'BETA(YYZ)': 19.155031271386, 'BETA(YZX)': -0.0, 'BETA(YZY)': 19.155031271386, 'BETA(YZZ)': -0.0, 'BETA(ZXX)': 4.328567440858, 'BETA(ZXY)': -0.0, 'BETA(ZXZ)': 0.0, 'BETA(ZYX)': -0.0, 'BETA(ZYY)': 18.786513667611, 'BETA(ZYZ)': -0.0, 'BETA(ZZX)': 0.0, 'BETA(ZZY)': -0.0, 'BETA(ZZZ)': 12.699179630195},  #TEST
+        'POCKELS': {'BETA(XXX)': 0.0, 'BETA(XXY)': 0.0, 'BETA(XXZ)': 4.328567440858, 'BETA(XYX)': 0.0, 'BETA(XYY)': 0.0, 'BETA(XYZ)': -0.0, 'BETA(XZX)': 2.899408570996, 'BETA(XZY)': -0.0, 'BETA(XZZ)': 0.0, 'BETA(YXX)': 0.0, 'BETA(YXY)': 0.0, 'BETA(YXZ)': -0.0, 'BETA(YYX)': 0.0, 'BETA(YYY)': -1e-12, 'BETA(YYZ)': 18.786513667611, 'BETA(YZX)': -0.0, 'BETA(YZY)': 19.155031271386, 'BETA(YZZ)': -0.0, 'BETA(ZXX)': 2.899408570996, 'BETA(ZXY)': -0.0, 'BETA(ZXZ)': 0.0, 'BETA(ZYX)': -0.0, 'BETA(ZYY)': 19.155031271386, 'BETA(ZYZ)': -0.0, 'BETA(ZZX)': 0.0, 'BETA(ZZY)': -0.0, 'BETA(ZZZ)': 12.699179630195},  #TEST
+    },  #TEST
+}  #TEST
+
+for scf_type in ['pk', 'df', 'cd']:
+    set_options({'scf_type': scf_type})
+
+    properties('scf', properties=['DIPOLE_POLARIZABILITIES'])
+    for label, value in ref_vals[scf_type]['POLARIZABILITY'].items():  #TEST
+        compare_values(value, variable(label), 1e-08, f'{scf_type} {label}')  #TEST
+
+    for prop, name in [('SHG', 'SCF_SHG'), ('OR', 'SCF_OPTICAL_RECTIFICATION'), ('POCKELS', 'SCF_POCKELS')]:
+        properties('scf', properties=[name])
+        for label, value in ref_vals[scf_type][prop].items():  #TEST
+            compare_values(value, variable(label), 1e-08, f'{scf_type} {prop} {label}')  #TEST
