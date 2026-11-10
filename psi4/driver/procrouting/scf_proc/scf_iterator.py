@@ -278,8 +278,13 @@ _OTR_NEEDS_POLISH = object()
 def _otr_shortfall(self, e_conv, d_conv):
     """How far OpenTrustRegion finished from this SCF's thresholds, as text and as orders."""
     _, grad, dE = self.otr_outcome_
+    # A run of a single macro-iteration had no earlier point to measure the energy change
+    # against, and reports NaN rather than a number for it.
+    dE_text = "unmeasured" if math.isnan(dE) else f"{dE:.2e}"
     text = (f"orbital gradient {grad:.2e} against D_CONVERGENCE {d_conv:.2e}, last energy change "
-            f"{dE:.2e} against E_CONVERGENCE {e_conv:.2e}")
+            f"{dE_text} against E_CONVERGENCE {e_conv:.2e}")
+    if math.isnan(dE):
+        return text, math.nan
     # Whichever criterion is further off sets how much work is left: a tight D_CONVERGENCE
     # against a loose E_CONVERGENCE leaves the gradient to travel, and the reverse happens too.
     e_orders = math.log10(dE / e_conv) if (dE > 0.0 and e_conv > 0.0) else 0.0
@@ -296,6 +301,10 @@ def _otr_polish_budget(self, e_conv, d_conv):
     can cut this shorter.
     """
     _, orders = _otr_shortfall(self, e_conv, d_conv)
+    # Nothing measured how far the energy still has to travel, so don't let its absence cut
+    # the budget to what the gradient alone asks for; assume the worst and allow all of it.
+    if math.isnan(orders):
+        return _OTR_POLISH_MAX_ITER
     return min(_OTR_POLISH_MAX_ITER, max(3, 3 * math.ceil(orders)))
 
 

@@ -34,6 +34,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -1663,10 +1664,12 @@ int HF::opentrustregion_scf(double e_conv, double d_conv, bool restart) {
     // whether or not the requested thresholds were met.
     // A run that took a single macro iteration has no second point to measure the energy
     // change against -- except on a restart, where the previous run's final energy is the
-    // baseline. Without either, the energy criterion is unmeasured rather than met.
+    // baseline. Without either it is unmeasured, reported as NaN rather than as a number:
+    // measuring against a zeroed previous energy made |dE| come out as the total energy.
     const bool have_delta = otr_has_prev_func_ || otr_restart_;
     const double baseline = otr_has_prev_func_ ? otr_prev_func_ : otr_restart_prev_func_;
-    const double e_delta = have_delta ? std::fabs(otr_curr_func_ - baseline) : 0.0;
+    const double e_delta = have_delta ? std::fabs(otr_curr_func_ - baseline)
+                                      : std::numeric_limits<double>::quiet_NaN();
     const bool energy_met = have_delta && e_delta < e_conv;
     const bool gradient_met = otr_grad_rms_ < d_conv;
 
@@ -1678,13 +1681,19 @@ int HF::opentrustregion_scf(double e_conv, double d_conv, bool restart) {
     otr_final_energy_delta_ = e_delta;
     otr_stopped_short_ = state.max_precision_reached && !energy_met && !gradient_met;
     if (state.max_precision_reached && !(energy_met && gradient_met)) {
+        char e_text[32];
+        if (have_delta) {
+            std::snprintf(e_text, sizeof(e_text), "%.2e", e_delta);
+        } else {
+            std::snprintf(e_text, sizeof(e_text), "unmeasured");
+        }
         outfile->Printf(
             "    Note: OpenTrustRegion stopped at its precision floor, short of this SCF's\n"
-            "          convergence test: |dE| %.2e against E_CONVERGENCE %.2e, orbital gradient\n"
+            "          convergence test: |dE| %s against E_CONVERGENCE %.2e, orbital gradient\n"
             "          %.2e against D_CONVERGENCE %.2e. It judged a further step unable to\n"
             "          lower the energy by more than the objective function resolves, so\n"
             "          these orbitals are as converged as it can make them.\n",
-            e_delta, e_conv, otr_grad_rms_, d_conv);
+            e_text, e_conv, otr_grad_rms_, d_conv);
     }
 
     // Every OTR failure mode means the orbs are unconverged. Hand the code back so the
