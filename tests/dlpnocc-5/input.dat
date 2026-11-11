@@ -31,11 +31,12 @@ set scf_type df
 set mp2_type df
 set cc_type  df
 set nat_orbs False
-# Match the tighter SCF reference used automatically by post-SCF energy calls;
-# the explicit C2v SCF below otherwise retains the looser standalone default.
-set e_convergence 1.0e-8
-set d_convergence 1.0e-8
-set r_convergence 1.0e-8
+# Converge both SCF (energy and density) and DLPNO (energy and residuals)
+# to 1.0e-9, one order tighter than the 1.0e-8 Eh threading comparisons.
+# Apply these thresholds to the standalone C2v SCF reference as well.
+set e_convergence 1.0e-9
+set d_convergence 1.0e-9
+set r_convergence 1.0e-9
 # DLPNO-CCSDT and higher ignore PNO_CONVERGENCE and always start from the same
 # default thresholds. A deliberately LOOSE preset here must not change the
 # reference energies below.
@@ -62,8 +63,9 @@ clean()
 # Multithreading regression. The integral transforms, PNO construction, LMP2, LCCSD,
 # (T), CCSDT, and (Q) kernels are all OpenMP-parallel, so repeat the identical in-core
 # calculation on 4 threads: a race condition shows up as a disagreement with the serial
-# stage energies. The 1.0e-8 tolerance matches E_CONVERGENCE/R_CONVERGENCE. CI runners
-# with fewer than 4 cores are oversubscribed, which only varies thread interleaving more.
+# stage energies. Keep the comparison tolerance at 1.0e-8 Eh while converging
+# SCF and CC to 1.0e-9, so stopping-error differences have some numerical margin.
+# CI runners with fewer than 4 cores are oversubscribed, varying thread interleaving.
 print('   Testing serial/4-thread in-core DLPNO-CCSDT(Q) equivalence ...')
 set_num_threads(4)
 compare_integers(4, get_num_threads(), 'in-core ccsdt(q) runs on 4 threads')  #TEST
