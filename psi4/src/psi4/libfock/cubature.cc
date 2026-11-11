@@ -40,6 +40,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -2077,6 +2078,7 @@ class RadialGridMgr {
     static const char *SchemeName(int which) { return radialschemes[which].name; }
     static int MuraKnowlesHack(int scheme, int Z);
     static void makeRadialGrid(int n, int whichScheme, double r[], double w[], double Rparam);
+    static bool isOutermostFirst(int n, const double r[]);
 };
 
 void RadialGridMgr::getTrapezoidalRoots(int n, double r[], double w[]) {
@@ -2434,7 +2436,7 @@ int RadialGridMgr::MuraKnowlesHack(int scheme, int Z) {
 }
 
 void RadialGridMgr::makeRadialGrid(int n, int whichScheme, double r[], double w[], double Rparam) {
-    assert(whichScheme >= 0 && (size_t)whichScheme < sizeof(radialschemes[0]));
+    assert(whichScheme >= 0 && (size_t)whichScheme < sizeof(radialschemes) / sizeof(radialschemes[0]));
 
     // Get the polynomial roots in the "nice" interval.
     radialschemes[whichScheme].getRoots(n, r, w);
@@ -2457,6 +2459,18 @@ void RadialGridMgr::makeRadialGrid(int n, int whichScheme, double r[], double w[
         r[i] *= Rparam;
         w[i] *= Rparam3;
     }
+}
+
+// Radial schemes don't agree on point ordering: TREUTLER and MULTIEXP emit the outermost shell first, while
+// BECKE, EM, and MURA emit the innermost first. Each maps sorted roots through a monotonic function, so a grid
+// is always strictly monotonic; anything else indicates a broken scheme. Returns true if r is decreasing.
+bool RadialGridMgr::isOutermostFirst(int n, const double r[]) {
+    const bool desc = n > 1 && r[0] > r[n - 1];
+    for (int i = 1; i < n; i++) {
+        if (desc ? !(r[i] < r[i - 1]) : !(r[i] > r[i - 1]))
+            throw PSIEXCEPTION("RadialGridMgr: radial grid points are not strictly monotonic.");
+    }
+    return desc;
 }
 
 // StandardGridMgr is used to build the SG-0 and SG-1 grids.
@@ -2547,6 +2561,15 @@ const MassPoint *StandardGridMgr::GetSG1grid(int Z) {
 void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, int radscheme, MassPoint *grid_out) {
     std::vector<double> r(spec.nrad), wr(spec.nrad);
     RadialGridMgr::makeRadialGrid(spec.nrad, radscheme, r.data(), wr.data(), spec.rparam);
+
+    // The PruneGroup tables (SG-0: Chien & Gill Table 1; SG-1: Gill, Johnson & Pople) list angular
+    // point counts from the nucleus outward, but radial schemes don't agree on ordering: e.g., MultiExp
+    // (r = -ln x) yields decreasing r while Euler-Maclaurin yields increasing r. Put the radii in
+    // ascending order so that the first group always lands on the innermost shells.
+    if (RadialGridMgr::isOutermostFirst(spec.nrad, r.data())) {
+        std::reverse(r.begin(), r.end());
+        std::reverse(wr.begin(), wr.end());
+    }
 #ifdef USING_BrianQC
     if (brianStoreGridDataInto != nullptr) {
         int groupCount = 0;
@@ -3653,7 +3676,7 @@ int RadialPruneMgr::GetPrunedNumAngPts(double rho) {
 }
 
 int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
-    // this assumes r goes from farthest to closest
+    // `ri` is the shell's rank counted from the outermost shell (0), independent of radial scheme ordering
     // prunes grid based on 3 different regions.
     // no pruning for heavy atoms
     // Turbomole appears to use BS radii in Angstrom. The smaller sphere appears
@@ -3686,7 +3709,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
 }
 
 int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
-    // this assumes r goes from farthest to closest
+    // `ri` is the shell's rank counted from the outermost shell (0), independent of radial scheme ordering
     // prunes grid based on (in principle) 4 different regions.
     // robust version of Treutler pruning.
     if (Z >= 36) {
@@ -3780,13 +3803,19 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             std::vector<std::shared_ptr<SphericalGrid>> spheres;
             spherical_grids_[A] = spheres;
 
+            // Region pruning assigns angular grids by a shell's rank counted from the outermost shell, but
+            // radial schemes differ in ordering (TREUTLER/MULTIEXP: outermost first; BECKE/EM/MURA: innermost
+            // first). Rank by radius so pruning is independent of the scheme's point ordering.
+            const bool outermostFirst = RadialGridMgr::isOutermostFirst(opt.nradpts, r.data());
+
             for (int i = 0; i < opt.nradpts; i++) {
+                const int rank_from_outside = outermostFirst ? i : opt.nradpts - 1 - i;
                 int numAngPts = 0;
                 if (opt.prunetype == "REGION") {
                     if (opt.prunescheme == "TREUTLER") {
-                        numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);
+                        numAngPts = prune.TreutlerShellPruning(rank_from_outside, Z, opt.nradpts);
                     } else if (opt.prunescheme == "ROBUST") {
-                        numAngPts = prune.ShellPruning(i, Z, opt.nradpts);
+                        numAngPts = prune.ShellPruning(rank_from_outside, Z, opt.nradpts);
                     }
                 } else if (opt.prunetype == "FUNCTION" || opt.prunescheme == "NONE") {
                     numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
