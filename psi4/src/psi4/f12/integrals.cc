@@ -347,6 +347,11 @@ void MP2F12::form_oeints(einsums::Tensor<double, 2>* h) {
             auto C2 = bs_[o2].C();
             auto t_ao = mints->ao_kinetic(bs1, bs2);
             auto v_ao = mints->ao_potential(bs1, bs2);
+#ifdef USING_ecpint
+            auto e_ao = mints->ao_ecp(bs1, bs2);
+            v_ao->add(e_ao);
+            e_ao.reset();
+#endif
             t_mo->transform(C1, t_ao, C2);
             v_mo->transform(C1, v_ao, C2);
             t_ao.reset();
@@ -848,6 +853,11 @@ void DiskMP2F12::form_oeints(einsums::DiskTensor<double, 2>* h) {
             auto C2 = bs_[o2].C();
             auto t_ao = mints->ao_kinetic(bs1, bs2);
             auto v_ao = mints->ao_potential(bs1, bs2);
+#ifdef USING_ecpint
+            auto e_ao = mints->ao_ecp(bs1, bs2);
+            v_ao->add(e_ao);
+            e_ao.reset();
+#endif
             t_mo->transform(C1, t_ao, C2);
             v_mo->transform(C1, v_ao, C2);
             t_ao.reset();
