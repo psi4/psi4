@@ -12,6 +12,8 @@ import numpy as np
 import pytest
 import psi4
 
+from addons import uusing
+
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 RADIAL_SCHEMES = ["TREUTLER", "BECKE", "MULTIEXP", "EM", "MURA"]
@@ -253,3 +255,61 @@ def test_radial_pruning_grid(radial, pruning, element):
         expected = [_function_pruned_npts(r, Z, NSPH, pruning) for r in g["radii"]]
 
     assert g["angular"] == expected, f"angular grids misassigned for {radial} radial + {pruning} pruning"
+
+
+# Auxiliary grids (MBIS, DDX, VV10) have their own size options and must not inherit a named XC grid
+# from the global DFT_GRID_NAME. HF uses no XC grid, so with HF a named XC grid should change nothing.
+
+_WATER = """
+O 0.000  0.000  0.117
+H 0.000  0.757 -0.467
+H 0.000 -0.757 -0.467
+symmetry c1
+"""
+_AUX_BASE = {"basis": "cc-pvdz", "scf_type": "pk", "e_convergence": 1e-10, "d_convergence": 1e-9}
+
+
+def _run_water(opts, fn):
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.core.clean_variables()
+    mol = psi4.geometry(_WATER)
+    psi4.set_options({**_AUX_BASE, **opts})
+    return fn(mol)
+
+
+def _mbis_charges(mol):
+    _, wfn = psi4.energy("hf", molecule=mol, return_wfn=True)
+    psi4.oeprop(wfn, "MBIS_CHARGES")
+    return wfn.array_variable("MBIS CHARGES").np.ravel()
+
+
+def test_mbis_grid_ignores_dft_grid_name():
+    q_ref = _run_water({}, _mbis_charges)
+    q_sg0 = _run_water({"dft_grid_name": "SG0"}, _mbis_charges)
+    # differed by 1.7e-4 when MBIS inherited the SG-0 grid
+    assert psi4.compare_arrays(q_ref, q_sg0, 1.0e-8, "MBIS charges independent of DFT_GRID_NAME")
+
+
+@uusing("ddx")
+def test_ddx_grid_ignores_dft_grid_name():
+    ddx = {"ddx": True, "ddx_model": "pcm", "ddx_solvent": "water", "ddx_radii_set": "uff"}
+    hf = lambda mol: psi4.energy("hf", molecule=mol)
+    e_ref = _run_water(ddx, hf)
+    e_sg0 = _run_water({**ddx, "dft_grid_name": "SG0"}, hf)
+    # differed by 5.9e-7 when DDX inherited the SG-0 grid
+    assert psi4.compare_values(e_ref, e_sg0, 1.0e-9, "DDX energy independent of DFT_GRID_NAME")
+
+
+def test_vv10_grid_name():
+    wb97xv = lambda mol: psi4.energy("wb97x-v", molecule=mol)
+    # The VV10 grid doesn't inherit DFT_GRID_NAME, so naming it SG1 as well changes the energy.
+    e_xc_sg1 = _run_water({"dft_grid_name": "SG1"}, wb97xv)
+    e_both_sg1 = _run_water({"dft_grid_name": "SG1", "dft_vv10_grid_name": "SG1"}, wb97xv)
+    assert abs(e_both_sg1 - e_xc_sg1) > 1.0e-8, "VV10 grid should not follow DFT_GRID_NAME"
+    # A named VV10 grid overrides DFT_VV10_RADIAL_POINTS / DFT_VV10_SPHERICAL_POINTS.
+    e_vv10_sg1 = _run_water({"dft_vv10_grid_name": "SG1"}, wb97xv)
+    e_vv10_sg1_pts = _run_water(
+        {"dft_vv10_grid_name": "SG1", "dft_vv10_radial_points": 20, "dft_vv10_spherical_points": 26}, wb97xv
+    )
+    assert psi4.compare_values(e_vv10_sg1, e_vv10_sg1_pts, 1.0e-10, "DFT_VV10_GRID_NAME overrides VV10 point counts")

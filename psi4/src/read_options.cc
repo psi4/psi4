@@ -1919,6 +1919,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DFT_VV10_SPHERICAL_POINTS", 146);
         /*- Number of radial points for VV10 NL integration. -*/
         options.add_int("DFT_VV10_RADIAL_POINTS", 50);
+        /*- Named grid (SG0 or SG1) for VV10 NL integration. If set, it replaces |scf__dft_vv10_radial_points| and
+        |scf__dft_vv10_spherical_points|. The VV10 grid does not inherit |scf__dft_grid_name|. !expert -*/
+        options.add_str("DFT_VV10_GRID_NAME", "", "SG0 SG1");
         /*- Rho cutoff for VV10 NL integration. !expert -*/
         options.add_double("DFT_VV10_RHO_CUTOFF", 1.e-8);
         /*- Define VV10 parameter b -*/
