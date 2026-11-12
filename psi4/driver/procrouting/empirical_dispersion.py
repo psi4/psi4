@@ -385,19 +385,22 @@ class EmpiricalDispersion():
 
     def _analytic_hessian_available(self) -> bool:
         """Whether the engine can compute the full dispersion Hessian analytically.
-        Only s-dftd3 at dftd3-python >=1.6.0 (as reported by QCEngine) qualifies, and not for -3c methods.
+        Only s-dftd3 at dftd3-python >=1.6.0 (as reported by QCEngine) driven by QCEngine >=0.52.0 qualifies,
+        and not for -3c methods.
 
         """
         if self.engine != "s-dftd3" or self.fctldash in ['hf3c', 'pbeh3c', 'r2scan3c', 'b973c']:
             return False
+        if parse_version(qcng.__version__) < parse_version("0.52.0"):
+                return False
         return parse_version(qcng.get_program(self.engine).get_version()) >= parse_version("1.6.0")
 
     def compute_hessian(self,
                         molecule: core.Molecule,
                         wfn: core.Wavefunction = None) -> core.Matrix:
         """Compute dispersion Hessian based on engine, dispersion level, and parameters in `self`.
-        Uses analytic second derivatives for engine s-dftd3 at dftd3-python >=1.6.0 (excepting -3c methods,
-        whose gCP part lacks them). Otherwise, uses finite difference of gradients.
+        Uses analytic second derivatives for engine s-dftd3 at dftd3-python >=1.6.0 and QCEngine >=0.52.0
+        (excepting -3c methods, whose gCP part lacks them). Otherwise, uses finite difference of gradients.
 
         Parameters
         ----------
