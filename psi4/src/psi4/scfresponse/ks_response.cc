@@ -251,8 +251,8 @@ void KSResponseSolver::store_polarizability(SharedMatrix alpha, double omega) {
 
     Process::environment.globals["SCF DIPOLE POLARIZABILITY" + at] = isotropic;  // no-autodoc
     Process::environment.arrays["SCF DIPOLE POLARIZABILITY TENSOR" + at] = alpha->clone();  // no-autodoc
-    reference_wavefunction_->set_scalar_variable("SCF DIPOLE POLARIZABILITY" + at, isotropic);
-    reference_wavefunction_->set_array_variable("SCF DIPOLE POLARIZABILITY TENSOR" + at, alpha->clone());
+    reference_wavefunction_->set_scalar_variable("SCF DIPOLE POLARIZABILITY" + at, isotropic);  // no-autodoc
+    reference_wavefunction_->set_array_variable("SCF DIPOLE POLARIZABILITY TENSOR" + at, alpha->clone());  // no-autodoc
 }
 
 /*- Process::environment.arrays["SCF DIPOLE HYPERPOLARIZABILITY TENSOR"] -*/
