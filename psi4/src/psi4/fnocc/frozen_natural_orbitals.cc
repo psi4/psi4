@@ -654,7 +654,7 @@ void DFFrozenNO::FourIndexIntegrals() {
     free(buf1);
 
     // hopefully nQ*nmo*(nmo+1)/2 will fit in memory
-    long int memory = Process::environment.get_memory();
+    int64_t memory = Process::environment.get_memory();
     if (memory < nmo * (nmo + 1) / 2 * nQ * sizeof(double)) {
         throw PsiException("Not enough memory (FourIndexIntegrals)", __FILE__, __LINE__);
     }
@@ -695,7 +695,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     long int v = nvirt;
     long int nQ = Process::environment.globals["NAUX (CC)"];
     long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
-    long int memory = Process::environment.get_memory();
+    int64_t memory = Process::environment.get_memory();
 
     if (memory < 8L * (3L * nso * nso + nso * nso * nQ + o * v * nQ)) {
         throw PsiException("not enough memory (fno)", __FILE__, __LINE__);

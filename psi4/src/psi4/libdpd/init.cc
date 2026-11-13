@@ -63,7 +63,7 @@ int dpd_set_default(int dpd_num) {
 }
 
 PSI_DEPRECATED("DPD construction via a vector of int* is being deprecated and will be removed as soon as 1.12.")
-extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+extern int dpd_init(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {
     if (dpd_list[dpd_num])
         throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
@@ -74,7 +74,7 @@ extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, in
     return 0;
 }
 
-extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+extern int dpd_init(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays) {
     if (dpd_list[dpd_num])
         throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
@@ -93,11 +93,11 @@ extern int dpd_close(int dpd_num) {
     return 0;
 }
 
-extern long int dpd_memfree() {
+extern int64_t dpd_memfree() {
     return dpd_main.memory - (dpd_main.memused - dpd_main.memcache + dpd_main.memlocked);
 }
 
-extern void dpd_memset(long int memory) { dpd_main.memory = memory; }
+extern void dpd_memset(int64_t memory) { dpd_main.memory = memory; }
 
 DPD::DPD()
     : nirreps(0),
@@ -115,13 +115,13 @@ DPD::DPD()
       params2(nullptr),
       params4(nullptr) {}
 
-DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+DPD::DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
          dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
 }
 
 /* Another constructor to use new DPDMOSpaces for determining pair indices directly from strings */
-DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+DPD::DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
          dpd_file4_cache_entry *priority, int num_subspaces, std::vector<DPDMOSpace> &spaces) {
     std::vector<int *> spaceArrays;
     int *tmparray;
@@ -141,7 +141,7 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefil
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
 }
 
-DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+DPD::DPD(int dpd_num, int nirreps, int64_t memory, int cachetype, int *cachefiles, int **cachelist,
          dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaces) {
     int num_subspaces = spaces.size();
     std::vector<int *> spaceArrays;
@@ -161,7 +161,7 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefil
 /* This is the original function code, but modified to take a vector of the orbital
  * space information arrays, rather than a variable argument list; the former is
  * easier to construct for some code that creates an arbitrary number of spaces */
-int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_in, int *cachefiles_in,
+int DPD::init(int dpd_num_in, int nirreps_in, int64_t memory_in, int cachetype_in, int *cachefiles_in,
               int **cachelist_in, dpd_file4_cache_entry *priority_in, int num_subspaces_in,
               std::vector<int *> &spaceArrays_in) {
     int h, h0, h1, cnt, ***dp, l_irrep, r_irrep, p, q;

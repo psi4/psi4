@@ -198,10 +198,12 @@ void ECPInt::compute_shell_deriv2(int s1, int s2) {
     const libecpint::GaussianShell &LibECPShell2 = libecp_shells2_[s2];
     const size_t size = LibECPShell1.ncartesian() * LibECPShell2.ncartesian();
     memset(buffer_, 0, 45 * size * sizeof(double));
-    for (const auto &center_and_ecp : centers_and_libecp_ecps_){
+    // Only the current ECP center (see `next_hessian_ecp()`): the C derivatives in the buffer belong to that
+    //   one center, so summing over all ECP centers here double-counts A/B terms and misattributes C terms.
+    {
+        const auto &center_and_ecp = centers_and_libecp_ecps_[current_ecp_iterator_];
         std::array<libecpint::TwoIndex<double>, 45> results;
         engine_.compute_shell_pair_second_derivative(center_and_ecp.second, LibECPShell1, LibECPShell2, results);
-        // Accumulate the results into buffer_
         for (int i = 0; i < 45; ++i){
             const size_t offset = i * size;
             std::transform (results[i].data.begin(), results[i].data.end(), buffer_ + offset, buffer_ + offset, std::plus<double>());

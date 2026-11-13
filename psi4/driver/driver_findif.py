@@ -225,7 +225,8 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
                        t_project: bool,
                        r_project: bool,
                        initialize: bool,
-                       verbose: int = 0) -> Dict:
+                       verbose: int = 0,
+                       mass_weight: bool = True) -> Dict:
     """Perform initialization tasks needed by all primary functions.
 
     Parameters
@@ -284,7 +285,13 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     # Get settings for CdSalcList, then get the CdSalcList.
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
     # core.get_option returns an int, but CdSalcList expect a bool, so re-cast
-    salc_list = core.CdSalcList(mol, method_allowed_irreps, t_project, r_project)
+    # * CdSalcList projects mass-weighted translations/rotations, so for Cartesian displacements, build from unit masses
+    salc_mol = mol
+    if not mass_weight:
+        salc_mol = mol.clone()
+        for at in range(salc_mol.natom()):
+            salc_mol.set_mass(at, 1.0)
+    salc_list = core.CdSalcList(salc_mol, method_allowed_irreps, t_project, r_project)
 
     n_atom = mol.natom()
     n_irrep = salc_list.nirrep()
@@ -395,7 +402,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     return data
 
 
-def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only: int, mode: str, *, t_project: bool = True, r_project: bool = True, stencil_size: int = 3, step_size: float = 0.005) -> Dict:
+def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only: int, mode: str, *, t_project: bool = True, r_project: bool = True, stencil_size: int = 3, step_size: float = 0.005, mass_weight: bool = True) -> Dict:
     """
     Generate geometries for the specified molecule and derivative levels.
     You probably want to instead use one of the convenience functions:
@@ -419,6 +426,9 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
         Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
     step_size
         Displacement size [a0].
+    mass_weight
+        Whether `step_size` is taken in mass-weighted coordinates (so an atom moves
+        `step_size / sqrt(mass)`) or plain Cartesian ones. Only "1_0" may use False.
 
     Returns
     -------
@@ -456,6 +466,9 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
 
     project_rotations : bool
         Whether rotations are to be projected out of the displacements.
+
+    mass_weighted : bool
+        Whether displacements are in mass-weighted (default) or Cartesian SALCs.
 
     molecule : dict
         The reference molecule, in MolSSI schema. See
@@ -504,6 +517,9 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
     except KeyError:
         raise ValidationError("FINDIF: Mode {} not recognized.".format(mode))
 
+    if not mass_weight and mode != "1_0":
+        raise ValidationError(f"FINDIF: Non-mass-weighted displacements not available for mode {mode}.")
+
     def init_string(data):
         return f"""  Using finite-differences of {print_msg}.
     Generating geometries for use with {data["stencil_size"]}-point formula.
@@ -515,7 +531,7 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
         mol = core.Molecule.from_dict(mol.to_dict())
 
     data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, t_project, r_project,
-                              True, 1)
+                              True, 1, mass_weight=mass_weight)
 
     # We can finally start generating displacements.
     ref_geom = np.array(mol.geometry())
@@ -530,16 +546,18 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
         "displacement_space": "CdSALC",
         "project_translations": data["project_translations"],
         "project_rotations": data["project_rotations"],
+        "mass_weighted": mass_weight,
         "molecule": mol.to_schema(dtype=2, units='Bohr'),
         "displacements": {},
         "reference": {}
     }
+    disp_masses = np.asarray(findifrec['molecule']['masses']) if mass_weight else np.ones(mol.natom())
 
     def append_geoms(indices, steps):
         """Given a list of indices and a list of steps to displace each, append the corresponding geometry to the list."""
 
         # Next, to make this salc/magnitude composite.
-        disp_geom, label = _displace_cart(findifrec['molecule']['masses'], ref_geom, data["salc_list"],
+        disp_geom, label = _displace_cart(disp_masses, ref_geom, data["salc_list"],
                                           zip(indices, steps), data["step_size"])
         if data["print_lvl"] > 2:
             info = "\nDisplacement '{}'\n{}\n".format(label, nppp10(disp_geom))
@@ -621,16 +639,18 @@ def assemble_gradient_from_energies(findifrec: Dict) -> np.ndarray:
 
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
     mol = core.Molecule.from_schema(findifrec["molecule"], nonphysical=True, verbose=0)
+    mass_weighted = findifrec.get("mass_weighted", True)
 
     def init_string(data):
         return f"""  Computing gradient from energies.
     Using {findifrec["stencil_size"]}-point formula.
     Energy without displacement: {findifrec["reference"]["energy"]:15.10f}
     Check energies below for precision!
-    Forces are for mass-weighted, symmetry-adapted cartesians [a0].\n"""
+    Forces are for {"mass-weighted, " if mass_weighted else ""}symmetry-adapted cartesians [a0].\n"""
 
     data = _initialize_findif(mol, -1, "1_0", findifrec['stencil_size'], findifrec['step']['size'], init_string,
-                              findifrec['project_translations'], findifrec['project_rotations'], False)
+                              findifrec['project_translations'], findifrec['project_rotations'], False,
+                              mass_weight=mass_weighted)
     salc_indices = data["salc_indices_pi"][0]
 
     # Extract the energies, and turn then into an ndarray for easy manipulating
@@ -666,12 +686,13 @@ def assemble_gradient_from_energies(findifrec: Dict) -> np.ndarray:
         core.print_out(info)
         logger.info(info)
 
-    # Transform the gradient from mass-weighted SALCs to non-mass-weighted Cartesians
+    # Transform the gradient from (mass-weighted) SALCs to non-mass-weighted Cartesians
     B = data["salc_list"].matrix()
     g_cart = np.dot(g_q, B)
     g_cart = g_cart.reshape(data["n_atom"], 3)
-    massweighter = np.array([mol.mass(a) for a in range(data["n_atom"])])**(0.5)
-    g_cart = (g_cart.T * massweighter).T
+    if mass_weighted:
+        massweighter = np.array([mol.mass(a) for a in range(data["n_atom"])])**(0.5)
+        g_cart = (g_cart.T * massweighter).T
 
     if data["print_lvl"]:
         info = "\n         -------------------------------------------------------------\n"
@@ -1228,7 +1249,8 @@ class FiniteDifferenceComputer(BaseComputer):
                                                                stencil_size=findif_stencil_size,
                                                                step_size=findif_step_size,
                                                                t_project=translations_projection_sound,
-                                                               r_project=r_project_grad)
+                                                               r_project=r_project_grad,
+                                                               mass_weight=core.get_option('FINDIF', 'DISP_MASS_WEIGHT'))
 
         elif self.metameta['mode'] == '2_1':
             self.metameta['proxy_driver'] = 'gradient'

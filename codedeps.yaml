@@ -1015,7 +1015,7 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.50.4
+      commit: v0.51.3
       githttps: true
     cmake:
       name: qcelemental
@@ -1033,7 +1033,7 @@ data:
         - "pydantic>=2.11.0,<3"
       aux_run_names_note:
         "setuptools": "Needed for qcelemental cmake detection."
-        "pydantic>=2.11.0,<3": "For Py v3.14, require Pydantic v2.12."
+        "pydantic>=2.11.0,<3": "For Py >=v3.14, require Pydantic v2.12."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1203,17 +1203,17 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.50.0
+      commit: v0.52.0
       githttps: true
     cmake:
       name: qcengine
-      constraint: ATLEAST 0.50.0
+      constraint: ATLEAST 0.52.0
       target:
     conda:
       channel: conda-forge
       name: qcengine
-      constraint: ">=0.50.0"
-      constraint_note: "v0.50 needed for QCSchema v2. v0.34.2/v0.50.0 have SAPT*-D4 parameters"
+      constraint: ">=0.52.0"
+      constraint_note: "v0.50 needed for QCSchema v2 and SAPT*-D4 parameters. v0.52 for ecp stdsuite."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true

@@ -66,7 +66,7 @@ void DefineQuadraticTasks();
 
 // sort
 void SortIntegrals(int nfzc, int nfzv, int norbs, int ndoccact, int nvirt, Options &options);
-void Sort_OV3_LowMemory(long int memory, long int o, long int v);
+void Sort_OV3_LowMemory(int64_t memory, long int o, long int v);
 
 // coupled cluster constructor
 CoupledCluster::CoupledCluster(SharedWavefunction ref_wfn, Options &options) : Wavefunction(options) {

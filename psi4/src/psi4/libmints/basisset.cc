@@ -159,7 +159,8 @@ std::shared_ptr<Molecule> BasisSet::molecule() const { return molecule_; }
 
 int BasisSet::n_ecp_core() const {
     int ncoreelectrons = 0;
-    for (int A = 0; A < molecule_->natom(); A++) ncoreelectrons += n_ecp_core(molecule_->label(A));
+    for (int A = 0; A < molecule_->natom(); A++)
+        if (molecule_->Z(A) > 0) ncoreelectrons += n_ecp_core(molecule_->label(A));
     return ncoreelectrons;
 }
 
@@ -706,8 +707,8 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             nao_ += shell.ncartesian();
             nbf_ += shell.nfunction();
         }
-        // ECP information
-        if (!ecp_shell_map.empty()) {
+        // ECP information; ghost atoms carry no ECP, even when a real atom shares their label
+        if (!ecp_shell_map.empty() && atom->Z() > 0) {
             std::vector<ShellInfo> &ecpshells = ecp_shell_map[basis][label];
             for (size_t i = 0; i < ecpshells.size(); ++i) {
                 const ShellInfo &ecpshell = ecpshells[i];
@@ -833,12 +834,16 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             const std::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(n);
             std::string basis = atom->basisset(basistype);
             std::string label = atom->label();                                 // symbol --> label
+            center_to_ecp_shell_[n] = ecp_shell_count;
+            if (atom->Z() == 0) {
+                center_to_ecp_nshell_[n] = 0;
+                continue;
+            }
             std::vector<ShellInfo> &ecp_shells = ecp_shell_map[basis][label];  // symbol --> label
             int ustart = ecp_primitive_start[basis][label];                    // symbol --> label
             int uend = ecp_primitive_end[basis][label];                        // symbol --> label
             int n_ecp_shells = ecp_shells.size();
             center_to_ecp_nshell_[n] = n_ecp_shells;
-            center_to_ecp_shell_[n] = ecp_shell_count;
             int atom_nprim = 0;
             for (int i = 0; i < n_ecp_shells; ++i) {
                 const ShellInfo &thisshell = ecp_shells[i];
