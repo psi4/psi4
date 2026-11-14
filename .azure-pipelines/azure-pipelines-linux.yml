@@ -36,8 +36,8 @@ jobs:
         vmImage: 'ubuntu-24.04'
         PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long or memory_profiler)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
-        ENABLE_EINSUMS: "OFF"
-        ENABLE_GAUXC: "OFF"
+        ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
         CMARGS: >-
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
           -Dpsi4_CMAKE_UNITY_BUILD=OFF
