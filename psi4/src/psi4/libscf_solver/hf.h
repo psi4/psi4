@@ -322,7 +322,7 @@ class HF : public Wavefunction {
     virtual int otr_n_param()  {
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };
-    int otr_n_param_;
+    int otr_n_param_ = 0;
 
     /// The orbital gradient at the current orbitals, measured as compute_orbital_gradient in
     /// the Python driver measures it for the first-order iterations, so that D_CONVERGENCE
@@ -331,14 +331,15 @@ class HF : public Wavefunction {
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
     };
 
-    /// Cached convergence quantities for OpenTrustRegion custom convergence checks
-    bool otr_has_prev_func_;
-    bool otr_has_curr_func_;
-    double otr_prev_func_;
-    double otr_curr_func_;
-    double otr_grad_rms_;
-    double otr_e_conv_;
-    double otr_d_conv_;
+    /// Cached convergence quantities for OpenTrustRegion custom convergence checks. Initialized
+    /// here because opentrustregion_scf reads otr_curr_func_ before any callback has set it.
+    bool otr_has_prev_func_ = false;
+    bool otr_has_curr_func_ = false;
+    double otr_prev_func_ = 0.0;
+    double otr_curr_func_ = 0.0;
+    double otr_grad_rms_ = 0.0;
+    double otr_e_conv_ = 0.0;
+    double otr_d_conv_ = 0.0;
 #endif
 
     /// Are we to do excited-state MOM?
