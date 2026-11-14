@@ -303,13 +303,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 "Second-order SCF: fractional occupation varies the occupation during the\n"
                 "     SCF, which a second-order step, taken at fixed occupation, cannot follow.\n"
                 "     Please set SOSCF to false")
-    efp_enabled = hasattr(self.molecule(), 'EFP')
+    potentials = _python_applied_potentials(self)
+    efp_enabled = potentials["efp"]
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
     ooo_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OOO", "OPENORBITALOPTIMIZER"]
     if ooo_scf:
-        pcm_enabled = core.get_option('SCF', 'PCM')
-        ddx_enabled = core.get_option('SCF', 'DDX')
-        pe_enabled = core.get_option('SCF', 'PE')
+        pcm_enabled, ddx_enabled, pe_enabled = potentials["pcm"], potentials["ddx"], potentials["pe"]
         level_shift_enabled = core.get_option("SCF", "LEVEL_SHIFT") != 0.0
         autograc_enabled = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE"
         guessmix_enabled = core.get_option("SCF", "GUESS_MIX")
@@ -325,7 +324,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # Name the optimizer that will actually drive the SCF. Both fallback guards have run
     # by now, so a package demoted above is reported as Internal rather than as requested.
     # Second-order package, consulted only once SOSCF turns second-order iterations on.
-    otr_soscf = otr_proc.selected(self, soscf_enabled, efp_enabled)
+    otr_soscf = otr_proc.selected(self, soscf_enabled, potentials)
 
     # Record what actually drove the SCF, so demotions/altered defaults are detectable other than print format
     _LABELS = {"internal": "Internal", "openorbitaloptimizer": "OpenOrbitalOptimizer",
@@ -1164,6 +1163,22 @@ def _validate_MOM():
             raise ValidationError('SCF MOM_START ({}) must be at least 1'.format(start))
 
     return enabled
+
+
+def _python_applied_potentials(wfn):
+    """The Fock contributions this loop adds from Python on every iteration.
+
+    A package that takes over the iteration loop stops applying them, so both fallback guards
+    have to refuse them. Keeping the list here rather than in each guard means a new embedding
+    or solvent model is refused by both, instead of being silently dropped after the handoff by
+    whichever guard nobody remembered to update.
+    """
+    return {
+        "efp": hasattr(wfn.molecule(), "EFP"),
+        "pcm": core.get_option("SCF", "PCM"),
+        "ddx": core.get_option("SCF", "DDX"),
+        "pe": core.get_option("SCF", "PE"),
+    }
 
 
 def _validate_soscf():

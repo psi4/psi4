@@ -316,8 +316,11 @@ class Polish:
             "thresholds within MAXITER, so this request is past what this system and\n"
             "basis support. Loosen D_CONVERGENCE and E_CONVERGENCE.")
 
-def selected(wfn, soscf_enabled, efp_enabled):
+def selected(wfn, soscf_enabled, potentials):
     """Whether OpenTrustRegion drives this SCF's second-order iterations.
+
+    ``potentials`` is :py:func:`~scf_iterator._python_applied_potentials`, the per-iteration
+    Fock contributions shared with the OpenOrbitalOptimizer guard.
 
     False where it is not the package asked for, and where it is but the calculation has
     something it cannot carry. It takes over the iteration loop at the handoff, so anything
@@ -332,16 +335,14 @@ def selected(wfn, soscf_enabled, efp_enabled):
             in ["OTR", "OPENTRUSTREGION"]):
         return False
 
-    pcm_enabled = core.get_option("SCF", "PCM")
-    ddx_enabled = core.get_option("SCF", "DDX")
-    pe_enabled = core.get_option("SCF", "PE")
     grac_enabled = (core.get_option("SCF", "DFT_GRAC_SHIFT") != 0.0
                     or core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE")
-    if (wfn.MOM_excited_ or efp_enabled or pcm_enabled or ddx_enabled or pe_enabled
-            or grac_enabled):
+    if wfn.MOM_excited_ or grac_enabled or any(potentials.values()):
         core.print_out("    Note: OpenTrustRegion not compatible with at least one of the following. Falling back to second_order_orbital_optimizer_package=internal\n")
-        core.print_out(f"          mom={wfn.MOM_excited_}, efp={efp_enabled},\n")
-        core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, grac={grac_enabled}\n")
+        core.print_out(f"          mom={wfn.MOM_excited_}, grac={grac_enabled},\n")
+        core.print_out("          "
+                       + ", ".join(f"{name}={value}" for name, value in potentials.items())
+                       + "\n")
         return False
 
     return True
