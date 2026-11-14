@@ -331,10 +331,10 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 }
 
 void export_mints(py::module& m) {
-    typedef void (Vector::*vector_setitem_1)(int, double);
-    typedef void (Vector::*vector_setitem_2)(int, int, double);
-    typedef double (Vector::*vector_getitem_1)(int) const;
-    typedef double (Vector::*vector_getitem_2)(int, int) const;
+    typedef void (Vector::*vector_setitem_1)(size_t, double);
+    typedef void (Vector::*vector_setitem_2)(int, size_t, double);
+    typedef double (Vector::*vector_getitem_1)(size_t) const;
+    typedef double (Vector::*vector_getitem_2)(int, size_t) const;
     typedef double (Vector::*vector_one_double)(const Vector& other);
     typedef void (Vector::*vector_two)(double scale, const Vector& other);
     typedef void (Vector::*vector_three)(double alpha, double beta, const Vector &other);
@@ -374,8 +374,10 @@ void export_mints(py::module& m) {
     py::class_<Vector, std::shared_ptr<Vector>, IrreppedVector<double>>(m, "Vector", "Class for creating and manipulating vectors",
                                                 py::dynamic_attr())
         .def(py::init<int>())
+        .def(py::init<size_t>(), "Construct one flat block with a size_t length.")
         .def(py::init<const Dimension&>())
         .def(py::init<const std::string&, int>())
+        .def(py::init<const std::string&, size_t>(), "Construct a named flat block with a size_t length.")
         .def(py::init<const std::string&, const Dimension&>())
         .def_property("name", &Vector::name, &Vector::set_name,
                       "The name of the Vector. Used in printing.")
@@ -392,15 +394,16 @@ void export_mints(py::module& m) {
         .def("copy", &Vector::copy, "Copy another vector into this.")
         .def(
             "clone",
-            [](Vector& vec) {
-                return std::make_shared<Vector>(std::move(vec.clone()));
+            [](const Vector& vec) {
+                return std::make_shared<Vector>(vec);
             },
             "Clone the vector")
         .def("zero", &Vector::zero, "Zeros the vector")
         .def("print_out", [](Vector& vec) {vec.print();}, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
-        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
-        .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
+        .def("dim", &Vector::block_size, "Returns the length of irrep h, including lengths above INT_MAX.", "h"_a = 0)
+        .def("size", &Vector::size, "Total number of elements across all irreps.")
+        .def("dimpi", &Vector::dimpi, "Returns the int-sized Dimension; use dim() for flat lengths above INT_MAX.")
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
         .def("vector_dot", vector_one_double(&Vector::vector_dot), "Take the dot product of two vectors", "other"_a)
         .def("axpy", vector_two(&Vector::axpy), "Adds to this vector (unscaled) another vector scaled by a; self <- a * other + self", "a"_a, "other"_a)
@@ -435,14 +438,9 @@ void export_mints(py::module& m) {
 
                 } else {
                     for (size_t h = 0; h < v.nirrep(); h++) {
-                        // Hmm, sometimes we need to handle empty ptr's correctly
-                        double* ptr = nullptr;
-                        if (v.dim(h) != 0) {
-                            ptr = v.pointer(h);
-                        }
-
-                        // Build the array
-                        std::vector<size_t> shape{(size_t)v.dim(h)};
+                        const size_t n = v.block_size(h);
+                        double* ptr = n ? v.pointer(h) : nullptr;
+                        std::vector<size_t> shape{n};
                         py::array arr(shape, ptr, py::cast(&v));
                         ret.append(arr);
                     }
@@ -454,10 +452,10 @@ void export_mints(py::module& m) {
 
     py::class_<IrreppedVector<int>, std::shared_ptr<IrreppedVector<int>>>(m, "ProtoIntVector");
 
-    typedef int (IntVector::*int_vector_get_1)(int) const;
-    typedef int (IntVector::*int_vector_get_2)(int, int) const;
-    typedef void (IntVector::*int_vector_set_1)(int, int);
-    typedef void (IntVector::*int_vector_set_2)(int, int, int);
+    typedef int (IntVector::*int_vector_get_1)(size_t) const;
+    typedef int (IntVector::*int_vector_get_2)(int, size_t) const;
+    typedef void (IntVector::*int_vector_set_1)(size_t, int);
+    typedef void (IntVector::*int_vector_set_2)(int, size_t, int);
     py::class_<IntVector, std::shared_ptr<IntVector>, IrreppedVector<int>>(m, "IntVector", "Class handling vectors with integer values")
         .def(py::init<int>())
         .def(py::init<const Dimension&>())

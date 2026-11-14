@@ -70,6 +70,21 @@ back to |PSIfour| objects using the ``from_array`` interface::
     >>> new_mat = psi4.core.Matrix.from_array(mat)
     >>> new_vec = psi4.core.Vector.from_array(vec)
 
+Flat vector lengths
+~~~~~~~~~~~~~~~~~~~
+
+``psi4.core.Vector(n)`` and ``psi4.core.Vector(name, n)`` allocate one
+contiguous block of ``n`` doubles. On 64-bit platforms, ``n`` may exceed
+``INT_MAX`` if enough memory is available. In Python, ``v.size()`` gives the
+total element count, ``v.dim(h)`` gives the length of block ``h``, and
+``v.np`` exposes the full flat block without copying it.
+
+The C++ overloads take ``std::size_t``; use ``v.size()`` or
+``v.block_size(h)`` to obtain a ``size_t`` count. The legacy C++ ``dim(h)``
+and the C++/Python ``dimpi()`` still use integer ``Dimension`` entries and
+raise an exception if a block cannot be represented. Symmetry-blocked
+constructors and matrix dimensions retain their existing integer limits.
+
 
 NumPy Views
 ~~~~~~~~~~~
