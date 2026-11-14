@@ -340,6 +340,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
                    ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
+    # Whether a first-order package stopped deliberately at the second-order handoff point,
+    # as opposed to this being a fresh SCF or a re-entry for some other reason.
+    reached_handoff = False
     if ooo_scf:
         # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
         if self.sad_ and self.iteration_ <= 0:
@@ -361,7 +364,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.find_occupation()
             ene_sad = self.compute_E()
 
-        reached_handoff = False
         try:
             reached_handoff = self.openorbital_scf()
         except RuntimeError as ex:
@@ -411,11 +413,17 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     early_screening_disabled = False
 
     # SCF iterations!
-    SCFE_old = 0.0
+    # A handoff arrives mid-SCF, so the energy it reached is what this loop's first Delta E
+    # should measure against. Taking 0.0 there printed the total energy in that column, on the
+    # Handoff row and on the first row of a stability-follow pass alike.
+    SCFE_old = self.get_energies("Total Energy") if self.iteration_ > 0 else 0.0
     Dnorm = 0.0
-    # Whether Dnorm holds a measured gradient yet. A fresh SCF has none until its first
-    # first-order iteration.
-    dnorm_measured = self.iteration_ > 0
+    # Whether Dnorm holds a gradient measured for the orbitals this loop starts from. Only a
+    # handoff does: the first-order package stopped exactly at the handoff threshold. Other
+    # re-entries with iteration_ > 0 -- STABILITY_ANALYSIS FOLLOW, or the DF guess before
+    # SCF_TYPE DIRECT -- leave Dnorm at 0.0, which would read as a converged gradient and hand
+    # straight off on their first iteration however far from converged the orbitals are.
+    dnorm_measured = reached_handoff
     scf_iter_post_screening = 0
     polish = None
 
