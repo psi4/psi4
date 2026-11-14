@@ -720,14 +720,16 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
             for (size_t j = 0; j < naocc; j++) {
                 bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_IJ"));
                 bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > T_CUT_PRE_);
-                double prefactor = (i == j) ? 1.0 : 0.5;
 
                 if (overlap_big || energy_big || i == j) {
                     i_j_to_ij_[i].push_back(ij);
                     ij_to_i_j_.push_back(std::make_pair(i, j));
                     ij++;
                 } else {
-                    de_dipole_ += prefactor * dipole_pair_e_->get(i, j);
+                    // The -4 dipole estimate includes both (i,j) and (j,i).
+                    // This loop visits both, so add half per ordered pair.
+                    // Diagonal pairs are always retained above.
+                    de_dipole_ += 0.5 * dipole_pair_e_->get(i, j);
                     i_j_to_ij_[i].push_back(-1);
                 }
             }

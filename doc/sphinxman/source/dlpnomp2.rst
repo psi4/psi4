@@ -143,24 +143,65 @@ The error in :math:`E^{(2)}` scales quadratically with the error in the amplitud
 No local approximations have been made so far, and this iterative approach can
 be used to exactly determine :math:`E^{(2)}` with :math:`{\cal O}(N^5)` cost.
 In DLPNO-MP2, the first local approximation is to screen distant, non-interacting
-orbital pairs ``ij``. Orbital pairs are screened if below both an overlap criteria:
+orbital pairs ``ij``. Off-diagonal orbital pairs are screened when their
+differential overlap is at most |dlpno__t_cut_do_ij|:
 
 .. math::
    :label: Differential Overlap Integral
 
    DOI_{ij} \equiv \sqrt{\int d\mathbf{r} | \chi_{i}(\mathbf{r}) | ^{2} | \chi_{j}(\mathbf{r}) | ^{2}}, 
 
-and a pair energy estimate: 
+and the magnitude of a pair energy estimate is at most |dlpno__t_cut_pre|:
 
 .. math::
    :label: Dipole Approximation
 
-   e_{ij}^{approx} = -\frac{4}{R^{6}} \sum_{a_{i} \in [i],b_{j} \in [j]} \frac{ (2 \langle i | \mathbf{r} | a_{i} \rangle \langle j | \mathbf{r} | b_{j} \rangle)^{2}}{\epsilon_{a_{i}} + \epsilon_{b_{j}} - f_{ii} - f_{jj}},
+   \widetilde{e}_{ij}^{\mathrm{pre}} = -\frac{4}{R_{ij}^{6}}
+   \sum_{a_i \in [i], b_j \in [j]}
+   \frac{(2\mathbf{d}_{ia_i}\cdot\mathbf{d}_{jb_j})^2}
+   {\epsilon_{a_i} + \epsilon_{b_j} - f_{ii} - f_{jj}}.
 
-in which small domains of virtual orbitals are used for each local MO. As a
-result, an asymptotically linear number of ``ij`` pairs enter the local MP2
-equations, and the approximate pair energy of neglected pairs is added to
-the final energy.
+Here, :math:`\mathbf{d}_{ia_i}=\langle i|\mathbf{r}|a_i\rangle`, small
+domains of virtual orbitals :math:`[i]` and :math:`[j]` are used for each
+local MO, and :math:`R_{ij}` is the distance between the orbital centroids.
+Diagonal pairs are always retained. As a result, an asymptotically linear
+number of ``ij`` pairs enter the local MP2 equations.
+
+The energy correction for neglected pairs uses the orientation-dependent
+dipole interaction, rather than the screening estimate above:
+
+.. math::
+   :label: Dipole Pair Energy
+
+   \widetilde{e}_{ij}^{\mathrm{dip}} = -\frac{4}{R_{ij}^{6}}
+   \sum_{a_i \in [i], b_j \in [j]}
+   \frac{\left[\mathbf{d}_{ia_i}\cdot\mathbf{d}_{jb_j}
+   -3(\mathbf{d}_{ia_i}\cdot\widehat{\mathbf{R}}_{ij})
+   (\mathbf{d}_{jb_j}\cdot\widehat{\mathbf{R}}_{ij})\right]^2}
+   {\epsilon_{a_i} + \epsilon_{b_j} - f_{ii} - f_{jj}},
+
+where :math:`\widehat{\mathbf{R}}_{ij}` is the unit vector joining the orbital
+centroids. Both quantities with a tilde use the **unique-pair** convention
+for :math:`i\ne j`: the prefactor :math:`-4` includes the contributions of
+both ordered pairs :math:`(i,j)` and :math:`(j,i)`. In contrast,
+:math:`e_{ij}` in Eq. :eq:`Energy` contributes to an ordered sum over all
+:math:`i,j`; its distant-pair approximation is
+:math:`e_{ij}^{\mathrm{dip}}=\widetilde{e}_{ij}^{\mathrm{dip}}/2`.
+Thus the correction added to the final energy is
+
+.. math::
+   :label: Dipole Energy Correction
+
+   \Delta E_{\mathrm{dip}}
+   = \sum_{\substack{i<j\\\mathrm{neglected}}}
+     \widetilde{e}_{ij}^{\mathrm{dip}}
+   = \frac{1}{2}\sum_{\substack{i\ne j\\\mathrm{neglected}}}
+     \widetilde{e}_{ij}^{\mathrm{dip}}.
+
+The implementation stores the same unique-pair estimate in both matrix
+elements ``(i,j)`` and ``(j,i)`` and therefore applies the factor of
+:math:`1/2` when accumulating the correction over the ordered pair list.
+The screening estimate and its threshold retain the unique-pair convention.
 
 The second major local approximation in DLPNO-MP2 is the truncation of the virtual
 space. Initially, exchange integrals are calculated in the LMO/PAO basis using the
