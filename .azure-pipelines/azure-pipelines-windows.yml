@@ -143,7 +143,7 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        libint ^
+                        libint<2.14 ^
                         qcelemental ^
                         qcengine ^
                         qcmanybody ^
