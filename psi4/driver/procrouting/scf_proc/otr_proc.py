@@ -198,8 +198,11 @@ def run(self, e_conv, d_conv):
             # changing the solution, so stop rather than oscillate. Where the energy actually
             # rose, the previous attempt is the better solution, so return that one.
             if SCFE > SCFE_prev_attempt + e_conv:
-                state, self.otr_outcome_ = prev_attempt
+                state, self.otr_outcome_, n_energies = prev_attempt
                 _restore_orbital_state(self, state)
+                # The rejected attempt's energies describe orbitals the wavefunction no longer
+                # holds, and SCF TOTAL ENERGIES would end on one of them.
+                del self.iteration_energies[n_energies:]
                 self.form_D()
                 self.form_G()
                 self.form_F()
@@ -222,7 +225,7 @@ def run(self, e_conv, d_conv):
         # Committing to the aufbau assignment, so rebuild the density at it before handing
         # the orbitals back to OpenTrustRegion for another attempt. Keep this attempt's
         # solution first, in case the next one ends higher.
-        prev_attempt = (_orbital_state(self), self.otr_outcome_)
+        prev_attempt = (_orbital_state(self), self.otr_outcome_, len(self.iteration_energies))
         self.find_occupation()
         self.form_D()
         SCFE_prev_attempt = SCFE
