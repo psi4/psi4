@@ -137,7 +137,7 @@ Capabilities and limitations
   |scf__wcombine| are not supported.
 * Hyperpolarizabilities are available for Hartree--Fock only; DFT would need the
   third-order exchange-correlation kernel.
-* Any |scf__scf_type|: the response uses the SCF's own JK object.
+* Any |globals__scf_type|: the response uses the SCF's own JK object.
 * Point-group symmetry is not used: run in C1 symmetry.
 * Bases with near-linear dependencies removed (fewer orbitals than basis
   functions) are supported.
