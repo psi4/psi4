@@ -18,6 +18,9 @@ set guess read
 energy('scf')
 compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy, read-in guess')  #TEST
 niter = int(variable('SCF ITERATIONS'))
+# One iteration to confirm orbitals that were read in already converged. OpenOrbitalOptimizer  #TEST
+# declines an ROHF reference and falls back to the internal code, so it costs nothing extra     #TEST
+# here, unlike the UHF case below.                                                              #TEST
 compare(1, niter, f'ROHF Iterations {niter}, read-in guess')  #TEST
 
 
@@ -29,5 +32,8 @@ compare_values(-247.03206951, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy')
 set guess read
 energy('scf')
 compare_values(-247.03206951, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy, read-in guess')  #TEST
+# Converged orbitals are read in, so one macro-iteration is all it takes to confirm them,  #TEST
+# whatever the packages: an already-converged SCF is settled before any second-order       #TEST
+# handoff, so no package spends an extra iteration rediscovering that.                     #TEST
 niter = int(variable('SCF ITERATIONS'))
 compare(1, niter, f'UHF Iterations {niter}, read-in guess')  #TEST

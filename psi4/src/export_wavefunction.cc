@@ -380,6 +380,9 @@ void export_wavefunction(py::module& m) {
         .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
+        .def("next_occupation", &scf::HF::next_occupation,
+             "What the next find_occupation() would leave the occupation as, as (alpha, beta) "
+             "Dimensions, without changing anything.")
         .def("diis", &scf::HF::diis, "docstring")
         .def_property("diis_manager_", &scf::HF::diis_manager, &scf::HF::set_diis_manager, "The DIIS object.")
         .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager,
@@ -413,7 +416,25 @@ void export_wavefunction(py::module& m) {
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.")
         .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring")
-        .def("openorbital_scf", &scf::HF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer");
+        .def("openorbital_scf", &scf::HF::openorbital_scf,
+             "Runs the SCF with OpenOrbitalOptimizer. Returns whether it stopped at the "
+             "second-order handoff point rather than finishing the SCF itself.")
+        .def("opentrustregion_scf", &scf::HF::opentrustregion_scf, "e_conv"_a, "d_conv"_a,
+             "restart"_a = false,
+             "Runs SCF with OpenTrustRegion to these energy and orbital-gradient thresholds. "
+             "Set restart when resuming at a new occupation for iteration counting.")
+        .def("opentrustregion_stopped_short", &scf::HF::otr_stopped_short,
+             "Whether OpenTrustRegion stopped at its floating-point precision floor with "
+             "neither half of this SCF's convergence test met.")
+        .def("opentrustregion_final_grad_rms", &scf::HF::otr_final_grad_rms,
+             "The gradient RMS OpenTrustRegion finished on.")
+        .def("opentrustregion_final_energy_delta", &scf::HF::otr_final_energy_delta,
+             "The last macro-iteration energy change OpenTrustRegion finished on.")
+        .def("opentrustregion_callback_error", &scf::HF::otr_callback_error,
+             "The message of the C++ exception a callback into Psi4 raised during the last "
+             "OpenTrustRegion run, or empty if none did.")
+        .def("opentrustregion_iteration_energies", &scf::HF::otr_iteration_energies,
+             "Total energy at each OpenTrustRegion macro-iteration");
 
     /// HF Functions
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")

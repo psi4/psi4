@@ -33,6 +33,11 @@ if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
   target_link_libraries(psi4_optional_deps INTERFACE OpenOrbitalOptimizer::OpenOrbitalOptimizer)
 endif()
 
+if(TARGET OpenTrustRegion::OpenTrustRegion)
+  target_link_libraries(psi4_optional_deps INTERFACE OpenTrustRegion::OpenTrustRegion)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_OpenTrustRegion)
+endif()
+
 if(TARGET BrianQC::static_wrapper)
   target_link_libraries(psi4_optional_deps INTERFACE BrianQC::static_wrapper)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_BrianQC)

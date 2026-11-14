@@ -29,6 +29,7 @@
 #ifndef HF_H
 #define HF_H
 
+#include <utility>
 #include <vector>
 #include <functional>
 #include "psi4/libmints/wavefunction.h"
@@ -36,6 +37,12 @@
 #include "psi4/psi4-dec.h"
 
 #include "psi4/pybind11.h"
+
+#ifdef USING_OpenTrustRegion
+namespace OTR {
+    #include "opentrustregion.h"
+}
+#endif
 
 namespace psi {
 using PerturbedPotentialFunction = std::function<SharedMatrix(SharedMatrix)>;
@@ -248,8 +255,93 @@ class HF : public Wavefunction {
     bool frac_performed() const { return frac_performed_; }
     void set_frac_performed(bool tf) { frac_performed_ = tf; }
 
-    /// Runs the SCF using OpenOrbitalOptimizer
-    virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
+    /// Run the SCF through OpenOrbitalOptimizer. Returns whether it stopped at the
+    /// second-order handoff point rather than finishing the SCF itself.
+    virtual bool openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
+
+    /// Runs the SCF using OpenTrustRegion to the energy and orbital-gradient thresholds given,
+    /// which are the driver's E_/D_CONVERGENCE unless iterations() was handed others. Returns
+    /// the solver's error code (0 on success) rather than throwing, so the driver can honour
+    /// FAIL_ON_MAXITER.
+    int opentrustregion_scf(double e_conv, double d_conv, bool restart = false);
+
+    /// Total energy at each OpenTrustRegion macro-iteration, so the Python driver can
+    /// report SCF ITERATIONS / SCF TOTAL ENERGIES the same way the internal solver does.
+    const std::vector<double>& otr_iteration_energies() const { return otr_iteration_energies_; }
+    std::vector<double> otr_iteration_energies_;
+
+    /// Whether OpenTrustRegion stopped at its floating-point precision floor with *neither*
+    /// half of this SCF's convergence test met. Not an error code: the solver reports success.
+    /// Meeting one half and missing the other is ordinary at the floor and is reported in the
+    /// output rather than flagged here, so this means the orbitals are genuinely unconverged.
+    bool otr_stopped_short() const { return otr_stopped_short_; }
+    bool otr_stopped_short_ = false;
+
+    /// The orbital gradient and energy change OpenTrustRegion finished on, for sizing the
+    /// first-order polish and for reporting what precision was actually reached.
+    double otr_final_grad_rms() const { return otr_final_grad_rms_; }
+    double otr_final_energy_delta() const { return otr_final_energy_delta_; }
+    double otr_final_grad_rms_ = 0.0;
+    double otr_final_energy_delta_ = 0.0;
+
+    /// The message of a C++ exception a callback caught rather than let unwind through
+    /// OpenTrustRegion's Fortran frames, for the driver to report. Empty if none was raised.
+    const std::string& otr_callback_error() const { return otr_callback_error_; }
+    std::string otr_callback_error_;
+
+#ifdef USING_OpenTrustRegion
+    /// OpenTrustRegion's iteration log in its own format, held back for printing.
+    std::string otr_log_;
+    /// The solver state, refreshed by OTR before each callback, so a macro iteration
+    /// can report its microiteration count as internal SOSCF does. Null outside a solve.
+    const OTR::solver_state_type* otr_state_ = nullptr;
+    /// How many times OTR has called back with a new point this solve. Its own macro counter
+    /// is only advanced after the callback returns, so this is what says which macro
+    /// iteration the callback is reporting.
+    int otr_macro_calls_ = 0;
+    /// Whether this run is an occupation restart, whose first macro iteration is a J/K build
+    /// no row has reported yet. On the first run that point is the handoff, already printed.
+    bool otr_restart_ = false;
+    /// The energy the previous run finished on. A restart has no earlier point of its own, so
+    /// this is the baseline both its first row and the end-of-run energy test measure against.
+    double otr_restart_prev_func_ = 0.0;
+
+    void otr_record_iteration(OTR::c_real func);
+    bool otr_converged() const;
+    virtual OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad,
+                                       OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
+    };
+    virtual OTR::c_int otr_hess_x(const OTR::c_real* x, OTR::c_real* out) {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
+    };
+    virtual OTR::c_int otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
+    };
+
+    /// The number of non-redundant parameters
+    virtual int otr_n_param()  {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
+    };
+    int otr_n_param_ = 0;
+
+    /// The orbital gradient at the current orbitals, measured as compute_orbital_gradient in
+    /// the Python driver measures it for the first-order iterations, so that D_CONVERGENCE
+    /// means the same thing for OpenTrustRegion. Its own parameter gradient is scaled differently.
+    virtual double otr_orbital_gradient() {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class");
+    };
+
+    /// Cached convergence quantities for OpenTrustRegion custom convergence checks. Initialized
+    /// here because opentrustregion_scf reads otr_curr_func_ before any callback has set it.
+    bool otr_has_prev_func_ = false;
+    bool otr_has_curr_func_ = false;
+    double otr_prev_func_ = 0.0;
+    double otr_curr_func_ = 0.0;
+    double otr_grad_rms_ = 0.0;
+    double otr_e_conv_ = 0.0;
+    double otr_d_conv_ = 0.0;
+#endif
 
     /// Are we to do excited-state MOM?
     bool MOM_excited() const { return MOM_excited_; }
@@ -331,6 +423,16 @@ class HF : public Wavefunction {
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();
 
+    /// The occupation the aufbau principle gives for the current orbital energies, as
+    /// (alpha, beta) counts per irrep, without assigning it. find_occupation() fills
+    /// nalphapi_/nbetapi_ from this.
+    std::pair<Dimension, Dimension> aufbau_occupation() const;
+
+    /// What find_occupation() would leave the occupation as, without changing anything, for
+    /// a caller that has to know whether it is about to move. MOM and a given DOCC/SOCC each
+    /// keep the occupation already set, so only the aufbau branch can move it.
+    std::pair<Dimension, Dimension> next_occupation() const;
+
     /** Performs DIIS extrapolation */
     virtual bool diis(double dnorm) { return false; }
 
@@ -369,12 +471,12 @@ class HF : public Wavefunction {
     /// Form the guess (guarantees C, D, and E)
     virtual void guess();
 
-    /// Compute the MO coefficients (C_) using level shift, then assign the occupation
+    /// Compute the MO coefficients (C_) using level shift, including update Aufbau occupation
     virtual void form_C(double shift = 0.0);
     /** Compute the MO coefficients (C_) using level shift, leaving the occupation alone.
         form_C is this followed by find_occupation. Generally, use form_C, but this can
         be useful when having already optimized against a particular occupation, one wants
-        the orbitals canonical without having the aufbau rule reassign underneath it. */
+        to diagonalize to update the orbitals without having the aufbau rule reassign underneath it. */
     virtual void diagonalize_orbitals(double shift = 0.0);
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
@@ -445,6 +547,14 @@ class HF : public Wavefunction {
     void clear_external_cpscf_perturbations() { external_cpscf_perturbations_.clear(); }
     void compute_fvpi();
 };
+
+#ifdef USING_OpenTrustRegion
+extern "C" OTR::obj_func_fn otr_obj_func_wrapper;
+extern "C" OTR::hess_x_fn otr_hess_x_wrapper;
+extern "C" OTR::update_orbs_fn otr_update_orbs_wrapper;
+extern "C" OTR::conv_check_fn otr_conv_check_wrapper;
+#endif
+
 }  // namespace scf
 }  // namespace psi
 

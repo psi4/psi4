@@ -1,5 +1,6 @@
 
 list(APPEND sources
+  otr_proc
   scf_iterator
 )
 

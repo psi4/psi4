@@ -19,6 +19,11 @@ set {
     socc [0, 1]
 }
 
+if psi4.core.get_option("scf", "second_order_orbital_optimizer_package") in ["OTR", "OPENTRUSTREGION"]:
+    # The A state here is reached by rotating HOMO and SOMO and is a stationary point, not a
+    # minimum. OpenTrustRegion's gradient perturbation is there to leave one, so turn it off.
+    psi4.set_options({"otr_grad_noise": False})
+
 molecule ho2 {
     0 2
     O -0.6937342972  0.0081785728  0.0000000000

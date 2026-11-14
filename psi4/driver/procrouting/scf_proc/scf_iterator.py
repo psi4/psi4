@@ -28,14 +28,17 @@
 """
 The SCF iteration functions
 """
+import math
+
 import numpy as np
 
 from psi4 import core
 
 from ... import p4util
 from ...constants import constants
-from ...p4util.exceptions import SCFConvergenceError, ValidationError
+from ...p4util.exceptions import PsiException, SCFConvergenceError, ValidationError
 from ..solvent.efp import get_qm_atoms_opts, modify_Fock_induced, modify_Fock_permanent
+from . import otr_proc
 
 #import logging
 #logger = logging.getLogger("scf.scf_iterator")
@@ -90,6 +93,9 @@ def scf_compute_energy(self):
             # energy = 0.0
             # A P::e fn to either throw or protest upon nonconvergence
             # die_if_not_converged()
+            # Release the DIIS scratch file, which otherwise outlives this wavefunction and
+            # collides with the next SCF in the process if that one needs larger entries.
+            self.finalize()
             raise e
         else:
             core.print_out("  Energy and/or wave function did not converge, but proceeding anyway.\n\n")
@@ -253,17 +259,20 @@ def scf_initialize(self):
         self.functional().set_do_vv10(False)
         self.functional().set_lock(True)
 
-    # Print iteration header
-    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
-    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
+    # Print iteration header. The column header comes later, from scf_iterate, once the
+    # orbital optimizer that will actually run is known.
     core.print_out("  ==> Iterations <==\n\n")
-    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
-                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
+    # The thresholds this SCF converges to: those handed to iterations(), else the options.
+    if e_conv is None:
+        e_conv = core.get_option("SCF", "E_CONVERGENCE")
+    if d_conv is None:
+        d_conv = core.get_option("SCF", "D_CONVERGENCE")
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
+    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
     verbose = core.get_option('SCF', "PRINT")
     reference = core.get_option('SCF', "REFERENCE")
 
@@ -272,64 +281,121 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     self.MOM_excited_ = _validate_MOM()
     self.diis_start_ = core.get_option('SCF', 'DIIS_START')
     damping_enabled = _validate_damping()
-    soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
-    efp_enabled = hasattr(self.molecule(), 'EFP')
+    soscf_enabled = _validate_soscf()
+    if soscf_enabled:
+        # refuse here what would otherwise die deep in C++
+        if reference == "CUHF":
+            raise ValidationError(
+                "Second-order SCF: no orbital Hessian is implemented for a CUHF reference.\n"
+                "     Please set SOSCF to false")
+        if self.functional().needs_xc() and (self.functional().is_meta()
+                                             or self.functional().needs_vv10()):
+            kind = "meta-GGA" if self.functional().is_meta() else "VV10"
+            raise ValidationError(
+                f"Second-order SCF: the {kind} exchange-correlation kernel cannot supply the\n"
+                "     rotated potential the orbital Hessian needs.\n"
+                "     Please set SOSCF to false")
+        if frac_enabled:
+            # FRAC_START changes occ through form_C but SOSCF doesn't notice and returns wrong E
+            # MOM is fine: it reassigns which orbitals are occupied, not how much, and internal SOSCF ok
+            raise ValidationError(
+                "Second-order SCF: fractional occupation varies the occupation during the\n"
+                "     SCF, which a second-order step, taken at fixed occupation, cannot follow.\n"
+                "     Please set SOSCF to false")
+    potentials = _python_applied_potentials(self)
+    efp_enabled = potentials["efp"]
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
     ooo_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OOO", "OPENORBITALOPTIMIZER"]
     if ooo_scf:
-        pcm_enabled = core.get_option('SCF', 'PCM')
-        ddx_enabled = core.get_option('SCF', 'DDX')
-        pe_enabled = core.get_option('SCF', 'PE')
+        pcm_enabled, ddx_enabled, pe_enabled = potentials["pcm"], potentials["ddx"], potentials["pe"]
         level_shift_enabled = core.get_option("SCF", "LEVEL_SHIFT") != 0.0
         autograc_enabled = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE"
         guessmix_enabled = core.get_option("SCF", "GUESS_MIX")
-        if (reference in ["ROHF", "CUHF"] or soscf_enabled or self.MOM_excited_ or frac_enabled or
+        if (reference in ["ROHF", "CUHF"] or self.MOM_excited_ or frac_enabled or
             efp_enabled or pcm_enabled or ddx_enabled or pe_enabled or autograc_enabled or
             level_shift_enabled or guessmix_enabled):
             core.print_out(f"    Note: OpenOrbitalOptimizer not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
-            core.print_out(f"          {reference=}, soscf={soscf_enabled}, mom={self.MOM_excited_}, frac={frac_enabled}, efp={efp_enabled},\n")
+            core.print_out(f"          {reference=}, mom={self.MOM_excited_}, frac={frac_enabled}, efp={efp_enabled},\n")
             core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, autograc={autograc_enabled}, level_shift={level_shift_enabled},\n")
             core.print_out(f"          guess_mix={guessmix_enabled}\n")
-        else:
-            # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
-            if self.sad_ and self.iteration_ <= 0:
-                self.iteration_ += 1
-                self.form_G()
-                self.form_initial_F()
-                self.form_initial_C()
-                self.reset_occupation()
-                self.find_occupation()
-                ene_sad = self.compute_E()
-                core.print_out(
-                    "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
-                    ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
-            if core.get_option("SCF", "GUESS") == "READ" and self.iteration_ <= 0:
-                self.form_G()
-                self.form_initial_F()
-                self.form_initial_C()
-                self.reset_occupation()
-                self.find_occupation()
-                ene_sad = self.compute_E()
+            ooo_scf = False
 
-            try:
-                self.openorbital_scf()
-            except RuntimeError as ex:
-                if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
-                    core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
-                else:
-                    raise ex
+    # Name the optimizer that will actually drive the SCF. Both fallback guards have run
+    # by now, so a package demoted above is reported as Internal rather than as requested.
+    # Second-order package, consulted only once SOSCF turns second-order iterations on.
+    otr_soscf = otr_proc.selected(self, soscf_enabled, potentials)
+
+    # Record what actually drove the SCF, so demotions/altered defaults are detectable other than print format
+    _LABELS = {"internal": "Internal", "openorbitaloptimizer": "OpenOrbitalOptimizer",
+               "opentrustregion": "OpenTrustRegion"}
+    first_module = "openorbitaloptimizer" if ooo_scf else "internal"
+    self.set_module_role("orbital_optimizer", first_module)
+    if soscf_enabled:
+        second_module = "opentrustregion" if otr_soscf else "internal"
+        self.set_module_role("second_order_orbital_optimizer", second_module)
+    first_label = _LABELS[first_module]
+    second_label = _LABELS[second_module] if soscf_enabled else "off"
+    core.print_out(f"  The orbital optimizer module is {first_label}, second-order {second_label}\n\n")
+    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
+                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+
+    # Whether a first-order package stopped deliberately at the second-order handoff point,
+    # as opposed to this being a fresh SCF or a re-entry for some other reason.
+    reached_handoff = False
+    if ooo_scf:
+        # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
+        if self.sad_ and self.iteration_ <= 0:
+            self.iteration_ += 1
+            self.form_G()
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+            ene_sad = self.compute_E()
+            core.print_out(
+                "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+                ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
+        if core.get_option("SCF", "GUESS") == "READ" and self.iteration_ <= 0:
+            self.form_G()
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+            ene_sad = self.compute_E()
+
+        try:
+            reached_handoff = self.openorbital_scf()
+        except RuntimeError as ex:
+            if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
+                core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
+            elif "FAIL_ON_MAXITER" in str(ex):
+                # OpenOrbitalOptimizer ran its own loop to MAXITER without converging. That is
+                # ordinary non-convergence, so raise what the rest of the driver raises for it
+                # rather than letting a bare RuntimeError past the FAIL_ON_MAXITER handling.
+                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
             else:
-                SCFE = self.compute_E()
-                self.set_energies("Total Energy", SCFE)
-                self.set_variable("SCF ITERATION ENERGY", SCFE)
-                self.iteration_energies.append(SCFE)  # note 1-len array, not niter-len array like INTERNAL
+                raise ex
+        else:
+            SCFE = self.compute_E()
+            self.set_energies("Total Energy", SCFE)
+            self.set_variable("SCF ITERATION ENERGY", SCFE)
+            self.iteration_energies.append(SCFE)  # note 1-len array, not niter-len array like INTERNAL
 
-                self.form_G()
-                self.form_F()
-                self.form_C()
-                self.form_D()
+            self.form_G()
+            self.form_F()
+            self.form_C()
+            self.form_D()
+
+            if not soscf_enabled or not reached_handoff:
+                # OpenOrbitalOptimizer finished the SCF itself, either by converging or by
+                # running out of iterations. Falling through would spend another J/K build
+                # just to find that out, and would put the SCF one iteration over MAXITER
+                # when OpenOrbitalOptimizer had already used the whole budget.
                 return
+            # Asked only to reach the handoff point (see its convergence callback in
+            # rhf.cc/uhf.cc), so fall through and let the second-order package finish.
+            core.print_out("    OpenOrbitalOptimizer reached the second-order handoff point.\n")
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = False
@@ -347,9 +413,20 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     early_screening_disabled = False
 
     # SCF iterations!
-    SCFE_old = 0.0
+    # A handoff arrives mid-SCF, so the energy it reached is what this loop's first Delta E
+    # should measure against. Taking 0.0 there printed the total energy in that column, on the
+    # Handoff row and on the first row of a stability-follow pass alike.
+    SCFE_old = self.get_energies("Total Energy") if self.iteration_ > 0 else 0.0
     Dnorm = 0.0
+    # Whether Dnorm holds a gradient measured for the orbitals this loop starts from. Only a
+    # handoff does: the first-order package stopped exactly at the handoff threshold. Other
+    # re-entries with iteration_ > 0 -- STABILITY_ANALYSIS FOLLOW, or the DF guess before
+    # SCF_TYPE DIRECT -- leave Dnorm at 0.0, which would read as a converged gradient and hand
+    # straight off on their first iteration however far from converged the orbitals are.
+    dnorm_measured = reached_handoff
     scf_iter_post_screening = 0
+    polish = None
+
     while True:
         self.iteration_ += 1
 
@@ -446,13 +523,60 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         status = []
 
         # Check if we are doing SOSCF
-        if (soscf_enabled and (self.iteration_ >= 3) and (Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
+        if (soscf_enabled and not dnorm_measured
+                and self.iteration_ >= core.get_option('SCF', 'SOSCF_START')):
+            # Measure the gradient if it has not been measured yet, only relevant for SOSCF_START=1
+            Dnorm = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
+            dnorm_measured = True
+        if (soscf_enabled and (self.iteration_ >= core.get_option('SCF', 'SOSCF_START'))
+                and (Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
             Dnorm = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
             diis_performed = False
             if self.functional().needs_xc():
                 base_name = "SOKS, nmicro="
             else:
                 base_name = "SOSCF, nmicro="
+
+            # This iteration cost a J/K build like any other, so it counts against MAXITER.
+            # The loop's own check is at the bottom and the handoff returns before reaching
+            # it, which let a first-order package that used the whole budget hand off anyway.
+            if self.iteration_ > core.get_option('SCF', 'MAXITER'):
+                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
+
+            # Already converged, there is nothing to hand off, so this falls through to the
+            # "conv" branch below, as for the internal code.
+            if otr_soscf and not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
+                # With no iteration left, OTR could only re-evaluate this state, so fail as any SCF
+                # would.
+                if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
+                    raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
+                # Hand the rest of the SCF to OpenTrustRegion. It owns the remaining
+                # iterations, so this returns rather than continuing the first-order loop.
+                # Print this iteration before handing over: OpenTrustRegion restarts the
+                # numbering in its own table, so the row would otherwise go missing from
+                # this one while still counting in SCF ITERATIONS.
+                core.print_out(
+                    "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+                    ("DF-" if is_dfjk else "", reference, self.iteration_, SCFE, Ediff, Dnorm,
+                     "Handoff"))
+                otr_outcome = otr_proc.run(self, e_conv, d_conv)
+                if otr_outcome is not otr_proc.NEEDS_POLISH:
+                    return otr_outcome
+                # Finish with first-order iterations. Turn second order off so this loop
+                # neither hands off again nor starts internal microiterations, and drop the
+                # DIIS subspace, whose vectors predate the orbitals OpenTrustRegion returned.
+                otr_soscf = False
+                soscf_enabled = False
+                # The polish gets what is left of MAXITER, as any other SCF would
+                polish = otr_proc.Polish(self, e_conv, d_conv)
+                # Measure the next energy change after the first iteration of the polish from
+                # where OpenTrustRegion finished, not from the handoff iteration before it ran.
+                SCFE_old = self.get_energies("Total Energy")
+                if self.initialized_diis_manager_:
+                    self.diis_manager_.reset_subspace()
+                core.print_out("    Finishing with first-order iterations, which converge on\n"
+                               "    the orbital gradient rather than the energy change.\n")
+                continue
 
             if not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
                 nmicro = self.soscf_update(core.get_option('SCF', 'SOSCF_CONV'),
@@ -496,6 +620,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 add_to_diis_subspace = self.diis_enabled_ and self.iteration_ >= self.diis_start_
 
                 Dnorm = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
+                dnorm_measured = True
 
                 if add_to_diis_subspace:
                     for engine_used in self.diis(Dnorm):
@@ -606,6 +731,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 break
 
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
+            if polish is not None:
+                polish.give_up(self, Ediff, Dnorm, e_conv, d_conv)
             raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
 
 
@@ -1046,13 +1173,29 @@ def _validate_MOM():
     return enabled
 
 
+def _python_applied_potentials(wfn):
+    """The Fock contributions this loop adds from Python on every iteration.
+
+    A package that takes over the iteration loop stops applying them, so both fallback guards
+    have to refuse them. Keeping the list here rather than in each guard means a new embedding
+    or solvent model is refused by both, instead of being silently dropped after the handoff by
+    whichever guard nobody remembered to update.
+    """
+    return {
+        "efp": hasattr(wfn.molecule(), "EFP"),
+        "pcm": core.get_option("SCF", "PCM"),
+        "ddx": core.get_option("SCF", "DDX"),
+        "pe": core.get_option("SCF", "PE"),
+    }
+
+
 def _validate_soscf():
     """Sanity-checks SOSCF control options
 
     Raises
     ------
     ValidationError
-        If any of |scf__soscf|, |scf__soscf_start_convergence|,
+        If any of |scf__soscf|, |scf__soscf_start|, |scf__soscf_start_convergence|,
         |scf__soscf_min_iter|, |scf__soscf_max_iter| don't play well together.
 
     Returns
@@ -1063,6 +1206,10 @@ def _validate_soscf():
     """
     enabled = core.get_option('SCF', 'SOSCF')
     if enabled:
+        start_iter = core.get_option('SCF', 'SOSCF_START')
+        if start_iter < 1:
+            raise ValidationError('SCF SOSCF_START ({}) must be at least 1'.format(start_iter))
+
         start = core.get_option('SCF', 'SOSCF_START_CONVERGENCE')
         if start < 0.0:
             raise ValidationError('SCF SOSCF_START_CONVERGENCE ({}) must be positive'.format(start))

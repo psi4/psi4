@@ -3,6 +3,7 @@ import pytest
 
 import psi4
 
+from addons import using, uusing
 from utils import compare_values
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
@@ -22,6 +23,14 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
     ],
 )
 def test_guess_mix_for_broken_symmetry(inp):
+    if (psi4.core.get_option("SCF", "SOSCF")
+            and psi4.core.get_option("scf", "second_order_orbital_optimizer_package")
+            in ["OTR", "OPENTRUSTREGION"]):
+        # This test expects a plain UHF to stop at -0.82648 but guess_mix to reach -0.99872 .
+        # The former is a saddle point, and OpenTrustRegion's gradient perturbation is there to
+        # leave one, so with it on the plain run descends to -0.99872 too and the test cannot
+        # tell the two apart.
+        psi4.set_options({"otr_grad_noise": False})
 
     refENuc = 0.17639240356
     refSCF = -0.82648407827446
@@ -288,3 +297,139 @@ def test_sad_frac_occ_atomic_natural_occupations(atom, geom, expected_spin_elect
 # 0  O:   4.00000000   4.00000000   8.00000000
 # 1  H:   0.50000000   0.50000000   1.00000000
 # 2  H:   0.50000000   0.50000000   1.00000000
+
+
+@pytest.mark.parametrize("soopkg", [
+    pytest.param("internal", id="internal"),
+    pytest.param("otr", id="otr", marks=using("otr")),
+])
+def test_soscf_maxiter_budget(soopkg):
+    """MAXITER caps the whole SCF, not each stage of it.
+
+    The second-order package takes over partway through, so its own iteration budget has to
+    account for what the first-order iterations already spent -- and, for OpenTrustRegion, for
+    the macro-iteration that re-evaluates the handoff state psi4 has already counted. Both
+    packages should therefore need the same MAXITER to converge the same computation, and
+    should report the same iteration count.
+    """
+    psi4.geometry("""
+      O
+      H 1 0.96
+      H 1 0.96 2 104.5
+      symmetry c1
+    """)
+    common = {"basis": "cc-pvdz", "scf_type": "pk", "soscf": True,
+              "second_order_orbital_optimizer_package": soopkg, "fail_on_maxiter": True}
+
+    # find the smallest budget that converges
+    for maxiter in range(2, 20):
+        psi4.set_options({**common, "maxiter": maxiter})
+        try:
+            psi4.energy("scf")
+        except psi4.SCFConvergenceError:
+            continue
+        break
+    else:
+        pytest.fail("never converged")
+
+    niter = int(psi4.variable("SCF ITERATIONS"))
+    # the budget actually spent is what was reported, not one more or one less
+    assert niter == maxiter, f"converged at MAXITER={maxiter} but reported {niter} iterations"
+
+    # and one fewer must fail rather than quietly returning a shorter run
+    psi4.set_options({**common, "maxiter": maxiter - 1})
+    with pytest.raises(psi4.SCFConvergenceError):
+        psi4.energy("scf")
+
+
+@pytest.mark.scf
+@uusing("otr")
+def test_otr_precision_floor_polish():
+    """OpenTrustRegion stops where the energy stops resolving; DIIS finishes the job.
+
+    Asked for more precision than the objective function can resolve, OpenTrustRegion stops
+    short of the thresholds and reports success. OTR_MAX_PRECISION_REACHED_HANDLING = DIIS
+    hands the orbitals to first-order iterations, which converge on the orbital gradient
+    instead and are not held to the same limit. Nothing in the regular suite reaches that
+    floor, so ask for a threshold tight enough to put it there on purpose.
+    """
+    # methyloxirane, geometry as in cc31 (Pederson et al., CPL)
+    psi4.geometry("""
+0 1
+C     0.210991841737     0.047663662717     0.483960886619
+C    -0.960965312103     0.688519555303    -0.115848688934
+C     1.558206749694     0.047460114159    -0.180267436891
+O    -0.815251456906    -0.734986972268    -0.138532905591
+H     0.223550547304    -0.045637654519     1.567373484970
+H    -1.759483315918     1.063259112311     0.516330435381
+H    -0.862256972568     1.177986074652    -1.079897880020
+H     2.088617117792    -0.883541600456     0.026321487274
+H     2.169362364888     0.872235726981     0.192209317060
+H     1.455347299576     0.149768052462    -1.260354487995
+noreorient
+""")
+    psi4.set_options({"basis": "sto-3g", "scf_type": "pk", "reference": "rhf",
+                      "soscf": True, "second_order_orbital_optimizer_package": "otr",
+                      "e_convergence": 1.0e-13, "d_convergence": 1.0e-13,
+                      "otr_max_precision_reached_handling": "diis"})
+
+    e, wfn = psi4.energy("scf", return_wfn=True)
+
+    # the floor was reached, so the polish is what finished this SCF
+    assert wfn.opentrustregion_stopped_short(), \
+        "expected OpenTrustRegion to stop at its precision floor for d_convergence 1e-13"
+    assert compare_values(-189.513417237103, e, 9, "SCF energy after the first-order polish")
+
+    # and it took a run of them, not a single step: OpenTrustRegion stops around a 1e-9
+    # orbital gradient here and the polish carries it the remaining four orders
+    assert int(psi4.variable("SCF ITERATIONS")) >= 10, \
+        f'only {int(psi4.variable("SCF ITERATIONS"))} iterations; expected a multi-step polish'
+
+    # FAIL declines to finish it, so the same request becomes non-convergence
+    psi4.set_options({"otr_max_precision_reached_handling": "fail"})
+    with pytest.raises(psi4.SCFConvergenceError):
+        psi4.energy("scf")
+
+
+@pytest.mark.scf
+@uusing("otr")
+def test_otr_polish_keeps_its_improvement():
+    """A polish that runs out of iterations keeps its orbitals when they are the better ones.
+
+    The polish is allowed to end short, and when it does, whichever of the two solutions has
+    the smaller orbital gradient is the one left behind. Both have to be measured the same
+    way for that comparison to mean anything, and OpenTrustRegion's cannot be measured after
+    the driver diagonalizes: that makes the density a projector onto eigenvectors of the
+    current Fock matrix, so the commutator falls to roundoff however unconverged the orbitals
+    are, and the comparison then throws the polish's work away every time.
+    """
+    psi4.geometry("""
+0 2
+N
+O 1 1.158
+symmetry c1
+""")
+    # the SCF of dfmp2-grad2, whose D_CONVERGENCE is tight enough that OpenTrustRegion hits
+    # its floor around iteration 7. Its polish converges at iteration 15, so stop two short
+    # of that: MAXITER is what ends a polish, and this is a polish ended by it.
+    psi4.set_options({"basis": "cc-pvdz", "df_basis_scf": "cc-pvdz-jkfit",
+                      "scf_type": "df", "guess": "sad", "reference": "uhf",
+                      "soscf": True, "second_order_orbital_optimizer_package": "otr",
+                      "e_convergence": 1.0e-10, "d_convergence": 1.0e-10, "maxiter": 13,
+                      "otr_max_precision_reached_handling": "diis"})
+
+    with pytest.raises(psi4.SCFConvergenceError) as exc:
+        psi4.energy("scf")
+
+    # the SCF is unconverged on its orbital gradient, so the gradient it reports has to be a
+    # real measure of these orbitals -- above D_CONVERGENCE, not the roundoff of a density
+    # built from the eigenvectors of its own Fock matrix
+    assert exc.value.d_conv > 1.0e-10, \
+        f"reported Dnorm {exc.value.d_conv:.2e} is below the D_CONVERGENCE it failed to reach"
+
+    # and the polish improved on where OpenTrustRegion stopped, so its orbitals are the ones
+    # kept; an equal value would mean OpenTrustRegion's were restored over better ones
+    otr_entry_dnorm = exc.value.wfn.otr_outcome_[3]
+    assert exc.value.d_conv < otr_entry_dnorm, \
+        (f"polish ended at {exc.value.d_conv:.2e} against OpenTrustRegion's "
+         f"{otr_entry_dnorm:.2e}; the better orbitals were not the ones kept")
