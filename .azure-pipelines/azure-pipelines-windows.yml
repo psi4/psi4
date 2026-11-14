@@ -143,13 +143,13 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        libint<2.14 ^
+                        "libint<2.14" ^
                         qcelemental ^
                         qcengine ^
                         qcmanybody ^
                         pydantic ^
                         optking ^
-                        scipy
+                        scipy || exit /b 1
           if %errorlevel% neq 0 exit /b %errorlevel%
           which conda
           conda list
