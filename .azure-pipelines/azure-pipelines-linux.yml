@@ -152,11 +152,19 @@ jobs:
     displayName: "Setup Information"
 
   - bash: |
-        echo "##vso[task.prependpath]$CONDA/bin"
-        conda config --set always_yes yes
-        conda config --set solver libmamba
-        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+      set -e
+      if [[ -z "${CONDA:-}" || ! -x "$CONDA/bin/conda" ]]; then
+        export CONDA="$HOME/miniforge3"
+        curl -fsSL -o miniforge.sh \
+          https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+        bash miniforge.sh -b -p "$CONDA"
+      fi
+      export PATH="$CONDA/bin:$PATH"
+      echo "##vso[task.setvariable variable=CONDA]$CONDA"
+      echo "##vso[task.prependpath]$CONDA/bin"
+      conda --version
+      conda config --set always_yes yes
+      # conda config --set solver libmamba
     displayName: "Add Conda to PATH"
 
   - bash: |
