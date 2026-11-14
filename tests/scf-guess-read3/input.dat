@@ -32,9 +32,8 @@ compare_values(-247.03206951, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy')
 set guess read
 energy('scf')
 compare_values(-247.03206951, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy, read-in guess')  #TEST
+# Converged orbitals are read in, so one macro-iteration is all it takes to confirm them,  #TEST
+# whatever the packages: an already-converged SCF is settled before any second-order       #TEST
+# handoff, so no package spends an extra iteration rediscovering that.                     #TEST
 niter = int(variable('SCF ITERATIONS'))
-# OpenOrbitalOptimizer costs one extra: it reaches the second-order handoff and the psi4  #TEST
-# loop then takes its own iteration to see that nothing is left to do.                    #TEST
-nexp = 2 if (psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL"
-             and psi4.core.get_option("SCF", "SOSCF")) else 1  # KP-LOGIC
-compare(nexp, niter, f'UHF Iterations {niter}, read-in guess')  #TEST
+compare(1, niter, f'UHF Iterations {niter}, read-in guess')  #TEST
