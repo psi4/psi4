@@ -17,7 +17,7 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-11 g++-11'
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: "quick"
+        PYTEST_MARKER_EXPR: "(quick and not memory_profiler)"
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
@@ -34,7 +34,7 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
         vmImage: 'ubuntu-24.04'
-        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
+        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long or memory_profiler)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
@@ -55,7 +55,7 @@ jobs:
         APT_INSTALL: 'gfortran clang-21 clang++-21'
         # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
+        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long or memory_profiler)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
