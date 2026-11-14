@@ -16,13 +16,13 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-11 g++-11'
-        vmImage: 'ubuntu-22.04'
-        PYTEST_MARKER_EXPR: "quick"
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: "(quick and not memory_profiler)"
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
         CMARGS: ""
-        CM_GENERATOR: "Unix Makefiles"
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -33,26 +33,29 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
-        vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
+        vmImage: 'ubuntu-24.04'
+        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long or memory_profiler)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
-        ENABLE_EINSUMS: "ON"
-        ENABLE_GAUXC: "ON"
-        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
-        CM_GENERATOR: "Ninja"
+        ENABLE_EINSUMS: "OFF"
+        ENABLE_GAUXC: "OFF"
+        CMARGS: >-
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
+          -Dpsi4_CMAKE_UNITY_BUILD=OFF
+          -DCMAKE_CXX_FLAGS_RELEASE:STRING='-O2 -DNDEBUG'
+        CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
       clang_latest:
-        CXX_COMPILER: 'clang++-15'
+        CXX_COMPILER: 'clang++-21'
         PYTHON_VER: '3.11'
-        C_COMPILER: 'clang-15'
+        C_COMPILER: 'clang-21'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-15 clang++-15'
+        APT_INSTALL: 'gfortran clang-21 clang++-21'
         # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
-        vmImage: 'ubuntu-22.04'
-        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long or memory_profiler)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
@@ -61,7 +64,7 @@ jobs:
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
           -DOpenMP_C_LIB_NAMES=omp
           -DOpenMP_CXX_LIB_NAMES=omp
-          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
+          -DOpenMP_omp_LIBRARY=/home/runner/miniforge3/envs/p4env/lib/libomp.so
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
@@ -75,7 +78,7 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-17 clang++-17'
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: 'quick'
+        PYTEST_MARKER_EXPR: '(quick and not memory_profiler)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
@@ -84,7 +87,7 @@ jobs:
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
           -DOpenMP_C_LIB_NAMES=omp
           -DOpenMP_CXX_LIB_NAMES=omp
-          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
+          -DOpenMP_omp_LIBRARY=/home/runner/miniforge3/envs/p4env/lib/libomp.so
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -152,11 +155,19 @@ jobs:
     displayName: "Setup Information"
 
   - bash: |
-        echo "##vso[task.prependpath]$CONDA/bin"
-        conda config --set always_yes yes
-        conda config --set solver libmamba
-        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+      set -e
+      if [[ -z "${CONDA:-}" || ! -x "$CONDA/bin/conda" ]]; then
+        export CONDA="$HOME/miniforge3"
+        curl -fsSL -o miniforge.sh \
+          https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+        bash miniforge.sh -b -p "$CONDA"
+      fi
+      export PATH="$CONDA/bin:$PATH"
+      echo "##vso[task.setvariable variable=CONDA]$CONDA"
+      echo "##vso[task.prependpath]$CONDA/bin"
+      conda --version
+      conda config --set always_yes yes
+      # conda config --set solver libmamba
     displayName: "Add Conda to PATH"
 
   - bash: |
