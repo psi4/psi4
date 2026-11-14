@@ -105,23 +105,14 @@ def _restore_orbital_state(wfn, state):
 
 
 def _aufbau_occupation(wfn):
-    """What find_occupation would assign from the current orbital energies, without assigning it.
+    """What the next find_occupation would leave the occupation as, without assigning it.
 
-    Mirrors the aufbau branch of HF::find_occupation: pool every (energy, irrep) pair, sort, and
-    hand the lowest nalpha/nbeta to their irreps. That branch is skipped entirely when DOCC or
-    SOCC is given, so report no change there rather than predicting one that cannot happen.
+    HF::next_occupation answers this where find_occupation's own aufbau branch lives, so the
+    two cannot drift. A given DOCC/SOCC and MOM each keep the occupation already set; only the
+    aufbau branch can move it.
     """
-    if core.has_option_changed("SCF", "DOCC") or core.has_option_changed("SCF", "SOCC"):
-        return _occupation(wfn)
-
-    def assign(epsilon, nelec):
-        counts = [0] * len(epsilon)
-        for _, h in sorted((e, h) for h, block in enumerate(epsilon) for e in block)[:nelec]:
-            counts[h] += 1
-        return tuple(counts)
-
-    return (assign(wfn.epsilon_a().nph, wfn.nalpha()),
-            assign(wfn.epsilon_b().nph, wfn.nbeta()))
+    na, nb = wfn.next_occupation()
+    return (tuple(na[h] for h in range(na.n())), tuple(nb[h] for h in range(nb.n())))
 
 
 def run(self, e_conv, d_conv):

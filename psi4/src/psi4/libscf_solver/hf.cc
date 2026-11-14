@@ -418,6 +418,48 @@ void HF::set_jk(std::shared_ptr<JK> jk) {
 
 void HF::semicanonicalize() { throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!"); }
 
+std::pair<Dimension, Dimension> HF::aufbau_occupation() const {
+    assert(nirrep_ == epsilon_a_->nirrep());
+    assert(nirrep_ == epsilon_b_->nirrep());
+
+    // The occupations are determined by the Aufbau
+    // principle. We first collect all the orbital energies and
+    // sort them in increasing order
+    std::vector<std::pair<double, int> > pairs_a;
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) {
+            pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+        }
+    }
+    sort(pairs_a.begin(), pairs_a.end());
+    // Same for beta electrons
+    std::vector<std::pair<double, int> > pairs_b;
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i) {
+            pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
+        }
+    }
+    sort(pairs_b.begin(), pairs_b.end());
+
+    // Sanity check: we must have at least one orbital per electron
+    if ((size_t)std::max(nalpha_, nbeta_) > pairs_a.size())
+        throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
+
+    Dimension nalphapi(nirrep_), nbetapi(nirrep_);
+    // Occupy the lowest nalpha orbitals
+    for (int i = 0; i < nalpha_; ++i) nalphapi[pairs_a[i].second]++;
+    // Occupy the lowest nbeta electrons
+    for (int i = 0; i < nbeta_; ++i) nbetapi[pairs_b[i].second]++;
+    return {nalphapi, nbetapi};
+}
+
+std::pair<Dimension, Dimension> HF::next_occupation() const {
+    // MOM reassigns by overlap and a given DOCC/SOCC is fixed, so in both cases
+    // find_occupation() leaves the occupation exactly where it is.
+    if (MOM_performed_ || input_docc_ || input_socc_) return {nalphapi_, nbetapi_};
+    return aufbau_occupation();
+}
+
 void HF::find_occupation() {
     // Don't mess with the occ, MOM's got it!
     if (MOM_performed_) {
@@ -426,41 +468,11 @@ void HF::find_occupation() {
         auto old_nalphapi = nalphapi_;
         auto old_nbetapi = nbetapi_;
         if (!input_docc_ && !input_socc_) {
-            assert(nirrep_ == epsilon_a_->nirrep());
-            assert(nirrep_ == epsilon_b_->nirrep());
-
-            // The occupations are determined by the Aufbau
-            // principle. We first collect all the orbital energies and
-            // sort them in increasing order
-            std::vector<std::pair<double, int> > pairs_a;
+            const auto [aufbau_a, aufbau_b] = aufbau_occupation();
             for (int h = 0; h < nirrep_; ++h) {
-                for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) {
-                    pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
-                }
+                nalphapi_[h] = aufbau_a[h];
+                nbetapi_[h] = aufbau_b[h];
             }
-            sort(pairs_a.begin(), pairs_a.end());
-            // Same for beta electrons
-            std::vector<std::pair<double, int> > pairs_b;
-            for (int h = 0; h < nirrep_; ++h) {
-                for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i) {
-                    pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
-                }
-            }
-            sort(pairs_b.begin(), pairs_b.end());
-
-            // Sanity check: we must have at least one orbital per electron
-            if ((size_t)std::max(nalpha_, nbeta_) > pairs_a.size())
-                throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
-
-            // Reset occupations
-            for (int h = 0; h < nirrep_; ++h) {
-                nalphapi_[h] = 0;
-                nbetapi_[h] = 0;
-            }
-            // Occupy the lowest nalpha orbitals
-            for (int i = 0; i < nalpha_; ++i) nalphapi_[pairs_a[i].second]++;
-            // Occupy the lowest nbeta electrons
-            for (int i = 0; i < nbeta_; ++i) nbetapi_[pairs_b[i].second]++;
         }
 
         if (!input_docc_ && !input_socc_) {

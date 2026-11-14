@@ -380,6 +380,9 @@ void export_wavefunction(py::module& m) {
         .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
+        .def("next_occupation", &scf::HF::next_occupation,
+             "What the next find_occupation() would leave the occupation as, as (alpha, beta) "
+             "Dimensions, without changing anything.")
         .def("diis", &scf::HF::diis, "docstring")
         .def_property("diis_manager_", &scf::HF::diis_manager, &scf::HF::set_diis_manager, "The DIIS object.")
         .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager,

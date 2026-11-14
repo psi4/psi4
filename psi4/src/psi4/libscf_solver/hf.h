@@ -29,6 +29,7 @@
 #ifndef HF_H
 #define HF_H
 
+#include <utility>
 #include <vector>
 #include <functional>
 #include "psi4/libmints/wavefunction.h"
@@ -421,6 +422,16 @@ class HF : public Wavefunction {
 
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();
+
+    /// The occupation the aufbau principle gives for the current orbital energies, as
+    /// (alpha, beta) counts per irrep, without assigning it. find_occupation() fills
+    /// nalphapi_/nbetapi_ from this.
+    std::pair<Dimension, Dimension> aufbau_occupation() const;
+
+    /// What find_occupation() would leave the occupation as, without changing anything, for
+    /// a caller that has to know whether it is about to move. MOM and a given DOCC/SOCC each
+    /// keep the occupation already set, so only the aufbau branch can move it.
+    std::pair<Dimension, Dimension> next_occupation() const;
 
     /** Performs DIIS extrapolation */
     virtual bool diis(double dnorm) { return false; }
