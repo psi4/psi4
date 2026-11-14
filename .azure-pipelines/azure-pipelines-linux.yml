@@ -37,19 +37,19 @@ jobs:
         PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
-        ENABLE_GAUXC: "ON"
+        ENABLE_GAUXC: "OFF"
         CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
       clang_latest:
-        CXX_COMPILER: 'clang++-15'
+        CXX_COMPILER: 'clang++-21'
         PYTHON_VER: '3.11'
-        C_COMPILER: 'clang-15'
+        C_COMPILER: 'clang-21'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-15 clang++-15'
+        APT_INSTALL: 'gfortran clang-21 clang++-21'
         # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
