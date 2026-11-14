@@ -324,8 +324,8 @@ def selected(wfn, soscf_enabled, potentials):
 
     False where it is not the package asked for, and where it is but the calculation has
     something it cannot carry. It takes over the iteration loop at the handoff, so anything
-    applied per-iteration from Python (EFP/PCM/DDX/PE) or through form_C (MOM) would stop
-    being applied thereafter. The GRAC shift splices its potential into V_xc outside the
+    applied per-iteration from Python (EFP/PCM/DDX/PE) or through find_occupation (MOM) would
+    stop being applied thereafter. The GRAC shift splices its potential into V_xc outside the
     kernel cphf_Hx differentiates, so the Hessian never sees it. Second-order SCF in general
     is refused for CUHF, meta/VV10 and FRAC by _validate_soscf, and for sn-LinK and IncFock
     in proc.scf_helper.
@@ -335,11 +335,16 @@ def selected(wfn, soscf_enabled, potentials):
             in ["OTR", "OPENTRUSTREGION"]):
         return False
 
+    # Excited-state MOM is MOM_START with MOM_OCC; MOM_START alone still reorders the
+    # occupation by overlap, which is neither what OpenTrustRegion optimizes at nor what
+    # _aufbau_occupation predicts, so the restart loop would reconverge at an occupation
+    # find_occupation then overrides.
+    mom_enabled = wfn.MOM_excited_ or core.get_option("SCF", "MOM_START") != 0
     grac_enabled = (core.get_option("SCF", "DFT_GRAC_SHIFT") != 0.0
                     or core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE")
-    if wfn.MOM_excited_ or grac_enabled or any(potentials.values()):
+    if mom_enabled or grac_enabled or any(potentials.values()):
         core.print_out("    Note: OpenTrustRegion not compatible with at least one of the following. Falling back to second_order_orbital_optimizer_package=internal\n")
-        core.print_out(f"          mom={wfn.MOM_excited_}, grac={grac_enabled},\n")
+        core.print_out(f"          mom={mom_enabled}, grac={grac_enabled},\n")
         core.print_out("          "
                        + ", ".join(f"{name}={value}" for name, value in potentials.items())
                        + "\n")
