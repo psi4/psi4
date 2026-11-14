@@ -168,6 +168,11 @@ def run(self, e_conv, d_conv):
         SCFE = self.compute_E()
         self.set_energies("Total Energy", SCFE)
         self.set_variable("SCF ITERATION ENERGY", SCFE)
+        # The first-order loop refreshes core's copies every iteration and does not run here,
+        # so they would otherwise still describe the pre-handoff point. SCF D NORM is read
+        # back by DirectJK/CompositeJK to decide whether an incremental Fock build is safe.
+        core.set_variable("SCF ITERATION ENERGY", SCFE)
+        core.set_variable("SCF D NORM", self.otr_outcome_[3])
 
         # Report one entry per OTR macro-iteration so SCF ITERATIONS and SCF TOTAL ENERGIES
         # mean the same thing as for internal solver. OTR's macro-iter=0 is already counted, and
@@ -209,6 +214,8 @@ def run(self, e_conv, d_conv):
                 SCFE = self.compute_E()
                 self.set_energies("Total Energy", SCFE)
                 self.set_variable("SCF ITERATION ENERGY", SCFE)
+                core.set_variable("SCF ITERATION ENERGY", SCFE)
+                core.set_variable("SCF D NORM", self.otr_outcome_[3])
                 core.print_out("    Note: reconverging at the aufbau occupation raised the energy; "
                                "keeping the previous solution.\n")
             break
@@ -293,6 +300,8 @@ class Polish:
             SCFE = wfn.compute_E()
             wfn.set_energies("Total Energy", SCFE)
             wfn.set_variable("SCF ITERATION ENERGY", SCFE)
+            core.set_variable("SCF ITERATION ENERGY", SCFE)
+            core.set_variable("SCF D NORM", self.entry_dnorm)
             core.print_out(
                 f"    The first-order iterations left the orbitals worse than\n"
                 f"    OpenTrustRegion did ({Dnorm:.2e} against "
