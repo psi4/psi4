@@ -255,6 +255,12 @@ def run(self, e_conv, d_conv):
         # change, so it cannot verify progress it cannot measure.
         handling = core.get_option("SCF", "OTR_MAX_PRECISION_REACHED_HANDLING")
         if handling == "DIIS":
+            if self.iteration_ >= core.get_option("SCF", "MAXITER"):
+                # Nothing left to polish with. Handing back would spend one more J/K build
+                # before the loop's own check fired, reporting MAXITER+1 iterations; the
+                # handoff and the OpenOrbitalOptimizer return guard themselves the same way.
+                core.print_out("    MAXITER leaves no iteration for the first-order polish.\n")
+                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
             # First-order iterations converge on the orbital gradient instead, which is still
             # measurable here, so let the caller finish the SCF with them.
             return NEEDS_POLISH
