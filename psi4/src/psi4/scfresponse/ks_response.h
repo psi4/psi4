@@ -1,0 +1,113 @@
+/*
+ * @BEGIN LICENSE
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2026 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This file is part of Psi4.
+ *
+ * Psi4 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * Psi4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along
+ * with Psi4; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
+ */
+
+#ifndef KS_RESPONSE_H
+#define KS_RESPONSE_H
+
+// for dft
+#include "psi4/libfock/v.h"
+#include "psi4/libfunctional/superfunctional.h"
+
+// jk object
+#include <psi4/libfock/jk.h>
+
+namespace psi {namespace scf_response{ 
+
+class KSResponseSolver: public Wavefunction {
+
+  public:
+
+    KSResponseSolver(std::shared_ptr<Wavefunction> reference_wavefunction, Options& options_);
+
+    ~KSResponseSolver();
+
+    void common_init();
+
+    void compute_properties(const std::string& property);
+
+  protected:
+
+    virtual std::vector<std::vector<double>> first_order_response(
+        std::vector<std::shared_ptr<Matrix>> op_a, 
+        std::vector<std::shared_ptr<Matrix>> op_b, 
+        double omega
+    ){ throw PsiException("KSResponseSolver::first_order_response is not implemented.", __FILE__, __LINE__); }
+
+    virtual void compute_polarizability(
+        std::vector<double>X, 
+        std::vector<double>Y, 
+        double omega
+    ){ throw PsiException("KSResponseSolver::compute_polarizability is not implemented.", __FILE__, __LINE__); }
+
+    virtual void compute_hyperpolarizability(std::vector<std::vector<double>>amps_wx,
+        std::vector<std::vector<double>>amps_wy,
+        std::vector<std::vector<double>>amps_wz,
+        std::string type, double omega
+    ){ throw PsiException("KSResponseSolver::compute_hyperpolarizability is not implemented.", __FILE__, __LINE__); }
+
+    // Store results as Psi4 variables (globally and on the reference wavefunction):
+    // SCF DIPOLE POLARIZABILITY [TENSOR] @ xNM, and the hyperpolarizability tensors
+    // SCF DIPOLE / SHG / OPTICAL RECTIFICATION / POCKELS HYPERPOLARIZABILITY TENSOR [@ xNM].
+    void store_polarizability(SharedMatrix alpha, double omega);
+    void store_hyperpolarizability(SharedMatrix beta, const std::string& type, double omega);
+
+    std::shared_ptr<VBase> potential_;
+
+    // restricted (RHF/RKS) or unrestricted (UHF/UKS) reference, taken from the orbitals
+    bool restricted_;
+
+    // jk object
+    std::shared_ptr<JK> jk_;
+
+    // is the functional hf?
+    bool is_hf_;
+
+    // hybrid?
+    bool is_x_hybrid_;
+
+    // lrc?
+    bool is_x_lrc_;
+
+    // lrc omega?
+    double x_omega_;
+
+    // needs xc?
+    bool needs_xc_;
+
+    // hybrid alpha?
+    double x_alpha_;
+    double x_beta_;
+
+    // MO-basis dipole integrals
+    std::vector<std::shared_ptr<Matrix>> mua_;
+    std::vector<std::shared_ptr<Matrix>> mub_;
+};
+
+}} // End namespaces
+
+#endif 

@@ -3341,16 +3341,26 @@ def run_scf_property(name, **kwargs):
     properties = kwargs.pop('properties')
 
     # What response do we need?
-    response_list_vals = list(response.scf_response.property_dicts)
+    scfresponse_types = response.scf_response.scfresponse_property_types
+    response_list_vals = list(response.scf_response.property_dicts) + list(scfresponse_types)
     oeprop_list_vals = core.OEProp.valid_methods
+
+    # With frequencies given through OMEGA, dipole polarizabilities are frequency dependent
+    # and are computed by the scfresponse module instead of the static CPSCF solver.
+    dynamic_polarizability = core.has_global_option_changed("OMEGA") and len(core.get_global_option("OMEGA")) > 0
 
     oe_properties = []
     linear_response = []
+    scfresponse_properties = []
     unknown_property = []
     for prop in properties:
 
         prop = prop.upper()
-        if prop in response_list_vals:
+        if prop in scfresponse_types:
+            scfresponse_properties.append(scfresponse_types[prop])
+        elif prop == "DIPOLE_POLARIZABILITIES" and dynamic_polarizability:
+            scfresponse_properties.append("POLARIZABILITY")
+        elif prop in response_list_vals:
             linear_response.append(prop)
         elif (prop in oeprop_list_vals) or ("MULTIPOLE(" in prop):
             oe_properties.append(prop)
@@ -3375,7 +3385,7 @@ def run_scf_property(name, **kwargs):
     if len(oe_properties):
         proc_util.oeprop_validator(oe_properties)
 
-    if len(linear_response):
+    if len(linear_response) or len(scfresponse_properties):
         optstash_jk = p4util.OptionsState(["SAVE_JK"])
         core.set_global_option("SAVE_JK", True)
 
@@ -3399,6 +3409,16 @@ def run_scf_property(name, **kwargs):
                                                             conv_tol = core.get_global_option("SOLVER_CONVERGENCE"),
                                                             max_iter = core.get_global_option("SOLVER_MAXITER"),
                                                             print_lvl = (core.get_global_option("PRINT") + 1))
+        optstash_jk.restore()
+
+    # Run frequency-dependent polarizabilities and hyperpolarizabilities
+    if len(scfresponse_properties) and isinstance(scf_wfn, (core.ROHF, core.CUHF)):
+        raise ValidationError(f"SCF response: {type(scf_wfn).__name__} references are not supported for "
+                              f"{', '.join(p for p in properties if p.upper() in scfresponse_types or p.upper() == 'DIPOLE_POLARIZABILITIES')}; "
+                              "use RHF/RKS or UHF/UKS.")
+    for prop in scfresponse_properties:
+        core.scfresponse(scf_wfn, prop)
+    if len(scfresponse_properties) and not len(linear_response):
         optstash_jk.restore()
 
     core.tstop()

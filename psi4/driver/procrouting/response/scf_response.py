@@ -75,6 +75,15 @@ property_dicts = {
     'TRACELESS_QUADRUPOLE_POLARIZABILITIES': traceless_quadrupole
 }
 
+# Properties computed by the scfresponse module (C++), mapped to the module's property types.
+# DIPOLE_POLARIZABILITIES is also routed there when frequencies are given through OMEGA.
+scfresponse_property_types = {
+    'SCF_DIPOLE_HYPERPOLARIZABILITY': 'HYPERPOLARIZABILITY',
+    'SCF_SHG': 'SHG',
+    'SCF_OPTICAL_RECTIFICATION': 'OR',
+    'SCF_POCKELS': 'POCKELS',
+}
+
 
 def cpscf_linear_response(wfn, *args, **kwargs):
     """

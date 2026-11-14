@@ -1,0 +1,73 @@
+#! Open-shell UKS-PBE/cc-pVDZ CH3 radical, SCF_TYPE PK: static dipole polarizability and alpha(omega = 0.05 au).
+#! Open shell, so the alpha and beta spin blocks of the XC kernel differ (a closed-shell UKS case would just
+#! reproduce RKS). DFT grid (99, 590) to match the reference (PySCF grid level 6); SCF energies agree to 5e-9.
+#! Static alpha is checked against Psi4's built-in CPSCF/CPKS solver. Reference values come from an
+#! independent TDHF/TDDFT response code built on PySCF 2.15 (the same code as the other scf-response
+#! references; it reproduces them to 1e-13); atol 1e-6.
+#! Static alpha and alpha(omega) come from one properties() call (OMEGA [0.0, 0.05, au]; see scf-response-multi).
+
+molecule {
+0 2
+C   0.000000   0.000000   0.000000
+H   0.000000   1.078000   0.000000
+H   0.933575  -0.539000   0.000000
+H  -0.933575  -0.539000   0.000000
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  reference uks
+  scf_type pk
+  e_convergence 1e-10
+  d_convergence 1e-10
+  solver_convergence 1e-10
+  dft_radial_points 99
+  dft_spherical_points 590
+}
+
+import numpy as np
+
+XYZ = "XYZ"
+
+
+def wavelength_label(omega):
+    """Wavelength label used in the result names: nearest nm, or INF NM for a static field."""
+    if abs(omega) < 1.e-14:
+        return "INF NM"
+    c = psi4.constants
+    return f"{round(c.c * c.h * 1.e9 / (c.hartree2J * abs(omega)))}NM"
+
+
+def alpha_tensor(omega):
+    """SCF dipole polarizability tensor (3 x 3) at frequency omega (au)."""
+    return np.asarray(variable(f"SCF DIPOLE POLARIZABILITY TENSOR @ {wavelength_label(omega)}"))
+
+
+def beta_tensor(kind, omega=0.0):
+    """SCF first hyperpolarizability tensor (3 x 3 x 3): kind STATIC, SHG, OR, or POCKELS."""
+    names = {"STATIC": "SCF DIPOLE HYPERPOLARIZABILITY TENSOR",
+             "SHG": "SCF SHG HYPERPOLARIZABILITY TENSOR",
+             "OR": "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR",
+             "POCKELS": "SCF POCKELS HYPERPOLARIZABILITY TENSOR"}
+    name = names[kind] if kind == "STATIC" else f"{names[kind]} @ {wavelength_label(omega)}"
+    return np.asarray(variable(name))
+
+
+ref_alpha_static = np.array([[12.350647802958381, 1.8642241738640963e-14, -2.0746761977868104e-16], [1.8385443341860766e-14, 12.350654295419018, -2.49819462484637e-19], [-1.5995660794108382e-16, 5.356118026252385e-17, 6.908397550804084]])  #TEST
+ref_alpha = np.array([[12.447557361450293, 1.8606944639042263e-14, -2.1405547172563786e-16], [1.8364601360272834e-14, 12.447563946794398, -1.0997551108682647e-18], [-1.6387337806452528e-16, 5.378457128088713e-17, 6.958651273631735]])  #TEST
+
+w = 0.05
+
+# static alpha from Psi4's built-in solver (OMEGA unset)
+properties('pbe', properties=['DIPOLE_POLARIZABILITIES'])
+builtin = np.array([[variable(f'DIPOLE POLARIZABILITY {p}{q}') for q in XYZ] for p in XYZ])
+
+# scfresponse module: static and omega in one call
+set_options({'omega': [0.0, w, 'au']})
+properties('pbe', properties=['DIPOLE_POLARIZABILITIES'])
+compare_arrays(builtin, alpha_tensor(0.0), 1.e-8, 'static alpha vs built-in solver')  #TEST
+compare_arrays(ref_alpha_static, alpha_tensor(0.0), 1.e-6, 'static alpha vs reference')  #TEST
+compare_arrays(ref_alpha, alpha_tensor(w), 1.e-6, f'alpha({w}) vs reference')  #TEST
