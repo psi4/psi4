@@ -31,6 +31,7 @@
 
 #include "psi4/pragma.h"
 #include <memory>
+#include <vector>
 #include "psi4/libmints/vector.h"
 #include <string>
 #include "typedefs.h"
@@ -73,8 +74,9 @@ class PSI_API MOWriter {
     bool restricted_;
 
    private:
-    double *Ca_pointer, *eps;
-    int *map, *sym, *occ, nmo, nso;
+    std::vector<double> C_data, eps;
+    std::vector<int> map, sym, occ;
+    int nmo, nso;
     void write_mos(Molecule &mol);
 
    public:

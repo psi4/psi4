@@ -1318,9 +1318,9 @@ std::string Molecule::save_string_xyz() const {
     return ss.str();
 }
 
-Matrix *Molecule::inertia_tensor() const {
+SharedMatrix Molecule::inertia_tensor() const {
     int i;
-    Matrix *tensor = new Matrix("Inertia Tensor", 3, 3);
+    auto tensor = std::make_shared<Matrix>("Inertia Tensor", 3, 3);
     Matrix &temp = *tensor;
 
     for (i = 0; i < natom(); i++) {
@@ -1351,7 +1351,7 @@ Matrix *Molecule::inertia_tensor() const {
 }
 
 Vector Molecule::rotational_constants(double zero_tol) const {
-    SharedMatrix pI(inertia_tensor());
+    SharedMatrix pI = inertia_tensor();
     Vector evals(3);
     auto eigenvectors = std::make_shared<Matrix>(3, 3);
     pI->diagonalize(*eigenvectors, evals, ascending);
@@ -2561,7 +2561,7 @@ void Molecule::set_full_point_group(double zero_tol) {
             outfile->Printf("\t\tWarning: Cannot determine point group.\n");
     } else if (rotor == RT_SYMMETRIC_TOP) {
         // Find principal axis that is unique and make it z-axis.
-        SharedMatrix It(inertia_tensor());
+        SharedMatrix It = inertia_tensor();
         Vector I_evals(3);
         auto I_evects = std::make_shared<Matrix>(3, 3);
         It->diagonalize(*I_evects, I_evals, ascending);
