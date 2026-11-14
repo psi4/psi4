@@ -37,8 +37,10 @@ jobs:
         PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
-        ENABLE_GAUXC: "OFF"
-        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        ENABLE_GAUXC: "ON"
+        CMARGS: >-
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
+          -Dpsi4_libmints_UNITY_BUILD_BATCH_SIZE=5
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
