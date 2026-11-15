@@ -161,6 +161,7 @@ jobs:
         curl -fsSL -o miniforge.sh \
           https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
         bash miniforge.sh -b -p "$CONDA"
+        rm -vf miniforge.sh
       fi
       export PATH="$CONDA/bin:$PATH"
       echo "##vso[task.setvariable variable=CONDA]$CONDA"
