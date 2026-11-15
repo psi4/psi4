@@ -43,12 +43,9 @@ extern "C" {
 namespace psi {
 
 using libcint_util::ncart;
+using libcint_util::upper_triangle;
 
 namespace {
-
-/// Index of (u, v), u <= v, in the row-major upper triangle of an n x n matrix: the
-/// order of Libint2's second-derivative results.
-inline size_t upper_triangle(int u, int v, int n) { return static_cast<size_t>(u) * (2 * n - u - 1) / 2 + v; }
 
 /// Number of psi4 functions in a shell pair, the stride between components in store_.
 inline size_t pair_size(const LibcintOneBodyEngine &engine, int s1, int s2) {

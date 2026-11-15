@@ -60,6 +60,10 @@ inline int libcint_m(int i, int l) {
 /// cartesian order is psi4's CartesianIter order) or spherical.
 inline int psi4_index(int i, int l, bool cart) { return cart ? i : psi4_slot(libcint_m(i, l)); }
 
+/// Index of (u, v), u <= v, in the row-major upper triangle of an n x n matrix: the
+/// order of Libint2's second-derivative results.
+inline size_t upper_triangle(int u, int v, int n) { return static_cast<size_t>(u) * (2 * n - u - 1) / 2 + v; }
+
 /// Factor converting a Libint2 contraction coefficient into the libcint coefficient
 /// describing the same function, for angular momentum l (see the definition).
 double libint2_to_libcint(int l, bool cart);
