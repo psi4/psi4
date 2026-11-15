@@ -44,7 +44,7 @@ class Vector;
 class JK;
 class PCM;
 class SuperFunctional;
-class VBase;
+class DensityFunctionalIntegratorDispatcher;
 class BasisSet;
 class DIISManager;
 class PSIO;
@@ -309,7 +309,7 @@ class HF : public Wavefunction {
     /// The DFT Potential object (or null if it has been deleted)
     /// This needs to be virtual so that subclasses can enforce their
     /// particular potential's derived class.
-    virtual std::shared_ptr<VBase> V_potential() const = 0;
+    virtual std::shared_ptr<DensityFunctionalIntegratorDispatcher> V_potential() const = 0;
 
     /// Returns the occupation vectors
     std::shared_ptr<Vector> occupation_a() const;
@@ -369,8 +369,13 @@ class HF : public Wavefunction {
     /// Form the guess (guarantees C, D, and E)
     virtual void guess();
 
-    /// Compute the MO coefficients (C_) using level shift
+    /// Compute the MO coefficients (C_) using level shift, then assign the occupation
     virtual void form_C(double shift = 0.0);
+    /** Compute the MO coefficients (C_) using level shift, leaving the occupation alone.
+        form_C is this followed by find_occupation. Generally, use form_C, but this can
+        be useful when having already optimized against a particular occupation, one wants
+        the orbitals canonical without having the aufbau rule reassign underneath it. */
+    virtual void diagonalize_orbitals(double shift = 0.0);
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
 

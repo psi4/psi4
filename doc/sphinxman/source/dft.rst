@@ -329,6 +329,16 @@ orthogonalization, DIIS, and a core Hamiltonian guess (because single atom). For
 any of these options, see the relevant section below, or in the preceding
 :ref:`Hartree--Fock section <sec:scf>`.
 
+.. _`sec:ks-integrators`:
+
+Integrators
+~~~~~~~~~~~
+|PSIfour| supports the use of three different engines to perform the numerical integrations necessary for KS-DFT. |PSIfour| has its own integrator, and it also has interfaces to the GauXC and :ref:`BrianQC <sec:brianqc>` modules, both of which provide GPU support. More information about these modules is provided on their respective webpages.
+
+|PSIfour| allows multiple integrators to be initialized. |PSIfour| will attempt the computation with each initialized integrator and fall back to the next integrator if the current one cannot perform the desired computation.
+
+By default, only |PSIfour| is enabled, for backwards compatability. The default may be changed by setting |scf__dft_xc_integrator_packages|. This expects an array of the integrators to be tried, in order. Acceptable options are "internal", "brianqc", and "gauxc".
+
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
 

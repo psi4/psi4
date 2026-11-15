@@ -60,7 +60,7 @@ jobs:
 
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
-            python-version: "3.14"
+            python-version: "3.15"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
@@ -311,6 +311,7 @@ jobs:
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
 
+      # Mac tests latest-release and Linux tests upstream main for QCFractal
     - name: Special Config - Download MolSSI/QCFractal Repo
       if: runner.os != 'Windows'
       uses: actions/checkout@v6
@@ -424,7 +425,7 @@ jobs:
         git diff --color-words
 
     - name: Analyze Conda dependencies
-      if: runner.os != 'Windows'
+      if: runner.os != 'Windows' && matrix.cfg.python-version != '3.15'
       run: |
         conda install conda-tree -c conda-forge
         conda-tree deptree

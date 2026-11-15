@@ -33,7 +33,7 @@
 #include "psi4/libpsio/psio.hpp"
 
 namespace psi {
-class VBase;
+class IntegratorDispatcher;
 namespace scf {
 
 /*
@@ -96,7 +96,7 @@ class CUHF final : public HF {
 
     void save_density_and_energy() override;
 
-    void form_C(double shift = 0.0) override;
+    void diagonalize_orbitals(double shift = 0.0) override;
     void form_D() override;
     void form_F() override;
     void form_G() override;
@@ -106,7 +106,7 @@ class CUHF final : public HF {
     void damping_update(double) override;
     bool stability_analysis() override;
 
-    std::shared_ptr<VBase> V_potential() const override { return nullptr; };
+    std::shared_ptr<DensityFunctionalIntegratorDispatcher> V_potential() const override { return nullptr; };
 
     std::shared_ptr<CUHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 
