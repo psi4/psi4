@@ -64,6 +64,7 @@ bool is_dummy_basis(const BasisSet &bs) {
 using libcint_util::libcint_m;
 using libcint_util::ncart;
 using libcint_util::psi4_slot;
+using libcint_util::upper_triangle;
 
 /// Does the libcint in use drop the integrals of diffuse primitives of high
 /// angular momentum? Its estimate of the size of a pair of primitives leaves out
@@ -513,10 +514,6 @@ namespace {
 /// Slot orders placing center c (0-3) in libcint's first slot while keeping it
 /// a valid ERI permutation: (ab|cd) = (ba|cd) = (cd|ab) = (dc|ab).
 constexpr int first_slot_perm[4][4] = {{0, 1, 2, 3}, {1, 0, 2, 3}, {2, 3, 0, 1}, {3, 2, 0, 1}};
-
-/// Position of the coordinate pair (u, v), u <= v, in the row-major upper
-/// triangle of an n x n matrix (Libint2's second-derivative order).
-inline int upper_triangle(int u, int v, int n) { return u * n - u * (u - 1) / 2 + (v - u); }
 
 }  // namespace
 
