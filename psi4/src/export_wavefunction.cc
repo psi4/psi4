@@ -261,8 +261,13 @@ void export_wavefunction(py::module& m) {
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of doubly occupied orbitals per irrep.")
         .def("force_occpi", &Wavefunction::force_occpi,
-             "Specialized expert use only. Sets the number of doubly and singly occupied oribtals per irrep. Note that this "
-             "results in inconsistent Wavefunction objects for SCF, so caution is advised.")
+             "Specialized expert use only. Sets the number of doubly and singly occupied oribtals per irrep, the (docc, socc) "
+             "counterpart to force_occupation. Note that this results in inconsistent Wavefunction objects for SCF, so "
+             "caution is advised.")
+        .def("force_occupation", &Wavefunction::force_occupation,
+             "Specialized expert use only. Forces the alpha and beta occupations per irrep directly, the (alpha, beta) "
+             "counterpart to force_occpi. Note that this results in inconsistent Wavefunction objects for SCF, so caution "
+             "is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of singly occupied orbitals per irrep.")
         .def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy,

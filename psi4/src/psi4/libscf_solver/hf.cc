@@ -454,8 +454,11 @@ std::pair<Dimension, Dimension> HF::aufbau_occupation() const {
 }
 
 std::pair<Dimension, Dimension> HF::next_occupation() const {
-    // MOM reassigns by overlap and a given DOCC/SOCC is fixed, so in both cases
-    // find_occupation() leaves the occupation exactly where it is.
+    // A given DOCC/SOCC pins the occupation, so find_occupation() leaves it untouched and
+    // the aufbau branch is skipped. Under MOM find_occupation() reassigns by overlap, which
+    // needs the new orbitals and cannot be predicted without running it, so report the
+    // occupation as it stands -- the aufbau branch, the one the restart loop asks about, is
+    // the only one answered here.
     if (MOM_performed_ || input_docc_ || input_socc_) return {nalphapi_, nbetapi_};
     return aufbau_occupation();
 }
@@ -467,13 +470,10 @@ void HF::find_occupation() {
     } else {
         auto old_nalphapi = nalphapi_;
         auto old_nbetapi = nbetapi_;
-        if (!input_docc_ && !input_socc_) {
-            const auto [aufbau_a, aufbau_b] = aufbau_occupation();
-            for (int h = 0; h < nirrep_; ++h) {
-                nalphapi_[h] = aufbau_a[h];
-                nbetapi_[h] = aufbau_b[h];
-            }
-        }
+        // next_occupation() handles DOCC/SOCC/MOM, otherwise returns aufbau.
+        const auto [next_a, next_b] = next_occupation();
+        nalphapi_ = next_a;
+        nbetapi_ = next_b;
 
         if (!input_docc_ && !input_socc_) {
             int alphacount = nalphapi_.sum();

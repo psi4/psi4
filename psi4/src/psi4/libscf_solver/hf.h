@@ -198,6 +198,10 @@ class HF : public Wavefunction {
     /// Fractional occupation UHF/UKS
     void frac();
 
+    /// The occupation the aufbau principle gives for the current orbital energies, as
+    /// (alpha, beta) counts per irrep, without assigning it. Used by find_occupation() through next_occupation().
+    std::pair<Dimension, Dimension> aufbau_occupation() const;
+
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
 
@@ -422,11 +426,6 @@ class HF : public Wavefunction {
 
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();
-
-    /// The occupation the aufbau principle gives for the current orbital energies, as
-    /// (alpha, beta) counts per irrep, without assigning it. find_occupation() fills
-    /// nalphapi_/nbetapi_ from this.
-    std::pair<Dimension, Dimension> aufbau_occupation() const;
 
     /// What find_occupation() would leave the occupation as, without changing anything, for
     /// a caller that has to know whether it is about to move. MOM and a given DOCC/SOCC each

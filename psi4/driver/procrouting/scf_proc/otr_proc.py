@@ -76,9 +76,8 @@ _OTR_MAX_OCCUPATION_RESTARTS = 5
 
 
 def _occupation(wfn):
-    """Snapshot the alpha and beta occupations per irrep as plain tuples."""
-    na, nb = wfn.nalphapi(), wfn.nbetapi()
-    return (tuple(na[h] for h in range(na.n())), tuple(nb[h] for h in range(nb.n())))
+    """Snapshot the alpha and beta occupations per irrep. Returns copies; two are == iff they match."""
+    return (wfn.nalphapi(), wfn.nbetapi())
 
 
 def _orbital_state(wfn):
@@ -94,25 +93,13 @@ def _orbital_state(wfn):
 
 def _restore_orbital_state(wfn, state):
     """Put back an :py:func:`_orbital_state` snapshot. The caller rebuilds D, G and F from it."""
-    na, nb = state["occupation"]
-    wfn.force_occpi(core.Dimension(list(nb)), core.Dimension([a - b for a, b in zip(na, nb)]))
+    wfn.force_occupation(*state["occupation"])
     wfn.Ca().copy(state["Ca"])
     wfn.Cb().copy(state["Cb"])
     wfn.epsilon_a().copy(state["epsilon_a"])
     wfn.epsilon_b().copy(state["epsilon_b"])
     if "Ct" in state:
         wfn.Ct().copy(state["Ct"])
-
-
-def _aufbau_occupation(wfn):
-    """What the next find_occupation would leave the occupation as, without assigning it.
-
-    HF::next_occupation answers this where find_occupation's own aufbau branch lives, so the
-    two cannot drift. A given DOCC/SOCC and MOM each keep the occupation already set; only the
-    aufbau branch can move it.
-    """
-    na, nb = wfn.next_occupation()
-    return (tuple(na[h] for h in range(na.n())), tuple(nb[h] for h in range(nb.n())))
 
 
 def run(self, e_conv, d_conv):
@@ -194,7 +181,9 @@ def run(self, e_conv, d_conv):
         if otr_error:
             # Out of macro-iterations. Reported below; nothing here can improve on it.
             break
-        if _aufbau_occupation(self) == occupation:
+        # HF::next_occupation is read-only what the next find_occupation would do.
+        # A given DOCC/SOCC and MOM each keep the occupation already set; otherwise aufbau moves it.
+        if self.next_occupation() == occupation:
             # The occupation OpenTrustRegion optimized is the aufbau one. Done.
             break
         if SCFE_prev_attempt is not None and SCFE >= SCFE_prev_attempt - e_conv:
@@ -346,7 +335,7 @@ def selected(wfn, soscf_enabled, potentials):
 
     # Excited-state MOM is MOM_START with MOM_OCC; MOM_START alone still reorders the
     # occupation by overlap, which is neither what OpenTrustRegion optimizes at nor what
-    # _aufbau_occupation predicts, so the restart loop would reconverge at an occupation
+    # next_occupation predicts, so the restart loop would reconverge at an occupation
     # find_occupation then overrides.
     mom_enabled = wfn.MOM_excited_ or core.get_option("SCF", "MOM_START") != 0
     grac_enabled = (core.get_option("SCF", "DFT_GRAC_SHIFT") != 0.0
