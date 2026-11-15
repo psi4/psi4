@@ -5,7 +5,6 @@ jobs:
   timeoutInMinutes: 120
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
-    MKL_CBWR: AUTO
   strategy:
     maxParallel: 8
     matrix:
