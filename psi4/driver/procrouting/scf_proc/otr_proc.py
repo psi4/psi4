@@ -236,7 +236,8 @@ def run(self, e_conv, d_conv):
         # Only running out of macro-iterations gets this far, so subject to FAIL_ON_MAXITER
         # like any other.
         core.print_out(f"    OpenTrustRegion solver returned error {otr_error}.\n")
-        raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
+        raise SCFConvergenceError("""SCF iterations""", self.iteration_, self,
+                                  self.otr_outcome_[2], self.otr_outcome_[3])
 
     if self.otr_outcome_[0]:
         # OpenTrustRegion stopped where the objective function stops resolving, short of both
@@ -249,14 +250,16 @@ def run(self, e_conv, d_conv):
                 # before the loop's own check fired, reporting MAXITER+1 iterations; the
                 # handoff and the OpenOrbitalOptimizer return guard themselves the same way.
                 core.print_out("    MAXITER leaves no iteration for the first-order polish.\n")
-                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
+                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self,
+                                          self.otr_outcome_[2], self.otr_outcome_[3])
             # First-order iterations converge on the orbital gradient instead, which is still
             # measurable here, so let the caller finish the SCF with them.
             return NEEDS_POLISH
         if handling == "FAIL":
             text = shortfall(self, e_conv, d_conv)
             raise SCFConvergenceError(
-                "SCF to the requested precision", self.iteration_, self, 0.0, 0.0,
+                "SCF to the requested precision", self.iteration_, self,
+                self.otr_outcome_[2], self.otr_outcome_[3],
                 "OpenTrustRegion stopped at its floating-point precision floor: a further\n"
                 "trust-region step changed the objective function by less than can be resolved\n"
                 "at this energy, so the step could not be verified and was rejected. The\n"

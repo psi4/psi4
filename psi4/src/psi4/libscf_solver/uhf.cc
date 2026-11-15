@@ -1552,6 +1552,13 @@ bool UHF::openorbital_scf() {
     double dE = std::any_cast<double>(data.at("dE"));
     // show AO-basis error
     double Dnorm = ao_basis_diis_error;
+    // Keep what this row reports. The FAIL_ON_MAXITER throw happens before the solution is
+    // copied back, so this is the only record of the run that survives it. Recorded here
+    // rather than in the convergence callback, which tests the candidate for the row after
+    // this one: on the iteration that exhausts MAXITER that row is never printed, so its
+    // numbers would describe an iteration the table does not show.
+    ooo_final_energy_delta_ = dE;
+    ooo_final_d_rms_ = Dnorm;
     std::string step = std::any_cast<std::string>(data.at("step"));
 
     outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(), iteration_, E, dE, Dnorm, step.c_str());

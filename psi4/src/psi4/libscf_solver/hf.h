@@ -29,6 +29,7 @@
 #ifndef HF_H
 #define HF_H
 
+#include <limits>
 #include <utility>
 #include <vector>
 #include <functional>
@@ -262,6 +263,16 @@ class HF : public Wavefunction {
     /// Run the SCF through OpenOrbitalOptimizer. Returns whether it stopped at the
     /// second-order handoff point rather than finishing the SCF itself.
     virtual bool openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
+
+    /// What the last OpenOrbitalOptimizer iteration reached: the energy change it reported and
+    /// the orbital gradient, scaled as the first-order loop measures it. Recorded as the
+    /// convergence callback goes past, because a FAIL_ON_MAXITER throw leaves before the
+    /// solver's orbitals are copied into Ca_ -- the wavefunction still holds the guess, so
+    /// nothing downstream can measure what the run actually reached. NaN until one has run.
+    double ooo_final_energy_delta() const { return ooo_final_energy_delta_; }
+    double ooo_final_d_rms() const { return ooo_final_d_rms_; }
+    double ooo_final_energy_delta_ = std::numeric_limits<double>::quiet_NaN();
+    double ooo_final_d_rms_ = std::numeric_limits<double>::quiet_NaN();
 
     /// Runs the SCF using OpenTrustRegion to the energy and orbital-gradient thresholds given,
     /// which are the driver's E_/D_CONVERGENCE unless iterations() was handed others. Returns

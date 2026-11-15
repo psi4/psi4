@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pytest
 
@@ -433,3 +435,66 @@ symmetry c1
     assert exc.value.d_conv < otr_entry_dnorm, \
         (f"polish ended at {exc.value.d_conv:.2e} against OpenTrustRegion's "
          f"{otr_entry_dnorm:.2e}; the better orbitals were not the ones kept")
+
+
+#: The last row of an SCF iteration table: iteration, energy, Delta E, RMS |[F,P]|.
+_SCF_ROW = re.compile(r"@\S*(?:RHF|UHF|ROHF|RKS|UKS)\s+iter\s+\S+:\s+"
+                      r"(-?\d+\.\d+)\s+(\S+)\s+(\S+)")
+
+
+@pytest.mark.scf
+@pytest.mark.parametrize("options,maxiter", [
+    # Each MAXITER is chosen to end the SCF at a different raise site: the first-order loop's
+    # own MAXITER check, OpenOrbitalOptimizer's internal one, and OpenTrustRegion's.
+    pytest.param({}, 4, id="internal"),
+    pytest.param({"orbital_optimizer_package": "ooo"}, 4, id="ooo", marks=using("ooo")),
+    pytest.param({"soscf": True, "second_order_orbital_optimizer_package": "otr"}, 7,
+                 id="internal-otr", marks=using("otr")),
+    pytest.param({"orbital_optimizer_package": "ooo", "soscf": True,
+                  "second_order_orbital_optimizer_package": "otr"}, 9,
+                 id="ooo-otr", marks=[*using("ooo"), *using("otr")]),
+])
+def test_unconverged_scf_reports_what_it_reached(options, maxiter, tmp_path):
+    """SCFConvergenceError carries the energy change and orbital gradient actually achieved.
+
+    Its e_conv and d_conv are documented as the last iteration's values, and that is the only
+    thing a caller has to tell a near miss from a diverging run. Whichever package drove the
+    iterations, they have to describe the iteration the table ends on -- not zero, which reads
+    as both criteria met, and not a gradient re-measured after the fact, which is roundoff:
+    every iteration ends by diagonalizing the Fock matrix and rebuilding the density from its
+    eigenvectors, so the commutator vanishes there however unconverged the orbitals are.
+    """
+    psi4.geometry("""
+O
+H 1 0.96
+H 1 0.96 2 104.5
+""")
+    psi4.set_options({"basis": "cc-pvdz", "scf_type": "df", "guess": "core",
+                      "e_convergence": 1.0e-8, "d_convergence": 1.0e-8,
+                      "maxiter": maxiter, "fail_on_maxiter": True, **options})
+
+    out = tmp_path / "unconverged.out"
+    psi4.core.set_output_file(str(out), False)
+    try:
+        with pytest.raises(psi4.SCFConvergenceError) as exc:
+            psi4.energy("scf")
+    finally:
+        psi4.core.close_outfile()
+        psi4.set_output_file("pytest_output.dat", True)
+
+    e_conv, d_conv = exc.value.e_conv, exc.value.d_conv
+
+    # what the table says the last iteration did. Printed to five figures, so compared loosely
+    _, last_dE, last_dnorm = _SCF_ROW.findall(out.read_text())[-1]
+    last_dE, last_dnorm = abs(float(last_dE)), float(last_dnorm)
+
+    # an SCF that failed cannot report a pair that reads as converged: zeros do, and so does
+    # the roundoff of a density built from the eigenvectors of its own Fock matrix
+    assert not (abs(e_conv) < 1.0e-8 and d_conv < 1.0e-8), \
+        (f"reported ({e_conv:.2e}, {d_conv:.2e}) meets both convergence criteria, "
+         f"but the SCF raised; the table ended at ({last_dE:.2e}, {last_dnorm:.2e})")
+
+    assert d_conv == pytest.approx(last_dnorm, rel=1.0e-4), \
+        f"reported Dnorm {d_conv:.6e} is not the {last_dnorm:.6e} of the last iteration"
+    assert abs(e_conv) == pytest.approx(last_dE, rel=1.0e-4), \
+        f"reported energy change {e_conv:.6e} is not the {last_dE:.6e} of the last iteration"

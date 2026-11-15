@@ -373,7 +373,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 # OpenOrbitalOptimizer ran its own loop to MAXITER without converging. That is
                 # ordinary non-convergence, so raise what the rest of the driver raises for it
                 # rather than letting a bare RuntimeError past the FAIL_ON_MAXITER handling.
-                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, 0.0, 0.0)
+                # It threw before copying its solution back, so the wavefunction still holds
+                # the guess and nothing measured here would describe the run; report what its
+                # last iteration recorded on the way past instead.
+                raise SCFConvergenceError("""SCF iterations""", self.iteration_, self,
+                                          self.openorbital_final_energy_delta(),
+                                          self.openorbital_final_d_rms())
             else:
                 raise ex
         else:

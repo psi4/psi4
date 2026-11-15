@@ -424,6 +424,12 @@ void export_wavefunction(py::module& m) {
         .def("openorbital_scf", &scf::HF::openorbital_scf,
              "Runs the SCF with OpenOrbitalOptimizer. Returns whether it stopped at the "
              "second-order handoff point rather than finishing the SCF itself.")
+        .def("openorbital_final_energy_delta", &scf::HF::ooo_final_energy_delta,
+             "The energy change the last OpenOrbitalOptimizer iteration reported, or NaN if "
+             "none has run.")
+        .def("openorbital_final_d_rms", &scf::HF::ooo_final_d_rms,
+             "The orbital gradient the last OpenOrbitalOptimizer iteration reached, scaled as "
+             "the first-order loop measures it, or NaN if none has run.")
         .def("opentrustregion_scf", &scf::HF::opentrustregion_scf, "e_conv"_a, "d_conv"_a,
              "restart"_a = false,
              "Runs SCF with OpenTrustRegion to these energy and orbital-gradient thresholds. "

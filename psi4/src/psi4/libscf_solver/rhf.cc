@@ -1287,6 +1287,13 @@ bool RHF::openorbital_scf() {
     // double Dnorm_orth = 0.5 * std::any_cast<double>(data.at("diis_error"));
     // show AO-basis error
     double Dnorm = 0.5 * ao_basis_diis_error;
+    // Keep what this row reports. The FAIL_ON_MAXITER throw happens before the solution is
+    // copied back, so this is the only record of the run that survives it. Recorded here
+    // rather than in the convergence callback, which tests the candidate for the row after
+    // this one: on the iteration that exhausts MAXITER that row is never printed, so its
+    // numbers would describe an iteration the table does not show.
+    ooo_final_energy_delta_ = dE;
+    ooo_final_d_rms_ = Dnorm;
     // scale density norm to match internal algorithm
     std::string step = std::any_cast<std::string>(data.at("step"));
 
