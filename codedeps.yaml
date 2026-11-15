@@ -743,7 +743,7 @@ data:
       host: github
       account: pybind
       name: pybind11
-      commit: v2.13.1
+      commit: v2.13.6
     cmake:
       name: pybind11  # detect Python before pybind11
       constraint: 2.12.0
@@ -1203,17 +1203,17 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.50.0
+      commit: v0.52.0
       githttps: true
     cmake:
       name: qcengine
-      constraint: ATLEAST 0.50.0
+      constraint: ATLEAST 0.52.0
       target:
     conda:
       channel: conda-forge
       name: qcengine
-      constraint: ">=0.50.0"
-      constraint_note: "v0.50 needed for QCSchema v2. v0.34.2/v0.50.0 have SAPT*-D4 parameters"
+      constraint: ">=0.52.0"
+      constraint_note: "v0.50 needed for QCSchema v2 and SAPT*-D4 parameters. v0.52 for dftd3 hessians."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true
@@ -1551,7 +1551,7 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
-      
+
   - project: openorbitaloptimizer
     use:
       added: "1.10"
