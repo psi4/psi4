@@ -377,19 +377,12 @@ void CIWavefunction::setup_mcscf_ints_ao() {
 
     timer_on("CIWave: Setup MCSCF INTS AO");
     std::string scf_type = options_.get_str("SCF_TYPE");
-    if (scf_type == "GTFOCK") {
-#ifdef HAVE_JK_FACTORY
-        // Formerly this communicated through P::e.set_legacy_molecule(molecule_) here. Legacy molecule removed
-        jk_ = std::make_shared<GTFockJK>(basisset_);
-#else
-        throw PSIEXCEPTION("GTFock was not compiled in this version");
-#endif
-    } else if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || scf_type == "CD" || scf_type == "PK" ||
-               scf_type == "DIRECT" || scf_type == "OUT_OF_CORE") {
+    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || scf_type == "CD" || scf_type == "PK" ||
+        scf_type == "DIRECT" || scf_type == "OUT_OF_CORE") {
         jk_ = JK::build_JK(this->basisset(), get_basisset("DF_BASIS_SCF"), options_, false,
                            Process::environment.get_memory() * 0.8 / sizeof(double));
     } else {
-        outfile->Printf("\n Please select GTFock, DF, CD or PK for use with MCSCF_TYPE AO");
+        outfile->Printf("\n Please select DF, CD or PK for use with MCSCF_TYPE AO");
         throw PSIEXCEPTION("AO_CASSCF does not work with your SCF_TYPE");
     }
     jk_->set_do_J(true);
