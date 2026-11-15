@@ -5,6 +5,11 @@ jobs:
   timeoutInMinutes: 120
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
+    # This no longer seems to be necessary for the current test suite to pass.
+    # If tighter test tolerances are required, or some tests become flaky due to changes in
+    # CI runner hardware, MKL version, phase of the moon, etc., this may be re-enabled.
+    # Cholesky tests are known to be particularly sensitive.
+    # MKL_CBWR: AUTO
   strategy:
     maxParallel: 8
     matrix:
