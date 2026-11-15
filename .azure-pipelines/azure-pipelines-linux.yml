@@ -215,6 +215,7 @@ jobs:
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
+      conda clean --tarballs
       source activate p4env
       conda info
       conda list
