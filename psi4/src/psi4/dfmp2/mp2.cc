@@ -1036,6 +1036,10 @@ void RDFMP2::form_Bia_cuest() {
     size_t naux = ribasis_->nbf();
 
     cuESTMOInts mo_ints(basisset_, ribasis_, options_);
+
+    // print memory estimate here, most likely to OOM on the following call
+    outfile->Printf("    Bia buffer:                   %8.3f GiB\n", sizeof(double) * naux * naocc * navir / (1024.0 * 1024.0 * 1024.0));
+
     CHECK_CUDA(cudaMalloc((void**) &Bia_, sizeof(double) * naux * naocc * navir));
     mo_ints.compute_3c_ints(Caocc_, Cavir_, Bia_);
 }

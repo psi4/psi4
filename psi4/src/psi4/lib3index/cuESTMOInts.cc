@@ -38,6 +38,8 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi {
 
@@ -105,6 +107,10 @@ void cuESTMOInts::common_init() {
         &temporaryWorkspaceDescriptor,
         nullptr));
 
+    outfile->Printf("    cuEST AO pair list workspace: %8.3f GiB persistent, %8.3f GiB temporary\n",
+                    persistentWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0),
+                    temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
+
     cuest_pair_list_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
     cuestWorkspace_t* temporaryPairListWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
 
@@ -147,6 +153,10 @@ void cuESTMOInts::common_init() {
         &temporaryWorkspaceDescriptor,
         nullptr));
 
+    outfile->Printf("    cuEST DF plan workspace:      %8.3f GiB persistent, %8.3f GiB temporary\n",
+                    persistentWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0),
+                    temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
+
     cuest_dfint_plan_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
     cuestWorkspace_t* temporaryDFIntPlanWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
 
@@ -188,6 +198,8 @@ void cuESTMOInts::compute_3c_ints(SharedMatrix Cleft, SharedMatrix Cright, doubl
 
     double* d_Cleft = nullptr;
     double* d_Cright = nullptr;
+
+    // TODO: add memory estimate for these calls
     CHECK_CUDA(cudaMalloc((void**)&d_Cleft, sizeof(double) * nleft * nao));
     CHECK_CUDA(cudaMalloc((void**)&d_Cright, sizeof(double) * nright * nao));
     CHECK_CUDA(cudaMemcpy(d_Cleft, CleftT->pointer()[0], sizeof(double) * nleft * nao, cudaMemcpyHostToDevice));
@@ -198,6 +210,7 @@ void cuESTMOInts::compute_3c_ints(SharedMatrix Cleft, SharedMatrix Cright, doubl
     CHECK_CUEST(cuestParametersCreate(CUEST_DFMOINTEGRALSCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&params)));
 
     // internal scratch for the transform, 2 GB is a reasonable default.
+    // this does not limit total (on device) memory usage
     cuestWorkspaceDescriptor_t variableBufferSize;
     variableBufferSize.hostBufferSizeInBytes = 0;
     variableBufferSize.deviceBufferSizeInBytes = 2000000000;
@@ -219,6 +232,9 @@ void cuESTMOInts::compute_3c_ints(SharedMatrix Cleft, SharedMatrix Cright, doubl
         d_Cleft, 
         d_Cright, 
         d_out));
+
+    outfile->Printf("    cuEST AO->MO workspace:       %8.3f GiB temporary\n",
+                    temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
 
     cuestWorkspace_t* temporaryDFMOWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
 
