@@ -6,7 +6,6 @@ list(APPEND sources
   dirprd_block.cc
   dot_block.cc
   dx_read.cc
-  dx_write.cc
   fill_sym_matrix.cc
   invert.cc
   lapack_intfc.cc

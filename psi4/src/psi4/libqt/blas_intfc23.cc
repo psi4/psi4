@@ -1070,7 +1070,7 @@ void C_DSYMM(char side, char uplo, int m, int n, double alpha, double* a, int ld
         uplo = 'U';
     else
         throw std::invalid_argument("C_DSYMM uplo argument is invalid.");
-    if (side == 'L' || side == 'L')
+    if (side == 'L' || side == 'l')
         side = 'R';
     else if (side == 'R' || side == 'r')
         side = 'L';
@@ -2299,7 +2299,7 @@ void C_DTRMM(char side, char uplo, char transa, char diag, int m, int n, double 
         uplo = 'U';
     else
         throw std::invalid_argument("C_DTRMM uplo argument is invalid.");
-    if (side == 'L' || side == 'L')
+    if (side == 'L' || side == 'l')
         side = 'R';
     else if (side == 'R' || side == 'r')
         side = 'L';
@@ -2550,7 +2550,7 @@ void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double 
         uplo = 'U';
     else
         throw std::invalid_argument("C_DTRSM uplo argument is invalid.");
-    if (side == 'L' || side == 'L')
+    if (side == 'L' || side == 'l')
         side = 'R';
     else if (side == 'R' || side == 'r')
         side = 'L';
