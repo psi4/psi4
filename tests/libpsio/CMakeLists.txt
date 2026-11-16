@@ -17,3 +17,8 @@ add_test(NAME libpsio-roundtrip
          COMMAND ${BINARY_DIR}/src/psi4/libpsio/test/psio_roundtrip_test.x${CMAKE_EXECUTABLE_SUFFIX}
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(libpsio-roundtrip PROPERTIES LABELS "psi;quicktests;smoketests;libpsio")
+
+add_test(NAME libpsio-conformance
+         COMMAND ${BINARY_DIR}/src/psi4/libpsio/test/psio_conformance_test.x${CMAKE_EXECUTABLE_SUFFIX}
+         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(libpsio-conformance PROPERTIES LABELS "psi;quicktests;smoketests;libpsio")
