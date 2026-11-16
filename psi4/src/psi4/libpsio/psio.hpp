@@ -309,8 +309,8 @@ class PSI_API PSIO {
     void rewind_toclen(const size_t unit);  // Seek the stream of the file backing a unit to its beginning.
     size_t rd_toclen(size_t unit);          // Read the length of the TOC for a given unit directly from the file.
 
-    /// grab the filename of unit and strdup into name.
-    void get_filename(size_t unit, char **name, bool remove_namespace = false) const;
+    /// Return the filename of a unit (the file-name prefix plus namespace suffix, without path or unit number).
+    std::string get_filename(size_t unit, bool remove_namespace = false) const;
 
     /// delete a specific TOC entry (only deletes entry, not data)
     bool tocdel(size_t unit, const char *key);
