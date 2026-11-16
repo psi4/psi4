@@ -1217,13 +1217,14 @@ void RDFMP2::form_energy_cuest() {
     CHECK_CUDA(cudaMemcpy(deps_aocc, eps_aocc_->pointer(), sizeof(double) * naocc, cudaMemcpyHostToDevice));
     CHECK_CUDA(cudaMemcpy(deps_avir, eps_avir_->pointer(), sizeof(double) * navir, cudaMemcpyHostToDevice));
  
+    size_t ws_size_bytes = size_t(2) << 30;  // 2 GiB
+    void* fp_emulation_ws = nullptr;
+
     if (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") {
         CHECK_CUBLAS(cublasSetMathMode(cublas_handle, CUBLAS_FP64_EMULATED_FIXEDPOINT_MATH));
 
         outfile->Printf("allocating 2 GiB workspace for cuBLAS fixed-point emulation\n");
-        
-        size_t ws_size_bytes = 2000000000;
-        void* fp_emulation_ws = nullptr;
+
         CHECK_CUDA(cudaMalloc((void**) &fp_emulation_ws, ws_size_bytes));
         CHECK_CUBLAS(cublasSetWorkspace(cublas_handle, fp_emulation_ws, ws_size_bytes));
     }
@@ -1257,21 +1258,21 @@ void RDFMP2::form_energy_cuest() {
     }
 
     if (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") {
-	// reset workspace back to default
+    	// reset workspace back to default
         CHECK_CUBLAS(cublasSetStream(cublas_handle, stream_handle));
         
         // cuEST shares this handle and requires that cuBLAS emulation parameters should be reset prior to calling cuEST
         CHECK_CUBLAS(cublasSetMathMode(cublas_handle, CUBLAS_DEFAULT_MATH));
-        CHECK_CUDA(cudaFree(fp_emulation_ws));
     }
+    CHECK_CUDA(cudaFree(fp_emulation_ws));
     
-    cudaFree((void*) Bia_);
-    cudaFree((void*) iajb);
-    cudaFree((void*) ibja);
-    cudaFree((void*) iajb_d);
+    CHECK_CUDA(cudaFree((void*) Bia_));
+    CHECK_CUDA(cudaFree((void*) iajb));
+    CHECK_CUDA(cudaFree((void*) ibja));
+    CHECK_CUDA(cudaFree((void*) iajb_d));
 
-    cudaFree((void*) deps_aocc);
-    cudaFree((void*) deps_avir);
+    CHECK_CUDA(cudaFree((void*) deps_aocc));
+    CHECK_CUDA(cudaFree((void*) deps_avir);
 
     variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = e_ss;
     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = e_os;
