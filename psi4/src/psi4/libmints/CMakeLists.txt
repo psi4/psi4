@@ -102,20 +102,42 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
    endif()
 endif()
 
-# limit to avoid OOM errors with Ninja parallelism
-# * finer control than `CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build`
-cmake_host_system_information(RESULT _memfree QUERY AVAILABLE_PHYSICAL_MEMORY)
-cmake_host_system_information(RESULT _numcore QUERY NUMBER_OF_PHYSICAL_CORES)
-math(EXPR _memrat "${_memfree} / ${_numcore}")
-message("AVAILABLE_PHYSICAL_MEMORY ${_memfree} / NUMBER_OF_PHYSICAL_CORES ${_numcore} = ${_memrat}")
-if(_numcore LESS 5)
-    if (UNIX AND NOT APPLE)
-        set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE one_job)
+# Limit l2intf compile memory to avoid OOM, esp. Ninja on CI/cloud runners.
+# Measured (GCC 14, -O3, L2 2.14): every l2intf file that includes libint2/engine.h peaks at 5.7-7.5 GB
+#   by itself, while one unity TU of all 19 files peaks at 7.6 GB in ~200 s -- no more memory or time than
+#   a single heavy file, vs. 3 x 7.5 GB (and ~3x the CPU) for 8-file batches.
+# (1) With unity build on, compile l2intf as a single TU regardless of CMAKE_UNITY_BUILD_BATCH_SIZE (0 = no limit).
+set_property(TARGET l2intf PROPERTY UNITY_BUILD_BATCH_SIZE 0)
+
+# (2) With unity build off (or Makefile generators, which ignore pools), each l2intf file is its own 6-8 GB job.
+#   For Ninja, cap concurrent l2intf compiles by memory: one job per ~8 GB available, at least one.
+#   Use the container's cgroup limit if it's tighter than the host memory CMake reports.
+cmake_host_system_information(RESULT _l2intf_mem QUERY AVAILABLE_PHYSICAL_MEMORY)  # MiB
+foreach(_cg_max _cg_cur IN ZIP_LISTS
+        "/sys/fs/cgroup/memory.max;/sys/fs/cgroup/memory/memory.limit_in_bytes"
+        "/sys/fs/cgroup/memory.current;/sys/fs/cgroup/memory/memory.usage_in_bytes")
+    if(EXISTS "${_cg_max}" AND EXISTS "${_cg_cur}")
+        file(READ "${_cg_max}" _cg_max_val)
+        file(READ "${_cg_cur}" _cg_cur_val)
+        string(STRIP "${_cg_max_val}" _cg_max_val)
+        string(STRIP "${_cg_cur_val}" _cg_cur_val)
+        # "max" (v2) means unlimited; v1 unlimited is a huge number that the comparison below discards
+        if(_cg_max_val MATCHES "^[0-9]+$" AND _cg_cur_val MATCHES "^[0-9]+$")
+            math(EXPR _cg_avail "(${_cg_max_val} - ${_cg_cur_val}) / 1048576")
+            if(_cg_avail LESS _l2intf_mem)
+                set(_l2intf_mem ${_cg_avail})
+            endif()
+        endif()
+        break()
     endif()
-else()
-    set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
+endforeach()
+math(EXPR _l2intf_jobs "${_l2intf_mem} / 8192")
+if(_l2intf_jobs LESS 1)
+    set(_l2intf_jobs 1)
 endif()
-set_property(TARGET mints l2intf PROPERTY UNITY_BUILD_BATCH_SIZE ${psi4_libmints_UNITY_BUILD_BATCH_SIZE})
+set_property(GLOBAL APPEND PROPERTY JOB_POOLS l2intf_pool=${_l2intf_jobs})
+set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE l2intf_pool)
+message(STATUS "l2intf: ${_l2intf_mem} MiB available -> compile job pool depth ${_l2intf_jobs}")
 
 # Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
