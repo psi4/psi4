@@ -38,11 +38,11 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
+        # was Makefiles + non-unity, single-threaded: 50+ min, and OOM-abandoned with L2 2.14 + GCC
         CMARGS: >-
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
-          -Dpsi4_CMAKE_UNITY_BUILD=OFF
           -DCMAKE_CXX_FLAGS_RELEASE:STRING='-O2 -DNDEBUG'
-        CM_GENERATOR: "Unix Makefiles"
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -65,8 +65,10 @@ jobs:
           -DOpenMP_C_LIB_NAMES=omp
           -DOpenMP_CXX_LIB_NAMES=omp
           -DOpenMP_omp_LIBRARY=/home/runner/miniforge3/envs/p4env/lib/libomp.so
-          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
-        CM_GENERATOR: "Ninja"
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
+          -Dpsi4_CMAKE_UNITY_BUILD=OFF
+        # Makefiles + non-unity + non-PCH: generator coverage and per-file header checks (l2intf stays one unity TU)
+        CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -88,6 +90,7 @@ jobs:
           -DOpenMP_C_LIB_NAMES=omp
           -DOpenMP_CXX_LIB_NAMES=omp
           -DOpenMP_omp_LIBRARY=/home/runner/miniforge3/envs/p4env/lib/libomp.so
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -127,6 +130,9 @@ jobs:
 
       echo "" && echo "Uname:"
       uname -a
+
+      echo "" && echo "Processors:"
+      nproc
 
       echo "" && echo "Free:"
       free -m
@@ -271,15 +277,14 @@ jobs:
     displayName: 'Add Swap'
     continueOnError: true
 
-    # most lanes are Ninja which parallelizes by default (nproc+2). Makefiles lane (min GCC) needs single thread anyways
-    # For Ninja, cap at 2 jobs: CMAKE_BUILD_PARALLEL_LEVEL is inherited by the nested `cmake --build` of
-    #   psi4-core (ExternalProject), which an outer `-j` does not reach.
+    # Ninja defaults to nproc+2 jobs, Make to 1. Use 2 for both (hosted agents are 2 vCPU, ~8 GB): little speed lost, and fewer
+    #   compiles sharing memory with the 6-8 GB libint2/engine.h TUs (whose own pool only limits each other).
+    #   CMAKE_BUILD_PARALLEL_LEVEL is inherited by the nested `cmake --build` of psi4-core (ExternalProject),
+    #   which an outer `-j` does not reach.
   - bash: |
       cd build
       source activate p4env
-      if [[ "${CM_GENERATOR}" == "Ninja" ]]; then
-        export CMAKE_BUILD_PARALLEL_LEVEL=2
-      fi
+      export CMAKE_BUILD_PARALLEL_LEVEL=2
       cmake --build .
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so

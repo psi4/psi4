@@ -106,7 +106,11 @@ endif()
 # Measured (GCC 14, -O3, L2 2.14): every l2intf file that includes libint2/engine.h peaks at 5.7-7.5 GB
 #   by itself, while one unity TU of all 19 files peaks at 7.6 GB in ~200 s -- no more memory or time than
 #   a single heavy file, vs. 3 x 7.5 GB (and ~3x the CPU) for 8-file batches.
-# (1) With unity build on, compile l2intf as a single TU regardless of CMAKE_UNITY_BUILD_BATCH_SIZE (0 = no limit).
+#   clang 20 has the same pattern at ~4.0-4.4 GB per TU (single file or all 19), with similar times.
+# (1) Compile l2intf as a single unity TU regardless of CMAKE_UNITY_BUILD (so non-unity builds, e.g. for
+#   header checking, still check every other file individually) and of CMAKE_UNITY_BUILD_BATCH_SIZE (0 = no limit).
+#   TODO: if CI holds up, expose as an option selecting the l2intf batch size (rather than on/off).
+set_property(TARGET l2intf PROPERTY UNITY_BUILD ON)
 set_property(TARGET l2intf PROPERTY UNITY_BUILD_BATCH_SIZE 0)
 
 # (2) With unity build off (or Makefile generators, which ignore pools), each l2intf file is its own 6-8 GB job.
