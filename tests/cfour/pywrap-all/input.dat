@@ -27,7 +27,6 @@ set globals {
     E_CONVERGENCE 9
     D_CONVERGENCE 8
     R_CONVERGENCE 8
-    JOBTYPE SP
     GUESS CORE
 }
 set cfour_symmetry false

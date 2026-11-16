@@ -19,7 +19,6 @@ set
   scf_type pk
   pcm true
   pcm_scf_type total
-  pcm_cc_type pte
 }
 
 pcm =
