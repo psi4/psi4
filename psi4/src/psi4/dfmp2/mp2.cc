@@ -854,7 +854,7 @@ void RDFMP2::print_header() {
 #ifdef USING_cuEST
     if (!use_cuest_) return;
     
-    double peak_device_memory_estimate = (static_cast<double>(ribasis_->nbf()) * aocc * avir + 3.0 * avir * avir + avir + aocc) * sizeof(double) / (1024.0 * 1024.0 * 1024.0);
+    double scratch_estimate = (static_cast<double>(ribasis_->nbf()) * aocc * avir + 3.0 * avir * avir + avir + aocc) * sizeof(double) / (1024.0 * 1024.0 * 1024.0);
 
     const char *cuest_str  = (options_.get_bool("CUEST_MIXED_PRECISION"))  ? "enabled"  : "disabled";
     const char *cublas_str = (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") ? "enabled"  : "disabled";
@@ -863,14 +863,15 @@ void RDFMP2::print_header() {
     outfile->Printf("\t    GPU-Accelerated DF-MP2    \n");
     outfile->Printf("\t   w/ NVIDIA cuEST & cuBLAS   \n");
     outfile->Printf("\t -----------------------------\n");
-    outfile->Printf("\t  Algorithm: low memory       \n");
     outfile->Printf("\t                              \n");
     outfile->Printf("\t  Fixed-point emulation       \n");
     outfile->Printf("\t  -------                     \n");
     outfile->Printf("\t   cuEST: %-8s            \n", cuest_str);
     outfile->Printf("\t   cuBLAS: %-8s           \n", cublas_str);
     outfile->Printf("\t                              \n");
-    outfile->Printf("\t  %6.2f GiB device scratch   \n", peak_device_memory_estimate);
+    outfile->Printf("\t  Form energy                 \n");
+    outfile->Printf("\t  -------                     \n");
+    outfile->Printf("\t   %6.2f GiB device scratch  \n", scratch_estimate);
     outfile->Printf("\t -----------------------------\n");
     outfile->Printf("\n");
 #endif
@@ -1233,7 +1234,7 @@ void RDFMP2::form_energy_cuest() {
             // form (i a | j b) / (eps[i] + eps[j] - eps[a] - eps[b])
             pair_amplitudes_ij(i, j, navir, iajb, deps_aocc, deps_avir, iajb_d, stream_handle);
     
-            // costs a host sync each iteration (very expensive!) 
+            // costs a host sync each iteration (expensive in principle, negligble in practice) 
             C_DDOT_CUBLAS(cublas_handle, navir2, iajb, 0, 1, iajb_d, 0, 1, &iajb_term);
             C_DDOT_CUBLAS(cublas_handle, navir2, ibja, 0, 1, iajb_d, 0, 1, &ibja_term);
     
