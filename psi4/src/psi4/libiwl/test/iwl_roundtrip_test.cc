@@ -28,12 +28,14 @@
 
 // Standalone round-trip test for libiwl. Exercises every bucket-boundary case
 // the 1995 README warned about: empty, single, exactly one bucket, just over
-// one bucket, and mid-bucket termination.
+// one bucket, and mid-bucket termination. Also verifies that the 16-bit Label
+// overflow check fires instead of silently truncating.
 //
-// Every case is run through all four write/read API combinations -- {C, C++}
-// write x {C, C++} read -- since libiwl exposes both a C-style (iwl_buf_*) and
-// a C++ (psi::IWL) interface and both are in use in-tree; a byte written by one
-// must read back identically through either.
+// Every case is run through {C, C++} write x {C, C++} read, since libiwl
+// exposes both a C-style (iwl_buf_*) and a C++ (psi::IWL) interface and both
+// are in use in-tree; a byte written by one must read back identically through
+// either. The RAII IWLWriter and range-for IWLReader are checked against both
+// and against each other.
 //
 // Also covers cutoff filtering. write_value() keeps an integral only when
 // |value| > cutoff, so sub-cutoff entries are *dropped*, not stored as zeros --
@@ -43,15 +45,20 @@
 // positional cases below (first/second/second-to-last/last bucket fully
 // filtered, plus all-filtered and interleaved) pin that behavior down.
 
+#include <cassert>
+#include <climits>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -106,8 +113,9 @@ double subcutoff_value(const std::size_t i) {
 }
 
 // A writer emits `data` to tape `itap` and leaves the file on disk for the
-// reader; a reader pulls it back. The two write and two read functions below
-// are the C++ (psi::IWL) and C-style (iwl_buf_*) sides of the same operation.
+// reader; a reader pulls it back and deletes the file. The functions below are
+// the C++ (psi::IWL), C-style (iwl_buf_*), and IWLWriter/IWLReader sides of
+// the same operation.
 using Writer = void (*)(const int itap, const std::vector<Quartet>& data);
 using Reader = std::vector<Quartet> (*)(const int itap);
 
@@ -192,6 +200,26 @@ bool quartets_equal(const Quartet& a, const Quartet& b) {
     return a.p == b.p && a.q == b.q && a.r == b.r && a.s == b.s && a.value == b.value;
 }
 
+// Write via the RAII IWLWriter. The flush and close happen in the destructor
+// when the writer goes out of scope; the file is kept for the reader.
+void write_all_writer(const int itap, const std::vector<Quartet>& data) {
+    IWLWriter out(_default_psio_lib_, itap, CUTOFF);
+    for (const auto& q : data) {
+        out.write(q.p, q.q, q.r, q.s, q.value);
+    }
+}
+
+// Read via the range-for IWLReader.
+std::vector<Quartet> read_all_reader(const int itap) {
+    std::vector<Quartet> out;
+    IWLReader reader(_default_psio_lib_, itap);
+    reader.set_keep(false);  // done reading; delete the scratch file
+    for (const auto& I : reader) {
+        out.push_back({I.p, I.q, I.r, I.s, I.value});
+    }
+    return out;
+}
+
 // Run one write/read round-trip for the given size and tape unit through the
 // supplied write/read APIs. Returns true on success, false otherwise (with
 // diagnostic to stderr).
@@ -258,6 +286,26 @@ bool round_trip_filtered(const std::size_t n, const std::size_t lo, const std::s
     return true;
 }
 
+// Verify that writing an out-of-range orbital index throws rather than
+// silently truncating.
+bool overflow_check_fires(int itap) {
+    psi::IWL buf(psi::_default_psio_lib_.get(), itap, 1.0e-14,
+                 /*oldfile*/ 0, /*readflag*/ 0);
+    bool threw = false;
+    try {
+        buf.write_value(SHRT_MAX + 1, 0, 0, 0, 1.0, 0, std::string("outfile"), 0);
+    } catch (const std::exception &e) {
+        threw = true;
+    }
+    buf.flush(/*lastbuf*/ 1);
+    buf.set_keep_flag(false);
+    if (!threw) {
+        std::cerr << "  overflow check did not throw\n";
+        return false;
+    }
+    return true;
+}
+
 }  // namespace
 
 int main() {
@@ -269,7 +317,7 @@ int main() {
     const int base_unit = 80;
     int failures = 0;
 
-    constexpr std::size_t B = IWL_INTS_PER_BUF;
+    constexpr std::size_t B = psi::IWL_INTS_PER_BUF;
     const std::vector<std::size_t> sizes = {1, B - 1, B, B + 1, 3 * B + B / 2};
 
     const std::size_t N4 = 4 * B;
@@ -290,7 +338,7 @@ int main() {
         {"all below cutoff", 0, N4},
     };
 
-    // Every case runs through all four write/read API combinations. Each reader
+    // Every case runs through each write/read API combination below. Each reader
     // deletes its file when done, so the unit range is free to reuse per pass.
     struct Api {
         const char* name;
@@ -302,6 +350,9 @@ int main() {
         {"Cw/C++r", write_all_c, read_all_cpp},
         {"C++w/C++r", write_all_cpp, read_all_cpp},
         {"Cw/Cr", write_all_c, read_all_c},
+        {"IWLWriter/IWLReader", write_all_writer, read_all_reader},
+        {"IWLWriter/Cr", write_all_writer, read_all_c},
+        {"C++w/IWLReader", write_all_cpp, read_all_reader},
     };
 
     for (const auto& api : apis) {
@@ -327,6 +378,10 @@ int main() {
         if (!round_trip_filtered(3 * B, B - 7, B + 11, unit++, "straddling run", api.write, api.read, api.name))
             ++failures;
     }
+
+    // Each API pass above deletes its tapes, so base_unit is free again.
+    std::cout << "[iwl_roundtrip] Label overflow check\n";
+    if (!overflow_check_fires(base_unit)) ++failures;
 
     if (failures) {
         std::cerr << failures << " case(s) failed.\n";
