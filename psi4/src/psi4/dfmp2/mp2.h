@@ -52,6 +52,10 @@ class DFMP2 : public Wavefunction {
     // Opposite-spin scale
     double oss_;
 
+#ifdef USING_cuEST
+    bool use_cuest_ = false;
+#endif
+
     void common_init();
     // Common printing of energies/SCS
     virtual void print_energies();
@@ -132,6 +136,9 @@ class RDFMP2 : public DFMP2 {
     SharedVector eps_aocc_;
     SharedVector eps_avir_;
     SharedVector eps_fvir_;
+#ifdef USING_cuEST
+    double* Bia_ = nullptr;
+#endif
 
     void common_init();
 
@@ -147,6 +154,12 @@ class RDFMP2 : public DFMP2 {
     void form_Bia_transpose() override;
     // Form the energy contributions
     void form_energy() override;
+#ifdef USING_cuEST
+    // Form Bia directly from the density fitted integrals and coefficient matricies using cuEST
+    void form_Bia_cuest();
+    // Form the energy contributions using cuEST & cuBLAS
+    void form_energy_cuest();
+#endif
     // Form the energy contributions and gradients
     void form_Pab() override;
     // Form the energy contributions and gradients

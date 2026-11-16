@@ -34,3 +34,7 @@
 #include "cholesky.h"
 
 #endif
+
+#ifdef USING_cuEST
+#include "cuESTMOInts.h"
+#endif

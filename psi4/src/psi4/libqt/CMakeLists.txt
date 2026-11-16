@@ -21,6 +21,12 @@ list(APPEND sources
   timer.cc
   )
 
+if(TARGET cuEST::cuEST)
+  list(APPEND sources
+    cublas.cc
+    )
+endif()
+
 # cmake_symbol_exists() or check_cxx_source_runs() are preferable to check_function_exists()
 #   according to CMake docs. But both require an explicit header, either in the call or in the code,
 #   and that's tough with multiple BLAS/LAPACK backends. So, we'll see if this is robust enough.

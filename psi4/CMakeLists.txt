@@ -249,6 +249,8 @@ else()
 endif()
 
 if(${ENABLE_cuEST})
+    enable_language(CUDA)
+    set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
     find_package(cuEST MODULE REQUIRED)
     get_property(_loc TARGET cuEST::cuEST PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
