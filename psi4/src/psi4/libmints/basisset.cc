@@ -50,7 +50,9 @@
 #include "coordentry.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <array>
 #include <memory>
+#include <mutex>
 #include <regex>
 #include <stdexcept>
 #include <cstdio>
@@ -64,9 +66,22 @@ using namespace psi;
 
 bool BasisSet::initialized_shared_ = false;
 
-std::vector<Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
+// Cartesian exponent table for evaluating basis functions (compute_phi, multipole symmetry).
+// Independent of integral library AM; sized to cover libcint's max AM (l <= 15). ~20 KB.
+static constexpr int EXP_AO_MAX_AM = 15;
+std::vector<Vector3> BasisSet::exp_ao[EXP_AO_MAX_AM + 1];
 
 namespace {
+// Lazily built, thread-safe per-AM cache of cart->pure transforms for compute_phi,
+// so they aren't rebuilt for every shell at every grid point.
+const SphericalTransform &cached_spherical_transform(int am) {
+    static std::array<std::once_flag, EXP_AO_MAX_AM + 1> flags;
+    static std::array<std::unique_ptr<SphericalTransform>, EXP_AO_MAX_AM + 1> cache;
+    if (am < 0 || am > EXP_AO_MAX_AM) throw PSIEXCEPTION("cached_spherical_transform: angular momentum out of range");
+    std::call_once(flags[am], [am] { cache[am] = std::make_unique<SphericalTransform>(am); });
+    return *cache[am];
+}
+
 bool has_ending(std::string const &fullString, std::string const &ending) {
     if (fullString.length() >= ending.length()) {
         return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
@@ -139,7 +154,7 @@ void BasisSet::initialize_singletons() {
     if (initialized_shared_ == true) return;
 
     // Populate the exp_ao arrays
-    for (int l = 0; l < LIBINT_MAX_AM; ++l) {
+    for (int l = 0; l <= EXP_AO_MAX_AM; ++l) {
         for (int i = 0; i <= l; ++i) {
             int x = l - i;
             for (int j = 0; j <= i; ++j) {
@@ -1223,7 +1238,7 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
         for (int np = 0; np < nprim; np++) cexpr += c[np] * exp(-a[np] * rr);
 
         if (puream_) {
-            const auto s_transform = SphericalTransform(am);
+            const SphericalTransform &s_transform = cached_spherical_transform(am);
             std::vector<double> cart_buffer(INT_NCART(am), 0.0);
 
             for (int l = 0; l < INT_NCART(am); l++) {
