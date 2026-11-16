@@ -1145,3 +1145,8 @@ Bibliography
    J. H. Van Lenthe, R. Zwaans, H. J. J. Van Dam, and M. F. Guest,
    *J. Comput. Chem.* **27**, 926 (2006).
    https://doi.org/10.1002/jcc.20393
+
+.. [Parrish:2016:131101]
+   R. M. Parrish, F. Liu, and T. J. Martínez
+   *J. Chem. Phys.* **144**, 131101 (2016).
+   https://doi.org/10.1063/1.4945277

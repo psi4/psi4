@@ -740,12 +740,20 @@ class PSI_API DirectJK : public JK {
     
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
+    /// Use a fixed reference for the incremental Fock build instead of updating it every iteration? (default false)
+    bool fixed_reference_;
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     bool do_incfock_iter_;
 
-    /// Previous iteration pseudo-density matrix
+    /// Previous iteration pseudo-density matrix (used by the default, updated-reference incremental build)
     std::vector<SharedMatrix> D_prev_;
+
+    /// Fixed reference density and the J, K, and wK matrices built from it (used by the fixed-reference incremental build)
+    std::vector<SharedMatrix> D_fixed_ref_;
+    std::vector<SharedMatrix> J_fixed_ref_;
+    std::vector<SharedMatrix> K_fixed_ref_;
+    std::vector<SharedMatrix> wK_fixed_ref_;
 
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
