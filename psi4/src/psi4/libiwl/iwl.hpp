@@ -30,6 +30,7 @@
 #define _psi_src_lib_libiwl_iwl_hpp_
 
 #include <cstdio>
+#include <string>
 #include "psi4/libpsio/psio.hpp"
 #include "config.h"
 
@@ -52,11 +53,17 @@ class PSI_API IWL {
     bool keep_;
 
    public:
+    // Construct an empty buffer; you must call init() before use. The default
+    // constructor exists only for the deferred-init pattern used by
+    // libtrans/integraltransform_tei_2nd_half.cc and similar callers.
     IWL();
     IWL(PSIO *psio, int itap, double cutoff, int oldfile, int readflag);
     ~IWL();
 
-    // Accessor functions to data
+    // Disallow copy: the buffer owns a psio file handle and heap storage.
+    IWL(const IWL &) = delete;
+    IWL &operator=(const IWL &) = delete;
+
     int &itap() { return itap_; }
     psio_address &buffer_position() { return bufpos_; }
     int &ints_per_buffer() { return ints_per_buf_; }
@@ -81,8 +88,6 @@ class PSI_API IWL {
                          std::string OutFileRMR);
     static void write_one(PSIO *psio, int itap, const char *label, int ntri, double *onel_ints);
 
-    int read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt, int mp2, int printflg, std::string OutFileRMR);
-
     void write(int p, int q, int pq, int pqsym, double *arr, int rmax, int *ioff, int *orbsym, int *firsti, int *lasti,
                int printflag, std::string OutFileRMR);
     void write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast, int sfirst, int slast, int *reorder,
@@ -90,7 +95,6 @@ class PSI_API IWL {
     void write_value(int p, int q, int r, int s, double value, int printflag, std::string OutFileRMR, int dirac);
 
     void flush(int lastbuf);
-    void to_end();
 };
 }
 

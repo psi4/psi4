@@ -30,13 +30,15 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
 #include <cmath>
-#include "psi4/libciomr/libciomr.h"
+#include <memory>
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/libpsi4util/PsiOutStream.h"
+#include "iwl_impl.h"
+
 namespace psi {
+
+using iwl_impl::check_label_fits;
 
 /*!
 ** iwl_buf_wrt()
@@ -52,45 +54,39 @@ namespace psi {
 */
 void IWL::write(int p, int q, int pq, int pqsym, double *arr, int rmax, int *ioff, int *orbsym, int *firsti, int *lasti,
                 int printflag, std::string out) {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>((out)));
-    int r, s, rs, rsym, ssym, smax, idx;
-    double value;
-    Label *lblptr;
-    Value *valptr;
+    std::shared_ptr<PsiOutStream> printer = printflag ? ((out == "outfile") ? outfile : std::make_shared<PsiOutStream>(out))
+                                                      : nullptr;
 
-    lblptr = labels_;
-    valptr = values_;
+    for (int r = 0; r < rmax; r++) {
+        int rsym = orbsym[r];
+        int ssym = pqsym ^ rsym;
+        int smax = (rsym == ssym) ? r : lasti[ssym];
 
-    for (r = 0; r < rmax; r++) {
-        rsym = orbsym[r];
-        ssym = pqsym ^ rsym;
-        smax = (rsym == ssym) ? r : lasti[ssym];
+        for (int s = firsti[ssym]; s <= smax; s++) {
+            int rs = ioff[r] + s;
+            double value = arr[rs];
 
-        for (s = firsti[ssym]; s <= smax; s++) {
-            rs = ioff[r] + s;
-            value = arr[rs];
+            if (std::fabs(value) <= cutoff_) continue;
+            check_label_fits(p, q, r, s);
 
-            if (std::fabs(value) > cutoff_) {
-                idx = 4 * idx_;
-                lblptr[idx] = (Label)p;
-                lblptr[idx + 1] = (Label)q;
-                lblptr[idx + 2] = (Label)r;
-                lblptr[idx + 3] = (Label)s;
-                valptr[idx_] = (Value)value;
+            int idx = 4 * idx_;
+            labels_[idx + 0] = static_cast<Label>(p);
+            labels_[idx + 1] = static_cast<Label>(q);
+            labels_[idx + 2] = static_cast<Label>(r);
+            labels_[idx + 3] = static_cast<Label>(s);
+            values_[idx_] = static_cast<Value>(value);
 
-                idx_++;
+            idx_++;
 
-                if (idx_ == ints_per_buf_) {
-                    inbuf_ = idx_;
-                    lastbuf_ = 0;
-                    put();
-                    idx_ = 0;
-                }
+            if (idx_ == ints_per_buf_) {
+                inbuf_ = idx_;
+                lastbuf_ = 0;
+                put();
+                idx_ = 0;
+            }
 
-                if (printflag) printer->Printf("<%d %d %d %d [%d] [%d] = %20.10f\n", p, q, r, s, pq, rs, value);
-
-            } /* end if (fabs(value) > Buf->cutoff) ... */
-        }     /* end loop over s */
-    }         /* end loop over r */
+            if (printflag) printer->Printf("<%d %d %d %d [%d] [%d] = %20.10f\n", p, q, r, s, pq, rs, value);
+        }
+    }
 }
 }
