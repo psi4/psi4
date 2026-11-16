@@ -112,6 +112,8 @@ set_property(TARGET l2intf PROPERTY UNITY_BUILD_BATCH_SIZE 0)
 # (2) With unity build off (or Makefile generators, which ignore pools), each l2intf file is its own 6-8 GB job.
 #   For Ninja, cap concurrent l2intf compiles by memory: one job per ~8 GB available, at least one.
 #   Use the container's cgroup limit if it's tighter than the host memory CMake reports.
+#   The pool is shared by all compiles that include libint2/engine.h: l2intf here, fock_l2engine
+#   (libfock/snLinK.cc), and the pybind11 core module (core.cc, export_mints.cc; psi4/src/CMakeLists.txt).
 cmake_host_system_information(RESULT _l2intf_mem QUERY AVAILABLE_PHYSICAL_MEMORY)  # MiB
 foreach(_cg_max _cg_cur IN ZIP_LISTS
         "/sys/fs/cgroup/memory.max;/sys/fs/cgroup/memory/memory.limit_in_bytes"
@@ -135,9 +137,9 @@ math(EXPR _l2intf_jobs "${_l2intf_mem} / 8192")
 if(_l2intf_jobs LESS 1)
     set(_l2intf_jobs 1)
 endif()
-set_property(GLOBAL APPEND PROPERTY JOB_POOLS l2intf_pool=${_l2intf_jobs})
-set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE l2intf_pool)
-message(STATUS "l2intf: ${_l2intf_mem} MiB available -> compile job pool depth ${_l2intf_jobs}")
+set_property(GLOBAL APPEND PROPERTY JOB_POOLS libint2_engine_pool=${_l2intf_jobs})
+set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE libint2_engine_pool)
+message(STATUS "libint2_engine_pool: ${_l2intf_mem} MiB available -> compile job pool depth ${_l2intf_jobs}")
 
 # Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)

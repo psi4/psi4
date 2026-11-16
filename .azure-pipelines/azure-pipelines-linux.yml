@@ -245,10 +245,27 @@ jobs:
 
     # conda remove qcengine --force || true
     # conda remove optking --force || true
-    # most lanes are Ninja which parallelizes by default. Makefiles lane (min GCC) needs single thread anyways
+    # Hosted agents are ~7 GB RAM; with libint2 >=2.14, each TU including libint2/engine.h peaks at 5.6-7.6 GB
+    #   (GCC), so add swap on the temp disk as headroom rather than have the OOM killer take out the agent.
+  - bash: |
+      sudo fallocate -l 8G /mnt/swapfile || sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=8192
+      sudo chmod 600 /mnt/swapfile
+      sudo mkswap /mnt/swapfile
+      sudo swapon /mnt/swapfile
+      swapon --show
+      free -m
+    displayName: 'Add Swap'
+    continueOnError: true
+
+    # most lanes are Ninja which parallelizes by default (nproc+2). Makefiles lane (min GCC) needs single thread anyways
+    # For Ninja, cap at 2 jobs: CMAKE_BUILD_PARALLEL_LEVEL is inherited by the nested `cmake --build` of
+    #   psi4-core (ExternalProject), which an outer `-j` does not reach.
   - bash: |
       cd build
       source activate p4env
+      if [[ "${CM_GENERATOR}" == "Ninja" ]]; then
+        export CMAKE_BUILD_PARALLEL_LEVEL=2
+      fi
       cmake --build .
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
