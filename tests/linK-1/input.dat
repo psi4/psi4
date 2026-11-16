@@ -1,5 +1,11 @@
 #! RHF Linear Exchange Algorithm test for water
 
+oopkg  = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "internal"
+# Second-order convergence cannot be used with this method, so only the first-order package
+# is varied and SOSCF is pinned off rather than inherited.
+psi4.set_options({"orbital_optimizer_package": oopkg, "soscf": False})
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+
 ref_energy = -76.0412801462671837 # TEST, compared to previously-devleoped DDFJ+LinK impl 
 
 molecule mol {

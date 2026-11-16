@@ -97,7 +97,9 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
         elif scf_type in [ "MEM_DF", "DISK_DF" ]:
             E_ref = Eref["Singlet"]["DF"]
         elif scf_type in Eref["Singlet"]["Composite"].keys(): 
-            if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL" and scf_type == "DFDIRJ+COSX":  # KP-DIFF-ANS
+            # OOO runs COSX on the final grid throughout and lands a few times 1e-5 away
+            # from the internal solver's early-screened answer.
+            if psi4.core.get_global_option("orbital_optimizer_package") in ["OOO", "OPENORBITALOPTIMIZER"] and scf_type == "DFDIRJ+COSX":  # KP-DIFF-ANS
                 E_ref = Eref["Singlet"]["Composite"][f"{scf_type}_OOO"]
             else:
                 E_ref = Eref["Singlet"]["Composite"][scf_type]
