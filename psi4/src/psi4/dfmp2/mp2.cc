@@ -1272,7 +1272,7 @@ void RDFMP2::form_energy_cuest() {
     CHECK_CUDA(cudaFree((void*) iajb_d));
 
     CHECK_CUDA(cudaFree((void*) deps_aocc));
-    CHECK_CUDA(cudaFree((void*) deps_avir);
+    CHECK_CUDA(cudaFree((void*) deps_avir));
 
     variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = e_ss;
     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = e_os;
