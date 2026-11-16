@@ -56,6 +56,9 @@ macro(psi4_add_module binlib libname sources)
       POSITION_INDEPENDENT_CODE 1
       VISIBILITY_INLINES_HIDDEN 1
     )
+  if(psi4_ENABLE_IPO)
+    set_target_properties(${libname} PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+  endif()
 
   # Link required and optional dependencies interface libraries
   # This ensures all modules get:
