@@ -1219,6 +1219,13 @@ void RDFMP2::form_energy_cuest() {
  
     if (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") {
         CHECK_CUBLAS(cublasSetMathMode(cublas_handle, CUBLAS_FP64_EMULATED_FIXEDPOINT_MATH));
+
+        outfile->Printf("allocating 2 GiB workspace for cuBLAS fixed-point emulation\n");
+        
+        size_t ws_size_bytes = 2000000000;
+        void* fp_emulation_ws = nullptr;
+        CHECK_CUDA(cudaMalloc((void**) &fp_emulation_ws, ws_size_bytes));
+        CHECK_CUBLAS(cublasSetWorkspace(cublas_handle, fp_emulation_ws, ws_size_bytes));
     }
 
     for (int i = 0; i < naocc; i++) {
@@ -1248,9 +1255,16 @@ void RDFMP2::form_energy_cuest() {
             e_ss += pair_prefactor * (iajb_term - ibja_term);
         }
     }
-    // cuEST shares this handle and requires that cuBLAS emulation parameters should be reset prior to calling cuEST
-    CHECK_CUBLAS(cublasSetMathMode(cublas_handle, CUBLAS_DEFAULT_MATH));
 
+    if (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") {
+        CHECK_CUDA(cudaStreamSynchronize(stream_handle));
+        CHECK_CUBLAS(cublasSetStream(cublas_handle, stream_handle));
+        
+        // cuEST shares this handle and requires that cuBLAS emulation parameters should be reset prior to calling cuEST
+        CHECK_CUBLAS(cublasSetMathMode(cublas_handle, CUBLAS_DEFAULT_MATH));
+        CHECK_CUDA(cudaFree(fp_emulation_ws));
+    }
+    
     cudaFree((void*) Bia_);
     cudaFree((void*) iajb);
     cudaFree((void*) ibja);
