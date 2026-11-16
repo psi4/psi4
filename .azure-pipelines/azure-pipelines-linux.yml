@@ -33,7 +33,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
-        vmImage: 'ubuntu-24.04'
+        vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long or memory_profiler)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
@@ -245,15 +245,29 @@ jobs:
 
     # conda remove qcengine --force || true
     # conda remove optking --force || true
-    # Hosted agents are ~7 GB RAM; with libint2 >=2.14, each TU including libint2/engine.h peaks at 5.6-7.6 GB
-    #   (GCC), so add swap on the temp disk as headroom rather than have the OOM killer take out the agent.
+    # Hosted agents are ~8 GB RAM + a 3 GB /swapfile; with libint2 >=2.14, each TU including libint2/engine.h
+    #   peaks at 5.6-7.6 GB with GCC, so give GCC lanes a bit more swap rather than have the OOM killer take
+    #   out the agent. Clang/icpx lanes don't need it. /mnt is NOT a separate disk on these agents -- swap
+    #   comes out of the ~13 GB free on /, which the build also needs, so keep it small and skip if tight.
   - bash: |
-      sudo fallocate -l 8G /mnt/swapfile || sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=8192
+      df -h /
+      if [[ "${CXX_COMPILER}" != g++* ]]; then
+        echo "Not a GCC lane (${CXX_COMPILER}); no extra swap"
+        exit 0
+      fi
+      SWAP_GB=4
+      AVAIL_GB=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
+      if (( AVAIL_GB < SWAP_GB + 6 )); then
+        echo "Only ${AVAIL_GB} GB free on /; skipping extra swap to leave room for the build"
+        exit 0
+      fi
+      sudo fallocate -l ${SWAP_GB}G /mnt/swapfile
       sudo chmod 600 /mnt/swapfile
       sudo mkswap /mnt/swapfile
       sudo swapon /mnt/swapfile
       swapon --show
       free -m
+      df -h /
     displayName: 'Add Swap'
     continueOnError: true
 
