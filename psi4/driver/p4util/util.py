@@ -41,6 +41,7 @@ __all__ = [
 ]
 
 import hashlib
+import numbers
 import os
 import re
 import warnings
@@ -441,8 +442,41 @@ def libint2_print_out() -> None:
 
 
 def libint2_supports(am: int, der: int = 0, centers: int = 4) -> bool:
-    """Does the linked Libint2 support 2-, 3-, or 4-*centers* ERIs of angular momentum *am* and derivative *der*."""
+    """Does the linked Libint2 support 2-, 3-, or 4-*centers* ERIs of angular momentum *am* and derivative *der*.
 
+    Parameters
+    ----------
+    am
+        Angular momentum of every center, ``0`` (S) through ``20`` (Z).
+    der
+        Derivative order, ``0`` (energy), ``1`` (gradient), or ``2`` (Hessian).
+    centers
+        Number of centers in the ERI: ``2``, ``3``, or ``4``.
+
+    Returns
+    -------
+    bool
+        Whether the linked Libint2 was built with that integral class.
+        ``False`` means *unsupported by this build*, never *invalid query*.
+
+    Raises
+    ------
+    ValidationError
+        If any argument is not an integer or is out of range.
+
+    """
     amstr = "SPDFGHIKLMNOQRTUVWXYZ"
-    amcode = amstr[int(am)].lower() * centers
+
+    for label, val, allowed in [
+        ("am", am, range(len(amstr))),
+        ("der", der, range(3)),  # expand this to allow arbitrary order deriv (plausible from L2)
+        ("centers", centers, range(2, 5)),
+    ]:
+        if isinstance(val, bool) or not isinstance(val, numbers.Integral):
+            raise ValidationError(f"libint2_supports: {label} must be an integer, not {type(val).__name__}: {val!r}")
+        if val not in allowed:
+            raise ValidationError(
+                f"libint2_supports: {label}={val} out of range; must be in [{allowed.start}, {allowed.stop - 1}]")
+
+    amcode = amstr[am].lower() * centers
     return core.libint2_supports(f"eri_{amcode}_d{der}")
