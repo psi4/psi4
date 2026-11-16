@@ -217,6 +217,15 @@ if(${ENABLE_OpenOrbitalOptimizer})
     message(STATUS "${Cyan}Using OpenOrbitalOptimizer${ColourReset}: ${_loc} (version ${OpenOrbitalOptimizer_VERSION})")
 else()
     message(STATUS "Disabled OpenOrbitalOptimizer ${OpenOrbitalOptimizer_DIR}")
+endif()
+
+if(${ENABLE_OpenTrustRegion})
+    find_package(OpenTrustRegion 3.0.0 COMPONENTS int32 CONFIG REQUIRED)  # edit in codedeps
+    get_property(_loc TARGET OpenTrustRegion::OpenTrustRegion PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using OpenTrustRegion${ColourReset}: ${_loc} (version ${OpenTrustRegion_VERSION})")
+else()
+    message(STATUS "Disabled OpenTrustRegion ${OpenTrustRegion_DIR}")
 endif ()
 
 if(${ENABLE_PCMSolver})
@@ -235,6 +244,15 @@ if(${ENABLE_simint})
     message(STATUS "${Cyan}Using simint ${simint_MAXAM}${ColourReset}: ${_loc} (version ${simint_VERSION}; vectorization ${simint_VECTOR})")
 else()
     message(STATUS "Disabled simint ${simint_DIR}")
+endif()
+
+if(${ENABLE_cint})
+    find_package(cint 6.1.2 CONFIG REQUIRED)  # edit in codedeps
+    get_property(_loc TARGET cint::cint PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using cint${ColourReset}: ${_loc} (version ${cint_VERSION})")
+else()
+    message(STATUS "Disabled cint ${cint_DIR}")
 endif()
 
 if(${ENABLE_BrianQC})

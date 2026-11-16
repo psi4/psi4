@@ -17,17 +17,12 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-11 g++-11'
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: "quick"
+        PYTEST_MARKER_EXPR: "(quick and not memory_profiler)"
         PYTEST_NAME_EXPR: 'not nonsense1'
-        ENABLE_EINSUMS: "OFF"
-        ENABLE_GAUXC: "OFF"
-        # older GCC + newer L2 vulnerable to OOM w/unity build
-        CMARGS: >-
-          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
-          -Dpsi4_CMAKE_UNITY_BUILD=OFF
-          -DCMAKE_CXX_FLAGS_RELEASE:STRING='-O2 -DNDEBUG'
-          -DCMAKE_VERBOSE_MAKEFILE=ON
-        CM_GENERATOR: "Unix Makefiles"
+        ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
+        CMARGS: ""
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -38,28 +33,29 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
-        vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
+        vmImage: 'ubuntu-24.04'
+        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long or memory_profiler)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
         CMARGS: >-
-          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
-          -Dpsi4_libmints_UNITY_BUILD_BATCH_SIZE=5
-        CM_GENERATOR: "Ninja"
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
+          -Dpsi4_CMAKE_UNITY_BUILD=OFF
+          -DCMAKE_CXX_FLAGS_RELEASE:STRING='-O2 -DNDEBUG'
+        CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
-      clang_15:
-        CXX_COMPILER: 'clang++-15'
+      clang_latest:
+        CXX_COMPILER: 'clang++-21'
         PYTHON_VER: '3.11'
-        C_COMPILER: 'clang-15'
+        C_COMPILER: 'clang-21'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-15 clang++-15'
+        APT_INSTALL: 'gfortran clang-21 clang++-21'
         # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
-        vmImage: 'ubuntu-22.04'
-        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long or memory_profiler)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
@@ -68,7 +64,7 @@ jobs:
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
           -DOpenMP_C_LIB_NAMES=omp
           -DOpenMP_CXX_LIB_NAMES=omp
-          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
+          -DOpenMP_omp_LIBRARY=/home/runner/miniforge3/envs/p4env/lib/libomp.so
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
@@ -82,7 +78,7 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-17 clang++-17'
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: 'quick'
+        PYTEST_MARKER_EXPR: '(quick and not memory_profiler)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
@@ -91,7 +87,7 @@ jobs:
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
           -DOpenMP_C_LIB_NAMES=omp
           -DOpenMP_CXX_LIB_NAMES=omp
-          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
+          -DOpenMP_omp_LIBRARY=/home/runner/miniforge3/envs/p4env/lib/libomp.so
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -158,11 +154,19 @@ jobs:
     displayName: "Setup Information"
 
   - bash: |
-        echo "##vso[task.prependpath]$CONDA/bin"
-        conda config --set always_yes yes
-        conda config --set solver libmamba
-        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+      set -e
+      if [[ -z "${CONDA:-}" || ! -x "$CONDA/bin/conda" ]]; then
+        export CONDA="$HOME/miniforge3"
+        curl -fsSL -o miniforge.sh \
+          https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+        bash miniforge.sh -b -p "$CONDA"
+      fi
+      export PATH="$CONDA/bin:$PATH"
+      echo "##vso[task.setvariable variable=CONDA]$CONDA"
+      echo "##vso[task.prependpath]$CONDA/bin"
+      conda --version
+      conda config --set always_yes yes
+      # conda config --set solver libmamba
     displayName: "Add Conda to PATH"
 
   - bash: |
@@ -175,6 +179,14 @@ jobs:
     displayName: "Special Operation: test OpenOrbitalOptimizer"
 
   - bash: |
+      grep '"INTEGRAL_PACKAGE"' psi4/src/read_options.cc
+      if [[ "$(Agent.JobName)" == "Linux Builds gcc_11" ]]; then
+        sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 SIMINT LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
+      fi
+      grep '"INTEGRAL_PACKAGE"' psi4/src/read_options.cc
+    displayName: "Special Operation: test libcint as default integral package"
+
+  - bash: |
       conda install pyyaml -c conda-forge
       conda/psi4-path-advisor.py \
         env \
@@ -184,10 +196,6 @@ jobs:
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       # test some alternative packages
-      if [[ "${PYTHON_VER}" != "3.12" ]]; then
-        echo "  - psi4::gcp" >> env_p4env.yaml
-        echo "  - psi4::dftd3" >> env_p4env.yaml
-      fi
       if [[ "$(Agent.JobName)" == "Linux Builds icpx_conda" ]]; then
         sed -i "s;#- dpcpp;- dpcpp;g" env_p4env.yaml
         sed -i "s;#- ifx;- ifx;g" env_p4env.yaml
@@ -197,6 +205,7 @@ jobs:
       echo "  - zlib" >> env_p4env.yaml
       echo "  - armadillo" >> env_p4env.yaml
       echo "  - openorbitaloptimizer" >> env_p4env.yaml
+      echo "  - libcint" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
@@ -228,6 +237,7 @@ jobs:
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc="${ENABLE_GAUXC}" \
+        -D ENABLE_cint=ON \
         -D FORCE_PEDANTIC=ON \
         $(CMARGS) \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
@@ -253,7 +263,7 @@ jobs:
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
       python -c 'import qcengine as q; print(q.__version__, q.__file__)'
       qcengine info
-      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
     displayName: 'Spot Test'
 
   - bash: |
@@ -267,7 +277,7 @@ jobs:
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
       python -c 'import qcengine as q; print(q.__version__, q.__file__)'
-      ./stage/bin/psi4 ../tests/ddd-deriv/input.dat
+      ./stage/bin/psi4 ../tests/ddd-deriv/input.dat -o stdout
     displayName: 'Spot Test 2'
 
   - bash: |

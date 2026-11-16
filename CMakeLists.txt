@@ -88,8 +88,8 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gauxc, gdma,
-#                         IntegratorXX, Libint2, OpenOrbitalOptimizer, optking, PCMSolver, pybind11,
-#                         pylibefp, qcelemental, qcengine, simint, Libxc, qcmanybody
+#                         IntegratorXX, Libint2, OpenOrbitalOptimizer, OpenTrustRegion, optking, PCMSolver,
+#                         pybind11, pylibefp, qcelemental, qcengine, simint, Libxc, qcmanybody, cint
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -129,10 +129,12 @@ option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
+option(ENABLE_cint "Enables use of the libcint two-electron integral library (experimental). Can also detect a qcint" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_IntegratorXX "Enables use of IntegratorXX density functional grids library" OFF)
 option(ENABLE_OpenOrbitalOptimizer "Enables the OpenOrbitalOptimizer library (requires Armadillo)" OFF)
+option(ENABLE_OpenTrustRegion "Enables the OpenTrustRegion library (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_qcmanybody "Enables qcmanybody for n-body/BSSE workflows (can also be added at runtime)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
@@ -153,7 +155,7 @@ if(ENABLE_ccsort OR ENABLE_transqt2)
   message(STATUS "Enabling pasture plugins")
 endif()
 
-if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_PCMSolver)
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_PCMSolver OR ENABLE_OpenTrustRegion)
   if(psi4_SKIP_ENABLE_Fortran)
     message(STATUS "NOT Enabling Fortran")
   else()
@@ -271,8 +273,10 @@ ExternalProject_Add(psi4-core
            qcengine_external
            qcmanybody_external
            openorbitaloptimizer_external
+           opentrustregion_external
            optking_external
            simint_external
+           cint_external
            libxc_external
            mdi_external
            brianqc_external
@@ -333,12 +337,14 @@ ExternalProject_Add(psi4-core
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
               -DENABLE_simint=${ENABLE_simint}
+              -DENABLE_cint=${ENABLE_cint}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DENABLE_mdi=${ENABLE_mdi}
               -DENABLE_BrianQC=${ENABLE_BrianQC}
               -DENABLE_OpenOrbitalOptimizer=${ENABLE_OpenOrbitalOptimizer}
               -DENABLE_OPENMP=${ENABLE_OPENMP}
+              -DENABLE_OpenTrustRegion=${ENABLE_OpenTrustRegion}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
               -DEigen3_DIR=${Eigen3_DIR}
@@ -352,6 +358,7 @@ ExternalProject_Add(psi4-core
               -Dgdma_DIR=${gdma_DIR}
               -DLibint2_DIR=${Libint2_DIR}
               -DOpenOrbitalOptimizer_DIR=${OpenOrbitalOptimizer_DIR}
+              -DOpenTrustRegion_DIR=${OpenTrustRegion_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
@@ -359,6 +366,7 @@ ExternalProject_Add(psi4-core
               -Dgauxc_DIR=${gauxc_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
+              -Dcint_DIR=${cint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
               -DBrianQC_DIR=${BrianQC_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}

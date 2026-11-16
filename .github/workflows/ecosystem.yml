@@ -166,6 +166,16 @@ jobs:
       if: false
       run: git clone https://github.com/psi4/iomp5md.git
 
+    - name: Show stack info
+      if: github.event.pull_request.stack != null
+      run: |
+          echo "Stack base ref: ${{ github.event.pull_request.stack.base.ref }}"
+          echo "PR ${{ github.event.pull_request.stack.position }} of ${{ github.event.pull_request.stack.size }} in the stack"
+
+    - name: Run only when the stack targets master
+      if: github.event.pull_request.stack != null && startsWith(github.event.pull_request.stack.base.ref, 'master')
+      run: echo "This stack targets a release branch"
+        
     - name: Write Conda environment files
       run: |
         #
@@ -247,6 +257,17 @@ jobs:
           sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
         fi
         grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+
+    - name: Special Config - Force testing Libcint
+      if: false  # LIBCINT as the default on every lane; Azure gcc_11 does it on one, and `pytest -m cint` runs everywhere
+      run: |
+        grep INTEGRAL_PACKAGE psi4/src/read_options.cc
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -E -i.bak 's;(options\.add_str\("INTEGRAL_PACKAGE", ")LIBINT2(", "LIBINT2 SIMINT LIBCINT");\1LIBCINT\2;' psi4/src/read_options.cc
+        else
+          sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 SIMINT LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
+        fi
+        grep INTEGRAL_PACKAGE psi4/src/read_options.cc
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
@@ -410,6 +431,11 @@ jobs:
       if: runner.os == 'macOS'
       working-directory: ./objdir
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
+
+    - name: Test Core with CTest (W)
+      if: runner.os == 'Windows'
+      working-directory: ./objdir
+      run: ctest -L quick -j2 --output-on-failure -LE d2ints
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)

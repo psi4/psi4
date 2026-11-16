@@ -803,6 +803,13 @@ void Wavefunction::force_occpi(const Dimension &input_doccpi, const Dimension &i
     nbeta_ = nbetapi_.sum();
 }
 
+void Wavefunction::force_occupation(const Dimension &input_nalphapi, const Dimension &input_nbetapi) {
+    nalphapi_ = input_nalphapi;
+    nbetapi_ = input_nbetapi;
+    nalpha_ = nalphapi_.sum();
+    nbeta_ = nbetapi_.sum();
+}
+
 void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
     for (int h = 0; h < nirrep_; h++) {
         frzvpi_[h] = frzvpi[h];
