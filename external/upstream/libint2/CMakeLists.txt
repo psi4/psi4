@@ -22,7 +22,7 @@
 #   a natural relationship between ERI and ERI3 for energy integrals is N and N+1.
 # * The combination LIBINT2_ERI_MAX_AM="5;4;3" and LIBINT2_ERI3_MAX_AM="6;5;4" permits any 5Z energy, QZ gradient, and TZ Hessian and is sufficient for the full test suite (c.2022 -- we don't check this regularly).
 # * Psi4 doesn't know the limits of the Libint2 library to which it's linked. `libint2::Engine::lmax_exceeded` errors will be thrown from l2; nothing from Psi4.
-# * If ever use a libint2 with AM>7, edit the `init_spherical_harmonics` line in libmints/integral.cc
+# * ~If ever use a libint2 with AM>7, edit the `init_spherical_harmonics` line in libmints/integral.cc~ (out-of-date Nov 2026)
 # * In selecting AM values, before `grep`ing lots of basis set files, consult the guide at end of this file.
 # [Feb 2023]
 # * ~Upon additions to the Libint2 API to allow runtime SHGAUSS switching, Psi4 can use LIBINT2_SHGAUSS_ORDERING=standard|gaussian
@@ -39,18 +39,13 @@
 # [Feb 2026]
 # * With Libint2 v2.13 (cmake+cmake), some variables gained LIBINT2_ prefixes, CMake components are available for
 #   `find_package(Libint2 ... COMPONENTS ...)`, and components are available from C++ without patching.
+# [Nov 2026]
+# * Conda-specific: with Libint v2.14, only libraries are in the libint package. Use libint-cxx-devel for headers and
+#   CMake detection files. Note that headers include L2's config.h and compiling against headers of one config and linking
+#   against lib of another config will segfault Psi4. Pure conda is safe but mixing conda packages and local builds is vulnerable.
 
-#                          1    1    2
-#                0    5    0    5    0
-set(_am_letters "spdfghiklmnoqrtuvwxyz")
-if (MAX_AM_ERI LESS 2 OR MAX_AM_ERI GREATER_EQUAL 20)
-    message(FATAL_ERROR "MAX_AM_ERI=${MAX_AM_ERI} not within 2-20")
-endif()
-string(SUBSTRING "${_am_letters}" "${MAX_AM_ERI}" 1 amletter)
-string(REPEAT "${amletter}" 4 amchar)
-message(VERBOSE "AM LETTERS ${_am_letters} ${amletter} ${amchar}")
-unset(_am_letters)
-unset(amletter)
+include(custom_util)
+am_to_shell(${MAX_AM_ERI} 4 amchar)
 find_package(Libint2 2.13.1 COMPONENTS ss eri_${amchar}_d0 eri_dddd_d1 eri_ggg_d0 eri_fff_d1 eri_gg_d0 eri_ff_d1 onebody_gg_d0 onebody_ff_d1 onebody_ff_d2 CONFIG  # edit in codedeps
   # REQUIRED COMPONENTS: ss; 2-, 3-, & 4-center E & G, onebody E, G, & H
   OPTIONAL_COMPONENTS
@@ -59,7 +54,7 @@ find_package(Libint2 2.13.1 COMPONENTS ss eri_${amchar}_d0 eri_dddd_d1 eri_ggg_d
     eri_ff_d2
   )
 
-if (TARGET Libint2::cxx)
+if(TARGET Libint2::cxx AND Libint2_FOUND)
     get_target_property(_loc Libint2::int2 LOCATION)
     get_target_property(Libint2_VERSION Libint2::int2 Libint2_VERSION)
     get_target_property(Libint2_MAX_AM_ERI Libint2::int2 Libint2_MAX_AM_ERI)
@@ -140,10 +135,10 @@ else()
             message(FATAL_ERROR "${Red}Libint2 generator source build faulty on Windows.${ColourReset}")
         endif()
 
-        # NOTE: active AM settings below will pass few tests, as they're set for 1st row triple-zeta ene and double-zeta ene/grad/hess for both conv/df. Please edit for desired use.
+        # NOTE: active AM settings below will pass the find_package() configuration checks and most quick tests, but it takes ~5h to compile. Please edit for desired use.
 
         ExternalProject_Add(libint2_external
-            URL https://github.com/evaleev/libint/archive/v2.13.1.tar.gz  # edit in codedeps
+            URL https://github.com/evaleev/libint/archive/v2.14.1.tar.gz  # edit in codedeps
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${_cmake_build_type}
@@ -169,6 +164,7 @@ else()
                        -DLIBINT2_CARTGAUSS_ORDERING=standard
                        -DLIBINT2_SHELL_SET=standard
                        -DBUILD_SHARED_LIBS=${_build_shared_libs}
+                       -DCMAKE_UNITY_BUILD_BATCH_SIZE=6
                        -DLIBINT2_REQUIRE_CXX_API=ON
                        -DLIBINT2_REQUIRE_CXX_API_COMPILED=OFF
                        -DLIBINT2_ENABLE_FORTRAN=OFF
@@ -181,10 +177,11 @@ else()
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
-                             -DLIBINT2_ERI_MAX_AM:STRING=3;2;2
-                             -DLIBINT2_ERI3_MAX_AM:STRING=4;3;3
-                             -DLIBINT2_ERI2_MAX_AM:STRING=4;3;3
-                             -DLIBINT2_MAX_AM:STRING=4;3;3
+                             -DLIBINT2_ONEBODY_MAX_AM:STRING=4;4;3
+                             -DLIBINT2_ERI_MAX_AM:STRING=4;4;2
+                             -DLIBINT2_ERI3_MAX_AM:STRING=5;5;3
+                             -DLIBINT2_ERI2_MAX_AM:STRING=5;5;3
+                             -DLIBINT2_MAX_AM:STRING=4;4;3
                              -DLIBINT2_G12_MAX_AM:STRING=3
         )
     endif()

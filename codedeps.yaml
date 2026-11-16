@@ -449,10 +449,11 @@ data:
       host: github
       account: evaleev
       name: libint
-      commit: v2.13.1
+      commit: v2.14.1
     cmake:
       name: Libint2
       constraint: 2.13.1
+      constraint_note: "Minimum the libmints src strictly needs is v2.8.0 to provide rt-switchable solid harmonics ordering. Minimum to work with the src and buildsys unchanged is v2.13.0 to provide CMake codes and C++ functions to introspect supported integrals. It is possible to use >=2.8.1,<2.13.0 with Psi4 provided you revert the find_package() and interface sugar (e.g., libint2_citation) added by https://github.com/psi4/psi4/pull/3353 ."
       target: Libint2::cxx
       components:
         - ss
@@ -468,12 +469,17 @@ data:
     conda:
       channel: conda-forge
       name: libint
-      name_note: "On the psi4 channel, libint/libint2 were used c.2021-23 to distinguish v1/v2. c-f always used libint as the package name. Starting with the v2.8 reunification with upstream, the supplementary 'bigAM' packages published on the psi4 channel will use the name libint for consistency with c-f."
-      constraint: ">=2.13.1"
-      constraint_note: "Provides rt-switchable ordering (v2.8.0 src), CMake and C++ codes for supported integrals (v2.13.0 src), and derivative integrals (build). It is possible to use >=2.8.1,<2.13.0 with Psi4 provided you revert the find_package() and libint2_citation interface sugar in https://github.com/psi4/psi4/pull/3353 ."
+      name_note: "On the psi4 channel, libint/libint2 were used c.2021-23 to distinguish v1/v2. c-f always used libint as the package name. Starting with the v2.8 reunification with upstream, the supplementary 'bigAM' packages published on the psi4 channel will use the name libint for consistency with c-f. With libcint taking over routine high-AM supplementary roles, no psi4 channel packages are presently useable w/o moderate cmake workarounds."
+      constraint: null
+      constraint_note: "v2.13.1 provides introspection of supported integrals (cmake+cmake)."
       aux_build_names:
-        - libboost-headers
-        - eigen
+        - libint-cxx-devel
+        - "//libint<2.14"
+        - "//libint-cxx-devel=*=lite*"
+      aux_build_names_note:
+        libint-cxx-devel: "Required to bring libboost-headers and eigen to compile against."
+        "//libint<2.14": "Optionally, use libint=2.13.1 but add libboost-headers and eigen, too."
+        "//libint-cxx-devel=*=lite*": "Optionally for linux-64, use a low-AM libint to be supplemented with libcint."
       cmake:
         BOOST_ROOT:
           unix: ${CONDA_PREFIX}
