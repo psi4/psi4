@@ -857,7 +857,6 @@ void RDFMP2::print_header() {
     double scratch_estimate = (static_cast<double>(ribasis_->nbf()) * aocc * avir + 3.0 * avir * avir + avir + aocc) * sizeof(double) / (1024.0 * 1024.0 * 1024.0);
 
     const char *cuest_str  = (options_.get_bool("CUEST_MIXED_PRECISION"))  ? "enabled"  : "disabled";
-    const char *cublas_str = (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") ? "enabled"  : "disabled";
 
     outfile->Printf("\t -----------------------------\n");
     outfile->Printf("\t    GPU-Accelerated DF-MP2    \n");
@@ -867,7 +866,7 @@ void RDFMP2::print_header() {
     outfile->Printf("\t  Fixed-point emulation       \n");
     outfile->Printf("\t  -------                     \n");
     outfile->Printf("\t   cuEST: %-8s            \n", cuest_str);
-    outfile->Printf("\t   cuBLAS: %-8s           \n", cublas_str);
+    outfile->Printf("\t   cuBLAS: disabled           \n");
     outfile->Printf("\t                              \n");
     outfile->Printf("\t  Form energy                 \n");
     outfile->Printf("\t  -------                     \n");
@@ -1217,18 +1216,6 @@ void RDFMP2::form_energy_cuest() {
     CHECK_CUDA(cudaMemcpy(deps_aocc, eps_aocc_->pointer(), sizeof(double) * naocc, cudaMemcpyHostToDevice));
     CHECK_CUDA(cudaMemcpy(deps_avir, eps_avir_->pointer(), sizeof(double) * navir, cudaMemcpyHostToDevice));
  
-    size_t ws_size_bytes = size_t(2) << 30;  // 2 GiB
-    void* fp_emulation_ws = nullptr;
-
-    if (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") {
-        CHECK_CUBLAS(cublasSetMathMode(cublas_handle, CUBLAS_FP64_EMULATED_FIXEDPOINT_MATH));
-
-        outfile->Printf("allocating 2 GiB workspace for cuBLAS fixed-point emulation\n");
-
-        CHECK_CUDA(cudaMalloc((void**) &fp_emulation_ws, ws_size_bytes));
-        CHECK_CUBLAS(cublasSetWorkspace(cublas_handle, fp_emulation_ws, ws_size_bytes));
-    }
-
     for (int i = 0; i < naocc; i++) {
         for (int j = i; j < naocc; j++) {
             
@@ -1257,15 +1244,6 @@ void RDFMP2::form_energy_cuest() {
         }
     }
 
-    if (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") {
-    	// reset workspace back to default
-        CHECK_CUBLAS(cublasSetStream(cublas_handle, stream_handle));
-        
-        // cuEST shares this handle and requires that cuBLAS emulation parameters should be reset prior to calling cuEST
-        CHECK_CUBLAS(cublasSetMathMode(cublas_handle, CUBLAS_DEFAULT_MATH));
-    }
-    CHECK_CUDA(cudaFree(fp_emulation_ws));
-    
     CHECK_CUDA(cudaFree((void*) Bia_));
     CHECK_CUDA(cudaFree((void*) iajb));
     CHECK_CUDA(cudaFree((void*) ibja));
