@@ -61,7 +61,9 @@ if(TARGET Libint2::cxx AND Libint2_FOUND)
     get_target_property(Libint2_CONFIGURATION Libint2::int2 Libint2_CONFIGURATION)
     message(STATUS "${Cyan}Found Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint2_VERSION})")
     message(VERBOSE "Libint2_CONFIGURATION: ${Libint2_CONFIGURATION}")
-    if (NOT eri_dddd_d2 IN_LIST Libint2_CONFIGURATION)
+    if (NOT "eri_dddd_d2" IN_LIST Libint2_CONFIGURATION OR
+        NOT "eri_fff_d2" IN_LIST Libint2_CONFIGURATION OR
+        NOT "eri_ff_d2" IN_LIST Libint2_CONFIGURATION)
         message(WARNING "Libint2 detected but missing ERI 2nd derivative integrals (components eri_dddd_d2 eri_fff_d2 eri_ff_d2). Psi4 will automatically fall back to finite difference.")
     endif()
     add_library(libint2_external INTERFACE)  # dummy
@@ -84,14 +86,15 @@ else()
     include(ExternalProject)
 
     if(NOT ${BUILD_Libint2_GENERATOR})
-        if (${MAX_AM_ERI} GREATER 5)
-            # set(_url_am_src "7-7-4-12-7-5")  # passes E&G 7z conv and 6z df, H Qz conv and df. covers all internal basis sets for energy and gradient
+        if (${MAX_AM_ERI} LESS_EQUAL 4)
+            set(_url_am_src "4-4-5-5")  # note no ERI Hessians
+        elseif (${MAX_AM_ERI} LESS_EQUAL 7)
             set(_url_am_src "7-6-4-7-7-6")
-        elseif (${MAX_AM_ERI} LESS_EQUAL 5)
-            set(_url_am_src "5-5-3-6-6-4")  # ~passes full tests
+        else()
+            message(FATAL_ERROR "Suitable Libint2 src tarball not available for MAX_AM_ERI=${MAX_AM_ERI}. Use `-D MAX_AM_ERI=7`, or generate and build
+your own L2 locally, or fall back to Libcint `-D ENABLE_cint=ON`, or consider `-D BUILD_Libint2_GENERATOR=ON`.")
         endif()
-
-        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/libint-2.13.1-${_url_am_src}_mm10f12ob2_0.tgz")
+        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/libint-2.14.1-${_url_am_src}_mm10f12ob2_0.tgz")
 
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2 ${_url_am_src}${ColourReset} instead.")
 

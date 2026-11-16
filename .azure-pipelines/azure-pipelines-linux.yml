@@ -21,7 +21,6 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        ENABLE_OOO: "OFF"
         # older GCC + newer L2 vulnerable to OOM w/unity build
         CMARGS: >-
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
@@ -44,7 +43,6 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        ENABLE_OOO: "ON"
         CMARGS: >-
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
           -Dpsi4_libmints_UNITY_BUILD_BATCH_SIZE=5
@@ -65,7 +63,6 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        ENABLE_OOO: "ON"
         CMARGS: >-
           -DOpenMP_C_FLAGS=-fopenmp=libomp
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
@@ -89,7 +86,6 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        ENABLE_OOO: "OFF"
         CMARGS: >-
           -DOpenMP_C_FLAGS=-fopenmp=libomp
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
@@ -113,7 +109,6 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        ENABLE_OOO: "ON"
         CMARGS: >-
           -DENABLE_XHOST=OFF
         CM_GENERATOR: "Ninja"
@@ -176,6 +171,7 @@ jobs:
         sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
       fi
       grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+    condition: false
     displayName: "Special Operation: test OpenOrbitalOptimizer"
 
   - bash: |
@@ -232,7 +228,6 @@ jobs:
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc="${ENABLE_GAUXC}" \
-        -D ENABLE_OpenOrbitalOptimizer="${ENABLE_OOO}" \
         -D FORCE_PEDANTIC=ON \
         $(CMARGS) \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
