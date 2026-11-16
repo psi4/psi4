@@ -31,13 +31,19 @@
 
 namespace psi {
 
-typedef short int Label;
-typedef double Value;
+// On-disk label width. The bucket format packs four labels per integral as
+// 16-bit signed integers, so any orbital index passed through IWL must fit in
+// [INT16_MIN, INT16_MAX]. The write paths check this and throw on overflow.
+using Label = short int;
+using Value = double;
 
-#define IWL_KEY_BUF "IWL Buffers"
-#define IWL_KEY_ONEL "IWL One-electron matrix elements"
+inline constexpr const char *IWL_KEY_BUF = "IWL Buffers";
+inline constexpr const char *IWL_KEY_ONEL = "IWL One-electron matrix elements";
 
-#define IWL_INTS_PER_BUF 2980
+// Number of integrals packed into a single on-disk bucket. Bucket size in
+// bytes is 2*sizeof(int) + 4*N*sizeof(Label) + N*sizeof(Value), i.e. ~28 kB at
+// N = 2980. Kept at the historical value for on-disk compatibility.
+inline constexpr int IWL_INTS_PER_BUF = 2980;
 }
 
 #endif
