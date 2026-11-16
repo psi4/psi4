@@ -1257,7 +1257,7 @@ void RDFMP2::form_energy_cuest() {
     }
 
     if (options_.get_str("CUBLAS_MIXED_PRECISION") == "ENABLED") {
-        CHECK_CUDA(cudaStreamSynchronize(stream_handle));
+	// reset workspace back to default
         CHECK_CUBLAS(cublasSetStream(cublas_handle, stream_handle));
         
         // cuEST shares this handle and requires that cuBLAS emulation parameters should be reset prior to calling cuEST
