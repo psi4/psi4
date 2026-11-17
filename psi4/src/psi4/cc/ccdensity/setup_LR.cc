@@ -47,7 +47,6 @@ void setup_LR(const struct RHO_Params& rho_params) {
     int i, j, L_irr, R_irr, G_irr, L_root, R_root;
     char L1A_lbl[32], L1B_lbl[32], L2AA_lbl[32], L2BB_lbl[32], L2AB_lbl[32], L2RHF_lbl[32];
     char R1A_lbl[32], R1B_lbl[32], R2AA_lbl[32], R2BB_lbl[32], R2AB_lbl[32], R2RHF_lbl[32];
-    char lbl[32];
     double tval, one_energy, this_energy, total_two_energy, two_energy, R0;
 
     L_irr = rho_params.L_irr;

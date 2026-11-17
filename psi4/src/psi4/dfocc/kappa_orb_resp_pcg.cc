@@ -455,7 +455,6 @@ void DFOCC::orb_resp_pcg_rhf() {
     SharedTensor2d K, L;
     itr_pcg = 0;
     double rms_r_pcgA = 0.0;
-    double rms_residual = 0.0;
     double rms_pcg = 0.0;
     double a_pcgA = 0.0;
     double b_pcgA = 0.0;
@@ -548,7 +547,6 @@ void DFOCC::orb_resp_pcg_uhf() {
     double rms_pcg = 0.0;
     double a_pcg = 0.0;
     double b_pcg = 0.0;
-    double rms_residual = 0.0;
     pcg_conver = 1;  // assuming pcg will converge
 
     // Head of the loop

@@ -2,6 +2,9 @@
 #! Note: MPQC4 does not use robust DF for DF-MP2-F12
 #! MP2 convergence requires that e_conv and d_conv are 1e-10
 
+if os.environ.get("_PSI4_USE_LIBCINT"):
+    psi4.set_options({"integral_package": "libcint"})
+
 ref_df_scf            =  -76.059551121528784      # TEST
 ref_df_mp2_corl       =  -0.24110853689574918     # TEST
 ref_df_f12_corl       =  -0.055279195185694963    # TEST

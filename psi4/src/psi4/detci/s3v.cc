@@ -73,7 +73,6 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist, double *
     size_t *Iaridx;
     signed char *Iasgn;
     double *Tptr;
-    int npthreads, rc, status;
 
     /* loop over i, j */
     for (i = 0; i < norbs; i++) {

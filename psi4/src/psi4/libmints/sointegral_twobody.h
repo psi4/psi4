@@ -574,7 +574,6 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     const int nao2 = b2_->naofunction(ujsh);
     const int nao3 = b3_->naofunction(uksh);
     const int nao4 = b4_->naofunction(ulsh);
-    const size_t nao = nao1 * nao2 * nao3 * nao4;
 
     const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell).ncenter();
     const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell).ncenter();

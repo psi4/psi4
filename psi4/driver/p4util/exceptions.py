@@ -270,8 +270,9 @@ class SCFConvergenceError(ConvergenceError):
         wfn: core.Wavefunction,
         e_conv: float,
         d_conv: float,
+        additional_info: Optional[str] = None,
     ):
-        ConvergenceError.__init__(self, eqn_description, iteration)
+        ConvergenceError.__init__(self, eqn_description, iteration, additional_info)
         self.e_conv = e_conv
         self.d_conv = d_conv
         self.wfn = wfn
