@@ -16,6 +16,11 @@ solver_n_root 2
 scf_type pk
 }
 
+if psi4.core.get_option("scf", "second_order_orbital_optimizer_package") in ["OTR", "OPENTRUSTREGION"]:
+    # This test analyses the stationary point it converges to, so it wants the optimizer to
+    # stay there. OpenTrustRegion's gradient perturbation is for leaving one.
+    psi4.set_options({"otr_grad_noise": False})
+
 ref_eigenvalues = psi4.Matrix.from_list([[-0.0142], [0.0203]]) # TEST
 
 energy('svwn')

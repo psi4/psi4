@@ -220,7 +220,6 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter, int& replace_diis_iter) {
     long int max = diis_iter;
     if (max > maxdiis) max = maxdiis;
 
-    double min = 1.e9;
     for (long int j = 1; j <= max; j++) {
         addr = PSIO_ZERO;
         sprintf(oldvector, "oldvector%li", j);

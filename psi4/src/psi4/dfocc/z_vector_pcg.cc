@@ -290,7 +290,6 @@ void DFOCC::pcg_solver_rhf() {
     SharedTensor2d K, L;
     itr_pcg = 0;
     double rms_r_pcgA = 0.0;
-    double rms_residual = 0.0;
     double rms_pcg = 0.0;
     double a_pcgA = 0.0;
     double b_pcgA = 0.0;
@@ -398,7 +397,6 @@ void DFOCC::pcg_solver_uhf() {
     double rms_pcg = 0.0;
     double a_pcg = 0.0;
     double b_pcg = 0.0;
-    double rms_residual = 0.0;
     pcg_conver = 1;  // assuming pcg will converge
 
     outfile->Printf("\n\t            PCG Solver \n");

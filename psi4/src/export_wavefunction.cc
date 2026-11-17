@@ -228,6 +228,15 @@ void export_wavefunction(py::module& m) {
              "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
         .def("module", &Wavefunction::module, py::return_value_policy::copy,
              "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
+        .def("set_module_role", &Wavefunction::set_module_role, "role"_a, "module"_a,
+             "Records which module (internal or external) filled a named role.")
+        .def("module_role", &Wavefunction::module_role, "role"_a, py::return_value_policy::copy,
+             "Module that filled a named role, or an empty string if that role was never filled.")
+        .def("module_roles", &Wavefunction::module_roles, py::return_value_policy::copy,
+             "Modules that filled named roles, keyed by role. The ``qc_module`` role is the "
+             "level-of-theory module for the current energy, the same string :py:meth:`module` "
+             "returns; the others record which package did a particular job along the way, "
+             "e.g. ``orbital_optimizer``.")
         .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "id"_a, "basis"_a, "subset"_a, R"pbdoc(
             Creates OrbitalSpace with information about the requested alpha orbital space.
 
@@ -252,8 +261,13 @@ void export_wavefunction(py::module& m) {
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of doubly occupied orbitals per irrep.")
         .def("force_occpi", &Wavefunction::force_occpi,
-             "Specialized expert use only. Sets the number of doubly and singly occupied oribtals per irrep. Note that this "
-             "results in inconsistent Wavefunction objects for SCF, so caution is advised.")
+             "Specialized expert use only. Sets the number of doubly and singly occupied oribtals per irrep, the (docc, socc) "
+             "counterpart to force_occupation. Note that this results in inconsistent Wavefunction objects for SCF, so "
+             "caution is advised.")
+        .def("force_occupation", &Wavefunction::force_occupation,
+             "Specialized expert use only. Forces the alpha and beta occupations per irrep directly, the (alpha, beta) "
+             "counterpart to force_occpi. Note that this results in inconsistent Wavefunction objects for SCF, so caution "
+             "is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of singly occupied orbitals per irrep.")
         .def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy,
@@ -322,6 +336,11 @@ void export_wavefunction(py::module& m) {
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
+        .def("diagonalize_orbitals", &scf::HF::diagonalize_orbitals,
+             "Forms the orbital matrices from the current Fock Matrices, as :py:meth:`form_C` does, "
+             "but leaves the occupation to the caller rather than reassigning it by the aufbau rule. "
+             "Prefer form_C, which is this followed by find_occupation.",
+             "shift"_a = 0.0)
         .def("form_initial_C", &scf::HF::form_initial_C,
              "Forms the initial Orbital Matrices from the current Fock Matrices.")
         .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
@@ -366,6 +385,9 @@ void export_wavefunction(py::module& m) {
         .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
+        .def("next_occupation", &scf::HF::next_occupation,
+             "What the next find_occupation() would leave the occupation as, as (alpha, beta) "
+             "Dimensions, without changing anything.")
         .def("diis", &scf::HF::diis, "docstring")
         .def_property("diis_manager_", &scf::HF::diis_manager, &scf::HF::set_diis_manager, "The DIIS object.")
         .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager,
@@ -399,7 +421,31 @@ void export_wavefunction(py::module& m) {
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.")
         .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring")
-        .def("openorbital_scf", &scf::HF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer");
+        .def("openorbital_scf", &scf::HF::openorbital_scf,
+             "Runs the SCF with OpenOrbitalOptimizer. Returns whether it stopped at the "
+             "second-order handoff point rather than finishing the SCF itself.")
+        .def("openorbital_final_energy_delta", &scf::HF::ooo_final_energy_delta,
+             "The energy change the last OpenOrbitalOptimizer iteration reported, or NaN if "
+             "none has run.")
+        .def("openorbital_final_d_rms", &scf::HF::ooo_final_d_rms,
+             "The orbital gradient the last OpenOrbitalOptimizer iteration reached, scaled as "
+             "the first-order loop measures it, or NaN if none has run.")
+        .def("opentrustregion_scf", &scf::HF::opentrustregion_scf, "e_conv"_a, "d_conv"_a,
+             "restart"_a = false,
+             "Runs SCF with OpenTrustRegion to these energy and orbital-gradient thresholds. "
+             "Set restart when resuming at a new occupation for iteration counting.")
+        .def("opentrustregion_stopped_short", &scf::HF::otr_stopped_short,
+             "Whether OpenTrustRegion stopped at its floating-point precision floor with "
+             "neither half of this SCF's convergence test met.")
+        .def("opentrustregion_final_grad_rms", &scf::HF::otr_final_grad_rms,
+             "The gradient RMS OpenTrustRegion finished on.")
+        .def("opentrustregion_final_energy_delta", &scf::HF::otr_final_energy_delta,
+             "The last macro-iteration energy change OpenTrustRegion finished on.")
+        .def("opentrustregion_callback_error", &scf::HF::otr_callback_error,
+             "The message of the C++ exception a callback into Psi4 raised during the last "
+             "OpenTrustRegion run, or empty if none did.")
+        .def("opentrustregion_iteration_energies", &scf::HF::otr_iteration_energies,
+             "Total energy at each OpenTrustRegion macro-iteration");
 
     /// HF Functions
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
