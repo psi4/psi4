@@ -162,6 +162,13 @@ def _serial_translation(value, json=False):
     if isinstance(value, (core.Dimension)):
         return value.to_tuple()
 
+    # Symmetry-blocked data (e.g., SCF STABILITY EIGENVALUES with one block per
+    # irrep) has no single array view (``.np`` raises); return one entry per
+    # irrep, in the molecule's irrep order.
+    if isinstance(value, (core.Matrix, core.Vector)) and value.nirrep() > 1:
+        blocks = [np.array(block) for block in value.nph]
+        return [block.ravel().tolist() for block in blocks] if json else blocks
+
     if json:
         if isinstance(value, (core.Matrix, core.Vector)):
             return value.np.ravel().tolist()
@@ -784,23 +791,35 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema",
             "module": wfn.module(),
+            **({"module_roles": dict(wfn.module_roles())} if wfn.module_roles() else {}),
         })
 
     if keep_wfn:
         result_data["wavefunction"] = _convert_wavefunction(wfn)
 
+    writer_prefix = core.get_writer_file_prefix(wfn.molecule().name())
     files = {
         # Path(...).with_suffix("grad") overwrites PID
-        "psi4.grad": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"),
-        "psi4.hess": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"),
-        "psi4.vibrec": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".vibrec"),
-        "psi4.molden_normal_modes": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".molden_normal_modes"),
+        "psi4.grad": Path(p4util.safe_writer_file_path(writer_prefix, ".grad")),
+        "psi4.hess": Path(p4util.safe_writer_file_path(writer_prefix, ".hess")),
+        "psi4.vibrec": Path(p4util.safe_writer_file_path(writer_prefix, ".vibrec")),
+        "psi4.molden_normal_modes": Path(p4util.safe_writer_file_path(writer_prefix, ".molden_normal_modes")),
         # binary "psi4.180.npy": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".180.npy"),
         # "timer.dat": Path("timer.dat"),  # ok for `psi4 --qcschema` but no file collected for `qcengine.run_program(..., "psi4")`
         "grid_esp.dat": Path("grid_esp.dat"),
         "grid_field.dat": Path("grid_field.dat"),
     }
-    result_data["native_files"] = {fl: flpath.read_text() for fl, flpath in files.items() if flpath.exists()}
+    result_data["native_files"] = {}
+    for fl, flpath in files.items():
+        try:
+            if flpath.exists():
+                result_data["native_files"][fl] = flpath.read_text()
+        except OSError as exc:
+            warnings.warn(
+                f"Skipping native file '{flpath}' due to filesystem error while checking output: {exc}",
+                RuntimeWarning,
+                stacklevel=2,
+            )
     # in-memory "files"
     result_data["native_files"]["timer.json"] = core.get_timer_records(compact=True)
 

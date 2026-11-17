@@ -58,7 +58,6 @@ namespace cchbar {
 void purge_cc2_Wabei();
 
 void cc2_Wabei_build() {
-    int omit = 0;
     int e, E;
     int Gef, Gab, Gei, Ge, Gf, Gi;
     int nrows, ncols, nlinks;

@@ -71,7 +71,6 @@ void cc3_HC1ET1(int i, int C_irr) {
 }
 
 void HC1ET1_Wmbij(int i, int C_irr) {
-    double dot;
     dpdbuf4 C, D, E, F, Ht, W, W1, X, Z;
     dpdfile2 CME, Cme;
     char CME_lbl[32], Cme_lbl[32];
@@ -235,7 +234,6 @@ void HC1ET1_Wmbij(int i, int C_irr) {
 }
 
 void HC1ET1_Wabei(int i, int C_irr) {
-    double dot;
     dpdfile2 CME, Cme, tIA, tia;
     dpdbuf4 Ht, Z, Z1, Z2, Z3, B, C, D, E, F, W, X;
 
@@ -564,7 +562,6 @@ void HC1ET1_Wabei(int i, int C_irr) {
 }
 
 void HC1ET1_Wmbij_rhf(int i, int C_irr) {
-    double dot;
     dpdbuf4 C, D, E, F, Ht, W, W1, X, Z;
     dpdfile2 CME;
     char CME_lbl[32];
@@ -605,7 +602,6 @@ void HC1ET1_Wmbij_rhf(int i, int C_irr) {
 }
 
 void HC1ET1_Wabei_rhf(int i, int C_irr) {
-    double dot;
     dpdfile2 CME, tIA, T1;
     dpdbuf4 Ht, Z, Z1, Z2, Z3, B, C, D, E, F, W, X;
     char CME_lbl[32];

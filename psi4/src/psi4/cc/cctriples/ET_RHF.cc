@@ -78,7 +78,6 @@ double ET_RHF() {
     double ET, *ET_array;
     dpdfile2 fIJ, fAB, fIA, T1;
     dpdbuf4 T2, Eints, Dints, *Fints_array;
-    FILE *ijkfile;
 
     timer_on("ET_RHF");
 
@@ -284,7 +283,6 @@ double ET_RHF() {
 
 void ET_RHF_thread(ET_RHF_thread_data *data) {
     int h, nirreps, cnt_ijk;
-    int Gp, p, nump;
     int nrows, ncols, nlinks;
     int Gijk, Gid, Gkd, Gjd, Gil, Gkl, Gjl;
     int Gab, Gba, Gbc, Gcb, Gac, Gca;

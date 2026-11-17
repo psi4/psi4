@@ -57,7 +57,6 @@ namespace ccresponse {
 
 void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     int i, j, h, p, q, errcod, nactive, nirreps, nfzc, nfzv;
-    int *actpi, offset, act_offset;
     double **scf, ***C;
     psio_address next;
 

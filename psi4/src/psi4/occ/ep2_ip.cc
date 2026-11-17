@@ -82,7 +82,6 @@ void OCCWave::ep2_ip() {
         for (int h = 0; h < nirrep_; ++h) {
             global_dpd_->buf4_mat_irrep_init(&D, h);
             for (int row = 0; row < D.params->rowtot[h]; ++row) {
-                int i = D.params->roworb[h][row][0];
                 int j = D.params->roworb[h][row][1];
                 for (int col = 0; col < D.params->coltot[h]; ++col) {
                     int a = D.params->colorb[h][col][0];
@@ -101,7 +100,6 @@ void OCCWave::ep2_ip() {
         for (int h = 0; h < nirrep_; ++h) {
             global_dpd_->buf4_mat_irrep_init(&D, h);
             for (int row = 0; row < D.params->rowtot[h]; ++row) {
-                int i = D.params->roworb[h][row][0];
                 int a = D.params->roworb[h][row][1];
                 for (int col = 0; col < D.params->coltot[h]; ++col) {
                     int j = D.params->colorb[h][col][0];
