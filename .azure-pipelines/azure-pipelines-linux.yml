@@ -27,12 +27,14 @@ jobs:
         ADVISOR_DISABLE_ARGS: "compilers"
 
       gcc_latest:
-        CXX_COMPILER: 'g++'
+        # pinned to GCC 14 (not the image's default GCC 15): GCC 15 needs ~15 GB just to preprocess
+        #   libint2 2.14 engine.h (vs 5.5 GB for GCC 14), beyond the 8 GB runner + swap
+        CXX_COMPILER: 'g++-14'
         PYTHON_VER: '3.14'
-        C_COMPILER: 'gcc'
+        C_COMPILER: 'gcc-14'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran'
+        APT_INSTALL: 'gfortran gcc-14 g++-14'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long or memory_profiler)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
@@ -68,7 +70,8 @@ jobs:
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
           -Dpsi4_CMAKE_UNITY_BUILD=OFF
         # Makefiles + non-unity + non-PCH: generator coverage and per-file header checks (l2intf stays one unity TU)
-        CM_GENERATOR: "Unix Makefiles"
+        #CM_GENERATOR: "Unix Makefiles"
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
