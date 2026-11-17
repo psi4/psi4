@@ -1369,7 +1369,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
 
             const std::vector<std::pair<int, int>>& shell_pairs = ints->shell_pairs();
             size_t npairs = shell_pairs.size();
-            size_t npairs2 = npairs * npairs;
 
             std::vector<std::mutex> mutexes(3 * natom);
             for (int A = 0; A < 3 * natom; A += max_a) {
@@ -1403,7 +1402,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                     for (auto& t : temps) t.resize((size_t)nbuffers * maxnpair);
                     thread_temps.push_back(temps);
                 }
-                size_t computed_shells = 0L;
                 // shell pair blocks
                 auto blocksPQ = ints[0]->get_blocks12();
                 auto blocksRS = ints[0]->get_blocks34();

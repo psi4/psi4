@@ -1,6 +1,7 @@
 from addons import *
 
 @ctest_labeler("quick;scf;cart")
-def test_scf1():
-    ctest_runner(__file__)
+@integral_package_combinations
+def test_scf1(intpkg):
+    ctest_runner(__file__, setenv=integral_package_setenv(intpkg))
 

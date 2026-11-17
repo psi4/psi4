@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <utility>
 
 #include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"
@@ -107,6 +108,8 @@ void DataType::assign(std::string) { throw DataTypeException("assign(std:string)
 std::vector<std::string> DataType::choices() { throw DataTypeException("choices() failure"); }
 
 void DataType::reset() { throw DataTypeException("reset() failure"); }
+
+const Data& DataType::operator[](size_t) const { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
 Data& DataType::operator[](std::string) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
@@ -391,9 +394,11 @@ void Data::reset() { ptr_->reset(); }
 
 DataType* Data::get() const { return ptr_.get(); }
 
-Data& Data::operator[](int i) { return (*(ptr_.get()))[i]; }
+Data& Data::operator[](int i) { return (*ptr_)[i]; }
 
-Data& Data::operator[](std::string s) { return (*(ptr_.get()))[s]; }
+const Data& Data::operator[](int i) const { return std::as_const(*ptr_)[i]; }
+
+Data& Data::operator[](std::string s) { return (*ptr_)[s]; }
 
 // ArrayType
 ArrayType::ArrayType() {}
@@ -413,6 +418,11 @@ void ArrayType::add(std::string s, std::string c) { add(new StringDataType(s, c)
 void ArrayType::assign(DataType* data) {
     changed();
     array_.push_back(Data(data));
+}
+
+const Data& ArrayType::operator[] (size_t i) const {
+    if (i >= array_.size()) throw IndexException("out of range");
+    return array_[i];
 }
 
 Data& ArrayType::operator[](size_t i) {
@@ -969,6 +979,15 @@ std::vector<double> Options::get_double_vector(std::string key) const {
     std::vector<double> array;
     for (size_t i = 0; i < use(key).size(); ++i) {
         array.push_back(use(key)[i].to_double());
+    }
+    return array;
+}
+
+std::vector<std::string> Options::get_string_vector(std::string key) const {
+    std::vector<std::string> array;
+    const auto& data = use(key);
+    for (size_t i = 0; i < data.size(); ++i) {
+        array.push_back(data[i].to_string());
     }
     return array;
 }

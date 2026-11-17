@@ -65,9 +65,7 @@ void T3_grad_RHF() {
     double ***W0, ***W1, ***M, ***E, ***V, ***W2, ***Mi, ***RW;
     dpdbuf4 T2, Fints, Eints, Dints, S2, S2i, F2ints, T2i, F3ints, E2ints, si, kappa, chi;
     dpdfile2 fIJ, fAB, fIA, T1, S1, DAB, DIJ;
-    int nijk, mijk, nabc, mabc;
     double value, value1, value2, ET1 = 0.0, ET2 = 0.0;
-    double **Z;
 
     nirreps = moinfo.nirreps;
     const auto& occpi = moinfo.occpi;

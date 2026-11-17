@@ -74,7 +74,6 @@ void fold_RHF(const struct RHO_Params& rho_params) {
     dpdfile2 D, D1, D2, F;
     dpdbuf4 G, Aints, E, C, DInts, FInts, BInts, G1, G2;
     double one_energy = 0.0, two_energy = 0.0, total_two_energy = 0.0;
-    double test_energy = 0.0, tmp;
     double this_energy;
 
     nirreps = moinfo.nirreps;
@@ -82,8 +81,6 @@ void fold_RHF(const struct RHO_Params& rho_params) {
     const auto& virtpi = moinfo.virtpi;
     const auto& occ_off = moinfo.occ_off;
     const auto& vir_off = moinfo.vir_off;
-    const auto& occ_sym = moinfo.occ_sym;
-    const auto& vir_sym = moinfo.vir_sym;
     const auto& openpi = moinfo.openpi;
 
     if (!params.aobasis && params.debug_) {

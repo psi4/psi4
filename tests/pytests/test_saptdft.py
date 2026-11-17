@@ -82,6 +82,10 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
     (IP) of the monomer. Basis set incompleteness prevents this here.
     e.g., aug-DZ H2O has a shift of 0.1306, compared to 0.1307 experimental IP.
     """
+    if psi4.core.get_option("scf", "integral_package") == "LIBCINT":
+        grac_tol = 4.e-8
+    else:
+        grac_tol = 1.e-8
     mol_dimer = psi4.geometry(_sapt_testing_mols[geometry])
     psi4.set_options(
         {
@@ -100,13 +104,13 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
     assert compare_values(
         refA,
         psi4.core.variable("SAPT DFT GRAC SHIFT A"),
-        8,
+        grac_tol,
         "SAPT DFT GRAC SHIFT A",
     )
     assert compare_values(
         refB,
         psi4.core.variable("SAPT DFT GRAC SHIFT B"),
-        8,
+        grac_tol,
         "SAPT DFT GRAC SHIFT B",
     )
 

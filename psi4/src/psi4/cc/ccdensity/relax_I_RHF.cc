@@ -51,9 +51,6 @@ void relax_I_RHF() {
     int h, nirreps, i, j, e;
 
     nirreps = moinfo.nirreps;
-    const auto& occpi = moinfo.occpi;
-    const auto& virtpi = moinfo.virtpi;
-    const auto& openpi = moinfo.openpi;
 
     /* I(I,A) = I'(I,A) - sum_M f(I,M) D(orb)(A,M) */
     global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");

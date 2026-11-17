@@ -294,7 +294,6 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params) {
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     if (t2_on_disk) {
         psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
@@ -406,7 +405,6 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params) {
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IAJB, "E2iajb", (char*)&tempt[0], o * o * v * v * sizeof(double));
