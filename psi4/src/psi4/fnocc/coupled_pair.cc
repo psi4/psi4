@@ -276,7 +276,6 @@ PsiReturnType CoupledPair::CEPAIterations() {
     outfile->Printf("   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
 
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     // zero residual
     psio->open(PSIF_DCC_R2, PSIO_OPEN_NEW);

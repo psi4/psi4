@@ -29,8 +29,13 @@ psi4.set_options({"ACTIVE": list(wfn.nmopi())})
 num_eig = 1
 ctol = 1.e-5
 etol = 1.e-7
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-NOT-KIDDING
-    # otherwise CI conv and energies go haywire
+if (psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL"
+        or psi4.core.get_option("SCF", "SOSCF")):  # KP-NOT-KIDDING
+    # The hand-rolled Davidson below is sensitive to which converged orbitals it is handed.
+    # FCI is invariant to rotations within the full active space, so any of them should do,
+    # but at the tight thresholds the subspace collapses onto a spurious root and the energy
+    # goes haywire. Any optimizer other than plain DIIS lands somewhere slightly different,
+    # so loosen for all of them.
     ctol = 1.e-4
     etol = 1.e-6
 
