@@ -1,5 +1,6 @@
 import sys
 import json
+import hashlib
 import numpy as np
 import pytest
 import pprint
@@ -8,6 +9,7 @@ from shutil import copytree
 from addons import uusing
 
 import psi4
+from psi4.driver.p4util import util as p4util_util
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.smoke]
 
@@ -208,3 +210,26 @@ def test_psi4_scfproperty(datadir, schver):
     assert psi4.compare_values(ref_b3lyp_di_au, atres.extras["qcvars"]["B3LYP DIPOLE"], 4, "B3LYP DIPOLE")
     assert psi4.compare_values(ref_b3lyp_quad_au, atres.extras["qcvars"]["B3LYP QUADRUPOLE"], 4, "B3LYP QUADRUPOLE")
     print(atres.native_files["grid_esp.dat"])
+
+
+def test_qcschema_safe_writer_file_path_hash_basename(monkeypatch, tmp_path):
+    """Ensure basename hashing/truncation is deterministic and suffix-preserving."""
+    max_name_bytes = 96
+    monkeypatch.setattr(p4util_util, "_name_max_for_parent", lambda _parent: max_name_bytes)
+
+    prefix_name = "long_qcschema_writer_name_" * 8
+    suffix = ".molden_normal_modes"
+    prefix = str(tmp_path / prefix_name)
+
+    resolved = p4util_util.safe_writer_file_path(prefix, suffix)
+    resolved_name = os.path.basename(resolved)
+
+    original_name = prefix_name + suffix
+    trailer = f"-{hashlib.sha1(os.fsencode(original_name)).hexdigest()[:12]}{suffix}"
+    keep_bytes = max_name_bytes - len(trailer.encode("utf-8"))
+    expected_prefix = p4util_util._truncate_utf8_to_nbytes(prefix_name, keep_bytes)
+    expected_name = f"{expected_prefix}{trailer}"
+
+    assert resolved_name == expected_name
+    assert resolved_name.endswith(suffix)
+    assert len(os.fsencode(resolved_name)) <= max_name_bytes

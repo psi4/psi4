@@ -55,10 +55,7 @@ void cc2_sigma(int i, int C_irr) {
     dpdbuf4 W;
     dpdbuf4 C;
     dpdfile2 S;
-    dpdbuf4 WMbEj;
-    dpdbuf4 WAmEf;
     dpdbuf4 WMnIe;
-    dpdbuf4 WAbEi;
     dpdbuf4 WMbIj;
     dpdbuf4 Z;
     dpdbuf4 Z2;

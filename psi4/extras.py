@@ -155,6 +155,7 @@ _addons_ = {
     "cppe": which_import("cppe", return_bool=True),
     "ddx": which_import("pyddx", return_bool=True),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
+    "cint": _CMake_to_Py_boolean("@ENABLE_cint@"),
     "dftd3": which_import("dftd3", return_bool=True),
     "cfour": psi4_which("xcfour", return_bool=True),
     "mrcc": psi4_which("dmrcc", return_bool=True),
@@ -181,6 +182,7 @@ _addons_ = {
     "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
     "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),
     "qcmanybody": which_import("qcmanybody", return_bool=True),
+    "otr": _CMake_to_Py_boolean("@ENABLE_OpenTrustRegion@"),
 }
 
 

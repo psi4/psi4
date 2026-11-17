@@ -35,17 +35,70 @@ __all__ = [
     "libint2_configuration",
     "libint2_print_out",
     "oeprop",
+    "safe_writer_file_path",
     "set_memory",
 ]
 
+import hashlib
 import os
 import re
+import warnings
+from pathlib import Path
 from typing import Dict, List, Union
 
 from psi4 import core
 
 from .exceptions import ValidationError
 from .prop_util import *
+
+
+def _truncate_utf8_to_nbytes(text: str, max_bytes: int) -> str:
+    """Return the longest prefix of *text* that fits in *max_bytes* bytes."""
+    if max_bytes <= 0:
+        return ""
+    return text.encode("utf-8")[:max_bytes].decode("utf-8", "ignore")
+
+
+def _name_max_for_parent(parent: Path) -> int:
+    """Fetch NAME_MAX for *parent* or use POSIX-safe fallback."""
+    try:
+        return int(os.pathconf(parent, "PC_NAME_MAX"))
+    except (AttributeError, OSError, ValueError):
+        return 255
+
+
+def safe_writer_file_path(prefix: str, suffix: str, warning_context: str | None = None) -> str:
+    """Build a writer file path and truncate overly long basenames with a hash suffix.
+
+    The resulting file basename retains *suffix* and appends ``-<hash>`` before
+    the suffix when truncation is needed.
+    """
+    path = Path(prefix + suffix)
+    max_name_bytes = _name_max_for_parent(path.parent)
+    if len(os.fsencode(path.name)) <= max_name_bytes:
+        return str(path)
+
+    trailer = f"-{hashlib.sha1(os.fsencode(path.name)).hexdigest()[:12]}{suffix}"
+    keep_bytes = max_name_bytes - len(trailer.encode("utf-8"))
+    if keep_bytes <= 0:
+        return str(path)
+
+    truncated_prefix = _truncate_utf8_to_nbytes(Path(prefix).name, keep_bytes)
+    if not truncated_prefix:
+        # No basename prefix can fit with minimum hash length
+        # Using original filename and allowing filesystem handling.
+        return str(path)
+
+    truncated = path.with_name(f"{truncated_prefix}{trailer}")
+
+    if warning_context is not None:
+        msg = (
+            f"{warning_context}: basename exceeded filesystem NAME_MAX={max_name_bytes}. "
+            f"Using truncated filename '{truncated.name}'."
+        )
+        warnings.warn(msg, RuntimeWarning, stacklevel=2)
+        core.print_out(f"\n  Warning: {msg}\n")
+    return str(truncated)
 
 
 def oeprop(wfn: core.Wavefunction, *args: List[str], **kwargs):
