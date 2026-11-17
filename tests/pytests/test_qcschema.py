@@ -83,7 +83,11 @@ def test_qcschema_gradient(result_data_fixture, schema_versions, request):
         pytest.skip("Py314 and v1.AtomicResult object incompatible.")
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        result_data_fixture["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+        tighten = {"e_convergence": 9, "d_convergence": 5e-9}
+        if from_v2(request.node.name):
+            result_data_fixture["specification"]["keywords"].update(tighten)
+        else:
+            result_data_fixture["keywords"].update(tighten)
 
     if from_v2(request.node.name):
         result_data_fixture["specification"]["driver"] = "gradient"
@@ -297,3 +301,28 @@ def test_qcschema_wavefunction_scf_occupations_es(result_data_fixture, schema_ve
     assert compare_arrays(ea, (Ca.T @ Fa @ Ca).diagonal(), 10, "Orbital Consistency")
     assert compare_arrays(Da, Ca_occ @ Ca_occ.T, 10, "Occupied Orbital Consistency")
 
+
+
+@pytest.mark.quick
+def test_serial_translation_irrep_blocked():
+    """Symmetry-blocked Matrix/Vector qcvars (e.g. SCF STABILITY EIGENVALUES) serialize per irrep."""
+    from psi4.driver.schema_wrapper import _serial_translation
+
+    mat = psi4.core.Matrix("blocked", psi4.core.Dimension([2, 1]), psi4.core.Dimension([1, 1]))
+    mat.nph[0][:] = [[0.5], [0.7]]
+    mat.nph[1][:] = [[-0.25]]
+    blocks = _serial_translation(mat)
+    assert len(blocks) == 2
+    np.testing.assert_array_equal(blocks[0], [[0.5], [0.7]])
+    np.testing.assert_array_equal(blocks[1], [[-0.25]])
+    assert _serial_translation(mat, json=True) == [[0.5, 0.7], [-0.25]]
+
+    vec = psi4.core.Vector("blocked", psi4.core.Dimension([2, 1]))
+    vec.nph[0][:] = [1.0, 2.0]
+    vec.nph[1][:] = [3.0]
+    assert _serial_translation(vec, json=True) == [[1.0, 2.0], [3.0]]
+
+    # single-irrep data is unchanged
+    single = psi4.core.Matrix.from_array(np.array([[1.0, 2.0], [3.0, 4.0]]))
+    np.testing.assert_array_equal(_serial_translation(single), [[1.0, 2.0], [3.0, 4.0]])
+    assert _serial_translation(single, json=True) == [1.0, 2.0, 3.0, 4.0]

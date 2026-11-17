@@ -41,9 +41,7 @@ void DFOCC::mp2l_energy() {
 
     EcorrL = 0.0;
     double Eoei = 0.0;
-    double Eoo = 0.0;
     double Eov = 0.0;
-    double Evv = 0.0;
     Emp2L_old = Emp2L;
 
     if (reference_ == "RESTRICTED") {

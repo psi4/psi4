@@ -302,7 +302,6 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     bs4_ = original_bs4_;
 
     screening_threshold_squared_ = screening_threshold_ * screening_threshold_;
-    double screening_threshold_over_max = screening_threshold_ / max_integral_;
     double screening_threshold_squared_over_max = screening_threshold_squared_ / max_integral_;
 
     shell_pairs.clear();
