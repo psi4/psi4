@@ -29,11 +29,39 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
+_PCH_FLAGS = ("-Winvalid-pch", "-fpch-instantiate-templates", "-fno-pch-timestamp", "-fpch-validate-input-files-content")
+
+
+def strip_pch(flags):
+    """Drop precompiled-header flags (CMake's `-include .../cmake_pch.hxx`; clang's `-Xclang -include-pch -Xclang x.pch`),
+    which would otherwise supply headers to every TU and hide missing includes. Returns (flags, stripped?)."""
+    units, i = [], 0
+    while i < len(flags):  # keep `-Xclang X` pairs together
+        if flags[i] == "-Xclang" and i + 1 < len(flags):
+            units.append((flags[i:i + 2], flags[i + 1]))
+            i += 2
+        else:
+            units.append(([flags[i]], flags[i]))
+            i += 1
+    out, stripped, i = [], False, 0
+    while i < len(units):
+        toks, val = units[i]
+        if val in ("-include", "-include-pch") and i + 1 < len(units) and re.search(r"cmake_pch|\.pch$|\.gch$", units[i + 1][1]):
+            stripped, i = True, i + 2
+            continue
+        if re.match(r"-include.*cmake_pch", val) or val in _PCH_FLAGS:
+            stripped, i = True, i + 1
+            continue
+        out += toks
+        i += 1
+    return out, stripped
+
+
 def load_commands(build_dir):
-    """[(source, compiler+flags without -c/-o/source, cwd)], unity TUs expanded to their member sources."""
+    """[(source, compiler+flags without -c/-o/source/PCH, cwd)], unity TUs expanded to their member sources."""
     with open(os.path.join(build_dir, "compile_commands.json")) as fp:
         entries = json.load(fp)
-    jobs = []
+    jobs, pch = [], False
     for e in entries:
         args = e["arguments"] if "arguments" in e else shlex.split(e["command"])
         src = e["file"]
@@ -50,21 +78,30 @@ def load_commands(build_dir):
             flags.append(a)
         if not src.endswith((".cc", ".cxx", ".cpp")):
             continue
+        flags, stripped = strip_pch(flags)
+        pch |= stripped
         if "/Unity/" in src:
             with open(src) as fp:
                 members = re.findall(r'#include\s+"([^"]+)"', fp.read())
             jobs += [(os.path.normpath(os.path.join(os.path.dirname(src), m)), flags, e["directory"]) for m in members]
         else:
             jobs.append((os.path.normpath(src), flags, e["directory"]))
+    if pch:
+        print("note: build uses precompiled headers; PCH flags stripped so they can't supply missing includes")
     return jobs
 
 
 def header_jobs(jobs, src_root, tmpdir, exclude):
-    by_dir = {}
-    compiled = set()
+    # A header with a same-named .cc uses that source's target flags (e.g. libmints/matrix.h gets mints's,
+    #   not l2intf's); any other header uses the target that compiles the most sources in its directory.
+    by_stem, dir_counts = {}, {}
     for src, flags, cwd in jobs:
-        by_dir.setdefault(os.path.dirname(src), (flags, cwd))
-        compiled.add(os.path.splitext(src)[0])
+        by_stem[os.path.splitext(src)[0]] = (flags, cwd)
+        counts = dir_counts.setdefault(os.path.dirname(src), {})
+        key = (tuple(flags), cwd)
+        counts[key] = counts.get(key, 0) + 1
+    by_dir = {d: (list(max(c, key=c.get)[0]), max(c, key=c.get)[1]) for d, c in dir_counts.items()}
+    compiled = set(by_stem)
     out, skipped = [], []
     for root, _, files in os.walk(src_root):
         for f in sorted(files):
@@ -76,7 +113,7 @@ def header_jobs(jobs, src_root, tmpdir, exclude):
             if root not in by_dir or sibling_uncompiled or (exclude and re.search(exclude, hdr)):
                 skipped.append(hdr)
                 continue
-            flags, cwd = by_dir[root]
+            flags, cwd = by_stem.get(stem, by_dir[root])
             tu = os.path.join(tmpdir, hdr.strip("/").replace("/", "__") + ".cc")
             with open(tu, "w") as fp:
                 fp.write(f'#include "{hdr}"\n')

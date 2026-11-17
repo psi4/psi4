@@ -164,7 +164,10 @@ def test_libint2_supports_matches_components(der, centers):
     for am in range(len(amstr)):
         ans = libint2_supports(am, der=der, centers=centers)
         assert isinstance(ans, bool)
-        assert ans == (f"eri_{amstr[am] * centers}_d{der}" in components)
+        if centers == 3:
+            assert ans == (f"eri_ss{amstr[am]}_d{der}" in components)
+        else:
+            assert ans == (f"eri_{amstr[am] * centers}_d{der}" in components)
 
 
 @pytest.mark.quick

@@ -479,7 +479,7 @@ data:
       aux_build_names_note:
         libint-cxx-devel: "Required to bring libboost-headers and eigen to compile against."
         "//libint<2.14": "Optionally, use libint=2.13.1 but add libboost-headers and eigen, too."
-        "//libint-cxx-devel=*=lite*": "Optionally for linux-64, use a low-AM libint to be supplemented with libcint."
+        "//libint-cxx-devel=*=lite*": "Optionally for linux-64, use a low-AM libint to be supplemented with libcint. Needs `-DMAX_AM_ERI=4`"
       cmake:
         BOOST_ROOT:
           unix: ${CONDA_PREFIX}

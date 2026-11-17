@@ -107,11 +107,19 @@ endif()
 #   by itself, while one unity TU of all 19 files peaks at 7.6 GB in ~200 s -- no more memory or time than
 #   a single heavy file, vs. 3 x 7.5 GB (and ~3x the CPU) for 8-file batches.
 #   clang 20 has the same pattern at ~4.0-4.4 GB per TU (single file or all 19), with similar times.
-# (1) Compile l2intf as a single unity TU regardless of CMAKE_UNITY_BUILD (so non-unity builds, e.g. for
-#   header checking, still check every other file individually) and of CMAKE_UNITY_BUILD_BATCH_SIZE (0 = no limit).
-#   TODO: if CI holds up, expose as an option selecting the l2intf batch size (rather than on/off).
+# (1) Compile l2intf as unity TUs of psi4_l2intf_UNITY_BUILD_BATCH_SIZE files, independent of CMAKE_UNITY_BUILD
+#   and CMAKE_UNITY_BUILD_BATCH_SIZE. Default 0 = no limit, i.e. one TU for all files: least memory and CPU,
+#   right for CI and one-shot builds, but editing any l2intf file recompiles all of them (~3.5 min).
+#   Developers editing these files can set 1 (per-file TUs; ~1 min to rebuild one file, mostly engine.h).
+if(NOT DEFINED psi4_l2intf_UNITY_BUILD_BATCH_SIZE)
+    set(psi4_l2intf_UNITY_BUILD_BATCH_SIZE 0)
+endif()
+if(NOT psi4_l2intf_UNITY_BUILD_BATCH_SIZE MATCHES "^[0-9]+$")
+    message(FATAL_ERROR "psi4_l2intf_UNITY_BUILD_BATCH_SIZE must be a non-negative integer, not '${psi4_l2intf_UNITY_BUILD_BATCH_SIZE}'")
+endif()
 set_property(TARGET l2intf PROPERTY UNITY_BUILD ON)
-set_property(TARGET l2intf PROPERTY UNITY_BUILD_BATCH_SIZE 0)
+set_property(TARGET l2intf PROPERTY UNITY_BUILD_BATCH_SIZE ${psi4_l2intf_UNITY_BUILD_BATCH_SIZE})
+message(STATUS "l2intf unity batch size: ${psi4_l2intf_UNITY_BUILD_BATCH_SIZE} (0 = one TU)")
 
 # (2) With unity build off (or Makefile generators, which ignore pools), each l2intf file is its own 6-8 GB job.
 #   For Ninja, cap concurrent l2intf compiles by memory: one job per ~8 GB available, at least one.

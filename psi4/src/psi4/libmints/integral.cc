@@ -90,8 +90,8 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     bs3_ = bs3;
     bs4_ = bs4;
 
-    // Use the max am from libint
-    init_spherical_harmonics(8);
+    // Use the max am that the integral libraries will produce, but >14 won't fit in the type
+    init_spherical_harmonics(14);
 }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_overlap(int deriv) {

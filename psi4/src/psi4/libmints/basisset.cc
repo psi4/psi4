@@ -71,13 +71,19 @@ bool BasisSet::initialized_shared_ = false;
 static constexpr int EXP_AO_MAX_AM = 15;
 std::vector<Vector3> BasisSet::exp_ao[EXP_AO_MAX_AM + 1];
 
+// Highest AM whose cart->pure coefficients solidharmonics.cc computes exactly: its uint64_t
+// intermediates overflow at l = 15 (checked against exact big-integer arithmetic).
+static constexpr int SPHERICAL_TRANSFORM_MAX_AM = 14;
+
 namespace {
 // Lazily built, thread-safe per-AM cache of cart->pure transforms for compute_phi,
 // so they aren't rebuilt for every shell at every grid point.
 const SphericalTransform &cached_spherical_transform(int am) {
-    static std::array<std::once_flag, EXP_AO_MAX_AM + 1> flags;
-    static std::array<std::unique_ptr<SphericalTransform>, EXP_AO_MAX_AM + 1> cache;
-    if (am < 0 || am > EXP_AO_MAX_AM) throw PSIEXCEPTION("cached_spherical_transform: angular momentum out of range");
+    static std::array<std::once_flag, SPHERICAL_TRANSFORM_MAX_AM + 1> flags;
+    static std::array<std::unique_ptr<SphericalTransform>, SPHERICAL_TRANSFORM_MAX_AM + 1> cache;
+    if (am < 0 || am > SPHERICAL_TRANSFORM_MAX_AM)
+        throw PSIEXCEPTION("cached_spherical_transform: pure (spherical) angular momentum " + std::to_string(am) +
+                           " exceeds the supported maximum of " + std::to_string(SPHERICAL_TRANSFORM_MAX_AM));
     std::call_once(flags[am], [am] { cache[am] = std::make_unique<SphericalTransform>(am); });
     return *cache[am];
 }

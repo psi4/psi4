@@ -402,7 +402,7 @@ def libint2_configuration() -> Dict[str, List[int]]:
 
     """
     skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
-    skel_re = {"onebody_": r"onebody_\w._d\d", "eri_c4_": r"eri_\w..._d\d", "eri_c3_":  r"eri_\w.._d\d", "eri_c2_": r"eri_\w._d\d"}
+    skel_re = {"onebody_": r"onebody_\w._d\d", "eri_c4_": r"\beri_\w..._d\d\b", "eri_c3_":  r"\beri_\w.._d\d\b", "eri_c2_": r"\beri_\w._d\d\b"}
 
     amstr = "SPDFGHIKLMNOQRTUVWXYZ"
     libint2_configuration = core._libint2_configuration()
@@ -447,11 +447,13 @@ def libint2_supports(am: int, der: int = 0, centers: int = 4) -> bool:
     Parameters
     ----------
     am
-        Angular momentum of every center, ``0`` (S) through ``20`` (Z).
+        Angular momentum of every center, ``0`` (s) through ``20`` (z).
     der
         Derivative order, ``0`` (energy), ``1`` (gradient), or ``2`` (Hessian).
     centers
         Number of centers in the ERI: ``2``, ``3``, or ``4``.
+        Note that for 3-center, this probes the single auxiliary AM, not the
+        paired AO indices. For finer control, use `psi4.core.libint2_supports` directly.
 
     Returns
     -------
@@ -478,5 +480,8 @@ def libint2_supports(am: int, der: int = 0, centers: int = 4) -> bool:
             raise ValidationError(
                 f"libint2_supports: {label}={val} out of range; must be in [{allowed.start}, {allowed.stop - 1}]")
 
-    amcode = amstr[am].lower() * centers
+    if centers == 3:
+        amcode = "ss" + amstr[am].lower()
+    else:
+        amcode = amstr[am].lower() * centers
     return core.libint2_supports(f"eri_{amcode}_d{der}")

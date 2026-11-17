@@ -43,6 +43,8 @@
 # * Conda-specific: with Libint v2.14, only libraries are in the libint package. Use libint-cxx-devel for headers and
 #   CMake detection files. Note that headers include L2's config.h and compiling against headers of one config and linking
 #   against lib of another config will segfault Psi4. Pure conda is safe but mixing conda packages and local builds is vulnerable.
+# * If ever use an integrals library with AM>14, edit the `init_spherical_harmonics` line in libmints/integral.cc and
+#   `SPHERICAL_TRANSFORM_MAX_AM` in basisset.cc AND adjust the types/algorithm so they don't overflow.
 
 include(custom_util)
 am_to_shell(${MAX_AM_ERI} 4 amchar)
@@ -132,7 +134,7 @@ your own L2 locally, or fall back to Libcint `-D ENABLE_cint=ON`, or consider `-
 
     else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
-        message(WARNING "${Yellow}Libint2 generator source build requires Ninja (not Makefile) builder and Boost, Eigen, and GMPXX dependencies. The build will be very long for non-trivial AM, and parallelism won't help for the generation phase. Edit external/upstream/libint2/CMakeLists.txt for AM, derivative, and integral classes settings.${ColourReset}")
+        message(WARNING "${Yellow}Libint2 generator source build requires Ninja (not Makefile) builder and Boost, Eigen, and GMPXX dependencies. The build will be very long for non-trivial AM. Edit external/upstream/libint2/CMakeLists.txt for AM, derivative, and integral classes settings.${ColourReset}")
 
         if (MSVC)
             message(FATAL_ERROR "${Red}Libint2 generator source build faulty on Windows.${ColourReset}")
@@ -181,7 +183,7 @@ your own L2 locally, or fall back to Libcint `-D ENABLE_cint=ON`, or consider `-
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DLIBINT2_ONEBODY_MAX_AM:STRING=4;4;3
-                             -DLIBINT2_ERI_MAX_AM:STRING=4;4;2
+                             -DLIBINT2_ERI_MAX_AM:STRING=${MAX_AM_ERI};4;2
                              -DLIBINT2_ERI3_MAX_AM:STRING=5;5;3
                              -DLIBINT2_ERI2_MAX_AM:STRING=5;5;3
                              -DLIBINT2_MAX_AM:STRING=4;4;3
