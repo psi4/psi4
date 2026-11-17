@@ -398,7 +398,8 @@ def test_schwarz_vs_none_energy():
                       'screening' : 'none',
                       'ints_tolerance' : 1.0e-12 })
 
-    tol = 3e-11
+    # ~3e-13 relative to |E| = 385 Eh: screening at 1e-12 changes far less, but summation order can move this
+    tol = 1e-10
 
     e_none = psi4.energy('hf/DZ')
 

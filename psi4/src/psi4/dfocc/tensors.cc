@@ -3685,7 +3685,6 @@ void Tensor2d::set3_act_oo(int frzc, const SharedTensor2d &A) {
     int naux = A->d1_;
     int aoccA = A->d2_;
     int aoccB = A->d3_;
-    int occA = d2_;
     int occB = d3_;
 #pragma omp parallel for
     for (int Q = 0; Q < naux; Q++) {
@@ -5261,9 +5260,6 @@ void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, 
     char ta, tb;
     int nca, ncb, ncc;
     int m, n, k;
-    int r1 = 0, r2 = 0, c1 = 0, c2 = 0;
-    int rr1, rr2, cc1, cc2;
-    int dim_t, dim_u;
     int t_a1 = 0, t_a2 = 0, f_a1 = 0, f_a2 = 0;
     int t_b1 = 0, t_b2 = 0, f_b1 = 0, f_b2 = 0;
     int d1_a, d2_a, d3_a, d4_a;  // Dimensions of sorted A tensor

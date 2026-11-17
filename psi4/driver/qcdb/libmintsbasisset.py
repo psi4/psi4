@@ -32,6 +32,7 @@ import hashlib
 import warnings
 import itertools
 import collections
+import copy
 
 import qcelemental as qcel
 
@@ -821,6 +822,10 @@ class BasisSet(object):
         ecp_atom_basis_shell = collections.OrderedDict()
         ecp_atom_basis_ncore = collections.OrderedDict()
         names = {}
+        # Parse each (source, entry) once per construction rather than once per
+        # atom. Cached results are copied before postprocessing or attachment
+        # so no two atoms share mutable shell objects.
+        parsed_entries = {}
         summary = []
         bastitles = []
 
@@ -929,7 +934,10 @@ class BasisSet(object):
                 for entry in seek['entry']:
 
                     # Seek entry in lines, else skip to next entry
-                    shells, msg, ecp_shells, ecp_msg, ecp_ncore = parser.parse(entry, lines)
+                    parse_key = (index, entry)
+                    if parse_key not in parsed_entries:
+                        parsed_entries[parse_key] = parser.parse(entry, lines)
+                    shells, msg, ecp_shells, ecp_msg, ecp_ncore = copy.deepcopy(parsed_entries[parse_key])
                     if shells is None:
                         continue
 

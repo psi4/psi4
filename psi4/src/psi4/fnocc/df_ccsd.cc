@@ -284,7 +284,6 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     if (brueckner_iter == 0) eccsd = 0.0;
 
     auto psio = std::make_shared<PSIO>();
-    psio_address addr;
 
     // zero residual
     psio->open(PSIF_DCC_R2, PSIO_OPEN_NEW);
@@ -854,7 +853,6 @@ void DFCoupledCluster::Vabcd1() {
             long int cd = 0;
             long int ind1 = (b - a) * vtri;
             long int ind2 = (b - a) * v * v;
-            long int v1, v2;
             for (long int c = 0; c < v; c++) {
                 for (long int d = 0; d <= c; d++) {
                     Vp[ind1 + cd] = Vcdb[ind2 + d * v + c] + Vcdb[ind2 + c * v + d];
@@ -871,7 +869,6 @@ void DFCoupledCluster::Vabcd1() {
             long int cd = 0;
             long int ind1 = (b - a) * vtri;
             long int ind2 = (b - a) * v * v;
-            long int v1, v2;
             for (long int c = 0; c < v; c++) {
                 for (long int d = 0; d <= c; d++) {
                     Vm[ind1 + cd] = Vcdb[ind2 + d * v + c] - Vcdb[ind2 + c * v + d];
