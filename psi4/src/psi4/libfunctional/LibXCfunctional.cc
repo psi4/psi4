@@ -408,8 +408,6 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
     double* gamma_bbp = nullptr;
     double* tau_ap = nullptr;
     double* tau_bp = nullptr;
-    double* lapl_ap = nullptr;
-    double* lapl_bp = nullptr;
 
     if (true) {
         rho_ap = in.find("RHO_A")->second->pointer();
@@ -445,8 +443,6 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
     double* v_gamma_bb = nullptr;
     double* v_tau_a = nullptr;
     double* v_tau_b = nullptr;
-    double* v_lapl_a = nullptr;
-    double* v_lapl_b = nullptr;
 
     double* v_rho_a_rho_a = nullptr;
     double* v_rho_a_rho_b = nullptr;

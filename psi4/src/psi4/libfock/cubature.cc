@@ -3780,7 +3780,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             std::vector<std::shared_ptr<SphericalGrid>> spheres;
             spherical_grids_[A] = spheres;
 
-            int currentBlockIndex = -1;
             for (int i = 0; i < opt.nradpts; i++) {
                 int numAngPts = 0;
                 if (opt.prunetype == "REGION") {

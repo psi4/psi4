@@ -40,6 +40,8 @@
 #include "qt.h"
 #include "lapack_intfc_mangle.h"
 
+// Fortran LAPACK entry points, visible to this translation unit only.
+namespace {
 extern "C" {
 extern int F_DBDSDC(char*, char*, int*, double*, double*, double*, int*, double*, int*, double*, int*, double*, int*,
                     int*);
@@ -280,6 +282,7 @@ extern int F_DTRTRI(char*, char*, int*, double*, int*, int*);
 extern int F_DTRTRS(char*, char*, char*, int*, int*, double*, int*, double*, int*, int*);
 extern int F_DTZRZF(int*, int*, double*, int*, double*, double*, int*, int*);
 }
+}  // namespace
 
 namespace psi {
 /**

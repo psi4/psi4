@@ -69,6 +69,7 @@ class OptionsException : public PsiException {
     OptionsException(const std::string& message) : PSIEXCEPTION("Options Exception: " + message) {}
 };
 
+// An abstract base class for data of some type.
 class PSI_API Data;
 class DataType {
     bool changed_;
@@ -115,6 +116,7 @@ class DataType {
 
     virtual void reset();
 
+    virtual const Data& operator[](size_t) const;
     virtual Data& operator[](std::string);
     virtual Data& operator[](size_t);
 };
@@ -247,6 +249,7 @@ class IStringDataType : public DataType {
     std::vector<std::string> choices() override { return choices_; }
 };
 
+// A shared_ptr wrapper on DataType.
 class PSI_API Data {
     std::shared_ptr<DataType> ptr_;
 
@@ -296,6 +299,7 @@ class PSI_API Data {
     DataType* get() const;
 
     Data& operator[](int i);
+    const Data& operator[](int i) const;
     Data& operator[](std::string s);
 };
 
@@ -317,6 +321,7 @@ class PSI_API ArrayType : public DataType {
     void add(std::string s, std::string c = "") override;
     void assign(DataType* data) override;
 
+    const Data& operator[](size_t i) const override;
     Data& operator[](size_t i) override;
     Data& operator[](std::string s) override;
     bool is_array() const override;
@@ -455,6 +460,7 @@ class PSI_API Options {
     std::vector<int> get_int_vector(std::string key) const;
     double* get_double_array(std::string key) const;
     std::vector<double> get_double_vector(std::string key) const;
+    std::vector<std::string> get_string_vector(std::string key) const;
 
     Data& operator[](std::string key);
 

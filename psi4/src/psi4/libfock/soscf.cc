@@ -828,7 +828,6 @@ void DFSOMCSCF::transform(bool approx_only) {
     SharedMatrix Cvir = matrices_["Cvir"];
 
     int nao = nao_;
-    int nact = nact_;
     int nrot = Cocc->ncol() + Cact->ncol() + Cvir->ncol();
     int aoc_rowdim = nrot + Cact->ncol();
 
