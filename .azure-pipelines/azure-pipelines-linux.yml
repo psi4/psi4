@@ -28,7 +28,8 @@ jobs:
 
       gcc_latest:
         # pinned to GCC 14 (not the image's default GCC 15): GCC 15 needs ~15 GB just to preprocess
-        #   libint2 2.14 engine.h (vs 5.5 GB for GCC 14), beyond the 8 GB runner + swap
+        #   libint2 2.14 engine.h (vs 5.5 GB for GCC 14), beyond the 8 GB runner + swap.
+        #   prone to OOM-abandoned, esp. L2 >=2.14 and GCC>=15
         CXX_COMPILER: 'g++-14'
         PYTHON_VER: '3.14'
         C_COMPILER: 'gcc-14'
@@ -40,7 +41,6 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        # was Makefiles + non-unity, single-threaded: 50+ min, and OOM-abandoned with L2 2.14 + GCC
         CMARGS: >-
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
           -DCMAKE_CXX_FLAGS_RELEASE:STRING='-O2 -DNDEBUG'

@@ -134,13 +134,14 @@ your own L2 locally, or fall back to Libcint `-D ENABLE_cint=ON`, or consider `-
 
     else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
-        message(WARNING "${Yellow}Libint2 generator source build requires Ninja (not Makefile) builder and Boost, Eigen, and GMPXX dependencies. The build will be very long for non-trivial AM. Edit external/upstream/libint2/CMakeLists.txt for AM, derivative, and integral classes settings.${ColourReset}")
+        message(WARNING "${Yellow}Libint2 generator source build requires Ninja (not Makefile) builder and Boost, Eigen, and GMPXX dependencies. The build will be very long for non-trivial AM. Stop now and edit external/upstream/libint2/CMakeLists.txt for AM, derivative, and integral classes settings. If you're doing a small (AM<4) build, also pare back `find_package(Libint2` settings in psi4/CMakeLists.txt.${ColourReset}")
 
         if (MSVC)
             message(FATAL_ERROR "${Red}Libint2 generator source build faulty on Windows.${ColourReset}")
         endif()
 
         # NOTE: active AM settings below will pass the find_package() configuration checks and most quick tests, but it takes ~5h to compile. Please edit for desired use.
+        math(EXPR _eri3_MAX_AM_ERI "${MAX_AM_ERI} + 1")
 
         ExternalProject_Add(libint2_external
             URL https://github.com/evaleev/libint/archive/v2.14.1.tar.gz  # edit in codedeps
@@ -182,11 +183,11 @@ your own L2 locally, or fall back to Libcint `-D ENABLE_cint=ON`, or consider `-
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
-                             -DLIBINT2_ONEBODY_MAX_AM:STRING=4;4;3
+                             -DLIBINT2_ONEBODY_MAX_AM:STRING=${MAX_AM_ERI};4;3
                              -DLIBINT2_ERI_MAX_AM:STRING=${MAX_AM_ERI};4;2
-                             -DLIBINT2_ERI3_MAX_AM:STRING=5;5;3
-                             -DLIBINT2_ERI2_MAX_AM:STRING=5;5;3
-                             -DLIBINT2_MAX_AM:STRING=4;4;3
+                             -DLIBINT2_ERI3_MAX_AM:STRING=${_eri3_MAX_AM_ERI};5;3
+                             -DLIBINT2_ERI2_MAX_AM:STRING=${_eri3_MAX_AM_ERI};5;3
+                             -DLIBINT2_MAX_AM:STRING=${MAX_AM_ERI};4;3
                              -DLIBINT2_G12_MAX_AM:STRING=3
         )
     endif()

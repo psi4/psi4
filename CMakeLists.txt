@@ -211,8 +211,7 @@ option_with_default(psi4_SHGAUSS_ORDERING "Ordering for shells of solid harmonic
 option_with_default(gauxc_ENABLE_GPU "Enable GPU support for GauXC" OFF)
 option_with_default(gauxc_ENABLE_MAGMA "Enable MAGMA support for GauXC. Required GPU-enabled GauXC" OFF)
 option_with_print(psi4_CMAKE_UNITY_BUILD "Enable unity/jumbo build to reduce compile units. Effective to at least 20 cores. 2-3x full rebuild speedup.  For dev, can turn off overall or per-module. See also independent psi4_l2intf_UNITY_BUILD_BATCH_SIZE for complete OFF" ON)
-option_with_default(psi4_CMAKE_UNITY_BUILD_BATCH_SIZE "Adjust unity build size from CMake default. See also independent
-psi4_l2intf_UNITY_BUILD_BATCH_SIZE" 8)
+option_with_default(psi4_CMAKE_UNITY_BUILD_BATCH_SIZE "Adjust unity build size from CMake default. See also independent psi4_l2intf_UNITY_BUILD_BATCH_SIZE" 8)
 option_with_default(psi4_l2intf_UNITY_BUILD_BATCH_SIZE "Unity batch size for the libmints files that include libint2/engine.h (l2intf; each TU costs 5-8 GB to compile with GCC 14, ~15+ with GCC 15+). 0 = one TU for all ~19 files (~3.5 min, least memory and CPU; default). 1 = per-file (~1 min to rebuild one edited file; pool-limited by memory). Independent of psi4_CMAKE_UNITY_BUILD" 0)
 option_with_print(psi4_ENABLE_PRECOMPILE_HEADERS "Enable reusing preprocessed libmints and other headers for build performance. 15-20% full rebuild speedup. For dev, can turn off for finer incr rebuild" OFF)
 
