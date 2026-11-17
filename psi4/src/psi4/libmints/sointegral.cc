@@ -136,7 +136,6 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
 
             int nao1 = b1_->naofunction(ish);
             int nao2 = b2_->naofunction(jsh);
-            int nao = nao1 * nao2;
 
             // loop through the AO shells that make up this SO shell
             // by the end of these 4 for loops we will have our final integral in buffer_
@@ -205,7 +204,6 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
             const SOTransform &t2 = b2_->sotrans(jsh);
             int nao2 = b2_->naofunction(jsh);
 
-            int nao12 = nao1 * nao2;
 
             // loop through the AO shells that make up this SO shell
             // by the end of these 4 for loops we will have our final integral in buffer_

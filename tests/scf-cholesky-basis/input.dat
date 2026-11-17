@@ -18,15 +18,20 @@ e_canonical   = -230.64152543331906
 # picked every time, we need to allow for changes in the energy that
 # go to zero when the tolerance is tightened.
 
+if psi4.core.get_option("scf", "integral_package") == "LIBCINT":
+    tight = 2.e-8
+else:
+    tight = 1.e-8
+
 tol_4 = 3
 tol_5 = 4
 tol_6 = 5
-tol_7 = 8
-tol_8 = 8
-tol_9 = 8
-tol_10 = 8
-tol_11 = 8
-tol_can = 8
+tol_7 = tight
+tol_8 = tight
+tol_9 = tight
+tol_10 = tight
+tol_11 = tight
+tol_can = tight
 
 molecule {
 -1 2

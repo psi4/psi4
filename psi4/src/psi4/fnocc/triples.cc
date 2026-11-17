@@ -74,7 +74,6 @@ PsiReturnType CoupledCluster::triples() {
     long int oo = o * o;
     long int vo = v * o;
     long int vv = v * v;
-    long int ooo = o * o * o;
     long int voo = v * o * o;
     long int vvo = v * v * o;
     long int vvv = v * v * v;

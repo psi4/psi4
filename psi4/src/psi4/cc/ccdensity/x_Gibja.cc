@@ -61,7 +61,6 @@ void x_Gibja_rohf() {
     int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;
     dpdfile2 L1, T1A, T1B, L1A, L1B, R1A, R1B, I1A, I1B;
     dpdbuf4 I2, L2, R2, T2, Z, Z1, V2, G, GIBJA, Gibja, GIbJa, GiBjA, GIbjA, GiBJa;
-    double value;
     L_irr = params.L_irr;
     R_irr = params.R_irr;
     G_irr = params.G_irr;
