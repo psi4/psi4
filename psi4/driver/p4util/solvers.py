@@ -49,6 +49,7 @@ Generalized iterative solvers for Psi4.
 
 """
 
+NUM_ZERO = 1e-11
 
 def cg_solver(
     rhs_vec: List[core.Matrix],
@@ -409,7 +410,7 @@ def _print_array(name, arr, verbose):
         core.print_out(f"\n\n{name}:\n{str(arr)}\n")
 
 
-def _gs_orth(engine, U, V, thresh: float = 1.0e-8):
+def _gs_orth(engine, U, V, thresh: float = NUM_ZERO):
     """Perform Gram-Schmidt orthonormalization of a set V against a previously orthonormalized set U
 
     Parameters
@@ -728,8 +729,7 @@ def davidson_solver(
     nk = nroot
 
     # TODO: Double-check if we can reliably tighten these restraints.
-    NUM_ZERO = 1e-10
-    eigmax_to_error = 500
+    eigmax_to_error = 100
     if nonneg_only and r_convergence < eigmax_to_error * NUM_ZERO:
         r_convergence = eigmax_to_error * NUM_ZERO
         core.print_out(f"\n\nWarning! r_convergence truncated to {eigmax_to_error * NUM_ZERO:3e}.\n")
@@ -951,8 +951,7 @@ def hamiltonian_solver(
     nk = nroot
 
     # TODO: Double-check if we can reliably tighten these restraints.
-    NUM_ZERO = 1e-10
-    eigmax_to_error = 500
+    eigmax_to_error = 100
     if r_convergence < eigmax_to_error * NUM_ZERO:
         r_convergence = eigmax_to_error * NUM_ZERO
         core.print_out(f"\n\nWarning! r_convergence truncated to {eigmax_to_error * NUM_ZERO:3e}.\n")

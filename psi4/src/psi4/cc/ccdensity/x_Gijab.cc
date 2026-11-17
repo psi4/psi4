@@ -58,7 +58,6 @@ void x_Gijab() {
 void x_Gijab_rohf() {
     int h, nirreps;
     int R_irr, L_irr, G_irr;
-    double value, tval;
     dpdfile2 T1, L1, I1, T1A, T1B, Z1, R1;
     dpdbuf4 R, I, G, L, T, V, Z, Z2;
 

@@ -8,8 +8,8 @@ h2o = psi4.geometry("""
 
 psi4.set_options({
     "basis": "cc-pvdz",
-    "d_convergence": 10,
-    "r_convergence": 10,
+    "d_convergence": 12,
+    "r_convergence": 12,
     "tdscf_states": [0, 0, 0, 2],
     "tdscf_tda": True
 })
