@@ -251,6 +251,7 @@ def test_gradient_grid_response(func, ref, geom):
     assert np.max(np.abs(g_fixed - g_findif)) > 1e-5         # fixed-grid gradient is not
 
 
+@pytest.mark.d2ints
 @pytest.mark.parametrize("func", ["SVWN", "PBE", "TPSS"])  # LDA, GGA, meta-GGA
 @pytest.mark.parametrize("ref,geom", [("rks", _WATER), ("uks", _NH2)])
 def test_hessian_grid_response(func, ref, geom):

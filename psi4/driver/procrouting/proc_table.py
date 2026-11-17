@@ -296,12 +296,12 @@ for key in functionals:
     if not ssuper.is_c_hybrid():
         procedures['properties'][key] = proc.run_scf_property
 
-    # Gradients
+    # Gradients and Hessians. The driver takes a registered Hessian to mean that analytic
+    # gradients exist too, so a functional without gradients (double hybrids, VV10) must not
+    # get a Hessian either.
     if not (ssuper.is_c_hybrid() or ssuper.is_c_lrc() or ssuper.needs_vv10()):
         procedures['gradient'][key] = proc.select_scf_gradient
-
-    # Hessians
-    procedures['hessian'][key] = proc.run_scf_hessian
+        procedures['hessian'][key] = proc.run_scf_hessian
 
 # Integrate CFOUR with driver routines
 for ssuper in interface_cfour.cfour_list():
