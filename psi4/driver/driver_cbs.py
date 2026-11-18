@@ -1635,6 +1635,9 @@ class CompositeComputer(BaseComputer):
             modules = set(modules) - {"scf"}
         modules = list(set(modules))
         modules = modules[0] if len(modules) == 1 else "(mixed)"
+        module_roles = p4util.merge_module_roles(v.provenance for v in results_list)
+        if modules:
+            module_roles["qc_module"] = modules
 
         # load results_list numbers into compute_list (task_list is AtomicComputer-s)
         for itask, mc in enumerate(self.compute_list):
@@ -1690,6 +1693,7 @@ class CompositeComputer(BaseComputer):
         # logger.debug('GRAND_NEED\n' + pp.pformat(self.cbsrec))
 
         cbs_results["module"] = modules
+        cbs_results["module_roles"] = module_roles
         return cbs_results
 
     def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
@@ -1758,7 +1762,7 @@ class CompositeComputer(BaseComputer):
                 },
                 'molecule': self.molecule.to_schema(dtype=3),
                 'properties': properties,
-                'provenance': p4util.provenance_stamp(__name__, module=assembled_results["module"]),
+                'provenance': p4util.provenance_stamp(__name__, module=assembled_results["module_roles"]),
                 'extras': {
                     'qcvars': qcvars,
                     'cbs_record': copy.deepcopy(self.cbsrec),
@@ -1819,8 +1823,7 @@ def _cbs_schema_to_wfn(cbs_model):
     mol = core.Molecule.from_schema(cbs_model.molecule.model_dump())
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp', quiet=True)
     wfn = core.Wavefunction(mol, basis)
-    if hasattr(cbs_model.provenance, "module"):
-        wfn.set_module(cbs_model.provenance.module)
+    p4util.set_wfn_module_roles(wfn, cbs_model.provenance)
 
     # wfn.set_energy(cbs_model['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
     for qcv, val in cbs_model.extras['qcvars'].items():

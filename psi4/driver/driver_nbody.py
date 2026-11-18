@@ -667,6 +667,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         qmol = core.Molecule.from_schema(self.molecule.model_dump())  # nonphy
         wfn = core.Wavefunction.build(qmol, "def2-svp", quiet=True)
+        roles = p4util.merge_module_roles(t.get_results(client=client).provenance for t in self.task_list.values())
+        p4util.set_wfn_module_roles(wfn, {"module_roles": roles})
 
         qcvars = translate_qcvariables(nbody_model.properties.model_dump())
         for qcv, val in qcvars.items():
