@@ -48,7 +48,6 @@
 #include "psi4/libmints/dimension.h"
 
 namespace psi {
-class Dimension;
 class Options;
 class Wavefunction;
 

@@ -54,7 +54,7 @@ namespace psi {
 ** (frozen core, restricted core, RAS I-IV, restricted vir, frozen vir)
 ** based on the available user specifications. This is done for any CI
 ** computation, even ones that do not update orbitals. The orbital space
-** space specification is therefore normally incomplete, so this function
+** specification is therefore normally incomplete, so this function
 ** also needs to supply what the user left implicit.
 ** It also obtains the appropriate orbital reordering array.  The
 ** reordering array takes a basis function in Pitzer ordering (orbitals
