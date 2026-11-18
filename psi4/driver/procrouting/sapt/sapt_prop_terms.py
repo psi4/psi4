@@ -44,6 +44,7 @@ from psi4 import core
 
 from ...p4util import solvers
 from ...p4util.exceptions import ConvergenceError
+from .sapt_prop_exch_disp import exch_disp2_s2_property
 from .sapt_prop_exch_ind import exch_ind2_s2_property, u_ra_amplitudes, u_sb_amplitudes
 from .sapt_prop_exch_ind_sinf import exch_ind2_sinf_property
 
@@ -218,6 +219,48 @@ def _ind2_r_terms(cache: dict, xt_A_ra: np.ndarray, xt_B_sb: np.ndarray, prop_A_
     return float(x2_ind_r_A), float(x2_ind_r_B)
 
 
+def _disp2_terms(cache: dict, xt_A_ra: np.ndarray, xt_B_sb: np.ndarray, prop_A_aa: np.ndarray, prop_A_rr: np.ndarray,
+                 prop_B_bb: np.ndarray, prop_B_ss: np.ndarray) -> Tuple[float, float]:
+    """
+    The second-order dispersion terms of monomers A and B with the uncoupled dispersion
+    amplitudes, `x2_disp_A` and `x2_disp_B`: the derivative of DISP20,U.
+    """
+
+    Qaa, Qar, Qbb, Qbs, Qrr, Qss = (cache[key] for key in ("Qaa", "Qar", "Qbb", "Qbs", "Qrr", "Qss"))
+    t_rsab = cache["t_rsab"]
+
+    x2_disp_A = (
+        # 2 Re <R(X)|V R(V)>
+        # NOTE some response not coupled
+        8 * contract("rsab,Qcr,Qbs,ca", t_rsab, Qrr, Qbs, xt_A_ra) -
+        8 * contract("rsab,Qac,Qbs,rc", t_rsab, Qaa, Qbs, xt_A_ra)
+        # <R(V)|X R(V)>
+        # NOTE not coupled no response
+        - 4 * contract("ac,rscb,rsab", prop_A_aa, t_rsab, t_rsab) +
+        4 * contract("cr,csab,rsab", prop_A_rr, t_rsab, t_rsab)
+        # X_A -> X_A + [W_A, C_A - C_A^\dagger]_1
+        + 8 * contract("ra,dscb,dseb,Qer,Qac", xt_A_ra, t_rsab, t_rsab, Qar, Qaa) +
+        16 * contract("ra,dscb,escb,Qar,Qde", xt_A_ra, t_rsab, t_rsab, Qar, Qrr) -
+        8 * contract("ra,dscb,escb,Qdr,Qae", xt_A_ra, t_rsab, t_rsab, Qrr, Qar) -
+        16 * contract("ra,dscb,dseb,Qar,Qec", xt_A_ra, t_rsab, t_rsab, Qar, Qaa))
+    x2_disp_B = (
+        # 2 Re <R(X)|V R(V)>
+        # NOTE some response not coupled
+        8 * contract("rsab,Qar,Qcs,cb", t_rsab, Qar, Qss, xt_B_sb) -
+        8 * contract("rsab,Qar,Qbc,sc", t_rsab, Qar, Qbb, xt_B_sb)
+        # <R(V)|X R(V)>
+        # NOTE not coupled no response
+        - 4 * contract("bc,rsac,rsab", prop_B_bb, t_rsab, t_rsab) +
+        4 * contract("cs,rcab,rsab", prop_B_ss, t_rsab, t_rsab)
+        # X_B -> X_B + [W_B, C_B - C_B^\dagger]_1
+        + 8 * contract("sb,rdac,rdae,Qes,Qbc", xt_B_sb, t_rsab, t_rsab, Qbs, Qbb) +
+        16 * contract("sb,rdac,reac,Qbs,Qde", xt_B_sb, t_rsab, t_rsab, Qbs, Qss) -
+        8 * contract("sb,rdac,reac,Qds,Qbe", xt_B_sb, t_rsab, t_rsab, Qss, Qbs) -
+        16 * contract("sb,rdac,rdae,Qbs,Qec", xt_B_sb, t_rsab, t_rsab, Qbs, Qbb))
+
+    return float(x2_disp_A), float(x2_disp_B)
+
+
 def property_terms(cache: dict,
                    operators: List[np.ndarray],
                    wfn_A: core.Wavefunction,
@@ -228,8 +271,7 @@ def property_terms(cache: dict,
                    sinf: bool = False,
                    second_order: bool = True) -> Dict[str, np.ndarray]:
     """
-    The monomer, first-order and second-order induction SAPT property terms of each
-    operator.
+    The monomer, first-order and second-order SAPT property terms of each operator.
 
     Parameters
     ----------
@@ -248,7 +290,7 @@ def property_terms(cache: dict,
     sinf
         Whether to compute the S^inf exchange-induction terms.
     second_order
-        Whether to compute the second-order induction terms at all.
+        Whether to compute the second-order terms at all.
 
     Returns
     -------
@@ -266,10 +308,18 @@ def property_terms(cache: dict,
           uncoupled amplitudes, S^2 and S^inf;
         - "x2_ind,r", "x2_exch-ind,r_S2", "x2_exch-ind,r": the same with the coupled
           amplitudes, if `coupled`;
+        - "x2_disp", "x2_exch-disp_S2": second-order dispersion and S^2
+          exchange-dispersion, with the uncoupled amplitudes, the derivatives of
+          DISP20,U and EXCH-DISP20,U(S^2);
+        - "ind_S2", "disp_S2": the induction and the dispersion classes, each term plus
+          its S^2 exchange counterpart, as Psi4's SAPT IND and SAPT DISP energies, the
+          induction with the coupled amplitudes if `coupled`;
+        - "x_induced_S2": the sum of the first-order terms and the two classes, as Psi4's
+          SAPT TOTAL energy;
 
-        and the parts of the first-order and the induction terms from monomers A and B,
-        keyed with "_A" and "_B" appended. The S^inf exchange-induction terms are there
-        only if `sinf`.
+        and the parts of the first-order, the induction and the dispersion terms from
+        monomers A and B, keyed with "_A" and "_B" appended. The S^inf
+        exchange-induction terms are there only if `sinf`.
     """
 
     C_a, C_r = cache["C_a"], cache["C_r"]
@@ -361,5 +411,20 @@ def property_terms(cache: dict,
         if sinf:
             terms[f"x2_exch-ind{tag}"] = (np.array(per_component(exch_ind2_sinf_property, *amplitudes)) -
                                           terms[f"x2_ind{tag}"])
+
+    # Second-order dispersion and S^2 exchange-dispersion, uncoupled. The S^inf
+    # exchange-dispersion is left out: propSAPT's is not the derivative of its energy.
+    parts = per_component(_disp2_terms, prop_A_aa, prop_A_rr, prop_B_bb, prop_B_ss)
+    terms["x2_disp_A"], terms["x2_disp_B"] = (np.array(part) for part in zip(*parts))
+    terms["x2_disp"] = terms["x2_disp_A"] + terms["x2_disp_B"]
+    terms["x2_exch-disp_S2"] = np.array(
+        per_component(exch_disp2_s2_property, prop_A_aa, prop_A_rr, prop_B_bb, prop_B_ss))
+
+    # Totals with the S^2 exchange terms at second order, propSAPT's x_induced_S2; the
+    # induction with the coupled amplitudes unless only the uncoupled ones were made
+    ind = ",r" if coupled else ""
+    terms["ind_S2"] = terms[f"x2_ind{ind}"] + terms[f"x2_exch-ind{ind}_S2"]
+    terms["disp_S2"] = terms["x2_disp"] + terms["x2_exch-disp_S2"]
+    terms["x_induced_S2"] = terms["x1_pol,r"] + terms["x1_exch,r"] + terms["ind_S2"] + terms["disp_S2"]
 
     return terms

@@ -62,7 +62,9 @@ def _term_labels(name: str, second_order: bool, coupled: bool, sinf: bool) -> li
     The first-order polarization term is the derivative of the electrostatic energy,
     but as a property it is a change of the density, hence POL. SAPT0 terms carry the
     intramonomer correlation order, 0, as the second index; SAPT(DFT) terms do not.
-    Both exchange-induction variants are suffixed, (S^2) and (S^INF).
+    Both exchange-induction variants are suffixed, (S^2) and (S^INF); the dispersion is
+    uncoupled, ",U". The totals IND, DISP and TOTAL are named after Psi4's SAPT energy
+    classes, whose derivatives they are.
 
     Returns
     -------
@@ -87,6 +89,9 @@ def _term_labels(name: str, second_order: bool, coupled: bool, sinf: bool) -> li
         labels.append((f"x2_exch-ind{tag}_S2", f"EXCH-IND{second}{kind}(S^2)", False))
         if sinf:
             labels.append((f"x2_exch-ind{tag}", f"EXCH-IND{second}{kind}(S^INF)", False))
+    labels.append(("x2_disp", f"DISP{second},U", True))
+    labels.append(("x2_exch-disp_S2", f"EXCH-DISP{second},U(S^2)", False))
+    labels += [("ind_S2", "IND", False), ("disp_S2", "DISP", False), ("x_induced_S2", "TOTAL", False)]
     return labels
 
 
@@ -103,35 +108,37 @@ def _print_header(name: str, properties: list, second_order: bool, coupled: bool
     core.print_out(f"   Properties              {', '.join(properties)}\n")
     core.print_out(f"   JK Algorithm            {core.get_global_option('SCF_TYPE'):>12s}\n")
     core.print_out(f"   CPHF R Convergence      {core.get_option('SAPT', 'CPHF_R_CONVERGENCE'):12.3e}\n")
-    core.print_out(f"   Second-Order Induction  {str(second_order):>12s}\n")
+    core.print_out(f"   Second Order            {str(second_order):>12s}\n")
     if second_order:
         core.print_out(f"   Coupled Induction       {str(coupled):>12s}\n")
         core.print_out(f"   S^inf Exch-Ind          {str(sinf):>12s}\n")
     core.print_out("\n")
     if not second_order:
         core.print_out(
-            "   The second-order induction properties are computed for SAPT0 only: with Kohn-Sham\n"
-            "   monomers, their expressions are not yet the field derivatives of the induction energies.\n\n")
+            "   The second-order properties are computed for SAPT0 only: with Kohn-Sham monomers, their\n"
+            "   expressions are not yet the field derivatives of the induction and dispersion energies.\n\n")
 
 
-def _check_memory(wfn_A: core.Wavefunction, wfn_B: core.Wavefunction, df_basis: core.BasisSet, sinf: bool):
-    """Prints the memory the second-order terms keep, and raises if it is above the memory
-    Psi4 is given: the fitted 3-index integrals of both monomers and, for the S^inf
-    exchange-induction terms, an occ(A) occ(B) vir(A) vir(B) intermediate."""
+def _check_memory(wfn_A: core.Wavefunction, wfn_B: core.Wavefunction, df_basis: core.BasisSet):
+    """Prints the memory the second-order terms need, and raises if it is above the memory
+    Psi4 is given: the fitted 3-index integrals of both monomers, the dispersion amplitudes
+    and their denominators, and one more occ(A) occ(B) vir(A) vir(B) intermediate at a time
+    (the derivative of the dispersion amplitudes, or that of the S^inf exchange-induction
+    terms)."""
 
     naux = df_basis.nbf()
     o_A, o_B = wfn_A.nalpha(), wfn_B.nalpha()
     v_A, v_B = wfn_A.nmo() - o_A, wfn_B.nmo() - o_B
     df_doubles = naux * (o_A * o_A + o_A * v_A + v_A * v_A + o_B * o_B + o_B * v_B + v_B * v_B)
-    sinf_doubles = o_A * o_B * v_A * v_B if sinf else 0
-    needed = 8 * (df_doubles + sinf_doubles)
+    oovv_doubles = o_A * o_B * v_A * v_B
+    needed = 8 * (df_doubles + 3 * oovv_doubles)
     available = core.get_memory()
 
     gib = 1024.0**3
     core.print_out("  ==> Memory <==\n\n")
     core.print_out(f"   Fitted 3-index integrals [GiB]    {8 * df_doubles / gib:10.3f}\n")
-    if sinf:
-        core.print_out(f"   S^inf Exch-Ind intermediate [GiB] {8 * sinf_doubles / gib:10.3f}\n")
+    core.print_out(f"   Dispersion amplitudes [GiB]       {16 * oovv_doubles / gib:10.3f}\n")
+    core.print_out(f"   Largest intermediate [GiB]        {8 * oovv_doubles / gib:10.3f}\n")
     core.print_out(f"   Available [GiB]                   {available / gib:10.3f}\n\n")
 
     if needed > available:
@@ -162,10 +169,11 @@ def run_sapt_property(name, **kwargs):
     linear in the one-particle density, the monomer values and the first-order
     polarization and exchange terms are set as QCVariables
     ``SAPT <TERM> <PROPERTY>``, with the parts of monomers A and B suffixed ``- A`` and
-    ``- B``. For SAPT0, so are the second-order induction and exchange-induction terms:
+    ``- B``. For SAPT0, so are the second-order terms: induction and exchange-induction
     with the uncoupled induction amplitudes, and with the coupled ones unless
-    COUPLED_INDUCTION is false; S^2 and, with DO_IND_EXCH_SINF, S^inf. The SAPT
-    interaction energy is computed too.
+    COUPLED_INDUCTION is false, S^2 and, with DO_IND_EXCH_SINF, S^inf; uncoupled
+    dispersion and S^2 exchange-dispersion; and the totals IND, DISP and TOTAL, as the
+    SAPT energy classes. The SAPT interaction energy is computed too.
     """
 
     name = name.lower()
@@ -202,9 +210,9 @@ def run_sapt_property(name, **kwargs):
     cphf_conv = core.get_option("SAPT", "CPHF_R_CONVERGENCE")
     maxiter = core.get_option("SAPT", "MAXITER")
 
-    # The second-order induction terms are SAPT0 only: with Kohn-Sham monomers, propSAPT
-    # v0.5.0's expressions take the field change of the Fock operator with the HF kernel,
-    # and miss the finite-field derivatives of the induction energies by about 1%.
+    # The second-order terms are SAPT0 only: with Kohn-Sham monomers, propSAPT v0.5.0's
+    # expressions take the field change of the Fock operator with the HF kernel, and miss
+    # the finite-field derivatives of the induction and dispersion energies by about 1%.
     second_order = name == "sapt0"
     coupled = core.get_option("SAPT", "COUPLED_INDUCTION")
     sinf = core.get_option("SAPT", "DO_IND_EXCH_SINF")
@@ -283,7 +291,7 @@ def run_sapt_property(name, **kwargs):
         df_basis = core.BasisSet.build(sapt_dimer, "DF_BASIS_SAPT", core.get_global_option("DF_BASIS_SAPT"), "RIFIT",
                                        core.get_global_option("BASIS"))
         dimer_wfn.set_basisset("DF_BASIS_SAPT", df_basis)
-        _check_memory(wfn_A, wfn_B, df_basis, sinf)
+        _check_memory(wfn_A, wfn_B, df_basis)
 
     # Property terms
     core.timer_on("SAPT properties: Properties")

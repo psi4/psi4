@@ -130,7 +130,8 @@ def build_prop_cache(wfn_A: core.Wavefunction,
         approximation ("omega_exchA_bs_S2", ...) and in full ("omega_exchA_bs", ...), and
         the uncoupled induction amplitudes ("tB_ra", "tA_sb") with their denominators
         ("eps_ra", "eps_sb"). With `df_basis`, also the fitted 3-index integrals ("Qaa",
-        "Qar", "Qrr", "Qbb", "Qbs", "Qss" and the transposes "Qra", "Qsb").
+        "Qar", "Qrr", "Qbb", "Qbs", "Qss" and the transposes "Qra", "Qsb") and the uncoupled
+        dispersion amplitudes ("t_rsab") with their denominators ("eps_rsab").
     """
 
     cache = {}
@@ -311,8 +312,11 @@ def build_prop_cache(wfn_A: core.Wavefunction,
     cache["eps_sb"] = 1 / (-cache["eps_s"].reshape(-1, 1) + cache["eps_b"])
     cache["tA_sb"] = omegaA_bs.T * cache["eps_sb"]
 
-    # Fitted 3-index integrals of the second-order terms
+    # Fitted 3-index integrals and uncoupled dispersion amplitudes of the second-order terms
     if df_basis is not None:
         cache.update(_df_blocks(wfn_A.basisset(), df_basis, orbitals))
+        cache["eps_rsab"] = 1 / (-cache["eps_r"].reshape(-1, 1, 1, 1) - cache["eps_s"].reshape(-1, 1, 1) +
+                                 cache["eps_a"].reshape(-1, 1) + cache["eps_b"])
+        cache["t_rsab"] = contract("Qar,Qbs,rsab->rsab", cache["Qar"], cache["Qbs"], cache["eps_rsab"])
 
     return cache
