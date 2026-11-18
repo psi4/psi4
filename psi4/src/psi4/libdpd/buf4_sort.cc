@@ -123,9 +123,10 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
     dpdbuf4 OutBuf;
     long int rowtot, coltot, core_total, maxrows;
     int Grow, Gcol;
-    int out_rows_per_bucket, out_nbuckets, out_rows_left, out_row_start, n;
-    int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
-    int rows_per_bucket, nbuckets, rows_left;
+    int64_t out_rows_per_bucket, in_rows_per_bucket, rows_per_bucket;
+    int out_nbuckets, out_rows_left, out_row_start, n;
+    int in_nbuckets, in_rows_left, in_row_start, m;
+    int nbuckets, rows_left;
 
     nirreps = InBuf->params->nirreps;
     my_irrep = InBuf->file.my_irrep;
@@ -1655,12 +1656,14 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                     outfile->Printf(stdout, "OutBuf.rowtot[Gpq]  = %d\n", OutBuf.params->rowtot[Gpq]);
                     outfile->Printf(stdout, "OutBuf.coltot[Grs]  = %d\n", OutBuf.params->coltot[Grs]);
                     outfile->Printf(stdout, "out_nbuckets        = %d\n", out_nbuckets);
-                    outfile->Printf(stdout, "out_rows_per_bucket = %d\n", out_rows_per_bucket);
+                    outfile->Printf(stdout, "out_rows_per_bucket = %lld\n",
+                                    static_cast<long long>(out_rows_per_bucket));
                     outfile->Printf(stdout, "out_rows_left       = %d\n", out_rows_left);
                     outfile->Printf(stdout, "InBuf.rowtot[Grs]   = %d\n", InBuf->params->rowtot[Grs]);
                     outfile->Printf(stdout, "InBuf.coltot[Gpq]   = %d\n", InBuf->params->coltot[Gpq]);
                     outfile->Printf(stdout, "in_nbuckets         = %d\n", in_nbuckets);
-                    outfile->Printf(stdout, "in_rows_per_bucket  = %d\n", in_rows_per_bucket);
+                    outfile->Printf(stdout, "in_rows_per_bucket  = %lld\n",
+                                    static_cast<long long>(in_rows_per_bucket));
                     outfile->Printf(stdout, "in_rows_left        = %d\n", in_rows_left);
                     fflush(stdout);
 #endif

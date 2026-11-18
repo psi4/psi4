@@ -261,8 +261,8 @@ double CoupledPair::compute_energy() {
 
 ===================================================================*/
 PsiReturnType CoupledPair::CEPAIterations() {
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     iter = 0;
     int diis_iter = 0;
@@ -481,9 +481,9 @@ PsiReturnType CoupledPair::CEPAIterations() {
 void CoupledPair::PairEnergy() {
     if (cepa_level < 1) return;
 
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
@@ -497,13 +497,13 @@ void CoupledPair::PairEnergy() {
         tb = tempt;
     }
 
-    for (long int i = 0; i < o; i++) {
-        for (long int j = 0; j < o; j++) {
+    for (int64_t i = 0; i < o; i++) {
+        for (int64_t j = 0; j < o; j++) {
             double energy = 0.0;
-            for (long int a = o; a < rs; a++) {
-                for (long int b = o; b < rs; b++) {
-                    long int ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
+            for (int64_t a = o; a < rs; a++) {
+                for (int64_t b = o; b < rs; b++) {
+                    int64_t ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
+                    int64_t iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
                     energy +=
                         integrals[iajb] * (2.0 * tb[ijab] - tb[(b - o) * o * o * v + (a - o) * o * o + i * o + j]);
                 }
@@ -514,9 +514,9 @@ void CoupledPair::PairEnergy() {
 }
 
 void CoupledPair::UpdateT2() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
@@ -534,32 +534,32 @@ void CoupledPair::UpdateT2() {
         fac = 1.0 - (2.0 * o - 2.0) * (2.0 * o - 3.0) / (2.0 * o * (2.0 * o - 1.0));
     double energy = eccsd * fac;
 
-    for (long int i = 0; i < o; i++) {
+    for (int64_t i = 0; i < o; i++) {
         double di = -eps[i];
-        for (long int j = 0; j < o; j++) {
+        for (int64_t j = 0; j < o; j++) {
             double dij = di - eps[j];
 
             if (cepa_level == 1) {
                 energy = 0.0;
-                for (long int k = 0; k < o; k++) {
+                for (int64_t k = 0; k < o; k++) {
                     energy += 0.5 * (pair_energy[i * o + k] + pair_energy[j * o + k]);
                 }
             } else if (cepa_level == 2) {
                 energy = pair_energy[i * o + j];
             } else if (cepa_level == 3) {
                 energy = -pair_energy[i * o + j];
-                for (long int k = 0; k < o; k++) {
+                for (int64_t k = 0; k < o; k++) {
                     energy += (pair_energy[i * o + k] + pair_energy[j * o + k]);
                 }
             }
 
-            for (long int a = o; a < rs; a++) {
+            for (int64_t a = o; a < rs; a++) {
                 double dija = dij + eps[a];
-                for (long int b = o; b < rs; b++) {
+                for (int64_t b = o; b < rs; b++) {
                     double dijab = dija + eps[b];
 
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
-                    long int ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
+                    int64_t iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
+                    int64_t ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
 
                     double tnew = -(integrals[iajb] + tempv[ijab]) / (dijab - energy);
                     tempt[ijab] = tnew;
@@ -589,9 +589,9 @@ void CoupledPair::UpdateT2() {
 }
 
 void CoupledPair::UpdateT1() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
     double fac = 1.0;
     if (cepa_level == 0)
@@ -604,22 +604,22 @@ void CoupledPair::UpdateT1() {
         fac = 1.0 - (2.0 * o - 2.0) * (2.0 * o - 3.0) / (2.0 * o * (2.0 * o - 1.0));
     double energy = eccsd * fac;
 
-    for (long int i = 0; i < o; i++) {
+    for (int64_t i = 0; i < o; i++) {
         if (cepa_level == 1) {
             energy = 0.0;
-            for (long int k = 0; k < o; k++) {
+            for (int64_t k = 0; k < o; k++) {
                 energy += (pair_energy[i * o + k]);
             }
         } else if (cepa_level == 2) {
             energy = pair_energy[i * o + i];
         } else if (cepa_level == 3) {
             energy = -pair_energy[i * o + i];
-            for (long int k = 0; k < o; k++) {
+            for (int64_t k = 0; k < o; k++) {
                 energy += 2.0 * (pair_energy[i * o + k]);
             }
         }
 
-        for (long int a = o; a < rs; a++) {
+        for (int64_t a = o; a < rs; a++) {
             double dia = -eps[i] + eps[a];
             double tnew = -(w1[(a - o) * o + i]) / (dia - energy);
             w1[(a - o) * o + i] = tnew;
@@ -632,9 +632,9 @@ void CoupledPair::UpdateT1() {
 }
 
 void CoupledPair::SCS_CEPA() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
@@ -650,13 +650,13 @@ void CoupledPair::SCS_CEPA() {
 
     double ssenergy = 0.0;
     double osenergy = 0.0;
-    for (long int a = o; a < rs; a++) {
-        for (long int b = o; b < rs; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
-                    long int jaib = iajb + (i - j) * v * (1 - v * o);
-                    long int ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
+    for (int64_t a = o; a < rs; a++) {
+        for (int64_t b = o; b < rs; b++) {
+            for (int64_t i = 0; i < o; i++) {
+                for (int64_t j = 0; j < o; j++) {
+                    int64_t iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
+                    int64_t jaib = iajb + (i - j) * v * (1 - v * o);
+                    int64_t ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
 
                     osenergy += integrals[iajb] * (tb[ijab]);
                     ssenergy += integrals[iajb] * (tb[ijab] - tb[(b - o) * o * o * v + (a - o) * o * o + i * o + j]);
@@ -670,9 +670,9 @@ void CoupledPair::SCS_CEPA() {
     psio.reset();
 }
 double CoupledPair::VariationalEnergy() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
     // (ai|bj)
     auto psio = std::make_shared<PSIO>();
@@ -708,8 +708,8 @@ double CoupledPair::VariationalEnergy() {
         for (int j = 0; j < o; j++) {
             for (int a = o; a < rs; a++) {
                 for (int b = o; b < rs; b++) {
-                    long int ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
+                    int64_t ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
+                    int64_t iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
                     double dum = 0.5 * (tb[ijab] - tb[(b - o) * o * o * v + (a - o) * o * o + i * o + j]);
                     nrm += (2.0 * dum * dum + tb[ijab] * tb[ijab]) * fac;
                 }
@@ -731,8 +731,8 @@ double CoupledPair::VariationalEnergy() {
                 double dija = dij + eps[a];
                 for (int b = o; b < rs; b++) {
                     double dijab = dija + eps[b];
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
-                    long int ijab = (a - o) * v * o * o + (b - o) * o * o + i * o + j;
+                    int64_t iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
+                    int64_t ijab = (a - o) * v * o * o + (b - o) * o * o + i * o + j;
                     ed += (tempv[ijab] + dijab * tb[ijab]) *
                           (2.0 * tb[ijab] - tb[(b - o) * o * o * v + (a - o) * o * o + i * o + j]);
                     e0 += integrals[iajb] * (2.0 * tb[ijab] - tb[(b - o) * o * o * v + (a - o) * o * o + i * o + j]);
@@ -750,9 +750,9 @@ double CoupledPair::VariationalEnergy() {
     return evar / nrm;
 }
 double CoupledPair::CheckEnergy() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
+    int64_t v = nvirt;
+    int64_t o = ndoccact;
+    int64_t rs = nmo;
 
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
@@ -767,13 +767,13 @@ double CoupledPair::CheckEnergy() {
     }
 
     double energy = 0.0;
-    for (long int a = o; a < rs; a++) {
-        for (long int b = o; b < rs; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
-                    long int jaib = iajb + (i - j) * v * (1 - v * o);
-                    long int ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
+    for (int64_t a = o; a < rs; a++) {
+        for (int64_t b = o; b < rs; b++) {
+            for (int64_t i = 0; i < o; i++) {
+                for (int64_t j = 0; j < o; j++) {
+                    int64_t iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
+                    int64_t jaib = iajb + (i - j) * v * (1 - v * o);
+                    int64_t ijab = (a - o) * o * o * v + (b - o) * o * o + i * o + j;
 
                     energy += (2. * integrals[iajb] - integrals[jaib]) * (tb[ijab]);
                 }
