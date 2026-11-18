@@ -1,11 +1,12 @@
 """
 Interaction-induced one-electron properties of dimers from SAPT0 and SAPT(DFT),
-``psi4.properties("sapt0" | "sapt(dft)")``: the monomer values and the first-order
-polarization and exchange terms.
+``psi4.properties("sapt0" | "sapt(dft)")``: the monomer values, the first-order
+polarization and exchange terms and, for SAPT0, the second-order induction and
+exchange-induction terms.
 
 The reference values come from propSAPT v0.5.0 (https://github.com/btyrcha/propSAPT),
-whose first-order terms of each operator component were assembled into these
-QCVariables; the port agrees with it to 1e-10 a.u. on the same Psi4.
+whose terms of each operator component were assembled into these QCVariables; the port
+agrees with it to 1e-10 a.u. on the same Psi4.
 """
 
 import numpy as np
@@ -59,6 +60,14 @@ REF_HE_H2_SAPT0 = {
     'SAPT EXCH10 DIPOLE': [-0.016052648008, -0.0, 0.0],
     'SAPT EXCH10 DIPOLE - A': [0.005969362232, -0.0, 0.0],
     'SAPT EXCH10 DIPOLE - B': [-0.02202201024, -0.0, 0.0],
+    'SAPT IND20,R DIPOLE': [0.001135562598, 0.0, -0.0],
+    'SAPT IND20,R DIPOLE - A': [-0.000138626423, -0.0, -0.0],
+    'SAPT IND20,R DIPOLE - B': [0.001274189021, 0.0, -0.0],
+    'SAPT IND20,U DIPOLE': [0.00100747924, 0.0, -0.0],
+    'SAPT IND20,U DIPOLE - A': [-0.000126851623, -0.0, -0.0],
+    'SAPT IND20,U DIPOLE - B': [0.001134330863, 0.0, -0.0],
+    'SAPT EXCH-IND20,R(S^2) DIPOLE': [-0.002163041484, -0.0, 0.0],
+    'SAPT EXCH-IND20,U(S^2) DIPOLE': [-0.001639929098, -0.0, 0.0],
     'SAPT MONOMER A QUADRUPOLE': [[-0.793369038733, -0.0, -0.0], [-0.0, -0.798317558007, 0.0],
                                   [-0.0, 0.0, -0.798317558007]],
     'SAPT MONOMER B QUADRUPOLE': [[-1.075117252717, -0.0, 0.0], [-0.0, -1.564897242189, -0.0],
@@ -79,6 +88,21 @@ REF_HE_H2_SAPT0 = {
                                    [0.0, 0.0, 0.002299989748]],
     'SAPT EXCH10 QUADRUPOLE - B': [[-0.043954711623, -0.0, 0.0], [-0.0, 0.003175817494, -0.0],
                                    [0.0, -0.0, 0.003175817494]],
+    'SAPT IND20,R QUADRUPOLE': [[0.00033710635, 0.0, -0.0], [0.0, -0.000337116592, -0.0],
+                                [-0.0, -0.0, -0.000337116592]],
+    'SAPT IND20,R QUADRUPOLE - A': [[-6.8459793e-05, 0.0, 0.0], [0.0, -0.000130767875, 0.0],
+                                    [0.0, 0.0, -0.000130767875]],
+    'SAPT IND20,R QUADRUPOLE - B': [[0.000405566143, 0.0, -0.0], [0.0, -0.000206348717, -0.0],
+                                    [-0.0, -0.0, -0.000206348717]],
+    'SAPT IND20,U QUADRUPOLE': [[0.000631857901, 0.0, -0.0], [0.0, -0.000271002999, -0.0],
+                                [-0.0, -0.0, -0.000271002999]],
+    'SAPT IND20,U QUADRUPOLE - A': [[2.16204e-05, 0.0, 0.0], [0.0, -0.000106536365, 0.0], [0.0, 0.0, -0.000106536365]],
+    'SAPT IND20,U QUADRUPOLE - B': [[0.000610237501, 0.0, -0.0], [0.0, -0.000164466634, -0.0],
+                                    [-0.0, -0.0, -0.000164466634]],
+    'SAPT EXCH-IND20,R(S^2) QUADRUPOLE': [[-0.002299257293, 0.0, 0.0], [0.0, 0.0001958684, -0.0],
+                                          [0.0, -0.0, 0.0001958684]],
+    'SAPT EXCH-IND20,U(S^2) QUADRUPOLE': [[-0.001868881311, 0.0, 0.0], [0.0, 0.000143028877, -0.0],
+                                          [0.0, -0.0, 0.000143028877]],
     'SAPT MONOMER A OCTUPOLE': [[[5.953429697466, 0.0, 0.0], [0.0, 1.992559035438, 0.0], [0.0, 0.0, 1.992559035438]],
                                 [[0.0, 1.992559035438, 0.0], [1.992559035438, -0.0, 0.0], [0.0, 0.0, -0.0]],
                                 [[0.0, 0.0, 1.992559035438], [0.0, 0.0, -0.0], [1.992559035438, -0.0, 0.0]]],
@@ -120,6 +144,36 @@ REF_HE_H2_SAPT0 = {
                                   [0.0, 0.0, -0.024198503603]],
                                  [[-0.0, -0.024198503603, 0.0], [-0.024198503603, -0.0, 0.0], [0.0, 0.0, -0.0]],
                                  [[0.0, 0.0, -0.024198503603], [0.0, 0.0, -0.0], [-0.024198503603, -0.0, 0.0]]],
+    'SAPT IND20,R OCTUPOLE': [[[0.006415721255, 0.0, -0.0], [0.0, 0.001167567778, 0.0], [-0.0, 0.0, 0.001167567778]],
+                              [[0.0, 0.001167567778, 0.0], [0.001167567778, 0.0, -0.0], [0.0, -0.0, 0.0]],
+                              [[-0.0, 0.0, 0.001167567778], [0.0, -0.0, 0.0], [0.001167567778, 0.0, -0.0]]],
+    'SAPT IND20,R OCTUPOLE - A': [[[0.000675531694, -0.0, -0.0], [-0.0, 0.000218529491, 0.0],
+                                   [-0.0, 0.0, 0.000218529491]],
+                                  [[-0.0, 0.000218529491, 0.0], [0.000218529491, -0.0, -0.0], [0.0, -0.0, -0.0]],
+                                  [[-0.0, 0.0, 0.000218529491], [0.0, -0.0, -0.0], [0.000218529491, -0.0, -0.0]]],
+    'SAPT IND20,R OCTUPOLE - B': [[[0.00574018956, 0.0, -0.0], [0.0, 0.000949038287, 0.0], [-0.0, 0.0,
+                                                                                            0.000949038287]],
+                                  [[0.0, 0.000949038287, 0.0], [0.000949038287, 0.0, -0.0], [0.0, -0.0, 0.0]],
+                                  [[-0.0, 0.0, 0.000949038287], [0.0, -0.0, 0.0], [0.000949038287, 0.0, -0.0]]],
+    'SAPT IND20,U OCTUPOLE': [[[0.006080596089, 0.0, -0.0], [0.0, 0.001067320837, 0.0], [-0.0, 0.0, 0.001067320837]],
+                              [[0.0, 0.001067320837, 0.0], [0.001067320837, 0.0, -0.0], [0.0, -0.0, 0.0]],
+                              [[-0.0, 0.0, 0.001067320837], [0.0, -0.0, 0.0], [0.001067320837, 0.0, -0.0]]],
+    'SAPT IND20,U OCTUPOLE - A': [[[0.00021559446, -0.0, -0.0], [-0.0, 0.00016913525, 0.0], [-0.0, 0.0,
+                                                                                             0.00016913525]],
+                                  [[-0.0, 0.00016913525, 0.0], [0.00016913525, -0.0, -0.0], [0.0, -0.0, -0.0]],
+                                  [[-0.0, 0.0, 0.00016913525], [0.0, -0.0, -0.0], [0.00016913525, -0.0, -0.0]]],
+    'SAPT IND20,U OCTUPOLE - B': [[[0.005865001629, 0.0, -0.0], [0.0, 0.000898185587, 0.0],
+                                   [-0.0, 0.0, 0.000898185587]],
+                                  [[0.0, 0.000898185587, 0.0], [0.000898185587, 0.0, -0.0], [0.0, -0.0, 0.0]],
+                                  [[-0.0, 0.0, 0.000898185587], [0.0, -0.0, 0.0], [0.000898185587, 0.0, -0.0]]],
+    'SAPT EXCH-IND20,R(S^2) OCTUPOLE':
+    [[[-0.022725864925, -0.0, 0.0], [-0.0, -0.002449425095, -0.0], [0.0, -0.0, -0.002449425095]],
+     [[-0.0, -0.002449425095, -0.0], [-0.002449425095, -0.0, 0.0], [-0.0, 0.0, -0.0]],
+     [[0.0, -0.0, -0.002449425095], [-0.0, 0.0, -0.0], [-0.002449425095, -0.0, 0.0]]],
+    'SAPT EXCH-IND20,U(S^2) OCTUPOLE':
+    [[[-0.017047242997, -0.0, 0.0], [-0.0, -0.001836479527, -0.0], [0.0, -0.0, -0.001836479527]],
+     [[-0.0, -0.001836479527, -0.0], [-0.001836479527, -0.0, 0.0], [-0.0, 0.0, -0.0]],
+     [[0.0, -0.0, -0.001836479527], [-0.0, 0.0, -0.0], [-0.001836479527, -0.0, 0.0]]],
     'SAPT MONOMER A ESP AT CENTER 1':
     -3.361382870621,
     'SAPT MONOMER B ESP AT CENTER 1':
@@ -142,6 +196,22 @@ REF_HE_H2_SAPT0 = {
     -0.002814116834,
     'SAPT EXCH10 ESP AT CENTER 1 - B':
     0.002105619547,
+    'SAPT IND20,R ESP AT CENTER 1':
+    -2.894993e-06,
+    'SAPT IND20,R ESP AT CENTER 1 - A':
+    0.000212908542,
+    'SAPT IND20,R ESP AT CENTER 1 - B':
+    -0.000215803535,
+    'SAPT IND20,U ESP AT CENTER 1':
+    -1.156212e-05,
+    'SAPT IND20,U ESP AT CENTER 1 - A':
+    0.000175056561,
+    'SAPT IND20,U ESP AT CENTER 1 - B':
+    -0.000186618682,
+    'SAPT EXCH-IND20,R(S^2) ESP AT CENTER 1':
+    0.00014648489,
+    'SAPT EXCH-IND20,U(S^2) ESP AT CENTER 1':
+    0.000116073741,
     'SAPT MONOMER A ESP AT CENTER 2':
     -5.917675e-06,
     'SAPT MONOMER B ESP AT CENTER 2':
@@ -164,6 +234,22 @@ REF_HE_H2_SAPT0 = {
     0.000624070302,
     'SAPT EXCH10 ESP AT CENTER 2 - B':
     -0.002231357284,
+    'SAPT IND20,R ESP AT CENTER 2':
+    0.000293034114,
+    'SAPT IND20,R ESP AT CENTER 2 - A':
+    -3.3404404e-05,
+    'SAPT IND20,R ESP AT CENTER 2 - B':
+    0.000326438518,
+    'SAPT IND20,U ESP AT CENTER 2':
+    0.00023973694,
+    'SAPT IND20,U ESP AT CENTER 2 - A':
+    -2.8186809e-05,
+    'SAPT IND20,U ESP AT CENTER 2 - B':
+    0.000267923749,
+    'SAPT EXCH-IND20,R(S^2) ESP AT CENTER 2':
+    -0.000237941363,
+    'SAPT EXCH-IND20,U(S^2) ESP AT CENTER 2':
+    -0.00018119806,
     'SAPT MONOMER A ESP AT CENTER 3':
     -8.408828e-06,
     'SAPT MONOMER B ESP AT CENTER 3':
@@ -186,6 +272,22 @@ REF_HE_H2_SAPT0 = {
     0.000326885089,
     'SAPT EXCH10 ESP AT CENTER 3 - B':
     -0.003949193335,
+    'SAPT IND20,R ESP AT CENTER 3':
+    0.000198158806,
+    'SAPT IND20,R ESP AT CENTER 3 - A':
+    -1.2567998e-05,
+    'SAPT IND20,R ESP AT CENTER 3 - B':
+    0.000210726804,
+    'SAPT IND20,U ESP AT CENTER 3':
+    0.000178036528,
+    'SAPT IND20,U ESP AT CENTER 3 - A':
+    -1.0638723e-05,
+    'SAPT IND20,U ESP AT CENTER 3 - B':
+    0.00018867525,
+    'SAPT EXCH-IND20,R(S^2) ESP AT CENTER 3':
+    -0.000334004327,
+    'SAPT EXCH-IND20,U(S^2) ESP AT CENTER 3':
+    -0.000256403144,
     'SAPT MONOMER A MULLIKEN CHARGES': [-1.514676e-06, -0.009460828631, 0.009462343307],
     'SAPT MONOMER B MULLIKEN CHARGES': [0.002991947833, 0.009281786833, -0.012273734666],
     'SAPT POL10,R MULLIKEN CHARGES': [0.00014463965, 0.003430380682, -0.003575020332],
@@ -197,6 +299,14 @@ REF_HE_H2_SAPT0 = {
     'SAPT EXCH10 MULLIKEN CHARGES': [0.002233628107, 0.006642777429, -0.008876405537],
     'SAPT EXCH10 MULLIKEN CHARGES - A': [-0.001907036078, 0.005353426777, -0.003446390699],
     'SAPT EXCH10 MULLIKEN CHARGES - B': [0.004140664185, 0.001289350652, -0.005430014838],
+    'SAPT IND20,R MULLIKEN CHARGES': [-0.000243562258, -7.5749186e-05, 0.000319311444],
+    'SAPT IND20,R MULLIKEN CHARGES - A': [7.7608692e-05, -0.000224262382, 0.00014665369],
+    'SAPT IND20,R MULLIKEN CHARGES - B': [-0.00032117095, 0.000148513196, 0.000172657754],
+    'SAPT IND20,U MULLIKEN CHARGES': [-0.000215107715, 0.000149857578, 6.5250137e-05],
+    'SAPT IND20,U MULLIKEN CHARGES - A': [6.2333837e-05, -0.000201213826, 0.000138879989],
+    'SAPT IND20,U MULLIKEN CHARGES - B': [-0.000277441552, 0.000351071404, -7.3629852e-05],
+    'SAPT EXCH-IND20,R(S^2) MULLIKEN CHARGES': [0.000307449321, -1.9758092e-05, -0.000287691229],
+    'SAPT EXCH-IND20,U(S^2) MULLIKEN CHARGES': [0.000229974718, -7.0229072e-05, -0.000159745647],
     'SAPT MONOMER A LOWDIN CHARGES': [0.031800498127, -0.029186902364, -0.002613595763],
     'SAPT MONOMER B LOWDIN CHARGES': [-0.011993091586, 0.005265171033, 0.006727920554],
     'SAPT POL10,R LOWDIN CHARGES': [-9.2277485e-05, -9.3014725e-05, 0.00018529221],
@@ -207,9 +317,23 @@ REF_HE_H2_SAPT0 = {
     'SAPT EXCH10(S^2) LOWDIN CHARGES - B': [0.003303828305, -0.001560100826, -0.001743727479],
     'SAPT EXCH10 LOWDIN CHARGES': [0.001756878871, -0.000879567097, -0.000877311774],
     'SAPT EXCH10 LOWDIN CHARGES - A': [-0.001552499202, 0.000683429975, 0.000869069228],
-    'SAPT EXCH10 LOWDIN CHARGES - B': [0.003309378073, -0.001562997072, -0.001746381001]
+    'SAPT EXCH10 LOWDIN CHARGES - B': [0.003309378073, -0.001562997072, -0.001746381001],
+    'SAPT IND20,R LOWDIN CHARGES': [-0.000210645083, 0.000141945429, 6.8699654e-05],
+    'SAPT IND20,R LOWDIN CHARGES - A': [6.8354617e-05, -5.2474491e-05, -1.5880126e-05],
+    'SAPT IND20,R LOWDIN CHARGES - B': [-0.0002789997, 0.00019441992, 8.457978e-05],
+    'SAPT IND20,U LOWDIN CHARGES': [-0.000181344288, 0.00012314392, 5.8200368e-05],
+    'SAPT IND20,U LOWDIN CHARGES - A': [5.6237866e-05, -4.3539405e-05, -1.2698461e-05],
+    'SAPT IND20,U LOWDIN CHARGES - B': [-0.000237582154, 0.000166683324, 7.089883e-05],
+    'SAPT EXCH-IND20,R(S^2) LOWDIN CHARGES': [0.000329980796, -0.00018145731, -0.000148523486],
+    'SAPT EXCH-IND20,U(S^2) LOWDIN CHARGES': [0.000250390403, -0.000141095515, -0.000109294888]
 }
 REF_HE_H2_SAPT0_ENERGY = 0.000638971671
+
+# the same, the S^inf exchange-induction dipole terms (DO_IND_EXCH_SINF)
+REF_HE_H2_SAPT0_SINF = {
+    'SAPT EXCH-IND20,R(S^INF) DIPOLE': [-0.002172468899, -0.0, 0.0],
+    'SAPT EXCH-IND20,U(S^INF) DIPOLE': [-0.001647458473, -0.0, 0.0]
+}
 
 # water dimer, SAPT(DFT)/cc-pVDZ, PBE0 with the GRAC shifts of test_saptdft.py, SCF_TYPE DF
 REF_WATER_SAPTDFT = {
@@ -250,6 +374,18 @@ REF_WATER_SAPTDFT = {
 REF_WATER_SAPTDFT_ENERGY = -0.004399083969
 
 
+def _dipole(refs):
+    """The dipole variables of `refs`."""
+
+    return {key: value for key, value in refs.items() if " DIPOLE" in key}
+
+
+def _second_order(wfn, prefixes=("SAPT IND2", "SAPT EXCH-IND2")):
+    """The second-order induction property variables on `wfn` whose names start with `prefixes`."""
+
+    return [key for key in wfn.variables() if key.startswith(prefixes) and not key.endswith("ENERGY")]
+
+
 def _check_variables(refs, wfn):
     """Every reference variable on the wavefunction and in the globals, and the parts of
     monomers A and B adding up to their terms."""
@@ -277,6 +413,8 @@ def test_sapt0_properties_he_h2():
     energy, wfn = psi4.properties("sapt0", properties=properties, molecule=dimer, return_wfn=True)
 
     _check_variables(REF_HE_H2_SAPT0, wfn)
+    # the S^inf exchange-induction terms only with DO_IND_EXCH_SINF
+    assert not [key for key in _second_order(wfn) if "(S^INF)" in key]
 
     # the monomer values are those of OEProp on the monomers in the dimer-centered basis
     for label, (real, ghost) in (("A", (1, 2)), ("B", (2, 1))):
@@ -300,9 +438,39 @@ def test_sapt0_properties_he_h2():
     assert compare_values(psi4.energy("sapt(dft)", molecule=dimer), energy, 8, "energy vs energy('sapt(dft)')")
 
 
+@pytest.mark.quick
+def test_sapt0_properties_sinf_he_h2():
+    """The S^inf exchange-induction terms, with DO_IND_EXCH_SINF, which gives the S^inf
+    exchange-induction energy too."""
+
+    dimer = psi4.geometry(HE_H2)
+    psi4.set_options({"basis": "aug-cc-pvdz", "scf_type": "direct", "do_ind_exch_sinf": True, **CONVERGENCE})
+
+    _, wfn = psi4.properties("sapt0", properties=["dipole"], molecule=dimer, return_wfn=True)
+
+    _check_variables({**_dipole(REF_HE_H2_SAPT0), **REF_HE_H2_SAPT0_SINF}, wfn)
+    assert "EXCH-IND20,R (S^INF)" in wfn.variables()
+
+
+@pytest.mark.quick
+def test_sapt0_properties_uncoupled_he_h2():
+    """With COUPLED_INDUCTION false, the second-order terms of the uncoupled induction
+    amplitudes only, the same as with the coupled ones."""
+
+    dimer = psi4.geometry(HE_H2)
+    psi4.set_options({"basis": "aug-cc-pvdz", "scf_type": "direct", "coupled_induction": False, **CONVERGENCE})
+
+    _, wfn = psi4.properties("sapt0", properties=["dipole"], molecule=dimer, return_wfn=True)
+
+    _check_variables({key: value for key, value in _dipole(REF_HE_H2_SAPT0).items() if "20,R" not in key}, wfn)
+    assert not _second_order(wfn, ("SAPT IND20,R", "SAPT EXCH-IND20,R"))
+
+
 @pytest.mark.saptdft
 def test_saptdft_properties_water():
-    """SAPT(DFT) terms, which drop the order index of the intramonomer correlation."""
+    """SAPT(DFT) terms, which drop the order index of the intramonomer correlation. The
+    second-order induction terms are SAPT0 only: with Kohn-Sham monomers, propSAPT's
+    expressions are not the field derivatives of the induction energies."""
 
     dimer = psi4.geometry(WATER_DIMER)
     psi4.set_options({
@@ -317,6 +485,7 @@ def test_saptdft_properties_water():
 
     _check_variables(REF_WATER_SAPTDFT, wfn)
     assert "SAPT POL10,R DIPOLE" not in wfn.variables()
+    assert not _second_order(wfn)
 
     # the energy is that of SAPT(DFT) without the delta HF correction
     assert compare_values(REF_WATER_SAPTDFT_ENERGY, energy, 8, "CURRENT ENERGY")

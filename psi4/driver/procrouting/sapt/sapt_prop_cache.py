@@ -26,7 +26,7 @@
 # @END LICENSE
 #
 """
-Intermediates of the first-order interaction-induced SAPT properties.
+Intermediates of the interaction-induced SAPT properties.
 
 Ported from propSAPT v0.5.0 (https://github.com/btyrcha/propSAPT), the S^inf
 second-quantized formulation of B. Tyrcha, T. Gupta, K. Patkowski and P. S. Zuchowski,
@@ -66,9 +66,49 @@ def _get_B_aa(s_ba, s_ab):
     return np.identity(B_aa_prime.shape[0]) + U @ B_aa_prime @ U.T
 
 
-def build_prop_cache(wfn_A: core.Wavefunction, wfn_B: core.Wavefunction, jk: core.JK) -> dict:
+def _df_blocks(primary: core.BasisSet, df_basis: core.BasisSet, orbitals: dict) -> dict:
+    """The fitted 3-index integrals (Q|pq) of the occupied-occupied, occupied-virtual and
+    virtual-virtual blocks of each monomer, as (naux, p, q) arrays.
+
+    As propSAPT's DF_BASIS_SAPT tensors: the Coulomb metric to the power -1/2, in the
+    dimer-centered basis.
     """
-    The orbitals, potentials and S^inf intermediates of the first-order SAPT properties.
+
+    dfh = core.DFHelper(primary, df_basis)
+    dfh.set_memory(int(0.5 * core.get_memory() / 8))
+    dfh.set_method("STORE")
+    dfh.set_nthreads(core.get_num_threads())
+    dfh.set_MO_core(True)
+    dfh.initialize()
+    dfh.print_header()
+
+    for space, C in orbitals.items():
+        dfh.add_space(space, core.Matrix.from_array(C))
+    blocks = ("aa", "ar", "rr", "bb", "bs", "ss")
+    for block in blocks:
+        dfh.add_transformation(f"Q{block}", block[0], block[1], "Qpq")
+    dfh.transform()
+
+    naux = df_basis.nbf()
+    tensors = {}
+    for block in blocks:
+        shape = (naux, orbitals[block[0]].shape[1], orbitals[block[1]].shape[1])
+        tensors[f"Q{block}"] = np.array(dfh.get_tensor(f"Q{block}")).reshape(shape)
+    dfh.clear_all()
+
+    # transposed views
+    tensors["Qra"] = tensors["Qar"].transpose(0, 2, 1)
+    tensors["Qsb"] = tensors["Qbs"].transpose(0, 2, 1)
+
+    return tensors
+
+
+def build_prop_cache(wfn_A: core.Wavefunction,
+                     wfn_B: core.Wavefunction,
+                     jk: core.JK,
+                     df_basis: core.BasisSet = None) -> dict:
+    """
+    The orbitals, potentials and S^inf intermediates of the SAPT properties.
 
     Parameters
     ----------
@@ -76,14 +116,21 @@ def build_prop_cache(wfn_A: core.Wavefunction, wfn_B: core.Wavefunction, jk: cor
         Closed-shell monomer wavefunctions in the dimer-centered basis.
     jk
         J/K object of that basis. It must compute J and K.
+    df_basis
+        Fitting basis of the 3-index integrals of the second-order terms (DF_BASIS_SAPT).
+        Without it the cache has the first-order intermediates only.
 
     Returns
     -------
     dict
         NumPy arrays keyed by name: the orbitals ("C_a", "C_r", "C_b", "C_s"), their
-        energies ("eps_a", ...), the electrostatic potentials of the monomers
-        ("omegaA_bs", "omegaB_ar", ...) and the first-order exchange potentials, in the
-        S^2 approximation ("omega_exchA_bs_S2", ...) and in full ("omega_exchA_bs", ...).
+        energies ("eps_a", ...), the MO overlaps ("s_ab", ...), the S^inf intermediates
+        ("A_bb", "B_aa", "E_ra", ...), the electrostatic potentials of the monomers
+        ("omegaA_bs", "omegaB_ar", ...), the first-order exchange potentials, in the S^2
+        approximation ("omega_exchA_bs_S2", ...) and in full ("omega_exchA_bs", ...), and
+        the uncoupled induction amplitudes ("tB_ra", "tA_sb") with their denominators
+        ("eps_ra", "eps_sb"). With `df_basis`, also the fitted 3-index integrals ("Qaa",
+        "Qar", "Qrr", "Qbb", "Qbs", "Qss" and the transposes "Qra", "Qsb").
     """
 
     cache = {}
@@ -135,7 +182,9 @@ def build_prop_cache(wfn_A: core.Wavefunction, wfn_B: core.Wavefunction, jk: cor
     H_ab = contract("Bb,aB->ab", A_bb, s_ab)
     H_ba = contract("Ba,bB->ba", s_ba, A_bb)
     I_rb = contract("Bb,rB->rb", A_bb, s_rb)
+    I_br = contract("Br,bB->br", s_br, A_bb)
     J_sa = contract("Aa,sA->sa", B_aa, s_sa)
+    J_as = contract("As,aA->as", s_as, B_aa)
 
     G_sr = s_sr + contract("br,Bb,aB,sa->sr", s_br, A_bb, s_ab, s_sa)
     G_rs = s_rs + contract("as,Aa,bA,rb->rs", s_as, B_aa, s_ba, s_rb)
@@ -147,6 +196,33 @@ def build_prop_cache(wfn_A: core.Wavefunction, wfn_B: core.Wavefunction, jk: cor
     E_ar = contract("aB,Bb,br->ar", s_ab, A_bb, s_br)
     F_sb = contract("ab,Aa,sA->sb", s_ab, B_aa, s_sa)
     F_bs = contract("bA,Aa,as->bs", s_ba, B_aa, s_as)
+
+    cache.update({
+        "s_ab": s_ab,
+        "s_ba": s_ba,
+        "s_sa": s_sa,
+        "s_as": s_as,
+        "s_rb": s_rb,
+        "s_br": s_br,
+        "s_sr": s_sr,
+        "s_rs": s_rs,
+        "A_bb": A_bb,
+        "B_aa": B_aa,
+        "H_ab": H_ab,
+        "H_ba": H_ba,
+        "I_rb": I_rb,
+        "I_br": I_br,
+        "J_sa": J_sa,
+        "J_as": J_as,
+        "G_sr": G_sr,
+        "G_rs": G_rs,
+        "C_rr": C_rr,
+        "D_ss": D_ss,
+        "E_ra": E_ra,
+        "E_ar": E_ar,
+        "F_sb": F_sb,
+        "F_bs": F_bs,
+    })
 
     # Electrostatic potentials of the monomers
     omegaA = V_A + 2 * J_A
@@ -228,5 +304,15 @@ def build_prop_cache(wfn_A: core.Wavefunction, wfn_B: core.Wavefunction, jk: cor
                                E_ra @ mo(K_I, "as") @ J_sa + 2 * I_rb @ mo(J_E, "bs") @ J_sa +
                                2 * E_ra @ mo(J_F, "ar") @ E_ra + 2 * (E_ar @ mo(J_F, "rr")).T - 2 *
                                (mo(J_F, "aa") @ E_ar).T)
+
+    # Uncoupled induction amplitudes
+    cache["eps_ra"] = 1 / (-cache["eps_r"].reshape(-1, 1) + cache["eps_a"])
+    cache["tB_ra"] = omegaB_ar.T * cache["eps_ra"]
+    cache["eps_sb"] = 1 / (-cache["eps_s"].reshape(-1, 1) + cache["eps_b"])
+    cache["tA_sb"] = omegaA_bs.T * cache["eps_sb"]
+
+    # Fitted 3-index integrals of the second-order terms
+    if df_basis is not None:
+        cache.update(_df_blocks(wfn_A.basisset(), df_basis, orbitals))
 
     return cache

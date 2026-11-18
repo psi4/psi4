@@ -36,7 +36,7 @@ component needs the CPSCF amplitudes of both monomers.
 
 import time
 from functools import partial
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -44,8 +44,10 @@ from psi4 import core
 
 from ...p4util import solvers
 from ...p4util.exceptions import ConvergenceError
+from .sapt_prop_exch_ind import exch_ind2_s2_property, u_ra_amplitudes, u_sb_amplitudes
+from .sapt_prop_exch_ind_sinf import exch_ind2_sinf_property
 
-__all__ = ["cpscf_batch", "first_order_properties"]
+__all__ = ["cpscf_batch", "property_terms"]
 
 # the contractions keep propSAPT's index strings
 contract = partial(np.einsum, optimize=True)
@@ -123,21 +125,130 @@ def cpscf_batch(wfn: core.Wavefunction, eps_occ: np.ndarray, eps_vir: np.ndarray
     return amplitudes
 
 
-def first_order_properties(cache: dict, operators: List[np.ndarray], wfn_A: core.Wavefunction,
-                           wfn_B: core.Wavefunction, conv: float, maxiter: int) -> Dict[str, np.ndarray]:
+def _cpscf_round(monomer: str, wfn: core.Wavefunction, eps_occ: np.ndarray, eps_vir: np.ndarray,
+                 perturbations: List[np.ndarray], conv: float, maxiter: int, what: str) -> List[np.ndarray]:
+    """:py:func:`cpscf_batch` with a header and the timing in the output."""
+
+    core.print_out(f"\n  ==> CPSCF of monomer {monomer}: {len(perturbations)} {what} <==\n\n")
+    tstart = time.time()
+    amplitudes = cpscf_batch(wfn, eps_occ, eps_vir, perturbations, conv, maxiter)
+    core.print_out(f"\n    ...finished in {time.time() - tstart:.2f} seconds.\n")
+    return amplitudes
+
+
+def _ind2_terms(cache: dict, xt_A_ra: np.ndarray, xt_B_sb: np.ndarray, prop_A_aa: np.ndarray, prop_A_rr: np.ndarray,
+                prop_B_bb: np.ndarray, prop_B_ss: np.ndarray) -> Tuple[float, float]:
     """
-    The monomer and first-order SAPT property terms of each operator.
+    The second-order induction terms of monomers A and B with the uncoupled induction
+    amplitudes, `x2_ind_A` and `x2_ind_B`: the derivative of IND20,U.
+    """
+
+    Qaa, Qar, Qbb, Qbs, Qrr, Qss = (cache[key] for key in ("Qaa", "Qar", "Qbb", "Qbs", "Qrr", "Qss"))
+    omegaA_bb, omegaA_ss, omegaB_aa, omegaB_rr, tA_sb, tB_ra = (cache[key]
+                                                                for key in ("omegaA_bb", "omegaA_ss", "omegaB_aa",
+                                                                            "omegaB_rr", "tA_sb", "tB_ra"))
+
+    x2_ind_A = (
+        +16 * contract("ra,Qar,Qbs,sb", xt_A_ra, Qar, Qbs, tA_sb) -
+        4 * contract("ra,ac,rc", tB_ra, omegaB_aa, xt_A_ra) + 4 * contract("ra,cr,ca", tB_ra, omegaB_rr, xt_A_ra) -
+        2 * contract("ac,rc,ra", prop_A_aa, tB_ra, tB_ra) + 2 * contract("cr,ca,ra", prop_A_rr, tB_ra, tB_ra)
+        # X_A -> X_A + [W_A, C_A - C_A^\dagger]_1
+        + 4 * contract("ra,cd,de,Qer,Qac", xt_A_ra, tB_ra.T, tB_ra, Qar, Qaa) +
+        8 * contract("ra,cd,ec,Qde,Qar", xt_A_ra, tB_ra.T, tB_ra, Qrr, Qar) -
+        4 * contract("ra,cd,ec,Qdr,Qae", xt_A_ra, tB_ra.T, tB_ra, Qrr, Qar) -
+        8 * contract("ra,cd,de,Qar,Qec", xt_A_ra, tB_ra.T, tB_ra, Qar, Qaa))
+    x2_ind_B = (
+        +16 * contract("sb,Qar,Qbs,ra", xt_B_sb, Qar, Qbs, tB_ra) -
+        4 * contract("sb,bc,sc", tA_sb, omegaA_bb, xt_B_sb) + 4 * contract("sb,cs,cb", tA_sb, omegaA_ss, xt_B_sb) -
+        2 * contract("bc,sc,sb", prop_B_bb, tA_sb, tA_sb) + 2 * contract("cs,cb,sb", prop_B_ss, tA_sb, tA_sb)
+        # X_B -> X_B + [W_B, C_B - C_B^\dagger]_1
+        + 4 * contract("sb,cd,de,Qes,Qbc", xt_B_sb, tA_sb.T, tA_sb, Qbs, Qbb) +
+        8 * contract("sb,cd,ec,Qde,Qbs", xt_B_sb, tA_sb.T, tA_sb, Qss, Qbs) -
+        4 * contract("sb,cd,ec,Qds,Qbe", xt_B_sb, tA_sb.T, tA_sb, Qss, Qbs) -
+        8 * contract("sb,cd,de,Qbs,Qec", xt_B_sb, tA_sb.T, tA_sb, Qbs, Qbb))
+
+    return float(x2_ind_A), float(x2_ind_B)
+
+
+def _ind2_r_terms(cache: dict, xt_A_ra: np.ndarray, xt_B_sb: np.ndarray, prop_A_aa: np.ndarray, prop_A_rr: np.ndarray,
+                  prop_B_bb: np.ndarray, prop_B_ss: np.ndarray, t_ra: np.ndarray,
+                  t_sb: np.ndarray) -> Tuple[float, float]:
+    """
+    The second-order induction terms of monomers A and B with the coupled (CPSCF)
+    induction amplitudes `t_ra` and `t_sb`, `x2_ind,r_A` and `x2_ind,r_B`: the
+    derivative of IND20,R.
+    """
+
+    Qaa, Qar, Qbb, Qbs, Qrr, Qss = (cache[key] for key in ("Qaa", "Qar", "Qbb", "Qbs", "Qrr", "Qss"))
+    omegaA_bb, omegaA_ss, omegaB_aa, omegaB_rr = (cache[key]
+                                                  for key in ("omegaA_bb", "omegaA_ss", "omegaB_aa", "omegaB_rr"))
+
+    x2_ind_r_A = (
+        +16 * contract("ra,Qar,Qbs,sb", xt_A_ra, Qar, Qbs, t_sb) - 4 * contract("ra,ac,rc", t_ra, omegaB_aa, xt_A_ra) +
+        4 * contract("ra,cr,ca", t_ra, omegaB_rr, xt_A_ra) - 2 * contract("ac,rc,ra", prop_A_aa, t_ra, t_ra) +
+        2 * contract("cr,ca,ra", prop_A_rr, t_ra, t_ra)
+        # 2 Re <C^{(1)}_A | W_A C^{[1]}_A C^{(1)}_A > + Re <C^{(1)}_A C^{(1)}_A | W_A C^{[1]}_A >
+        + 4 * contract("ra,cr,de,Qad,Qec", xt_A_ra, t_ra.T, t_ra, Qar, Qaa) +
+        4 * contract("ra,cd,de,Qer,Qac", xt_A_ra, t_ra.T, t_ra, Qar, Qaa) +
+        16 * contract("ra,ac,de,Qcr,Qed", xt_A_ra, t_ra.T, t_ra, Qrr, Qar) +
+        8 * contract("ra,cd,ec,Qde,Qar", xt_A_ra, t_ra.T, t_ra, Qrr, Qar) -
+        4 * contract("ra,ac,de,Qcd,Qer", xt_A_ra, t_ra.T, t_ra, Qrr, Qar) -
+        4 * contract("ra,cd,ec,Qdr,Qae", xt_A_ra, t_ra.T, t_ra, Qrr, Qar) -
+        16 * contract("ra,cr,de,Qed,Qac", xt_A_ra, t_ra.T, t_ra, Qar, Qaa) -
+        8 * contract("ra,cd,de,Qar,Qec", xt_A_ra, t_ra.T, t_ra, Qar, Qaa) +
+        4 * contract("ra,cr,de,Qae,Qcd", xt_A_ra, t_ra.T, t_ra, Qaa, Qar) -
+        4 * contract("ra,ac,de,Qec,Qrd", xt_A_ra, t_ra.T, t_ra, Qar, Qrr))
+
+    x2_ind_r_B = (
+        +16 * contract("sb,Qar,Qbs,ra", xt_B_sb, Qar, Qbs, t_ra) - 4 * contract("sb,bc,sc", t_sb, omegaA_bb, xt_B_sb) +
+        4 * contract("sb,cs,cb", t_sb, omegaA_ss, xt_B_sb) - 2 * contract("bc,sc,sb", prop_B_bb, t_sb, t_sb) +
+        2 * contract("cs,cb,sb", prop_B_ss, t_sb, t_sb)
+        # 2 Re <C^{(1)}_B | W_B C^{[1]}_B C^{(1)}_B > + Re <C^{(1)}_B C^{(1)}_B | W_B C^{[1]}_B >
+        + 4 * contract("sb,cs,de,Qbd,Qec", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb) +
+        4 * contract("sb,cd,de,Qes,Qbc", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb) +
+        16 * contract("sb,bc,de,Qcs,Qed", xt_B_sb, t_sb.T, t_sb, Qss, Qbs) +
+        8 * contract("sb,cd,ec,Qde,Qbs", xt_B_sb, t_sb.T, t_sb, Qss, Qbs) -
+        4 * contract("sb,bc,de,Qcd,Qes", xt_B_sb, t_sb.T, t_sb, Qss, Qbs) -
+        4 * contract("sb,cd,ec,Qds,Qbe", xt_B_sb, t_sb.T, t_sb, Qss, Qbs) -
+        16 * contract("sb,cs,de,Qed,Qbc", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb) -
+        8 * contract("sb,cd,de,Qbs,Qec", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb) +
+        4 * contract("sb,cs,de,Qbe,Qcd", xt_B_sb, t_sb.T, t_sb, Qbb, Qbs) -
+        4 * contract("sb,bc,de,Qec,Qsd", xt_B_sb, t_sb.T, t_sb, Qbs, Qss))
+
+    return float(x2_ind_r_A), float(x2_ind_r_B)
+
+
+def property_terms(cache: dict,
+                   operators: List[np.ndarray],
+                   wfn_A: core.Wavefunction,
+                   wfn_B: core.Wavefunction,
+                   conv: float,
+                   maxiter: int,
+                   coupled: bool = True,
+                   sinf: bool = False,
+                   second_order: bool = True) -> Dict[str, np.ndarray]:
+    """
+    The monomer, first-order and second-order induction SAPT property terms of each
+    operator.
 
     Parameters
     ----------
     cache
-        Intermediates from :py:func:`~psi4.driver.procrouting.sapt.sapt_prop_cache.build_prop_cache`.
+        Intermediates from :py:func:`~psi4.driver.procrouting.sapt.sapt_prop_cache.build_prop_cache`,
+        with the fitted 3-index integrals if `second_order`.
     operators
         AO matrices of the property components.
     wfn_A, wfn_B
         The monomer wavefunctions.
     conv, maxiter
         Convergence threshold and maximum number of iterations of the CPSCF equations.
+    coupled
+        Whether to compute the terms with the coupled (CPSCF) induction amplitudes too.
+        The ones with the uncoupled amplitudes are always computed.
+    sinf
+        Whether to compute the S^inf exchange-induction terms.
+    second_order
+        Whether to compute the second-order induction terms at all.
 
     Returns
     -------
@@ -149,29 +260,38 @@ def first_order_properties(cache: dict, operators: List[np.ndarray], wfn_A: core
         - "x1_exch,r_S2": first-order exchange in the S^2 approximation, the derivative
           of EXCH10(S^2);
         - "x1_exch,r": first-order exchange, the derivative of EXCH10;
+        - "x2_ind": second-order induction with the uncoupled amplitudes, the
+          derivative of IND20,U;
+        - "x2_exch-ind_S2", "x2_exch-ind": second-order exchange-induction with the
+          uncoupled amplitudes, S^2 and S^inf;
+        - "x2_ind,r", "x2_exch-ind,r_S2", "x2_exch-ind,r": the same with the coupled
+          amplitudes, if `coupled`;
 
-        and the parts of each first-order term from monomers A and B, keyed with "_A"
-        and "_B" appended.
+        and the parts of the first-order and the induction terms from monomers A and B,
+        keyed with "_A" and "_B" appended. The S^inf exchange-induction terms are there
+        only if `sinf`.
     """
 
     C_a, C_r = cache["C_a"], cache["C_r"]
     C_b, C_s = cache["C_b"], cache["C_s"]
+    eps_a, eps_r = cache["eps_a"], cache["eps_r"]
+    eps_b, eps_s = cache["eps_b"], cache["eps_s"]
 
     prop_A_aa = [C_a.T @ op @ C_a for op in operators]
     prop_A_ar = [C_a.T @ op @ C_r for op in operators]
     prop_B_bb = [C_b.T @ op @ C_b for op in operators]
     prop_B_bs = [C_b.T @ op @ C_s for op in operators]
 
-    # relaxed amplitudes of the monomers in the field of each operator
-    core.print_out(f"\n  ==> CPSCF of monomer A for {len(operators)} operators <==\n\n")
-    tstart = time.time()
-    xt_A = cpscf_batch(wfn_A, cache["eps_a"], cache["eps_r"], prop_A_ar, conv, maxiter)
-    core.print_out(f"\n    ...finished in {time.time() - tstart:.2f} seconds.\n")
-
-    core.print_out(f"\n  ==> CPSCF of monomer B for {len(operators)} operators <==\n\n")
-    tstart = time.time()
-    xt_B = cpscf_batch(wfn_B, cache["eps_b"], cache["eps_s"], prop_B_bs, conv, maxiter)
-    core.print_out(f"\n    ...finished in {time.time() - tstart:.2f} seconds.\n")
+    # relaxed amplitudes of the monomers in the field of each operator, solved together
+    # with the coupled induction amplitudes, the response of each monomer to the
+    # electrostatic potential of the other
+    induction = second_order and coupled
+    xt_A = _cpscf_round("A", wfn_A, eps_a, eps_r, prop_A_ar + ([cache["omegaB_ar"]] if induction else []), conv,
+                        maxiter, "operators" + (" and the induction amplitudes" if induction else ""))
+    xt_B = _cpscf_round("B", wfn_B, eps_b, eps_s, prop_B_bs + ([cache["omegaA_bs"]] if induction else []), conv,
+                        maxiter, "operators" + (" and the induction amplitudes" if induction else ""))
+    if induction:
+        t_ra, t_sb = xt_A.pop(), xt_B.pop()
 
     terms = {}
 
@@ -196,5 +316,50 @@ def first_order_properties(cache: dict, operators: List[np.ndarray], wfn_A: core
 
     for term in ("x1_pol,r", "x1_exch,r_S2", "x1_exch,r"):
         terms[term] = terms[f"{term}_A"] + terms[f"{term}_B"]
+
+    if not second_order:
+        return terms
+
+    prop_A_rr = [C_r.T @ op @ C_r for op in operators]
+    prop_B_ss = [C_s.T @ op @ C_s for op in operators]
+    components = range(len(operators))
+
+    def per_component(term, *args):
+        """`term` of every operator component, its arguments `args` then those of the component."""
+        return [
+            term(cache, xt_A[n], xt_B[n], *(arg[n] if isinstance(arg, list) else arg for arg in args))
+            for n in components
+        ]
+
+    # Second-order induction, with the uncoupled and the coupled amplitudes
+    ind_tags = [""]
+    parts = per_component(_ind2_terms, prop_A_aa, prop_A_rr, prop_B_bb, prop_B_ss)
+    terms["x2_ind_A"], terms["x2_ind_B"] = (np.array(part) for part in zip(*parts))
+    if coupled:
+        ind_tags.append(",r")
+        parts = per_component(_ind2_r_terms, prop_A_aa, prop_A_rr, prop_B_bb, prop_B_ss, t_ra, t_sb)
+        terms["x2_ind,r_A"], terms["x2_ind,r_B"] = (np.array(part) for part in zip(*parts))
+    for tag in ind_tags:
+        terms[f"x2_ind{tag}"] = terms[f"x2_ind{tag}_A"] + terms[f"x2_ind{tag}_B"]
+
+    # Second-order exchange-induction, S^2 and S^inf, with the coupled amplitudes and
+    # their derivatives from the CPSCF equations, then with the uncoupled ones
+    modes = [(True, t_ra, t_sb, ",r")] if coupled else []
+    modes.append((False, cache["tB_ra"], cache["tA_sb"], ""))
+    for mode_coupled, amps_ra, amps_sb, tag in modes:
+        u_ra = per_component(u_ra_amplitudes, prop_A_aa, prop_A_rr, amps_ra, mode_coupled)
+        u_sb = per_component(u_sb_amplitudes, prop_B_bb, prop_B_ss, amps_sb, mode_coupled)
+        if mode_coupled:
+            what = "derivatives of the induction amplitudes"
+            u_ra = _cpscf_round("A", wfn_A, eps_a, eps_r, [u.T for u in u_ra], conv, maxiter, what)
+            u_sb = _cpscf_round("B", wfn_B, eps_b, eps_s, [u.T for u in u_sb], conv, maxiter, what)
+
+        amplitudes = (u_ra, u_sb, amps_ra, amps_sb)
+        terms[f"x2_exch-ind{tag}_S2"] = np.array(per_component(exch_ind2_s2_property, *amplitudes))
+
+        # the S^inf expression holds the induction term as well
+        if sinf:
+            terms[f"x2_exch-ind{tag}"] = (np.array(per_component(exch_ind2_sinf_property, *amplitudes)) -
+                                          terms[f"x2_ind{tag}"])
 
     return terms

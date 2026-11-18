@@ -47,7 +47,7 @@ from ..proc import scf_helper
 from .sapt_proc import compute_GRAC_shift, sapt_dft
 from .sapt_prop_cache import build_prop_cache
 from .sapt_prop_operators import build_operators, validate_properties
-from .sapt_prop_terms import first_order_properties
+from .sapt_prop_terms import property_terms
 
 __all__ = ["run_sapt_property"]
 
@@ -56,23 +56,41 @@ __all__ = ["run_sapt_property"]
 _PROPERTY_CPHF_R_CONVERGENCE = 1.0e-10
 
 
-def _term_labels(name: str) -> dict:
-    """QCVariable labels of the property terms, keyed as in propSAPT.
+def _term_labels(name: str, second_order: bool, coupled: bool, sinf: bool) -> list:
+    """QCVariable labels of the property terms that are computed.
 
     The first-order polarization term is the derivative of the electrostatic energy,
     but as a property it is a change of the density, hence POL. SAPT0 terms carry the
     intramonomer correlation order, 0, as the second index; SAPT(DFT) terms do not.
+    Both exchange-induction variants are suffixed, (S^2) and (S^INF).
+
+    Returns
+    -------
+    list
+        (propSAPT key, label, whether the term has parts of monomers A and B) of each term.
     """
 
-    order = "10" if name == "sapt0" else "1"
-    return {
-        "x1_pol,r": f"POL{order},R",
-        "x1_exch,r_S2": f"EXCH{order}(S^2)",
-        "x1_exch,r": f"EXCH{order}",
-    }
+    first, second = ("10", "20") if name == "sapt0" else ("1", "2")
+    labels = [
+        ("x1_pol,r", f"POL{first},R", True),
+        ("x1_exch,r_S2", f"EXCH{first}(S^2)", True),
+        ("x1_exch,r", f"EXCH{first}", True),
+    ]
+    if not second_order:
+        return labels
+
+    # propSAPT's keys of the coupled (",r") and the uncoupled ("") induction amplitudes
+    modes = ([(",r", ",R")] if coupled else []) + [("", ",U")]
+    for tag, kind in modes:
+        labels.append((f"x2_ind{tag}", f"IND{second}{kind}", True))
+    for tag, kind in modes:
+        labels.append((f"x2_exch-ind{tag}_S2", f"EXCH-IND{second}{kind}(S^2)", False))
+        if sinf:
+            labels.append((f"x2_exch-ind{tag}", f"EXCH-IND{second}{kind}(S^INF)", False))
+    return labels
 
 
-def _print_header(name: str, properties: list):
+def _print_header(name: str, properties: list, second_order: bool, coupled: bool, sinf: bool):
     core.print_out("\n")
     core.print_out("         ---------------------------------------------------------\n")
     core.print_out("         " + "SAPT Interaction-Induced Properties".center(58) + "\n")
@@ -85,7 +103,41 @@ def _print_header(name: str, properties: list):
     core.print_out(f"   Properties              {', '.join(properties)}\n")
     core.print_out(f"   JK Algorithm            {core.get_global_option('SCF_TYPE'):>12s}\n")
     core.print_out(f"   CPHF R Convergence      {core.get_option('SAPT', 'CPHF_R_CONVERGENCE'):12.3e}\n")
+    core.print_out(f"   Second-Order Induction  {str(second_order):>12s}\n")
+    if second_order:
+        core.print_out(f"   Coupled Induction       {str(coupled):>12s}\n")
+        core.print_out(f"   S^inf Exch-Ind          {str(sinf):>12s}\n")
     core.print_out("\n")
+    if not second_order:
+        core.print_out(
+            "   The second-order induction properties are computed for SAPT0 only: with Kohn-Sham\n"
+            "   monomers, their expressions are not yet the field derivatives of the induction energies.\n\n")
+
+
+def _check_memory(wfn_A: core.Wavefunction, wfn_B: core.Wavefunction, df_basis: core.BasisSet, sinf: bool):
+    """Prints the memory the second-order terms keep, and raises if it is above the memory
+    Psi4 is given: the fitted 3-index integrals of both monomers and, for the S^inf
+    exchange-induction terms, an occ(A) occ(B) vir(A) vir(B) intermediate."""
+
+    naux = df_basis.nbf()
+    o_A, o_B = wfn_A.nalpha(), wfn_B.nalpha()
+    v_A, v_B = wfn_A.nmo() - o_A, wfn_B.nmo() - o_B
+    df_doubles = naux * (o_A * o_A + o_A * v_A + v_A * v_A + o_B * o_B + o_B * v_B + v_B * v_B)
+    sinf_doubles = o_A * o_B * v_A * v_B if sinf else 0
+    needed = 8 * (df_doubles + sinf_doubles)
+    available = core.get_memory()
+
+    gib = 1024.0**3
+    core.print_out("  ==> Memory <==\n\n")
+    core.print_out(f"   Fitted 3-index integrals [GiB]    {8 * df_doubles / gib:10.3f}\n")
+    if sinf:
+        core.print_out(f"   S^inf Exch-Ind intermediate [GiB] {8 * sinf_doubles / gib:10.3f}\n")
+    core.print_out(f"   Available [GiB]                   {available / gib:10.3f}\n\n")
+
+    if needed > available:
+        raise ValidationError(
+            f"SAPT properties: the second-order terms need at least {needed / gib:.2f} GiB of memory, "
+            f"but Psi4 is given {available / gib:.2f} GiB. Raise the memory with set_memory.")
 
 
 def _print_property(quantity, rows):
@@ -110,7 +162,10 @@ def run_sapt_property(name, **kwargs):
     linear in the one-particle density, the monomer values and the first-order
     polarization and exchange terms are set as QCVariables
     ``SAPT <TERM> <PROPERTY>``, with the parts of monomers A and B suffixed ``- A`` and
-    ``- B``. The SAPT interaction energy is computed too.
+    ``- B``. For SAPT0, so are the second-order induction and exchange-induction terms:
+    with the uncoupled induction amplitudes, and with the coupled ones unless
+    COUPLED_INDUCTION is false; S^2 and, with DO_IND_EXCH_SINF, S^inf. The SAPT
+    interaction energy is computed too.
     """
 
     name = name.lower()
@@ -147,6 +202,13 @@ def run_sapt_property(name, **kwargs):
     cphf_conv = core.get_option("SAPT", "CPHF_R_CONVERGENCE")
     maxiter = core.get_option("SAPT", "MAXITER")
 
+    # The second-order induction terms are SAPT0 only: with Kohn-Sham monomers, propSAPT
+    # v0.5.0's expressions take the field change of the Fock operator with the HF kernel,
+    # and miss the finite-field derivatives of the induction energies by about 1%.
+    second_order = name == "sapt0"
+    coupled = core.get_option("SAPT", "COUPLED_INDUCTION")
+    sinf = core.get_option("SAPT", "DO_IND_EXCH_SINF")
+
     # Get the molecule of interest
     molecule = kwargs.pop("molecule", core.get_active_molecule())
     sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(molecule, "dimer")
@@ -178,7 +240,7 @@ def run_sapt_property(name, **kwargs):
         core.set_variable("SAPT DFT GRAC SHIFT A", mon_a_shift)  # P::e SAPT
         core.set_variable("SAPT DFT GRAC SHIFT B", mon_b_shift)  # P::e SAPT
 
-    _print_header(name, properties)
+    _print_header(name, properties, second_order, coupled, sinf)
 
     # Monomer wavefunctions in the dimer-centered basis, sharing one J/K object
     core.IO.set_default_namespace("dimer")
@@ -215,12 +277,27 @@ def run_sapt_property(name, **kwargs):
     sapt_jk = wfn_B.jk()
     wfn_A.set_jk(sapt_jk)
 
+    # Fitting basis of the second-order terms, as for the SAPT0 energy
+    df_basis = None
+    if second_order:
+        df_basis = core.BasisSet.build(sapt_dimer, "DF_BASIS_SAPT", core.get_global_option("DF_BASIS_SAPT"), "RIFIT",
+                                       core.get_global_option("BASIS"))
+        dimer_wfn.set_basisset("DF_BASIS_SAPT", df_basis)
+        _check_memory(wfn_A, wfn_B, df_basis, sinf)
+
     # Property terms
     core.timer_on("SAPT properties: Properties")
     tstart = time.time()
     components, quantities = build_operators(properties, wfn_A.basisset(), sapt_dimer)
-    cache = build_prop_cache(wfn_A, wfn_B, sapt_jk)
-    terms = first_order_properties(cache, [c.matrix for c in components], wfn_A, wfn_B, cphf_conv, maxiter)
+    cache = build_prop_cache(wfn_A, wfn_B, sapt_jk, df_basis)
+    terms = property_terms(cache, [c.matrix for c in components],
+                           wfn_A,
+                           wfn_B,
+                           cphf_conv,
+                           maxiter,
+                           coupled=coupled,
+                           sinf=sinf,
+                           second_order=second_order)
 
     # monomer values with their nuclear parts
     charges_A = np.array([monomerA.Z(atom) for atom in range(monomerA.natom())])
@@ -229,10 +306,11 @@ def run_sapt_property(name, **kwargs):
         ("MONOMER A", terms["x0_A"] + np.array([c.nuclear(charges_A) for c in components])),
         ("MONOMER B", terms["x0_B"] + np.array([c.nuclear(charges_B) for c in components])),
     ]
-    for key, label in _term_labels(name).items():
+    for key, label, has_parts in _term_labels(name, second_order, coupled, sinf):
         rows.append((label, terms[key]))
-        rows.append((f"{label} - A", terms[f"{key}_A"]))
-        rows.append((f"{label} - B", terms[f"{key}_B"]))
+        if has_parts:
+            rows.append((f"{label} - A", terms[f"{key}_A"]))
+            rows.append((f"{label} - B", terms[f"{key}_B"]))
 
     core.print_out("\n  ==> Interaction-Induced Properties <==\n")
     for quantity in quantities:
