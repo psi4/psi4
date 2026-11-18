@@ -88,7 +88,7 @@ foreach(test_name aediis-1
                   pywrap-cbs1 pywrap-checkrun-convcrit pywrap-checkrun-rhf
                   pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1
                   pywrap-db3
-                  pywrap-molecule rasci-c2-active rasci-h2o
+                  pywrap-molecule rasci-c2-active rasci-h2o rasci-h2o+
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc
                   remp-energy1 remp-energy2
                   sapt-exch-disp-inf sapt-exch-ind-inf sapt-exch-ind30-inf
