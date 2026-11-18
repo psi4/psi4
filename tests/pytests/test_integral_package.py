@@ -1,7 +1,7 @@
 """INTEGRAL_PACKAGE validates the selected engine and falls back for unsupported integral types."""
 
 import pytest
-from addons import uusing
+from addons import using, uusing
 
 import psi4
 
@@ -52,3 +52,59 @@ def test_simint_falls_back_to_libint2(method, driver, options):
         assert psi4.compare_values(ref, res, 9, f"{method} energy, SIMINT vs LIBINT2")
     else:
         assert psi4.compare_values(ref, res, 8, f"{method} {driver.__name__}, SIMINT vs LIBINT2")
+
+
+@pytest.mark.parametrize(
+    "package,driver,options,expected",
+    [
+        pytest.param("libint2", psi4.energy, {"scf_type": "pk"}, "libint2", id="libint2-energy"),
+        pytest.param("simint", psi4.energy, {"scf_type": "pk"}, "simint", marks=using("simint"), id="simint-energy"),
+        pytest.param("simint", psi4.gradient, {"scf_type": "pk"}, "simint>libint2", marks=using("simint"),
+                     id="simint-gradient"),
+        pytest.param("libcint", psi4.energy, {"scf_type": "df"}, "libcint", marks=using("cint"), id="libcint-df-energy"),
+        pytest.param("libcint", psi4.gradient, {"scf_type": "pk"}, "libcint", marks=using("cint"),
+                     id="libcint-gradient"),
+    ],
+)
+def test_coulomb_eri_integrals_role(package, driver, options, expected):
+    """The wavefunction records which engines computed the plain ERIs, in order of precedence."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.geometry(_H2O)
+    psi4.set_options({"basis": "6-31g*", "integral_package": package})
+    psi4.set_options(options)
+    _, wfn = driver("hf", return_wfn=True)
+    assert wfn.module_role("coulomb_eri_integrals") == expected
+
+
+
+@uusing("simint")
+def test_coulomb_eri_integrals_role_sequential():
+    """Each driver call starts a fresh record: a SIMINT gradient followed by a SIMINT energy reports the
+    gradient's Libint2 derivative integrals on the first wavefunction only."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.geometry(_H2O)
+    psi4.set_options({"basis": "6-31g*", "scf_type": "pk", "integral_package": "simint"})
+    _, gwfn = psi4.gradient("hf", return_wfn=True)
+    _, ewfn = psi4.energy("hf", return_wfn=True)
+    assert gwfn.module_role("coulomb_eri_integrals") == "simint>libint2"
+    assert ewfn.module_role("coulomb_eri_integrals") == "simint"
+
+def test_coulomb_eri_integrals_role_in_schema():
+    """The role reaches QCSchema provenance, and each calculation starts a fresh record."""
+    psi4.core.clean()
+    psi4.core.clean_options()
+    psi4.set_options({"integral_package": "libint2"})
+    psi4.core.IntegralFactory.reset_coulomb_eri_engines()
+    atin = {
+        "molecule": {"symbols": ["O", "H", "H"], "geometry": [0, 0, 0.221, 0, 1.430, -0.883, 0, -1.430, -0.883]},
+        "specification": {
+            "driver": "energy",
+            "model": {"method": "hf", "basis": "6-31g*"},
+            "keywords": {"scf_type": "pk", "integral_package": "libint2"},
+        },
+    }
+    ret = psi4.schema_wrapper.run_qcschema(atin)
+    assert ret.success, ret.error
+    assert ret.provenance.model_dump().get("module_roles", {}).get("coulomb_eri_integrals") == "libint2"

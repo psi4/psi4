@@ -39,9 +39,11 @@ __all__ = [
     "import_ignorecase",
     "kwargs_lower",
     "mat2arr",
+    "merge_module_roles",
     "prepare_options_for_modules",
     "prepare_options_for_set_options",
     "provenance_stamp",
+    "set_wfn_module_roles",
     "state_to_atomicinput",
 ]
 
@@ -734,7 +736,10 @@ def expand_psivars(
                 print("""SUCCESS""")
 
 
-def provenance_stamp(routine: str, module: str = None) -> Dict[str, str]:
+def provenance_stamp(
+    routine: str,
+    module: Optional[Union[str, Dict[str, str]]] = None,
+) -> Dict[str, Any]:
     """Prepare QCSchema Provenance with |PSIfour| credentials.
 
     Parameters
@@ -742,18 +747,67 @@ def provenance_stamp(routine: str, module: str = None) -> Dict[str, str]:
     routine
         Name of driver function generating the QCSchema.
     module
-        Primary contributing |PSIfour| library, like ``ccenergy`` or ``dfmp2``.
+        Primary contributing |PSIfour| library (like ``ccenergy`` or ``dfmp2``), or a
+        ``module_roles`` mapping (as from :py:func:`psi4.core.Wavefunction.module_roles`
+        or :py:func:`merge_module_roles`) whose ``"qc_module"`` entry is copied to
+        ``provenance["module"]``.
 
     Returns
     -------
-    provenance : Dict[str, str]
+    provenance : Dict[str, Any]
         Dictionary satisfying QCSchema, with |PSIfour| credentials for creator
         and version.
         https://github.com/MolSSI/QCSchema/blob/master/qcschema/dev/definitions.py#L23-L41
 
     """
-    prov = {'creator': 'Psi4', 'version': __version__, 'routine': routine}
-    if module:
+    prov: Dict[str, Any] = {'creator': 'Psi4', 'version': __version__, 'routine': routine}
+    if isinstance(module, str) and module:
         prov["module"] = module
+    elif isinstance(module, dict) and module:
+        roles = {k: v for k, v in module.items() if v}
+        if roles.get("qc_module"):
+            prov["module"] = roles["qc_module"]
+        if roles:
+            prov["module_roles"] = roles
 
     return prov
+
+
+def merge_module_roles(provenances: Iterable[Any]) -> Dict[str, str]:
+    """Consolidate the ``module_roles`` of several results (e.g., findif displacements, CBS stages)
+    into one record: each role maps to its module if every result reporting that role agrees,
+    else to ``"(mixed)"``. Results that don't report a role don't vote on it.
+
+    Parameters
+    ----------
+    provenances
+        QCSchema Provenance models (or dicts) of the contributing results.
+
+    Returns
+    -------
+    module_roles : Dict[str, str]
+        Role to module, possibly empty.
+
+    """
+    seen = {}
+    for prov in provenances:
+        roles = prov.get("module_roles") if isinstance(prov, dict) else getattr(prov, "module_roles", None)
+        mod = prov.get("module") if isinstance(prov, dict) else getattr(prov, "module", None)
+        for role, val in (roles or {}).items():
+            if val:
+                seen.setdefault(role, set()).add(val)
+        if mod and not (roles and "qc_module" in roles):
+            seen.setdefault("qc_module", set()).add(mod)
+    return {role: next(iter(mods)) if len(mods) == 1 else "(mixed)" for role, mods in sorted(seen.items())}
+
+
+def set_wfn_module_roles(wfn: "core.Wavefunction", provenance: Any) -> None:
+    """Copy a provenance's ``module_roles`` (and ``module``) onto ``wfn``."""
+    roles = provenance.get("module_roles") if isinstance(provenance, dict) else getattr(provenance, "module_roles", None)
+    mod = provenance.get("module") if isinstance(prov := provenance, dict) else getattr(prov, "module", None)
+    if mod:
+        wfn.set_module(mod)
+    for role, val in (roles or {}).items():
+        if val:
+            wfn.set_module_role(role, val)
+

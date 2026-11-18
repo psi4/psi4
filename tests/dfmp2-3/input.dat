@@ -46,4 +46,5 @@ print(f"{roles=}")
 compare("dfmp2", wfn.module(), "primary")  #TEST
 compare("dfmp2", roles.pop("qc_module"), "qc_module")  #TEST
 compare("internal", roles.pop("orbital_optimizer"), "orbital_optimizer")  #TEST
+compare(psi4.get_global_option("INTEGRAL_PACKAGE").lower(), roles.pop("coulomb_eri_integrals"), "coulomb_eri_integrals")  #TEST
 compare(0, len(roles), "all modules asserted")  #TEST
