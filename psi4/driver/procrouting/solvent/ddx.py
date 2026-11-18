@@ -130,6 +130,7 @@ def get_ddx_options(molecule):
         "DFT_RADIAL_SCHEME": "BECKE",   # but this is so far untested with Psi4
         "DFT_PRUNING_SCHEME": "ROBUST",
         "DFT_BLOCK_SCHEME": "ATOMIC",
+        "DFT_GRID_NAME": "",  # don't inherit a named XC grid (SG0/SG1)
     }
     return {"model": model_options, "dielectric": dielectric_options,
             "solver": solver_options, "grid": grid_options}
