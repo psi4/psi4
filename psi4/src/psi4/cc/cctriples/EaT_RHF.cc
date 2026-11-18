@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <exception>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -210,14 +211,23 @@ double EaT_RHF() {
                                     thread_data_array[thread].first_ijk, thread_data_array[thread].last_ijk);
                 }
 
+                /* an exception (e.g., DPD out of memory) cannot leave an OpenMP region: keep the first one and
+                   rethrow it afterwards, rather than letting it terminate the process */
+                std::exception_ptr thread_error = nullptr;
 #pragma omp parallel num_threads(nthreads)
                 {
                     int ithread = 0;
 #ifdef _OPENMP
                     ithread = omp_get_thread_num();
 #endif
-                    if (ijk_part[ithread]) EaT_RHF_thread(&thread_data_array[ithread]);
+                    try {
+                        if (ijk_part[ithread]) EaT_RHF_thread(&thread_data_array[ithread]);
+                    } catch (...) {
+#pragma omp critical(cctriples_thread_error)
+                        if (!thread_error) thread_error = std::current_exception();
+                    }
                 }
+                if (thread_error) std::rethrow_exception(thread_error);
 
                 for (thread = 0; thread < nthreads; ++thread) ET += ET_array[thread];
 

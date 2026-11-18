@@ -131,6 +131,8 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance, int perm_pr, int
             p = File->params->roworb[h][row][0];
             q = File->params->roworb[h][row][1];
             bucket_map[p][q] = nbuckets - 1;
+            /* in a packed (p>=q) row space (q,p) is the same row; readers look either pair up */
+            if (q < nump && p < numq && File->params->rowidx[q][p] == row) bucket_map[q][p] = nbuckets - 1;
         }
     }
 

@@ -134,6 +134,8 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
             int p = I.params->roworb[h][row][0];
             int q = I.params->roworb[h][row][1];
             bucketMap[p][q] = nBuckets - 1;
+            /* in a packed (p>=q) row space (q,p) is the same row; readers look either pair up */
+            if (q < nump && p < numq && I.params->rowidx[q][p] == row) bucketMap[q][p] = nBuckets - 1;
         }
     }
 
@@ -286,6 +288,8 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
             int p = I.params->roworb[h][row][0];
             int q = I.params->roworb[h][row][1];
             bucketMap[p][q] = nBuckets - 1;
+            /* in a packed (p>=q) row space (q,p) is the same row; readers look either pair up */
+            if (q < nump && p < numq && I.params->rowidx[q][p] == row) bucketMap[q][p] = nBuckets - 1;
         }
     }
 
