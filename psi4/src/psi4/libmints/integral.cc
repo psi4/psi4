@@ -90,8 +90,8 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     bs3_ = bs3;
     bs4_ = bs4;
 
-    // Use the max am from libint
-    init_spherical_harmonics(8);
+    // Use the max am that the integral libraries will produce, but >14 won't fit in the type
+    init_spherical_harmonics(14);
 }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_overlap(int deriv) {
@@ -346,11 +346,26 @@ ShellRotation IntegralFactory::shell_rotation(int am, SymmetryOperation& so, int
     return r;
 }
 
+namespace {
+// Bounds-checked lookup: an out-of-range am (e.g., a pure l=15 shell from libcint) must not read past the end.
+template <class T>
+const T& checked_transform(const std::vector<T>& transforms, int am) {
+    if (am < 0 || am >= static_cast<int>(transforms.size()))
+        throw PSIEXCEPTION("IntegralFactory: pure (spherical) angular momentum " + std::to_string(am) +
+                           " exceeds the supported maximum of " + std::to_string(static_cast<int>(transforms.size()) - 1));
+    return transforms[am];
+}
+}  // namespace
+
+const SphericalTransform* IntegralFactory::spherical_transform(int am) const {
+    return &checked_transform(spherical_transforms_, am);
+}
+
 SphericalTransformIter* IntegralFactory::spherical_transform_iter(int am, int inv, int subl) const {
     if (subl != -1) throw NOT_IMPLEMENTED_EXCEPTION();
 
     if (inv) {
-        return new SphericalTransformIter(ispherical_transforms_[am]);
+        return new SphericalTransformIter(checked_transform(ispherical_transforms_, am));
     }
-    return new SphericalTransformIter(spherical_transforms_[am]);
+    return new SphericalTransformIter(checked_transform(spherical_transforms_, am));
 }

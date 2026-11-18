@@ -126,8 +126,6 @@ jobs:
           conda install cmake ^
                         conda-build ^
                         m2-sed ^
-                        eigen ^
-                        libboost-headers ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^
                         msgpack-python ^
@@ -143,7 +141,7 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        "libint<2.14" ^
+                        libint-cxx-devel ^
                         qcelemental ^
                         qcengine ^
                         qcmanybody ^
