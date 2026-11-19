@@ -2349,15 +2349,22 @@ Dimension Matrix::power(double alpha, double cutoff) {
 
         memcpy(static_cast<void *>(A1[0]), static_cast<void *>(A[0]), sizeof(double) * n * n);
 
-        // Eigendecomposition
+        // Eigendecomposition.  DSYEVR (MRRR) is many times faster than DSYEV for large n (e.g. DF
+        // fitting metrics) and, unlike DSYEVD, needs no O(n^2) workspace: eigenvectors go to A2.
+        int m;
+        std::vector<int> isuppz(2 * static_cast<size_t>(n));
         double lwork;
-        int stat = C_DSYEV('V', 'U', n, A1[0], n, a.data(), &lwork, -1);
-        std::vector<double> work((int)lwork);
-        stat = C_DSYEV('V', 'U', n, A1[0], n, a.data(), work.data(), (int)lwork);
+        int liwork;
+        int stat = C_DSYEVR('V', 'A', 'U', n, A1[0], n, 0.0, 0.0, 0, 0, 0.0, &m, a.data(), A2[0], n, isuppz.data(),
+                            &lwork, -1, &liwork, -1);
+        std::vector<double> work(static_cast<size_t>(lwork));
+        std::vector<int> iwork(liwork);
+        stat = C_DSYEVR('V', 'A', 'U', n, A1[0], n, 0.0, 0.0, 0, 0, 0.0, &m, a.data(), A2[0], n, isuppz.data(),
+                        work.data(), static_cast<int>(lwork), iwork.data(), liwork);
 
-        if (stat) throw PSIEXCEPTION("Matrix::power: C_DSYEV failed");
+        if (stat || m != n) throw PSIEXCEPTION("Matrix::power: C_DSYEVR failed");
 
-        memcpy(static_cast<void *>(A2[0]), static_cast<void *>(A1[0]), sizeof(double) * n * n);
+        memcpy(static_cast<void *>(A1[0]), static_cast<void *>(A2[0]), sizeof(double) * n * n);
 
         double max_a = (std::fabs(a[n - 1]) > std::fabs(a[0]) ? std::fabs(a[n - 1]) : std::fabs(a[0]));
         int remain = 0;
