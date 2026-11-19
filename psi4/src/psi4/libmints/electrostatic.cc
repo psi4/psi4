@@ -41,7 +41,7 @@ using Zxyz_vector = std::vector<std::pair<double, std::array<double, 3>>>;
 // Initialize potential_recur_ to +1 basis set angular momentum
 ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1,
                                    std::shared_ptr<BasisSet> bs2, int deriv)
-    : PotentialInt(st, bs1, bs2, deriv) {
+    : Libint2PotentialInt(st, bs1, bs2, deriv) {
     int max_am = std::max(basis1()->max_am(), basis2()->max_am());
     int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
 

@@ -39,20 +39,33 @@ class SphericalTransform;
 
 /*! \ingroup MINTS
  *  \class OverlapInt
- *  \brief This class computes overlap integrals and soon overlap integral derivatives.
+ *  \brief Overlap integrals and their first and second derivatives, whichever
+ *         library computes them (Libint2OverlapInt, LibcintOverlapInt).
  *  Use an IntegralFactory to create this object.
  */
 class OverlapInt : public OneBodyAOInt {
+   protected:
+    /// Checks deriv and sets the number of chunks of each derivative order; builds no integral engine.
+    OverlapInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv);
 
    public:
-    /// Constructor, it assumes you are not computing derivatives by default
-    OverlapInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     ~OverlapInt() override;
 
     /// Does the method provide first derivatives?
     bool has_deriv1() override { return true; }
     /// Does the method provide second derivatives?
     bool has_deriv2() override { return true; }
+};
+
+/*! \ingroup MINTS
+ *  \class Libint2OverlapInt
+ *  \brief Overlap integrals and their derivatives computed with Libint2.
+ */
+class Libint2OverlapInt : public OverlapInt {
+   public:
+    Libint2OverlapInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                      int deriv = 0);
+    ~Libint2OverlapInt() override;
 };
 
 }  // namespace psi

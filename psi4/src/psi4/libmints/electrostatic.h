@@ -44,7 +44,7 @@ class Vector3;
  *  \brief Computes potential integrals.
  * Use an IntegralFactory to create this object.
  */
-class ElectrostaticInt : public PotentialInt {
+class ElectrostaticInt : public Libint2PotentialInt {
 
    public:
     /// Constructor

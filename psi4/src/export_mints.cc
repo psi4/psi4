@@ -56,6 +56,7 @@
 #include "psi4/libmints/eri.h"
 #ifdef USING_cint
 #include "psi4/libmints/libcinteri.h"
+#include "psi4/libmints/libcintonebody.h"
 #endif
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/3coverlap.h"
@@ -1281,6 +1282,26 @@ void export_mints(py::module& m) {
     pyOneBodyAOInt
         .def("compute_shell", &OneBodyAOInt::compute_shell,
              "Compute integrals between basis functions in the given shell pair")
+        .def("compute_shell_deriv1", &OneBodyAOInt::compute_shell_deriv1,
+             "Compute first derivative integrals between basis functions in the given shell pair")
+        .def("compute_shell_deriv2", &OneBodyAOInt::compute_shell_deriv2,
+             "Compute second derivative integrals between basis functions in the given shell pair")
+        .def_property_readonly("nchunk", &OneBodyAOInt::nchunk,
+                               "Number of chunks of integrals, e.g. derivative components, of the last computation")
+        .def(
+            "shell_buffers",
+            [](OneBodyAOInt &self, int s1, int s2) {
+                // Shells s1 and s2 set the shape; the last compute_shell* call must have been for them.
+                const int n1 = self.basis1()->shell(s1).nfunction(), n2 = self.basis2()->shell(s2).nfunction();
+                std::vector<SharedMatrix> chunks;
+                for (const double *buf : self.buffers()) {
+                    auto M = std::make_shared<Matrix>(n1, n2);
+                    std::copy(buf, buf + static_cast<size_t>(n1) * n2, M->pointer()[0]);
+                    chunks.push_back(M);
+                }
+                return chunks;
+            },
+            "Copies of the chunks of integrals the last compute_shell* call computed, for that call's shells s1 and s2")
         .def("compute", vecmatrix_version(&OneBodyAOInt::compute),
              "Compute all integrals over both basis sets, and store them in the provided matrix")
         .def_property("origin", py::cpp_function(&OneBodyAOInt::origin), py::cpp_function(&OneBodyAOInt::set_origin),
@@ -1307,7 +1328,12 @@ void export_mints(py::module& m) {
     //        add_property("basis1", &OneBodySOInt::basis1, "The basis set on center one").
     //        add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
 
-    py::class_<OverlapInt, std::shared_ptr<OverlapInt>>(m, "OverlapInt", pyOneBodyAOInt, "Computes overlap integrals");
+    // IntegralFactory returns the concrete classes behind std::unique_ptr<OneBodyAOInt>; they are registered so
+    // that Python sees them as the semantic types (OverlapInt, KineticInt, PotentialInt) they derive from.
+    py::class_<OverlapInt, std::shared_ptr<OverlapInt>> pyOverlapInt(m, "OverlapInt", pyOneBodyAOInt,
+                                                                    "Computes overlap integrals");
+    py::class_<Libint2OverlapInt, std::shared_ptr<Libint2OverlapInt>>(m, "Libint2OverlapInt", pyOverlapInt,
+                                                                      "Computes overlap integrals with Libint2");
     py::class_<DipoleInt, std::shared_ptr<DipoleInt>>(m, "DipoleInt", pyOneBodyAOInt, "Computes dipole integrals");
     py::class_<QuadrupoleInt, std::shared_ptr<QuadrupoleInt>>(m, "QuadrupoleInt", pyOneBodyAOInt,
                                                               "Computes quadrupole integrals");
@@ -1317,9 +1343,27 @@ void export_mints(py::module& m) {
         m, "TracelessQuadrupoleInt", pyOneBodyAOInt, "Computes traceless quadrupole integrals");
     py::class_<ElectricFieldInt, std::shared_ptr<ElectricFieldInt>>(m, "ElectricFieldInt", pyOneBodyAOInt,
                                                                     "Computes electric field integrals");
-    py::class_<KineticInt, std::shared_ptr<KineticInt>>(m, "KineticInt", pyOneBodyAOInt, "Computes kinetic integrals");
-    py::class_<PotentialInt, std::shared_ptr<PotentialInt>>(m, "PotentialInt", pyOneBodyAOInt,
-                                                            "Computes potential integrals");
+    py::class_<KineticInt, std::shared_ptr<KineticInt>> pyKineticInt(m, "KineticInt", pyOneBodyAOInt,
+                                                                    "Computes kinetic integrals");
+    py::class_<Libint2KineticInt, std::shared_ptr<Libint2KineticInt>>(m, "Libint2KineticInt", pyKineticInt,
+                                                                      "Computes kinetic integrals with Libint2");
+    py::class_<PotentialInt, std::shared_ptr<PotentialInt>> pyPotentialInt(m, "PotentialInt", pyOneBodyAOInt,
+                                                                          "Computes potential integrals");
+    pyPotentialInt
+        .def("set_charge_field", &PotentialInt::set_charge_field,
+             "Set the field of point charges, a list of (charge, (x, y, z)); its size sets the number of chunks of "
+             "derivative integrals")
+        .def_property_readonly("charge_field", &PotentialInt::charge_field, "The field of point charges");
+    py::class_<Libint2PotentialInt, std::shared_ptr<Libint2PotentialInt>>(m, "Libint2PotentialInt", pyPotentialInt,
+                                                                          "Computes potential integrals with Libint2");
+#ifdef USING_cint
+    py::class_<LibcintOverlapInt, std::shared_ptr<LibcintOverlapInt>>(m, "LibcintOverlapInt", pyOverlapInt,
+                                                                      "Computes overlap integrals with libcint");
+    py::class_<LibcintKineticInt, std::shared_ptr<LibcintKineticInt>>(m, "LibcintKineticInt", pyKineticInt,
+                                                                      "Computes kinetic integrals with libcint");
+    py::class_<LibcintPotentialInt, std::shared_ptr<LibcintPotentialInt>>(
+        m, "LibcintPotentialInt", pyPotentialInt, "Computes potential integrals with libcint");
+#endif
     py::class_<ElectrostaticInt, std::shared_ptr<ElectrostaticInt>>(m, "ElectrostaticInt", pyOneBodyAOInt,
                                                                     "Computes electrostatic integrals");
     py::class_<NablaInt, std::shared_ptr<NablaInt>>(m, "NablaInt", pyOneBodyAOInt, "Computes nabla integrals");

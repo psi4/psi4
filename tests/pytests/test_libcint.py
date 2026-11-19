@@ -262,6 +262,13 @@ def test_libcint_diffuse_external_charge():
 
     assert compare_values(energy("libint2"), energy("libcint"), 9, "SCF with diffuse external charges")
 
+    def gradient(pkg):
+        psi4.set_options({"integral_package": pkg})
+        psi4.core.clean()
+        return np.asarray(psi4.gradient("scf", external_potentials=external))
+
+    assert compare_values(gradient("libint2"), gradient("libcint"), 8, "SCF gradient with diffuse external charges")
+
 
 @uusing("cint")
 @pytest.mark.parametrize("puream", [True, False])
@@ -608,3 +615,90 @@ def test_libcint_oei_diffuse_high_l(puream):
         ref = np.asarray(getattr(_mints("libint2", mol), name)())
         tst = np.asarray(getattr(_mints("libcint", mol), name)())
         assert compare_values(ref, tst, 12, f"diffuse G {name} puream={puream}")
+
+
+_OEI_FACTORIES = [("ao_overlap", "OverlapInt"), ("ao_kinetic", "KineticInt"), ("ao_potential", "PotentialInt")]
+
+
+def _factory(pkg, basis="cc-pvdz", puream=True):
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    psi4.set_options({"integral_package": pkg})
+    bas = psi4.core.BasisSet.build(mol, "ORBITAL", basis, puream=puream)
+    return psi4.core.IntegralFactory(bas), bas
+
+
+@uusing("cint")
+@pytest.mark.parametrize("name,semantic", _OEI_FACTORIES)
+def test_libcint_python_factory_oei(name, semantic):
+    """IntegralFactory's one-electron objects are the semantic Python types, whichever library computes
+    them, and compute the same matrices."""
+    import psi4
+
+    mats = {}
+    for pkg, library in [("libint2", "Libint2"), ("libcint", "Libcint")]:
+        fact, bas = _factory(pkg)
+        obj = getattr(fact, name)()
+        assert isinstance(obj, getattr(psi4.core, semantic)), f"{pkg} {name} is a {type(obj).__name__}"
+        assert type(obj).__name__ == library + semantic
+        M = psi4.core.Matrix(bas.nbf(), bas.nbf())
+        obj.compute([M])
+        mats[pkg] = M.np
+    assert np.abs(mats["libint2"]).max() > 1.e-1
+    assert compare_values(mats["libint2"], mats["libcint"], 12, f"factory {name}")
+
+
+@uusing("cint")
+@pytest.mark.parametrize("pkg", ["libint2", "libcint"])
+@pytest.mark.parametrize("name", [n for n, _ in _OEI_FACTORIES])
+def test_libcint_oei_deriv_order_checked(pkg, name):
+    """Asking an integral object for derivatives of a higher order than it was created for raises, rather
+    than writing past the blocks it allocated."""
+    fact, _ = _factory(pkg)
+    with pytest.raises(Exception, match="created for derivatives of order 0, not 1"):
+        getattr(fact, name)(0).compute_shell_deriv1(1, 0)
+    with pytest.raises(Exception, match="created for derivatives of order 1, not 2"):
+        getattr(fact, name)(1).compute_shell_deriv2(1, 0)
+    with pytest.raises(Exception, match=r"derivative order 3 is not in \[0, 2\]"):
+        getattr(fact, name)(3)
+
+
+@uusing("cint")
+@pytest.mark.parametrize("deriv", [0, 1, 2])
+@pytest.mark.parametrize("puream", [True, False])
+def test_libcint_potential_charge_field_chunks(deriv, puream):
+    """The number of chunks follows the charge field, before and after a computation, and both libraries
+    give the same derivative integrals for a field of another size than the nuclei."""
+    if deriv == 2:
+        _skip_without_libint2_hessian_ints()
+
+    def nchunk(ncharge):
+        ncoord = 3 * (2 + ncharge)
+        return [1, ncoord, ncoord * (ncoord + 1) // 2][deriv]
+
+    field = [(0.417, (2.0, 1.0, 0.5)), (-0.834, (-1.5, 2.5, -1.0))]
+    pairs = [(0, 0), (3, 1), (5, 4), (9, 2)]
+    results = {}
+    for pkg in ["libint2", "libcint"]:
+        fact, bas = _factory(pkg, puream=puream)
+        V = fact.ao_potential(deriv)
+        natom = bas.molecule().natom()
+        assert V.nchunk == nchunk(natom)
+        V.set_charge_field(field)
+        assert V.nchunk == nchunk(len(field))
+        compute = [V.compute_shell, V.compute_shell_deriv1, V.compute_shell_deriv2][deriv]
+        results[pkg] = []
+        for s1, s2 in pairs:
+            compute(s1, s2)
+            assert V.nchunk == nchunk(len(field))
+            chunks = V.shell_buffers(s1, s2)
+            assert len(chunks) == V.nchunk
+            results[pkg].append([c.np for c in chunks])
+        assert len(V.charge_field) == len(field)
+        V.set_charge_field(field + [(1.0, (0.0, 0.0, 3.0))])
+        assert V.nchunk == nchunk(len(field) + 1)
+    for (s1, s2), ref, tst in zip(pairs, results["libint2"], results["libcint"]):
+        for k, (r, t) in enumerate(zip(ref, tst)):
+            assert compare_values(r, t, 11, f"deriv {deriv} chunk {k} of shells ({s1}, {s2}), puream={puream}")
