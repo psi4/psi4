@@ -135,6 +135,9 @@ def name_dft_test(val):
     pytest.param(         'PW6B95', 0.4566580191, '6-31G'),  # Q-Chem
     pytest.param(           'PW91', 0.4573407123, '6-31G'),  # Q-Chem
     pytest.param(          'PWB6K', 0.4535664415, '6-31G', marks=pytest.mark.quick),  # Q-Chem
+    pytest.param(     'CAM-QTP-00', 0.4470684732, 'cc-pVDZ'),  # Psi4
+    pytest.param(     'CAM-QTP-01', 0.4536546376, 'cc-pVDZ'),  # Psi4
+    pytest.param(     'CAM-QTP-02', 0.4491464888, 'cc-pVDZ'),  # Psi4
     pytest.param(         'revPBE', 0.4527402025, '6-31G'),  # Q-Chem
     pytest.param(        'revPBE0', 0.4512137933, '6-31G'),  # Q-Chem
     pytest.param(        'revTPSS', 0.4499706673, '6-31G'),  # Q-Chem
@@ -150,6 +153,7 @@ def name_dft_test(val):
     pytest.param(          'TPSSh', 0.4505861795, '6-31G'),  # Q-Chem
     pytest.param(           'VSXC', 0.4547894146, '6-31G'),  # Q-Chem
     pytest.param(           'VV10', 0.4551366594, '6-31G'),  # Q-Chem
+    pytest.param(         'LC-QTP', 0.4557383782, 'cc-pVDZ'),  # Psi4
     pytest.param(           'wB97', 0.4561211941, '6-31G'),  # Q-Chem
     pytest.param(        'wB97M-V', 0.4544676075, '6-31G'),  # Q-Chem
     pytest.param(          'wB97X', 0.4564711283, '6-31G'),  # Q-Chem
@@ -258,6 +262,9 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(    'PW6B95', -0.0145444936,  '6-31G'),  #   Q-Chem
     pytest.param(      'PW91', -0.0160147465,  '6-31G'),  #   Q-Chem
     pytest.param(     'PWB6K', -0.0150275431,  '6-31G'),  #   Q-Chem
+    pytest.param('cam-QTP-00', -0.0137044263,  'cc-pVDZ'),  #   Psi4
+    pytest.param('cam-QTP-01', -0.0154208850,  'cc-pVDZ'),  #   Psi4
+    pytest.param('cam-QTP-02', -0.0156646743,  'cc-pVDZ'),  #   Psi4
     pytest.param(    'revPBE', -0.0129363604,  '6-31G'),  #   Q-Chem
     pytest.param(   'revPBE0', -0.0131251963,  '6-31G'),  #   Q-Chem
     pytest.param(   'revTPSS', -0.0140137038,  '6-31G'),  #   Q-Chem
@@ -273,6 +280,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(     'TPSSh', -0.0140808774,  '6-31G'),  #   Q-Chem
     pytest.param(      'VSXC', -0.0138314231,  '6-31G'),  #   Q-Chem
     pytest.param(      'VV10', -0.0160812898,  '6-31G'),  #   Q-Chem
+    pytest.param(    'LC-QTP', -0.0159109461,  'cc-pVDZ'),  #   Psi4
     pytest.param(      'wB97', -0.0160148410,  '6-31G'),  #   Q-Chem
     pytest.param('wB97M-D3BJ', -0.01351626999, 'cc-pVDZ', marks=using("dftd3")), #   Orca
     pytest.param(   'wB97M-V', -0.0152233456,  '6-31G'),  #   Q-Chem
