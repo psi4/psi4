@@ -334,19 +334,18 @@ size_t DiskDFJK::memory_temp() const {
     return mem;
 }
 int DiskDFJK::max_rows() const {
-    // Start with all memory
-    size_t mem = memory_;
-    // Subtract J/K/wK/C/D overhead
-    mem -= memory_overhead();
-    // Subtract threading temp overhead
-    mem -= memory_temp();
+    // Start with all memory, minus J/K/wK/C/D overhead and threading temp overhead
+    size_t used = memory_overhead() + memory_temp();
+    // In core mode the (Q|mn) tensor(s) are already resident; a row block adds only its E slices
+    if (is_core_) used += (do_wK_ ? 3L : 1L) * ((size_t)auxiliary_->nbf()) * n_function_pairs_;
+    size_t mem = (memory_ > used) ? memory_ - used : 0L;
 
     // How much will each row cost?
     size_t row_cost = 0L;
     // Copies of E tensor
     row_cost += (lr_symmetric_ ? 1L : 2L) * max_nocc() * primary_->nbf();
-    // Slices of Qmn tensor, including AIO buffer (NOTE: AIO not implemented yet)
-    row_cost += (is_core_ ? 1L : 1L) * n_function_pairs_;
+    // Out of core: slices of Qmn tensor, including AIO buffer (NOTE: AIO not implemented yet)
+    if (!is_core_) row_cost += n_function_pairs_;
 
     size_t max_rows = mem / row_cost;
 
