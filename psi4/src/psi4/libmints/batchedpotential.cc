@@ -119,20 +119,9 @@ void BatchedPotentialInt::boys(int L, size_t nk, const double* T, double* F, dou
 
 void BatchedPotentialInt::compute_cart_vrr(const libint2::Shell& sh1, const libint2::Shell& sh2, size_t npoints,
                                            const double* x, const double* y, const double* z) {
-    // Cartesian integrals by the generated Obara-Saika kernels of snk_integral_codegen (see snk/README.md), for
-    // the significant primitive pairs, over chunks of the points
+    // Cartesian integrals by the generated Obara-Saika VRR or HRR kernels of snk_integral_codegen (see
+    // snk/README.md), for the significant primitive pairs, over chunks of the points
     const int am1 = sh1.contr[0].l, am2 = sh2.contr[0].l;
-    if (am1 < am2) {
-        // the kernels are for am(A) >= am(B): compute the swapped pair, [c2][c1][k], and transpose
-        compute_cart_vrr(sh2, sh1, npoints, x, y, z);
-        const size_t ncart1 = comps_[am1].size(), ncart2 = comps_[am2].size();
-        vrr_out_.assign(cart_.begin(), cart_.end());
-        for (size_t c1 = 0; c1 < ncart1; ++c1)
-            for (size_t c2 = 0; c2 < ncart2; ++c2)
-                std::copy(&vrr_out_[(c2 * ncart1 + c1) * npoints], &vrr_out_[(c2 * ncart1 + c1) * npoints] + npoints,
-                          &cart_[(c1 * ncart2 + c2) * npoints]);
-        return;
-    }
     const int L = am1 + am2;
     const size_t ncart12 = comps_[am1].size() * comps_[am2].size();
     const double A[3] = {sh1.O[0], sh1.O[1], sh1.O[2]};
@@ -163,6 +152,24 @@ void BatchedPotentialInt::compute_cart_vrr(const libint2::Shell& sh1, const libi
         }
     }
     const int nprim = static_cast<int>(prim_p_.size());
+
+    // The kernel, by the rules of the preprint (sec. III B): HRR for more than two primitive pairs; for two, if
+    // am(A) + am(B) > 3 (and am(B) > 1 on the same center); for one, if am(A) + am(B) > 6; VRR otherwise. HRR
+    // kernels exist for am(A), am(B) >= 1, in either order; VRR kernels for am(A) >= am(B).
+    const bool hrr_exists = am1 >= 1 && am2 >= 1;
+    const bool use_hrr = hrr_exists && (nprim > 2 || (nprim == 2 && L > 3 && (!same_center || am2 > 1)) ||
+                                        (nprim == 1 && L > 6));
+    if (!use_hrr && am1 < am2) {
+        // VRR for the swapped pair, [c2][c1][k], transposed
+        compute_cart_vrr(sh2, sh1, npoints, x, y, z);
+        const size_t ncart1 = comps_[am1].size(), ncart2 = comps_[am2].size();
+        vrr_out_.assign(cart_.begin(), cart_.end());
+        for (size_t c1 = 0; c1 < ncart1; ++c1)
+            for (size_t c2 = 0; c2 < ncart2; ++c2)
+                std::copy(&vrr_out_[(c2 * ncart1 + c1) * npoints], &vrr_out_[(c2 * ncart1 + c1) * npoints] + npoints,
+                          &cart_[(c1 * ncart2 + c2) * npoints]);
+        return;
+    }
 
     cart_.assign(ncart12 * npoints, 0.0);
     if (nprim == 0) return;
@@ -209,12 +216,21 @@ void BatchedPotentialInt::compute_cart_vrr(const libint2::Shell& sh1, const libi
         }
 
         vrr_out_.resize(ncart12 * nk);
-        if (same_center)
-            snk::vrr_same_center[am1][am2](vrr_out_.data(), vrr_seed_.data(), prim_p_.data(), PGx, PGy, PGz, nprim,
-                                           static_cast<int>(nk));
-        else
+        const int gb = static_cast<int>(nk);
+        if (use_hrr) {
+            hrr_base_.resize(static_cast<size_t>(snk::hrr_base_size(am1, am2, same_center)) * nk);
+            if (same_center)
+                snk::hrr_same_center[am1][am2](vrr_out_.data(), hrr_base_.data(), vrr_seed_.data(), prim_p_.data(), PGx,
+                                               PGy, PGz, nprim, gb);
+            else
+                snk::hrr[am1][am2](vrr_out_.data(), hrr_base_.data(), vrr_seed_.data(), prim_p_.data(), PGx, PGy, PGz,
+                                   PAx.data(), PAy, PAz, A[0] - B[0], A[1] - B[1], A[2] - B[2], nprim, gb);
+        } else if (same_center) {
+            snk::vrr_same_center[am1][am2](vrr_out_.data(), vrr_seed_.data(), prim_p_.data(), PGx, PGy, PGz, nprim, gb);
+        } else {
             snk::vrr[am1][am2](vrr_out_.data(), vrr_seed_.data(), prim_p_.data(), PGx, PGy, PGz, PAx.data(), PAy, PAz,
-                               A[0] - B[0], A[1] - B[1], A[2] - B[2], nprim, static_cast<int>(nk));
+                               A[0] - B[0], A[1] - B[1], A[2] - B[2], nprim, gb);
+        }
         for (size_t c = 0; c < ncart12; ++c)
             std::copy(&vrr_out_[c * nk], &vrr_out_[c * nk] + nk, &cart_[c * npoints + k0]);
     }

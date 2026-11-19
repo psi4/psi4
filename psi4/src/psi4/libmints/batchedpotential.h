@@ -84,7 +84,8 @@ class PSI_API BatchedPotentialInt {
    private:
     /// F_n(T[k]) into F[n * nk + k], n <= L, for the nk arguments T; inv_T is nk doubles of work space
     void boys(int L, size_t nk, const double* T, double* F, double* inv_T) const;
-    /// Cartesian integrals into cart_, by the generated Obara-Saika kernels (angular momenta up to snk::max_am)
+    /// Cartesian integrals into cart_, by the generated Obara-Saika VRR or HRR kernels (angular momenta up to
+    /// snk::max_am)
     void compute_cart_vrr(const libint2::Shell& sh1, const libint2::Shell& sh2, size_t npoints, const double* x,
                           const double* y, const double* z);
     /// Cartesian integrals into cart_, by the McMurchie-Davidson scheme (any angular momenta)
@@ -116,7 +117,7 @@ class PSI_API BatchedPotentialInt {
     /// Work space of compute_cart_vrr: per significant primitive pair p, P, P - A, and (2 pi / p) U_p; P - A by
     /// direction; and for a chunk of points, P - G, T, the seeds, and the kernel's output
     std::vector<double> prim_p_, prim_P_, prim_PA_, prim_U_;
-    std::vector<double> vrr_PA_, vrr_PG_, vrr_T_, vrr_seed_, vrr_out_;
+    std::vector<double> vrr_PA_, vrr_PG_, vrr_T_, vrr_seed_, vrr_out_, hrr_base_;
 };
 
 /// The electrostatic potential integrals contracted with a density matrix at many points:
