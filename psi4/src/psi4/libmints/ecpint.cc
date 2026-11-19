@@ -55,7 +55,8 @@ namespace psi {
 ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv),
-      engine_(std::max(bs1->max_am(), bs2->max_am()), bs1->max_ecp_am(), deriv) {
+      // max_ecp_am() is -1 for a basis without ECPs (e.g., a SAD guess atom); libecpint >=1.1 needs >= 0
+      engine_(std::max(bs1->max_am(), bs2->max_am()), std::max(0, bs1->max_ecp_am()), deriv) {
     int maxam1 = bs1->max_am();
     int maxam2 = bs2->max_am();
 
