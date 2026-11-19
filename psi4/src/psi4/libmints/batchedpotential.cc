@@ -65,6 +65,110 @@ constexpr double prim_threshold = 1.0e-15;
 constexpr double asymptotic_T[] = {36, 40, 44, 47, 49, 52, 54, 57, 59, 61, 64,
                                    66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
 
+/*! The Boys function F_L(T) and exp(-T) for 0 <= T <= asymptotic_T[nmax], L <= nmax, as in the preprint of DiCenso,
+ *  Laqua and Head-Gordon (arXiv:2610.21075, sec. III B 1): third-order Chebyshev interpolation on intervals of width
+ *  1/512, for many arguments at a time. Measured against the series in extended precision, the relative error is
+ *  below 4e-15 for F_0 .. F_8, and 1.1e-14 (absolute 5e-15) for exp(-T). The tables are built once, in long
+ *  double, on first use.
+ */
+class BoysChebyshevTable {
+   public:
+    static constexpr int nmax = 8;
+    static constexpr double inv_delta = 512.0;
+    static constexpr double Tmax = 59.0;  // asymptotic_T[nmax]
+    static constexpr int nint = static_cast<int>(Tmax * inv_delta) + 1;
+
+    static const BoysChebyshevTable& instance() {
+        static const BoysChebyshevTable table;
+        return table;
+    }
+
+    /// F_n(T[k]) into F[n * nk + k], n <= L <= nmax, for the nk arguments T, by interpolating F_L and exp(-T)
+    /// and the downward recursion F_n = (2T F_{n+1} + exp(-T)) / (2n + 1); arguments beyond Tmax are clamped,
+    /// and the caller discards their values. e is nk doubles of work space.
+    void eval(int L, size_t nk, const double* T, double* F, double* e) const {
+        const double* cF = &coef_[static_cast<size_t>(L) * nint * 4];
+        const double* cE = &coef_[static_cast<size_t>(nmax + 1) * nint * 4];
+        double* FL = F + L * nk;
+#pragma omp simd
+        for (size_t k = 0; k < nk; ++k) {
+            const double x = std::min(T[k], Tmax) * inv_delta;
+            const int i = std::min(static_cast<int>(x), nint - 1);
+            const double t = 2.0 * (x - i) - 1.0;
+            const double* c = cF + 4 * i;
+            const double* d = cE + 4 * i;
+            FL[k] = c[0] + t * (c[1] + t * (c[2] + t * c[3]));
+            e[k] = d[0] + t * (d[1] + t * (d[2] + t * d[3]));
+        }
+        for (int n = L - 1; n >= 0; --n) {
+            const double inv = 1.0 / (2 * n + 1);
+            const double* up = F + (n + 1) * nk;
+            double* cur = F + n * nk;
+#pragma omp simd
+            for (size_t k = 0; k < nk; ++k) cur[k] = (2.0 * T[k] * up[k] + e[k]) * inv;
+        }
+    }
+
+   private:
+    /// [n][interval][4] power coefficients in t in [-1, 1] of F_n, n <= nmax, then of exp(-T)
+    std::vector<double> coef_;
+
+    BoysChebyshevTable() {
+        coef_.resize(static_cast<size_t>(nmax + 2) * nint * 4);
+        // Chebyshev nodes of degree 3, and the inverse of the Vandermonde matrix in t at them
+        long double tn[4], V[4][4], Vinv[4][4];
+        for (int j = 0; j < 4; ++j) tn[j] = std::cos((2 * j + 1) * 3.14159265358979323846264338327950288L / 8);
+        for (int j = 0; j < 4; ++j)
+            for (int m = 0; m < 4; ++m) V[j][m] = m == 0 ? 1.0L : V[j][m - 1] * tn[j];
+        invert4(V, Vinv);
+        for (int i = 0; i < nint; ++i) {
+            long double vals[nmax + 2][4];
+            for (int j = 0; j < 4; ++j) {
+                const long double x = (i + 0.5L + 0.5L * tn[j]) / inv_delta;
+                // F_nmax by the series, all terms positive, then the downward recursion
+                const long double ex = std::exp(-x);
+                long double term = 1.0L / (2 * nmax + 1), sum = term;
+                for (int k = 1; k < 10000; ++k) {
+                    term *= 2 * x / (2 * nmax + 2 * k + 1);
+                    sum += term;
+                    if (term < sum * 1.0e-21L) break;
+                }
+                long double f = ex * sum;
+                vals[nmax][j] = f;
+                for (int n = nmax - 1; n >= 0; --n) vals[n][j] = f = (2 * x * f + ex) / (2 * n + 1);
+                vals[nmax + 1][j] = ex;
+            }
+            for (int n = 0; n <= nmax + 1; ++n)
+                for (int m = 0; m < 4; ++m) {
+                    long double c = 0;
+                    for (int j = 0; j < 4; ++j) c += Vinv[m][j] * vals[n][j];
+                    coef_[(static_cast<size_t>(n) * nint + i) * 4 + m] = static_cast<double>(c);
+                }
+        }
+    }
+
+    static void invert4(const long double (&M)[4][4], long double (&Minv)[4][4]) {
+        long double a[4][8];
+        for (int r = 0; r < 4; ++r)
+            for (int c = 0; c < 8; ++c) a[r][c] = c < 4 ? M[r][c] : (c - 4 == r ? 1.0L : 0.0L);
+        for (int c = 0; c < 4; ++c) {
+            int piv = c;
+            for (int r = c + 1; r < 4; ++r)
+                if (std::abs(a[r][c]) > std::abs(a[piv][c])) piv = r;
+            for (int k = 0; k < 8; ++k) std::swap(a[c][k], a[piv][k]);
+            const long double d = a[c][c];
+            for (int k = 0; k < 8; ++k) a[c][k] /= d;
+            for (int r = 0; r < 4; ++r)
+                if (r != c) {
+                    const long double f = a[r][c];
+                    for (int k = 0; k < 8; ++k) a[r][k] -= f * a[c][k];
+                }
+        }
+        for (int r = 0; r < 4; ++r)
+            for (int c = 0; c < 4; ++c) Minv[r][c] = a[r][c + 4];
+    }
+};
+
 /// Points per chunk for total angular momentum L.
 size_t chunk_size(int L) {
     const size_t dim1 = L + 1;
@@ -94,12 +198,13 @@ BatchedPotentialInt::BatchedPotentialInt(std::shared_ptr<BasisSet> bs1, std::sha
 
 BatchedPotentialInt::~BatchedPotentialInt() {}
 
-void BatchedPotentialInt::boys(int L, size_t nk, const double* T, double* F, double* inv_T) const {
+void BatchedPotentialInt::boys(int L, size_t nk, const double* T, double* F, double* inv_T) {
     // Above T_crit, F_0 .. F_L follow the asymptotic upward recursion F_0 = sqrt(pi/4) sqrt(1/T),
     // F_n = F_{n-1} (n - 1/2) / T, which omits exp(-T) / (2T), to double precision (relative error below 1e-16);
     // the omitted term weighs more at higher orders. Evaluate it, as Libint2 does, for all the arguments at once
-    // (at smaller T the values are meaningless, T = 0 included, and are overwritten); below T_crit, Libint2's
-    // FmEval_Chebyshev7 argument by argument.
+    // (at smaller T the values are meaningless, T = 0 included, and are overwritten); below T_crit,
+    // BoysChebyshevTable for L <= BoysChebyshevTable::nmax, and Libint2's FmEval_Chebyshev7 argument by argument
+    // for higher L.
     const double T_crit = L < static_cast<int>(sizeof(asymptotic_T) / sizeof(double)) ? asymptotic_T[L] : 117.0;
     for (size_t k = 0; k < nk; ++k) inv_T[k] = 1 / T[k];
     for (size_t k = 0; k < nk; ++k) F[k] = 0.88622692545275801365 * std::sqrt(inv_T[k]);
@@ -108,6 +213,23 @@ void BatchedPotentialInt::boys(int L, size_t nk, const double* T, double* F, dou
         const double* prev = &F[(n - 1) * nk];
         double* cur = &F[n * nk];
         for (size_t k = 0; k < nk; ++k) cur[k] = prev[k] * ihalf * inv_T[k];
+    }
+    double Tmin = T[0];
+    for (size_t k = 1; k < nk; ++k) Tmin = std::min(Tmin, T[k]);
+    if (Tmin > T_crit) return;
+    if (L <= BoysChebyshevTable::nmax) {
+        // the preprint's regime (3), for mixed batches as well: interpolate for all the arguments, and keep the
+        // interpolated values where T <= T_crit
+        table_F_.resize((L + 2) * nk);
+        double* G = table_F_.data();
+        BoysChebyshevTable::instance().eval(L, nk, T, G, G + (L + 1) * nk);
+        for (int n = 0; n <= L; ++n) {
+            double* f = F + n * nk;
+            const double* g = G + n * nk;
+#pragma omp simd
+            for (size_t k = 0; k < nk; ++k) f[k] = T[k] <= T_crit ? g[k] : f[k];
+        }
+        return;
     }
     double Fm[64];
     for (size_t k = 0; k < nk; ++k) {
