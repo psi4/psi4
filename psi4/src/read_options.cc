@@ -1074,18 +1074,25 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Convergence criterion for residual of the CPHF/CPKS coefficients
           in the SAPT $E@@{ind,resp}^{(20)}$ term. This applies to
           wavefunction-based SAPT or SAPT(DFT). See |fisapt__cphf_r_convergence| for 
-          fragment-partitioned or intramolecular SAPT. -*/
+          fragment-partitioned or intramolecular SAPT. For :ref:`SAPT interaction-induced
+          properties <sec:saptprop>`, it applies to all their CPHF/CPKS equations, and it
+          defaults to 1e-10 unless set. -*/
         options.add_double("CPHF_R_CONVERGENCE", 1e-8);
 
         /*- Solve the CPHF equations to compute coupled induction and
             exchange-induction. These are not available for ROHF, and
             the option is automatically false in this case. In all other cases,
             coupled induction is strongly recommended. Only turn it off if the
-            induction energy is not going to be used.
+            induction energy is not going to be used. For SAPT0
+            :ref:`interaction-induced properties <sec:saptprop>`, false skips
+            the coupled induction and exchange-induction property terms, whose
+            uncoupled counterparts are computed either way.
             !expert -*/
         options.add_bool("COUPLED_INDUCTION", true);
 
-        /*- For SAPT0 or SAPT(DFT), compute the non-approximated second-order exchange-induction term. !expert -*/
+        /*- For SAPT0 or SAPT(DFT), compute the non-approximated second-order exchange-induction term.
+            For SAPT0 :ref:`interaction-induced properties <sec:saptprop>`, also compute its property
+            terms. !expert -*/
         options.add_bool("DO_IND_EXCH_SINF", false);
 
         /*- For SAPT0 or SAPT(DFT), compute the non-approximated second-order exchange-dispersion term. !expert -*/

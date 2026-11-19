@@ -716,6 +716,12 @@ def properties(*args, **kwargs):
     | cvs-adc(0), ...    |                                               |                |                                                               |
     | cvs-adc(3)         |                                               |                |                                                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | sapt0              | 0th-order SAPT, interaction-induced           | RHF            | dipole, quadrupole, multipole(n), esp_at_nuclei,              |
+    |                    | properties :ref:`[manual] <sec:saptprop>`     |                | mulliken_charges, lowdin_charges                              |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | sapt(dft)          | SAPT upon KS reference, interaction-induced   | RKS            | as sapt0, first-order terms only                              |
+    |                    | properties :ref:`[manual] <sec:saptprop>`     |                |                                                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
 
     :type name: str
     :param name: ``'ccsd'`` || etc.
