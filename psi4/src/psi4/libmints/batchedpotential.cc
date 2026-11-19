@@ -35,6 +35,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mcmurchiedavidson.h"
+#include "psi4/libmints/snk/snk_kernels.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 
@@ -93,17 +94,140 @@ BatchedPotentialInt::BatchedPotentialInt(std::shared_ptr<BasisSet> bs1, std::sha
 
 BatchedPotentialInt::~BatchedPotentialInt() {}
 
-void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const double* x, const double* y,
-                                      const double* z) {
-    const libint2::Shell& sh1 = bs1_->l2_shell(s1);
-    const libint2::Shell& sh2 = bs2_->l2_shell(s2);
+void BatchedPotentialInt::boys(int L, size_t nk, const double* T, double* F, double* inv_T) const {
+    // Above T_crit, F_0 .. F_L follow the asymptotic upward recursion F_0 = sqrt(pi/4) sqrt(1/T),
+    // F_n = F_{n-1} (n - 1/2) / T, which omits exp(-T) / (2T), to double precision (relative error below 1e-16);
+    // the omitted term weighs more at higher orders. Evaluate it, as Libint2 does, for all the arguments at once
+    // (at smaller T the values are meaningless, T = 0 included, and are overwritten); below T_crit, Libint2's
+    // FmEval_Chebyshev7 argument by argument.
+    const double T_crit = L < static_cast<int>(sizeof(asymptotic_T) / sizeof(double)) ? asymptotic_T[L] : 117.0;
+    for (size_t k = 0; k < nk; ++k) inv_T[k] = 1 / T[k];
+    for (size_t k = 0; k < nk; ++k) F[k] = 0.88622692545275801365 * std::sqrt(inv_T[k]);
+    for (int n = 1; n <= L; ++n) {
+        const double ihalf = double(n) - double(0.5);
+        const double* prev = &F[(n - 1) * nk];
+        double* cur = &F[n * nk];
+        for (size_t k = 0; k < nk; ++k) cur[k] = prev[k] * ihalf * inv_T[k];
+    }
+    double Fm[64];
+    for (size_t k = 0; k < nk; ++k) {
+        if (T[k] > T_crit) continue;
+        fm_eval_->eval(Fm, T[k], L);
+        for (int n = 0; n <= L; ++n) F[n * nk + k] = Fm[n];
+    }
+}
+
+void BatchedPotentialInt::compute_cart_vrr(const libint2::Shell& sh1, const libint2::Shell& sh2, size_t npoints,
+                                           const double* x, const double* y, const double* z) {
+    // Cartesian integrals by the generated Obara-Saika kernels of snk_integral_codegen (see snk/README.md), for
+    // the significant primitive pairs, over chunks of the points
+    const int am1 = sh1.contr[0].l, am2 = sh2.contr[0].l;
+    if (am1 < am2) {
+        // the kernels are for am(A) >= am(B): compute the swapped pair, [c2][c1][k], and transpose
+        compute_cart_vrr(sh2, sh1, npoints, x, y, z);
+        const size_t ncart1 = comps_[am1].size(), ncart2 = comps_[am2].size();
+        vrr_out_.assign(cart_.begin(), cart_.end());
+        for (size_t c1 = 0; c1 < ncart1; ++c1)
+            for (size_t c2 = 0; c2 < ncart2; ++c2)
+                std::copy(&vrr_out_[(c2 * ncart1 + c1) * npoints], &vrr_out_[(c2 * ncart1 + c1) * npoints] + npoints,
+                          &cart_[(c1 * ncart2 + c2) * npoints]);
+        return;
+    }
+    const int L = am1 + am2;
+    const size_t ncart12 = comps_[am1].size() * comps_[am2].size();
+    const double A[3] = {sh1.O[0], sh1.O[1], sh1.O[2]};
+    const double B[3] = {sh2.O[0], sh2.O[1], sh2.O[2]};
+    const bool same_center = A[0] == B[0] && A[1] == B[1] && A[2] == B[2];
+    const double AB2 = (A[0] - B[0]) * (A[0] - B[0]) + (A[1] - B[1]) * (A[1] - B[1]) + (A[2] - B[2]) * (A[2] - B[2]);
+
+    // the significant primitive pairs: exponent p, center P, P - A, and seed prefactor (2 pi / p) U_p
+    prim_p_.clear();
+    prim_P_.clear();
+    prim_PA_.clear();
+    prim_U_.clear();
+    for (size_t p1 = 0; p1 < sh1.nprim(); ++p1) {
+        const double a = sh1.alpha[p1], ca = sh1.contr[0].coeff[p1];
+        for (size_t p2 = 0; p2 < sh2.nprim(); ++p2) {
+            const double b = sh2.alpha[p2], cb = sh2.contr[0].coeff[p2];
+            const double p = a + b;
+            const double prefac = 2.0 * M_PI * ca * cb / p;
+            const double U = prefac * std::exp(-a * b / p * AB2);
+            if (std::abs(U) < prim_threshold) continue;
+            prim_p_.push_back(p);
+            for (int i = 0; i < 3; ++i) {
+                const double Pi = (a * A[i] + b * B[i]) / p;
+                prim_P_.push_back(Pi);
+                prim_PA_.push_back(Pi - A[i]);
+            }
+            prim_U_.push_back(U);
+        }
+    }
+    const int nprim = static_cast<int>(prim_p_.size());
+
+    cart_.assign(ncart12 * npoints, 0.0);
+    if (nprim == 0) return;
+
+    // P - A by direction, as the kernels take them
+    std::vector<double>& PAx = vrr_PA_;
+    PAx.resize(3 * nprim);
+    double *PAy = PAx.data() + nprim, *PAz = PAy + nprim;
+    for (int q = 0; q < nprim; ++q) {
+        PAx[q] = prim_PA_[3 * q];
+        PAy[q] = prim_PA_[3 * q + 1];
+        PAz[q] = prim_PA_[3 * q + 2];
+    }
+
+    constexpr size_t vrr_chunk = 128;
+    const size_t nseed = static_cast<size_t>(L + 1);
+    for (size_t k0 = 0; k0 < npoints; k0 += vrr_chunk) {
+        const size_t nk = std::min(vrr_chunk, npoints - k0);
+        // per primitive pair: P - G for the points, T, and the seeds (2 pi / p) U_p F_N(T)
+        vrr_PG_.resize(3 * nprim * nk);
+        vrr_seed_.resize(nprim * nseed * nk);
+        vrr_T_.resize(2 * nk);
+        if (boys_.size() < nseed * nk) boys_.resize(nseed * nk);
+        double* PGx = vrr_PG_.data();
+        double* PGy = PGx + nprim * nk;
+        double* PGz = PGy + nprim * nk;
+        for (int q = 0; q < nprim; ++q) {
+            const double p = prim_p_[q];
+            const double* P = &prim_P_[3 * q];
+            double* gx = PGx + q * nk;
+            double* gy = PGy + q * nk;
+            double* gz = PGz + q * nk;
+            double* T = vrr_T_.data();
+            for (size_t k = 0; k < nk; ++k) {
+                gx[k] = P[0] - x[k0 + k];
+                gy[k] = P[1] - y[k0 + k];
+                gz[k] = P[2] - z[k0 + k];
+                T[k] = p * (gx[k] * gx[k] + gy[k] * gy[k] + gz[k] * gz[k]);
+            }
+            boys(L, nk, T, boys_.data(), T + nk);
+            double* seed = &vrr_seed_[q * nseed * nk];
+            const double U = prim_U_[q];
+            for (size_t i = 0; i < nseed * nk; ++i) seed[i] = U * boys_[i];
+        }
+
+        vrr_out_.resize(ncart12 * nk);
+        if (same_center)
+            snk::vrr_same_center[am1][am2](vrr_out_.data(), vrr_seed_.data(), prim_p_.data(), PGx, PGy, PGz, nprim,
+                                           static_cast<int>(nk));
+        else
+            snk::vrr[am1][am2](vrr_out_.data(), vrr_seed_.data(), prim_p_.data(), PGx, PGy, PGz, PAx.data(), PAy, PAz,
+                               A[0] - B[0], A[1] - B[1], A[2] - B[2], nprim, static_cast<int>(nk));
+        for (size_t c = 0; c < ncart12; ++c)
+            std::copy(&vrr_out_[c * nk], &vrr_out_[c * nk] + nk, &cart_[c * npoints + k0]);
+    }
+}
+
+void BatchedPotentialInt::compute_cart_md(const libint2::Shell& sh1, const libint2::Shell& sh2, size_t npoints,
+                                          const double* x, const double* y, const double* z) {
+    // Cartesian integrals by the McMurchie-Davidson scheme, for shells of any angular momentum
     const int am1 = sh1.contr[0].l, am2 = sh2.contr[0].l;
     const int L = am1 + am2;
     const auto& comps1 = comps_[am1];
     const auto& comps2 = comps_[am2];
     const size_t ncart1 = comps1.size(), ncart2 = comps2.size();
-
-    // => Cartesian integrals, [c1][c2][k] <= //
 
     cart_.assign(ncart1 * ncart2 * npoints, 0.0);
 
@@ -112,10 +236,6 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
     const size_t dim2 = static_cast<size_t>(dim1) * dim1 * dim1;  // (t, u, v) box
     if (R_.size() < dim1 * dim2 * nchunk_max) R_.resize(dim1 * dim2 * nchunk_max);
     if (boys_.size() < (dim1 + 2) * nchunk_max) boys_.resize((dim1 + 2) * nchunk_max);
-    double Fm[64];  // Boys function values of one point, F_0 .. F_L
-    // Above T_crit, F_0 .. F_L follow the asymptotic upward recursion, which omits exp(-T) / (2T), to double
-    // precision (relative error below 1e-16); the omitted term weighs more at higher orders.
-    const double T_crit = L < static_cast<int>(sizeof(asymptotic_T) / sizeof(double)) ? asymptotic_T[L] : 117.0;
 
     // E coefficient layout of fill_E_matrix for these angular momenta
     const int edim2 = am2 + 1, edim3 = am1 + am2 + 2;
@@ -146,29 +266,13 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
                     return R + ((n * dim2) + address_3d(t, u, v, dim1, dim1)) * nk;
                 };
 
-                // Boys function F_n(T_k), T_k = p |P - C_k|^2, into boys_[n][k]. Above T_crit, the upward
-                // recursion F_0 = sqrt(pi/4) sqrt(1/T), F_n = F_{n-1} (n - 1/2) / T, as Libint2 evaluates it,
-                // for all the points at once (at smaller T the values are meaningless, T = 0 included, and are
-                // overwritten); below it, Libint2 point by point.
+                // Boys function F_n(T_k), T_k = p |P - C_k|^2, into boys_[n][k]
                 double* T = &boys_[(L + 1) * nk];
-                double* inv_T = T + nk;
                 for (size_t k = 0; k < nk; ++k) {
                     const double PCx = P[0] - x[k0 + k], PCy = P[1] - y[k0 + k], PCz = P[2] - z[k0 + k];
                     T[k] = p * (PCx * PCx + PCy * PCy + PCz * PCz);
                 }
-                for (size_t k = 0; k < nk; ++k) inv_T[k] = 1 / T[k];
-                for (size_t k = 0; k < nk; ++k) boys_[k] = 0.88622692545275801365 * std::sqrt(inv_T[k]);
-                for (int n = 1; n <= L; ++n) {
-                    const double ihalf = double(n) - double(0.5);
-                    const double* prev = &boys_[(n - 1) * nk];
-                    double* cur = &boys_[n * nk];
-                    for (size_t k = 0; k < nk; ++k) cur[k] = prev[k] * ihalf * inv_T[k];
-                }
-                for (size_t k = 0; k < nk; ++k) {
-                    if (T[k] > T_crit) continue;
-                    fm_eval_->eval(Fm, T[k], L);
-                    for (int n = 0; n <= L; ++n) boys_[n * nk + k] = Fm[n];
-                }
+                boys(L, nk, T, boys_.data(), T + nk);
                 // R^n_000 = (-2p)^n F_n (eq 9.9.14)
                 double fac = 1.0;
                 for (int n = 0; n <= L; ++n) {
@@ -249,6 +353,22 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
                 }
             }
         }
+    }
+}
+
+void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const double* x, const double* y,
+                                      const double* z) {
+    const libint2::Shell& sh1 = bs1_->l2_shell(s1);
+    const libint2::Shell& sh2 = bs2_->l2_shell(s2);
+    const int am1 = sh1.contr[0].l, am2 = sh2.contr[0].l;
+    const size_t ncart1 = comps_[am1].size(), ncart2 = comps_[am2].size();
+
+    // => Cartesian integrals, [c1][c2][k] <= //
+
+    if (am1 <= snk::max_am && am2 <= snk::max_am) {
+        compute_cart_vrr(sh1, sh2, npoints, x, y, z);
+    } else {
+        compute_cart_md(sh1, sh2, npoints, x, y, z);
     }
 
     // => Spherical transforms, one index at a time <= //
