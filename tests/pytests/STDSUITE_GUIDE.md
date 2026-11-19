@@ -73,6 +73,7 @@ QCEngine (matched by hash). It cannot add new systems/blocks; those must go into
 ```
 test_<mtd>_<drv>_<type>(inp, dertype, basis, subjects, ...)
   -> _processor(): picks the molecule by reference, resolves per-dertype "error"/"wrong"/"xptd"/"marks",
+                   copies the row's keywords, merges _system_keywords(basis, method, driver, dertype, ...),
                    sets keywords.basis and function_kwargs.dertype
   -> runner_asserter():
        * module skips (detci only for cc-pvdz; ECP-basis CD rows; ...)
@@ -102,6 +103,12 @@ See the ADVICE comment at the top of `test_standard_suite.py`. Short version:
 * Error tuples `_pNN = (ExceptionType, regex, human_reason)`; `wrong` tuples `_wNN = (QCVariable, reason)`.
 * dertypes: `grd1/grd0`, `hes2/hes1/hes0`. FD dertypes carry `findif` and usually `nonroutine` (skipped unless
   `--runnonroutine`). `hes2` usually carries `d2ints` (needs Libint2 second-derivative ERIs).
+* **Where keywords are set:** in `test_standard_suite.py`, never in the runner (beyond its always-on block of
+  `points`/`fd_project`/... and the commented "reference generation" block). A keyword that belongs to one row goes in
+  that `pytest.param`. One that depends on a combination of axes (basis x method/row x dertype, e.g., a system's DFT
+  grid, or tighter convergence for its CC gradients by energies) goes in `_system_keywords()`, with *why* and numbers in
+  a comment. The runner keeps skips, tolerances, and memory. `_processor` hands the runner a fresh keywords dict,
+  because a param's dict is shared by all of that row's basis/dertype instances (in-place edits leak between them).
 * **Param ids must not contain dashes** in the basis-row id; stdsuite tooling splits test ids on dashes
   (hence `id="def2ecp"`, not `"def2-svp"`).
 
@@ -136,8 +143,9 @@ pytest test_standard_suite.py -m "ecp" --runnonroutine -n 12
    dummy df corl type HF uses), DF-AE-DF, and CD-*-DF if CD is in scope. Correlated tests need FC twins.
 3. psi4: add the `basis, subjects` row to each `*_module` test you cover, with marks
    `[*using("<addon>"), pytest.mark.<topic>]` (+ `pytest.mark.long` where FD runs are routine and expensive).
-4. If the system needs special handling (skips, tolerances, FD options), key it off one flag in the runner
-   (e.g., `is_ecp = basis in [...]`) and comment *why* with numbers.
+4. If the system needs special handling, comment *why* with numbers. Skips, tolerances, and memory: key them off one
+   flag in the runner (e.g., `is_ecp = basis in [...]`). Keywords (FD options, grids, convergence): add them to
+   `_system_keywords()` in `test_standard_suite.py` under the system's basis (Sec. 5).
 5. Generate refs (7c), insert, run, triage (Sec. 8).
 
 ### 7c. Generating reference values
@@ -151,8 +159,10 @@ pytest test_standard_suite.py -m "ecp" --runnonroutine -n 12
   * two modules for the same quantity (ccenergy vs fnocc; dfmp2 vs dfocc; occ vs ccenergy ROHF-MP2);
   * DF/CD vs CONV within `atol_conv`.
 * When analytic and FD disagree, **don't** store either until you know which one is right (Sec. 8).
-* FD caveats (see 8): default findif displaces in *mass-weighted* coordinates; for heavy atoms use
-  `disp_mass_weight false` for gradients-from-energies; FD-of-energies Hessians of *non-variational*
+* FD caveats (see 8): default findif displaces in *mass-weighted* coordinates, so energy noise reaches a heavy
+  atom's gradient amplified ~sqrt(m) more than with Cartesian steps. With clean (PK/CONV) energies both agree with
+  analytic to ~1e-9; with DF energies on I (~1e-9 Eh roughness), only `disp_mass_weight false` passes 1e-6 for
+  gradients-from-energies (ECP rows get it from `_system_keywords()`). FD-of-energies Hessians of *non-variational*
   (correlated) energies on heavy atoms are noise-limited, so prefer FD-of-analytic-gradients.
 
 ## 8. Triage: failure message -> likely meaning

@@ -182,12 +182,6 @@ def runner_asserter(inp, subject, method, basis, tnm):
     if is_ecp:
         # ccenergy ccsd(t) gradient for ch2i2 exhausts the 500 MiB default (and 4 GiB) w/ dpd_block_matrix: No memory left
         psi4.set_memory("8 GiB" if (qc_module_in == "psi4-ccenergy" and driver == "gradient") else "2 GiB")
-        # mass-weighted steps move I only disp_size/sqrt(127), amplifying (DF) energy noise ~sqrt(m) in grd0 gradients
-        psi4.set_options({"disp_mass_weight": False})
-        if is_dft:
-            # around ECP I, (99,590) leaves svwn/pbe grd1 vs grd0 at ~4.5e-6, (200,974) at ~5e-7. refs at (200,974).
-            #   TODO: GGA exchange (b88, pbe-x) near ECP centers still ~1.5e-5 at (200,974); under investigation.
-            inp["keywords"].update({"dft_radial_points": 200, "dft_spherical_points": 974})
     extra_kwargs = inp["keywords"].pop("function_kwargs", {})
 
     if "error" in inp:

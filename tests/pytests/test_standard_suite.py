@@ -6248,6 +6248,30 @@ def test_b2plyp_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, r
 #  <<<  Common functions
 
 
+def _system_keywords(basis, method, driver, dertype, keywords):
+    """Keywords a system needs that depend on more than one parametrize axis (basis x row x dertype), so can't be
+    written into a single pytest.param. Keyword *setting* belongs here (or in the params), not in the runner, which
+    keeps only its always-on block and per-system memory/findif settings.
+
+    """
+    kw = {}
+    if basis == "def2-svp":
+        # ECP systems ch2i2/ch2i
+        if driver == "gradient" and dertype == 0:
+            # DF energies with I carry ~1e-9 Eh deterministic roughness (jkfit metric cond ~1e9), and mass-weighted steps
+            #   move I only disp_size/sqrt(127), amplifying it ~11x more: rhf df grd0 2.2e-6 mass-weighted vs 1.6e-7 Cartesian
+            kw["disp_mass_weight"] = False
+        if driver == "gradient" and dertype == 0 and keywords.get("cc_type") == "df" and method in ["ccsd", "ccsd(t)"]:
+            # at default conv, dfocc uhf fc ccsd/ccsd(t) amplitude noise leaves ch2i grd0 1.2-1.5e-6 from analytic; tight ~6e-8
+            kw.update({"e_convergence": 12, "d_convergence": 11, "r_convergence": 11})
+        if method in ["svwn", "pbe", "b3lyp", "wb97x", "b3lyp5", "b2plyp"]:
+            # default (75,302) grid leaves ch2i2 dft grd1 vs grd0 at ~1.5e-4 (also ch2br2 all-electron ~8e-5, so heavy-atom
+            #   angular grid, not ECP). (99,974) and (200,974) bring svwn/pbe to ~5e-7. b3lyp (b88 near ECP I) still 7.5e-6 at
+            #   (200,974), 1.7e-6 at (300,974). no ECP DFT rows or refs yet; any refs must be computed at this grid.
+            kw.update({"dft_radial_points": 200, "dft_spherical_points": 974})
+    return kw
+
+
 def _processor(inp, dertype, basis, subjects, clsd_open_pmols, request, method, driver):
     """For each pytest.param in this file, takes its input dictionary, inserts additional param
     fields like molecule, basis, dertype, inserts per-test fields like method and driver, sets up
@@ -6281,6 +6305,8 @@ def _processor(inp, dertype, basis, subjects, clsd_open_pmols, request, method, 
 
     inpcopy["driver"] = driver
     inpcopy["call"] = method
+    # fresh dict: the param's own keywords dict is shared by every basis/dertype instance of the row
+    inpcopy["keywords"] = {**inp["keywords"], **_system_keywords(basis, method, driver, dertype, inp["keywords"])}
     inpcopy["keywords"]["basis"] = basis
     inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}
     # print("INP", inpcopy)
