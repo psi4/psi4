@@ -30,7 +30,9 @@
 #define _psi4_libmints_libcintonebody_h
 
 #include <array>
+#include <cstdint>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -56,10 +58,13 @@ class BasisSet;
  *  cartesian and the spherical shells are transformed here with psi4's solid
  *  harmonics, as in LibcintTwoElectronInt.
  *
- *  The point charges come first in libcint's atom table, ahead of the centers of
- *  the basis functions, so that int1e_nuc, which sums over the first natm atoms,
- *  sums over the charges alone. They use libcint's fractional-charge model, which
- *  takes any charge, negative ones included.
+ *  The basis description is built once. Every kernel but int1e_nuc sees only the
+ *  basis atoms; the rinv kernels take the one charge they need through
+ *  set_rinv_origin. int1e_nuc sums over the first natm atoms of its atom table, so
+ *  it gets a table of its own with the charges first and the basis atoms after
+ *  them, rebuilt only when it is used after the charges changed. The charges use
+ *  libcint's fractional-charge model, which takes any charge, negative ones
+ *  included.
  */
 class LibcintOneBodyEngine {
    public:
@@ -70,7 +75,8 @@ class LibcintOneBodyEngine {
 
     using ChargeField = std::vector<std::pair<double, std::array<double, 3>>>;
 
-    LibcintOneBodyEngine(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2);
+    LibcintOneBodyEngine(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                         const ChargeField &Zxyz = {});
 
     /// Set the point charges int1e_nuc sums over.
     void set_charges(const ChargeField &Zxyz);
@@ -83,21 +89,27 @@ class LibcintOneBodyEngine {
     int nfunction2(int s2) const;
 
     /// Compute each component c of kernel k for bra shell s1 and ket shell s2, into
-    /// out[c] in psi4's layout, scaled by scale; add to out[c] if accumulate. If
-    /// swap, the ket function takes libcint's first slot, the one ip
-    /// differentiates, but out[c] stays bra-major. Returns the number of components.
-    int compute(Kernel k, int s1, int s2, bool swap, double scale, bool accumulate, double *const *out);
+    /// out[c] in psi4's layout, scaled by scale. If swap, the ket function takes
+    /// libcint's first slot, the one ip differentiates, but out[c] stays bra-major.
+    void compute(Kernel k, int s1, int s2, bool swap, double scale, double *const *out);
 
    private:
     std::shared_ptr<BasisSet> bs1_;
     std::shared_ptr<BasisSet> bs2_;
     ChargeField charges_;
 
-    /// libcint's atom, shell and environment arrays: the charges' atoms, then those
-    /// of bs1 and of bs2 (once, if they are the same basis set).
+    /// libcint's atom, shell and environment arrays for the basis atoms and shells of
+    /// bs1 and of bs2 (once, if they are the same basis set). env_ holds the basis
+    /// description in its first basis_env_size_ entries and the charges after it.
     std::vector<int> atm_;
     std::vector<int> bas_;
     std::vector<double> env_;
+    size_t basis_env_size_;
+    /// int1e_nuc's atom and shell arrays: the charges' atoms, then atm_; bas_ with its
+    /// atoms shifted past the charges. Stale while nuc_stale_.
+    std::vector<int> nuc_atm_;
+    std::vector<int> nuc_bas_;
+    bool nuc_stale_;
     /// libcint bas index of shell 0 of bs1 and of bs2
     int bas_start1_;
     int bas_start2_;
@@ -112,13 +124,17 @@ class LibcintOneBodyEngine {
     /// psi4 cartesian -> spherical transforms by angular momentum (used when mixed_).
     std::vector<SphericalTransform> sph_trans_;
 
-    /// libcint's output, and a shell pair being repacked and transformed.
+    /// libcint's output, and a shell pair being transformed (used when mixed_).
     std::vector<double> cint_buf_;
     std::vector<double> pair_;
     std::vector<double> scratch_;
+    /// libcint's working memory, reused across calls, and the size libcint asks for
+    /// by kernel and by the angular momentum and number of primitives of each shell.
+    std::vector<double> cache_;
+    std::unordered_map<uint64_t, size_t> cache_sizes_;
 
-    /// (Re)build atm_/bas_/env_ from the charges and the two basis sets.
-    void build_environment();
+    /// Bring nuc_atm_, nuc_bas_ and the charges in env_ up to date with charges_.
+    void build_nuc_tables();
     int nfunction(int g) const;
 };
 
@@ -129,6 +145,7 @@ class LibcintOneBodyEngine {
  */
 class LibcintOverlapInt : public OverlapInt {
     LibcintOneBodyEngine engine_;
+    /// The public result blocks of the largest shell pair, then private scratch.
     std::vector<double> store_;
 
    public:
@@ -147,6 +164,7 @@ class LibcintOverlapInt : public OverlapInt {
  */
 class LibcintKineticInt : public KineticInt {
     LibcintOneBodyEngine engine_;
+    /// The public result blocks of the largest shell pair, then private scratch.
     std::vector<double> store_;
 
    public:
@@ -162,13 +180,15 @@ class LibcintKineticInt : public KineticInt {
  *  \class LibcintPotentialInt
  *  \brief Potential integrals of a field of point charges (by default, the
  *         nuclei of the bra basis's molecule) and their first and second
- *         derivatives, computed with libcint, in PotentialInt's layout: the
- *         derivatives are with respect to the bra center, the ket center, and
- *         then each charge in turn.
+ *         derivatives, computed with libcint, in PotentialInt's layout.
  */
 class LibcintPotentialInt : public PotentialInt {
     LibcintOneBodyEngine engine_;
+    /// The public result blocks of the largest shell pair, then private scratch.
     std::vector<double> store_;
+
+    /// Size store_ for the current field.
+    void resize_store();
 
    public:
     LibcintPotentialInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,

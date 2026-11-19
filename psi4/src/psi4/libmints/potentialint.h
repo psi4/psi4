@@ -51,7 +51,7 @@ class BasisSet;
  *
  * NB: This code must be specified in the .h file in order for the compiler to properly in-line the functors. (TDC)
  */
-class PCMPotentialInt : public PotentialInt {
+class PCMPotentialInt : public Libint2PotentialInt {
 
     std::vector<std::unique_ptr<libint2::Engine>> engines_;
    public:
