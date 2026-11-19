@@ -41,24 +41,35 @@ class SphericalTransform;
 
 /*! \ingroup MINTS
  *  \class KineticInt
- *  \brief Computes kinetic integrals.
+ *  \brief Kinetic energy integrals and their first and second derivatives,
+ *         whichever library computes them (Libint2KineticInt, LibcintKineticInt).
  *
  * Use an IntegralFactory to create this object.
  */
 class KineticInt : public OneBodyAOInt {
+   protected:
+    /// Checks deriv and sets the number of chunks of each derivative order; builds no integral engine.
+    KineticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv);
 
    public:
-    //! Constructor. Do not call directly, use an IntegralFactory.
-    KineticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
-    //! Virtual destructor.
     ~KineticInt() override;
 
     /// Does the method provide first derivatives?
     bool has_deriv1() override { return true; }
-
-    /// Does the method provide first derivatives?
+    /// Does the method provide second derivatives?
     bool has_deriv2() override { return true; }
+};
 
+/*! \ingroup MINTS
+ *  \class Libint2KineticInt
+ *  \brief Kinetic energy integrals and their derivatives computed with Libint2.
+ */
+class Libint2KineticInt : public KineticInt {
+   public:
+    //! Constructor. Do not call directly, use an IntegralFactory.
+    Libint2KineticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                      int deriv = 0);
+    ~Libint2KineticInt() override;
 };
 
 }  // namespace psi

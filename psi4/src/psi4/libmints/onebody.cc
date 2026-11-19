@@ -85,70 +85,18 @@ static void transform1e_2(int am, SphericalTransformIter &sti, double *s, double
 }  // namespace
 
 std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr<BasisSet> bs1,
-                                                                 std::shared_ptr<BasisSet> bs2, double threshold) {
-    const auto nsh1 = bs1->nshell();
-    const auto nsh2 = bs2->nshell();
-    const auto bs1_equiv_bs2 = (bs1 == bs2);
-    auto nthreads = Process::environment.get_n_threads();
+                                                                 std::shared_ptr<BasisSet> bs2) {
+    const int nsh1 = bs1->nshell();
+    const int nsh2 = bs2->nshell();
+    const bool bs1_equiv_bs2 = (bs1 == bs2);
 
-    // construct the 2-electron repulsion integrals engine
-    using libint2::Engine;
-    std::vector<Engine> engines;
-    engines.reserve(nthreads);
-    engines.emplace_back(libint2::Operator::overlap, std::max(bs1->max_nprimitive(), bs2->max_nprimitive()),
-                         std::max(bs1->max_am(), bs2->max_am()), 0);
-    for (size_t i = 1; i != nthreads; ++i) {
-        engines.push_back(engines[0]);
+    std::vector<std::pair<int, int>> pairs;
+    pairs.reserve(bs1_equiv_bs2 ? static_cast<size_t>(nsh1) * (nsh1 + 1) / 2 : static_cast<size_t>(nsh1) * nsh2);
+    for (int s1 = 0; s1 < nsh1; ++s1) {
+        const int s2_max = bs1_equiv_bs2 ? s1 : nsh2 - 1;
+        for (int s2 = 0; s2 <= s2_max; ++s2) pairs.emplace_back(s1, s2);
     }
-    std::vector<std::vector<std::pair<int, int>>> threads_sp_list(nthreads);
-
-    threshold *= threshold;
-    //TODO: Eventually we need to make sure we set the threshold appropriately.  When set to zero, all pairs
-    // are considered, as they were previously.  Turning this to some function of the integral screening
-    // threshold will start to screen out some integrals, breaking some of the more sensitive test cases in
-    // the process.  Therefore this should be done separately from the integral rewrite.
-    threshold = 0.0;
-
-#pragma omp parallel num_threads(nthreads)
-    {
-        int thread_id = 0;
-#ifdef _OPENMP
-        thread_id = omp_get_thread_num();
-#endif
-        auto &engine = engines[thread_id];
-        const auto &buf = engine.results();
-
-        // loop over permutationally-unique set of shells
-        for (auto s1 = 0l, s12 = 0l; s1 != nsh1; ++s1) {
-            auto n1 = bs1->shell(s1).nfunction();
-
-            auto s2_max = bs1_equiv_bs2 ? s1 : nsh2 - 1;
-            for (auto s2 = 0; s2 <= s2_max; ++s2, ++s12) {
-                if (s12 % nthreads != thread_id) continue;
-
-                auto on_same_center = (bs1->shell(s1).center() == bs2->shell(s2).center());
-                bool significant = on_same_center;
-                if (!on_same_center) {
-                    auto n2 = bs2->shell(s2).nfunction();
-                    engines[thread_id].compute(bs1->l2_shell(s1), bs2->l2_shell(s2));
-                    double normsq = std::inner_product(buf[0], buf[0] + n1 * n2, buf[0], 0.0);
-                    significant = (normsq >= threshold);
-                }
-
-                if (significant) {
-                    threads_sp_list[thread_id].push_back(std::make_pair(s1, s2));
-                }
-            }
-        }
-    }  // end of compute
-
-    for (int thread = 1; thread < nthreads; ++thread) {
-        for (const auto &pair : threads_sp_list[thread]) {
-            threads_sp_list[0].push_back(pair);
-        }
-    }
-
-    return threads_sp_list[0];
+    return pairs;
 }
 
 OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, std::shared_ptr<BasisSet> bs1,
@@ -162,8 +110,24 @@ OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms
     tformbuf_ = new double[buffsize];
     target_ = new double[buffsize];
 
-    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    shellpairs_ = build_shell_pair_list_no_spdata(bs1, bs2, threshold);
+    shellpairs_ = build_shell_pair_list_no_spdata(bs1, bs2);
+}
+
+void OneBodyAOInt::require_deriv_range(const char *name, int max_deriv) const {
+    if (deriv_ < 0 || deriv_ > max_deriv)
+        throw PSIEXCEPTION(std::string(name) + ": derivative order " + std::to_string(deriv_) +
+                           " is not in [0, " + std::to_string(max_deriv) + "].");
+}
+
+void OneBodyAOInt::require_deriv(int order) const {
+    if (deriv_ < order)
+        throw PSIEXCEPTION("OneBodyAOInt: the integral object was created for derivatives of order " +
+                           std::to_string(deriv_) + ", not " + std::to_string(order) + ".");
+}
+
+void OneBodyAOInt::set_two_center_chunks() {
+    set_chunks(deriv_ == 2 ? 21 : (deriv_ == 1 ? 6 : 1));
+    buffers_.assign(nchunk_, nullptr);
 }
 
 OneBodyAOInt::~OneBodyAOInt() {
@@ -327,15 +291,13 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
         int p1 = pair.first;
         int p2 = pair.second;
 
-        const auto &s1 = bs1_->l2_shell(p1);
-        const auto &s2 = bs2_->l2_shell(p2);
         int ni = bs1_->shell(p1).nfunction();
         int nj = bs2_->shell(p2).nfunction();
         int i_offset = bs1_->shell_to_basis_function(p1);
         int j_offset = bs2_->shell_to_basis_function(p2);
 
         // Compute the shell
-        compute_pair(s1, s2);
+        compute_shell(p1, p2);
 
         // For each integral that we got put in its contribution
         for (int r = 0; r < nchunk_; ++r) {
@@ -360,12 +322,14 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2) {
 }
 
 void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2) {
+    require_deriv(1);
     const auto &s1 = bs1_->l2_shell(sh1);
     const auto &s2 = bs2_->l2_shell(sh2);
     compute_pair_deriv1(s1, s2);
 }
 
 void OneBodyAOInt::compute_shell_deriv2(int sh1, int sh2) {
+    require_deriv(2);
     const auto &s1 = bs1_->l2_shell(sh1);
     const auto &s2 = bs2_->l2_shell(sh2);
     compute_pair_deriv2(s1, s2);

@@ -62,6 +62,7 @@
 
 #ifdef USING_cint
 #include "psi4/libmints/libcinteri.h"
+#include "psi4/libmints/libcintonebody.h"
 #endif
 
 using namespace psi;
@@ -94,8 +95,25 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     init_spherical_harmonics(14);
 }
 
+namespace {
+void require_compiled_in(const std::string &package);
+
+/// Whether INTEGRAL_PACKAGE asks for libcint, which computes the overlap, kinetic, and potential integrals too.
+/// Stops if it does in a build without libcint.
+bool libcint_requested() {
+    const auto package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    require_compiled_in(package);
+    return package == "LIBCINT";
+}
+}  // namespace
+
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_overlap(int deriv) {
-    return std::make_unique<OverlapInt>(spherical_transforms_, bs1_, bs2_, deriv);
+    if (libcint_requested()) {
+#ifdef USING_cint
+        return std::make_unique<LibcintOverlapInt>(spherical_transforms_, bs1_, bs2_, deriv);
+#endif
+    }
+    return std::make_unique<Libint2OverlapInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 std::unique_ptr<OneBodySOInt> IntegralFactory::so_overlap(int deriv) {
@@ -106,7 +124,12 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_overlap(int deriv) {
 std::unique_ptr<ThreeCenterOverlapInt> IntegralFactory::overlap_3c() { return std::make_unique<ThreeCenterOverlapInt>(bs1_, bs2_, bs3_); }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_kinetic(int deriv) {
-    return std::make_unique<KineticInt>(spherical_transforms_, bs1_, bs2_, deriv);
+    if (libcint_requested()) {
+#ifdef USING_cint
+        return std::make_unique<LibcintKineticInt>(spherical_transforms_, bs1_, bs2_, deriv);
+#endif
+    }
+    return std::make_unique<Libint2KineticInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 std::unique_ptr<OneBodySOInt> IntegralFactory::so_kinetic(int deriv) {
@@ -115,7 +138,12 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_kinetic(int deriv) {
 }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_potential(int deriv) {
-    return std::make_unique<PotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
+    if (libcint_requested()) {
+#ifdef USING_cint
+        return std::make_unique<LibcintPotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
+#endif
+    }
+    return std::make_unique<Libint2PotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 std::unique_ptr<OneBodySOInt> IntegralFactory::so_potential(int deriv) {

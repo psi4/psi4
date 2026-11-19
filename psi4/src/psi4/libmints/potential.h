@@ -44,25 +44,50 @@ class CdSalcList;
 
 /*! \ingroup MINTS
  *  \class PotentialInt
- *  \brief Computes potential integrals.
- * Use an IntegralFactory to create this object.
+ *  \brief Potential integrals of a field of point charges (by default, the nuclei
+ *         of the bra basis's molecule) and their first and second derivatives,
+ *         whichever library computes them (Libint2PotentialInt, LibcintPotentialInt).
+ *
+ *  The derivatives are with respect to the bra center, the ket center, and then
+ *  each charge in turn: 3 (2 + ncharge) first derivatives, and the upper triangle
+ *  of the matrix of those coordinates for the second derivatives.
  */
 class PotentialInt : public OneBodyAOInt {
-
    protected:
     /// The charges and locations that define the external potential
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz_;
 
+    /// Checks deriv and sets the field to the nuclei of the bra basis's molecule; builds no integral engine.
+    PotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv);
+
+    /// The number of chunks of the derivatives deriv_ asks for, for the current field.
+    int field_chunks() const;
+
    public:
-    /// Constructor. Assumes nuclear centers/charges as the potential
-    PotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     ~PotentialInt() override;
 
-    /// Set the field of charges
-    void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz);
+    /// Set the field of charges. Its size sets the number of chunks of derivative integrals.
+    virtual void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz);
+    /// The field of charges
+    const std::vector<std::pair<double, std::array<double, 3>>>& charge_field() const { return Zxyz_; }
 
     /// Does the method provide first derivatives?
     bool has_deriv1() override { return true; }
+    /// Does the method provide second derivatives?
+    bool has_deriv2() override { return true; }
+};
+
+/*! \ingroup MINTS
+ *  \class Libint2PotentialInt
+ *  \brief Potential integrals and their derivatives computed with Libint2.
+ */
+class Libint2PotentialInt : public PotentialInt {
+   public:
+    Libint2PotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                        int deriv = 0);
+    ~Libint2PotentialInt() override;
+
+    void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz) override;
 };
 
 class PotentialSOInt : public OneBodySOInt {
