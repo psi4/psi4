@@ -621,15 +621,25 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         potential_->compute_Vx(Dx, Vx);
     }
 
+    // External CPSCF perturbations (PCM, PE, DDX, ...) respond to the perturbed charge density Dx_a + Dx_b and act on
+    // both spins, like J: one summed potential per vector.
     std::vector<SharedMatrix> V_ext_pert;
     for (const auto& pert : external_cpscf_perturbations_) {
         if (print_ > 1) outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
-        for (size_t i = 0; i < nvecs; i++) {
-            auto Dx_a = linalg::doublet(Cl[i], Cr[i], false, true);
-            auto Dx_b = linalg::doublet(Cl[nvecs + i], Cr[nvecs + i], false, true);
-            V_ext_pert.push_back(pert.second(Dx_a));
-            V_ext_pert.push_back(pert.second(Dx_b));
+    }
+    for (size_t i = 0; i < nvecs && !external_cpscf_perturbations_.empty(); i++) {
+        auto Dx = linalg::doublet(Cl[i], Cr[i], false, true);
+        Dx->add(linalg::doublet(Cl[nvecs + i], Cr[nvecs + i], false, true));
+        SharedMatrix V;
+        for (const auto& pert : external_cpscf_perturbations_) {
+            auto Vp = pert.second(Dx);
+            if (V) {
+                V->add(Vp);
+            } else {
+                V = Vp->clone();
+            }
         }
+        V_ext_pert.push_back(V);
     }
 
     Cl.clear();
@@ -675,8 +685,8 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                 J[nvecs + i]->axpy(-beta, wK[nvecs + i]->transpose());
             }
             if (V_ext_pert.size()) {
-                J[i]->axpy(2.0, V_ext_pert[2 * i]);
-                J[nvecs + i]->axpy(2.0, V_ext_pert[2 * i + 1]);
+                J[i]->axpy(2.0, V_ext_pert[i]);
+                J[nvecs + i]->axpy(2.0, V_ext_pert[i]);
             }
             ret.push_back(J[i]);
             ret.push_back(J[nvecs + i]);
@@ -698,8 +708,8 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                 J[nvecs + i]->add(Vx[2 * i + 1]);
             }
             if (V_ext_pert.size()) {
-                J[i]->add(V_ext_pert[2 * i]);
-                J[nvecs + i]->add(V_ext_pert[2 * i + 1]);
+                J[i]->add(V_ext_pert[i]);
+                J[nvecs + i]->add(V_ext_pert[i]);
             }
             ret.push_back(J[i]);
             ret.push_back(J[nvecs + i]);
