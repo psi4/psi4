@@ -58,6 +58,12 @@ constexpr size_t R_budget = 65536;
 /// Primitive pairs whose Gaussian product prefactor is below this are skipped
 constexpr double prim_threshold = 1.0e-15;
 
+/// asymptotic_T[L]: the argument above which F_0 .. F_L follow the upward recursion from the asymptotic
+/// F_0 = sqrt(pi / (4T)) to a relative error below 1e-16 (computed in 50-digit arithmetic against the series,
+/// plus a margin of one). For higher L, Libint2's FmEval_Chebyshev7::T_crit = 117 holds.
+constexpr double asymptotic_T[] = {36, 40, 44, 47, 49, 52, 54, 57, 59, 61, 64,
+                                   66, 68, 70, 72, 74, 76, 78, 80, 82, 84};
+
 /// Points per chunk for total angular momentum L.
 size_t chunk_size(int L) {
     const size_t dim1 = L + 1;
@@ -107,9 +113,9 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
     if (R_.size() < dim1 * dim2 * nchunk_max) R_.resize(dim1 * dim2 * nchunk_max);
     if (boys_.size() < (dim1 + 2) * nchunk_max) boys_.resize((dim1 + 2) * nchunk_max);
     double Fm[64];  // Boys function values of one point, F_0 .. F_L
-    // FmEval_Chebyshev7::T_crit (cheb_table_tmax, private there): above it the upward recursion, which omits
-    // exp(-T) / (2T), is exact to double precision
-    constexpr double T_crit = 117.0;
+    // Above T_crit, F_0 .. F_L follow the asymptotic upward recursion, which omits exp(-T) / (2T), to double
+    // precision (relative error below 1e-16); the omitted term weighs more at higher orders.
+    const double T_crit = L < static_cast<int>(sizeof(asymptotic_T) / sizeof(double)) ? asymptotic_T[L] : 117.0;
 
     // E coefficient layout of fill_E_matrix for these angular momenta
     const int edim2 = am2 + 1, edim3 = am1 + am2 + 2;
@@ -140,10 +146,10 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
                     return R + ((n * dim2) + address_3d(t, u, v, dim1, dim1)) * nk;
                 };
 
-                // Boys function F_n(T_k), T_k = p |P - C_k|^2, into boys_[n][k]. Above Libint2's T_crit, its
-                // upward recursion F_0 = sqrt(pi/4) sqrt(1/T), F_n = F_{n-1} (n - 1/2) / T, with the same
-                // operations in the same order, for all the points at once (at smaller T the values are
-                // meaningless, T = 0 included, and are overwritten); below it, Libint2 point by point.
+                // Boys function F_n(T_k), T_k = p |P - C_k|^2, into boys_[n][k]. Above T_crit, the upward
+                // recursion F_0 = sqrt(pi/4) sqrt(1/T), F_n = F_{n-1} (n - 1/2) / T, as Libint2 evaluates it,
+                // for all the points at once (at smaller T the values are meaningless, T = 0 included, and are
+                // overwritten); below it, Libint2 point by point.
                 double* T = &boys_[(L + 1) * nk];
                 double* inv_T = T + nk;
                 for (size_t k = 0; k < nk; ++k) {
