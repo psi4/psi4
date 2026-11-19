@@ -69,6 +69,7 @@ BatchedPotentialInt::BatchedPotentialInt(std::shared_ptr<BasisSet> bs1, std::sha
     : bs1_(bs1), bs2_(bs2) {
     const int am1 = bs1_->max_am(), am2 = bs2_->max_am();
     max_L_ = am1 + am2;
+    if (max_L_ >= 64) throw PSIEXCEPTION("BatchedPotentialInt: shell pairs of total angular momentum 64 or more.");
     fm_eval_ = libint2::FmEval_Chebyshev7<double>::instance(max_L_);
     for (int l = 0; l <= std::max(am1, am2); ++l) {
         sph_trans_.emplace_back(l);
@@ -101,7 +102,11 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
     const int dim1 = L + 1;
     const size_t dim2 = static_cast<size_t>(dim1) * dim1 * dim1;  // (t, u, v) box
     if (R_.size() < dim1 * dim2 * nchunk_max) R_.resize(dim1 * dim2 * nchunk_max);
-    std::vector<double> Fm(dim1);
+    if (boys_.size() < (dim1 + 2) * nchunk_max) boys_.resize((dim1 + 2) * nchunk_max);
+    double Fm[64];  // Boys function values of one point, F_0 .. F_L
+    // FmEval_Chebyshev7::T_crit (cheb_table_tmax, private there): above it the upward recursion, which omits
+    // exp(-T) / (2T), is exact to double precision
+    constexpr double T_crit = 117.0;
 
     // E coefficient layout of fill_E_matrix for these angular momenta
     const int edim2 = am2 + 1, edim3 = am1 + am2 + 2;
@@ -127,15 +132,36 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
                     return R + ((n * dim2) + address_3d(t, u, v, dim1, dim1)) * nk;
                 };
 
-                // Boys function and R^n_000 = (-2p)^n F_n(p |P - C|^2) (eq 9.9.14)
+                // Boys function F_n(T_k), T_k = p |P - C_k|^2, into boys_[n][k]. Above Libint2's T_crit, its
+                // upward recursion F_0 = sqrt(pi/4) sqrt(1/T), F_n = F_{n-1} (n - 1/2) / T, with the same
+                // operations in the same order, for all the points at once (at smaller T the values are
+                // meaningless, T = 0 included, and are overwritten); below it, Libint2 point by point.
+                double* T = &boys_[(L + 1) * nk];
+                double* inv_T = T + nk;
                 for (size_t k = 0; k < nk; ++k) {
                     const double PCx = P[0] - x[k0 + k], PCy = P[1] - y[k0 + k], PCz = P[2] - z[k0 + k];
-                    fm_eval_->eval(Fm.data(), p * (PCx * PCx + PCy * PCy + PCz * PCz), L);
-                    double fac = 1.0;
-                    for (int n = 0; n <= L; ++n) {
-                        Rat(n, 0, 0, 0)[k] = fac * Fm[n];
-                        fac *= -2.0 * p;
-                    }
+                    T[k] = p * (PCx * PCx + PCy * PCy + PCz * PCz);
+                }
+                for (size_t k = 0; k < nk; ++k) inv_T[k] = 1 / T[k];
+                for (size_t k = 0; k < nk; ++k) boys_[k] = 0.88622692545275801365 * std::sqrt(inv_T[k]);
+                for (int n = 1; n <= L; ++n) {
+                    const double ihalf = double(n) - double(0.5);
+                    const double* prev = &boys_[(n - 1) * nk];
+                    double* cur = &boys_[n * nk];
+                    for (size_t k = 0; k < nk; ++k) cur[k] = prev[k] * ihalf * inv_T[k];
+                }
+                for (size_t k = 0; k < nk; ++k) {
+                    if (T[k] > T_crit) continue;
+                    fm_eval_->eval(Fm, T[k], L);
+                    for (int n = 0; n <= L; ++n) boys_[n * nk + k] = Fm[n];
+                }
+                // R^n_000 = (-2p)^n F_n (eq 9.9.14)
+                double fac = 1.0;
+                for (int n = 0; n <= L; ++n) {
+                    double* out = Rat(n, 0, 0, 0);
+                    const double* F = &boys_[n * nk];
+                    for (size_t k = 0; k < nk; ++k) out[k] = fac * F[k];
+                    fac *= -2.0 * p;
                 }
 
                 // Hermite Coulomb integrals R^n_tuv, t + u + v <= L - n, by the recursions of

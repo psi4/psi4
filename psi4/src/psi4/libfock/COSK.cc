@@ -611,12 +611,14 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
             const size_t num_tau = primary_->shell(TAU).nfunction();
             const size_t tau_start = primary_->shell_to_basis_function(TAU);
             const double *dist_TAU = dist_blockp[primary_->shell_to_center(TAU)];
+            const double extent_TAU = shell_extents->get(TAU);
 
             // TAU -> NU sparity determined by shell extents
             for (size_t NU : shell_extent_map[TAU]) {
                 const size_t num_nu = primary_->shell(NU).nfunction();
                 const size_t nu_start = primary_->shell_to_basis_function(NU);
                 const double *dist_NU = dist_blockp[primary_->shell_to_center(NU)];
+                const double extent_NU = shell_extents->get(NU);
 
                 // is this value of NU also a possible value of TAU for this grid block?
                 // i.e. can we use permutational symmetry of this (NU|TAU) integral shell pair?
@@ -640,7 +642,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 sig_z.clear();
                 for (size_t g = 0; g < npoints_block; g++) {
                     // account for the distance between the grid point and the shell pair
-                    double dist_NUTAU_g = std::min(dist_TAU[g] - shell_extents->get(TAU), dist_NU[g] - shell_extents->get(NU));
+                    double dist_NUTAU_g = std::min(dist_TAU[g] - extent_TAU, dist_NU[g] - extent_NU);
                     double dist_decay = 1.0 / std::max(1.0, dist_NUTAU_g);
 
                     // can we screen this single point over K_uv = (X_ug (A_vtg (F_tg))) upper bound?
