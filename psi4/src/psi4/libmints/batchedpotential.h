@@ -93,6 +93,8 @@ class PSI_API BatchedPotentialInt {
 
     /// Hermite expansion coefficients of a primitive pair, per direction
     std::vector<double> Ex_, Ey_, Ez_;
+    /// Boys function values of a chunk of points, [n][k], then T_k and 1/T_k
+    std::vector<double> boys_;
     /// Hermite Coulomb integrals of a chunk of points, [n][t][u][v][k]
     std::vector<double> R_;
     /// Cartesian integrals of the shell pair, [c1][c2][k], and a half-transformed copy
