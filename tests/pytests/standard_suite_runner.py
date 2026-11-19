@@ -127,6 +127,10 @@ def runner_asserter(inp, subject, method, basis, tnm):
             # I jkfit metric is ill-conditioned (~1e9), so DF grads carry ~1e-8 run-to-run noise; mass-weighted
             #   steps on I are only 0.005/sqrt(127) bohr, so findif-of-grads hessians scatter up to ~7e-5 from analytic
             atol_h = 1.0e-4
+        if is_ecp and inp["keywords"]["function_kwargs"]["dertype"] == 0:
+            # same tiny mass-weighted steps on I make findif-of-energies hessians scatter ~2-4e-5 run to run for ch2i2
+            #   even at e/d_convergence 12/11, and up to ~1.3e-4 from analytic refs at default convergence
+            atol_h = 2.0e-4
 
 
     chash = answer_hash(
