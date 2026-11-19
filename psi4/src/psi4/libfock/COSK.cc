@@ -33,7 +33,7 @@
 #include "psi4/libfock/points.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/electrostatic.h"
+#include "psi4/libmints/batchedpotential.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
@@ -307,12 +307,10 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     // bounds for the one-electron integrals
     esp_bound_ = std::make_shared<Matrix>(compute_esp_bound(*primary_));
 
-    // per-thread ElectrostaticInt objects (for computing one-electron "pseudospectral" integrals)
-    factory_ = std::make_shared<IntegralFactory>(primary_);
+    // per-thread objects for the one-electron "pseudospectral" integrals of a shell pair over a grid block
     int_computers_.resize(nthreads_);
     for (size_t thread = 0; thread < nthreads_; thread++) {
-        int_computers_[thread] =
-            std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory_->electrostatic().release()));
+        int_computers_[thread] = std::make_shared<BatchedPotentialInt>(primary_, primary_);
     }
 
     // inter-atom distances [Bohr]
@@ -597,7 +595,15 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         if(rank == 0) timer_on("ESP Integrals");
 
-        const auto & int_buff = int_computers_[rank]->buffers()[0];
+        auto& int_computer = *int_computers_[rank];
+
+        // the grid points of this block at which a shell pair is significant, and their coordinates
+        std::vector<size_t> sig_points;
+        std::vector<double> sig_x, sig_y, sig_z;
+        sig_points.reserve(npoints_block);
+        sig_x.reserve(npoints_block);
+        sig_y.reserve(npoints_block);
+        sig_z.reserve(npoints_block);
 
         // calculate A_NU_TAU at all grid points in this block
         // contract A_NU_TAU with F_TAU to get G_NU
@@ -627,9 +633,12 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 if (symm) k_bound = std::max(k_bound, X_block_max * esp_boundp[TAU][NU] * F_block_gmaxp[NU]);
                 if (k_bound < kscreen_) continue;
 
+                // grid-point specific screening
+                sig_points.clear();
+                sig_x.clear();
+                sig_y.clear();
+                sig_z.clear();
                 for (size_t g = 0; g < npoints_block; g++) {
-
-                    // grid-point specific screening
                     // account for the distance between the grid point and the shell pair
                     double dist_NUTAU_g = std::min(dist_TAU[g] - shell_extents->get(TAU), dist_NU[g] - shell_extents->get(NU));
                     double dist_decay = 1.0 / std::max(1.0, dist_NUTAU_g);
@@ -639,26 +648,36 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                     if (symm) k_bound = std::max(k_bound, X_block_bfmaxp[g] * esp_boundp[TAU][NU] * dist_decay * F_block_shellp[g][NU]);
                     if (k_bound < kscreen_) continue;
 
-                    // calculate pseudospectral integral shell pair (A_NU_TAU) at gridpoint g
-                    int_computers_[rank]->set_origin({x[g], y[g], z[g]});
-                    int_computers_[rank]->compute_shell(NU, TAU);
+                    sig_points.push_back(g);
+                    sig_x.push_back(x[g]);
+                    sig_y.push_back(y[g]);
+                    sig_z.push_back(z[g]);
+                }
+                const size_t nsig = sig_points.size();
+                if (nsig == 0) continue;
 
-                    // benchmarking
-                    int_shells_computed++;
+                // calculate pseudospectral integral shell pair (A_NU_TAU) at all significant grid points at once
+                int_computer.compute_shell(NU, TAU, nsig, sig_x.data(), sig_y.data(), sig_z.data());
+                const double* int_buff = int_computer.buffer();
 
-                    // contract A_nu_tau with F_tau to get contribution to G_nu
-                    // symmetry permitting, also contract A_nu_tau with F_nu to get contribution to G_tau
-                    for(size_t jki = 0; jki < njk; jki++) {
-                        auto F_blockp = F_block[jki]->pointer();
-                        auto G_blockp = G_block[jki]->pointer();
-                        for (size_t nu = nu_start, index = 0; nu < (nu_start + num_nu); ++nu) {
-                            for (size_t tau = tau_start; tau < (tau_start + num_tau); ++tau, index++) {
-                                G_blockp[nu][g] += int_buff[index] * F_blockp[g][tau];
-                                if (symm) G_blockp[tau][g] += int_buff[index] * F_blockp[g][nu];
+                // benchmarking
+                int_shells_computed += nsig;
+
+                // contract A_nu_tau with F_tau to get contribution to G_nu
+                // symmetry permitting, also contract A_nu_tau with F_nu to get contribution to G_tau
+                for(size_t jki = 0; jki < njk; jki++) {
+                    auto F_blockp = F_block[jki]->pointer();
+                    auto G_blockp = G_block[jki]->pointer();
+                    for (size_t nu = nu_start, index = 0; nu < (nu_start + num_nu); ++nu) {
+                        for (size_t tau = tau_start; tau < (tau_start + num_tau); ++tau, index++) {
+                            const double* A = int_buff + index * nsig;
+                            for (size_t k = 0; k < nsig; ++k) {
+                                const size_t g = sig_points[k];
+                                G_blockp[nu][g] += A[k] * F_blockp[g][tau];
+                                if (symm) G_blockp[tau][g] += A[k] * F_blockp[g][nu];
                             }
                         }
                     }
-
                 }
             }
 

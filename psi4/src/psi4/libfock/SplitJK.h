@@ -67,8 +67,7 @@ class Options;
 class PsiOutStream;
 class DFTGrid;
 class BasisFunctions;
-class ElectrostaticInt;
-class IntegralFactory;
+class BatchedPotentialInt;
 
 /**
  * Class SplitJK
@@ -278,10 +277,8 @@ class PSI_API COSK : public SplitJK {
     SharedMatrix esp_bound_;
     /// Per grid, the shells whose extents overlap that of each shell
     std::unordered_map<std::string, std::vector<std::vector<int>>> shell_extent_map_;
-    /// Factory the ESP integral objects were built with; they keep a reference to its spherical transforms
-    std::shared_ptr<IntegralFactory> factory_;
-    /// Per thread, the ESP integral object
-    std::vector<std::shared_ptr<ElectrostaticInt>> int_computers_;
+    /// Per thread, the ESP integrals of a shell pair over the points of a grid block
+    std::vector<std::shared_ptr<BatchedPotentialInt>> int_computers_;
     /// Per grid and thread, the basis function values on the grid
     std::unordered_map<std::string, std::vector<std::shared_ptr<BasisFunctions>>> bf_computers_;
 
