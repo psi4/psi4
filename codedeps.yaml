@@ -1266,7 +1266,7 @@ data:
       channel: conda-forge
       name: libecpint
       constraint: null
-      constraint_note: "v1.1.0 improves diffuse and high-AM accuracy."
+      constraint_note: "v1.1.0 improves diffuse basis and high-AM accuracy."
       cmake:
         ENABLE_ecpint: true
         ecpint_DIR:
