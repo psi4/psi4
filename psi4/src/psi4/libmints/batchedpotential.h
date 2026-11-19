@@ -43,6 +43,7 @@ class FmEval_Chebyshev7;
 namespace psi {
 
 class BasisSet;
+class Matrix;
 class SphericalTransform;
 
 /*! \ingroup MINTS
@@ -100,6 +101,19 @@ class PSI_API BatchedPotentialInt {
     /// The result, [i1][i2][k]
     std::vector<double> out_;
 };
+
+/// The electrostatic potential integrals contracted with a density matrix at many points:
+/// V[k] += sum_{mu nu} D_{mu nu} (mu| 1/|r - C_k| |nu), for mu in bs1 and nu in bs2.
+/// D is nbf(bs1) x nbf(bs2), points is npoints x 3 [Bohr], and V has npoints elements.
+/// Threaded over shell pairs.
+PSI_API void batched_potential_contract_density(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                                const Matrix& D, const Matrix& points, double* V);
+
+/// The potential matrix of point charges q[k] at many points:
+/// F_{mu nu} += sum_k q[k] (mu| 1/|r - C_k| |nu), for mu in bs1 and nu in bs2.
+/// F is nbf(bs1) x nbf(bs2), and points is npoints x 3 [Bohr]. Threaded over shell pairs.
+PSI_API void batched_potential_contract_charges(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                                const double* q, const Matrix& points, Matrix& F);
 
 }  // namespace psi
 

@@ -33,7 +33,14 @@
 
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mcmurchiedavidson.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/process.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <libint2/boys.h>
 #include <libint2/shell.h>
@@ -235,6 +242,133 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
         }
     } else {
         out_.assign(in->begin(), in->begin() + n1 * n2 * npoints);
+    }
+}
+
+namespace {
+
+/// Points per BatchedPotentialInt call in the contraction drivers, to bound the size of its buffers
+constexpr size_t driver_chunk = 512;
+
+/// Shell pairs of bs1 x bs2: with s2 <= s1 if they are the same basis set.
+std::vector<std::pair<int, int>> shell_pairs(const BasisSet& bs1, const BasisSet& bs2, bool same) {
+    std::vector<std::pair<int, int>> pairs;
+    for (int s1 = 0; s1 < bs1.nshell(); ++s1)
+        for (int s2 = 0; s2 < (same ? s1 + 1 : bs2.nshell()); ++s2) pairs.emplace_back(s1, s2);
+    return pairs;
+}
+
+/// The points as three coordinate arrays.
+void split_points(const Matrix& points, std::vector<double>& x, std::vector<double>& y, std::vector<double>& z) {
+    if (points.nirrep() != 1 || points.coldim() != 3)
+        throw PSIEXCEPTION("BatchedPotentialInt: points must be an npoints x 3 matrix.");
+    const size_t npoints = points.rowdim();
+    x.resize(npoints);
+    y.resize(npoints);
+    z.resize(npoints);
+    for (size_t k = 0; k < npoints; ++k) {
+        x[k] = points.get(k, 0);
+        y[k] = points.get(k, 1);
+        z[k] = points.get(k, 2);
+    }
+}
+
+int driver_threads() {
+#ifdef _OPENMP
+    return Process::environment.get_n_threads();
+#else
+    return 1;
+#endif
+}
+
+}  // namespace
+
+void batched_potential_contract_density(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, const Matrix& D,
+                                        const Matrix& points, double* V) {
+    if (D.nirrep() != 1 || D.rowdim() != bs1->nbf() || D.coldim() != bs2->nbf())
+        throw PSIEXCEPTION("batched_potential_contract_density: D must be nbf(bs1) x nbf(bs2).");
+    std::vector<double> x, y, z;
+    split_points(points, x, y, z);
+    const size_t npoints = x.size();
+    const bool same = bs1 == bs2;
+    const auto pairs = shell_pairs(*bs1, *bs2, same);
+    double** Dp = D.pointer();
+
+    const int nthreads = driver_threads();
+    std::vector<std::vector<double>> VT(nthreads, std::vector<double>(npoints, 0.0));
+
+#pragma omp parallel num_threads(nthreads)
+    {
+        int rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        BatchedPotentialInt ints(bs1, bs2);
+        double* Vt = VT[rank].data();
+#pragma omp for schedule(dynamic)
+        for (size_t ip = 0; ip < pairs.size(); ++ip) {
+            const int P = pairs[ip].first, Q = pairs[ip].second;
+            const int n1 = bs1->shell(P).nfunction(), n2 = bs2->shell(Q).nfunction();
+            const int o1 = bs1->shell_to_basis_function(P), o2 = bs2->shell_to_basis_function(Q);
+            const bool both = same && P != Q;  // (Q, P) is not in the list: it contributes the same integrals
+            for (size_t k0 = 0; k0 < npoints; k0 += driver_chunk) {
+                const size_t nk = std::min(driver_chunk, npoints - k0);
+                ints.compute_shell(P, Q, nk, &x[k0], &y[k0], &z[k0]);
+                const double* A = ints.buffer();
+                for (int i1 = 0; i1 < n1; ++i1) {
+                    for (int i2 = 0; i2 < n2; ++i2, A += nk) {
+                        double d = Dp[o1 + i1][o2 + i2];
+                        if (both) d += Dp[o2 + i2][o1 + i1];
+                        for (size_t k = 0; k < nk; ++k) Vt[k0 + k] += d * A[k];
+                    }
+                }
+            }
+        }
+    }
+
+    for (int t = 0; t < nthreads; ++t)
+        for (size_t k = 0; k < npoints; ++k) V[k] += VT[t][k];
+}
+
+void batched_potential_contract_charges(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, const double* q,
+                                        const Matrix& points, Matrix& F) {
+    if (F.nirrep() != 1 || F.rowdim() != bs1->nbf() || F.coldim() != bs2->nbf())
+        throw PSIEXCEPTION("batched_potential_contract_charges: F must be nbf(bs1) x nbf(bs2).");
+    std::vector<double> x, y, z;
+    split_points(points, x, y, z);
+    const size_t npoints = x.size();
+    const bool same = bs1 == bs2;
+    const auto pairs = shell_pairs(*bs1, *bs2, same);
+    double** Fp = F.pointer();
+
+    const int nthreads = driver_threads();
+#pragma omp parallel num_threads(nthreads)
+    {
+        BatchedPotentialInt ints(bs1, bs2);
+        std::vector<double> block;
+        // each shell pair writes only its own blocks of F
+#pragma omp for schedule(dynamic)
+        for (size_t ip = 0; ip < pairs.size(); ++ip) {
+            const int P = pairs[ip].first, Q = pairs[ip].second;
+            const int n1 = bs1->shell(P).nfunction(), n2 = bs2->shell(Q).nfunction();
+            const int o1 = bs1->shell_to_basis_function(P), o2 = bs2->shell_to_basis_function(Q);
+            block.assign(static_cast<size_t>(n1) * n2, 0.0);
+            for (size_t k0 = 0; k0 < npoints; k0 += driver_chunk) {
+                const size_t nk = std::min(driver_chunk, npoints - k0);
+                ints.compute_shell(P, Q, nk, &x[k0], &y[k0], &z[k0]);
+                const double* A = ints.buffer();
+                for (int i12 = 0; i12 < n1 * n2; ++i12, A += nk) {
+                    double f = 0.0;
+                    for (size_t k = 0; k < nk; ++k) f += q[k0 + k] * A[k];
+                    block[i12] += f;
+                }
+            }
+            for (int i1 = 0; i1 < n1; ++i1)
+                for (int i2 = 0; i2 < n2; ++i2) {
+                    Fp[o1 + i1][o2 + i2] += block[i1 * n2 + i2];
+                    if (same && P != Q) Fp[o2 + i2][o1 + i1] += block[i1 * n2 + i2];
+                }
+        }
     }
 }
 
