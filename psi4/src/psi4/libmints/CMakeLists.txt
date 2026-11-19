@@ -68,7 +68,6 @@ onebody.cc
 overlap.cc
 potential.cc
 batchedpotential.cc   # includes <libint2/boys.h>
-potentialint.cc
 potential_erf.cc
 quadrupole.cc
 rel_potential.cc

@@ -52,6 +52,7 @@
 #include "psi4/libmints/shellrotation.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/electricfield.h"
+#include "psi4/libmints/batchedpotential.h"
 #include "psi4/libmints/electrostatic.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/multipoles.h"
@@ -1046,8 +1047,6 @@ void OEProp::compute_esp_over_grid() { epc_.compute_esp_over_grid(true); }
 void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     auto mol = basisset_->molecule();
 
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
-
     if (print_output) {
         outfile->Printf("\n Electrostatic potential to be computed on the grid and written to grid_esp.dat\n");
     }
@@ -1058,28 +1057,34 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
         Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
     }
 
-    int nbf = basisset_->nbf();
-    auto ints = std::make_shared<Matrix>("Ex integrals", nbf, nbf);
-
-    Vvals_.clear();
-    FILE* gridout = fopen("grid_esp.dat", "w");
-    if (!gridout) throw PSIEXCEPTION("Unable to write to grid_esp.dat");
+    std::vector<Vector3> origins;
     GridIterator griditer("grid.dat");
     for (griditer.first(); !griditer.last(); griditer.next()) {
         Vector3 origin(griditer.gridpoints());
         if (mol->units() == Molecule::Angstrom) origin /= pc_bohr2angstroms;
-        ints->zero();
-        epot->compute(ints, origin);
-        double Velec = Dtot->vector_dot(ints);
+        origins.push_back(origin);
+    }
+
+    // => Electronic part: -sum_{mu nu} D_{mu nu} (mu| 1/|r - C| |nu) at all the points at once <= //
+    Matrix points("Grid points", origins.size(), 3);
+    for (size_t i = 0; i < origins.size(); ++i)
+        for (int x = 0; x < 3; ++x) points.set(i, x, origins[i][x]);
+    std::vector<double> Velec(origins.size(), 0.0);
+    batched_potential_contract_density(basisset_, basisset_, *Dtot, points, Velec.data());
+
+    Vvals_.clear();
+    FILE* gridout = fopen("grid_esp.dat", "w");
+    if (!gridout) throw PSIEXCEPTION("Unable to write to grid_esp.dat");
+    for (size_t i = 0; i < origins.size(); ++i) {
         double Vnuc = 0.0;
         int natom = mol->natom();
-        for (int i = 0; i < natom; i++) {
-            Vector3 dR = origin - mol->xyz(i);
+        for (int A = 0; A < natom; A++) {
+            Vector3 dR = origins[i] - mol->xyz(A);
             double r = dR.norm();
-            if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
+            if (r > 1.0E-8) Vnuc += mol->Z(A) / r;
         }
-        Vvals_.push_back(Velec + Vnuc);
-        fprintf(gridout, "%16.10f\n", Velec + Vnuc);
+        Vvals_.push_back(-Velec[i] + Vnuc);
+        fprintf(gridout, "%16.10f\n", -Velec[i] + Vnuc);
     }
     fclose(gridout);
 }
@@ -1105,40 +1110,18 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
         Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
     }
 
-    int const nbf = basisset_->nbf();
-
     bool convert = mol->units() == Molecule::Angstrom;
 
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
+    Matrix points("Grid points", number_of_grid_points, 3);
+    for (int i = 0; i < number_of_grid_points; ++i)
+        for (int x = 0; x < 3; ++x) points.set(i, x, input_grid->get(i, x) / (convert ? pc_bohr2angstroms : 1.0));
 
-    std::vector<std::shared_ptr<Matrix>> VtempT;
-    std::vector<std::shared_ptr<ElectrostaticInt>> VintT;
+    // => Electronic part: -sum_{mu nu} D_{mu nu} (mu| 1/|r - C| |nu) at all the points at once <= //
+    std::vector<double> Velec(number_of_grid_points, 0.0);
+    batched_potential_contract_density(basisset_, basisset_, *Dtot, points, Velec.data());
 
-    for (int thread = 0; thread < nthreads; thread++) {
-        VtempT.push_back(std::make_shared<Matrix>("ints", nbf, nbf));
-        VintT.push_back(std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt*>(integral_->electrostatic().release())));
-    }
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
     for (int i = 0; i < number_of_grid_points; ++i) {
-        Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
-        if (convert) origin /= pc_bohr2angstroms;
-         
-        // Thread info
-        int thread = 0;
-#ifdef _OPENMP
-        thread = omp_get_thread_num();
-#endif
-        // => Electronic part <= //
-        VtempT[thread]->zero();
-        VintT[thread]->compute(VtempT[thread],origin);
-        
-        double Velec = Dtot->vector_dot(VtempT[thread]);
+        Vector3 origin(points.get(i, 0), points.get(i, 1), points.get(i, 2));
 
         // => Nuclear part <= //
         double Vnuc = 0.0;
@@ -1149,7 +1132,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
             if (r > 1.0E-8) Vnuc += mol->Z(iat) / r;
         }
 
-        (*output)[i] = Velec + Vnuc;
+        (*output)[i] = -Velec[i] + Vnuc;
     }
     return output;
 }

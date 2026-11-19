@@ -487,10 +487,6 @@ class PSI_API IntegralFactory {
     /// Returns an OneBodyInt that computes the point electrostatic potential
     virtual std::unique_ptr<OneBodyAOInt> electrostatic();
 
-    /// Returns an OneBodyInt that computes the electrostatic potential at desired points
-    /// Want to change the name of this after the PCM dust settles
-    virtual std::unique_ptr<OneBodyAOInt> pcm_potentialint();
-
     /// Returns an ERI integral object
     virtual std::unique_ptr<TwoBodyAOInt> eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
