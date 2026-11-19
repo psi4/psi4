@@ -650,7 +650,12 @@ void JK::compute() {
     }
 
     timer_on("JK: JK");
-    compute_JK();
+    try {
+        compute_JK();
+    } catch (...) {
+        timer_off("JK: JK");  // a raising build must not leave the timer on for the next compute()
+        throw;
+    }
     timer_off("JK: JK");
 
     if (C1()) {
