@@ -145,28 +145,35 @@ def _ind2_terms(cache: dict, xt_A_ra: np.ndarray, xt_B_sb: np.ndarray, prop_A_aa
     """
 
     Qaa, Qar, Qbb, Qbs, Qrr, Qss = (cache[key] for key in ("Qaa", "Qar", "Qbb", "Qbs", "Qrr", "Qss"))
-    omegaA_bb, omegaA_ss, omegaB_aa, omegaB_rr, tA_sb, tB_ra = (cache[key]
-                                                                for key in ("omegaA_bb", "omegaA_ss", "omegaB_aa",
-                                                                            "omegaB_rr", "tA_sb", "tB_ra"))
+    omegaA_bb, omegaA_ss, tA_sb = (cache[key] for key in ("omegaA_bb", "omegaA_ss", "tA_sb"))
+    omegaB_aa, omegaB_rr, tB_ra = (cache[key] for key in ("omegaB_aa", "omegaB_rr", "tB_ra"))
 
+    # yapf: disable
     x2_ind_A = (
-        +16 * contract("ra,Qar,Qbs,sb", xt_A_ra, Qar, Qbs, tA_sb) -
-        4 * contract("ra,ac,rc", tB_ra, omegaB_aa, xt_A_ra) + 4 * contract("ra,cr,ca", tB_ra, omegaB_rr, xt_A_ra) -
-        2 * contract("ac,rc,ra", prop_A_aa, tB_ra, tB_ra) + 2 * contract("cr,ca,ra", prop_A_rr, tB_ra, tB_ra)
+        + 16 * contract("ra,Qar,Qbs,sb", xt_A_ra, Qar, Qbs, tA_sb)
+        - 4 * contract("ra,ac,rc", tB_ra, omegaB_aa, xt_A_ra)
+        + 4 * contract("ra,cr,ca", tB_ra, omegaB_rr, xt_A_ra)
+        - 2 * contract("ac,rc,ra", prop_A_aa, tB_ra, tB_ra)
+        + 2 * contract("cr,ca,ra", prop_A_rr, tB_ra, tB_ra)
         # X_A -> X_A + [W_A, C_A - C_A^\dagger]_1
-        + 4 * contract("ra,cd,de,Qer,Qac", xt_A_ra, tB_ra.T, tB_ra, Qar, Qaa) +
-        8 * contract("ra,cd,ec,Qde,Qar", xt_A_ra, tB_ra.T, tB_ra, Qrr, Qar) -
-        4 * contract("ra,cd,ec,Qdr,Qae", xt_A_ra, tB_ra.T, tB_ra, Qrr, Qar) -
-        8 * contract("ra,cd,de,Qar,Qec", xt_A_ra, tB_ra.T, tB_ra, Qar, Qaa))
+        + 4 * contract("ra,cd,de,Qer,Qac", xt_A_ra, tB_ra.T, tB_ra, Qar, Qaa)
+        + 8 * contract("ra,cd,ec,Qde,Qar", xt_A_ra, tB_ra.T, tB_ra, Qrr, Qar)
+        - 4 * contract("ra,cd,ec,Qdr,Qae", xt_A_ra, tB_ra.T, tB_ra, Qrr, Qar)
+        - 8 * contract("ra,cd,de,Qar,Qec", xt_A_ra, tB_ra.T, tB_ra, Qar, Qaa)
+    )
     x2_ind_B = (
-        +16 * contract("sb,Qar,Qbs,ra", xt_B_sb, Qar, Qbs, tB_ra) -
-        4 * contract("sb,bc,sc", tA_sb, omegaA_bb, xt_B_sb) + 4 * contract("sb,cs,cb", tA_sb, omegaA_ss, xt_B_sb) -
-        2 * contract("bc,sc,sb", prop_B_bb, tA_sb, tA_sb) + 2 * contract("cs,cb,sb", prop_B_ss, tA_sb, tA_sb)
+        + 16 * contract("sb,Qar,Qbs,ra", xt_B_sb, Qar, Qbs, tB_ra)
+        - 4 * contract("sb,bc,sc", tA_sb, omegaA_bb, xt_B_sb)
+        + 4 * contract("sb,cs,cb", tA_sb, omegaA_ss, xt_B_sb)
+        - 2 * contract("bc,sc,sb", prop_B_bb, tA_sb, tA_sb)
+        + 2 * contract("cs,cb,sb", prop_B_ss, tA_sb, tA_sb)
         # X_B -> X_B + [W_B, C_B - C_B^\dagger]_1
-        + 4 * contract("sb,cd,de,Qes,Qbc", xt_B_sb, tA_sb.T, tA_sb, Qbs, Qbb) +
-        8 * contract("sb,cd,ec,Qde,Qbs", xt_B_sb, tA_sb.T, tA_sb, Qss, Qbs) -
-        4 * contract("sb,cd,ec,Qds,Qbe", xt_B_sb, tA_sb.T, tA_sb, Qss, Qbs) -
-        8 * contract("sb,cd,de,Qbs,Qec", xt_B_sb, tA_sb.T, tA_sb, Qbs, Qbb))
+        + 4 * contract("sb,cd,de,Qes,Qbc", xt_B_sb, tA_sb.T, tA_sb, Qbs, Qbb)
+        + 8 * contract("sb,cd,ec,Qde,Qbs", xt_B_sb, tA_sb.T, tA_sb, Qss, Qbs)
+        - 4 * contract("sb,cd,ec,Qds,Qbe", xt_B_sb, tA_sb.T, tA_sb, Qss, Qbs)
+        - 8 * contract("sb,cd,de,Qbs,Qec", xt_B_sb, tA_sb.T, tA_sb, Qbs, Qbb)
+    )
+    # yapf: enable
 
     return float(x2_ind_A), float(x2_ind_B)
 
@@ -181,40 +188,48 @@ def _ind2_r_terms(cache: dict, xt_A_ra: np.ndarray, xt_B_sb: np.ndarray, prop_A_
     """
 
     Qaa, Qar, Qbb, Qbs, Qrr, Qss = (cache[key] for key in ("Qaa", "Qar", "Qbb", "Qbs", "Qrr", "Qss"))
-    omegaA_bb, omegaA_ss, omegaB_aa, omegaB_rr = (cache[key]
-                                                  for key in ("omegaA_bb", "omegaA_ss", "omegaB_aa", "omegaB_rr"))
+    omegaA_bb, omegaA_ss = (cache[key] for key in ("omegaA_bb", "omegaA_ss"))
+    omegaB_aa, omegaB_rr = (cache[key] for key in ("omegaB_aa", "omegaB_rr"))
 
+    # yapf: disable
     x2_ind_r_A = (
-        +16 * contract("ra,Qar,Qbs,sb", xt_A_ra, Qar, Qbs, t_sb) - 4 * contract("ra,ac,rc", t_ra, omegaB_aa, xt_A_ra) +
-        4 * contract("ra,cr,ca", t_ra, omegaB_rr, xt_A_ra) - 2 * contract("ac,rc,ra", prop_A_aa, t_ra, t_ra) +
-        2 * contract("cr,ca,ra", prop_A_rr, t_ra, t_ra)
+        + 16 * contract("ra,Qar,Qbs,sb", xt_A_ra, Qar, Qbs, t_sb)
+        - 4 * contract("ra,ac,rc", t_ra, omegaB_aa, xt_A_ra)
+        + 4 * contract("ra,cr,ca", t_ra, omegaB_rr, xt_A_ra)
+        - 2 * contract("ac,rc,ra", prop_A_aa, t_ra, t_ra)
+        + 2 * contract("cr,ca,ra", prop_A_rr, t_ra, t_ra)
         # 2 Re <C^{(1)}_A | W_A C^{[1]}_A C^{(1)}_A > + Re <C^{(1)}_A C^{(1)}_A | W_A C^{[1]}_A >
-        + 4 * contract("ra,cr,de,Qad,Qec", xt_A_ra, t_ra.T, t_ra, Qar, Qaa) +
-        4 * contract("ra,cd,de,Qer,Qac", xt_A_ra, t_ra.T, t_ra, Qar, Qaa) +
-        16 * contract("ra,ac,de,Qcr,Qed", xt_A_ra, t_ra.T, t_ra, Qrr, Qar) +
-        8 * contract("ra,cd,ec,Qde,Qar", xt_A_ra, t_ra.T, t_ra, Qrr, Qar) -
-        4 * contract("ra,ac,de,Qcd,Qer", xt_A_ra, t_ra.T, t_ra, Qrr, Qar) -
-        4 * contract("ra,cd,ec,Qdr,Qae", xt_A_ra, t_ra.T, t_ra, Qrr, Qar) -
-        16 * contract("ra,cr,de,Qed,Qac", xt_A_ra, t_ra.T, t_ra, Qar, Qaa) -
-        8 * contract("ra,cd,de,Qar,Qec", xt_A_ra, t_ra.T, t_ra, Qar, Qaa) +
-        4 * contract("ra,cr,de,Qae,Qcd", xt_A_ra, t_ra.T, t_ra, Qaa, Qar) -
-        4 * contract("ra,ac,de,Qec,Qrd", xt_A_ra, t_ra.T, t_ra, Qar, Qrr))
+        + 4 * contract("ra,cr,de,Qad,Qec", xt_A_ra, t_ra.T, t_ra, Qar, Qaa)
+        + 4 * contract("ra,cd,de,Qer,Qac", xt_A_ra, t_ra.T, t_ra, Qar, Qaa)
+        + 16 * contract("ra,ac,de,Qcr,Qed", xt_A_ra, t_ra.T, t_ra, Qrr, Qar)
+        + 8 * contract("ra,cd,ec,Qde,Qar", xt_A_ra, t_ra.T, t_ra, Qrr, Qar)
+        - 4 * contract("ra,ac,de,Qcd,Qer", xt_A_ra, t_ra.T, t_ra, Qrr, Qar)
+        - 4 * contract("ra,cd,ec,Qdr,Qae", xt_A_ra, t_ra.T, t_ra, Qrr, Qar)
+        - 16 * contract("ra,cr,de,Qed,Qac", xt_A_ra, t_ra.T, t_ra, Qar, Qaa)
+        - 8 * contract("ra,cd,de,Qar,Qec", xt_A_ra, t_ra.T, t_ra, Qar, Qaa)
+        + 4 * contract("ra,cr,de,Qae,Qcd", xt_A_ra, t_ra.T, t_ra, Qaa, Qar)
+        - 4 * contract("ra,ac,de,Qec,Qrd", xt_A_ra, t_ra.T, t_ra, Qar, Qrr)
+    )
 
     x2_ind_r_B = (
-        +16 * contract("sb,Qar,Qbs,ra", xt_B_sb, Qar, Qbs, t_ra) - 4 * contract("sb,bc,sc", t_sb, omegaA_bb, xt_B_sb) +
-        4 * contract("sb,cs,cb", t_sb, omegaA_ss, xt_B_sb) - 2 * contract("bc,sc,sb", prop_B_bb, t_sb, t_sb) +
-        2 * contract("cs,cb,sb", prop_B_ss, t_sb, t_sb)
+        + 16 * contract("sb,Qar,Qbs,ra", xt_B_sb, Qar, Qbs, t_ra)
+        - 4 * contract("sb,bc,sc", t_sb, omegaA_bb, xt_B_sb)
+        + 4 * contract("sb,cs,cb", t_sb, omegaA_ss, xt_B_sb)
+        - 2 * contract("bc,sc,sb", prop_B_bb, t_sb, t_sb)
+        + 2 * contract("cs,cb,sb", prop_B_ss, t_sb, t_sb)
         # 2 Re <C^{(1)}_B | W_B C^{[1]}_B C^{(1)}_B > + Re <C^{(1)}_B C^{(1)}_B | W_B C^{[1]}_B >
-        + 4 * contract("sb,cs,de,Qbd,Qec", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb) +
-        4 * contract("sb,cd,de,Qes,Qbc", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb) +
-        16 * contract("sb,bc,de,Qcs,Qed", xt_B_sb, t_sb.T, t_sb, Qss, Qbs) +
-        8 * contract("sb,cd,ec,Qde,Qbs", xt_B_sb, t_sb.T, t_sb, Qss, Qbs) -
-        4 * contract("sb,bc,de,Qcd,Qes", xt_B_sb, t_sb.T, t_sb, Qss, Qbs) -
-        4 * contract("sb,cd,ec,Qds,Qbe", xt_B_sb, t_sb.T, t_sb, Qss, Qbs) -
-        16 * contract("sb,cs,de,Qed,Qbc", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb) -
-        8 * contract("sb,cd,de,Qbs,Qec", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb) +
-        4 * contract("sb,cs,de,Qbe,Qcd", xt_B_sb, t_sb.T, t_sb, Qbb, Qbs) -
-        4 * contract("sb,bc,de,Qec,Qsd", xt_B_sb, t_sb.T, t_sb, Qbs, Qss))
+        + 4 * contract("sb,cs,de,Qbd,Qec", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb)
+        + 4 * contract("sb,cd,de,Qes,Qbc", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb)
+        + 16 * contract("sb,bc,de,Qcs,Qed", xt_B_sb, t_sb.T, t_sb, Qss, Qbs)
+        + 8 * contract("sb,cd,ec,Qde,Qbs", xt_B_sb, t_sb.T, t_sb, Qss, Qbs)
+        - 4 * contract("sb,bc,de,Qcd,Qes", xt_B_sb, t_sb.T, t_sb, Qss, Qbs)
+        - 4 * contract("sb,cd,ec,Qds,Qbe", xt_B_sb, t_sb.T, t_sb, Qss, Qbs)
+        - 16 * contract("sb,cs,de,Qed,Qbc", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb)
+        - 8 * contract("sb,cd,de,Qbs,Qec", xt_B_sb, t_sb.T, t_sb, Qbs, Qbb)
+        + 4 * contract("sb,cs,de,Qbe,Qcd", xt_B_sb, t_sb.T, t_sb, Qbb, Qbs)
+        - 4 * contract("sb,bc,de,Qec,Qsd", xt_B_sb, t_sb.T, t_sb, Qbs, Qss)
+    )
+    # yapf: enable
 
     return float(x2_ind_r_A), float(x2_ind_r_B)
 
@@ -229,34 +244,34 @@ def _disp2_terms(cache: dict, xt_A_ra: np.ndarray, xt_B_sb: np.ndarray, prop_A_a
     Qaa, Qar, Qbb, Qbs, Qrr, Qss = (cache[key] for key in ("Qaa", "Qar", "Qbb", "Qbs", "Qrr", "Qss"))
     t_rsab = cache["t_rsab"]
 
+    # yapf: disable
     x2_disp_A = (
         # 2 Re <R(X)|V R(V)>
-        # NOTE some response not coupled
-        8 * contract("rsab,Qcr,Qbs,ca", t_rsab, Qrr, Qbs, xt_A_ra) -
-        8 * contract("rsab,Qac,Qbs,rc", t_rsab, Qaa, Qbs, xt_A_ra)
+        8 * contract("rsab,Qcr,Qbs,ca", t_rsab, Qrr, Qbs, xt_A_ra)
+        - 8 * contract("rsab,Qac,Qbs,rc", t_rsab, Qaa, Qbs, xt_A_ra)
         # <R(V)|X R(V)>
-        # NOTE not coupled no response
-        - 4 * contract("ac,rscb,rsab", prop_A_aa, t_rsab, t_rsab) +
-        4 * contract("cr,csab,rsab", prop_A_rr, t_rsab, t_rsab)
+        - 4 * contract("ac,rscb,rsab", prop_A_aa, t_rsab, t_rsab)
+        + 4 * contract("cr,csab,rsab", prop_A_rr, t_rsab, t_rsab)
         # X_A -> X_A + [W_A, C_A - C_A^\dagger]_1
-        + 8 * contract("ra,dscb,dseb,Qer,Qac", xt_A_ra, t_rsab, t_rsab, Qar, Qaa) +
-        16 * contract("ra,dscb,escb,Qar,Qde", xt_A_ra, t_rsab, t_rsab, Qar, Qrr) -
-        8 * contract("ra,dscb,escb,Qdr,Qae", xt_A_ra, t_rsab, t_rsab, Qrr, Qar) -
-        16 * contract("ra,dscb,dseb,Qar,Qec", xt_A_ra, t_rsab, t_rsab, Qar, Qaa))
+        + 8 * contract("ra,dscb,dseb,Qer,Qac", xt_A_ra, t_rsab, t_rsab, Qar, Qaa)
+        + 16 * contract("ra,dscb,escb,Qar,Qde", xt_A_ra, t_rsab, t_rsab, Qar, Qrr)
+        - 8 * contract("ra,dscb,escb,Qdr,Qae", xt_A_ra, t_rsab, t_rsab, Qrr, Qar)
+        - 16 * contract("ra,dscb,dseb,Qar,Qec", xt_A_ra, t_rsab, t_rsab, Qar, Qaa)
+    )
     x2_disp_B = (
         # 2 Re <R(X)|V R(V)>
-        # NOTE some response not coupled
-        8 * contract("rsab,Qar,Qcs,cb", t_rsab, Qar, Qss, xt_B_sb) -
-        8 * contract("rsab,Qar,Qbc,sc", t_rsab, Qar, Qbb, xt_B_sb)
+        8 * contract("rsab,Qar,Qcs,cb", t_rsab, Qar, Qss, xt_B_sb)
+        - 8 * contract("rsab,Qar,Qbc,sc", t_rsab, Qar, Qbb, xt_B_sb)
         # <R(V)|X R(V)>
-        # NOTE not coupled no response
-        - 4 * contract("bc,rsac,rsab", prop_B_bb, t_rsab, t_rsab) +
-        4 * contract("cs,rcab,rsab", prop_B_ss, t_rsab, t_rsab)
+        - 4 * contract("bc,rsac,rsab", prop_B_bb, t_rsab, t_rsab)
+        + 4 * contract("cs,rcab,rsab", prop_B_ss, t_rsab, t_rsab)
         # X_B -> X_B + [W_B, C_B - C_B^\dagger]_1
-        + 8 * contract("sb,rdac,rdae,Qes,Qbc", xt_B_sb, t_rsab, t_rsab, Qbs, Qbb) +
-        16 * contract("sb,rdac,reac,Qbs,Qde", xt_B_sb, t_rsab, t_rsab, Qbs, Qss) -
-        8 * contract("sb,rdac,reac,Qds,Qbe", xt_B_sb, t_rsab, t_rsab, Qss, Qbs) -
-        16 * contract("sb,rdac,rdae,Qbs,Qec", xt_B_sb, t_rsab, t_rsab, Qbs, Qbb))
+        + 8 * contract("sb,rdac,rdae,Qes,Qbc", xt_B_sb, t_rsab, t_rsab, Qbs, Qbb)
+        + 16 * contract("sb,rdac,reac,Qbs,Qde", xt_B_sb, t_rsab, t_rsab, Qbs, Qss)
+        - 8 * contract("sb,rdac,reac,Qds,Qbe", xt_B_sb, t_rsab, t_rsab, Qss, Qbs)
+        - 16 * contract("sb,rdac,rdae,Qbs,Qec", xt_B_sb, t_rsab, t_rsab, Qbs, Qbb)
+    )
+    # yapf: enable
 
     return float(x2_disp_A), float(x2_disp_B)
 
@@ -336,10 +351,11 @@ def property_terms(cache: dict,
     # with the coupled induction amplitudes, the response of each monomer to the
     # electrostatic potential of the other
     induction = second_order and coupled
-    xt_A = _cpscf_round("A", wfn_A, eps_a, eps_r, prop_A_ar + ([cache["omegaB_ar"]] if induction else []), conv,
-                        maxiter, "operators" + (" and the induction amplitudes" if induction else ""))
-    xt_B = _cpscf_round("B", wfn_B, eps_b, eps_s, prop_B_bs + ([cache["omegaA_bs"]] if induction else []), conv,
-                        maxiter, "operators" + (" and the induction amplitudes" if induction else ""))
+    rhs_A = prop_A_ar + ([cache["omegaB_ar"]] if induction else [])
+    rhs_B = prop_B_bs + ([cache["omegaA_bs"]] if induction else [])
+    what = "operators and the induction amplitudes" if induction else "operators"
+    xt_A = _cpscf_round("A", wfn_A, eps_a, eps_r, rhs_A, conv, maxiter, what)
+    xt_B = _cpscf_round("B", wfn_B, eps_b, eps_s, rhs_B, conv, maxiter, what)
     if induction:
         t_ra, t_sb = xt_A.pop(), xt_B.pop()
 
@@ -409,8 +425,8 @@ def property_terms(cache: dict,
 
         # the S^inf expression holds the induction term as well
         if sinf:
-            terms[f"x2_exch-ind{tag}"] = (np.array(per_component(exch_ind2_sinf_property, *amplitudes)) -
-                                          terms[f"x2_ind{tag}"])
+            ind_exch_ind = np.array(per_component(exch_ind2_sinf_property, *amplitudes))
+            terms[f"x2_exch-ind{tag}"] = ind_exch_ind - terms[f"x2_ind{tag}"]
 
     # Second-order dispersion and S^2 exchange-dispersion, uncoupled. The S^inf
     # exchange-dispersion is left out: propSAPT's is not the derivative of its energy.

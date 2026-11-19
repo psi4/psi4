@@ -298,7 +298,9 @@ def run_sapt_property(name, **kwargs):
     tstart = time.time()
     components, quantities = build_operators(properties, wfn_A.basisset(), sapt_dimer)
     cache = build_prop_cache(wfn_A, wfn_B, sapt_jk, df_basis)
-    terms = property_terms(cache, [c.matrix for c in components],
+    operators = [c.matrix for c in components]
+    terms = property_terms(cache,
+                           operators,
                            wfn_A,
                            wfn_B,
                            cphf_conv,

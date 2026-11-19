@@ -262,49 +262,93 @@ def build_prop_cache(wfn_A: core.Wavefunction,
     J_E, J_F, J_Sar, J_Sbs = J_list[:4]
     K_Sas, K_Srb, K_I, K_J = K_list[4:]
 
-    cache["omega_exchA_bs_S2"] = (contract("ab,Ba,bs->Bs", s_ab, s_ba, omegaA_bs) -
-                                  contract("aS,sa,bs->bS", s_as, s_sa, omegaA_bs) -
-                                  contract("rs,ba,ar->bs", s_rs, s_ba, omegaB_ar) - mo(K_Sas, "rb").T @ s_rs +
-                                  s_ba @ mo(K_Srb, "as") - 2 * mo(J_Sar, "bs"))
+    # yapf: disable
+    cache["omega_exchA_bs_S2"] = (
+        contract("ab,Ba,bs->Bs", s_ab, s_ba, omegaA_bs)
+        - contract("aS,sa,bs->bS", s_as, s_sa, omegaA_bs)
+        - contract("rs,ba,ar->bs", s_rs, s_ba, omegaB_ar)
+        - mo(K_Sas, "rb").T @ s_rs
+        + s_ba @ mo(K_Srb, "as")
+        - 2 * mo(J_Sar, "bs")
+    )
 
-    cache["omega_exchA_bs"] = (contract("Bb,sS,bs->BS", A_bb, D_ss, omegaA_bs) - contract(
-        "rs,ba,ar->bs", G_rs, H_ba, omegaB_ar) - 2 * A_bb @ mo(J_E, "bs") @ D_ss - A_bb @ mo(K_J, "rb").T @ G_rs +
-                               H_ba @ mo(K_I, "as") @ D_ss + 2 * H_ba @ mo(J_F, "ar") @ G_rs) - omegaA_bs
+    cache["omega_exchA_bs"] = (
+        contract("Bb,sS,bs->BS", A_bb, D_ss, omegaA_bs)
+        - contract("rs,ba,ar->bs", G_rs, H_ba, omegaB_ar)
+        - 2 * A_bb @ mo(J_E, "bs") @ D_ss
+        - A_bb @ mo(K_J, "rb").T @ G_rs
+        + H_ba @ mo(K_I, "as") @ D_ss
+        + 2 * H_ba @ mo(J_F, "ar") @ G_rs
+    ) - omegaA_bs
 
-    cache["omega_exchA_sb_S2"] = (+contract("as,ba,cb->sc", s_as, s_ba, omegaA_bb) -
-                                  contract("as,ba,sc->cb", s_as, s_ba, omegaA_ss) -
-                                  contract("br,as,ar->sb", s_br, s_as, omegaB_ar) + s_as.T @ mo(K_Srb, "ab") -
-                                  mo(K_Sas, "rs").T @ s_br.T - 2 * mo(J_Sar, "bs").T)
+    cache["omega_exchA_sb_S2"] = (
+        + contract("as,ba,cb->sc", s_as, s_ba, omegaA_bb)
+        - contract("as,ba,sc->cb", s_as, s_ba, omegaA_ss)
+        - contract("br,as,ar->sb", s_br, s_as, omegaB_ar)
+        + s_as.T @ mo(K_Srb, "ab")
+        - mo(K_Sas, "rs").T @ s_br.T
+        - 2 * mo(J_Sar, "bs").T
+    )
 
-    cache["omega_exchA_sb"] = (-2 * mo(J_E, "bs").T + contract("bB,sb->sB", omegaA_bb, F_sb) -
-                               contract("Ss,sb->Sb", omegaA_ss, F_sb) + J_sa @ mo(K_I, "ab") - mo(K_J, "rs").T @ I_rb -
-                               contract("ar,sa,rb->sb", omegaB_ar, J_sa, I_rb) -
-                               contract("BS,Sb,sB->sb", omegaA_bs, F_sb, F_sb) - J_sa @ mo(K_I, "as") @ F_sb -
-                               F_sb @ mo(K_J, "rb").T @ I_rb + 2 * J_sa @ mo(J_F, "ar") @ I_rb +
-                               2 * F_sb @ mo(J_E, "bs") @ F_sb + 2 * (F_bs @ mo(J_E, "ss")).T - 2 *
-                               (mo(J_E, "bb") @ F_bs).T)
+    cache["omega_exchA_sb"] = (
+        - 2 * mo(J_E, "bs").T
+        + contract("bB,sb->sB", omegaA_bb, F_sb)
+        - contract("Ss,sb->Sb", omegaA_ss, F_sb)
+        + J_sa @ mo(K_I, "ab")
+        - mo(K_J, "rs").T @ I_rb
+        - contract("ar,sa,rb->sb", omegaB_ar, J_sa, I_rb)
+        - contract("BS,Sb,sB->sb", omegaA_bs, F_sb, F_sb)
+        - J_sa @ mo(K_I, "as") @ F_sb
+        - F_sb @ mo(K_J, "rb").T @ I_rb
+        + 2 * J_sa @ mo(J_F, "ar") @ I_rb
+        + 2 * F_sb @ mo(J_E, "bs") @ F_sb
+        + 2 * (F_bs @ mo(J_E, "ss")).T
+        - 2 * (mo(J_E, "bb") @ F_bs).T
+    )
 
-    cache["omega_exchB_ar_S2"] = (contract("ba,Ab,ar->Ar", s_ba, s_ab, omegaB_ar) -
-                                  contract("bR,rb,ar->aR", s_br, s_rb, omegaB_ar) -
-                                  contract("sr,ab,bs->ar", s_sr, s_ab, omegaA_bs) + s_ab @ mo(K_Sas, "rb").T -
-                                  mo(K_Srb, "as") @ s_sr - 2 * mo(J_Sbs, "ar"))
+    cache["omega_exchB_ar_S2"] = (
+        contract("ba,Ab,ar->Ar", s_ba, s_ab, omegaB_ar)
+        - contract("bR,rb,ar->aR", s_br, s_rb, omegaB_ar)
+        - contract("sr,ab,bs->ar", s_sr, s_ab, omegaA_bs)
+        + s_ab @ mo(K_Sas, "rb").T
+        - mo(K_Srb, "as") @ s_sr
+        - 2 * mo(J_Sbs, "ar")
+    )
 
-    cache["omega_exchB_ar"] = (contract("Aa,rR,ar->AR", B_aa, C_rr, omegaB_ar) - contract(
-        "sr,ab,bs->ar", G_sr, H_ab, omegaA_bs) - 2 * B_aa @ mo(J_F, "ar") @ C_rr - B_aa @ mo(K_I, "as") @ G_sr +
-                               H_ab @ mo(K_J, "rb").T @ C_rr + 2 * H_ab @ mo(J_E, "bs") @ G_sr) - omegaB_ar
+    cache["omega_exchB_ar"] = (
+        contract("Aa,rR,ar->AR", B_aa, C_rr, omegaB_ar)
+        - contract("sr,ab,bs->ar", G_sr, H_ab, omegaA_bs)
+        - 2 * B_aa @ mo(J_F, "ar") @ C_rr
+        - B_aa @ mo(K_I, "as") @ G_sr
+        + H_ab @ mo(K_J, "rb").T @ C_rr
+        + 2 * H_ab @ mo(J_E, "bs") @ G_sr
+    ) - omegaB_ar
 
-    cache["omega_exchB_ra_S2"] = (+contract("br,ab,ca->rc", s_br, s_ab, omegaB_aa) -
-                                  contract("br,ab,rc->ca", s_br, s_ab, omegaB_rr) -
-                                  contract("br,as,bs->ra", s_br, s_as, omegaA_bs) + s_br.T @ mo(K_Sas, "ab").T -
-                                  mo(K_Srb, "rs") @ s_as.T - 2 * mo(J_Sbs, "ar").T)
+    cache["omega_exchB_ra_S2"] = (
+        + contract("br,ab,ca->rc", s_br, s_ab, omegaB_aa)
+        - contract("br,ab,rc->ca", s_br, s_ab, omegaB_rr)
+        - contract("br,as,bs->ra", s_br, s_as, omegaA_bs)
+        + s_br.T @ mo(K_Sas, "ab").T
+        - mo(K_Srb, "rs") @ s_as.T
+        - 2 * mo(J_Sbs, "ar").T
+    )
 
-    cache["omega_exchB_ra"] = (-2 * mo(J_F, "ar").T + contract("aA,ra->rA", omegaB_aa, E_ra) -
-                               contract("Rr,ra->Ra", omegaB_rr, E_ra) + I_rb @ mo(K_J, "ab").T - mo(K_I, "rs") @ J_sa -
-                               contract("bs,rb,sa->ra", omegaA_bs, I_rb, J_sa) -
-                               contract("AR,Ra,rA->ra", omegaB_ar, E_ra, E_ra) - I_rb @ mo(K_J, "rb").T @ E_ra -
-                               E_ra @ mo(K_I, "as") @ J_sa + 2 * I_rb @ mo(J_E, "bs") @ J_sa +
-                               2 * E_ra @ mo(J_F, "ar") @ E_ra + 2 * (E_ar @ mo(J_F, "rr")).T - 2 *
-                               (mo(J_F, "aa") @ E_ar).T)
+    cache["omega_exchB_ra"] = (
+        - 2 * mo(J_F, "ar").T
+        + contract("aA,ra->rA", omegaB_aa, E_ra)
+        - contract("Rr,ra->Ra", omegaB_rr, E_ra)
+        + I_rb @ mo(K_J, "ab").T
+        - mo(K_I, "rs") @ J_sa
+        - contract("bs,rb,sa->ra", omegaA_bs, I_rb, J_sa)
+        - contract("AR,Ra,rA->ra", omegaB_ar, E_ra, E_ra)
+        - I_rb @ mo(K_J, "rb").T @ E_ra
+        - E_ra @ mo(K_I, "as") @ J_sa
+        + 2 * I_rb @ mo(J_E, "bs") @ J_sa
+        + 2 * E_ra @ mo(J_F, "ar") @ E_ra
+        + 2 * (E_ar @ mo(J_F, "rr")).T
+        - 2 * (mo(J_F, "aa") @ E_ar).T
+    )
+    # yapf: enable
 
     # Uncoupled induction amplitudes
     cache["eps_ra"] = 1 / (-cache["eps_r"].reshape(-1, 1) + cache["eps_a"])
