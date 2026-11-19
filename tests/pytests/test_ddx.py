@@ -170,9 +170,9 @@ def test_ddx_limiting_cases():
 
     # get a realistic guess density
     mol = psi4.geometry(__geoms["nh3"])
-    basis = psi4.core.BasisSet.build(mol, "BASIS", "sto-3g")
     _, wfn = psi4.energy('SCF', molecule=mol, return_wfn=True)
-    density_matrix = core.Matrix.from_array(wfn.Da().np)
+    basis = wfn.basisset()
+    density_matrix = wfn.Da_subset("AO")
 
     def ddenergy(model, solvent_kappa=0.0, solvent_epsilon=80.0):
         psi4.set_options({"ddx_solvent_kappa": solvent_kappa, "ddx_model": model,
