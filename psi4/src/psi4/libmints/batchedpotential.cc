@@ -55,6 +55,9 @@ namespace {
 /// as many points as fit, between 8 and 64.
 constexpr size_t R_budget = 65536;
 
+/// Primitive pairs whose Gaussian product prefactor is below this are skipped
+constexpr double prim_threshold = 1.0e-15;
+
 /// Points per chunk for total angular momentum L.
 size_t chunk_size(int L) {
     const size_t dim1 = L + 1;
@@ -121,6 +124,11 @@ void BatchedPotentialInt::compute_shell(int s1, int s2, size_t npoints, const do
             const double p = a + b;
             const Point P{(a * A[0] + b * B[0]) / p, (a * A[1] + b * B[1]) / p, (a * A[2] + b * B[2]) / p};
             const double prefac = 2.0 * M_PI * ca * cb / p;
+
+            // Skip primitive pairs whose Gaussian product is negligible: their integrals are bounded by
+            // |prefac| exp(-ab/p |A - B|^2) times polynomial factors of order one
+            const double AB2 = (A[0] - B[0]) * (A[0] - B[0]) + (A[1] - B[1]) * (A[1] - B[1]) + (A[2] - B[2]) * (A[2] - B[2]);
+            if (std::abs(prefac) * std::exp(-a * b / p * AB2) < prim_threshold) continue;
 
             // Hermite expansion coefficients of the primitive pair: independent of the points
             fill_E_matrix(am1, am2, P, A, B, a, b, Ex_, Ey_, Ez_);
