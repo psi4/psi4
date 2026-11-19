@@ -360,3 +360,36 @@ def test_j_algo_bp86(j_algo, k_algo, df_basis_scf, mols):
     energy_composite = psi4.energy("bp86", molecule=molecule) 
  
     assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')
+
+@pytest.mark.parametrize(
+    "k_algo",
+    [
+        pytest.param("LINK"),
+        pytest.param("COSX"),
+        pytest.param("SNLINK", marks=using('gauxc')),
+    ]
+)
+@pytest.mark.parametrize("functional", [ "hf", "b3lyp", "bp86" ])
+def test_composite_gradient_exchange_guard(k_algo, functional, mols):
+    """Gradients have no LinK/COSX/snLinK exchange term (the DF one would not match the energy):
+    with exchange the gradient must raise; pure functionals (J only) give the DFDIRJ gradient."""
+
+    molecule = mols["h2o"]
+    scf_type = f'DFDIRJ+{k_algo}'
+    screening = "CSAM" if k_algo in [ "COSX", "SNLINK" ] else "DENSITY"
+    psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening})
+
+    if functional == "bp86":
+        grad_composite = psi4.gradient(functional, molecule=molecule)
+
+        psi4.set_options({"scf_type": "DFDIRJ", "screening": "DENSITY"})
+        grad_dfdirj = psi4.gradient(functional, molecule=molecule)
+
+        assert compare_values(grad_dfdirj, grad_composite, 6, f'BP86 {scf_type} gradient equals DFDIRJ')
+    else:
+        with pytest.raises(RuntimeError, match="no analytic exchange gradient"):
+            psi4.gradient(functional, molecule=molecule)
+
+        # the refusal must leave no timer running: a following gradient in the same session works
+        psi4.set_options({"scf_type": "DF", "screening": "CSAM"})
+        psi4.gradient(functional, molecule=molecule)

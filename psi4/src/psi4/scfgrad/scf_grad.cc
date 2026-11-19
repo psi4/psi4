@@ -73,6 +73,20 @@ extern bool brianEnableDFT;
 namespace psi {
 namespace scfgrad {
 
+namespace {
+// JKGrad::build_JKGrad sends every SCF_TYPE containing "DF" to DFJKGrad, also the composite
+// DFDIRJ+{COSX,LINK,SNLINK}.  Their J part is DF and matches the energy; their exchange part would
+// be a DF exchange derivative that does not belong to the LinK/COSX/snLinK energy.  Refuse it when
+// exchange is needed; pure functionals (J only) stay allowed.
+void check_composite_exchange_derivative(const std::string& scf_type, bool needs_exchange, const std::string& what) {
+    const auto plus = scf_type.find('+');
+    if (!needs_exchange || plus == std::string::npos) return;
+    throw PSIEXCEPTION("SCF_TYPE " + scf_type + ": no analytic exchange " + what + " is implemented for the " +
+                       scf_type.substr(plus + 1) + " algorithm, and the density-fitted one would not match the " +
+                       "energy. Use SCF_TYPE DF, DIRECT or PK, or finite differences of energies (dertype='energy').");
+}
+}  // namespace
+
 SCFDeriv::SCFDeriv(std::shared_ptr<scf::HF> ref_wfn, Options& options) :
     Wavefunction(options)
 {
@@ -221,6 +235,8 @@ SharedMatrix SCFDeriv::compute_gradient()
     timer_off("Grad: S");
 
     // => Two-Electron Gradient <= //
+    check_composite_exchange_derivative(options_.get_str("SCF_TYPE"),
+                                        functional_->is_x_hybrid() || functional_->is_x_lrc(), "gradient");
     timer_on("Grad: JK");
 
     auto jk = JKGrad::build_JKGrad(1, mintshelper_);
@@ -977,6 +993,9 @@ SharedMatrix SCFDeriv::compute_hessian()
     }
     // => Two-Electron Hessian <= //
 
+    check_composite_exchange_derivative(options_.get_str("SCF_TYPE"),
+                                        !functional_ || functional_->is_x_hybrid() || functional_->is_x_lrc(),
+                                        "Hessian");
     timer_on("Hess: JK");
 
     auto jk = JKGrad::build_JKGrad(2, mintshelper_);
