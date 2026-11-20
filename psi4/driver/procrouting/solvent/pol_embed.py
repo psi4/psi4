@@ -112,6 +112,17 @@ class CppeInterface:
             core.print_out(f"{output}\n")
 
         self.cppe_state = cppe.CppeState(self.options, psi4mol_to_cppemol(self.molecule), callback)
+        # CPPE (>=0.3) treats any site listed under @POLARIZABILITIES as polarizable, and an all-zero tensor
+        #   makes its induced-dipole solver produce NaN ("Failed to converge induced dipole moments")
+        zero_pol_sites = [
+            p.index + 1 for p in self.cppe_state.potentials
+            if p.is_polarizable and not np.any(p.polarizability.values)
+        ]
+        if zero_pol_sites:
+            raise ValidationError(
+                f"PE: potential file {self.cppe_state.options['potfile']} lists all-zero polarizabilities for site(s) "
+                f"{zero_pol_sites}. CPPE can't solve for induced moments with them. Remove those sites "
+                f"from the @POLARIZABILITIES section (and decrease its site count) to make them non-polarizable.")
         core.print_out("CPPE Options:\n")
         core.print_out(f"PE(ECP) repulsive potentials = {self.pe_ecp}\n")
         for k in cppe.valid_option_keys:

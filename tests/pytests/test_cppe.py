@@ -271,11 +271,10 @@ ORDER 2
 4         0 0 0 0 0 0
 @POLARIZABILITIES
 ORDER 1 1
-4
+3
 1        2.98942355    -0.37779481     0.04141173     1.82815813     0.40319255     2.35026343
 2        1.31859676    -0.60024842    -0.89358696     1.20607500     0.56785158     1.40652272
 3        2.28090986     0.01949959     0.86466278     0.68674835    -0.13216306     0.96339257
-4        0 0 0 0 0 0
 EXCLISTS
 4 4
 1       2    3    4
@@ -313,11 +312,10 @@ ORDER 2
 4         0 0 0 0 0 0
 @POLARIZABILITIES
 ORDER 1 1
-4
+3
 1        2.98942355    -0.37779481     0.04141173     1.82815813     0.40319255     2.35026343
 2        1.31859676    -0.60024842    -0.89358696     1.20607500     0.56785158     1.40652272
 3        2.28090986     0.01949959     0.86466278     0.68674835    -0.13216306     0.96339257
-4        0 0 0 0 0 0
 EXCLISTS
 4 4
 1       2    3    4
@@ -508,6 +506,27 @@ def test_cppe_pe_ecp(inp):
     })
     scf_energy, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
     assert compare_values(inp["ref"], scf_energy, 7, "Total PE-SCF Energy with PE(ECP)")
+
+
+@pytest.mark.quick
+@uusing("cppe")
+def test_cppe_zero_polarizability_error():
+    """A site listed under @POLARIZABILITIES with an all-zero tensor makes CPPE's induced-dipole
+    solver NaN; psi4 should stop with a clear message instead of a convergence failure."""
+    mol = psi4.geometry(__geoms['formamide'])
+    pot = __potentials['h2o_spillout'].replace(
+        "ORDER 1 1\n3\n", "ORDER 1 1\n4\n").replace("EXCLISTS", "4        0 0 0 0 0 0\nEXCLISTS")
+    potfile = 'h2o_spillout_zeropol.pot'
+    with open(potfile, 'w') as fp:
+        fp.write(pot)
+    psi4.set_options({
+        'basis': 'sto-3g',
+        'pe': True,
+        'scf_type': 'pk',
+        'pe__potfile': potfile,
+    })
+    with pytest.raises(psi4.ValidationError, match=r"all-zero polarizabilities for site\(s\) \[4\]"):
+        psi4.energy('scf', molecule=mol)
 
 
 @pytest.mark.quick

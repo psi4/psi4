@@ -121,6 +121,7 @@ _w1 = ("CCSD TOTAL GRADIENT",  "wrong semicanonical ae rohf ccsd gradients by cc
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -217,6 +218,7 @@ def test_hf_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, reque
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -320,6 +322,7 @@ def test_hf_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, req
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -470,6 +473,7 @@ def test_mp2_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, requ
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -672,6 +676,7 @@ def test_mp2_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -790,6 +795,7 @@ def test_mp2_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp, pytest.mark.long]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3324,6 +3330,7 @@ def test_ccsd_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, req
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3474,6 +3481,7 @@ def test_ccsd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3573,6 +3581,7 @@ def test_ccsd_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, r
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3717,6 +3726,7 @@ def test_ccsd_prt_pr_energy_default(inp, dertype, basis, subjects, clsd_open_pmo
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp, pytest.mark.long]),
     ],
 )
 @pytest.mark.parametrize(
@@ -6238,6 +6248,35 @@ def test_b2plyp_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, r
 #  <<<  Common functions
 
 
+def _system_keywords(basis, method, driver, dertype, keywords):
+    """Keywords a system needs that depend on more than one parametrize axis (basis x row x dertype), so can't be
+    written into a single pytest.param. Keyword *setting* belongs here (or in the params), not in the runner, which
+    keeps only its always-on block and per-system memory/findif settings.
+
+    """
+    kw = {}
+    if basis == "def2-svp":
+        # ECP systems ch2i2/ch2i
+        if driver == "gradient" and dertype == 0:
+            # DF energies with I carry ~1e-9 Eh deterministic roughness (jkfit metric cond ~1e9), and mass-weighted steps
+            #   move I only disp_size/sqrt(127), amplifying it ~11x more: rhf df grd0 2.2e-6 mass-weighted vs 1.6e-7 Cartesian
+            kw["disp_mass_weight"] = False
+        if driver == "gradient" and dertype == 0 and keywords.get("cc_type") == "df" and method in ["ccsd", "ccsd(t)"]:
+            # at default conv, dfocc uhf fc ccsd/ccsd(t) amplitude noise leaves ch2i grd0 1.2-1.5e-6 from analytic; tight ~6e-8
+            kw.update({"e_convergence": 12, "d_convergence": 11, "r_convergence": 11})
+        if driver == "hessian" and dertype == 1 and method == "hf" and "df" not in keywords.get("scf_type", ""):
+            # findif-of-grads hessians divide gradient error from the leftover orbital gradient by the mass-weighted step
+            #   on I (0.005/sqrt(127) bohr): at default d_conv, rhf pk/out_of_core 1.2-2.1e-5 from analytic (direct
+            #   ~8e-7 only because it overconverges); at e/d 11/10 all <2e-6. DF rows have a separate floor (runner atol_h).
+            kw.update({"e_convergence": 11, "d_convergence": 10})
+        if method in ["svwn", "pbe", "b3lyp", "wb97x", "b3lyp5", "b2plyp"]:
+            # default (75,302) grid leaves ch2i2 dft grd1 vs grd0 at ~1.5e-4 (also ch2br2 all-electron ~8e-5, so heavy-atom
+            #   angular grid, not ECP). (99,974) and (200,974) bring svwn/pbe to ~5e-7. b3lyp (b88 near ECP I) still 7.5e-6 at
+            #   (200,974), 1.7e-6 at (300,974). no ECP DFT rows or refs yet; any refs must be computed at this grid.
+            kw.update({"dft_radial_points": 200, "dft_spherical_points": 974})
+    return kw
+
+
 def _processor(inp, dertype, basis, subjects, clsd_open_pmols, request, method, driver):
     """For each pytest.param in this file, takes its input dictionary, inserts additional param
     fields like molecule, basis, dertype, inserts per-test fields like method and driver, sets up
@@ -6262,6 +6301,11 @@ def _processor(inp, dertype, basis, subjects, clsd_open_pmols, request, method, 
         inpcopy["wrong"] = inp["wrong"][basis]
     if inp.get("marks", False) and inp["marks"].get(dertype, False):
         request.node.add_marker(inp["marks"][dertype])
+    if basis == "def2-svp" and method == "hf" and driver == "hessian" and dertype == 0 and "df" in inp["keywords"].get("scf_type", ""):
+        # ECP systems ch2i2/ch2i: DF energies with I are rough at ~1e-9 Eh (jkfit metric cond ~1e9), and findif hessian
+        #   steps on I are mass-weighted to 0.005/sqrt(127) bohr, so second differences land 1.3e-3 (uhf, rohf) to 6.7e-3
+        #   (rhf) from analytic. tighter conv or ints_tolerance don't help; DISP_MASS_WEIGHT=false isn't available for hessians.
+        request.node.add_marker(pytest.mark.xfail(reason="ECP DF findif-of-energies hessian noise (1e-3 to 7e-3)", strict=True))
 
     xptd = {}
     for k, v in inp.get("xptd", {}).items():
@@ -6271,6 +6315,8 @@ def _processor(inp, dertype, basis, subjects, clsd_open_pmols, request, method, 
 
     inpcopy["driver"] = driver
     inpcopy["call"] = method
+    # fresh dict: the param's own keywords dict is shared by every basis/dertype instance of the row
+    inpcopy["keywords"] = {**inp["keywords"], **_system_keywords(basis, method, driver, dertype, inp["keywords"])}
     inpcopy["keywords"]["basis"] = basis
     inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}
     # print("INP", inpcopy)
