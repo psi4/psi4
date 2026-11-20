@@ -23,21 +23,21 @@ void VRR_P_S(
 
     for (int prim = 0; prim < nprim; ++prim) {
 
-        const T tpi = 0.5 / v_p[prim];
-        const T PAx = v_PAx[prim];
-        const T PAy = v_PAy[prim];
-        const T PAz = v_PAz[prim];
         const T* __restrict PGx = &v_PGx[prim*gb_size];
         const T* __restrict PGy = &v_PGy[prim*gb_size];
         const T* __restrict PGz = &v_PGz[prim*gb_size];
-
         const T* __restrict scaled_boys_0 = &v_scaled_boys[prim*2*gb_size+0*gb_size];
         const T* __restrict scaled_boys_1 = &v_scaled_boys[prim*2*gb_size+1*gb_size];
+
+        const T PAx = v_PAx[prim];
+        const T PAy = v_PAy[prim];
+        const T PAz = v_PAz[prim];
 
         // overwrite integrals for first primitive, accumulate otherwise
         if (prim==0) {
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
+
 
                 integral_0[g] = PAx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
                 integral_1[g] = PAy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
@@ -48,6 +48,7 @@ void VRR_P_S(
 
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
+
 
                 integral_0[g] += PAx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
                 integral_1[g] += PAy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];

@@ -5,7 +5,7 @@
 def get_codestrings(hrr, need_coeff_ratios, same_center):
     args_str_T = (
             "        T* integrals,              //!< overwritten, cartesian integrals for this grid batch\n" +
-            ("        T* base_integrals,         //!< overwritten, base [LA+LB|0] integrals for HRR\n" if hrr else "") +
+            ("        T* base_integrals,         //!< work array for the base [LA+LB|0] integrals of the HRR (not used by all kernels)\n" if hrr else "") +
             "        const T* v_scaled_boys,    //!< Obara-Saika S-type seed integrals (primitive index slow)\n" +
             "        const T* v_p,              //!< (a + b) where a/b is the exponent of multishell A/B respectively\n" +
             "        const T* v_PGx,            //!< (Px - Gx); P is the GPT combined center; G is a gridpoint (primitive index slow)\n" +

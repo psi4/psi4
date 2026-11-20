@@ -3,7 +3,7 @@
 template <typename T>
 void HRR_P_P(
         T* integrals,              //!< overwritten, cartesian integrals for this grid batch
-        T* base_integrals,         //!< overwritten, base [LA+LB|0] integrals for HRR
+        T* base_integrals,         //!< work array for the base [LA+LB|0] integrals of the HRR (not used by all kernels)
         const T* v_scaled_boys,    //!< Obara-Saika S-type seed integrals (primitive index slow)
         const T* v_p,              //!< (a + b) where a/b is the exponent of multishell A/B respectively
         const T* v_PGx,            //!< (Px - Gx); P is the GPT combined center; G is a gridpoint (primitive index slow)
@@ -30,20 +30,17 @@ void HRR_P_P(
 
     for (int prim = 0; prim < nprim; ++prim) {
 
-        const T tpi = 0.5 / v_p[prim];
-        const T PAx = v_PAx[prim];
-        const T PAy = v_PAy[prim];
-        const T PAz = v_PAz[prim];
-        const T PBx = PAx + ABx;
-        const T PBy = PAy + ABy;
-        const T PBz = PAz + ABz;
         const T* __restrict PGx = &v_PGx[prim*gb_size];
         const T* __restrict PGy = &v_PGy[prim*gb_size];
         const T* __restrict PGz = &v_PGz[prim*gb_size];
-
         const T* __restrict scaled_boys_0 = &v_scaled_boys[prim*3*gb_size+0*gb_size];
         const T* __restrict scaled_boys_1 = &v_scaled_boys[prim*3*gb_size+1*gb_size];
         const T* __restrict scaled_boys_2 = &v_scaled_boys[prim*3*gb_size+2*gb_size];
+
+        const T PAx = v_PAx[prim];
+        const T PAy = v_PAy[prim];
+        const T PAz = v_PAz[prim];
+        const T tpi = 0.5 / v_p[prim];
 
         // overwrite integrals for first primitive, accumulate otherwise
         if (prim==0) {
@@ -53,19 +50,20 @@ void HRR_P_P(
                 const T x0 = PAx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
                 const T x1 = PAy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
                 const T x2 = PAz*scaled_boys_0[g] - PGz[g]*scaled_boys_1[g];
-                const T x3 = tpi*(scaled_boys_0[g] - scaled_boys_1[g]);
-                const T x4 = PAy*scaled_boys_1[g] - PGy[g]*scaled_boys_2[g];
-                const T x5 = PAz*scaled_boys_1[g] - PGz[g]*scaled_boys_2[g];
+                const T x3 = PAx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g];
+                const T x4 = scaled_boys_0[g] - scaled_boys_1[g];
+                const T x5 = PAy*scaled_boys_1[g] - PGy[g]*scaled_boys_2[g];
+                const T x6 = PAz*scaled_boys_1[g] - PGz[g]*scaled_boys_2[g];
 
                 base_integral_0[g] = x0;
                 base_integral_1[g] = x1;
                 base_integral_2[g] = x2;
-                base_integral_3[g] = PAx*x0 - PGx[g]*(PAx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g]) + x3;
-                base_integral_4[g] = PAx*x1 - PGx[g]*x4;
-                base_integral_5[g] = PAx*x2 - PGx[g]*x5;
-                base_integral_6[g] = PAy*x1 - PGy[g]*x4 + x3;
-                base_integral_7[g] = PAy*x2 - PGy[g]*x5;
-                base_integral_8[g] = PAz*x2 - PGz[g]*x5 + x3;
+                base_integral_3[g] = PAx*x0 + tpi*x4 - PGx[g]*x3;
+                base_integral_4[g] = PAx*x1 - PGx[g]*x5;
+                base_integral_5[g] = PAx*x2 - PGx[g]*x6;
+                base_integral_6[g] = PAy*x1 + tpi*x4 - PGy[g]*x5;
+                base_integral_7[g] = PAy*x2 - PGy[g]*x6;
+                base_integral_8[g] = PAz*x2 + tpi*x4 - PGz[g]*x6;
 
             } // for g
         } else {
@@ -76,19 +74,20 @@ void HRR_P_P(
                 const T x0 = PAx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
                 const T x1 = PAy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
                 const T x2 = PAz*scaled_boys_0[g] - PGz[g]*scaled_boys_1[g];
-                const T x3 = tpi*(scaled_boys_0[g] - scaled_boys_1[g]);
-                const T x4 = PAy*scaled_boys_1[g] - PGy[g]*scaled_boys_2[g];
-                const T x5 = PAz*scaled_boys_1[g] - PGz[g]*scaled_boys_2[g];
+                const T x3 = PAx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g];
+                const T x4 = scaled_boys_0[g] - scaled_boys_1[g];
+                const T x5 = PAy*scaled_boys_1[g] - PGy[g]*scaled_boys_2[g];
+                const T x6 = PAz*scaled_boys_1[g] - PGz[g]*scaled_boys_2[g];
 
                 base_integral_0[g] += x0;
                 base_integral_1[g] += x1;
                 base_integral_2[g] += x2;
-                base_integral_3[g] += PAx*x0 - PGx[g]*(PAx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g]) + x3;
-                base_integral_4[g] += PAx*x1 - PGx[g]*x4;
-                base_integral_5[g] += PAx*x2 - PGx[g]*x5;
-                base_integral_6[g] += PAy*x1 - PGy[g]*x4 + x3;
-                base_integral_7[g] += PAy*x2 - PGy[g]*x5;
-                base_integral_8[g] += PAz*x2 - PGz[g]*x5 + x3;
+                base_integral_3[g] += PAx*x0 + tpi*x4 - PGx[g]*x3;
+                base_integral_4[g] += PAx*x1 - PGx[g]*x5;
+                base_integral_5[g] += PAx*x2 - PGx[g]*x6;
+                base_integral_6[g] += PAy*x1 + tpi*x4 - PGy[g]*x5;
+                base_integral_7[g] += PAy*x2 - PGy[g]*x6;
+                base_integral_8[g] += PAz*x2 + tpi*x4 - PGz[g]*x6;
 
             } // for g
         } // if/else prim
@@ -107,14 +106,15 @@ void HRR_P_P(
     #pragma omp simd
     for (int g = 0; g < gb_size; ++g) {
 
-        integral_0[g] = ABx*base_integral_0[g] + base_integral_3[g];
+
+        integral_0[g] = base_integral_3[g] + ABx*base_integral_0[g];
         integral_1[g] = ABy*base_integral_0[g] + base_integral_4[g];
         integral_2[g] = ABz*base_integral_0[g] + base_integral_5[g];
-        integral_3[g] = ABx*base_integral_1[g] + base_integral_4[g];
+        integral_3[g] = base_integral_4[g] + ABx*base_integral_1[g];
         integral_4[g] = ABy*base_integral_1[g] + base_integral_6[g];
         integral_5[g] = ABz*base_integral_1[g] + base_integral_7[g];
-        integral_6[g] = ABx*base_integral_2[g] + base_integral_5[g];
-        integral_7[g] = ABy*base_integral_2[g] + base_integral_7[g];
+        integral_6[g] = base_integral_5[g] + ABx*base_integral_2[g];
+        integral_7[g] = base_integral_7[g] + ABy*base_integral_2[g];
         integral_8[g] = ABz*base_integral_2[g] + base_integral_8[g];
 
     } // for g

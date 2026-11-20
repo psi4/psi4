@@ -3,14 +3,12 @@
 Runs the vendored snk_integral_codegen (codegen/, MIT license, see codegen/LICENSE) for the vertical-recurrence
 (VRR) kernels of every pair of shells s..f with am(A) >= am(B), and the horizontal-recurrence (HRR) kernels of every
 pair of shells p..f, on different centers and on the same center, and writes snk_kernels.cc, which compiles them,
-and snk_kernels.h, their dispatch tables. Needs SymPy. Run from anywhere:
+and snk_kernels.h, their dispatch tables. Needs no packages. Run from anywhere:
 
     python generate.py
 
-The generator emits uncompilable VRR code for an s shell on A with a higher shell on B (P - A is used but not
-declared; fixed upstream in jesse-dicenso/snk_integral_codegen#1), so only am(A) >= am(B) is generated for VRR;
-BatchedPotentialInt transposes the other orders. The generator makes HRR kernels only for shells with angular
-momentum.
+Only am(A) >= am(B) is generated for VRR; BatchedPotentialInt transposes the other orders. The generator makes HRR
+kernels only for shells with angular momentum.
 """
 
 import os
