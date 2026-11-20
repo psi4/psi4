@@ -25,9 +25,7 @@ points, from Obara-Saika seed integrals (2 pi / p) U_p F_N(T) supplied by the
 caller, accumulating over the primitive pairs; HRR kernels contract the base
 integrals [c|0] before transferring angular momentum to B, which pays off for
 deeper contractions. `BatchedPotentialInt` chooses between them by the rules of
-the preprint. HRR kernels are made for shells with angular momentum only. VRR
-kernels are generated for am(A) >= am(B) only, and `BatchedPotentialInt`
-transposes the other orders.
+the preprint. HRR kernels are made for shells with angular momentum only.
 
 ## Regenerating
 
