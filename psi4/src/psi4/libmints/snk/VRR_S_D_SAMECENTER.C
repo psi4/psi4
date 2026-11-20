@@ -34,17 +34,18 @@ void VRR_S_D_SAMECENTER(
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
 
-                const T x0 = -PGy[g]*scaled_boys_2[g];
-                const T x1 = scaled_boys_0[g] - scaled_boys_1[g];
-                const T x2 = -PGx[g]*scaled_boys_2[g];
-                const T x3 = -PGz[g]*scaled_boys_2[g];
+                const T x0 = scaled_boys_0[g] - scaled_boys_1[g];
+                const T x1 = tpi*x0;
+                const T x2 = PGx[g]*scaled_boys_2[g];
+                const T x3 = PGy[g]*scaled_boys_2[g];
+                const T x4 = PGz[g]*scaled_boys_2[g];
 
-                integral_0[g] = tpi*x1 - PGx[g]*x2;
-                integral_1[g] = -PGx[g]*x0;
-                integral_2[g] = -PGx[g]*x3;
-                integral_3[g] = tpi*x1 - PGy[g]*x0;
-                integral_4[g] = -PGy[g]*x3;
-                integral_5[g] = tpi*x1 - PGz[g]*x3;
+                integral_0[g] = PGx[g]*x2 + x1;
+                integral_1[g] = PGx[g]*x3;
+                integral_2[g] = PGx[g]*x4;
+                integral_3[g] = x1 + PGy[g]*x3;
+                integral_4[g] = PGy[g]*x4;
+                integral_5[g] = x1 + PGz[g]*x4;
 
             } // for g
         } else {
@@ -52,17 +53,18 @@ void VRR_S_D_SAMECENTER(
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
 
-                const T x0 = -PGy[g]*scaled_boys_2[g];
-                const T x1 = scaled_boys_0[g] - scaled_boys_1[g];
-                const T x2 = -PGx[g]*scaled_boys_2[g];
-                const T x3 = -PGz[g]*scaled_boys_2[g];
+                const T x0 = scaled_boys_0[g] - scaled_boys_1[g];
+                const T x1 = tpi*x0;
+                const T x2 = PGx[g]*scaled_boys_2[g];
+                const T x3 = PGy[g]*scaled_boys_2[g];
+                const T x4 = PGz[g]*scaled_boys_2[g];
 
-                integral_0[g] += tpi*x1 - PGx[g]*x2;
-                integral_1[g] += -PGx[g]*x0;
-                integral_2[g] += -PGx[g]*x3;
-                integral_3[g] += tpi*x1 - PGy[g]*x0;
-                integral_4[g] += -PGy[g]*x3;
-                integral_5[g] += tpi*x1 - PGz[g]*x3;
+                integral_0[g] += PGx[g]*x2 + x1;
+                integral_1[g] += PGx[g]*x3;
+                integral_2[g] += PGx[g]*x4;
+                integral_3[g] += x1 + PGy[g]*x3;
+                integral_4[g] += PGy[g]*x4;
+                integral_5[g] += x1 + PGz[g]*x4;
 
             } // for g
         } // if/else prim

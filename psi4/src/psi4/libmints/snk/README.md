@@ -10,7 +10,7 @@ J. DiCenso, H. Laqua and M. Head-Gordon, "Vectorized and Symbolically Optimized
 Seminumerical Exchange for Large-Scale Quantum Chemistry", arXiv:2610.21075 (2026).
 
 - `codegen/`: the generator files (`benchmark/` and `main.py` left out),
-  unmodified, at commit b98cab6753bf2bb8a27b8e3a03714685450efb5b of
+  unmodified, at commit 1a34519b8b883f83e8b9d6fe6578079caa968e45 of
   jesse-dicenso/snk_integral_codegen#2, which replaces the SymPy back end with a
   search for the cheapest recurrence path and blocks the kernels for the cache
   (MIT license, see `codegen/LICENSE`). `codegen/verify.py` checks generated
@@ -30,8 +30,8 @@ the preprint. HRR kernels are made for shells with angular momentum only.
 ## Regenerating
 
 No packages are needed (these files were generated under Python 3.15; SymPy is
-needed only for `codegen/verify.py`). Generating all kernels takes a few seconds,
-and the output is deterministic:
+needed only for `codegen/verify.py`). Generating all kernels takes about half a
+minute, and the output is deterministic:
 
 ```
 python psi4/src/psi4/libmints/snk/generate.py

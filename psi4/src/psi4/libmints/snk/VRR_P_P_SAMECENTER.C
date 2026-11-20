@@ -37,23 +37,24 @@ void VRR_P_P_SAMECENTER(
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
 
-                const T x0 = -PGy[g]*scaled_boys_2[g];
-                const T x1 = -PGx[g]*x0;
-                const T x2 = scaled_boys_0[g] - scaled_boys_1[g];
-                const T x3 = -PGx[g]*scaled_boys_2[g];
-                const T x4 = -PGz[g]*scaled_boys_2[g];
-                const T x5 = -PGx[g]*x4;
-                const T x6 = -PGy[g]*x4;
+                const T x0 = scaled_boys_0[g] - scaled_boys_1[g];
+                const T x1 = tpi*x0;
+                const T x2 = PGx[g]*scaled_boys_2[g];
+                const T x3 = PGy[g]*scaled_boys_2[g];
+                const T x4 = PGx[g]*x3;
+                const T x5 = PGz[g]*scaled_boys_2[g];
+                const T x6 = PGx[g]*x5;
+                const T x7 = PGy[g]*x5;
 
-                integral_0[g] = tpi*x2 - PGx[g]*x3;
-                integral_1[g] = x1;
-                integral_2[g] = x5;
-                integral_3[g] = x1;
-                integral_4[g] = tpi*x2 - PGy[g]*x0;
-                integral_5[g] = x6;
-                integral_6[g] = x5;
-                integral_7[g] = x6;
-                integral_8[g] = tpi*x2 - PGz[g]*x4;
+                integral_0[g] = PGx[g]*x2 + x1;
+                integral_1[g] = x4;
+                integral_2[g] = x6;
+                integral_3[g] = x4;
+                integral_4[g] = x1 + PGy[g]*x3;
+                integral_5[g] = x7;
+                integral_6[g] = x6;
+                integral_7[g] = x7;
+                integral_8[g] = x1 + PGz[g]*x5;
 
             } // for g
         } else {
@@ -61,23 +62,24 @@ void VRR_P_P_SAMECENTER(
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
 
-                const T x0 = -PGy[g]*scaled_boys_2[g];
-                const T x1 = -PGx[g]*x0;
-                const T x2 = scaled_boys_0[g] - scaled_boys_1[g];
-                const T x3 = -PGx[g]*scaled_boys_2[g];
-                const T x4 = -PGz[g]*scaled_boys_2[g];
-                const T x5 = -PGx[g]*x4;
-                const T x6 = -PGy[g]*x4;
+                const T x0 = scaled_boys_0[g] - scaled_boys_1[g];
+                const T x1 = tpi*x0;
+                const T x2 = PGx[g]*scaled_boys_2[g];
+                const T x3 = PGy[g]*scaled_boys_2[g];
+                const T x4 = PGx[g]*x3;
+                const T x5 = PGz[g]*scaled_boys_2[g];
+                const T x6 = PGx[g]*x5;
+                const T x7 = PGy[g]*x5;
 
-                integral_0[g] += tpi*x2 - PGx[g]*x3;
-                integral_1[g] += x1;
-                integral_2[g] += x5;
-                integral_3[g] += x1;
-                integral_4[g] += tpi*x2 - PGy[g]*x0;
-                integral_5[g] += x6;
-                integral_6[g] += x5;
-                integral_7[g] += x6;
-                integral_8[g] += tpi*x2 - PGz[g]*x4;
+                integral_0[g] += PGx[g]*x2 + x1;
+                integral_1[g] += x4;
+                integral_2[g] += x6;
+                integral_3[g] += x4;
+                integral_4[g] += x1 + PGy[g]*x3;
+                integral_5[g] += x7;
+                integral_6[g] += x6;
+                integral_7[g] += x7;
+                integral_8[g] += x1 + PGz[g]*x5;
 
             } // for g
         } // if/else prim

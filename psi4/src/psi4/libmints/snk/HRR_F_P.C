@@ -32,7 +32,7 @@ void HRR_F_P(
 
         // The gridpoints are processed in blocks.  The integrals of a block are contracted in
         // a buffer that stays in the L1 cache and are then copied to the output arrays.
-        enum { g_block = (sizeof(T) <= 4) ? 32 : 32 };
+        enum { g_block = (sizeof(T) <= 4) ? 32 : 16 };
         alignas(64) T base_integral[25*g_block];
         T* __restrict base_integral_0 = &base_integral[0*g_block];
         T* __restrict base_integral_1 = &base_integral[1*g_block];
@@ -297,32 +297,32 @@ void HRR_F_P(
             #pragma omp simd
             for (int g = 0; g < g_block; ++g) {
 
-                block_0[g] = base_integral_10[g] + ABx*base_integral_0[g];
-                block_1[g] = ABy*base_integral_0[g] + base_integral_11[g];
-                block_2[g] = ABz*base_integral_0[g] + base_integral_12[g];
-                block_3[g] = base_integral_11[g] + ABx*base_integral_1[g];
-                block_6[g] = base_integral_12[g] + ABx*base_integral_2[g];
-                block_4[g] = ABy*base_integral_1[g] + base_integral_13[g];
-                block_5[g] = ABz*base_integral_1[g] + base_integral_14[g];
-                block_7[g] = base_integral_14[g] + ABy*base_integral_2[g];
-                block_8[g] = ABz*base_integral_2[g] + base_integral_15[g];
-                block_9[g] = base_integral_13[g] + ABx*base_integral_3[g];
-                block_12[g] = base_integral_14[g] + ABx*base_integral_4[g];
-                block_15[g] = base_integral_15[g] + ABx*base_integral_5[g];
                 block_10[g] = ABy*base_integral_3[g] + base_integral_16[g];
-                block_11[g] = ABz*base_integral_3[g] + base_integral_17[g];
-                block_13[g] = base_integral_17[g] + ABy*base_integral_4[g];
-                block_14[g] = ABz*base_integral_4[g] + base_integral_18[g];
-                block_16[g] = base_integral_18[g] + ABy*base_integral_5[g];
-                block_17[g] = ABz*base_integral_5[g] + base_integral_19[g];
                 block_18[g] = base_integral_16[g] + ABx*base_integral_6[g];
                 block_19[g] = ABy*base_integral_6[g] + base_integral_20[g];
                 block_20[g] = ABz*base_integral_6[g] + base_integral_21[g];
-                block_21[g] = base_integral_17[g] + ABx*base_integral_7[g];
                 block_22[g] = base_integral_21[g] + ABy*base_integral_7[g];
+                block_9[g] = base_integral_13[g] + ABx*base_integral_3[g];
+                block_4[g] = ABy*base_integral_1[g] + base_integral_13[g];
+                block_11[g] = ABz*base_integral_3[g] + base_integral_17[g];
+                block_21[g] = base_integral_17[g] + ABx*base_integral_7[g];
+                block_13[g] = base_integral_17[g] + ABy*base_integral_4[g];
                 block_23[g] = ABz*base_integral_7[g] + base_integral_22[g];
-                block_24[g] = base_integral_18[g] + ABx*base_integral_8[g];
                 block_25[g] = base_integral_22[g] + ABy*base_integral_8[g];
+                block_3[g] = base_integral_11[g] + ABx*base_integral_1[g];
+                block_1[g] = ABy*base_integral_0[g] + base_integral_11[g];
+                block_0[g] = base_integral_10[g] + ABx*base_integral_0[g];
+                block_2[g] = ABz*base_integral_0[g] + base_integral_12[g];
+                block_5[g] = ABz*base_integral_1[g] + base_integral_14[g];
+                block_12[g] = base_integral_14[g] + ABx*base_integral_4[g];
+                block_6[g] = base_integral_12[g] + ABx*base_integral_2[g];
+                block_7[g] = base_integral_14[g] + ABy*base_integral_2[g];
+                block_8[g] = ABz*base_integral_2[g] + base_integral_15[g];
+                block_14[g] = ABz*base_integral_4[g] + base_integral_18[g];
+                block_24[g] = base_integral_18[g] + ABx*base_integral_8[g];
+                block_15[g] = base_integral_15[g] + ABx*base_integral_5[g];
+                block_16[g] = base_integral_18[g] + ABy*base_integral_5[g];
+                block_17[g] = ABz*base_integral_5[g] + base_integral_19[g];
                 block_26[g] = ABz*base_integral_8[g] + base_integral_23[g];
                 block_27[g] = base_integral_19[g] + ABx*base_integral_9[g];
                 block_28[g] = base_integral_23[g] + ABy*base_integral_9[g];

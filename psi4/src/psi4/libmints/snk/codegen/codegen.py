@@ -3,7 +3,7 @@
 #
 
 from multishells import MULTISHELLS, num_cartesian_integrals, get_hrr_blist
-from dag import Graph, VRRBuilder, HRRBuilder
+from dag import Graph, VRRBuilder, HRRBuilder, ADD_COST
 from codestrings import get_codestrings
 
 import io
@@ -31,7 +31,7 @@ SEARCH_KICKS = 20
 BLOCK_MIN_BYTES = 280
 # ... a block has this many gridpoints ...
 BLOCK_POINTS = 32
-# ... unless the buffers of the block would then exceed this many bytes.
+# ... unless its buffers would then exceed half of this many bytes; smaller blocks may use all of it.
 BLOCK_MAX_BYTES = 24*1024
 
 def cartesian_components(L):
@@ -44,14 +44,21 @@ def ratio_expression(iLA, iLB, nLA, nLB):
     return f"ratios[{iLA*nLB+iLB}]"
 
 def build_vrr_graph(same_center, lqns, verbose=False):
-    """Find a cheap VRR evaluation of the integrals lqns = [(a, b), ...]; returns the graph and its nodes."""
-    graph = Graph()
-    vrr = VRRBuilder(same_center, graph, kicks=SEARCH_KICKS)
-    nodes = graph.factor(vrr.build([vrr.target(a, b) for (a, b) in lqns], verbose))
-    if verbose:
+    """Find a cheap VRR evaluation of the integrals lqns = [(a, b), ...]; returns the graph and its nodes.
+
+    The path search is run for both cost models of the differences (see dag.VRRBuilder)
+    and the graph with fewer operations is kept."""
+    best = None
+    for shared_differences in (False, True):
+        graph = Graph()
+        vrr = VRRBuilder(same_center, graph, shared_differences=shared_differences, kicks=SEARCH_KICKS)
+        nodes = graph.factor(vrr.build([vrr.target(a, b) for (a, b) in lqns], verbose))
         nmul, nadd = graph.count(nodes)
-        print(f"  VRR: {nmul} multiplications and {nadd} additions per gridpoint and primitive.")
-    return graph, nodes
+        if verbose:
+            print(f"  VRR: {nmul} multiplications and {nadd} additions per gridpoint and primitive.")
+        if best is None or nmul + ADD_COST*nadd < best[0]:
+            best = (nmul + ADD_COST*nadd, graph, nodes)
+    return best[1], best[2]
 
 def unique_rows(values):
     """Number the distinct values; returns (distinct values, row of every value)."""
@@ -156,7 +163,8 @@ def write_primitive_loop(f, graph, stores, Nmax, nratios, blocked):
 def block_points(nrows, size):
     """Gridpoints per block for buffers of nrows arrays of a type with the given size."""
     points = BLOCK_POINTS
-    while points*size*nrows > BLOCK_MAX_BYTES and points*size > 64:
+    # a full block only if its buffers take at most half of the limit
+    while points*size*nrows > (BLOCK_MAX_BYTES // 2 if points == BLOCK_POINTS else BLOCK_MAX_BYTES) and points*size > 64:
         points //= 2
     return points
 
@@ -361,7 +369,7 @@ def generate_hrr(MSA, MSB, same_center, dname="SNK_CODEGEN", verbose=False):
         print(f"Searching for the HRR path ({nci} final integrals)...")
 
     graph = Graph()
-    hrr = HRRBuilder(same_center, graph, hrr_blist)
+    hrr = HRRBuilder(same_center, graph, hrr_blist, kicks=SEARCH_KICKS)
     targets = []
     for LA in vLA:
         for a in cartesian_components(LA):
