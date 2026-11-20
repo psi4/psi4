@@ -3,6 +3,7 @@ from addons import uusing
 from utils import *
 
 import math
+import time
 
 import numpy as np
 import qcelemental as qcel
@@ -146,6 +147,21 @@ print("timers usable after errors")
         pytest.fail("timer call after a timer error deadlocked")
     assert proc.returncode == 0, proc.stderr
     assert "timers usable after errors" in proc.stdout
+
+
+def test_timer_user_time_in_seconds():
+    """A single-threaded busy loop costs about one CPU second per wall second.  User times were
+    converted with a fixed 60 clock ticks per second, i.e. 100/60 too large on Linux."""
+    psi4.core.clean_timers()
+    psi4.core.timer_on("busy_loop")
+    t0 = time.perf_counter()
+    while time.perf_counter() - t0 < 1.0:
+        pass
+    psi4.core.timer_off("busy_loop")
+
+    rec = next(r for r in psi4.core.get_timer_records().values() if r["timer_name"] == "busy_loop")
+    # upper bound catches the 100/60 factor; loose lower bound tolerates a loaded test machine
+    assert 0.3 < rec["user_time"] / rec["wall_time"] < 1.3
 
 
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>

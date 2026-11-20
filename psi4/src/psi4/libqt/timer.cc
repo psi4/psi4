@@ -120,10 +120,17 @@ typedef int omp_lock_t;
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libqt/qt.h"
 
-/* guess for HZ, if missing */
-#ifndef HZ
-#define HZ 60
-#endif
+namespace {
+/* Clock ticks per second of the times() counters (100 on Linux).  The former fixed guess of 60
+   overstated user and system times by 100/60.  The Windows stub of sysconf returns 0. */
+double clock_ticks_per_second() {
+    static const double ticks = [] {
+        const long tck = sysconf(_SC_CLK_TCK);
+        return tck > 0 ? static_cast<double>(tck) : 100.0;
+    }();
+    return ticks;
+}
+}  // namespace
 
 namespace psi {
 
@@ -323,8 +330,8 @@ class Timer_Structure {
                     tms offtime;
                     status_ = OFF;
                     times(&offtime);
-                    utime_ += ((double)(offtime.tms_utime - ontime_.tms_utime)) / HZ;
-                    stime_ += ((double)(offtime.tms_stime - ontime_.tms_stime)) / HZ;
+                    utime_ += ((double)(offtime.tms_utime - ontime_.tms_utime)) / clock_ticks_per_second();
+                    stime_ += ((double)(offtime.tms_stime - ontime_.tms_stime)) / clock_ticks_per_second();
                     wtime_ += clock::now() - wall_start_;
                 } else {
                     std::string str = "Timer ";
