@@ -50,7 +50,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libmints/potentialint.h"
 #ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
 #endif
@@ -151,7 +150,6 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_rel_potential(int deriv) {
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::electrostatic() { return std::make_unique<ElectrostaticInt>(spherical_transforms_, bs1_, bs2_, 0); }
 
-std::unique_ptr<OneBodyAOInt> IntegralFactory::pcm_potentialint() { return  std::make_unique<PCMPotentialInt>(spherical_transforms_, bs1_, bs2_, 0); }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_potential_erf(double omega, int deriv) {
     return std::make_unique<PotentialErfInt>(spherical_transforms_, bs1_, bs2_, omega, deriv);

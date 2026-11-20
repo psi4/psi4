@@ -443,7 +443,7 @@ for each type of one electron integral in |PSIfour|.
     +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
     | Nuclear Coulomb Potential  | ``PotentialInt``           | Libint2         | assumes nuclear centers/charges as the potential                   |
     +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
-    | PCM Potential              | ``PCMPotentialInt``        | Libint2         | parallelized over charge points                                    |
+    | Potential at Points        | ``BatchedPotentialInt``    | M-D             | one shell pair over a batch of points, vectorized over the points  |
     +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
     | Quadrupole                 | ``QuadrupoleInt``          | Libint2         |                                                                    |
     +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
