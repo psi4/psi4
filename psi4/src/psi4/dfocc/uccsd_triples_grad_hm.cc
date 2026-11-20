@@ -172,14 +172,14 @@ void DFOCC::uccsd_triples_grad_hm()
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
         // read G[I](A,BC)
-        G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(i * navirA * navir2AA) * sizeof(double));
+        G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
         Mterm40s->zero();
         for(long int j = 0; j < naoccA; j++) {
             long int ij = ij_idxAA->get(i, j);
             double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
             // read G[J](A,BC)
-            G_J_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(j * navirA * navir2AA) * sizeof(double));
+            G_J_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)j * navirA * navir2AA) * sizeof(double));
             for (long int k = 0; k < naoccA; k++) {
                 long int kj = ij_idxAA->get(k, j);
                 long int jk = ij_idxAA->get(j, k);
@@ -200,7 +200,7 @@ void DFOCC::uccsd_triples_grad_hm()
 
                 // read G[K](A,BC)
                 SharedTensor2d G_K_ABC = std::make_shared<Tensor2d>("G[I] <A||BC>", navirA, navirA, navirA);
-                G_K_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(k * navirA * navir2AA) * sizeof(double));
+                G_K_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)k * navirA * navir2AA) * sizeof(double));
 
                 // X_AAA[IJK](A,CB) = \sum(E) t_IJ^AE <KE||CB>          (1)
                 // X_AAA[IJK](A,CB) = \sum(E) T[IJ](A,E) G[K](E,CB)
@@ -328,7 +328,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 Mterm38.reset();
 
                 // M_OOVO(IJ,AM) += \sum(K) Mterm38tr(A,M)
-                M_OOVO->axpy((size_t)(naoccA * navirA), 0, 1, Mterm38tr, (i * naoccA * navirA * naoccA) + (j * navirA * naoccA), 1, 1.0);
+                M_OOVO->axpy(((size_t)naoccA * navirA), 0, 1, Mterm38tr, (i * naoccA * navirA * naoccA) + (j * navirA * naoccA), 1, 1.0);
                 Mterm38tr.reset();
 
                 // UCCSD(T) M intr. Eq. (39)
@@ -341,7 +341,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // M_OOVV(IJ,AB) += \sum(K) Mterm39(AB)
                 SharedTensor2d M_OOVV = std::make_shared<Tensor2d>("M <IJ||AB>", naoccA, naoccA, navirA, navirA);
                 if (!first_write) M_OOVV->read_anti_symm(psio_, PSIF_DFOCC_DENS);
-                M_OOVV->axpy((size_t)(navirA * navirA), 0, 1, Mterm39, (i * naoccA * navirA * navirA) + (j * navirA * navirA), 1, 1.0);
+                M_OOVV->axpy(((size_t)navirA * navirA), 0, 1, Mterm39, (i * naoccA * navirA * navirA) + (j * navirA * navirA), 1, 1.0);
                 M_OOVV->write_anti_symm(psio_, PSIF_DFOCC_DENS);
                 M_OOVV.reset();
                 Mterm39.reset();
@@ -352,7 +352,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //------------------------------------------------------------------------------------------
                 // read G[K](A,BC)
                 G_K_ABC = std::make_shared<Tensor2d>("G[I] <A||BC>", navirA, navirA, navirA);
-                G_K_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(k * navirA * navir2AA) * sizeof(double));
+                G_K_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)k * navirA * navir2AA) * sizeof(double));
 
                 // lterm20(A,B) = (1/2) * -\sum(EF) M[IJK](A,EF) G[K](B,EF)
                 // lterm20(A,B) = (1/2) * -\sum(EF) M[IJK](A,EF) G[K](EF,B)
@@ -549,13 +549,13 @@ void DFOCC::uccsd_triples_grad_hm()
 
         Mterm43s->zero();
         // read G[i](a,bc)
-        G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(i * navirB * navir2BB) * sizeof(double));
+        G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)i * navirB * navir2BB) * sizeof(double));
         for(long int j = 0; j < naoccB; j++) {
             long int ij = ij_idxBB->get(i, j);
             double Dij = Di + FockB->get(j + nfrzc, j + nfrzc);
 
             // read G[j](a,bc)
-            G_j_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(j * navirB * navir2BB) * sizeof(double));
+            G_j_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
             for (long int k = 0; k < naoccB; k++) {
                 long int kj = ij_idxBB->get(k, j);
                 long int jk = ij_idxBB->get(j, k);
@@ -563,7 +563,7 @@ void DFOCC::uccsd_triples_grad_hm()
 
                 // read G[k](a,bc)
                 SharedTensor2d G_k_abc = std::make_shared<Tensor2d>("G[i] <a||bc>", navirB, navirB, navirB);
-                G_k_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(k * navirB * navir2BB) * sizeof(double));
+                G_k_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)k * navirB * navir2BB) * sizeof(double));
 
                 // malloc W[ijk](abc)
                 SharedTensor2d X_BBB = std::make_shared<Tensor2d>("X[ijk](a,cb)", navirB, navirB, navirB);
@@ -704,7 +704,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 Mterm41.reset();
 
                 // M_oovo(ij,am) += \sum(k) Mterm41tr(a,m)
-                M_oovo->axpy((size_t)(naoccB * navirB), 0, 1, Mterm41tr, (i * naoccB * navirB * naoccB) + (j * navirB * naoccB), 1, 1.0);
+                M_oovo->axpy(((size_t)naoccB * navirB), 0, 1, Mterm41tr, (i * naoccB * navirB * naoccB) + (j * navirB * naoccB), 1, 1.0);
                 Mterm41tr.reset();
 
                 // UCCSD(T) M intr. Eq. (42)
@@ -718,7 +718,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // M_oovv(ij,ab) += \sum(k) Mterm42(ab)
                 SharedTensor2d M_oovv = std::make_shared<Tensor2d>("M <ij||ab>", naoccB, naoccB, navirB, navirB);
                 if (!first_write) M_oovv->read_anti_symm(psio_, PSIF_DFOCC_DENS);
-                M_oovv->axpy((size_t)(navirB * navirB), 0, 1, Mterm42, (i * naoccB * navirB * navirB) + (j * navirB * navirB), 1, 1.0);
+                M_oovv->axpy(((size_t)navirB * navirB), 0, 1, Mterm42, (i * naoccB * navirB * navirB) + (j * navirB * navirB), 1, 1.0);
                 M_oovv->write_anti_symm(psio_, PSIF_DFOCC_DENS);
                 M_oovv.reset();
                 Mterm42.reset();
@@ -728,7 +728,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // UCCSD(T) Lambda Eq. (22) 1st term
                 //------------------------------------------------------------------------------------------
                 G_k_abc = std::make_shared<Tensor2d>("G[i] <a||bc>", navirB, navirB, navirB);
-                G_k_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(k * navirB * navir2BB) * sizeof(double));
+                G_k_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)k * navirB * navir2BB) * sizeof(double));
 
                 // lterm22(a,b) = (1/2) * -\sum(ef) M[ijk](a,ef) <kb||ef>
                 // lterm22(a,b) = (1/2) * -\sum(ef) M[ijk](a,ef) G[k](ef,b)
@@ -965,7 +965,7 @@ void DFOCC::uccsd_triples_grad_hm()
 
                 // read K[k](A,bC)
                 K_i_AbC = std::make_shared<Tensor2d>("K[i] <A|bC>", navirA, navirB, navirA);
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)k * navirB * navir2AA) * sizeof(double));
 
                 Waux = std::make_shared<Tensor2d>("X[IJk](A, cB)", navirA, navirB, navirA);
                 // Waux[IJk](A,cB) = \sum(E) t_IJ^AE <kE|cB>          (1)
@@ -1006,7 +1006,7 @@ void DFOCC::uccsd_triples_grad_hm()
 
                 // read G[I](A,BC)
                 G_I_ABC = std::make_shared<Tensor2d>("G[I] <A||BC>", navirA, navirA, navirA);
-                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(i * navirA * navir2AA) * sizeof(double));
+                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
 
                 // W_AAB[IJk](AB,c) = \sum(E) t_Jk^Ec <IE||AB>         (3)
                 // W_AAB[IJk](AB,c) = \sum(E) G[I](E,AB) T[Jk](E,c)
@@ -1014,7 +1014,7 @@ void DFOCC::uccsd_triples_grad_hm()
                         0, (j * naoccB * navirA * navirB) + (k * navirA * navirB), 1.0, 1.0);
 
                 // read G[J](A,BC)
-                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(j * navirA * navir2AA) * sizeof(double));
+                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)j * navirA * navir2AA) * sizeof(double));
 
                 // W_AAB[IJk](AB,c) -= \sum(E) t_Ik^Ec <JE||AB>        (4)
                 // W_AAB[IJk](AB,c) -= \sum(E) G[J](E,AB) T[Ik](E,c)
@@ -1034,7 +1034,7 @@ void DFOCC::uccsd_triples_grad_hm()
 
                 // read K[J](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(j * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)j * navirB * navirA * navirB) * sizeof(double));
 
                 Waux = std::make_shared<Tensor2d>("X[IJk](A, Bc)", navirA, navirA, navirB);
 
@@ -1044,7 +1044,7 @@ void DFOCC::uccsd_triples_grad_hm()
                         (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[I](a,Bc)
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(i * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
 
                 // Waux[IJk](A,Bc) -= \sum(e) t_Jk^Ae <Ie|Bc>         (8)
                 // Waux[IJk](A,Bc) -= \sum(e) T[Jk](A,e) K[I](e,Bc)
@@ -1170,7 +1170,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 Mterm44.reset();
 
                 // M_oOvO[kJ](cM) += \sum(I) Mterm44tr(cM)
-                M_oOvO->axpy((size_t)(navirB * naoccA), 0, 1, Mterm44tr, (k * naoccA * navirB * naoccA) + (j * navirB * naoccA), 1, 1.0);
+                M_oOvO->axpy(((size_t)navirB * naoccA), 0, 1, Mterm44tr, (k * naoccA * navirB * naoccA) + (j * navirB * naoccA), 1, 1.0);
                 Mterm44tr.reset();
 
                 // UCCSD(T) M intr. Eq. (46)
@@ -1194,7 +1194,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 Mterm46.reset();
 
                 // M_OOVO(IJ,AM) += \sum(k) Mterm46tr(A,M)
-                M_OOVO->axpy((size_t)(navirA * naoccA), 0, 1, Mterm46tr, (i * naoccA * navirA * naoccA) + (j * navirA * naoccA), 1, 1.0);
+                M_OOVO->axpy(((size_t)navirA * naoccA), 0, 1, Mterm46tr, (i * naoccA * navirA * naoccA) + (j * navirA * naoccA), 1, 1.0);
                 Mterm46tr.reset();
 
                 // UCCSD(T) M intr. Eq. (47)
@@ -1215,7 +1215,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 Mterm47.reset();
 
                 // M_OoVo(Ik,Am) += \sum(J) Mterm47tr(A,m)
-                M_OoVo->axpy((size_t)(navirA * naoccB), 0, 1, Mterm47tr, (i * naoccB * navirA * naoccB) + (k * navirA * naoccB), 1, 1.0);
+                M_OoVo->axpy(((size_t)navirA * naoccB), 0, 1, Mterm47tr, (i * naoccB * navirA * naoccB) + (k * navirA * naoccB), 1, 1.0);
                 Mterm47tr.reset();
 
                 // UCCSD(T) M intr. Eq. (50)
@@ -1237,7 +1237,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // M_OoVv(IkAc) += \sum(J) Mterm50(Ac)
                 SharedTensor2d M_OoVv = std::make_shared<Tensor2d>("M <Ij|Ab>", naoccA, naoccB, navirA, navirB);
                 if (!first_write) M_OoVv->read(psio_, PSIF_DFOCC_DENS);
-                M_OoVv->axpy((size_t)(navirA * navirB), 0, 1, Mterm50t, (i * naoccB * navirA * navirB) + (k * navirA * navirB), 1, 1.0);
+                M_OoVv->axpy(((size_t)navirA * navirB), 0, 1, Mterm50t, (i * naoccB * navirA * navirB) + (k * navirA * navirB), 1, 1.0);
                 M_OoVv->write(psio_, PSIF_DFOCC_DENS);
                 M_OoVv.reset();
 
@@ -1252,7 +1252,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // M_OOVV(IJAB) += \sum(k) Mterm51(AB)
                 SharedTensor2d M_OOVV = std::make_shared<Tensor2d>("M <IJ||AB>", naoccA, naoccA, navirA, navirA);
                 M_OOVV->read_anti_symm(psio_, PSIF_DFOCC_DENS);
-                M_OOVV->axpy((size_t)(navirA * navirA), 0, 1, Mterm51, (i * naoccA * navirA * navirA) + (j * navirA * navirA), 1, 1.0);
+                M_OOVV->axpy(((size_t)navirA * navirA), 0, 1, Mterm51, (i * naoccA * navirA * navirA) + (j * navirA * navirA), 1, 1.0);
                 M_OOVV->write_anti_symm(psio_, PSIF_DFOCC_DENS);
                 M_OOVV.reset();
 
@@ -1262,7 +1262,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //------------------------------------------------------------------------------------------
                 // read K[k](B,fE)
                 K_i_AbC = std::make_shared<Tensor2d>("K[i] <A|bC>", navirA, navirB, navirA);
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)k * navirB * navir2AA) * sizeof(double));
 
                 SharedTensor2d lterm24_1 = std::make_shared<Tensor2d>("lterm24_1", navirA, navirA);
                 SharedTensor2d lterm24_1tr = std::make_shared<Tensor2d>("lterm24_1", navirA, navirA);
@@ -1314,7 +1314,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //------------------------------------------------------------------------------------------
                 // read K[J](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(j * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)j * navirB * navirA * navirB) * sizeof(double));
 
                 // lterm27(Ab) = \sum(Ef) M[IJk](A,Ef) <Jb|Ef>
                 // lterm27(Ab) = \sum(Ef) M[IJk](A,Ef) K[J](b,Ef)
@@ -1326,7 +1326,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //------------------------------------------------------------------------------------------
                 // read G[J](A,BC)
                 G_I_ABC = std::make_shared<Tensor2d>("G[I] <A||BC>", navirA, navirA, navirA);
-                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(j * navirA * navir2AA) * sizeof(double));
+                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)j * navirA * navir2AA) * sizeof(double));
 
                 // lterm27(Ab) = -(1/2) \sum(EF) <JA||EF> M[IJk](EF,b)
                 // lterm27(Ab) = -(1/2) \sum(EF) G[J](A,EF) M[IJk](EF,b)
@@ -1400,11 +1400,11 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm48       = \sum(c) M[IJk](A,Bc) * T(kJ,cD)
                 // Mterm48(AB,D) = \sum(c) M[IJk](AB,c) * T[kJ](c,D)
                 SharedTensor2d Mterm48 = std::make_shared<Tensor2d>("Mterm48(AB,D)", navir2AA, navirA);
-                Mterm48->myread(psio_, PSIF_DFOCC_MIABC_AAAA, (size_t)(i * navirA * navir2AA) * sizeof(double));
+                Mterm48->myread(psio_, PSIF_DFOCC_MIABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
                 Mterm48->contract(false, false, navir2AA, navirA, navirB, Td_AAB, t2BA,
                         0, (k * naoccA * navirB * navirA) + (j * navirB * navirA), 1.0, 1.0);
 
-                Mterm48->mywrite(psio_, PSIF_DFOCC_MIABC_AAAA, (size_t)(i * navirA * navir2AA) * sizeof(double));
+                Mterm48->mywrite(psio_, PSIF_DFOCC_MIABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
                 Mterm48.reset();
 
                 // UCCSD(T) M intr. Eq. (49)
@@ -1432,10 +1432,10 @@ void DFOCC::uccsd_triples_grad_hm()
                         (i * naoccA * navir2AA) + (j * navir2AA), 0, -0.5, 0.0);
 
                 SharedTensor2d Mterm45s = std::make_shared<Tensor2d>("Mterm45tr(c,BD)", navirB, navirA, navirA);
-                Mterm45s->myread(psio_, PSIF_DFOCC_MIABC_BBAA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                Mterm45s->myread(psio_, PSIF_DFOCC_MIABC_BBAA, ((size_t)k * navirB * navir2AA) * sizeof(double));
                 Mterm45s->sort3a(321, navirA, navirA, navirB, Mterm45, 1.0, 1.0);
                 Mterm45.reset();
-                Mterm45s->mywrite(psio_, PSIF_DFOCC_MIABC_BBAA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                Mterm45s->mywrite(psio_, PSIF_DFOCC_MIABC_BBAA, ((size_t)k * navirB * navir2AA) * sizeof(double));
                 Mterm45s.reset();
 
                 Td_AAB.reset();
@@ -1506,7 +1506,7 @@ void DFOCC::uccsd_triples_grad_hm()
 
                 // read G[k](a,bc)
                 G_i_abc = std::make_shared<Tensor2d>("G[i] <a||bc>", navirB, navirB, navirB);
-                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(k * navirB * navir2BB) * sizeof(double));
+                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)k * navirB * navir2BB) * sizeof(double));
 
                 // W_ABB[Ijk](A,cb) = \sum(e) t_Ij^Ae <ke||cb>          (1)
                 // W_ABB[Ijk](A,cb) = T[Ij](A,e) G[k](e,cb)
@@ -1514,7 +1514,7 @@ void DFOCC::uccsd_triples_grad_hm()
                         (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read G[j](a,bc)
-                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(j * navirB * navir2BB) * sizeof(double));
+                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
                 // W_ABB[Ijk](A,cb) = \sum(e) t_Ik^Ae <je||cb>          (2)
                 // W_ABB[Ijk](A,cb) = T[Ik](A,e) G[j](e,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, navirB, t2AB, G_i_abc,
@@ -1552,7 +1552,7 @@ void DFOCC::uccsd_triples_grad_hm()
 
                 // read K[I](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(i * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
 
                 // Waux[Ijk](c,Ab) = \sum(e) t_kj^ce <Ie|Ab>        (6)
                 // Waux[Ijk](c,Ab) = T[kj](c,e) K[I](e,Ab)
@@ -1576,7 +1576,7 @@ void DFOCC::uccsd_triples_grad_hm()
 
                 // read K[k](A,bC)
                 K_i_AbC = std::make_shared<Tensor2d>("K[i] <A|bC>", navirA, navirB, navirA);
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)k * navirB * navir2AA) * sizeof(double));
 
                 // Waux[Ijk](b,cA) = \sum(E) t_Ij^Eb <kE|cA>        (7)
                 // Waux[Ijk](b,cA) = T[Ij](E,b) K[k](E,cA)
@@ -1584,7 +1584,7 @@ void DFOCC::uccsd_triples_grad_hm()
                         (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[j](A,bC)
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(j * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)j * navirB * navir2AA) * sizeof(double));
 
                 // Waux[Ijk](b,cA) = \sum(E) t_Ik^Eb <jE|cA>        (8)
                 // Waux[Ijk](b,cA) = T[Ik](E,b) K[j](E,cA)
@@ -1731,7 +1731,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 Mterm52.reset();
 
                 // M_oovo(kj,cm) += \sum(I) Mterm52(c,m)
-                M_oovo->axpy((size_t)(naoccB * navirB), 0, 1, Mterm52tr, (k * naoccB * navirB * naoccB) + (j * navirB * naoccB), 1, 1.0);
+                M_oovo->axpy(((size_t)naoccB * navirB), 0, 1, Mterm52tr, (k * naoccB * navirB * naoccB) + (j * navirB * naoccB), 1, 1.0);
                 Mterm52tr.reset();
 
                 // UCCSD(T) M intr. Eq. (53)
@@ -1753,7 +1753,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 Mterm53.reset();
 
                 // M_oOvO[jI](bM) += \sum(k) Mterm53tr(bM)
-                M_oOvO->axpy((size_t)(navirB * naoccA), 0, 1, Mterm53tr, (j * naoccA * navirB * naoccA) + (i * navirB * naoccA), 1, 1.0);
+                M_oOvO->axpy(((size_t)navirB * naoccA), 0, 1, Mterm53tr, (j * naoccA * navirB * naoccA) + (i * navirB * naoccA), 1, 1.0);
                 Mterm53tr.reset();
 
                 // UCCSD(T) M intr. Eq. (55)
@@ -1766,10 +1766,10 @@ void DFOCC::uccsd_triples_grad_hm()
                         0, (k * naoccA * navirB * navirA) + (i * navirB * navirA), 1.0, 0.0);
 
                 SharedTensor2d Mterm55s = std::make_shared<Tensor2d>("Mterm55tr(b,AD)", navirB, navirA, navirA);
-                Mterm55s->myread(psio_, PSIF_DFOCC_MIABC_BBAA, (size_t)(j * navirB * navir2AA) * sizeof(double));
+                Mterm55s->myread(psio_, PSIF_DFOCC_MIABC_BBAA, ((size_t)j * navirB * navir2AA) * sizeof(double));
                 Mterm55s->sort3a(213, navirA, navirB, navirA, Mterm55, 1.0, 1.0);
                 Mterm55.reset();
-                Mterm55s->mywrite(psio_, PSIF_DFOCC_MIABC_BBAA, (size_t)(j * navirB * navir2AA) * sizeof(double));
+                Mterm55s->mywrite(psio_, PSIF_DFOCC_MIABC_BBAA, ((size_t)j * navirB * navir2AA) * sizeof(double));
                 Mterm55s.reset();
 
                 // UCCSD(T) M intr. Eq. (56)
@@ -1786,7 +1786,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 Mterm56.reset();
 
                 // M_OoVo(Ij,Am) += \sum(k) Mterm56tr(A,m)
-                M_OoVo->axpy((size_t)(navirA * naoccB), 0, 1, Mterm56tr, (i * naoccB * navirA * naoccB) + (j * navirA * naoccB), 1, 1.0);
+                M_OoVo->axpy(((size_t)navirA * naoccB), 0, 1, Mterm56tr, (i * naoccB * navirA * naoccB) + (j * navirA * naoccB), 1, 1.0);
                 Mterm56tr.reset();
 
                 // UCCSD(T) M intr. Eq. (57)
@@ -1795,10 +1795,10 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm57       = -\sum(c) M[Ijk](A,bc) * T(jk,cd)
                 // Mterm57(Ab,d) = -\sum(c) M[Ijk](Ab,c) * T[jk](c,d)
                 SharedTensor2d Mterm57 = std::make_shared<Tensor2d>("Mterm57(Ab,d)", navirA, navirB, navirB);
-                Mterm57->myread(psio_, PSIF_DFOCC_MIABC_AABB,(size_t)(i * navirA * navir2BB) * sizeof(double));
+                Mterm57->myread(psio_, PSIF_DFOCC_MIABC_AABB,((size_t)i * navirA * navir2BB) * sizeof(double));
                 Mterm57->contract(false, false, navirA * navirB, navirB, navirB, Td_ABB, t2BB,
                         0, (j * naoccB * navirB * navirB) + (k * navirB * navirB), -0.5, 1.0);
-                Mterm57->mywrite(psio_, PSIF_DFOCC_MIABC_AABB,(size_t)(i * navirA * navir2BB) * sizeof(double));
+                Mterm57->mywrite(psio_, PSIF_DFOCC_MIABC_AABB,((size_t)i * navirA * navir2BB) * sizeof(double));
                 Mterm57.reset();
 
                 // UCCSD(T) M intr. Eq. (58)
@@ -1815,7 +1815,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // M_oovv(kj,cb) += \sum(I) Mterm58(bc)
                 SharedTensor2d M_oovv = std::make_shared<Tensor2d>("M <ij||ab>", naoccB, naoccB, navirB, navirB);
                 M_oovv->read_anti_symm(psio_, PSIF_DFOCC_DENS);
-                M_oovv->axpy((size_t)(navirB * navirB), 0, 1, Mterm58tr, (k * naoccB * navirB * navirB) + (j * navirB * navirB), 1, 1.0);
+                M_oovv->axpy(((size_t)navirB * navirB), 0, 1, Mterm58tr, (k * naoccB * navirB * navirB) + (j * navirB * navirB), 1, 1.0);
                 M_oovv->write_anti_symm(psio_, PSIF_DFOCC_DENS);
                 M_oovv.reset();
                 Mterm58tr.reset();
@@ -1831,7 +1831,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // M_OoVv(IjAb) += \sum(k) Mterm59(Ab)
                 SharedTensor2d M_OoVv = std::make_shared<Tensor2d>("M <Ij|Ab>", naoccA, naoccB, navirA, navirB);
                 M_OoVv->read(psio_, PSIF_DFOCC_DENS);
-                M_OoVv->axpy((size_t)(navirA * navirB), 0, 1, Mterm59, (i * naoccB * navirA * navirB) + (j * navirA * navirB), 1, 1.0);
+                M_OoVv->axpy(((size_t)navirA * navirB), 0, 1, Mterm59, (i * naoccB * navirA * navirB) + (j * navirA * navirB), 1, 1.0);
                 M_OoVv->write(psio_, PSIF_DFOCC_DENS);
                 M_OoVv.reset();
                 Mterm59.reset();
@@ -1840,7 +1840,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //------------------------------------------------------------------------------------------
                 // read K[I](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(i * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
 
                 SharedTensor2d lterm31 = std::make_shared<Tensor2d>("lterm31", navirB, navirB);
                 SharedTensor2d lterm31_tr = std::make_shared<Tensor2d>("lterm31", navirB, navirB);
@@ -1892,7 +1892,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //------------------------------------------------------------------------------------------
                 // read G[k](a,bc)
                 G_i_abc = std::make_shared<Tensor2d>("G[i] <a||bc>", navirB, navirB, navirB);
-                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(k * navirB * navir2BB) * sizeof(double));
+                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)k * navirB * navir2BB) * sizeof(double));
 
                 SharedTensor2d lterm33_1 = std::make_shared<Tensor2d>("lterm33_1", navirA, navirB);
                 // lterm33_1(A,b) = 0.5 \sum(ef) M[Ijk](A,ef] <bk||ef> 
@@ -1909,7 +1909,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //------------------------------------------------------------------------------------------
                 // read K[k](A,bC)
                 K_i_AbC = std::make_shared<Tensor2d>("K[i] <A|bC>", navirA, navirB, navirA);
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(k * navirA * navirB * navirA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)k * navirA * navirB * navirA) * sizeof(double));
 
                 SharedTensor2d K_i_ACb = std::make_shared<Tensor2d>("K_i_ACb", navirA, navirA, navirB);
                 K_i_ACb->sort3a(132, navirA, navirB, navirA, K_i_AbC, 1.0, 0.0);
@@ -1973,10 +1973,10 @@ void DFOCC::uccsd_triples_grad_hm()
                         (k * naoccA * navirB * navirA) + (i * navirB * navirA), 0, -1.0, 0.0);
 
                 SharedTensor2d Mterm54s = std::make_shared<Tensor2d>("Mterm54tr(c,bd)", navirB, navirB, navirB);
-                Mterm54s->myread(psio_, PSIF_DFOCC_MIABC_BBBB, (size_t)(j * navirB * navir2BB) * sizeof(double));
+                Mterm54s->myread(psio_, PSIF_DFOCC_MIABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
                 Mterm54s->sort3a(321, navirB, navirB, navirB, Mterm54, 1.0, 1.0);
                 Mterm54.reset();
-                Mterm54s->mywrite(psio_, PSIF_DFOCC_MIABC_BBBB, (size_t)(j * navirB * navir2BB) * sizeof(double));
+                Mterm54s->mywrite(psio_, PSIF_DFOCC_MIABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
                 Mterm54s.reset();
 
                 Tc_ABB.reset();
