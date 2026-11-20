@@ -3726,7 +3726,7 @@ def test_ccsd_prt_pr_energy_default(inp, dertype, basis, subjects, clsd_open_pmo
         pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
         pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
         pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
-        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp]),
+        pytest.param("def2-svp", ["ch2i2", "ch2i", "ch2i"], id="def2ecp", marks=[*using("ecpint"), pytest.mark.ecp, pytest.mark.long]),
     ],
 )
 @pytest.mark.parametrize(
@@ -6264,6 +6264,11 @@ def _system_keywords(basis, method, driver, dertype, keywords):
         if driver == "gradient" and dertype == 0 and keywords.get("cc_type") == "df" and method in ["ccsd", "ccsd(t)"]:
             # at default conv, dfocc uhf fc ccsd/ccsd(t) amplitude noise leaves ch2i grd0 1.2-1.5e-6 from analytic; tight ~6e-8
             kw.update({"e_convergence": 12, "d_convergence": 11, "r_convergence": 11})
+        if driver == "hessian" and dertype == 1 and method == "hf" and "df" not in keywords.get("scf_type", ""):
+            # findif-of-grads hessians divide gradient error from the leftover orbital gradient by the mass-weighted step
+            #   on I (0.005/sqrt(127) bohr): at default d_conv, rhf pk/out_of_core 1.2-2.1e-5 from analytic (direct
+            #   ~8e-7 only because it overconverges); at e/d 11/10 all <2e-6. DF rows have a separate floor (runner atol_h).
+            kw.update({"e_convergence": 11, "d_convergence": 10})
         if method in ["svwn", "pbe", "b3lyp", "wb97x", "b3lyp5", "b2plyp"]:
             # default (75,302) grid leaves ch2i2 dft grd1 vs grd0 at ~1.5e-4 (also ch2br2 all-electron ~8e-5, so heavy-atom
             #   angular grid, not ECP). (99,974) and (200,974) bring svwn/pbe to ~5e-7. b3lyp (b88 near ECP I) still 7.5e-6 at
@@ -6296,6 +6301,11 @@ def _processor(inp, dertype, basis, subjects, clsd_open_pmols, request, method, 
         inpcopy["wrong"] = inp["wrong"][basis]
     if inp.get("marks", False) and inp["marks"].get(dertype, False):
         request.node.add_marker(inp["marks"][dertype])
+    if basis == "def2-svp" and method == "hf" and driver == "hessian" and dertype == 0 and "df" in inp["keywords"].get("scf_type", ""):
+        # ECP systems ch2i2/ch2i: DF energies with I are rough at ~1e-9 Eh (jkfit metric cond ~1e9), and findif hessian
+        #   steps on I are mass-weighted to 0.005/sqrt(127) bohr, so second differences land 1.3e-3 (uhf, rohf) to 6.7e-3
+        #   (rhf) from analytic. tighter conv or ints_tolerance don't help; DISP_MASS_WEIGHT=false isn't available for hessians.
+        request.node.add_marker(pytest.mark.xfail(reason="ECP DF findif-of-energies hessian noise (1e-3 to 7e-3)", strict=True))
 
     xptd = {}
     for k, v in inp.get("xptd", {}).items():

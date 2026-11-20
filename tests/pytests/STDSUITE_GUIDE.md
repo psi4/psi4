@@ -163,7 +163,10 @@ pytest test_standard_suite.py -m "ecp" --runnonroutine -n 12
   atom's gradient amplified ~sqrt(m) more than with Cartesian steps. With clean (PK/CONV) energies both agree with
   analytic to ~1e-9; with DF energies on I (~1e-9 Eh roughness), only `disp_mass_weight false` passes 1e-6 for
   gradients-from-energies (ECP rows get it from `_system_keywords()`). FD-of-energies Hessians of *non-variational*
-  (correlated) energies on heavy atoms are noise-limited, so prefer FD-of-analytic-gradients.
+  (correlated) energies on heavy atoms are noise-limited, so prefer FD-of-analytic-gradients. Hessians always
+  take mass-weighted steps (`disp_mass_weight` is gradient-only), so FD-of-gradients Hessians amplify the gradient
+  error left by SCF convergence (ECP HF non-DF hes1 rows get e/d 11/10 from `_system_keywords()`), and DF
+  FD-of-energies HF Hessians with I (1e-3 to 7e-3 off) are xfailed in `_processor`.
 
 ## 8. Triage: failure message -> likely meaning
 

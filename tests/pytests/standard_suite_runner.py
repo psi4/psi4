@@ -124,12 +124,14 @@ def runner_asserter(inp, subject, method, basis, tnm):
         if is_dft:
             atol_h = 7.0e-5
         if is_ecp and scf_type in ["df", "mem_df", "disk_df"]:
-            # I jkfit metric is ill-conditioned (~1e9), so DF grads carry ~1e-8 run-to-run noise; mass-weighted
-            #   steps on I are only 0.005/sqrt(127) bohr, so findif-of-grads hessians scatter up to ~7e-5 from analytic
+            # I jkfit metric is ill-conditioned (~1e9), so DF energies/grads are rough at ~1e-9 (deterministic with
+            #   geometry, not run-to-run), and findif hessian steps on I are mass-weighted to 0.005/sqrt(127) bohr.
+            #   hf findif-of-grads hessians land 7-8e-5 (rhf) / 0.6-1e-5 (uhf, rohf) from analytic. hf findif-of-energies
+            #   hessians (1.3e-3 uhf/rohf, 6.7e-3 rhf) are beyond any sensible tolerance, so xfail in test_standard_suite._processor.
             atol_h = 1.0e-4
-        if is_ecp and inp["keywords"]["function_kwargs"]["dertype"] == 0:
-            # same tiny mass-weighted steps on I make findif-of-energies hessians scatter ~2-4e-5 run to run for ch2i2
-            #   even at e/d_convergence 12/11, and up to ~1.3e-4 from analytic refs at default convergence
+        if is_ecp and inp["keywords"]["function_kwargs"]["dertype"] == 0 and method != "hf":
+            # same tiny mass-weighted steps on I: conv mp2 findif-of-energies hessians are 4e-6 to 4.8e-5 from analytic
+            #   refs, and 1.3e-4 for ch2i2 ae (deterministic). hf pk/direct hes0 are <5e-6, so need no relaxation.
             atol_h = 2.0e-4
 
 
