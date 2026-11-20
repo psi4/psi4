@@ -120,7 +120,7 @@ inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
 
         auto q_ov = std::make_shared<Matrix>(toc_entry.str(), naux_ij, nlmo_ij * npno_ij);
 #pragma omp critical
-        q_ov->load(psio_, PSIF_DLPNO_QIA_PNO, psi::Matrix::SubBlocks);
+        q_ov->load(psio_, PSIF_DLPNO_QIA_PNO, ::psi::Matrix::SubBlocks);
 
         std::vector<SharedMatrix> Qma_pno(naux_ij);
         for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
@@ -146,7 +146,7 @@ inline std::vector<SharedMatrix> DLPNOCCSD::QAB_PNO(const int ij) {
 
         auto q_vv = std::make_shared<Matrix>(toc_entry.str(), naux_ij, npno_ij * npno_ij);
 #pragma omp critical
-        q_vv->load(psio_, PSIF_DLPNO_QAB_PNO, psi::Matrix::ThreeIndexLowerTriangle);
+        q_vv->load(psio_, PSIF_DLPNO_QAB_PNO, ::psi::Matrix::ThreeIndexLowerTriangle);
 
         std::vector<SharedMatrix> Qab_pno(naux_ij);
         for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
@@ -495,6 +495,12 @@ void DLPNOCCSD::estimate_memory() {
     } else {
         outfile->Printf("    Storing (Q_{ij}|a_{ij} b_{ij}) integrals in RAM... \n\n");
     }
+
+    // Retain the final, post-toggle CCSD estimates so higher-order methods can distinguish
+    // the baseline in the CCSD estimator from its thread workspace.
+    ccsd_baseline_memory_doubles_ = memory_ccsd - thread_buffer_b * nthreads;
+    ccsd_iteration_workspace_doubles_ = thread_buffer_b * nthreads;
+    ccsd_peak_memory_doubles_ = std::max(memory_ccsd, memory_integrals);
 }
 
 template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
@@ -1684,7 +1690,7 @@ void DLPNOCCSD::compute_pno_integrals() {
                 toc_entry << "QIA (PNO) " << ij;
                 q_ov->set_name(toc_entry.str());
     #pragma omp critical
-                q_ov->save(psio_, PSIF_DLPNO_QIA_PNO, psi::Matrix::SubBlocks);
+                q_ov->save(psio_, PSIF_DLPNO_QIA_PNO, ::psi::Matrix::SubBlocks);
             }
         }
 
@@ -1701,7 +1707,7 @@ void DLPNOCCSD::compute_pno_integrals() {
                 toc_entry << "QAB (PNO) " << ij;
                 q_vv->set_name(toc_entry.str());
     #pragma omp critical
-                q_vv->save(psio_, PSIF_DLPNO_QAB_PNO, psi::Matrix::ThreeIndexLowerTriangle);
+                q_vv->save(psio_, PSIF_DLPNO_QAB_PNO, ::psi::Matrix::ThreeIndexLowerTriangle);
             }
         }
 
@@ -2904,10 +2910,14 @@ double DLPNOCCSD::compute_energy() {
     lccsd_iterations();
     timer_off("LCCSD");
 
-    // Bye bye (Q_ij | m_ij a_ij) integrals. You won't be missed
-    psio_->close(PSIF_DLPNO_QIA_PNO, 0);
-    // Bye bye (Q_ij | a_ij b_ij) integrals. You won't be missed
-    psio_->close(PSIF_DLPNO_QAB_PNO, 0);
+    // CCSDT consumes disk-backed PNO integrals built in this stage. Preserve
+    // each file only when a higher-order method follows and that storage path
+    // is active; the last consumer deletes it.
+    const bool ccsdt_follows = algorithm_ == DLPNOMethod::CCSDT ||
+                               algorithm_ == DLPNOMethod::CCSDT_Q ||
+                               algorithm_ == DLPNOMethod::CCSDTQ;
+    psio_->close(PSIF_DLPNO_QIA_PNO, ccsdt_follows && write_qia_pno_ ? 1 : 0);
+    psio_->close(PSIF_DLPNO_QAB_PNO, ccsdt_follows && write_qab_pno_ ? 1 : 0);
 
     print_results();
 
@@ -2999,7 +3009,7 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("                   by Andy Jiang               \n");
     outfile->Printf("              DOI: 10.1063/5.0219963           \n");
     outfile->Printf("   --------------------------------------------\n\n");
-    outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
+    print_pno_convergence();
     outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
     outfile->Printf("    T_CUT_PNO        = %6.4e \n", T_CUT_PNO_);
     outfile->Printf("    T_DIAG_SCALE     = %6.4e \n", T_CUT_PNO_DIAG_SCALE_);
@@ -3023,6 +3033,20 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("    F_CUT            = %6.4e \n", options_.get_double("F_CUT"));
     outfile->Printf("    INTS_TOL (AO)    = %6.4e \n", options_.get_double("DLPNO_AO_INTS_TOL"));
     outfile->Printf("    MIN_PNOS         = %6d   \n", options_.get_int("MIN_PNOS"));
+    if (is_post_ccsd_t() && options_["PNO_CONVERGENCE"].has_changed()) {
+        outfile->Printf(
+            "\n    WARNING: PNO_CONVERGENCE = %s is ignored for DLPNO-CCSDT and higher methods.\n"
+            "             These methods always start from the post-CCSD(T) defaults listed above.\n"
+            "             Set the individual T_CUT_* options to change those thresholds.\n",
+            options_.get_str("PNO_CONVERGENCE").c_str());
+    }
+    if (is_post_ccsd_t() && options_["T_CUT_PAIRS_MP2"].has_changed()) {
+        outfile->Printf(
+            "\n    WARNING: T_CUT_PAIRS_MP2 does not define a separate weak-pair interval for\n"
+            "             DLPNO-CCSDT and higher methods. Its value is overridden by\n"
+            "             T_CUT_PAIRS = %6.4e, and every retained pair is treated as strong.\n",
+            T_CUT_PAIRS_);
+    }
     outfile->Printf("\n\n");
 
     outfile->Printf("  ==> Basis Set Information <==\n\n");
