@@ -1,0 +1,56 @@
+#! Unsupported cases of the scfresponse module stop with a clear error before any response work:
+#! ROHF and CUHF references, meta-GGA and VV10 functionals, DFT hyperpolarizabilities, a static
+#! hyperpolarizability requested at nonzero OMEGA, and point-group symmetry. A normal calculation
+#! must still work afterwards in the same run.
+
+molecule h2o {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+molecule ch3 {
+0 2
+C   0.000000   0.000000   0.000000
+H   0.000000   1.078000   0.000000
+H   0.933575  -0.539000   0.000000
+H  -0.933575  -0.539000   0.000000
+symmetry c1
+}
+
+molecule h2o_c2v {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+}
+
+
+def expect_error(method, mol, options, props, text, label):
+    core.clean_options()
+    set_options({"basis": "cc-pvdz", "scf_type": "pk", "omega": [0.1]})
+    set_options(options)
+    try:
+        properties(method, properties=props, molecule=mol)
+        msg = "no error raised"
+    except Exception as e:
+        msg = str(e)
+    compare(1, int(text in msg), label)  #TEST
+
+
+expect_error("scf", ch3, {"reference": "rohf"}, ["SCF_SHG"], "ROHF references are not supported", "ROHF rejected")
+expect_error("scf", ch3, {"reference": "cuhf"}, ["DIPOLE_POLARIZABILITIES"], "CUHF references are not supported", "CUHF rejected")
+expect_error("tpss", h2o, {"reference": "rks"}, ["DIPOLE_POLARIZABILITIES"], "meta-GGA functionals are not supported", "meta-GGA (RKS) rejected")
+expect_error("tpss", h2o, {"reference": "uks"}, ["DIPOLE_POLARIZABILITIES"], "meta-GGA functionals are not supported", "meta-GGA (UKS) rejected")
+expect_error("wb97x-v", h2o, {}, ["DIPOLE_POLARIZABILITIES"], "VV10 nonlocal correlation is not supported", "VV10 rejected")
+expect_error("pbe", h2o, {}, ["SCF_SHG"], "only available for Hartree-Fock", "DFT hyperpolarizability rejected")
+expect_error("scf", h2o, {}, ["SCF_DIPOLE_HYPERPOLARIZABILITY"], "is the static hyperpolarizability", "static beta at nonzero OMEGA rejected")
+expect_error("scf", h2o_c2v, {}, ["DIPOLE_POLARIZABILITIES"], "only C1 symmetry is supported", "symmetry rejected")
+
+# a normal calculation still works after the errors above
+core.clean_options()
+set_options({"basis": "cc-pvdz", "scf_type": "pk", "reference": "uks", "omega": [0.1]})
+properties("pbe", properties=["DIPOLE_POLARIZABILITIES"], molecule=h2o)
+compare(1, int(variable("SCF DIPOLE POLARIZABILITY @ 456NM") > 0), "calculation after errors still works")  #TEST

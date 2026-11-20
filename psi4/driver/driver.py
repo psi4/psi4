@@ -673,9 +673,13 @@ def properties(*args, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | Name               | Calls Method                                  | Reference      | Supported Properties                                          |
     +====================+===============================================+================+===============================================================+
-    | scf                | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
+    | scf                | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`; frequency-dependent          |
+    |                    |                                               |                | polarizabilities and hyperpolarizabilities                    |
+    |                    |                                               |                | :ref:`[manual] <sec:scfresponse>` (RHF/UHF)                   |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | hf                 | HF Self-consistent field method(s)            | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
+    | hf                 | HF Self-consistent field method(s)            | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`; frequency-dependent          |
+    |                    |                                               |                | polarizabilities and hyperpolarizabilities                    |
+    |                    |                                               |                | :ref:`[manual] <sec:scfresponse>` (RHF/UHF)                   |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | mp2                | MP2 with density fitting only (mp2_type df)   | RHF            | Listed :ref:`here <sec:oeprop>`                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
