@@ -173,19 +173,19 @@ void DFOCC::uccsdl_triples_hm()
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
         // read G[I](A,BC)
-        G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(i * navirA * navir2AA) * sizeof(double));
+        G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
         for(long int j = 0; j < i; j++) {
             long int ij = ij_idxAA->get(i, j);
             double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
             // read G[J](A,BC)
-            G_J_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(j * navirA * navir2AA) * sizeof(double));
+            G_J_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)j * navirA * navir2AA) * sizeof(double));
             for (long int k = 0; k < j; k++) {
                 long int kj = ij_idxAA->get(k, j);
                 long int ik = ij_idxAA->get(i, k);
 
                 // read G[K](A,BC)
-                G_K_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(k * navirA * navir2AA) * sizeof(double));
+                G_K_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)k * navirA * navir2AA) * sizeof(double));
 
                 // X_AAA[IJK](A,CB) = \sum(E) t_IJ^AE <KE||CB>          (1)
                 // X_AAA[IJK](A,CB) = \sum(E) T[IJ](A,E) G[K](E,CB)
@@ -458,19 +458,19 @@ void DFOCC::uccsdl_triples_hm()
         double Di = FockB->get(i + nfrzc, i + nfrzc);
 
         // read G[i](a,bc)
-        G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(i * navirB * navir2BB) * sizeof(double));
+        G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)i * navirB * navir2BB) * sizeof(double));
         for(long int j = 0; j < i; j++) {
             long int ij = ij_idxBB->get(i, j);
             double Dij = Di + FockB->get(j + nfrzc, j + nfrzc);
 
             // read G[j](a,bc)
-            G_j_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(j * navirB * navir2BB) * sizeof(double));
+            G_j_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
             for (long int k = 0; k < j; k++) {
                 long int kj = ij_idxBB->get(k, j);
                 long int ik = ij_idxBB->get(i, k);
 
                 // read G[k](a,bc)
-                G_k_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(k * navirB * navir2BB) * sizeof(double));
+                G_k_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)k * navirB * navir2BB) * sizeof(double));
 
                 // X_BBB[ijk](a,cb) = \sum(e) t_ij^ae <ke||cb>          (1)
                 // X_BBB[ijk](a,cb) = \sum(e) T[ij](a,e) G[k](e,cb)
@@ -783,7 +783,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read K[k](A,bC)
                 K_i_AbC = std::make_shared<Tensor2d>("K[i] <A|bC>", navirA, navirB, navirA);
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)k * navirB * navir2AA) * sizeof(double));
 
                 Waux = std::make_shared<Tensor2d>("X[IJk](A, cB)", navirA, navirB, navirA);
                 // Waux[IJk](A,cB) = \sum(E) t_IJ^AE <kE|cB>          (1)
@@ -824,7 +824,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read G[I](A,BC)
                 G_I_ABC = std::make_shared<Tensor2d>("G[I] <A||BC>", navirA, navirA, navirA);
-                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(i * navirA * navir2AA) * sizeof(double));
+                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
 
                 // W_AAB[IJk](AB,c) = \sum(E) t_Jk^Ec <IE||AB>         (3)
                 // W_AAB[IJk](AB,c) = \sum(E) G[I](E,AB) T[Jk](E,c)
@@ -832,7 +832,7 @@ void DFOCC::uccsdl_triples_hm()
                         0, (j * naoccB * navirA * navirB) + (k * navirA * navirB), 1.0, 1.0);
 
                 // read G[J](A,BC)
-                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(j * navirA * navir2AA) * sizeof(double));
+                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)j * navirA * navir2AA) * sizeof(double));
 
                 // W_AAB[IJk](AB,c) -= \sum(E) t_Ik^Ec <JE||AB>        (4)
                 // W_AAB[IJk](AB,c) -= \sum(E) G[J](E,AB) T[Ik](E,c)
@@ -852,7 +852,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read K[J](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(j * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)j * navirB * navirA * navirB) * sizeof(double));
 
                 Waux = std::make_shared<Tensor2d>("X[IJk](A, Bc)", navirA, navirA, navirB);
 
@@ -862,7 +862,7 @@ void DFOCC::uccsdl_triples_hm()
                         (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[I](a,Bc)
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(i * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
 
                 // Waux[IJk](A,Bc) -= \sum(e) t_Jk^Ae <Ie|Bc>         (8)
                 // Waux[IJk](A,Bc) -= \sum(e) T[Jk](A,e) K[I](e,Bc)
@@ -898,7 +898,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read K[k](A,bC)
                 K_i_AbC = std::make_shared<Tensor2d>("K[i] <A|bC>", navirA, navirB, navirA);
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)k * navirB * navir2AA) * sizeof(double));
 
                 Waux = std::make_shared<Tensor2d>("X[IJk](A, cB)", navirA, navirB, navirA);
                 // Waux[IJk](A,cB) = \sum(E) l_IJ^AE <kE|cB>          (1)
@@ -939,7 +939,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read G[I](A,BC)
                 G_I_ABC = std::make_shared<Tensor2d>("G[I] <A||BC>", navirA, navirA, navirA);
-                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(i * navirA * navir2AA) * sizeof(double));
+                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
 
                 // Wl_AAB[IJk](AB,c) = \sum(E) l_Jk^Ec <IE||AB>         (3)
                 // Wl_AAB[IJk](AB,c) = \sum(E) G[I](E,AB) L[Jk](E,c)
@@ -947,7 +947,7 @@ void DFOCC::uccsdl_triples_hm()
                         0, (j * naoccB * navirA * navirB) + (k * navirA * navirB), 1.0, 1.0);
 
                 // read G[J](A,BC)
-                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, (size_t)(j * navirA * navir2AA) * sizeof(double));
+                G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)j * navirA * navir2AA) * sizeof(double));
 
                 // Wl_AAB[IJk](AB,c) -= \sum(E) l_Ik^Ec <JE||AB>        (4)
                 // Wl_AAB[IJk](AB,c) -= \sum(E) G[J](E,AB) L[Ik](E,c)
@@ -967,7 +967,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read K[J](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(j * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)j * navirB * navirA * navirB) * sizeof(double));
 
                 Waux = std::make_shared<Tensor2d>("X[IJk](A, Bc)", navirA, navirA, navirB);
 
@@ -977,7 +977,7 @@ void DFOCC::uccsdl_triples_hm()
                         (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[I](a,Bc)
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(i * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
 
                 // Waux[IJk](A,Bc) -= \sum(e) l_Jk^Ae <Ie|Bc>         (8)
                 // Waux[IJk](A,Bc) -= \sum(e) L[Jk](A,e) K[I](e,Bc)
@@ -1131,7 +1131,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read G[k](a,bc)
                 G_i_abc = std::make_shared<Tensor2d>("G[i] <a||bc>", navirB, navirB, navirB);
-                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(k * navirB * navir2BB) * sizeof(double));
+                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)k * navirB * navir2BB) * sizeof(double));
 
                 // W_ABB[Ijk](A,cb) = \sum(e) t_Ij^Ae <ke||cb>          (1)
                 // W_ABB[Ijk](A,cb) = T[Ij](A,e) G[k](e,cb)
@@ -1139,7 +1139,7 @@ void DFOCC::uccsdl_triples_hm()
                         (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read G[j](a,bc)
-                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(j * navirB * navir2BB) * sizeof(double));
+                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
                 // W_ABB[Ijk](A,cb) = \sum(e) t_Ik^Ae <je||cb>          (2)
                 // W_ABB[Ijk](A,cb) = T[Ik](A,e) G[j](e,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, navirB, t2AB, G_i_abc,
@@ -1177,7 +1177,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read K[I](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(i * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
 
                 // Waux[Ijk](c,Ab) = \sum(e) t_kj^ce <Ie|Ab>        (6)
                 // Waux[Ijk](c,Ab) = T[kj](c,e) K[I](e,Ab)
@@ -1201,7 +1201,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read K[k](A,bC)
                 K_i_AbC = std::make_shared<Tensor2d>("K[i] <A|bC>", navirA, navirB, navirA);
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)k * navirB * navir2AA) * sizeof(double));
 
                 // Waux[Ijk](b,cA) = \sum(E) t_Ij^Eb <kE|cA>        (7)
                 // Waux[Ijk](b,cA) = T[Ij](E,b) K[k](E,cA)
@@ -1209,7 +1209,7 @@ void DFOCC::uccsdl_triples_hm()
                         (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[j](A,bC)
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(j * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)j * navirB * navir2AA) * sizeof(double));
 
                 // Waux[Ijk](b,cA) = \sum(E) t_Ik^Eb <jE|cA>        (8)
                 // Waux[Ijk](b,cA) = T[Ik](E,b) K[j](E,cA)
@@ -1256,7 +1256,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read G[k](a,bc)
                 G_i_abc = std::make_shared<Tensor2d>("G[i] <a||bc>", navirB, navirB, navirB);
-                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(k * navirB * navir2BB) * sizeof(double));
+                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)k * navirB * navir2BB) * sizeof(double));
 
                 // Wl_ABB[Ijk](A,cb) = \sum(e) l_Ij^Ae <ke||cb>          (1)
                 // Wl_ABB[Ijk](A,cb) = L[Ij](A,e) G[k](e,cb)
@@ -1264,7 +1264,7 @@ void DFOCC::uccsdl_triples_hm()
                         (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read G[j](a,bc)
-                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, (size_t)(j * navirB * navir2BB) * sizeof(double));
+                G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
                 // Wl_ABB[Ijk](A,cb) = \sum(e) l_Ik^Ae <je||cb>          (2)
                 // Wl_ABB[Ijk](A,cb) = L[Ik](A,e) G[j](e,cb)
                 Wl_ABB->contract(false, false, navirA, navir2BB, navirB, l2AB, G_i_abc,
@@ -1302,7 +1302,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read K[I](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
-                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, (size_t)(i * navirB * navirA * navirB) * sizeof(double));
+                K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
 
                 // Waux[Ijk](c,Ab) = \sum(e) l_kj^ce <Ie|Ab>        (6)
                 // Waux[Ijk](c,Ab) = L[kj](c,e) K[I](e,Ab)
@@ -1326,7 +1326,7 @@ void DFOCC::uccsdl_triples_hm()
 
                 // read K[k](A,bC)
                 K_i_AbC = std::make_shared<Tensor2d>("K[i] <A|bC>", navirA, navirB, navirA);
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(k * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)k * navirB * navir2AA) * sizeof(double));
 
                 // Waux[Ijk](b,cA) = \sum(E) l_Ij^Eb <kE|cA>        (7)
                 // Waux[Ijk](b,cA) = L[Ij](E,b) K[k](E,cA)
@@ -1334,7 +1334,7 @@ void DFOCC::uccsdl_triples_hm()
                         (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[j](A,bC)
-                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, (size_t)(j * navirB * navir2AA) * sizeof(double));
+                K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)j * navirB * navir2AA) * sizeof(double));
 
                 // Waux[Ijk](b,cA) = \sum(E) l_Ik^Eb <jE|cA>        (8)
                 // Waux[Ijk](b,cA) = L[Ik](E,b) K[j](E,cA)
