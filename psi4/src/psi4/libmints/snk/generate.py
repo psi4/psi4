@@ -1,14 +1,12 @@
 """Regenerate the 3c1e kernels of BatchedPotentialInt in this directory.
 
 Runs the vendored snk_integral_codegen (codegen/, MIT license, see codegen/LICENSE) for the vertical-recurrence
-(VRR) kernels of every pair of shells s..f with am(A) >= am(B), and the horizontal-recurrence (HRR) kernels of every
-pair of shells p..f, on different centers and on the same center, and writes snk_kernels.cc, which compiles them,
+(VRR) kernels of every pair of shells s..f, and the horizontal-recurrence (HRR) kernels of every pair of shells p..f, on different centers and on the same center, and writes snk_kernels.cc, which compiles them,
 and snk_kernels.h, their dispatch tables. Needs no packages. Run from anywhere:
 
     python generate.py
 
-Only am(A) >= am(B) is generated for VRR; BatchedPotentialInt transposes the other orders. The generator makes HRR
-kernels only for shells with angular momentum.
+The generator makes HRR kernels only for shells with angular momentum.
 """
 
 import os
@@ -19,7 +17,7 @@ sys.path.insert(0, os.path.join(here, "codegen"))
 import codegen  # noqa: E402
 
 SHELLS = "SPDF"  # angular momenta 0 .. snk::max_am
-VRR_PAIRS = [(a, b) for i, a in enumerate(SHELLS) for b in SHELLS[:i + 1]]
+VRR_PAIRS = [(a, b) for a in SHELLS for b in SHELLS]
 HRR_PAIRS = [(a, b) for a in SHELLS[1:] for b in SHELLS[1:]]
 
 
@@ -89,7 +87,7 @@ constexpr int hrr_base_size(int la, int lb, bool same_center) {{
     return n;
 }}
 
-// VRR only for am(A) >= am(B), see generate.py; HRR only for am(A), am(B) >= 1.
+// HRR only for am(A), am(B) >= 1.
 """)
         f.write(table("vrr", "VRRKernel", "VRR", VRR_PAIRS, False) + "\n")
         f.write(table("vrr_same_center", "VRRKernelSameCenter", "VRR", VRR_PAIRS, True) + "\n")

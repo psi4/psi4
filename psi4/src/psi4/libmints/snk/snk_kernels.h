@@ -6,16 +6,28 @@
 
 #include "VRR_S_S.h"
 #include "VRR_S_S_SAMECENTER.h"
+#include "VRR_S_P.h"
+#include "VRR_S_P_SAMECENTER.h"
+#include "VRR_S_D.h"
+#include "VRR_S_D_SAMECENTER.h"
+#include "VRR_S_F.h"
+#include "VRR_S_F_SAMECENTER.h"
 #include "VRR_P_S.h"
 #include "VRR_P_S_SAMECENTER.h"
 #include "VRR_P_P.h"
 #include "VRR_P_P_SAMECENTER.h"
+#include "VRR_P_D.h"
+#include "VRR_P_D_SAMECENTER.h"
+#include "VRR_P_F.h"
+#include "VRR_P_F_SAMECENTER.h"
 #include "VRR_D_S.h"
 #include "VRR_D_S_SAMECENTER.h"
 #include "VRR_D_P.h"
 #include "VRR_D_P_SAMECENTER.h"
 #include "VRR_D_D.h"
 #include "VRR_D_D_SAMECENTER.h"
+#include "VRR_D_F.h"
+#include "VRR_D_F_SAMECENTER.h"
 #include "VRR_F_S.h"
 #include "VRR_F_S_SAMECENTER.h"
 #include "VRR_F_P.h"
@@ -72,18 +84,18 @@ constexpr int hrr_base_size(int la, int lb, bool same_center) {
     return n;
 }
 
-// VRR only for am(A) >= am(B), see generate.py; HRR only for am(A), am(B) >= 1.
+// HRR only for am(A), am(B) >= 1.
 inline constexpr VRRKernel vrr[max_am + 1][max_am + 1] = {
-    {&VRR_S_S<double>, nullptr, nullptr, nullptr},
-    {&VRR_P_S<double>, &VRR_P_P<double>, nullptr, nullptr},
-    {&VRR_D_S<double>, &VRR_D_P<double>, &VRR_D_D<double>, nullptr},
+    {&VRR_S_S<double>, &VRR_S_P<double>, &VRR_S_D<double>, &VRR_S_F<double>},
+    {&VRR_P_S<double>, &VRR_P_P<double>, &VRR_P_D<double>, &VRR_P_F<double>},
+    {&VRR_D_S<double>, &VRR_D_P<double>, &VRR_D_D<double>, &VRR_D_F<double>},
     {&VRR_F_S<double>, &VRR_F_P<double>, &VRR_F_D<double>, &VRR_F_F<double>},
 };
 
 inline constexpr VRRKernelSameCenter vrr_same_center[max_am + 1][max_am + 1] = {
-    {&VRR_S_S_SAMECENTER<double>, nullptr, nullptr, nullptr},
-    {&VRR_P_S_SAMECENTER<double>, &VRR_P_P_SAMECENTER<double>, nullptr, nullptr},
-    {&VRR_D_S_SAMECENTER<double>, &VRR_D_P_SAMECENTER<double>, &VRR_D_D_SAMECENTER<double>, nullptr},
+    {&VRR_S_S_SAMECENTER<double>, &VRR_S_P_SAMECENTER<double>, &VRR_S_D_SAMECENTER<double>, &VRR_S_F_SAMECENTER<double>},
+    {&VRR_P_S_SAMECENTER<double>, &VRR_P_P_SAMECENTER<double>, &VRR_P_D_SAMECENTER<double>, &VRR_P_F_SAMECENTER<double>},
+    {&VRR_D_S_SAMECENTER<double>, &VRR_D_P_SAMECENTER<double>, &VRR_D_D_SAMECENTER<double>, &VRR_D_F_SAMECENTER<double>},
     {&VRR_F_S_SAMECENTER<double>, &VRR_F_P_SAMECENTER<double>, &VRR_F_D_SAMECENTER<double>, &VRR_F_F_SAMECENTER<double>},
 };
 

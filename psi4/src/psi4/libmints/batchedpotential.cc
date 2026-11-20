@@ -277,21 +277,10 @@ void BatchedPotentialInt::compute_cart_vrr(const libint2::Shell& sh1, const libi
 
     // The kernel, by the rules of the preprint (sec. III B): HRR for more than two primitive pairs; for two, if
     // am(A) + am(B) > 3 (and am(B) > 1 on the same center); for one, if am(A) + am(B) > 6; VRR otherwise. HRR
-    // kernels exist for am(A), am(B) >= 1, in either order; VRR kernels for am(A) >= am(B).
+    // kernels exist for am(A), am(B) >= 1, VRR kernels for all pairs, in either order.
     const bool hrr_exists = am1 >= 1 && am2 >= 1;
     const bool use_hrr = hrr_exists && (nprim > 2 || (nprim == 2 && L > 3 && (!same_center || am2 > 1)) ||
                                         (nprim == 1 && L > 6));
-    if (!use_hrr && am1 < am2) {
-        // VRR for the swapped pair, [c2][c1][k], transposed
-        compute_cart_vrr(sh2, sh1, npoints, x, y, z);
-        const size_t ncart1 = comps_[am1].size(), ncart2 = comps_[am2].size();
-        vrr_out_.assign(cart_.begin(), cart_.end());
-        for (size_t c1 = 0; c1 < ncart1; ++c1)
-            for (size_t c2 = 0; c2 < ncart2; ++c2)
-                std::copy(&vrr_out_[(c2 * ncart1 + c1) * npoints], &vrr_out_[(c2 * ncart1 + c1) * npoints] + npoints,
-                          &cart_[(c1 * ncart2 + c2) * npoints]);
-        return;
-    }
 
     cart_.assign(ncart12 * npoints, 0.0);
     if (nprim == 0) return;
