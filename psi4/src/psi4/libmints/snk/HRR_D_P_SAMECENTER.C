@@ -73,34 +73,34 @@ void HRR_D_P_SAMECENTER(
                 const T* __restrict scaled_boys_3 = padded ? &pad[6*g_block] : &v_scaled_boys[prim*4*gb_size+3*gb_size + g_lo];
 
                 const T tpi = 0.5 / v_p[prim];
-                const T tpi_2 = 2*tpi;
 
                 // overwrite integrals for first primitive, accumulate otherwise
                 if (prim==0) {
                     #pragma omp simd
                     for (int g = 0; g < g_block; ++g) {
 
-                        const T x0 = -PGz[g]*scaled_boys_3[g];
-                        const T x1 = -PGx[g]*x0;
+                        const T x0 = PGz[g]*scaled_boys_3[g];
+                        const T x1 = PGx[g]*x0;
                         base_integral_4[g] = -PGy[g]*x1;
                         const T x2 = scaled_boys_1[g] - scaled_boys_2[g];
-                        const T x3 = tpi*x2 - PGz[g]*x0;
-                        base_integral_5[g] = -PGx[g]*x3;
-                        base_integral_8[g] = -PGy[g]*x3;
-                        const T x4 = -tpi_2*x2 - x3;
-                        base_integral_9[g] = PGz[g]*x4;
-                        const T x5 = -PGx[g]*scaled_boys_3[g];
-                        const T x6 = tpi*x2 - PGx[g]*x5;
-                        base_integral_1[g] = -PGy[g]*x6;
-                        base_integral_2[g] = -PGz[g]*x6;
-                        const T x7 = -tpi_2*x2 - x6;
-                        base_integral_0[g] = PGx[g]*x7;
-                        const T x8 = -PGy[g]*scaled_boys_3[g];
-                        const T x9 = tpi*x2 - PGy[g]*x8;
-                        const T x10 = -tpi_2*x2 - x9;
-                        base_integral_6[g] = PGy[g]*x10;
-                        base_integral_3[g] = -PGx[g]*x9;
-                        base_integral_7[g] = -PGz[g]*x9;
+                        const T x3 = tpi*x2;
+                        const T x4 = x3 + PGz[g]*x0;
+                        base_integral_5[g] = -PGx[g]*x4;
+                        base_integral_8[g] = -PGy[g]*x4;
+                        const T x5 = 2*x3 + x4;
+                        base_integral_9[g] = -PGz[g]*x5;
+                        const T x6 = PGx[g]*scaled_boys_3[g];
+                        const T x7 = PGx[g]*x6 + x3;
+                        base_integral_1[g] = -PGy[g]*x7;
+                        base_integral_2[g] = -PGz[g]*x7;
+                        const T x8 = 2*x3 + x7;
+                        base_integral_0[g] = -PGx[g]*x8;
+                        const T x9 = PGy[g]*scaled_boys_3[g];
+                        const T x10 = x3 + PGy[g]*x9;
+                        const T x11 = 2*x3 + x10;
+                        base_integral_6[g] = -PGy[g]*x11;
+                        base_integral_3[g] = -PGx[g]*x10;
+                        base_integral_7[g] = -PGz[g]*x10;
 
                     } // for g
                 } else {
@@ -108,27 +108,28 @@ void HRR_D_P_SAMECENTER(
                     #pragma omp simd
                     for (int g = 0; g < g_block; ++g) {
 
-                        const T x0 = -PGz[g]*scaled_boys_3[g];
-                        const T x1 = -PGx[g]*x0;
+                        const T x0 = PGz[g]*scaled_boys_3[g];
+                        const T x1 = PGx[g]*x0;
                         base_integral_4[g] += -PGy[g]*x1;
                         const T x2 = scaled_boys_1[g] - scaled_boys_2[g];
-                        const T x3 = tpi*x2 - PGz[g]*x0;
-                        base_integral_5[g] += -PGx[g]*x3;
-                        base_integral_8[g] += -PGy[g]*x3;
-                        const T x4 = -tpi_2*x2 - x3;
-                        base_integral_9[g] += PGz[g]*x4;
-                        const T x5 = -PGx[g]*scaled_boys_3[g];
-                        const T x6 = tpi*x2 - PGx[g]*x5;
-                        base_integral_1[g] += -PGy[g]*x6;
-                        base_integral_2[g] += -PGz[g]*x6;
-                        const T x7 = -tpi_2*x2 - x6;
-                        base_integral_0[g] += PGx[g]*x7;
-                        const T x8 = -PGy[g]*scaled_boys_3[g];
-                        const T x9 = tpi*x2 - PGy[g]*x8;
-                        const T x10 = -tpi_2*x2 - x9;
-                        base_integral_6[g] += PGy[g]*x10;
-                        base_integral_3[g] += -PGx[g]*x9;
-                        base_integral_7[g] += -PGz[g]*x9;
+                        const T x3 = tpi*x2;
+                        const T x4 = x3 + PGz[g]*x0;
+                        base_integral_5[g] += -PGx[g]*x4;
+                        base_integral_8[g] += -PGy[g]*x4;
+                        const T x5 = 2*x3 + x4;
+                        base_integral_9[g] += -PGz[g]*x5;
+                        const T x6 = PGx[g]*scaled_boys_3[g];
+                        const T x7 = PGx[g]*x6 + x3;
+                        base_integral_1[g] += -PGy[g]*x7;
+                        base_integral_2[g] += -PGz[g]*x7;
+                        const T x8 = 2*x3 + x7;
+                        base_integral_0[g] += -PGx[g]*x8;
+                        const T x9 = PGy[g]*scaled_boys_3[g];
+                        const T x10 = x3 + PGy[g]*x9;
+                        const T x11 = 2*x3 + x10;
+                        base_integral_6[g] += -PGy[g]*x11;
+                        base_integral_3[g] += -PGx[g]*x10;
+                        base_integral_7[g] += -PGz[g]*x10;
 
                     } // for g
                 } // if/else prim
@@ -173,35 +174,35 @@ void HRR_D_P_SAMECENTER(
             const T* __restrict scaled_boys_3 = &v_scaled_boys[prim*4*gb_size+3*gb_size];
 
             const T tpi = 0.5 / v_p[prim];
-            const T tpi_2 = 2*tpi;
 
             // overwrite integrals for first primitive, accumulate otherwise
             if (prim==0) {
                 #pragma omp simd
                 for (int g = 0; g < gb_size; ++g) {
 
-                    const T x0 = -PGz[g]*scaled_boys_3[g];
-                    const T x1 = -PGx[g]*x0;
+                    const T x0 = PGz[g]*scaled_boys_3[g];
+                    const T x1 = PGx[g]*x0;
                     const T x2 = scaled_boys_1[g] - scaled_boys_2[g];
-                    const T x3 = tpi*x2 - PGz[g]*x0;
-                    const T x4 = -tpi_2*x2 - x3;
-                    const T x5 = -PGx[g]*scaled_boys_3[g];
-                    const T x6 = tpi*x2 - PGx[g]*x5;
-                    const T x7 = -tpi_2*x2 - x6;
-                    const T x8 = -PGy[g]*scaled_boys_3[g];
-                    const T x9 = tpi*x2 - PGy[g]*x8;
-                    const T x10 = -tpi_2*x2 - x9;
+                    const T x3 = tpi*x2;
+                    const T x4 = x3 + PGz[g]*x0;
+                    const T x5 = 2*x3 + x4;
+                    const T x6 = PGx[g]*scaled_boys_3[g];
+                    const T x7 = PGx[g]*x6 + x3;
+                    const T x8 = 2*x3 + x7;
+                    const T x9 = PGy[g]*scaled_boys_3[g];
+                    const T x10 = x3 + PGy[g]*x9;
+                    const T x11 = 2*x3 + x10;
 
-                    base_integral_0[g] = PGx[g]*x7;
-                    base_integral_1[g] = -PGy[g]*x6;
-                    base_integral_2[g] = -PGz[g]*x6;
-                    base_integral_3[g] = -PGx[g]*x9;
+                    base_integral_0[g] = -PGx[g]*x8;
+                    base_integral_1[g] = -PGy[g]*x7;
+                    base_integral_2[g] = -PGz[g]*x7;
+                    base_integral_3[g] = -PGx[g]*x10;
                     base_integral_4[g] = -PGy[g]*x1;
-                    base_integral_5[g] = -PGx[g]*x3;
-                    base_integral_6[g] = PGy[g]*x10;
-                    base_integral_7[g] = -PGz[g]*x9;
-                    base_integral_8[g] = -PGy[g]*x3;
-                    base_integral_9[g] = PGz[g]*x4;
+                    base_integral_5[g] = -PGx[g]*x4;
+                    base_integral_6[g] = -PGy[g]*x11;
+                    base_integral_7[g] = -PGz[g]*x10;
+                    base_integral_8[g] = -PGy[g]*x4;
+                    base_integral_9[g] = -PGz[g]*x5;
 
                 } // for g
             } else {
@@ -209,28 +210,29 @@ void HRR_D_P_SAMECENTER(
                 #pragma omp simd
                 for (int g = 0; g < gb_size; ++g) {
 
-                    const T x0 = -PGz[g]*scaled_boys_3[g];
-                    const T x1 = -PGx[g]*x0;
+                    const T x0 = PGz[g]*scaled_boys_3[g];
+                    const T x1 = PGx[g]*x0;
                     const T x2 = scaled_boys_1[g] - scaled_boys_2[g];
-                    const T x3 = tpi*x2 - PGz[g]*x0;
-                    const T x4 = -tpi_2*x2 - x3;
-                    const T x5 = -PGx[g]*scaled_boys_3[g];
-                    const T x6 = tpi*x2 - PGx[g]*x5;
-                    const T x7 = -tpi_2*x2 - x6;
-                    const T x8 = -PGy[g]*scaled_boys_3[g];
-                    const T x9 = tpi*x2 - PGy[g]*x8;
-                    const T x10 = -tpi_2*x2 - x9;
+                    const T x3 = tpi*x2;
+                    const T x4 = x3 + PGz[g]*x0;
+                    const T x5 = 2*x3 + x4;
+                    const T x6 = PGx[g]*scaled_boys_3[g];
+                    const T x7 = PGx[g]*x6 + x3;
+                    const T x8 = 2*x3 + x7;
+                    const T x9 = PGy[g]*scaled_boys_3[g];
+                    const T x10 = x3 + PGy[g]*x9;
+                    const T x11 = 2*x3 + x10;
 
-                    base_integral_0[g] += PGx[g]*x7;
-                    base_integral_1[g] += -PGy[g]*x6;
-                    base_integral_2[g] += -PGz[g]*x6;
-                    base_integral_3[g] += -PGx[g]*x9;
+                    base_integral_0[g] += -PGx[g]*x8;
+                    base_integral_1[g] += -PGy[g]*x7;
+                    base_integral_2[g] += -PGz[g]*x7;
+                    base_integral_3[g] += -PGx[g]*x10;
                     base_integral_4[g] += -PGy[g]*x1;
-                    base_integral_5[g] += -PGx[g]*x3;
-                    base_integral_6[g] += PGy[g]*x10;
-                    base_integral_7[g] += -PGz[g]*x9;
-                    base_integral_8[g] += -PGy[g]*x3;
-                    base_integral_9[g] += PGz[g]*x4;
+                    base_integral_5[g] += -PGx[g]*x4;
+                    base_integral_6[g] += -PGy[g]*x11;
+                    base_integral_7[g] += -PGz[g]*x10;
+                    base_integral_8[g] += -PGy[g]*x4;
+                    base_integral_9[g] += -PGz[g]*x5;
 
                 } // for g
             } // if/else prim

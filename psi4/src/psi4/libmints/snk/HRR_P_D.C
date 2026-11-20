@@ -205,21 +205,21 @@ void HRR_P_D(
             #pragma omp simd
             for (int g = 0; g < g_block; ++g) {
 
-                block_0[g] = base_integral_6[g] - ABx*base_integral_0[g];
-                block_6[g] = base_integral_7[g] - ABy*base_integral_0[g];
-                block_1[g] = base_integral_7[g] - ABx*base_integral_1[g];
-                block_12[g] = base_integral_8[g] - ABz*base_integral_0[g];
-                block_2[g] = base_integral_8[g] - ABx*base_integral_2[g];
-                block_7[g] = base_integral_9[g] - ABy*base_integral_1[g];
-                block_3[g] = base_integral_9[g] - ABx*base_integral_3[g];
                 block_9[g] = base_integral_12[g] - ABy*base_integral_3[g];
-                block_13[g] = base_integral_10[g] - ABz*base_integral_1[g];
-                block_8[g] = base_integral_10[g] - ABy*base_integral_2[g];
-                block_4[g] = base_integral_10[g] - ABx*base_integral_4[g];
-                block_14[g] = base_integral_11[g] - ABz*base_integral_2[g];
-                block_5[g] = base_integral_11[g] - ABx*base_integral_5[g];
+                block_3[g] = base_integral_9[g] - ABx*base_integral_3[g];
+                block_7[g] = base_integral_9[g] - ABy*base_integral_1[g];
                 block_15[g] = base_integral_13[g] - ABz*base_integral_3[g];
                 block_10[g] = base_integral_13[g] - ABy*base_integral_4[g];
+                block_1[g] = base_integral_7[g] - ABx*base_integral_1[g];
+                block_6[g] = base_integral_7[g] - ABy*base_integral_0[g];
+                block_0[g] = base_integral_6[g] - ABx*base_integral_0[g];
+                block_12[g] = base_integral_8[g] - ABz*base_integral_0[g];
+                block_2[g] = base_integral_8[g] - ABx*base_integral_2[g];
+                block_13[g] = base_integral_10[g] - ABz*base_integral_1[g];
+                block_4[g] = base_integral_10[g] - ABx*base_integral_4[g];
+                block_8[g] = base_integral_10[g] - ABy*base_integral_2[g];
+                block_14[g] = base_integral_11[g] - ABz*base_integral_2[g];
+                block_5[g] = base_integral_11[g] - ABx*base_integral_5[g];
                 block_16[g] = base_integral_14[g] - ABz*base_integral_4[g];
                 block_11[g] = base_integral_14[g] - ABy*base_integral_5[g];
                 block_17[g] = base_integral_15[g] - ABz*base_integral_5[g];

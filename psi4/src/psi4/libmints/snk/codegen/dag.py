@@ -10,6 +10,7 @@
 #   them for emission as straight-line C++.
 #
 
+import math
 import random
 import re
 
@@ -248,6 +249,7 @@ class Graph:
         self.defs = []           # id -> ('leaf', cstr) or ('lin', terms)
         self.memo = {}
         self.scalar_exprs = {}   # name -> C++ expression of a loop-invariant scalar
+        self.schedules = {}      # (roots, reorder) -> result of schedule()
         self.used = set()        # names of the scalars that were emitted
 
     def define_scalar(self, name, expr):
@@ -278,29 +280,38 @@ class Graph:
         return self._intern(('lin', terms))
 
     def factor(self, roots):
-        """Use  v*x + s*(v*y) = v*(x + s*y)  where the product v*y has no other user.
+        """Algebraic simplifications of the graph; returns the nodes that replace roots.
 
-        v is a per-gridpoint factor and s a scalar.  This saves a multiplication whenever a
-        VRR step and one of its differences carry the same factor PG_i, which happens for
-        same center integrals.  Returns the nodes that replace roots."""
+        1. v*x + s*(v*y) = v*(x + s*y) where the product v*y has no other user (v is a
+           per-gridpoint factor, s a scalar): a VRR step and one of its differences carry
+           the same factor PG_i, which happens for same center integrals.
+        2. A product s*x with a scalar is merged into the steps that use it, unless it is
+           the plain addend of at least two two-term steps (where it costs nothing extra).
+        3. Integer multipliers are folded into the scalar products below them.
+        4. s*x + s*y = s*(x + y) for terms of a step with the same coefficient.
+        5. Intermediates with only negative terms are negated, and their users with them.
+
+        The node numbers of before the call are no longer valid."""
         nuses = {}
         for r in roots:
             nuses[r] = nuses.get(r, 0) + 1
-        order = self._subtree_all(roots)
+        order = sorted(self._subtree_all(roots))
         for n in order:
             for o in self.operands(n):
                 nuses[o] = nuses.get(o, 0) + 1
+        old_defs = self.defs
+        self.defs, self.memo = [], {}
         new = {}
         for n in order:
-            if self.defs[n][0] == 'leaf':
-                new[n] = n
+            if old_defs[n][0] == 'leaf':
+                new[n] = self.leaf(old_defs[n][1])
                 continue
-            terms = list(self.defs[n][1])
+            terms = list(old_defs[n][1])
             for a, (ka, sa, va, na) in enumerate(terms):
                 # a: the term s*(v*y), its operand is the product v*y
-                if va is not None or self.defs[na][0] != 'lin' or nuses[na] != 1:
+                if va is not None or old_defs[na][0] != 'lin' or nuses[na] != 1:
                     continue
-                product = self.defs[na][1]
+                product = old_defs[na][1]
                 if len(product) != 1 or product[0][1] is not None or product[0][2] is None:
                     continue
                 (kp, _, v, y) = product[0]
@@ -316,6 +327,145 @@ class Graph:
                 break
             else:
                 new[n] = self.lin([(k, s, w, new[o]) for (k, s, w, o) in terms])
+        roots = [new[r] for r in roots]
+        roots = self._fold_and_inline_scalars(roots)
+        roots = self._factor_same_coeff(roots)
+        roots = self._normalize_signs(roots)
+        self.schedules = {}
+        return roots
+
+    def _fold_and_inline_scalars(self, roots):
+        for _ in range(2):
+            order = sorted(self._subtree_all(roots))
+            users = {n: [] for n in order}
+            for r in roots:
+                users.setdefault(r, []).append((None, 1, None, None))
+            for n in order:
+                if self.defs[n][0] == 'lin':
+                    for (k, s, v, ch) in self.defs[n][1]:
+                        users[ch].append((n, k, s, v))
+            old_defs = self.defs
+            self.defs, self.memo = [], {}
+            new = {}
+            for n in order:
+                if old_defs[n][0] == 'leaf':
+                    new[n] = self.leaf(old_defs[n][1])
+                    continue
+                terms = []
+                for (k, s, v, ch_orig) in old_defs[n][1]:
+                    ch = new[ch_orig]
+                    if s is None and v is None and self.defs[ch][0] == 'lin' and len(self.defs[ch][1]) == 1:
+                        (k0, s0, v0, x0) = self.defs[ch][1][0]
+                        if s0 is not None and v0 is None:
+                            two_term_unit_users = [
+                                u for (u, ku, su, vu) in users.get(ch_orig, [])
+                                if u is not None and abs(ku) == 1 and su is None and vu is None
+                                and len(old_defs[u][1]) == 2
+                                and any(st is not None or vt is not None for (_, st, vt, _) in old_defs[u][1])
+                            ]
+                            other_keep = [u for (u, ku, su, vu) in users.get(ch_orig, [])
+                                          if u is None or not (su is None and vu is None)]
+                            if len(two_term_unit_users) <= 1 and len(other_keep) == 0:
+                                terms.append((k * k0, s0, None, x0))
+                                continue
+                    terms.append((k, s, v, ch))
+                new[n] = self.lin(terms)
+            roots = [new[r] for r in roots]
+
+            order = sorted(self._subtree_all(roots))
+            users = {n: [] for n in order}
+            for n in order:
+                if self.defs[n][0] == 'lin':
+                    for (k, s, v, ch) in self.defs[n][1]:
+                        users[ch].append((n, k, s, v))
+            root_set = set(roots)
+            can_scale = {}
+            for n in order:
+                if self.defs[n][0] == 'leaf':
+                    can_scale[n] = False
+                    continue
+                can_scale[n] = all(s is not None or (can_scale.get(ch, False) and len(users[ch]) == 1)
+                                   for (k, s, v, ch) in self.defs[n][1])
+            scale = {}
+            for n in reversed(order):
+                if n in root_set or not can_scale.get(n, False) or not users[n]:
+                    continue
+                if all(s is None and v is None for (_, _, s, v) in users[n]):
+                    c = 0
+                    for (u, k, _, _) in users[n]:
+                        c = math.gcd(c, abs(k))
+                    if c > 1:
+                        scale[n] = c
+                elif len(users[n]) == 1 and users[n][0][2] is None:
+                    c = abs(users[n][0][1])
+                    if c > 1:
+                        scale[n] = c
+                if n in scale:
+                    c = scale[n]
+                    new_terms = [(k * c, s, v, ch) for (k, s, v, ch) in self.defs[n][1]]
+                    self.defs[n] = ('lin', tuple(new_terms))
+                    for (k, s, v, ch) in new_terms:
+                        users[ch] = [(u, k if u == n and s_u == s and v_u == v else k_u, s_u, v_u)
+                                     for (u, k_u, s_u, v_u) in users[ch]]
+            old_defs = self.defs
+            self.defs, self.memo = [], {}
+            new = {}
+            for n in order:
+                if old_defs[n][0] == 'leaf':
+                    new[n] = self.leaf(old_defs[n][1])
+                    continue
+                terms = [((k // (scale.get(ch, 1) if s is None else 1)), s, v, new[ch])
+                         for (k, s, v, ch) in old_defs[n][1]]
+                new[n] = self.lin(terms)
+            roots = [new[r] for r in roots]
+        return roots
+
+    def _factor_same_coeff(self, roots):
+        order = sorted(self._subtree_all(roots))
+        old_defs = self.defs
+        self.defs, self.memo = [], {}
+        new = {}
+        for n in order:
+            if old_defs[n][0] == 'leaf':
+                new[n] = self.leaf(old_defs[n][1])
+                continue
+            terms = [(k, s, v, new[ch]) for (k, s, v, ch) in old_defs[n][1]]
+            groups = {}
+            for i, (k, s, v, ch) in enumerate(terms):
+                if s is not None or v is not None:
+                    groups.setdefault((abs(k), s, v), []).append(i)
+            used_idx = set()
+            new_terms = []
+            for (ak, s, v), idxs in groups.items():
+                if len(idxs) >= 2:
+                    inner = self.lin([(1 if terms[i][0] > 0 else -1, None, None, terms[i][3]) for i in idxs])
+                    new_terms.append((ak, s, v, inner))
+                    used_idx.update(idxs)
+            if used_idx:
+                for i, t in enumerate(terms):
+                    if i not in used_idx:
+                        new_terms.append(t)
+                new[n] = self.lin(new_terms)
+            else:
+                new[n] = self.lin(terms)
+        return [new[r] for r in roots]
+
+    def _normalize_signs(self, roots):
+        order = sorted(self._subtree_all(roots))
+        root_set = set(roots)
+        flip = set()
+        old_defs = self.defs
+        self.defs, self.memo = [], {}
+        new = {}
+        for n in order:
+            if old_defs[n][0] == 'leaf':
+                new[n] = self.leaf(old_defs[n][1])
+                continue
+            terms = [(-k if ch in flip else k, s, v, new[ch]) for (k, s, v, ch) in old_defs[n][1]]
+            if n not in root_set and all(k < 0 for (k, _, _, _) in terms):
+                terms = [(-k, s, v, ch) for (k, s, v, ch) in terms]
+                flip.add(n)
+            new[n] = self.lin(terms)
         return [new[r] for r in roots]
 
     def operands(self, i):
@@ -403,37 +553,195 @@ class Graph:
         intermediate is emitted close to its first user.  With reorder, the next output is
         the one that changes the number of live values the least: the kernels have many
         more live intermediates than there are vector registers, and every value that is
-        alive across many statements costs a spill to the stack."""
+        alive across many statements costs a spill to the stack.  Several variants of this
+        greedy order (which values count as live, how the next output is rated, which
+        output comes first) are then tried and the one with the fewest live values is kept."""
+        cached = self.schedules.get((tuple(roots), reorder))
+        if cached is None:
+            cached = self.schedules[(tuple(roots), reorder)] = self._schedule(roots, reorder)
+        return cached
+
+    def _schedule(self, roots, reorder):
+        all_nodes = self._subtree_all(roots)
         nuses = {}
-        users = {}
+        users = {n: set() for n in all_nodes}
         for r in roots:
             nuses[r] = nuses.get(r, 0) + 1
-        for n in self._subtree_all(roots):
+        for n in all_nodes:
             for o in self.operands(n):
                 nuses[o] = nuses.get(o, 0) + 1
-                users.setdefault(o, set()).add(n)
+                users[o].add(n)
 
-        order, done = [], set()
+        orig_order, orig_done = [], set()
         pending = list(dict.fromkeys(roots))
         while pending:
             if not reorder:
-                best, bsub = pending[0], self._subtree(pending[0], done)
+                best, bsub = pending[0], self._subtree(pending[0], orig_done)
             else:
                 best, bkey, bsub = None, None, None
                 for r in pending:
-                    sub = self._subtree(r, done)
+                    sub = self._subtree(r, orig_done)
                     inside = set(sub)
-                    # new values that stay alive after this output, minus values that die with it
                     stay = sum(1 for n in sub if any(u not in inside for u in users.get(n, ())))
                     die = sum(1 for o in {o for n in sub for o in self.operands(n)}
-                              if o in done and all(u in inside or u in done for u in users[o]))
+                              if o in orig_done and all(u in inside or u in orig_done for u in users[o]))
                     key = (stay - die, len(sub))
                     if bkey is None or key < bkey:
                         best, bkey, bsub = r, key, sub
             pending.remove(best)
-            order.extend(bsub)
-            done.update(bsub)
-        return order, nuses
+            orig_order.extend(bsub)
+            orig_done.update(bsub)
+        if not reorder or any(users[r] for r in roots):
+            return orig_order, nuses
+
+        weight = {}
+        for n in all_nodes:
+            if self.defs[n][0] == 'leaf':
+                weight[n] = 0
+            else:
+                weight[n] = 1 + sum(weight[o] for o in set(self.operands(n)))
+
+        non_leaves = [n for n in all_nodes if self.defs[n][0] != 'leaf']
+        position = {n: i for i, n in enumerate(non_leaves)}
+        unique_roots = list(dict.fromkeys(roots))
+        root_set = set(roots)
+
+        def liveness_score(order):
+            last_use = {}
+            for i, n in enumerate(order):
+                for o in self.operands(n):
+                    last_use[o] = max(last_use.get(o, 0), i)
+                if n in root_set:
+                    last_use[n] = max(last_use.get(n, 0), i)
+            live_all, live_nl = set(), set()
+            max_all = sum_all = max_nl = sum_nl = 0
+            for i, n in enumerate(order):
+                live_all.add(n)
+                if self.defs[n][0] != 'leaf':
+                    live_nl.add(n)
+                for o in list(live_all):
+                    if last_use.get(o, -1) <= i:
+                        live_all.discard(o)
+                        live_nl.discard(o)
+                if self.defs[n][0] != 'leaf':
+                    max_all = max(max_all, len(live_all))
+                    sum_all += len(live_all)
+                    max_nl = max(max_nl, len(live_nl))
+                    sum_nl += len(live_nl)
+            return (max_all + max_nl, sum_all + sum_nl)
+
+        def run_schedule(inc_leaf, w_stay, w_prog, start_root=None):
+            rem_users = {n: set(u) for n, u in users.items()}
+            order, done, live = [], set(), set()
+            pending = list(unique_roots)
+            # intermediates whose operands have all been emitted
+            waiting = {n: len(set(self.operands(n))) for n in non_leaves}
+            ready = set()
+
+            def mark_done(n):
+                done.add(n)
+                order.append(n)
+                ready.discard(n)
+                for u in users[n]:
+                    waiting[u] -= 1
+                    if waiting[u] == 0:
+                        ready.add(u)
+
+            def subtree_ordered(root):
+                if root in done:
+                    return []
+                seen = {root}
+                out = []
+                def dfs(node):
+                    ops = [ch for ch in self.operands(node) if ch not in done and ch not in seen]
+                    if len(ops) > 1:
+                        ops.sort(key=lambda ch: (
+                            -sum(1 for o in self.operands(ch) if o in live and len(rem_users.get(o, ())) <= 2),
+                            -sum(1 for o in self.operands(ch) if o in live),
+                            -weight[ch],
+                            ch
+                        ))
+                    for ch in ops:
+                        if ch not in done and ch not in seen:
+                            seen.add(ch)
+                            dfs(ch)
+                    out.append(node)
+                dfs(root)
+                return out
+
+            def emit_node(n):
+                if n in done:
+                    return
+                for o in self.operands(n):
+                    if o not in done and self.defs[o][0] == 'leaf':
+                        mark_done(o)
+                        if inc_leaf and rem_users.get(o):
+                            live.add(o)
+                mark_done(n)
+                if n in pending:
+                    pending.remove(n)
+                if (inc_leaf or self.defs[n][0] != 'leaf') and rem_users.get(n):
+                    live.add(n)
+                for o in self.operands(n):
+                    if o in rem_users:
+                        rem_users[o].discard(n)
+                        if not rem_users[o]:
+                            live.discard(o)
+
+            def collapse_ready():
+                changed = True
+                while changed:
+                    changed = False
+                    best_n, best_d = None, 0
+                    for n in sorted(ready, key=position.__getitem__):
+                        stay = 1 if rem_users.get(n) else 0
+                        die = sum(1 for o in set(self.operands(n)) if o in live and rem_users.get(o) == {n})
+                        if stay - die < best_d:
+                            best_n, best_d = n, stay - die
+                    if best_n is not None:
+                        emit_node(best_n)
+                        changed = True
+
+            first = start_root
+            while pending:
+                collapse_ready()
+                if not pending:
+                    break
+                if first is not None and first in pending:
+                    bsub = subtree_ordered(first)
+                    first = None
+                else:
+                    bkey, best = None, None
+                    for r in pending:
+                        # the rating only needs the set of nodes below r, not their order
+                        sub = self._subtree(r, done)
+                        inside = set(sub)
+                        stay = sum(1 for n in sub if (inc_leaf or self.defs[n][0] != 'leaf')
+                                   and any(u not in inside and u not in done for u in users[n]))
+                        touch_ops = {o for n in sub for o in self.operands(n) if o in live}
+                        die = sum(1 for o in touch_ops if all(u in inside or u in done for u in users[o]))
+                        progress = math.fsum(sum(1 for u in rem_users[o] if u in inside) / len(rem_users[o])
+                                             for o in touch_ops if rem_users.get(o))
+                        key = (w_stay * stay - die - w_prog * progress, -len(touch_ops), len(sub))
+                        if bkey is None or key < bkey:
+                            bkey, best = key, r
+                    bsub = subtree_ordered(best)
+                for n in bsub:
+                    emit_node(n)
+                    collapse_ready()
+            return order
+
+        best_order, best_score = orig_order, liveness_score(orig_order)
+        step = max(1, len(unique_roots) // 6)
+        starts = [None] + [unique_roots[i] for i in range(0, len(unique_roots), step)]
+        for inc_leaf in (True, False):
+            for (w_stay, w_prog) in ((1.0, 0.0), (1.0, 0.8), (1.5, 1.0)):
+                for s in starts:
+                    cand = run_schedule(inc_leaf, w_stay, w_prog, s)
+                    score = liveness_score(cand)
+                    if score < best_score:
+                        best_score, best_order = score, cand
+        return best_order, nuses
 
     def _subtree_all(self, roots):
         done, out = set(), []
@@ -447,31 +755,41 @@ class Graph:
 #                                                                         #
 #   Obara-Saika VRR                                                       #
 #                                                                         #
-#   key = (ax, ay, az, bx, by, bz, N, d) is the d-th finite difference    #
-#   of the intermediate [a|b]^(N) with respect to the auxiliary index,    #
+#   key = (ax, ay, az, bx, by, bz, N, d) is the intermediate [a|b]^(N)     #
+#   for d = 0 and for d > 0 its d-th finite difference with respect to    #
+#   the auxiliary index, weighted with (1/2p)^d,                          #
 #                                                                         #
-#       D^0 [a|b]^(N) = [a|b]^(N)                                         #
-#       D^d [a|b]^(N) = D^(d-1) [a|b]^(N) - D^(d-1) [a|b]^(N+1)           #
+#       W^0 [a|b]^(N) = [a|b]^(N)                                         #
+#       W^d [a|b]^(N) = (1/2p) (W^(d-1) [a|b]^(N) - W^(d-1) [a|b]^(N+1))  #
 #                                                                         #
 #   The VRR only ever needs lower intermediates of the same auxiliary     #
 #   index through such differences,                                       #
 #                                                                         #
 #       [a+1_i|b]^(N) = PA_i [a|b]^(N) - PG_i [a|b]^(N+1)                 #
-#                     + (1/2p) (a_i D[a-1_i|b]^(N) + b_i D[a|b-1_i]^(N))  #
+#                     + a_i W[a-1_i|b]^(N) + b_i W[a|b-1_i]^(N)           #
 #                                                                         #
 #   and because its coefficients do not depend on N, the differences      #
 #   satisfy the same recurrence with d -> d+1 in the last two terms.      #
 #   A difference can therefore be formed either by subtracting two        #
 #   intermediates or by recursion; the path search picks the cheaper.     #
 #                                                                         #
+#   The factor 1/2p can be applied once per difference (which the steps   #
+#   that use it then add) or in every step that uses the difference.      #
+#   Which is cheaper depends on how many steps share a difference and     #
+#   is settled per difference by Graph.factor(); the search has to        #
+#   assume one of the two, selected by shared_differences.  In that       #
+#   model, keys with d < 0 are the plain |d|-th differences of the Boys   #
+#   functions, which are then weighted with a single product.             #
+#                                                                         #
 ###########################################################################
 
 XYZ = "xyz"
 
 class VRRBuilder:
-    def __init__(self, same_center, graph, differences=True, grouped=True, kicks=0):
+    def __init__(self, same_center, graph, shared_differences=False, differences=True, grouped=True, kicks=0):
         self.sc = same_center
         self.g = graph
+        self.shared = shared_differences
         self.differences = differences
         self.grouped = grouped
         self.kicks = kicks
@@ -479,11 +797,20 @@ class VRRBuilder:
         self.steps = {}     # key -> list of term lists (one per option), parallel to the rule
         self.tags = {}      # key -> list of step labels (one per option)
         self.node = {}
+        self.unweighted = {}
 
         graph.define_scalar("tpi", "0.5 / v_p[prim]")
         for c in XYZ:
             graph.define_scalar(f"PA{c}", f"v_PA{c}[prim]")
             graph.define_scalar(f"PB{c}", f"v_PA{c}[prim] + AB{c}")
+
+    def _tpi_pow(self, d):
+        if d == 1:
+            return "tpi"
+        name = f"tpi_p{d}"
+        prev = self._tpi_pow(d - 1)
+        self.g.define_scalar(name, f"tpi*{prev}")
+        return name
 
     def target(self, a, b):
         if self.sc:
@@ -494,12 +821,27 @@ class VRRBuilder:
     def rule(self, key):
         idx, N, d = list(key[0:6]), key[6], key[7]
         L = sum(idx)
+        if d < 0:
+            ad = -d
+            c0 = tuple(idx) + (N, 0 if ad == 1 else -(ad - 1))
+            c1 = tuple(idx) + (N + 1, 0 if ad == 1 else -(ad - 1))
+            terms = [(1, None, None, c0), (-1, None, None, c1)]
+            self.steps[key] = [terms]
+            self.tags[key] = [-1]
+            return [(ADD_COST, (c0, c1))]
         if L == 0 and d == 0:
             return None
         opts, steps, tags = [], [], []
         if d > 0:
-            terms = [(1, None, None, tuple(idx) + (N, d-1)), (-1, None, None, tuple(idx) + (N+1, d-1))]
-            opts.append((term_ops(terms), tuple(t[3] for t in terms)))
+            if self.shared and L == 0:
+                u_key = tuple(idx) + (N, -d)
+                terms = [(1, self._tpi_pow(d), None, u_key)]
+                opts.append((1.0, (u_key,)))
+            else:
+                c0 = tuple(idx) + (N, d-1)
+                c1 = tuple(idx) + (N+1, d-1)
+                terms = [(1, "tpi", None, c0), (-1, "tpi", None, c1)]
+                opts.append(((1.0 + ADD_COST) if self.shared else ADD_COST, (c0, c1)))
             steps.append(terms)
             tags.append(-1)
         if L > 0 and (d == 0 or self.differences):
@@ -510,17 +852,20 @@ class VRRBuilder:
                         continue
                     low = list(idx)
                     low[p] -= 1
-                    terms = []
+                    terms, cost_terms = [], []
                     if not self.sc:
                         terms.append((1, f"P{'AB'[c]}{XYZ[i]}", None, tuple(low) + (N, d)))
+                        cost_terms.append((1, f"P{'AB'[c]}{XYZ[i]}", None, tuple(low) + (N, d)))
                     terms.append((-1, None, f"PG{XYZ[i]}[g]", tuple(low) + (N+1, d)))
+                    cost_terms.append((-1, None, f"PG{XYZ[i]}[g]", tuple(low) + (N+1, d)))
                     for cc in (0, 1):
                         q = 3*cc + i
                         if low[q] > 0:
                             low2 = list(low)
                             low2[q] -= 1
-                            terms.append((low[q], "tpi", None, tuple(low2) + (N, d+1)))
-                    opts.append((term_ops(terms), tuple(t[3] for t in terms)))
+                            terms.append((low[q], None, None, tuple(low2) + (N, d+1)))
+                            cost_terms.append((low[q], None if self.shared else "tpi", None, tuple(low2) + (N, d+1)))
+                    opts.append((term_ops(cost_terms), tuple(t[3] for t in terms)))
                     steps.append(terms)
                     tags.append(p)
         self.steps[key] = steps
@@ -530,7 +875,8 @@ class VRRBuilder:
     @staticmethod
     def order(key):
         # parents before children: decreasing total L, then decreasing difference order
-        return (-sum(key[0:6]), -key[7], key)
+        d = key[7]
+        return (-sum(key[0:6]), -abs(d), 0 if d >= 0 else 1, key)
 
     @staticmethod
     def group(key):
@@ -557,6 +903,32 @@ class VRRBuilder:
                              policies=policies, kicks=self.kicks, verbose=verbose)
         return [self._materialize(t) for t in targets]
 
+    def _can_unweight(self, key):
+        d = key[7]
+        if d <= 0:
+            return True
+        if self.search.options(key) is None:
+            return True
+        choice = self.search.chosen(key)
+        if self.tags[key][choice] != -1:
+            return False
+        return all(self._can_unweight(t[3]) for t in self.steps[key][choice])
+
+    def _get_unweighted(self, key):
+        if key[7] <= 0:
+            return self._materialize(key)
+        u = self.unweighted.get(key)
+        if u is not None:
+            return u
+        terms = self.steps[key][self.search.chosen(key)]
+        if len(terms) == 1:
+            u = self._materialize(terms[0][3])
+        else:
+            u = self.g.lin([(1, None, None, self._get_unweighted(terms[0][3])),
+                            (-1, None, None, self._get_unweighted(terms[1][3]))])
+        self.unweighted[key] = u
+        return u
+
     def _materialize(self, key):
         n = self.node.get(key)
         if n is not None:
@@ -564,8 +936,18 @@ class VRRBuilder:
         if self.search.options(key) is None:
             n = self.g.leaf(f"scaled_boys_{key[6]}[g]")
         else:
-            terms = self.steps[key][self.search.chosen(key)]
-            n = self.g.lin([(k, s, v, self._materialize(ch)) for (k, s, v, ch) in terms])
+            choice = self.search.chosen(key)
+            terms = self.steps[key][choice]
+            if key[7] > 0 and self.tags[key][choice] == -1:
+                if self._can_unweight(key):
+                    u = self._get_unweighted(key)
+                    n = self.g.lin([(1, self._tpi_pow(key[7]), None, u)])
+                else:
+                    diff = self.g.lin([(1, None, None, self._materialize(terms[0][3])),
+                                       (-1, None, None, self._materialize(terms[1][3]))])
+                    n = self.g.lin([(1, "tpi", None, diff)])
+            else:
+                n = self.g.lin([(k, s, v, self._materialize(ch)) for (k, s, v, ch) in terms])
         self.node[key] = n
         return n
 
@@ -579,12 +961,14 @@ class VRRBuilder:
 ###########################################################################
 
 class HRRBuilder:
-    def __init__(self, same_center, graph, hrr_blist):
+    def __init__(self, same_center, graph, hrr_blist, kicks=0):
         self.sc = same_center
         self.g = graph
         self.blist = hrr_blist
+        self.kicks = kicks
         self.search = PathSearch(self.rule)
         self.steps = {}
+        self.tags = {}
         self.node = {}
         self.base = {}      # graph node of a base integral -> its index
 
@@ -597,7 +981,7 @@ class HRRBuilder:
         src, dst = (3, 0) if ltr else (0, 3)   # move quanta from src center to dst center
         if not any(idx[src:src+3]):
             return None
-        opts, steps = [], []
+        opts, steps, tags = [], [], []
         for i in range(3):
             if idx[src+i] == 0:
                 continue
@@ -610,7 +994,9 @@ class HRRBuilder:
                 terms.append((1 if ltr else -1, f"AB{XYZ[i]}", None, tuple(low) + (LA, LB)))
             opts.append((term_ops(terms), tuple(t[3] for t in terms)))
             steps.append(terms)
+            tags.append(src + i)
         self.steps[key] = steps
+        self.tags[key] = tags
         return opts
 
     @staticmethod
@@ -619,8 +1005,16 @@ class HRRBuilder:
         moved = sum(key[3:6]) if LA >= LB else sum(key[0:3])
         return (-moved, key)
 
+    def policy(self, largest):
+        def candidates(key):
+            tags = self.tags[key]
+            return [min(range(len(tags)), key=lambda n: (-key[tags[n]] if largest else key[tags[n]], tags[n]))]
+        return candidates
+
     def build(self, targets, verbose=False):
-        self.search.optimize(targets, self.order, verbose=verbose)
+        policies = [None, self.policy(False), self.policy(True)]
+        self.search.optimize(targets, self.order, tags=self.tags, policies=policies,
+                             kicks=self.kicks, verbose=verbose)
         return [self._materialize(t) for t in targets]
 
     def _materialize(self, key):
