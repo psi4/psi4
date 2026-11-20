@@ -1,9 +1,17 @@
 #include "HRR_D_D.h"
 
+#ifndef SNK_COPY
+#if defined(__GNUC__) || defined(__clang__)
+#define SNK_COPY(dst, src, n) __builtin_memcpy(dst, src, (n)*sizeof(*(dst)))
+#else
+#define SNK_COPY(dst, src, n) for (int k_ = 0; k_ < (n); ++k_) (dst)[k_] = (src)[k_]
+#endif
+#endif
+
 template <typename T>
 void HRR_D_D(
         T* integrals,              //!< overwritten, cartesian integrals for this grid batch
-        T* base_integrals,         //!< overwritten, base [LA+LB|0] integrals for HRR
+        T* base_integrals,         //!< work array for the base [LA+LB|0] integrals of the HRR (not used by all kernels)
         const T* v_scaled_boys,    //!< Obara-Saika S-type seed integrals (primitive index slow)
         const T* v_p,              //!< (a + b) where a/b is the exponent of multishell A/B respectively
         const T* v_PGx,            //!< (Px - Gx); P is the GPT combined center; G is a gridpoint (primitive index slow)
@@ -18,391 +26,388 @@ void HRR_D_D(
         int nprim,                 //!< number of primitive shellpairs in this contracted shellpair
         int gb_size)               //!< number of gridpoints in this grid batch 
 {
-    T* __restrict base_integral_0 = &base_integrals[0*gb_size];
-    T* __restrict base_integral_1 = &base_integrals[1*gb_size];
-    T* __restrict base_integral_2 = &base_integrals[2*gb_size];
-    T* __restrict base_integral_3 = &base_integrals[3*gb_size];
-    T* __restrict base_integral_4 = &base_integrals[4*gb_size];
-    T* __restrict base_integral_5 = &base_integrals[5*gb_size];
-    T* __restrict base_integral_6 = &base_integrals[6*gb_size];
-    T* __restrict base_integral_7 = &base_integrals[7*gb_size];
-    T* __restrict base_integral_8 = &base_integrals[8*gb_size];
-    T* __restrict base_integral_9 = &base_integrals[9*gb_size];
-    T* __restrict base_integral_10 = &base_integrals[10*gb_size];
-    T* __restrict base_integral_11 = &base_integrals[11*gb_size];
-    T* __restrict base_integral_12 = &base_integrals[12*gb_size];
-    T* __restrict base_integral_13 = &base_integrals[13*gb_size];
-    T* __restrict base_integral_14 = &base_integrals[14*gb_size];
-    T* __restrict base_integral_15 = &base_integrals[15*gb_size];
-    T* __restrict base_integral_16 = &base_integrals[16*gb_size];
-    T* __restrict base_integral_17 = &base_integrals[17*gb_size];
-    T* __restrict base_integral_18 = &base_integrals[18*gb_size];
-    T* __restrict base_integral_19 = &base_integrals[19*gb_size];
-    T* __restrict base_integral_20 = &base_integrals[20*gb_size];
-    T* __restrict base_integral_21 = &base_integrals[21*gb_size];
-    T* __restrict base_integral_22 = &base_integrals[22*gb_size];
-    T* __restrict base_integral_23 = &base_integrals[23*gb_size];
-    T* __restrict base_integral_24 = &base_integrals[24*gb_size];
-    T* __restrict base_integral_25 = &base_integrals[25*gb_size];
-    T* __restrict base_integral_26 = &base_integrals[26*gb_size];
-    T* __restrict base_integral_27 = &base_integrals[27*gb_size];
-    T* __restrict base_integral_28 = &base_integrals[28*gb_size];
-    T* __restrict base_integral_29 = &base_integrals[29*gb_size];
-    T* __restrict base_integral_30 = &base_integrals[30*gb_size];
+    if (nprim < 1) return;
 
-    for (int prim = 0; prim < nprim; ++prim) {
+    // The gridpoints are processed in blocks.  The integrals of a block are contracted in
+    // a buffer that stays in the L1 cache and are then copied to the output arrays.
+    enum { g_block = (sizeof(T) <= 4) ? 32 : 32 };
+    alignas(64) T base_integral[31*g_block];
+    T* __restrict base_integral_0 = &base_integral[0*g_block];
+    T* __restrict base_integral_1 = &base_integral[1*g_block];
+    T* __restrict base_integral_2 = &base_integral[2*g_block];
+    T* __restrict base_integral_3 = &base_integral[3*g_block];
+    T* __restrict base_integral_4 = &base_integral[4*g_block];
+    T* __restrict base_integral_5 = &base_integral[5*g_block];
+    T* __restrict base_integral_6 = &base_integral[6*g_block];
+    T* __restrict base_integral_7 = &base_integral[7*g_block];
+    T* __restrict base_integral_8 = &base_integral[8*g_block];
+    T* __restrict base_integral_9 = &base_integral[9*g_block];
+    T* __restrict base_integral_10 = &base_integral[10*g_block];
+    T* __restrict base_integral_11 = &base_integral[11*g_block];
+    T* __restrict base_integral_12 = &base_integral[12*g_block];
+    T* __restrict base_integral_13 = &base_integral[13*g_block];
+    T* __restrict base_integral_14 = &base_integral[14*g_block];
+    T* __restrict base_integral_15 = &base_integral[15*g_block];
+    T* __restrict base_integral_16 = &base_integral[16*g_block];
+    T* __restrict base_integral_17 = &base_integral[17*g_block];
+    T* __restrict base_integral_18 = &base_integral[18*g_block];
+    T* __restrict base_integral_19 = &base_integral[19*g_block];
+    T* __restrict base_integral_20 = &base_integral[20*g_block];
+    T* __restrict base_integral_21 = &base_integral[21*g_block];
+    T* __restrict base_integral_22 = &base_integral[22*g_block];
+    T* __restrict base_integral_23 = &base_integral[23*g_block];
+    T* __restrict base_integral_24 = &base_integral[24*g_block];
+    T* __restrict base_integral_25 = &base_integral[25*g_block];
+    T* __restrict base_integral_26 = &base_integral[26*g_block];
+    T* __restrict base_integral_27 = &base_integral[27*g_block];
+    T* __restrict base_integral_28 = &base_integral[28*g_block];
+    T* __restrict base_integral_29 = &base_integral[29*g_block];
+    T* __restrict base_integral_30 = &base_integral[30*g_block];
+    alignas(64) T block[36*g_block];
+    T* __restrict block_0 = &block[0*g_block];
+    T* __restrict block_1 = &block[1*g_block];
+    T* __restrict block_2 = &block[2*g_block];
+    T* __restrict block_3 = &block[3*g_block];
+    T* __restrict block_4 = &block[4*g_block];
+    T* __restrict block_5 = &block[5*g_block];
+    T* __restrict block_6 = &block[6*g_block];
+    T* __restrict block_7 = &block[7*g_block];
+    T* __restrict block_8 = &block[8*g_block];
+    T* __restrict block_9 = &block[9*g_block];
+    T* __restrict block_10 = &block[10*g_block];
+    T* __restrict block_11 = &block[11*g_block];
+    T* __restrict block_12 = &block[12*g_block];
+    T* __restrict block_13 = &block[13*g_block];
+    T* __restrict block_14 = &block[14*g_block];
+    T* __restrict block_15 = &block[15*g_block];
+    T* __restrict block_16 = &block[16*g_block];
+    T* __restrict block_17 = &block[17*g_block];
+    T* __restrict block_18 = &block[18*g_block];
+    T* __restrict block_19 = &block[19*g_block];
+    T* __restrict block_20 = &block[20*g_block];
+    T* __restrict block_21 = &block[21*g_block];
+    T* __restrict block_22 = &block[22*g_block];
+    T* __restrict block_23 = &block[23*g_block];
+    T* __restrict block_24 = &block[24*g_block];
+    T* __restrict block_25 = &block[25*g_block];
+    T* __restrict block_26 = &block[26*g_block];
+    T* __restrict block_27 = &block[27*g_block];
+    T* __restrict block_28 = &block[28*g_block];
+    T* __restrict block_29 = &block[29*g_block];
+    T* __restrict block_30 = &block[30*g_block];
+    T* __restrict block_31 = &block[31*g_block];
+    T* __restrict block_32 = &block[32*g_block];
+    T* __restrict block_33 = &block[33*g_block];
+    T* __restrict block_34 = &block[34*g_block];
+    T* __restrict block_35 = &block[35*g_block];
 
-        const T tpi = 0.5 / v_p[prim];
-        const T PAx = v_PAx[prim];
-        const T PAy = v_PAy[prim];
-        const T PAz = v_PAz[prim];
-        const T PBx = PAx + ABx;
-        const T PBy = PAy + ABy;
-        const T PBz = PAz + ABz;
-        const T* __restrict PGx = &v_PGx[prim*gb_size];
-        const T* __restrict PGy = &v_PGy[prim*gb_size];
-        const T* __restrict PGz = &v_PGz[prim*gb_size];
+    // fewer gridpoints than one block: work on a zero padded copy of the inputs
+    const bool padded = (gb_size < g_block);
+    alignas(64) T pad[8*g_block];
+    if (padded) {
+        for (int k = 0; k < 8*g_block; ++k) pad[k] = 0;
+    }
 
-        const T* __restrict scaled_boys_0 = &v_scaled_boys[prim*5*gb_size+0*gb_size];
-        const T* __restrict scaled_boys_1 = &v_scaled_boys[prim*5*gb_size+1*gb_size];
-        const T* __restrict scaled_boys_2 = &v_scaled_boys[prim*5*gb_size+2*gb_size];
-        const T* __restrict scaled_boys_3 = &v_scaled_boys[prim*5*gb_size+3*gb_size];
-        const T* __restrict scaled_boys_4 = &v_scaled_boys[prim*5*gb_size+4*gb_size];
+    for (int g_lo = 0; g_lo < gb_size; g_lo += g_block) {
 
-        // overwrite integrals for first primitive, accumulate otherwise
-        if (prim==0) {
-            #pragma omp simd
-            for (int g = 0; g < gb_size; ++g) {
+        // all blocks are complete: the last one overlaps its predecessor
+        if (g_lo + g_block > gb_size && !padded) g_lo = gb_size - g_block;
 
-                const T x0 = tpi*(scaled_boys_0[g] - scaled_boys_1[g]);
-                const T x1 = PAx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
-                const T x2 = PAx*scaled_boys_1[g];
-                const T x3 = PGx[g]*scaled_boys_2[g];
-                const T x4 = x2 - x3;
-                const T x5 = PAx*x1 - PGx[g]*x4 + x0;
-                const T x6 = PAy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
-                const T x7 = PAy*scaled_boys_1[g];
-                const T x8 = PGy[g]*scaled_boys_2[g];
-                const T x9 = x7 - x8;
-                const T x10 = PAx*x6 - PGx[g]*x9;
-                const T x11 = PAz*scaled_boys_0[g] - PGz[g]*scaled_boys_1[g];
-                const T x12 = PAz*scaled_boys_1[g];
-                const T x13 = PGz[g]*scaled_boys_2[g];
-                const T x14 = x12 - x13;
-                const T x15 = PAx*x11 - PGx[g]*x14;
-                const T x16 = PAy*x6 - PGy[g]*x9 + x0;
-                const T x17 = PAy*x11 - PGy[g]*x14;
-                const T x18 = PAz*x11 - PGz[g]*x14 + x0;
-                const T x19 = 2*tpi;
-                const T x20 = tpi*(scaled_boys_1[g] - scaled_boys_2[g]);
-                const T x21 = PAx*x4;
-                const T x22 = PAx*scaled_boys_2[g];
-                const T x23 = PGx[g]*scaled_boys_3[g];
-                const T x24 = x22 - x23;
-                const T x25 = PGx[g]*x24;
-                const T x26 = x20 + x21 - x25;
-                const T x27 = PAx*x5 - PGx[g]*x26 + x19*(x1 - x2 + x3);
-                const T x28 = tpi*(x6 - x7 + x8);
-                const T x29 = PAx*x9;
-                const T x30 = PAy*scaled_boys_2[g];
-                const T x31 = PGy[g]*scaled_boys_3[g];
-                const T x32 = x30 - x31;
-                const T x33 = PGx[g]*x32;
-                const T x34 = x29 - x33;
-                const T x35 = PAx*x10 - PGx[g]*x34 + x28;
-                const T x36 = tpi*(x11 - x12 + x13);
-                const T x37 = PAx*x14;
-                const T x38 = PAz*scaled_boys_2[g];
-                const T x39 = PGz[g]*scaled_boys_3[g];
-                const T x40 = x38 - x39;
-                const T x41 = PGx[g]*x40;
-                const T x42 = x37 - x41;
-                const T x43 = PAx*x15 - PGx[g]*x42 + x36;
-                const T x44 = PAy*x9;
-                const T x45 = PGy[g]*x32;
-                const T x46 = x20 + x44 - x45;
-                const T x47 = PAx*x16 - PGx[g]*x46;
-                const T x48 = PAy*x14;
-                const T x49 = PGy[g]*x40;
-                const T x50 = x48 - x49;
-                const T x51 = PAx*x17 - PGx[g]*x50;
-                const T x52 = PAz*x14;
-                const T x53 = PGz[g]*x40;
-                const T x54 = x20 + x52 - x53;
-                const T x55 = PAx*x18 - PGx[g]*x54;
-                const T x56 = PAy*x16 - PGy[g]*x46 + 2*x28;
-                const T x57 = PAy*x17 - PGy[g]*x50 + x36;
-                const T x58 = PAy*x18 - PGy[g]*x54;
-                const T x59 = PAz*x18 - PGz[g]*x54 + 2*x36;
-                const T x60 = -x20;
-                const T x61 = tpi*(scaled_boys_2[g] - scaled_boys_3[g]);
-                const T x62 = tpi*(-x30 + x31 + x9);
-                const T x63 = PAy*scaled_boys_3[g] - PGy[g]*scaled_boys_4[g];
-                const T x64 = tpi*(x14 - x38 + x39);
-                const T x65 = PAz*scaled_boys_3[g] - PGz[g]*scaled_boys_4[g];
-                const T x66 = tpi*(x16 - x44 + x45 + x60);
-                const T x67 = PAy*x32 - PGy[g]*x63 + x61;
-                const T x68 = tpi*(x17 - x48 + x49);
-                const T x69 = PAy*x40 - PGy[g]*x65;
-                const T x70 = tpi*(x18 - x52 + x53 + x60);
-                const T x71 = PAz*x40 - PGz[g]*x65 + x61;
-                const T x72 = PAy*x46 - PGy[g]*x67 + 2*x62;
-                const T x73 = PAy*x50 - PGy[g]*x69 + x64;
-                const T x74 = PAy*x54 - PGy[g]*x71;
-                const T x75 = PAz*x54 - PGz[g]*x71 + 2*x64;
+        for (int prim = 0; prim < nprim; ++prim) {
 
-                base_integral_0[g] = x5;
-                base_integral_1[g] = x10;
-                base_integral_2[g] = x15;
-                base_integral_3[g] = x16;
-                base_integral_4[g] = x17;
-                base_integral_5[g] = x18;
-                base_integral_6[g] = x27;
-                base_integral_7[g] = x35;
-                base_integral_8[g] = x43;
-                base_integral_9[g] = x47;
-                base_integral_10[g] = x51;
-                base_integral_11[g] = x55;
-                base_integral_12[g] = x56;
-                base_integral_13[g] = x57;
-                base_integral_14[g] = x58;
-                base_integral_15[g] = x59;
-                base_integral_16[g] = PAx*x27 - PGx[g]*(PAx*x26 - PGx[g]*(PAx*x24 - PGx[g]*(PAx*scaled_boys_3[g] - PGx[g]*scaled_boys_4[g]) + x61) + x19*(-x22 + x23 + x4)) + 3*tpi*(-x21 + x25 + x5 + x60);
-                base_integral_17[g] = PAx*x35 - PGx[g]*(PAx*x34 - PGx[g]*(PAx*x32 - PGx[g]*x63) + x62) + x19*(x10 - x29 + x33);
-                base_integral_18[g] = PAx*x43 - PGx[g]*(PAx*x42 - PGx[g]*(PAx*x40 - PGx[g]*x65) + x64) + x19*(x15 - x37 + x41);
-                base_integral_19[g] = PAx*x47 - PGx[g]*(PAx*x46 - PGx[g]*x67) + x66;
-                base_integral_20[g] = PAx*x51 - PGx[g]*(PAx*x50 - PGx[g]*x69) + x68;
-                base_integral_21[g] = PAx*x55 - PGx[g]*(PAx*x54 - PGx[g]*x71) + x70;
-                base_integral_22[g] = PAx*x56 - PGx[g]*x72;
-                base_integral_23[g] = PAx*x57 - PGx[g]*x73;
-                base_integral_24[g] = PAx*x58 - PGx[g]*x74;
-                base_integral_25[g] = PAx*x59 - PGx[g]*x75;
-                base_integral_26[g] = PAy*x56 - PGy[g]*x72 + 3*x66;
-                base_integral_27[g] = PAy*x57 - PGy[g]*x73 + 2*x68;
-                base_integral_28[g] = PAy*x58 - PGy[g]*x74 + x70;
-                base_integral_29[g] = PAy*x59 - PGy[g]*x75;
-                base_integral_30[g] = PAz*x59 - PGz[g]*x75 + 3*x70;
+            if (padded) {
+                for (int k = 0; k < gb_size; ++k) {
+                    pad[0*g_block+k] = v_PGx[prim*gb_size+k];
+                    pad[1*g_block+k] = v_PGy[prim*gb_size+k];
+                    pad[2*g_block+k] = v_PGz[prim*gb_size+k];
+                    pad[3*g_block+k] = v_scaled_boys[prim*5*gb_size+0*gb_size+k];
+                    pad[4*g_block+k] = v_scaled_boys[prim*5*gb_size+1*gb_size+k];
+                    pad[5*g_block+k] = v_scaled_boys[prim*5*gb_size+2*gb_size+k];
+                    pad[6*g_block+k] = v_scaled_boys[prim*5*gb_size+3*gb_size+k];
+                    pad[7*g_block+k] = v_scaled_boys[prim*5*gb_size+4*gb_size+k];
+                }
+            }
+            const T* __restrict PGx = padded ? &pad[0*g_block] : &v_PGx[prim*gb_size + g_lo];
+            const T* __restrict PGy = padded ? &pad[1*g_block] : &v_PGy[prim*gb_size + g_lo];
+            const T* __restrict PGz = padded ? &pad[2*g_block] : &v_PGz[prim*gb_size + g_lo];
+            const T* __restrict scaled_boys_0 = padded ? &pad[3*g_block] : &v_scaled_boys[prim*5*gb_size+0*gb_size + g_lo];
+            const T* __restrict scaled_boys_1 = padded ? &pad[4*g_block] : &v_scaled_boys[prim*5*gb_size+1*gb_size + g_lo];
+            const T* __restrict scaled_boys_2 = padded ? &pad[5*g_block] : &v_scaled_boys[prim*5*gb_size+2*gb_size + g_lo];
+            const T* __restrict scaled_boys_3 = padded ? &pad[6*g_block] : &v_scaled_boys[prim*5*gb_size+3*gb_size + g_lo];
+            const T* __restrict scaled_boys_4 = padded ? &pad[7*g_block] : &v_scaled_boys[prim*5*gb_size+4*gb_size + g_lo];
 
-            } // for g
-        } else {
+            const T PAx = v_PAx[prim];
+            const T PAy = v_PAy[prim];
+            const T PAz = v_PAz[prim];
+            const T tpi = 0.5 / v_p[prim];
+            const T tpi_2 = 2*tpi;
+            const T tpi_3 = 3*tpi;
 
-            #pragma omp simd
-            for (int g = 0; g < gb_size; ++g) {
+            // overwrite integrals for first primitive, accumulate otherwise
+            if (prim==0) {
+                #pragma omp simd
+                for (int g = 0; g < g_block; ++g) {
 
-                const T x0 = tpi*(scaled_boys_0[g] - scaled_boys_1[g]);
-                const T x1 = PAx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
-                const T x2 = PAx*scaled_boys_1[g];
-                const T x3 = PGx[g]*scaled_boys_2[g];
-                const T x4 = x2 - x3;
-                const T x5 = PAx*x1 - PGx[g]*x4 + x0;
-                const T x6 = PAy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
-                const T x7 = PAy*scaled_boys_1[g];
-                const T x8 = PGy[g]*scaled_boys_2[g];
-                const T x9 = x7 - x8;
-                const T x10 = PAx*x6 - PGx[g]*x9;
-                const T x11 = PAz*scaled_boys_0[g] - PGz[g]*scaled_boys_1[g];
-                const T x12 = PAz*scaled_boys_1[g];
-                const T x13 = PGz[g]*scaled_boys_2[g];
-                const T x14 = x12 - x13;
-                const T x15 = PAx*x11 - PGx[g]*x14;
-                const T x16 = PAy*x6 - PGy[g]*x9 + x0;
-                const T x17 = PAy*x11 - PGy[g]*x14;
-                const T x18 = PAz*x11 - PGz[g]*x14 + x0;
-                const T x19 = 2*tpi;
-                const T x20 = tpi*(scaled_boys_1[g] - scaled_boys_2[g]);
-                const T x21 = PAx*x4;
-                const T x22 = PAx*scaled_boys_2[g];
-                const T x23 = PGx[g]*scaled_boys_3[g];
-                const T x24 = x22 - x23;
-                const T x25 = PGx[g]*x24;
-                const T x26 = x20 + x21 - x25;
-                const T x27 = PAx*x5 - PGx[g]*x26 + x19*(x1 - x2 + x3);
-                const T x28 = tpi*(x6 - x7 + x8);
-                const T x29 = PAx*x9;
-                const T x30 = PAy*scaled_boys_2[g];
-                const T x31 = PGy[g]*scaled_boys_3[g];
-                const T x32 = x30 - x31;
-                const T x33 = PGx[g]*x32;
-                const T x34 = x29 - x33;
-                const T x35 = PAx*x10 - PGx[g]*x34 + x28;
-                const T x36 = tpi*(x11 - x12 + x13);
-                const T x37 = PAx*x14;
-                const T x38 = PAz*scaled_boys_2[g];
-                const T x39 = PGz[g]*scaled_boys_3[g];
-                const T x40 = x38 - x39;
-                const T x41 = PGx[g]*x40;
-                const T x42 = x37 - x41;
-                const T x43 = PAx*x15 - PGx[g]*x42 + x36;
-                const T x44 = PAy*x9;
-                const T x45 = PGy[g]*x32;
-                const T x46 = x20 + x44 - x45;
-                const T x47 = PAx*x16 - PGx[g]*x46;
-                const T x48 = PAy*x14;
-                const T x49 = PGy[g]*x40;
-                const T x50 = x48 - x49;
-                const T x51 = PAx*x17 - PGx[g]*x50;
-                const T x52 = PAz*x14;
-                const T x53 = PGz[g]*x40;
-                const T x54 = x20 + x52 - x53;
-                const T x55 = PAx*x18 - PGx[g]*x54;
-                const T x56 = PAy*x16 - PGy[g]*x46 + 2*x28;
-                const T x57 = PAy*x17 - PGy[g]*x50 + x36;
-                const T x58 = PAy*x18 - PGy[g]*x54;
-                const T x59 = PAz*x18 - PGz[g]*x54 + 2*x36;
-                const T x60 = -x20;
-                const T x61 = tpi*(scaled_boys_2[g] - scaled_boys_3[g]);
-                const T x62 = tpi*(-x30 + x31 + x9);
-                const T x63 = PAy*scaled_boys_3[g] - PGy[g]*scaled_boys_4[g];
-                const T x64 = tpi*(x14 - x38 + x39);
-                const T x65 = PAz*scaled_boys_3[g] - PGz[g]*scaled_boys_4[g];
-                const T x66 = tpi*(x16 - x44 + x45 + x60);
-                const T x67 = PAy*x32 - PGy[g]*x63 + x61;
-                const T x68 = tpi*(x17 - x48 + x49);
-                const T x69 = PAy*x40 - PGy[g]*x65;
-                const T x70 = tpi*(x18 - x52 + x53 + x60);
-                const T x71 = PAz*x40 - PGz[g]*x65 + x61;
-                const T x72 = PAy*x46 - PGy[g]*x67 + 2*x62;
-                const T x73 = PAy*x50 - PGy[g]*x69 + x64;
-                const T x74 = PAy*x54 - PGy[g]*x71;
-                const T x75 = PAz*x54 - PGz[g]*x71 + 2*x64;
+                    const T x0 = PAy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
+                    const T x1 = PAy*scaled_boys_1[g] - PGy[g]*scaled_boys_2[g];
+                    base_integral_1[g] = PAx*x0 - PGx[g]*x1;
+                    const T x2 = scaled_boys_0[g] - scaled_boys_1[g];
+                    const T x3 = tpi*x2 + PAy*x0 - PGy[g]*x1;
+                    base_integral_3[g] = x3;
+                    const T x4 = PAz*scaled_boys_0[g] - PGz[g]*scaled_boys_1[g];
+                    const T x5 = PAz*scaled_boys_1[g] - PGz[g]*scaled_boys_2[g];
+                    base_integral_4[g] = PAy*x4 - PGy[g]*x5;
+                    const T x6 = PAx*x4 - PGx[g]*x5;
+                    base_integral_2[g] = x6;
+                    const T x7 = tpi*x2 + PAz*x4 - PGz[g]*x5;
+                    base_integral_5[g] = x7;
+                    const T x8 = PAx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
+                    const T x9 = PAx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g];
+                    const T x10 = PAx*x8 + tpi*x2 - PGx[g]*x9;
+                    base_integral_0[g] = x10;
+                    const T x11 = PAz*scaled_boys_2[g] - PGz[g]*scaled_boys_3[g];
+                    const T x12 = PAx*x5 - PGx[g]*x11;
+                    base_integral_10[g] = PAy*x6 - PGy[g]*x12;
+                    const T x13 = scaled_boys_1[g] - scaled_boys_2[g];
+                    const T x14 = PAz*x5 + tpi*x13 - PGz[g]*x11;
+                    base_integral_11[g] = PAx*x7 - PGx[g]*x14;
+                    const T x15 = x4 - x5;
+                    const T x16 = PAz*x7 + tpi_2*x15 - PGz[g]*x14;
+                    base_integral_15[g] = x16;
+                    const T x17 = PAy*x7 - PGy[g]*x14;
+                    base_integral_14[g] = x17;
+                    const T x18 = PAx*scaled_boys_2[g] - PGx[g]*scaled_boys_3[g];
+                    const T x19 = PAx*x9 + tpi*x13 - PGx[g]*x18;
+                    base_integral_7[g] = PAy*x10 - PGy[g]*x19;
+                    const T x20 = x8 - x9;
+                    const T x21 = PAx*x10 + tpi_2*x20 - PGx[g]*x19;
+                    base_integral_6[g] = x21;
+                    const T x22 = PAz*x10 - PGz[g]*x19;
+                    base_integral_8[g] = x22;
+                    const T x23 = PAy*scaled_boys_2[g] - PGy[g]*scaled_boys_3[g];
+                    const T x24 = PAy*x1 + tpi*x13 - PGy[g]*x23;
+                    base_integral_13[g] = PAz*x3 - PGz[g]*x24;
+                    const T x25 = x0 - x1;
+                    const T x26 = PAy*x3 + tpi_2*x25 - PGy[g]*x24;
+                    base_integral_12[g] = x26;
+                    const T x27 = PAx*x3 - PGx[g]*x24;
+                    base_integral_9[g] = x27;
+                    const T x28 = PAx*scaled_boys_3[g] - PGx[g]*scaled_boys_4[g];
+                    const T x29 = scaled_boys_2[g] - scaled_boys_3[g];
+                    const T x30 = PAx*x18 + tpi*x29 - PGx[g]*x28;
+                    const T x31 = x9 - x18;
+                    const T x32 = PAx*x19 + tpi_2*x31 - PGx[g]*x30;
+                    base_integral_17[g] = PAy*x21 - PGy[g]*x32;
+                    const T x33 = x10 - x19;
+                    const T x34 = PAz*x19 - PGz[g]*x30;
+                    base_integral_21[g] = PAz*x22 + tpi*x33 - PGz[g]*x34;
+                    base_integral_20[g] = PAy*x22 - PGy[g]*x34;
+                    base_integral_16[g] = PAx*x21 + tpi_3*x33 - PGx[g]*x32;
+                    base_integral_18[g] = PAz*x21 - PGz[g]*x32;
+                    const T x35 = PAy*scaled_boys_3[g] - PGy[g]*scaled_boys_4[g];
+                    const T x36 = PAy*x23 + tpi*x29 - PGy[g]*x35;
+                    const T x37 = x1 - x23;
+                    const T x38 = PAy*x24 + tpi_2*x37 - PGy[g]*x36;
+                    base_integral_22[g] = PAx*x26 - PGx[g]*x38;
+                    const T x39 = PAz*scaled_boys_3[g] - PGz[g]*scaled_boys_4[g];
+                    const T x40 = PAz*x11 + tpi*x29 - PGz[g]*x39;
+                    const T x41 = x5 - x11;
+                    const T x42 = PAz*x14 + tpi_2*x41 - PGz[g]*x40;
+                    base_integral_25[g] = PAx*x16 - PGx[g]*x42;
+                    const T x43 = PAx*x24 - PGx[g]*x36;
+                    const T x44 = x3 - x24;
+                    base_integral_19[g] = PAx*x27 + tpi*x44 - PGx[g]*x43;
+                    base_integral_23[g] = PAz*x27 - PGz[g]*x43;
+                    base_integral_26[g] = PAy*x26 + tpi_3*x44 - PGy[g]*x38;
+                    base_integral_27[g] = PAz*x26 - PGz[g]*x38;
+                    const T x45 = PAy*x14 - PGy[g]*x40;
+                    const T x46 = x7 - x14;
+                    base_integral_28[g] = PAy*x17 + tpi*x46 - PGy[g]*x45;
+                    base_integral_24[g] = PAx*x17 - PGx[g]*x45;
+                    base_integral_30[g] = PAz*x16 + tpi_3*x46 - PGz[g]*x42;
+                    base_integral_29[g] = PAy*x16 - PGy[g]*x42;
 
-                base_integral_0[g] += x5;
-                base_integral_1[g] += x10;
-                base_integral_2[g] += x15;
-                base_integral_3[g] += x16;
-                base_integral_4[g] += x17;
-                base_integral_5[g] += x18;
-                base_integral_6[g] += x27;
-                base_integral_7[g] += x35;
-                base_integral_8[g] += x43;
-                base_integral_9[g] += x47;
-                base_integral_10[g] += x51;
-                base_integral_11[g] += x55;
-                base_integral_12[g] += x56;
-                base_integral_13[g] += x57;
-                base_integral_14[g] += x58;
-                base_integral_15[g] += x59;
-                base_integral_16[g] += PAx*x27 - PGx[g]*(PAx*x26 - PGx[g]*(PAx*x24 - PGx[g]*(PAx*scaled_boys_3[g] - PGx[g]*scaled_boys_4[g]) + x61) + x19*(-x22 + x23 + x4)) + 3*tpi*(-x21 + x25 + x5 + x60);
-                base_integral_17[g] += PAx*x35 - PGx[g]*(PAx*x34 - PGx[g]*(PAx*x32 - PGx[g]*x63) + x62) + x19*(x10 - x29 + x33);
-                base_integral_18[g] += PAx*x43 - PGx[g]*(PAx*x42 - PGx[g]*(PAx*x40 - PGx[g]*x65) + x64) + x19*(x15 - x37 + x41);
-                base_integral_19[g] += PAx*x47 - PGx[g]*(PAx*x46 - PGx[g]*x67) + x66;
-                base_integral_20[g] += PAx*x51 - PGx[g]*(PAx*x50 - PGx[g]*x69) + x68;
-                base_integral_21[g] += PAx*x55 - PGx[g]*(PAx*x54 - PGx[g]*x71) + x70;
-                base_integral_22[g] += PAx*x56 - PGx[g]*x72;
-                base_integral_23[g] += PAx*x57 - PGx[g]*x73;
-                base_integral_24[g] += PAx*x58 - PGx[g]*x74;
-                base_integral_25[g] += PAx*x59 - PGx[g]*x75;
-                base_integral_26[g] += PAy*x56 - PGy[g]*x72 + 3*x66;
-                base_integral_27[g] += PAy*x57 - PGy[g]*x73 + 2*x68;
-                base_integral_28[g] += PAy*x58 - PGy[g]*x74 + x70;
-                base_integral_29[g] += PAy*x59 - PGy[g]*x75;
-                base_integral_30[g] += PAz*x59 - PGz[g]*x75 + 3*x70;
+                } // for g
+            } else {
 
-            } // for g
-        } // if/else prim
-    } // for prim
+                #pragma omp simd
+                for (int g = 0; g < g_block; ++g) {
 
-    T* __restrict integral_0 = &integrals[0*gb_size];
-    T* __restrict integral_1 = &integrals[1*gb_size];
-    T* __restrict integral_2 = &integrals[2*gb_size];
-    T* __restrict integral_3 = &integrals[3*gb_size];
-    T* __restrict integral_4 = &integrals[4*gb_size];
-    T* __restrict integral_5 = &integrals[5*gb_size];
-    T* __restrict integral_6 = &integrals[6*gb_size];
-    T* __restrict integral_7 = &integrals[7*gb_size];
-    T* __restrict integral_8 = &integrals[8*gb_size];
-    T* __restrict integral_9 = &integrals[9*gb_size];
-    T* __restrict integral_10 = &integrals[10*gb_size];
-    T* __restrict integral_11 = &integrals[11*gb_size];
-    T* __restrict integral_12 = &integrals[12*gb_size];
-    T* __restrict integral_13 = &integrals[13*gb_size];
-    T* __restrict integral_14 = &integrals[14*gb_size];
-    T* __restrict integral_15 = &integrals[15*gb_size];
-    T* __restrict integral_16 = &integrals[16*gb_size];
-    T* __restrict integral_17 = &integrals[17*gb_size];
-    T* __restrict integral_18 = &integrals[18*gb_size];
-    T* __restrict integral_19 = &integrals[19*gb_size];
-    T* __restrict integral_20 = &integrals[20*gb_size];
-    T* __restrict integral_21 = &integrals[21*gb_size];
-    T* __restrict integral_22 = &integrals[22*gb_size];
-    T* __restrict integral_23 = &integrals[23*gb_size];
-    T* __restrict integral_24 = &integrals[24*gb_size];
-    T* __restrict integral_25 = &integrals[25*gb_size];
-    T* __restrict integral_26 = &integrals[26*gb_size];
-    T* __restrict integral_27 = &integrals[27*gb_size];
-    T* __restrict integral_28 = &integrals[28*gb_size];
-    T* __restrict integral_29 = &integrals[29*gb_size];
-    T* __restrict integral_30 = &integrals[30*gb_size];
-    T* __restrict integral_31 = &integrals[31*gb_size];
-    T* __restrict integral_32 = &integrals[32*gb_size];
-    T* __restrict integral_33 = &integrals[33*gb_size];
-    T* __restrict integral_34 = &integrals[34*gb_size];
-    T* __restrict integral_35 = &integrals[35*gb_size];
+                    const T x0 = PAy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
+                    const T x1 = PAy*scaled_boys_1[g] - PGy[g]*scaled_boys_2[g];
+                    base_integral_1[g] += PAx*x0 - PGx[g]*x1;
+                    const T x2 = scaled_boys_0[g] - scaled_boys_1[g];
+                    const T x3 = tpi*x2 + PAy*x0 - PGy[g]*x1;
+                    base_integral_3[g] += x3;
+                    const T x4 = PAz*scaled_boys_0[g] - PGz[g]*scaled_boys_1[g];
+                    const T x5 = PAz*scaled_boys_1[g] - PGz[g]*scaled_boys_2[g];
+                    base_integral_4[g] += PAy*x4 - PGy[g]*x5;
+                    const T x6 = PAx*x4 - PGx[g]*x5;
+                    base_integral_2[g] += x6;
+                    const T x7 = tpi*x2 + PAz*x4 - PGz[g]*x5;
+                    base_integral_5[g] += x7;
+                    const T x8 = PAx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
+                    const T x9 = PAx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g];
+                    const T x10 = PAx*x8 + tpi*x2 - PGx[g]*x9;
+                    base_integral_0[g] += x10;
+                    const T x11 = PAz*scaled_boys_2[g] - PGz[g]*scaled_boys_3[g];
+                    const T x12 = PAx*x5 - PGx[g]*x11;
+                    base_integral_10[g] += PAy*x6 - PGy[g]*x12;
+                    const T x13 = scaled_boys_1[g] - scaled_boys_2[g];
+                    const T x14 = PAz*x5 + tpi*x13 - PGz[g]*x11;
+                    base_integral_11[g] += PAx*x7 - PGx[g]*x14;
+                    const T x15 = x4 - x5;
+                    const T x16 = PAz*x7 + tpi_2*x15 - PGz[g]*x14;
+                    base_integral_15[g] += x16;
+                    const T x17 = PAy*x7 - PGy[g]*x14;
+                    base_integral_14[g] += x17;
+                    const T x18 = PAx*scaled_boys_2[g] - PGx[g]*scaled_boys_3[g];
+                    const T x19 = PAx*x9 + tpi*x13 - PGx[g]*x18;
+                    base_integral_7[g] += PAy*x10 - PGy[g]*x19;
+                    const T x20 = x8 - x9;
+                    const T x21 = PAx*x10 + tpi_2*x20 - PGx[g]*x19;
+                    base_integral_6[g] += x21;
+                    const T x22 = PAz*x10 - PGz[g]*x19;
+                    base_integral_8[g] += x22;
+                    const T x23 = PAy*scaled_boys_2[g] - PGy[g]*scaled_boys_3[g];
+                    const T x24 = PAy*x1 + tpi*x13 - PGy[g]*x23;
+                    base_integral_13[g] += PAz*x3 - PGz[g]*x24;
+                    const T x25 = x0 - x1;
+                    const T x26 = PAy*x3 + tpi_2*x25 - PGy[g]*x24;
+                    base_integral_12[g] += x26;
+                    const T x27 = PAx*x3 - PGx[g]*x24;
+                    base_integral_9[g] += x27;
+                    const T x28 = PAx*scaled_boys_3[g] - PGx[g]*scaled_boys_4[g];
+                    const T x29 = scaled_boys_2[g] - scaled_boys_3[g];
+                    const T x30 = PAx*x18 + tpi*x29 - PGx[g]*x28;
+                    const T x31 = x9 - x18;
+                    const T x32 = PAx*x19 + tpi_2*x31 - PGx[g]*x30;
+                    base_integral_17[g] += PAy*x21 - PGy[g]*x32;
+                    const T x33 = x10 - x19;
+                    const T x34 = PAz*x19 - PGz[g]*x30;
+                    base_integral_21[g] += PAz*x22 + tpi*x33 - PGz[g]*x34;
+                    base_integral_20[g] += PAy*x22 - PGy[g]*x34;
+                    base_integral_16[g] += PAx*x21 + tpi_3*x33 - PGx[g]*x32;
+                    base_integral_18[g] += PAz*x21 - PGz[g]*x32;
+                    const T x35 = PAy*scaled_boys_3[g] - PGy[g]*scaled_boys_4[g];
+                    const T x36 = PAy*x23 + tpi*x29 - PGy[g]*x35;
+                    const T x37 = x1 - x23;
+                    const T x38 = PAy*x24 + tpi_2*x37 - PGy[g]*x36;
+                    base_integral_22[g] += PAx*x26 - PGx[g]*x38;
+                    const T x39 = PAz*scaled_boys_3[g] - PGz[g]*scaled_boys_4[g];
+                    const T x40 = PAz*x11 + tpi*x29 - PGz[g]*x39;
+                    const T x41 = x5 - x11;
+                    const T x42 = PAz*x14 + tpi_2*x41 - PGz[g]*x40;
+                    base_integral_25[g] += PAx*x16 - PGx[g]*x42;
+                    const T x43 = PAx*x24 - PGx[g]*x36;
+                    const T x44 = x3 - x24;
+                    base_integral_19[g] += PAx*x27 + tpi*x44 - PGx[g]*x43;
+                    base_integral_23[g] += PAz*x27 - PGz[g]*x43;
+                    base_integral_26[g] += PAy*x26 + tpi_3*x44 - PGy[g]*x38;
+                    base_integral_27[g] += PAz*x26 - PGz[g]*x38;
+                    const T x45 = PAy*x14 - PGy[g]*x40;
+                    const T x46 = x7 - x14;
+                    base_integral_28[g] += PAy*x17 + tpi*x46 - PGy[g]*x45;
+                    base_integral_24[g] += PAx*x17 - PGx[g]*x45;
+                    base_integral_30[g] += PAz*x16 + tpi_3*x46 - PGz[g]*x42;
+                    base_integral_29[g] += PAy*x16 - PGy[g]*x42;
 
-    #pragma omp simd
-    for (int g = 0; g < gb_size; ++g) {
+                } // for g
+            } // if/else prim
+        } // for prim
 
-        const T x0 = ABy*base_integral_0[g] + base_integral_7[g];
-        const T x1 = ABz*base_integral_0[g] + base_integral_8[g];
-        const T x2 = ABy*base_integral_7[g] + base_integral_19[g];
-        const T x3 = ABz*base_integral_7[g] + base_integral_20[g];
-        const T x4 = ABz*base_integral_8[g] + base_integral_21[g];
-        const T x5 = ABy*base_integral_1[g] + base_integral_9[g];
-        const T x6 = ABz*base_integral_1[g] + base_integral_10[g];
-        const T x7 = ABy*base_integral_9[g] + base_integral_22[g];
-        const T x8 = ABz*base_integral_9[g] + base_integral_23[g];
-        const T x9 = ABz*base_integral_10[g] + base_integral_24[g];
-        const T x10 = ABy*base_integral_2[g] + base_integral_10[g];
-        const T x11 = ABz*base_integral_2[g] + base_integral_11[g];
-        const T x12 = ABy*base_integral_10[g] + base_integral_23[g];
-        const T x13 = ABz*base_integral_11[g] + base_integral_25[g];
-        const T x14 = ABy*base_integral_3[g] + base_integral_12[g];
-        const T x15 = ABz*base_integral_3[g] + base_integral_13[g];
-        const T x16 = ABz*base_integral_13[g] + base_integral_28[g];
-        const T x17 = ABy*base_integral_4[g] + base_integral_13[g];
-        const T x18 = ABz*base_integral_4[g] + base_integral_14[g];
-        const T x19 = ABz*base_integral_14[g] + base_integral_29[g];
-        const T x20 = ABy*base_integral_5[g] + base_integral_14[g];
-        const T x21 = ABz*base_integral_5[g] + base_integral_15[g];
+        #pragma omp simd
+        for (int g = 0; g < g_block; ++g) {
 
-        integral_0[g] = ABx*base_integral_6[g] + ABx*(ABx*base_integral_0[g] + base_integral_6[g]) + base_integral_16[g];
-        integral_1[g] = ABx*x0 + ABy*base_integral_6[g] + base_integral_17[g];
-        integral_2[g] = ABx*x1 + ABz*base_integral_6[g] + base_integral_18[g];
-        integral_3[g] = ABy*x0 + x2;
-        integral_4[g] = ABy*x1 + x3;
-        integral_5[g] = ABz*x1 + x4;
-        integral_6[g] = ABx*base_integral_7[g] + ABx*(ABx*base_integral_1[g] + base_integral_7[g]) + base_integral_17[g];
-        integral_7[g] = ABx*x5 + x2;
-        integral_8[g] = ABx*x6 + x3;
-        integral_9[g] = ABy*x5 + x7;
-        integral_10[g] = ABy*x6 + x8;
-        integral_11[g] = ABz*x6 + x9;
-        integral_12[g] = ABx*base_integral_8[g] + ABx*(ABx*base_integral_2[g] + base_integral_8[g]) + base_integral_18[g];
-        integral_13[g] = ABx*x10 + ABy*base_integral_8[g] + base_integral_20[g];
-        integral_14[g] = ABx*x11 + x4;
-        integral_15[g] = ABy*x10 + x12;
-        integral_16[g] = ABy*x11 + x9;
-        integral_17[g] = ABz*x11 + x13;
-        integral_18[g] = ABx*base_integral_9[g] + ABx*(ABx*base_integral_3[g] + base_integral_9[g]) + base_integral_19[g];
-        integral_19[g] = ABx*x14 + x7;
-        integral_20[g] = ABx*x15 + x8;
-        integral_21[g] = ABy*base_integral_12[g] + ABy*x14 + base_integral_26[g];
-        integral_22[g] = ABy*x15 + ABz*base_integral_12[g] + base_integral_27[g];
-        integral_23[g] = ABz*x15 + x16;
-        integral_24[g] = ABx*base_integral_10[g] + ABx*(ABx*base_integral_4[g] + base_integral_10[g]) + base_integral_20[g];
-        integral_25[g] = ABx*x17 + x12;
-        integral_26[g] = ABx*x18 + x9;
-        integral_27[g] = ABy*base_integral_13[g] + ABy*x17 + base_integral_27[g];
-        integral_28[g] = ABy*x18 + x16;
-        integral_29[g] = ABz*x18 + x19;
-        integral_30[g] = ABx*base_integral_11[g] + ABx*(ABx*base_integral_5[g] + base_integral_11[g]) + base_integral_21[g];
-        integral_31[g] = ABx*x20 + ABy*base_integral_11[g] + base_integral_24[g];
-        integral_32[g] = ABx*x21 + x13;
-        integral_33[g] = ABy*base_integral_14[g] + ABy*x20 + base_integral_28[g];
-        integral_34[g] = ABy*x21 + x19;
-        integral_35[g] = ABz*base_integral_15[g] + ABz*x21 + base_integral_30[g];
+            const T x0 = base_integral_16[g] + ABx*base_integral_6[g];
+            const T x1 = base_integral_6[g] + ABx*base_integral_0[g];
+            block_0[g] = x0 + ABx*x1;
+            const T x2 = base_integral_17[g] + ABx*base_integral_7[g];
+            block_1[g] = ABy*x1 + x2;
+            const T x3 = base_integral_7[g] + ABx*base_integral_1[g];
+            block_6[g] = x2 + ABx*x3;
+            const T x4 = base_integral_18[g] + ABx*base_integral_8[g];
+            block_2[g] = ABz*x1 + x4;
+            const T x5 = base_integral_8[g] + ABx*base_integral_2[g];
+            block_12[g] = x4 + ABx*x5;
+            const T x6 = ABy*base_integral_7[g] + base_integral_19[g];
+            const T x7 = ABy*base_integral_0[g] + base_integral_7[g];
+            block_3[g] = x6 + ABy*x7;
+            const T x8 = ABy*base_integral_1[g] + base_integral_9[g];
+            block_7[g] = x6 + ABx*x8;
+            const T x9 = ABy*base_integral_9[g] + base_integral_22[g];
+            block_9[g] = ABy*x8 + x9;
+            const T x10 = base_integral_19[g] + ABx*base_integral_9[g];
+            const T x11 = base_integral_9[g] + ABx*base_integral_3[g];
+            block_18[g] = x10 + ABx*x11;
+            const T x12 = ABy*base_integral_3[g] + base_integral_12[g];
+            block_19[g] = x9 + ABx*x12;
+            const T x13 = ABy*base_integral_12[g] + base_integral_26[g];
+            block_21[g] = ABy*x12 + x13;
+            const T x14 = ABz*base_integral_7[g] + base_integral_20[g];
+            const T x15 = ABz*base_integral_0[g] + base_integral_8[g];
+            block_4[g] = x14 + ABy*x15;
+            const T x16 = ABz*base_integral_8[g] + base_integral_21[g];
+            block_5[g] = ABz*x15 + x16;
+            const T x17 = ABz*base_integral_1[g] + base_integral_10[g];
+            block_8[g] = x14 + ABx*x17;
+            const T x18 = base_integral_20[g] + ABx*base_integral_10[g];
+            block_13[g] = ABy*x5 + x18;
+            const T x19 = base_integral_10[g] + ABx*base_integral_4[g];
+            block_24[g] = x18 + ABx*x19;
+            const T x20 = ABz*base_integral_9[g] + base_integral_23[g];
+            block_10[g] = ABy*x17 + x20;
+            const T x21 = ABy*base_integral_10[g] + base_integral_23[g];
+            const T x22 = base_integral_10[g] + ABy*base_integral_2[g];
+            block_15[g] = x21 + ABy*x22;
+            const T x23 = ABz*base_integral_10[g] + base_integral_24[g];
+            block_11[g] = ABz*x17 + x23;
+            const T x24 = ABz*base_integral_2[g] + base_integral_11[g];
+            block_14[g] = x16 + ABx*x24;
+            block_16[g] = x23 + ABy*x24;
+            const T x25 = ABz*base_integral_11[g] + base_integral_25[g];
+            block_17[g] = ABz*x24 + x25;
+            const T x26 = ABz*base_integral_3[g] + base_integral_13[g];
+            block_20[g] = x20 + ABx*x26;
+            const T x27 = base_integral_13[g] + ABy*base_integral_4[g];
+            block_25[g] = x21 + ABx*x27;
+            const T x28 = ABy*base_integral_13[g] + base_integral_27[g];
+            block_22[g] = ABz*x12 + x28;
+            block_27[g] = x28 + ABy*x27;
+            const T x29 = ABz*base_integral_13[g] + base_integral_28[g];
+            block_23[g] = ABz*x26 + x29;
+            const T x30 = ABz*base_integral_4[g] + base_integral_14[g];
+            block_26[g] = x23 + ABx*x30;
+            block_28[g] = x29 + ABy*x30;
+            const T x31 = ABz*base_integral_14[g] + base_integral_29[g];
+            block_29[g] = ABz*x30 + x31;
+            const T x32 = base_integral_21[g] + ABx*base_integral_11[g];
+            const T x33 = base_integral_11[g] + ABx*base_integral_5[g];
+            block_30[g] = x32 + ABx*x33;
+            const T x34 = base_integral_24[g] + ABy*base_integral_11[g];
+            const T x35 = base_integral_14[g] + ABy*base_integral_5[g];
+            block_31[g] = x34 + ABx*x35;
+            const T x36 = base_integral_28[g] + ABy*base_integral_14[g];
+            block_33[g] = ABy*x35 + x36;
+            const T x37 = ABz*base_integral_5[g] + base_integral_15[g];
+            block_32[g] = x25 + ABx*x37;
+            block_34[g] = x31 + ABy*x37;
+            const T x38 = ABz*base_integral_15[g] + base_integral_30[g];
+            block_35[g] = ABz*x37 + x38;
 
-    } // for g
+        } // for g
+
+        // copy the block to the output arrays
+        for (int i = 0; i < 36; ++i) {
+            const T* __restrict src = &block[i*g_block];
+            T* __restrict dst = &integrals[i*gb_size + g_lo];
+            if (padded) {
+                SNK_COPY(dst, src, gb_size);
+            } else {
+                SNK_COPY(dst, src, g_block);
+            }
+        }
+    } // for g_lo
 } // HRR_D_D
 
 template void HRR_D_D<float>(

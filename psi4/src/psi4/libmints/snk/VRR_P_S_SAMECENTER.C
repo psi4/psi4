@@ -17,18 +17,18 @@ void VRR_P_S_SAMECENTER(
 
     for (int prim = 0; prim < nprim; ++prim) {
 
-        const T tpi = 0.5 / v_p[prim];
         const T* __restrict PGx = &v_PGx[prim*gb_size];
         const T* __restrict PGy = &v_PGy[prim*gb_size];
         const T* __restrict PGz = &v_PGz[prim*gb_size];
-
         const T* __restrict scaled_boys_0 = &v_scaled_boys[prim*2*gb_size+0*gb_size];
         const T* __restrict scaled_boys_1 = &v_scaled_boys[prim*2*gb_size+1*gb_size];
+
 
         // overwrite integrals for first primitive, accumulate otherwise
         if (prim==0) {
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
+
 
                 integral_0[g] = -PGx[g]*scaled_boys_1[g];
                 integral_1[g] = -PGy[g]*scaled_boys_1[g];
@@ -39,6 +39,7 @@ void VRR_P_S_SAMECENTER(
 
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
+
 
                 integral_0[g] += -PGx[g]*scaled_boys_1[g];
                 integral_1[g] += -PGy[g]*scaled_boys_1[g];

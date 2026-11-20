@@ -29,47 +29,43 @@ void VRR_P_P(
 
     for (int prim = 0; prim < nprim; ++prim) {
 
-        const T tpi = 0.5 / v_p[prim];
-        const T PAx = v_PAx[prim];
-        const T PAy = v_PAy[prim];
-        const T PAz = v_PAz[prim];
-        const T PBx = PAx + ABx;
-        const T PBy = PAy + ABy;
-        const T PBz = PAz + ABz;
         const T* __restrict PGx = &v_PGx[prim*gb_size];
         const T* __restrict PGy = &v_PGy[prim*gb_size];
         const T* __restrict PGz = &v_PGz[prim*gb_size];
-
         const T* __restrict scaled_boys_0 = &v_scaled_boys[prim*3*gb_size+0*gb_size];
         const T* __restrict scaled_boys_1 = &v_scaled_boys[prim*3*gb_size+1*gb_size];
         const T* __restrict scaled_boys_2 = &v_scaled_boys[prim*3*gb_size+2*gb_size];
+
+        const T PAx = v_PAx[prim];
+        const T PAy = v_PAy[prim];
+        const T PAz = v_PAz[prim];
+        const T PBx = v_PAx[prim] + ABx;
+        const T PBy = v_PAy[prim] + ABy;
+        const T PBz = v_PAz[prim] + ABz;
+        const T tpi = 0.5 / v_p[prim];
 
         // overwrite integrals for first primitive, accumulate otherwise
         if (prim==0) {
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
 
-                const T x0 = tpi*(scaled_boys_0[g] - scaled_boys_1[g]);
-                const T x1 = -PGy[g]*scaled_boys_1[g];
-                const T x2 = PBy*scaled_boys_0[g] + x1;
-                const T x3 = -PGy[g]*scaled_boys_2[g];
-                const T x4 = PBy*scaled_boys_1[g] + x3;
-                const T x5 = -PGz[g]*scaled_boys_1[g];
-                const T x6 = PBz*scaled_boys_0[g] + x5;
-                const T x7 = -PGz[g]*scaled_boys_2[g];
-                const T x8 = PBz*scaled_boys_1[g] + x7;
-                const T x9 = PAz*scaled_boys_0[g] + x5;
-                const T x10 = PAz*scaled_boys_1[g] + x7;
+                const T x0 = PBy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
+                const T x1 = PBy*scaled_boys_1[g] - PGy[g]*scaled_boys_2[g];
+                const T x2 = scaled_boys_0[g] - scaled_boys_1[g];
+                const T x3 = PBx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
+                const T x4 = PBx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g];
+                const T x5 = PBz*scaled_boys_0[g] - PGz[g]*scaled_boys_1[g];
+                const T x6 = PBz*scaled_boys_1[g] - PGz[g]*scaled_boys_2[g];
 
-                integral_0[g] = PAx*(PBx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g]) - PGx[g]*(PBx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g]) + x0;
-                integral_1[g] = PAx*x2 - PGx[g]*x4;
-                integral_2[g] = PAx*x6 - PGx[g]*x8;
-                integral_3[g] = PBx*(PAy*scaled_boys_0[g] + x1) - PGx[g]*(PAy*scaled_boys_1[g] + x3);
-                integral_4[g] = PAy*x2 - PGy[g]*x4 + x0;
-                integral_5[g] = PAy*x6 - PGy[g]*x8;
-                integral_6[g] = PBx*x9 - PGx[g]*x10;
-                integral_7[g] = PBy*x9 - PGy[g]*x10;
-                integral_8[g] = PAz*x6 - PGz[g]*x8 + x0;
+                integral_0[g] = PAx*x3 + tpi*x2 - PGx[g]*x4;
+                integral_1[g] = PAx*x0 - PGx[g]*x1;
+                integral_2[g] = PAx*x5 - PGx[g]*x6;
+                integral_3[g] = PAy*x3 - PGy[g]*x4;
+                integral_4[g] = tpi*x2 + PAy*x0 - PGy[g]*x1;
+                integral_5[g] = PAy*x5 - PGy[g]*x6;
+                integral_6[g] = PAz*x3 - PGz[g]*x4;
+                integral_7[g] = PAz*x0 - PGz[g]*x1;
+                integral_8[g] = tpi*x2 + PAz*x5 - PGz[g]*x6;
 
             } // for g
         } else {
@@ -77,27 +73,23 @@ void VRR_P_P(
             #pragma omp simd
             for (int g = 0; g < gb_size; ++g) {
 
-                const T x0 = tpi*(scaled_boys_0[g] - scaled_boys_1[g]);
-                const T x1 = -PGy[g]*scaled_boys_1[g];
-                const T x2 = PBy*scaled_boys_0[g] + x1;
-                const T x3 = -PGy[g]*scaled_boys_2[g];
-                const T x4 = PBy*scaled_boys_1[g] + x3;
-                const T x5 = -PGz[g]*scaled_boys_1[g];
-                const T x6 = PBz*scaled_boys_0[g] + x5;
-                const T x7 = -PGz[g]*scaled_boys_2[g];
-                const T x8 = PBz*scaled_boys_1[g] + x7;
-                const T x9 = PAz*scaled_boys_0[g] + x5;
-                const T x10 = PAz*scaled_boys_1[g] + x7;
+                const T x0 = PBy*scaled_boys_0[g] - PGy[g]*scaled_boys_1[g];
+                const T x1 = PBy*scaled_boys_1[g] - PGy[g]*scaled_boys_2[g];
+                const T x2 = scaled_boys_0[g] - scaled_boys_1[g];
+                const T x3 = PBx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g];
+                const T x4 = PBx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g];
+                const T x5 = PBz*scaled_boys_0[g] - PGz[g]*scaled_boys_1[g];
+                const T x6 = PBz*scaled_boys_1[g] - PGz[g]*scaled_boys_2[g];
 
-                integral_0[g] += PAx*(PBx*scaled_boys_0[g] - PGx[g]*scaled_boys_1[g]) - PGx[g]*(PBx*scaled_boys_1[g] - PGx[g]*scaled_boys_2[g]) + x0;
-                integral_1[g] += PAx*x2 - PGx[g]*x4;
-                integral_2[g] += PAx*x6 - PGx[g]*x8;
-                integral_3[g] += PBx*(PAy*scaled_boys_0[g] + x1) - PGx[g]*(PAy*scaled_boys_1[g] + x3);
-                integral_4[g] += PAy*x2 - PGy[g]*x4 + x0;
-                integral_5[g] += PAy*x6 - PGy[g]*x8;
-                integral_6[g] += PBx*x9 - PGx[g]*x10;
-                integral_7[g] += PBy*x9 - PGy[g]*x10;
-                integral_8[g] += PAz*x6 - PGz[g]*x8 + x0;
+                integral_0[g] += PAx*x3 + tpi*x2 - PGx[g]*x4;
+                integral_1[g] += PAx*x0 - PGx[g]*x1;
+                integral_2[g] += PAx*x5 - PGx[g]*x6;
+                integral_3[g] += PAy*x3 - PGy[g]*x4;
+                integral_4[g] += tpi*x2 + PAy*x0 - PGy[g]*x1;
+                integral_5[g] += PAy*x5 - PGy[g]*x6;
+                integral_6[g] += PAz*x3 - PGz[g]*x4;
+                integral_7[g] += PAz*x0 - PGz[g]*x1;
+                integral_8[g] += tpi*x2 + PAz*x5 - PGz[g]*x6;
 
             } // for g
         } // if/else prim

@@ -9,8 +9,12 @@ the kernel generator of
 J. DiCenso, H. Laqua and M. Head-Gordon, "Vectorized and Symbolically Optimized
 Seminumerical Exchange for Large-Scale Quantum Chemistry", arXiv:2610.21075 (2026).
 
-- `codegen/`: the generator, unmodified, at commit
-  f15df00115301fefbb4380ca336775622f18a16b (MIT license, see `codegen/LICENSE`).
+- `codegen/`: the generator files (`benchmark/` and `main.py` left out),
+  unmodified, at commit b98cab6753bf2bb8a27b8e3a03714685450efb5b of
+  jesse-dicenso/snk_integral_codegen#2, which replaces the SymPy back end with a
+  search for the cheapest recurrence path and blocks the kernels for the cache
+  (MIT license, see `codegen/LICENSE`). `codegen/verify.py` checks generated
+  kernels against the SymPy recurrences in exact arithmetic.
 - `generate.py`: runs it and writes everything else in this directory: the
   kernels `VRR_*` and `HRR_*` (`_SAMECENTER` for shells on the same center),
   `snk_kernels.cc`, which compiles them, and `snk_kernels.h`, their dispatch
@@ -22,16 +26,14 @@ caller, accumulating over the primitive pairs; HRR kernels contract the base
 integrals [c|0] before transferring angular momentum to B, which pays off for
 deeper contractions. `BatchedPotentialInt` chooses between them by the rules of
 the preprint. HRR kernels are made for shells with angular momentum only. VRR
-kernels are generated for am(A) >= am(B) only: at the commit above, the
-generator emits uncompilable code for an s shell on A with a higher shell on B
-(P - A is used but not declared; fixed in
-jesse-dicenso/snk_integral_codegen#1), and `BatchedPotentialInt` transposes the
-other orders.
+kernels are generated for am(A) >= am(B) only, and `BatchedPotentialInt`
+transposes the other orders.
 
 ## Regenerating
 
-With SymPy installed (these files were generated with SymPy 1.14 under Python
-3.15):
+No packages are needed (these files were generated under Python 3.15; SymPy is
+needed only for `codegen/verify.py`). Generating all kernels takes a few seconds,
+and the output is deterministic:
 
 ```
 python psi4/src/psi4/libmints/snk/generate.py

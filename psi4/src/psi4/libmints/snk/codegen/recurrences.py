@@ -125,31 +125,6 @@ def do_VRR_multishell(vLA,vLB,same_center,verbose=False):
 #                                                                                              #
 ################################################################################################
 
-def get_hrr_blist(vLA, vLB, same_center):
-    hrr_blist = {} 
-    idx = 0
-    if same_center:
-        for LA in vLA:
-            for LB in vLB:
-                L = LA+LB
-                for lx in range(L, -1, -1):
-                    for ly in range(L-lx, -1, -1):
-                        lz = L-lx-ly
-                        lqns = (lx,ly,lz,0,0,0,LA,LB) if (LA>=LB) else (0,0,0,lx,ly,lz,LA,LB) # need LA,LB to keep keys unique
-                        hrr_blist[lqns] = idx
-                        idx += 1
-    else:
-        for LA in vLA:
-            for LB in vLB:
-                for L in range(max(LA,LB), LA+LB+1):
-                    for lx in range(L, -1, -1):
-                        for ly in range(L-lx, -1, -1):
-                            lz = L-lx-ly
-                            lqns = (lx,ly,lz,0,0,0,LA,LB) if (LA>=LB) else (0,0,0,lx,ly,lz,LA,LB) # need LA,LB to keep keys unique
-                            hrr_blist[lqns] = idx
-                            idx += 1
-    return hrr_blist
-
 def check_HRR_input(args):
     if len(args) != 13:
         raise ValueError(f"recurrences.HRR_*() expects 10 arguments but {len(args)} were given.")
