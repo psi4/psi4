@@ -457,6 +457,7 @@ class PSI_API JK {
     *        defaults to false
     */
     virtual void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
+    bool get_do_K() {return do_K_;}
     bool get_do_wK() {return do_wK_;}
     /**
     * Set to combine wK integral tensors
