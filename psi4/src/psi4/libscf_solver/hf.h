@@ -32,6 +32,7 @@
 #include <limits>
 #include <utility>
 #include <vector>
+#include <optional>
 #include <functional>
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/vector3.h"
@@ -213,6 +214,14 @@ class HF : public Wavefunction {
     /// analysis, where we want to retry SCF without going through all of the setup
     int attempt_number_;
 
+    /// Fraction of pi/2 radians to rotate orbitals during stability FOLLOW
+    double step_scale_;
+    /// Increment to step_scale_ when FOLLOW cycles to the same minimum
+    double step_increment_;
+    /// Lowest totally-symmetric Hessian eigenvalue from previous FOLLOW iteration; unset if no
+    /// previous FOLLOW iteration (std::nullopt). Replaces a former NaN-sentinel convention.
+    std::optional<double> last_hess_eigval_;
+
     /// The number of electrons
     int nelectron_;
 
@@ -372,6 +381,10 @@ class HF : public Wavefunction {
     /// analysis, where we want to retry SCF without going through all of the setup
     int attempt_number() const { return attempt_number_; }
     void set_attempt_number(int an) { attempt_number_ = an; }
+
+    /// Stability FOLLOW state (used by RHF C++ FOLLOW; UHF Python uses the bare attribute `step_scale`)
+    double step_scale() const { return step_scale_; }
+    void set_step_scale(double s) { step_scale_ = s; }
 
     /// Check the stability of the wavefunction, and correct (if requested)
     /// For UHF, this is defined Python-side. The other methods should be joining it.
