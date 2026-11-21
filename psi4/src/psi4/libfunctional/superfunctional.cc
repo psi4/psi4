@@ -39,7 +39,6 @@
 #include "LibXCfunctional.h"
 
 #include <algorithm>
-#include <cstdint>
 #include <cmath>
 #include <cstdlib>
 
@@ -830,18 +829,156 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
 
     return values_;
 }
+namespace {
+
+// Process right-grid points in L1D-resident tiles (6 * 512 * 8 B = 24 KB) across all active left
+// points in a block so right coordinates and intermediates stay hot in cache.
+constexpr size_t kVV10TileSize = 512;
+
+struct VV10LeftPoint {
+    size_t index;
+    double x;
+    double y;
+    double z;
+    double w0;
+    double kappa;
+    double phi = 0.0;
+    double u = 0.0;
+    double w = 0.0;
+    double xc = 0.0;
+    double yc = 0.0;
+    double zc = 0.0;
+};
+
+// Accumulate VV10 pair-kernel sums for one active left point over a right-grid tile.
+// Uses a single reciprocal per pair via the identities (with gs = g + gp, inv = 1 / (g * gp * gs)):
+//   1/g + 1/gs                       = gp * (gs + g) * inv
+//   w0/g + w0'/gp + (w0 + w0')/gs    = (w0 * gp * (gs + g) + w0' * g * (gs + gp)) * inv
+// Positive prefactor r_pref[t] = +1.5 * w * rho avoids per-pair sign flips (phi subtracts).
+template <bool DoGrad>
+void accumulate_vv10_tile(VV10LeftPoint& lp, size_t count, const double* r_x, const double* r_y, const double* r_z,
+                          const double* r_W0, const double* r_kappa, const double* r_pref) noexcept {
+    const double lx = lp.x;
+    const double ly = lp.y;
+    const double lz = lp.z;
+    const double lw0 = lp.w0;
+    const double lkappa = lp.kappa;
+
+    double phi_neg = 0.0;
+    double u = 0.0;
+    double w = 0.0;
+
+    if constexpr (DoGrad) {
+        double xc = 0.0;
+        double yc = 0.0;
+        double zc = 0.0;
+#pragma omp simd reduction(+ : phi_neg, u, w, xc, yc, zc)
+        for (size_t t = 0; t < count; ++t) {
+            const double dx = lx - r_x[t];
+            const double dy = ly - r_y[t];
+            const double dz = lz - r_z[t];
+            const double R2 = dx * dx + dy * dy + dz * dz;
+
+            const double g = lw0 * R2 + lkappa;
+            const double gp = r_W0[t] * R2 + r_kappa[t];
+            const double gs = g + gp;
+            const double inv = 1.0 / (g * gp * gs);
+
+            const double pk = r_pref[t] * inv;
+            const double pk_inv = pk * inv;
+            const double t_left = gp * (gs + g);
+            const double t_right = g * (gs + gp);
+            const double tmp_u = pk_inv * t_left;
+            const double q = 2.0 * pk_inv * (lw0 * t_left + r_W0[t] * t_right);
+
+            phi_neg += pk;
+            u += tmp_u;
+            w += tmp_u * R2;
+            xc += q * dx;
+            yc += q * dy;
+            zc += q * dz;
+        }
+        lp.xc += xc;
+        lp.yc += yc;
+        lp.zc += zc;
+    } else {
+#pragma omp simd reduction(+ : phi_neg, u, w)
+        for (size_t t = 0; t < count; ++t) {
+            const double dx = lx - r_x[t];
+            const double dy = ly - r_y[t];
+            const double dz = lz - r_z[t];
+            const double R2 = dx * dx + dy * dy + dz * dz;
+
+            const double g = lw0 * R2 + lkappa;
+            const double gp = r_W0[t] * R2 + r_kappa[t];
+            const double gs = g + gp;
+            const double inv = 1.0 / (g * gp * gs);
+
+            const double pk = r_pref[t] * inv;
+            const double tmp_u = (pk * (gp * (gs + g))) * inv;
+
+            phi_neg += pk;
+            u += tmp_u;
+            w += tmp_u * R2;
+        }
+    }
+
+    lp.phi -= phi_neg;
+    lp.u += u;
+    lp.w += w;
+}
+
+void accumulate_vv10_right_block(std::vector<VV10LeftPoint>& active_left, size_t r_npoints, const double* r_x,
+                                 const double* r_y, const double* r_z, const double* r_W0, const double* r_kappa,
+                                 const double* r_pref_in, const double* r_w, const double* r_rho,
+                                 bool do_grad) noexcept {
+    alignas(64) double r_pref_tile[kVV10TileSize];
+    for (size_t j0 = 0; j0 < r_npoints; j0 += kVV10TileSize) {
+        const size_t count = std::min(kVV10TileSize, r_npoints - j0);
+        if (r_pref_in != nullptr) {
+#pragma omp simd
+            for (size_t t = 0; t < count; ++t) {
+                r_pref_tile[t] = -r_pref_in[j0 + t];
+            }
+        } else {
+#pragma omp simd
+            for (size_t t = 0; t < count; ++t) {
+                r_pref_tile[t] = 1.5 * r_w[j0 + t] * r_rho[j0 + t];
+            }
+        }
+
+        const double* tx = r_x + j0;
+        const double* ty = r_y + j0;
+        const double* tz = r_z + j0;
+        const double* tw0 = r_W0 + j0;
+        const double* tkappa = r_kappa + j0;
+
+        if (do_grad) {
+            for (auto& lp : active_left) {
+                accumulate_vv10_tile<true>(lp, count, tx, ty, tz, tw0, tkappa, r_pref_tile);
+            }
+        } else {
+            for (auto& lp : active_left) {
+                accumulate_vv10_tile<false>(lp, count, tx, ty, tz, tw0, tkappa, r_pref_tile);
+            }
+        }
+    }
+}
+
+}  // namespace
+
 std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const std::map<std::string, SharedVector>& vals,
                                                                         std::shared_ptr<BlockOPoints> block,
                                                                         double rho_thresh, int npoints, bool internal) {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
+    const size_t npts = static_cast<size_t>(npoints);
 
-    // Precompute prefactors
+    // Precompute prefactors (cbrt(sqrt(x)) == x^(1/6))
     const double Wp_pref = (4.0 / 3.0) * M_PI;
     const double Wg_pref = vv10_c_;
     const double kappa_pref = (1.5 * vv10_b_ * M_PI) / std::cbrt(std::sqrt(9.0 * M_PI));
 
     size_t nact = 0;
-    // rho_thresh = 0.0;
 
     // Zero out the vectors
     vv_values_["W0"]->zero();
@@ -852,7 +989,7 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
     double* rhop = vals.find("RHO_A")->second->pointer();
     double* gammap = vals.find("GAMMA_AA")->second->pointer();
 
-    for (size_t i = 0; i < static_cast<size_t>(npoints); i++) {
+    for (size_t i = 0; i < npts; i++) {
         const double rho = rhop[i];
         if (rho < rho_thresh) continue;
 
@@ -869,7 +1006,6 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
         return vv_values_;
     }
 
-    // printf("Nact/Ntot %zu / %d\n", nact, npoints);
     // Sieve the results
     auto w_vec = std::make_shared<Vector>("W Grid points", nact);
     auto x_vec = std::make_shared<Vector>("X Grid points", nact);
@@ -888,7 +1024,7 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
     double* kappa_vecp = kappa_vec->pointer();
 
     size_t sieve_pos = 0;
-    for (size_t i = 0; i < npoints; i++) {
+    for (size_t i = 0; i < npts; i++) {
         if (rhop[i] < rho_thresh) continue;
 
         w_vecp[sieve_pos] = block->w()[i];
@@ -949,247 +1085,42 @@ double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVe
     const double* l_W0 = vv_values_["W0"]->pointer();
     const double* l_kappa = vv_values_["KAPPA"]->pointer();
 
-    std::vector<uint32_t> act_i;
-    act_i.reserve(l_npoints);
+    // Initialize local terms and gather active left points above the density threshold
+    std::vector<VV10LeftPoint> active_left;
+    active_left.reserve(l_npoints);
     for (size_t i = 0; i < l_npoints; i++) {
         vv10_e += l_w[i] * l_rho[i] * vv10_beta;
         v_rho[i] = vv10_beta;
         v_gamma[i] = 0.0;
         if (l_rho[i] >= l_thresh) {
-            act_i.push_back(static_cast<uint32_t>(i));
+            active_left.push_back({i, l_x[i], l_y[i], l_z[i], l_W0[i], l_kappa[i]});
         }
     }
 
-    const size_t nact = act_i.size();
-    if (nact == 0) {
+    if (active_left.empty()) {
         return vv10_e;
     }
 
-    std::vector<double> phi_acc(nact, 0.0);
-    std::vector<double> U_acc(nact, 0.0);
-    std::vector<double> W_acc(nact, 0.0);
-    std::vector<double> xc_acc;
-    std::vector<double> yc_acc;
-    std::vector<double> zc_acc;
-    if (do_grad) {
-        xc_acc.assign(nact, 0.0);
-        yc_acc.assign(nact, 0.0);
-        zc_acc.assign(nact, 0.0);
-    }
-
-    // 6 vectors * 512 doubles * 8 B = 24 KB -> L1D-resident tile on both AVX2 and AVX-512 CPUs
-    constexpr size_t JB = 512;
-
     for (const auto& r_block : vv10_cache) {
+        const size_t r_npoints = r_block.at("KAPPA")->dimpi()[0];
+        if (r_npoints == 0) continue;
+
         const double* r_x = r_block.at("X")->pointer();
         const double* r_y = r_block.at("Y")->pointer();
         const double* r_z = r_block.at("Z")->pointer();
         const double* r_W0 = r_block.at("W0")->pointer();
         const double* r_kappa = r_block.at("KAPPA")->pointer();
-        const size_t r_npoints = r_block.at("KAPPA")->dimpi()[0];
-        if (r_npoints == 0) continue;
 
-        const double* r_pref = nullptr;
-        std::vector<double> r_pref_local;
-        auto it_pref = r_block.find("PREF");
-        if (it_pref != r_block.end()) {
-            r_pref = it_pref->second->pointer();
-        } else {
-            const double* r_w = r_block.at("W")->pointer();
-            const double* r_rho = r_block.at("RHO")->pointer();
-            r_pref_local.resize(r_npoints);
-#pragma omp simd
-            for (size_t j = 0; j < r_npoints; ++j) {
-                r_pref_local[j] = -1.5 * r_w[j] * r_rho[j];
-            }
-            r_pref = r_pref_local.data();
-        }
+        const auto it_pref = r_block.find("PREF");
+        const double* r_pref = (it_pref != r_block.end()) ? it_pref->second->pointer() : nullptr;
+        const double* r_w = (r_pref == nullptr) ? r_block.at("W")->pointer() : nullptr;
+        const double* r_rho = (r_pref == nullptr) ? r_block.at("RHO")->pointer() : nullptr;
 
-        if (do_grad) {
-            for (size_t j0 = 0; j0 < r_npoints; j0 += JB) {
-                const size_t j1 = std::min(j0 + JB, r_npoints);
-                for (size_t k = 0; k < nact; ++k) {
-                    const uint32_t i = act_i[k];
-                    const double lx = l_x[i], ly = l_y[i], lz = l_z[i];
-                    const double lw0 = l_W0[i], lk = l_kappa[i];
-                    double phi = 0.0, U = 0.0, W = 0.0, xc = 0.0, yc = 0.0, zc = 0.0;
-#pragma omp simd reduction(+ : phi, U, W, xc, yc, zc)
-                    for (size_t j = j0; j < j1; ++j) {
-                        const double d_x = lx - r_x[j];
-                        const double d_y = ly - r_y[j];
-                        const double d_z = lz - r_z[j];
-                        const double R2 = d_x * d_x + d_y * d_y + d_z * d_z;
+        accumulate_vv10_right_block(active_left, r_npoints, r_x, r_y, r_z, r_W0, r_kappa, r_pref, r_w, r_rho, do_grad);
+    }
 
-                        const double g = lw0 * R2 + lk;
-                        const double gp = r_W0[j] * R2 + r_kappa[j];
-                        const double gs = g + gp;
-                        const double inv = 1.0 / (g * gp * gs);
-
-                        const double phi_kernel = r_pref[j] * inv;
-                        phi += phi_kernel;
-                        const double tmp_U = -phi_kernel * gp * (gs + g) * inv;
-                        U += tmp_U;
-                        W += tmp_U * R2;
-
-                        const double rw0 = r_W0[j];
-                        const double Q =
-                            -2.0 * phi_kernel * (lw0 * gp * gs + rw0 * g * gs + (lw0 + rw0) * g * gp) * inv;
-                        xc += Q * d_x;
-                        yc += Q * d_y;
-                        zc += Q * d_z;
-                    }
-                    phi_acc[k] += phi;
-                    U_acc[k] += U;
-                    W_acc[k] += W;
-                    xc_acc[k] += xc;
-                    yc_acc[k] += yc;
-                    zc_acc[k] += zc;
-                }
-            }
-        } else {
-            for (size_t j0 = 0; j0 < r_npoints; j0 += JB) {
-                const size_t j1 = std::min(j0 + JB, r_npoints);
-                size_t k = 0;
-#ifdef __AVX512F__
-                // 32 ZMM registers: unroll 4 active left points per L1D right-grid tile
-                for (; k + 4 <= nact; k += 4) {
-                    const uint32_t i0 = act_i[k], i1 = act_i[k + 1], i2 = act_i[k + 2], i3 = act_i[k + 3];
-                    const double lx0 = l_x[i0], ly0 = l_y[i0], lz0 = l_z[i0], lw0 = l_W0[i0], lk0 = l_kappa[i0];
-                    const double lx1 = l_x[i1], ly1 = l_y[i1], lz1 = l_z[i1], lw1 = l_W0[i1], lk1 = l_kappa[i1];
-                    const double lx2 = l_x[i2], ly2 = l_y[i2], lz2 = l_z[i2], lw2 = l_W0[i2], lk2 = l_kappa[i2];
-                    const double lx3 = l_x[i3], ly3 = l_y[i3], lz3 = l_z[i3], lw3 = l_W0[i3], lk3 = l_kappa[i3];
-                    double p0 = 0.0, u0 = 0.0, w0 = 0.0;
-                    double p1 = 0.0, u1 = 0.0, w1 = 0.0;
-                    double p2 = 0.0, u2 = 0.0, w2 = 0.0;
-                    double p3 = 0.0, u3 = 0.0, w3 = 0.0;
-#pragma omp simd reduction(+ : p0, u0, w0, p1, u1, w1, p2, u2, w2, p3, u3, w3)
-                    for (size_t j = j0; j < j1; ++j) {
-                        const double rx = r_x[j], ry = r_y[j], rz = r_z[j];
-                        const double rw = r_W0[j], rk = r_kappa[j], rpref = r_pref[j];
-
-                        const double dx0 = lx0 - rx, dy0 = ly0 - ry, dz0 = lz0 - rz;
-                        const double R20 = dx0 * dx0 + dy0 * dy0 + dz0 * dz0;
-                        const double g0 = lw0 * R20 + lk0, gp0 = rw * R20 + rk, gs0 = g0 + gp0;
-                        const double inv0 = 1.0 / (g0 * gp0 * gs0);
-                        const double pk0 = rpref * inv0;
-                        const double tu0 = -pk0 * gp0 * (gs0 + g0) * inv0;
-                        p0 += pk0;
-                        u0 += tu0;
-                        w0 += tu0 * R20;
-
-                        const double dx1 = lx1 - rx, dy1 = ly1 - ry, dz1 = lz1 - rz;
-                        const double R21 = dx1 * dx1 + dy1 * dy1 + dz1 * dz1;
-                        const double g1 = lw1 * R21 + lk1, gp1 = rw * R21 + rk, gs1 = g1 + gp1;
-                        const double inv1 = 1.0 / (g1 * gp1 * gs1);
-                        const double pk1 = rpref * inv1;
-                        const double tu1 = -pk1 * gp1 * (gs1 + g1) * inv1;
-                        p1 += pk1;
-                        u1 += tu1;
-                        w1 += tu1 * R21;
-
-                        const double dx2 = lx2 - rx, dy2 = ly2 - ry, dz2 = lz2 - rz;
-                        const double R22 = dx2 * dx2 + dy2 * dy2 + dz2 * dz2;
-                        const double g2 = lw2 * R22 + lk2, gp2 = rw * R22 + rk, gs2 = g2 + gp2;
-                        const double inv2 = 1.0 / (g2 * gp2 * gs2);
-                        const double pk2 = rpref * inv2;
-                        const double tu2 = -pk2 * gp2 * (gs2 + g2) * inv2;
-                        p2 += pk2;
-                        u2 += tu2;
-                        w2 += tu2 * R22;
-
-                        const double dx3 = lx3 - rx, dy3 = ly3 - ry, dz3 = lz3 - rz;
-                        const double R23 = dx3 * dx3 + dy3 * dy3 + dz3 * dz3;
-                        const double g3 = lw3 * R23 + lk3, gp3 = rw * R23 + rk, gs3 = g3 + gp3;
-                        const double inv3 = 1.0 / (g3 * gp3 * gs3);
-                        const double pk3 = rpref * inv3;
-                        const double tu3 = -pk3 * gp3 * (gs3 + g3) * inv3;
-                        p3 += pk3;
-                        u3 += tu3;
-                        w3 += tu3 * R23;
-                    }
-                    phi_acc[k] += p0;
-                    U_acc[k] += u0;
-                    W_acc[k] += w0;
-                    phi_acc[k + 1] += p1;
-                    U_acc[k + 1] += u1;
-                    W_acc[k + 1] += w1;
-                    phi_acc[k + 2] += p2;
-                    U_acc[k + 2] += u2;
-                    W_acc[k + 2] += w2;
-                    phi_acc[k + 3] += p3;
-                    U_acc[k + 3] += u3;
-                    W_acc[k + 3] += w3;
-                }
-#endif
-                // 16 YMM registers (and cleanup for AVX-512): unroll 2 active left points without register spills
-                for (; k + 2 <= nact; k += 2) {
-                    const uint32_t i0 = act_i[k], i1 = act_i[k + 1];
-                    const double lx0 = l_x[i0], ly0 = l_y[i0], lz0 = l_z[i0], lw0 = l_W0[i0], lk0 = l_kappa[i0];
-                    const double lx1 = l_x[i1], ly1 = l_y[i1], lz1 = l_z[i1], lw1 = l_W0[i1], lk1 = l_kappa[i1];
-                    double p0 = 0.0, u0 = 0.0, w0 = 0.0;
-                    double p1 = 0.0, u1 = 0.0, w1 = 0.0;
-#pragma omp simd reduction(+ : p0, u0, w0, p1, u1, w1)
-                    for (size_t j = j0; j < j1; ++j) {
-                        const double rx = r_x[j], ry = r_y[j], rz = r_z[j];
-                        const double rw = r_W0[j], rk = r_kappa[j], rpref = r_pref[j];
-
-                        const double dx0 = lx0 - rx, dy0 = ly0 - ry, dz0 = lz0 - rz;
-                        const double R20 = dx0 * dx0 + dy0 * dy0 + dz0 * dz0;
-                        const double g0 = lw0 * R20 + lk0, gp0 = rw * R20 + rk, gs0 = g0 + gp0;
-                        const double inv0 = 1.0 / (g0 * gp0 * gs0);
-                        const double pk0 = rpref * inv0;
-                        const double tu0 = -pk0 * gp0 * (gs0 + g0) * inv0;
-                        p0 += pk0;
-                        u0 += tu0;
-                        w0 += tu0 * R20;
-
-                        const double dx1 = lx1 - rx, dy1 = ly1 - ry, dz1 = lz1 - rz;
-                        const double R21 = dx1 * dx1 + dy1 * dy1 + dz1 * dz1;
-                        const double g1 = lw1 * R21 + lk1, gp1 = rw * R21 + rk, gs1 = g1 + gp1;
-                        const double inv1 = 1.0 / (g1 * gp1 * gs1);
-                        const double pk1 = rpref * inv1;
-                        const double tu1 = -pk1 * gp1 * (gs1 + g1) * inv1;
-                        p1 += pk1;
-                        u1 += tu1;
-                        w1 += tu1 * R21;
-                    }
-                    phi_acc[k] += p0;
-                    U_acc[k] += u0;
-                    W_acc[k] += w0;
-                    phi_acc[k + 1] += p1;
-                    U_acc[k + 1] += u1;
-                    W_acc[k + 1] += w1;
-                }
-                for (; k < nact; ++k) {
-                    const uint32_t i = act_i[k];
-                    const double lx = l_x[i], ly = l_y[i], lz = l_z[i], lw = l_W0[i], lk = l_kappa[i];
-                    double phi = 0.0, U = 0.0, W = 0.0;
-#pragma omp simd reduction(+ : phi, U, W)
-                    for (size_t j = j0; j < j1; ++j) {
-                        const double d_x = lx - r_x[j];
-                        const double d_y = ly - r_y[j];
-                        const double d_z = lz - r_z[j];
-                        const double R2 = d_x * d_x + d_y * d_y + d_z * d_z;
-                        const double g = lw * R2 + lk;
-                        const double gp = r_W0[j] * R2 + r_kappa[j];
-                        const double gs = g + gp;
-                        const double inv = 1.0 / (g * gp * gs);
-                        const double phi_kernel = r_pref[j] * inv;
-                        const double tmp_U = -phi_kernel * gp * (gs + g) * inv;
-                        phi += phi_kernel;
-                        U += tmp_U;
-                        W += tmp_U * R2;
-                    }
-                    phi_acc[k] += phi;
-                    U_acc[k] += U;
-                    W_acc[k] += W;
-                }
-            }
-        }
-    }  // End r blocks
-
-    for (size_t k = 0; k < nact; ++k) {
-        const uint32_t i = act_i[k];
+    for (const auto& lp : active_left) {
+        const size_t i = lp.index;
         const double rho = l_rho[i];
         const double r2 = rho * rho;
         const double r4 = r2 * r2;
@@ -1200,22 +1131,17 @@ double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVe
         const double w0_dgamma = vv10_c_ * gam * inv_lW0 / r4;
         const double w0_drho = 2.0 * inv_lW0 * (M_PI / 3.0 - vv10_c_ * (gam * gam) / r5);
 
-        const double phi = phi_acc[k];
-        const double U = U_acc[k];
-        const double W = W_acc[k];
-
-        vv10_e += 0.5 * l_w[i] * rho * phi;
-        v_rho[i] += phi + rho * (kappa_dn * U + w0_drho * W);
-        v_gamma[i] += rho * w0_dgamma * W;
+        vv10_e += 0.5 * l_w[i] * rho * lp.phi;
+        v_rho[i] += lp.phi + rho * (kappa_dn * lp.u + w0_drho * lp.w);
+        v_gamma[i] += rho * w0_dgamma * lp.w;
         if (do_grad) {
             const double rw = rho * l_w[i];
-            x_grid[i] += rw * xc_acc[k];
-            y_grid[i] += rw * yc_acc[k];
-            z_grid[i] += rw * zc_acc[k];
+            x_grid[i] += rw * lp.xc;
+            y_grid[i] += rw * lp.yc;
+            z_grid[i] += rw * lp.zc;
         }
     }
 
-    // printf("Nact/Ntot Ext %zu / %zu\n", nact, l_npoints);
     return vv10_e;
 }
 void SuperFunctional::test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa,
