@@ -66,6 +66,8 @@ class TwoBodyAOInt;
 class Options;
 class PsiOutStream;
 class DFTGrid;
+class BasisFunctions;
+class BatchedPotentialInt;
 
 /**
  * Class SplitJK
@@ -268,6 +270,17 @@ class PSI_API COSK : public SplitJK {
 
     /// Overlap fitting metric for different COSX grids
     std::unordered_map<std::string, SharedMatrix> Q_mat_;
+
+    // => Geometry- and grid-only quantities, computed once <= //
+
+    /// Bound on the one-electron (ESP) integral of each shell pair, nshell x nshell
+    SharedMatrix esp_bound_;
+    /// Per grid, the shells whose extents overlap that of each shell
+    std::unordered_map<std::string, std::vector<std::vector<int>>> shell_extent_map_;
+    /// Per thread, the ESP integrals of a shell pair over the points of a grid block
+    std::vector<std::shared_ptr<BatchedPotentialInt>> int_computers_;
+    /// Per grid and thread, the basis function values on the grid
+    std::unordered_map<std::string, std::vector<std::shared_ptr<BasisFunctions>>> bf_computers_;
 
     // integral cutoff
     double kscreen_;

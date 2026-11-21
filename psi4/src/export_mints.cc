@@ -64,6 +64,7 @@
 #include "psi4/libmints/nabla.h"
 #include "psi4/libmints/electrostatic.h"
 #include "psi4/libmints/potential.h"
+#include "psi4/libmints/batchedpotential.h"
 #include "psi4/libmints/kinetic.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/writer.h"
@@ -1313,6 +1314,55 @@ void export_mints(py::module& m) {
     py::class_<ElectrostaticInt, std::shared_ptr<ElectrostaticInt>>(m, "ElectrostaticInt", pyOneBodyAOInt,
                                                                     "Computes electrostatic integrals");
     py::class_<NablaInt, std::shared_ptr<NablaInt>>(m, "NablaInt", pyOneBodyAOInt, "Computes nabla integrals");
+
+    py::class_<BatchedPotentialInt, std::shared_ptr<BatchedPotentialInt>>(
+        m, "BatchedPotentialInt",
+        "Potential integrals (mu| 1/|r - C_k| |nu) of a shell pair over a batch of points C_k")
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(), "bs1"_a, "bs2"_a)
+        .def(
+            "compute_shell",
+            [](BatchedPotentialInt& self, int s1, int s2, SharedMatrix points) {
+                if (points->nirrep() != 1 || points->coldim() != 3)
+                    throw PSIEXCEPTION("BatchedPotentialInt.compute_shell: points must be an npoints x 3 matrix.");
+                const size_t npoints = points->rowdim();
+                std::vector<double> x(npoints), y(npoints), z(npoints);
+                for (size_t k = 0; k < npoints; ++k) {
+                    x[k] = points->get(k, 0);
+                    y[k] = points->get(k, 1);
+                    z[k] = points->get(k, 2);
+                }
+                self.compute_shell(s1, s2, npoints, x.data(), y.data(), z.data());
+                const int n1 = self.basis1()->shell(s1).nfunction(), n2 = self.basis2()->shell(s2).nfunction();
+                auto result = std::make_shared<Matrix>(n1 * n2, npoints);
+                if (npoints) std::copy(self.buffer(), self.buffer() + static_cast<size_t>(n1) * n2 * npoints, result->pointer()[0]);
+                return result;
+            },
+            "Integrals of shells s1 and s2 at the points [Bohr] (an npoints x 3 matrix), as an (n1 * n2) x npoints "
+            "matrix, row i1 * n2 + i2",
+            "s1"_a, "s2"_a, "points"_a);
+
+    m.def(
+        "batched_potential_contract_density",
+        [](std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, SharedMatrix D, SharedMatrix points) {
+            auto V = std::make_shared<Vector>("Potential integrals contracted with D", points->rowdim());
+            batched_potential_contract_density(bs1, bs2, *D, *points, V->pointer());
+            return V;
+        },
+        "sum_{mu nu} D_{mu nu} (mu| 1/|r - C_k| |nu) at each point C_k [Bohr] of an npoints x 3 matrix, for mu in "
+        "bs1 and nu in bs2",
+        "bs1"_a, "bs2"_a, "D"_a, "points"_a);
+    m.def(
+        "batched_potential_contract_charges",
+        [](std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, SharedVector q, SharedMatrix points) {
+            if (q->dim() != points->rowdim())
+                throw PSIEXCEPTION("batched_potential_contract_charges: one charge per point is needed.");
+            auto F = std::make_shared<Matrix>("Potential matrix of point charges", bs1->nbf(), bs2->nbf());
+            batched_potential_contract_charges(bs1, bs2, q->pointer(), *points, *F);
+            return F;
+        },
+        "sum_k q_k (mu| 1/|r - C_k| |nu) for point charges q_k at the points C_k [Bohr] of an npoints x 3 matrix, "
+        "for mu in bs1 and nu in bs2",
+        "bs1"_a, "bs2"_a, "q"_a, "points"_a);
     py::class_<AngularMomentumInt, std::shared_ptr<AngularMomentumInt>>(m, "AngularMomentumInt", pyOneBodyAOInt,
                                                                         "Computes angular momentum integrals");
 
