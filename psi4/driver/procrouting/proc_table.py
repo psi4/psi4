@@ -236,6 +236,8 @@ procedures = {
         'cvs-adc(2)'   : proc.run_adcc_property,
         'cvs-adc(2)-x' : proc.run_adcc_property,
         'cvs-adc(3)'   : proc.run_adcc_property,
+        'sapt0'        : sapt.run_sapt_property,
+        'sapt(dft)'    : sapt.run_sapt_property,
     }} # yapf: disable
 
 # Will only allow energy to be run for the following methods
