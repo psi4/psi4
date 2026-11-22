@@ -859,3 +859,91 @@ def test_cuest_grid_reports_its_size():
     assert npoints == 3 * 75 * 302, (
         f"cuEST grid reported {npoints} points; a GPU-resident grid used to "
         f"report 0 here, which reads like a broken grid.")
+
+
+@pytest.mark.quick
+@uusing("cuest")
+@uusing("cuda_cc8")
+def test_cuest_zero_omega_ignores_nonzero_beta():
+    """Non-LRC SCF and omega=0 cuESTJK plans must not activate cuEST's LRC DF path.
+
+    SuperFunctional initializes x_beta_ = 1.0 even when x_omega_ == 0.0. Passing
+    lrc_exchange_fraction = 1.0 with lrc_exchange_omega = 0.0 into cuEST selects
+    the LRC DF path, introducing non-deterministic Coulomb noise across repeated
+    evaluations of the same fixed plan and shifting J/K away from the beta = 0
+    full-Coulomb plan.
+    """
+    psi4.core.clean()
+    psi4.core.clean_options()
+    benzene = psi4.geometry("""
+        0 1
+        C   1.3915   0.0000   0.0000
+        C   0.6958   1.2051   0.0000
+        C  -0.6958   1.2051   0.0000
+        C  -1.3915   0.0000   0.0000
+        C  -0.6958  -1.2051   0.0000
+        C   0.6958  -1.2051   0.0000
+        H   2.4755   0.0000   0.0000
+        H   1.2378   2.1438   0.0000
+        H  -1.2378   2.1438   0.0000
+        H  -2.4755   0.0000   0.0000
+        H  -1.2378  -2.1438   0.0000
+        H   1.2378  -2.1438   0.0000
+        units angstrom
+        symmetry c1
+        no_reorient
+        no_com
+    """)
+    psi4.set_options({
+        "basis": "cc-pvdz",
+        "df_basis_scf": "cc-pvdz-jkfit",
+        "scf_type": "df",
+        "puream": True,
+        "use_cuest": True,
+        "cuest_mixed_precision": False,
+        "save_jk": True,
+    })
+
+    # 1. Non-LRC SCF must initialize JK with omega == 0 and omega_beta == 0.
+    _, wfn = psi4.energy("hf", molecule=benzene, return_wfn=True)
+    assert wfn.jk().name() == "cuESTJK"
+    assert wfn.jk().get_omega() == 0.0
+    assert wfn.jk().get_omega_beta() == 0.0
+
+    # 2. Even if a caller directly sets omega=0.0, beta=1.0 on cuESTJK, the
+    #    resulting DF plan must match the full-Coulomb beta=0.0 plan and give
+    #    deterministic Coulomb matrices across repeated compute() calls.
+    primary = wfn.basisset()
+    aux = wfn.get_basisset("DF_BASIS_SCF")
+    c_occ = psi4.core.Matrix.from_array(wfn.Ca_subset("AO", "OCC").np.copy())
+
+    def eval_cuest_jk(beta, repeats=4):
+        jk = psi4.core.JK.build_JK(primary, aux)
+        jk.set_do_J(True)
+        jk.set_do_K(True)
+        jk.set_do_wK(False)
+        jk.set_omega(0.0)
+        jk.set_omega_alpha(1.0)
+        jk.set_omega_beta(beta)
+        try:
+            jk.initialize()
+            js, ks = [], []
+            for _ in range(repeats):
+                jk.C_clear()
+                jk.C_left_add(c_occ)
+                jk.compute()
+                js.append(jk.J()[0].np.copy())
+                ks.append(jk.K()[0].np.copy())
+            return js, ks
+        finally:
+            jk.finalize()
+
+    j_beta0, k_beta0 = eval_cuest_jk(0.0)
+    j_beta1, k_beta1 = eval_cuest_jk(1.0)
+
+    # Full-Coulomb cuEST J is deterministic on a fixed plan; the LRC path
+    # triggered by (omega=0, beta=1) drifts by O(1e-13) on benzene.
+    for rep in range(1, len(j_beta1)):
+        np.testing.assert_array_equal(j_beta1[rep], j_beta1[0])
+    np.testing.assert_allclose(j_beta1[0], j_beta0[0], rtol=1.0e-12, atol=1.0e-11)
+    np.testing.assert_allclose(k_beta1[0], k_beta0[0], rtol=1.0e-12, atol=1.0e-11)
