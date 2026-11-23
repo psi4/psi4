@@ -43,7 +43,7 @@
 
 namespace psi {
 
-cuESTMOInts::cuESTMOInts(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options, bool integral_direct) 
+cuESTMOInts::cuESTMOInts(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
     : primary_(primary), 
       auxiliary_(auxiliary), 
       pq_threshold_(1.0E-14), 
@@ -177,34 +177,19 @@ void cuESTMOInts::common_init() {
         dfint_params));
 }
 
-void cuESTMOInts::compute_3c_ints(SharedMatrix Cleft, SharedMatrix Cright, double* d_out) {
-    if (Cleft->nirrep() != 1 || Cright->nirrep() != 1) {
-        throw PSIEXCEPTION("cuESTMOInts::compute_3c_ints: coefficient matrices must be C1 (AO basis).");
+void cuESTMOInts::compute_3c_ints(const std::vector<uint64_t>& nleft, const std::vector<uint64_t>& nright,
+                                  const double* d_Cleft, const double* d_Cright, double* d_out) {
+    if (nleft.empty() || nleft.size() != nright.size()) {
+        throw PSIEXCEPTION("cuESTMOInts::compute_3c_ints: need one or more (left, right) coefficient pairs.");
+    }
+    for (size_t i = 0; i < nleft.size(); ++i) {
+        if (nleft[i] == 0 || nright[i] == 0) {
+            throw PSIEXCEPTION("cuESTMOInts::compute_3c_ints: cuEST requires at least one left and one right orbital.");
+        }
     }
 
-    const size_t nao = primary_->nbf();
-    const uint64_t nleft = static_cast<uint64_t>(Cleft->colspi()[0]);
-    const uint64_t nright = static_cast<uint64_t>(Cright->colspi()[0]);
-
-    if (static_cast<size_t>(Cleft->rowspi()[0]) != nao || static_cast<size_t>(Cright->rowspi()[0]) != nao) {
-        throw PSIEXCEPTION("cuESTMOInts::compute_3c_ints: coefficient matrices must have nbf rows.");
-    }
-    if (nleft == 0 || nright == 0) {
-        throw PSIEXCEPTION("cuESTMOInts::compute_3c_ints: cuEST requires at least one left and one right orbital.");
-    }
-
-    // cuEST needs Cleft & Cright as [nmo, nao]
-    SharedMatrix CleftT = Cleft->transpose();
-    SharedMatrix CrightT = Cright->transpose();
-
-    double* d_Cleft = nullptr;
-    double* d_Cright = nullptr;
-
-    // TODO: add memory estimate for these calls
-    CHECK_CUDA(cudaMalloc((void**)&d_Cleft, sizeof(double) * nleft * nao));
-    CHECK_CUDA(cudaMalloc((void**)&d_Cright, sizeof(double) * nright * nao));
-    CHECK_CUDA(cudaMemcpy(d_Cleft, CleftT->pointer()[0], sizeof(double) * nleft * nao, cudaMemcpyHostToDevice));
-    CHECK_CUDA(cudaMemcpy(d_Cright, CrightT->pointer()[0], sizeof(double) * nright * nao, cudaMemcpyHostToDevice));
+    // each (left, right) pair -> a [naux, nleft, nright] tensor, concatenated in d_out
+    const uint64_t num_matrices = nleft.size();
 
     // presently there are no configurable parameters for MO ints
     cuestDFMOIntegralsComputeParameters_t params;
@@ -218,20 +203,17 @@ void cuESTMOInts::compute_3c_ints(SharedMatrix Cleft, SharedMatrix Cright, doubl
 
     cuestWorkspaceDescriptor_t temporaryWorkspaceDescriptor;
 
-    // a single (left, right) pair -> a single [naux, nleft, nright] tensor
-    const uint64_t num_matrices = 1;
-
     CHECK_CUEST(cuestDFMOIntegralsComputeWorkspaceQuery(
-        cuest_handle, 
-        cuest_df_plan_, 
-        params, 
+        cuest_handle,
+        cuest_df_plan_,
+        params,
         &variableBufferSize,
-        &temporaryWorkspaceDescriptor, 
-        num_matrices, 
-        &nleft, 
-        &nright,
-        d_Cleft, 
-        d_Cright, 
+        &temporaryWorkspaceDescriptor,
+        num_matrices,
+        nleft.data(),
+        nright.data(),
+        d_Cleft,
+        d_Cright,
         d_out));
 
     outfile->Printf("    cuEST AO->MO workspace:       %8.3f GiB temporary\n",
@@ -240,23 +222,20 @@ void cuESTMOInts::compute_3c_ints(SharedMatrix Cleft, SharedMatrix Cright, doubl
     cuestWorkspace_t* temporaryDFMOWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
 
     CHECK_CUEST(cuestDFMOIntegralsCompute(
-        cuest_handle, 
-        cuest_df_plan_, 
-        params, 
+        cuest_handle,
+        cuest_df_plan_,
+        params,
         &variableBufferSize,
-        temporaryDFMOWorkspace, 
-        num_matrices, 
-        &nleft, 
-        &nright, 
-        d_Cleft, 
+        temporaryDFMOWorkspace,
+        num_matrices,
+        nleft.data(),
+        nright.data(),
+        d_Cleft,
         d_Cright,
         d_out));
 
     cuest_common::freeWorkspace(temporaryDFMOWorkspace);
     CHECK_CUEST(cuestParametersDestroy(CUEST_DFMOINTEGRALSCOMPUTE_PARAMETERS, params));
-
-    CHECK_CUDA(cudaFree(d_Cleft));
-    CHECK_CUDA(cudaFree(d_Cright));
 }
 
 }  // namespace psi

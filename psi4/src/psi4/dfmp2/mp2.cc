@@ -1033,6 +1033,7 @@ void RDFMP2::form_Bia_cuest() {
     size_t naocc = Caocc_->colspi()[0];
     size_t navir = Cavir_->colspi()[0];
     size_t naux = ribasis_->nbf();
+    size_t nso = basisset_->nbf();
 
     cuESTMOInts mo_ints(basisset_, ribasis_, options_);
 
@@ -1040,7 +1041,24 @@ void RDFMP2::form_Bia_cuest() {
     outfile->Printf("    Bia buffer:                   %8.3f GiB\n", sizeof(double) * naux * naocc * navir / (1024.0 * 1024.0 * 1024.0));
 
     CHECK_CUDA(cudaMalloc((void**) &Bia_, sizeof(double) * naux * naocc * navir));
-    mo_ints.compute_3c_ints(Caocc_, Cavir_, Bia_);
+
+    // cuEST needs Cleft & Cright as [nmo, nao]
+    SharedMatrix CaoccT = Caocc_->transpose();
+    SharedMatrix CavirT = Cavir_->transpose();
+
+    double* d_Caocc = nullptr;
+    double* d_Cavir = nullptr;
+
+    // TODO: add memory estimate for these calls
+    CHECK_CUDA(cudaMalloc((void**) &d_Caocc, sizeof(double) * naocc * nso));
+    CHECK_CUDA(cudaMalloc((void**) &d_Cavir, sizeof(double) * navir * nso));
+    CHECK_CUDA(cudaMemcpy(d_Caocc, CaoccT->pointer()[0], sizeof(double) * naocc * nso, cudaMemcpyHostToDevice));
+    CHECK_CUDA(cudaMemcpy(d_Cavir, CavirT->pointer()[0], sizeof(double) * navir * nso, cudaMemcpyHostToDevice));
+
+    mo_ints.compute_3c_ints({naocc}, {navir}, d_Caocc, d_Cavir, Bia_);
+
+    CHECK_CUDA(cudaFree(d_Caocc));
+    CHECK_CUDA(cudaFree(d_Cavir));
 }
 #endif
 void RDFMP2::form_Bia_Cia() {

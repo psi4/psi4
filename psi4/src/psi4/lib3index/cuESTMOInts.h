@@ -34,6 +34,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 #include <cuest.h>
 
@@ -73,20 +74,22 @@ class cuESTMOInts {
     void common_init();
 
    public:
-    cuESTMOInts(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options,);
+    cuESTMOInts(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
     ~cuESTMOInts();
 
     cuESTMOInts(const cuESTMOInts&) = delete;
     cuESTMOInts& operator=(const cuESTMOInts&) = delete;
 
     /**
-     * Fitted 3-index MO integrals B(Q|lr) = sum_mn B(Q|mn) C_ml C_nr.
+     * Fitted 3-index MO integrals B(Q|lr) = sum_mn B(Q|mn) C_ml C_nr for each (left, right) pair.
      *
-     * Cleft / Cright: Psi4 AO-basis coefficient matrices (nbf x nleft, nbf x nright, C1).
-     * d_out:          caller-owned DEVICE buffer of naux * nleft * nright doubles,
-     *                 written row-major as [Q][l][r].
+     * nleft / nright:    number of left / right orbitals of each pair.
+     * d_Cleft / d_Cright: DEVICE buffers of the concatenated coefficient matrices, each [nmo, nbf].
+     * d_out:             caller-owned DEVICE buffer of naux * sum_i nleft[i] * nright[i] doubles,
+     *                    one row-major [Q][l][r] tensor per pair, concatenated.
      */
-    void compute_3c_ints(SharedMatrix Cleft, SharedMatrix Cright, double* d_out);
+    void compute_3c_ints(const std::vector<uint64_t>& nleft, const std::vector<uint64_t>& nright, const double* d_Cleft,
+                         const double* d_Cright, double* d_out);
 };
 
 }  // namespace psi
