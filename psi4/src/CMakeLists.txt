@@ -34,6 +34,10 @@ set_target_properties(core
     VISIBILITY_INLINES_HIDDEN 1
     # CI linking with unity build sometimes hangs w/o this slight suppression
     UNITY_BUILD_BATCH_SIZE 5
+    # core.cc and export_mints.cc include libint2/engine.h (5.6+ GB per TU w/ GCC and L2 >=2.14), so share the
+    #   memory-sized pool defined in libmints/CMakeLists.txt. Whole target, since splitting sources out of the
+    #   pybind11 module would drop its module/LTO flags; it's only a few unity jobs.
+    JOB_POOL_COMPILE libint2_engine_pool
   )
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<

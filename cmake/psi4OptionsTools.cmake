@@ -20,8 +20,8 @@ endmacro()
 #Syntax: option_with_print(<option name> <description> <default value>)
 #
 macro(option_with_print variable msge default)
-print_option(${variable} ${default})
-option(${variable} ${msge} ${default})
+print_option(${variable} "${default}")
+option(${variable} "${msge}" ${default})
 endmacro(option_with_print)
 
 #Wraps an option with a default other than ON/OFF and prints it
@@ -33,9 +33,9 @@ endmacro(option_with_print)
 #Syntax: option_with_default(<option name> <description> <default value>)
 #
 macro(option_with_default variable msge default)
-print_option(${variable} ${default})
+print_option(${variable} "${default}")
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
-set(${variable} ${default} CACHE STRING ${msge} FORCE)
+set(${variable} ${default} CACHE STRING "${msge}" FORCE)
 endif()
 endmacro(option_with_default)
 

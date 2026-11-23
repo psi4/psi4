@@ -50,9 +50,9 @@ namespace fnocc {
   * Build and use I(a,b)
   */
 void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params) {
-    long int o = ndoccact;
-    long int v = nvirt;
-    long int b, m, n, e, a, id = 0;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
+    int64_t b, m, n, e, a, id = 0;
     // build I1(a,b)
     auto psio = std::make_shared<PSIO>();
     psio->open(PSIF_DCC_IAJB, PSIO_OPEN_OLD);
@@ -84,7 +84,7 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params) {
     }
     F_DGEMM('n', 't', v, v, o * o * v, -2.0, tempv, v, tempt, v, 0.0, I1, v);
 
-    long int i, j, l, k, c, d;
+    int64_t i, j, l, k, c, d;
 
     if (t2_on_disk) {
         psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
@@ -124,11 +124,11 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params) {
   * Build and use I(i,j), I'(i,j), and I(i,a)
   */
 void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params) {
-    long int o = ndoccact;
-    long int v = nvirt;
-    long int m, j, e, f, i, a, b;  //,one=1;
-    long int ov2 = o * v * v;
-    long int id = 0;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
+    int64_t m, j, e, f, i, a, b;  //,one=1;
+    int64_t ov2 = o * v * v;
+    int64_t id = 0;
     auto psio = std::make_shared<PSIO>();
 
     // no singles
@@ -237,7 +237,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params) {
  *  Build and use I2ijkl
  */
 void CoupledCluster::I2ijkl_quadratic(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
@@ -290,7 +290,7 @@ void CoupledCluster::I2ijkl_quadratic(CCTaskParams params) {
  *  Build and use I2iabj
  */
 void CoupledCluster::I2iabj_quadratic(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();
@@ -401,7 +401,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params) {
  *  Build and use I2iajb
  */
 void CoupledCluster::I2iajb_quadratic(CCTaskParams params) {
-    long int id, i, j, a, b, o, v;
+    int64_t id, i, j, a, b, o, v;
     o = ndoccact;
     v = nvirt;
     auto psio = std::make_shared<PSIO>();

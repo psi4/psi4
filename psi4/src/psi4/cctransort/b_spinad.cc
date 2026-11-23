@@ -77,8 +77,8 @@ void b_spinad(std::shared_ptr<PSIO> psio) {
     int nvirt = 0;
     for (int h = 0; h < Bs.params->nirreps; h++) nvirt += Bs.params->ppi[h];
 
-    int rows_per_bucket = dpd_memfree() / (Bs.params->coltot[0] + nvirt);
-    if (rows_per_bucket > Bs.params->rowtot[0]) rows_per_bucket = Bs.params->rowtot[0];
+    int rows_per_bucket =
+        dpd_rows_per_bucket(dpd_memfree(), Bs.params->coltot[0] + nvirt, Bs.params->rowtot[0]);
     int nbuckets = (int)std::ceil((double)Bs.params->rowtot[0] / (double)rows_per_bucket);
     int rows_left = Bs.params->rowtot[0] % rows_per_bucket;
 

@@ -28,6 +28,8 @@
 
 #ifndef FROZENNO_H
 #define FROZENNO_H
+#include <cstdint>
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
 
@@ -46,7 +48,7 @@ class FrozenNO : public Wavefunction {
    protected:
     // mp2 energy in full basis
     double emp2;
-    long int nso, nmo, ndocc, nvirt, nfzc, nfzv, ndoccact, nvirt_no;
+    int64_t nso, nmo, ndocc, nvirt, nfzc, nfzv, ndoccact, nvirt_no;
 
     void common_init();
 };
@@ -70,8 +72,8 @@ class PSI_API DFFrozenNO : public FrozenNO {
    protected:
     void ModifyCa(const std::vector<double>& Dab);
     void ModifyCa_occ(double* Dij);
-    void BuildFock(long int nQ, double* Qso, double* F);
-    void TransformQ(long int nQ, double* Qso);
+    void BuildFock(int64_t nQ, double* Qso, double* F);
+    void TransformQ(int64_t nQ, double* Qso);
 };
 }
 }
