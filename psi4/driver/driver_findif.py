@@ -1193,10 +1193,14 @@ class FiniteDifferenceComputer(BaseComputer):
 
     @field_validator('molecule')
     def set_molecule(cls, mol):
+        # work on a clone so that freezing the frame doesn't leak back to the caller's molecule
         mol.update_geometry()
-        mol.fix_com(True)
-        mol.fix_orientation(True)
-        return mol
+        clone = mol.clone()
+        if hasattr(mol, "EFP"):
+            clone.EFP = mol.EFP  # python-side attribute not carried by clone()
+        clone.fix_com(True)
+        clone.fix_orientation(True)
+        return clone
 
     def __init__(self, **data):
         """Initialize FiniteDifference class.
@@ -1442,15 +1446,17 @@ class FiniteDifferenceComputer(BaseComputer):
         # load QCVariables & properties
         qcvars = self.task_list['reference'].get_results().extras['qcvars']
         E0 = self.findifrec['reference']['energy']
+        # take NRE from the reference calc, since self.molecule hasn't seen the basis, so has full Z even with ECPs
+        nre = qcvars.get('NUCLEAR REPULSION ENERGY', self.molecule.nuclear_repulsion_energy())
 
         properties = {
             "calcinfo_natom": self.molecule.natom(),
-            "nuclear_repulsion_energy": self.molecule.nuclear_repulsion_energy(),
+            "nuclear_repulsion_energy": nre,
             "return_energy": E0,
         }
 
         qcvars['FINDIF NUMBER'] = len(self.task_list)
-        qcvars['NUCLEAR REPULSION ENERGY'] = self.molecule.nuclear_repulsion_energy()
+        qcvars['NUCLEAR REPULSION ENERGY'] = nre
         qcvars['CURRENT ENERGY'] = E0
 
         DD0 = self.findifrec['reference'].get('dipole derivative')
@@ -1458,16 +1464,29 @@ class FiniteDifferenceComputer(BaseComputer):
             qcvars['CURRENT DIPOLE GRADIENT'] = DD0
             qcvars[f"{self.method.upper()} DIPOLE GRADIENT"] = DD0
 
+        # when the differentiated energy is the SCF energy (HF or non-DH DFT), also store the
+        #   SCF-level (and HF- or DFT-level) derivative QCVariables, as analytic SCF derivatives do
+        scf_labels = []
+        if qcvars.get("SCF TOTAL ENERGY") == E0:
+            scf_labels.append("SCF")
+            if qcvars.get("DFT TOTAL ENERGY") == E0:
+                scf_labels.append("DFT")
+            elif qcvars.get("HF TOTAL ENERGY") == E0:
+                scf_labels.append("HF")
+        deriv_labels = list(dict.fromkeys([*scf_labels, self.method.upper()]))
+
         G0 = self.findifrec['reference'].get('gradient')
         if G0 is not None:
             qcvars['CURRENT GRADIENT'] = G0
-            qcvars[f"{self.method.upper()} TOTAL GRADIENT"] = G0
+            for lbl in deriv_labels:
+                qcvars[f"{lbl} TOTAL GRADIENT"] = G0
             properties["return_gradient"] = G0
 
         H0 = self.findifrec['reference'].get('hessian')
         if H0 is not None:
             qcvars['CURRENT HESSIAN'] = H0
-            qcvars[f"{self.method.upper()} TOTAL HESSIAN"] = H0
+            for lbl in deriv_labels:
+                qcvars[f"{lbl} TOTAL HESSIAN"] = H0
             properties["return_hessian"] = H0
 
 #        if isinstance(lowername, str) and lowername in procedures['energy']:

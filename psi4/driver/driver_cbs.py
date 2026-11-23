@@ -1551,10 +1551,14 @@ class CompositeComputer(BaseComputer):
 
     @field_validator('molecule')
     def set_molecule(cls, mol):
+        # work on a clone so that freezing the frame doesn't leak back to the caller's molecule
         mol.update_geometry()
-        mol.fix_com(True)
-        mol.fix_orientation(True)
-        return mol
+        clone = mol.clone()
+        if hasattr(mol, "EFP"):
+            clone.EFP = mol.EFP  # python-side attribute not carried by clone()
+        clone.fix_com(True)
+        clone.fix_orientation(True)
+        return clone
 
     def __init__(self, **data):
         data = p4util.kwargs_lower(data)
@@ -1699,14 +1703,19 @@ class CompositeComputer(BaseComputer):
         E0 = assembled_results["energy"]
 
         # load QCVariables & properties
+        # take NRE from a component calc, since self.molecule hasn't seen the basis, so has full Z even with ECPs. (Mixed
+        #   ECP/non-ECP basis sets in one CBS are ill-defined for NRE anyway.)
+        nre = self.task_list[0].get_results(client=client).properties.nuclear_repulsion_energy
+        if nre is None:
+            nre = self.molecule.nuclear_repulsion_energy()
         qcvars = {
             'CBS NUMBER': len(self.compute_list),
-            'NUCLEAR REPULSION ENERGY': self.molecule.nuclear_repulsion_energy(),
+            'NUCLEAR REPULSION ENERGY': nre,
         }
 
         properties = {
             "calcinfo_natom": self.molecule.natom(),
-            "nuclear_repulsion_energy": self.molecule.nuclear_repulsion_energy(),
+            "nuclear_repulsion_energy": nre,
             "return_energy": E0,
         }
 

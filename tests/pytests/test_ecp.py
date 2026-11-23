@@ -466,12 +466,22 @@ _ghost_ecp_systems = {
 }
 
 
-def _ghost_ecp_molecule(name):
+def _ghost_ecp_molecule(name, fixed_frame=True):
     import psi4
 
     charge, atoms, _ = _ghost_ecp_systems[name]
     lines = "\n".join(f"{lbl} {x} {y} {z}" for lbl, x, y, z in atoms)
-    return psi4.geometry(f"{charge} 1\n{lines}\nunits angstrom\nsymmetry c1\nno_com\nno_reorient\n", name=name)
+    frame = "no_com\nno_reorient\n" if fixed_frame else ""
+    return psi4.geometry(f"{charge} 1\n{lines}\nunits angstrom\nsymmetry c1\n{frame}", name=name)
+
+
+def _ecp_nuclear_repulsion(mol, name):
+    """NRE from ECP-reduced charges (I: 53 - 28), ghosts zero, independent of psi4's Molecule.Z bookkeeping."""
+    zeff = {"I": 25.0, "F": 9.0}
+    z = [0.0 if lbl.startswith("Gh(") else zeff[lbl] for lbl, *_ in _ghost_ecp_systems[name][1]]
+    geom = np.asarray(mol.geometry())
+    return sum(z[i] * z[j] / np.linalg.norm(geom[i] - geom[j])
+               for i in range(len(z)) for j in range(i + 1, len(z)))
 
 
 @uusing("ecpint")
@@ -504,15 +514,32 @@ def test_ecp_ghost_integral_identities():
     pytest.param("I+GhF"),
     pytest.param("I+GhI"),
     pytest.param("I+I"),
+    pytest.param("I+I-free"),
     pytest.param("IF+GhI", marks=pytest.mark.medlong),
 ])
 def test_ecp_ghost_derivatives(name):
     """Analytic HF gradient vs 5-point findif of energies (Cartesian steps) and analytic Hessian vs findif of gradients,
-    over all centers including ghosts. Prototype agreement: gradients <= 1e-10, Hessians <= 3e-8."""
+    over all centers including ghosts. Prototype agreement: gradients <= 1e-10, Hessians <= 3e-8.
+
+    Also, analytic and findif paths must agree on the side results: NUCLEAR REPULSION ENERGY from ECP-reduced charges
+    (findif's own molecule never builds the basis, so it once reported full-Z NRE), and the caller's fix_com/
+    fix_orientation left as given (findif once froze them on the input molecule). "-free" runs in psi4's frame."""
     import psi4
 
-    mol = _ghost_ecp_molecule(name)
+    fixed_frame = not name.endswith("-free")
+    name = name.removesuffix("-free")
+    mol = _ghost_ecp_molecule(name, fixed_frame=fixed_frame)
+    mol.update_geometry()
     natom = mol.natom()
+    nre = _ecp_nuclear_repulsion(mol, name)
+
+    def assert_side_results(label, wfn):
+        for store, val in [("core", psi4.variable("NUCLEAR REPULSION ENERGY")),
+                           ("wfn", wfn.variable("NUCLEAR REPULSION ENERGY"))]:
+            assert compare_values(nre, val, atol=1.e-10, label=f"{name} {label} {store} NUCLEAR REPULSION ENERGY")
+        assert (mol.com_fixed(), mol.orientation_fixed()) == (fixed_frame, fixed_frame), \
+            f"{name} {label} changed input molecule frame flags to {(mol.com_fixed(), mol.orientation_fixed())}"
+
     ghosts = [a for a, (lbl, *_) in enumerate(_ghost_ecp_systems[name][1]) if lbl.startswith("Gh(")]
     psi4.set_options({
         "basis": "def2-svp",
@@ -524,15 +551,42 @@ def test_ecp_ghost_derivatives(name):
         "disp_mass_weight": False,
     })
 
-    g1 = psi4.gradient("hf", molecule=mol).np
-    g0 = psi4.gradient("hf", molecule=mol, dertype=0).np
+    # findif first: building a basis with ECPs lowers Z on the molecule it's built on, so an analytic calc beforehand
+    #   would mask a findif NRE taken from its own (never basis-built) molecule
+    g0, wfn = psi4.gradient("hf", molecule=mol, dertype=0, return_wfn=True)
+    assert_side_results("grd0", wfn)
+    g1, wfn = psi4.gradient("hf", molecule=mol, return_wfn=True)
+    assert_side_results("grd1", wfn)
+    g1, g0 = g1.np, g0.np
     assert compare_values(g0, g1, atol=1.e-8, label=f"{name} analytic vs findif gradient")
     assert compare_values(np.zeros(3), g1.sum(axis=0), atol=1.e-9, label=f"{name} gradient translational sum")
     for a in ghosts:
         assert np.abs(g1[a]).max() > 1.e-5, f"{name} ghost center {a} gradient vanishes: {g1[a]}"
 
-    h2 = psi4.hessian("hf", molecule=mol).np
-    h1 = psi4.hessian("hf", molecule=mol, dertype=1).np
+    h2, wfn = psi4.hessian("hf", molecule=mol, return_wfn=True)
+    assert_side_results("hes2", wfn)
+    h1, wfn = psi4.hessian("hf", molecule=mol, dertype=1, return_wfn=True)
+    assert_side_results("hes1", wfn)
+    h2, h1 = h2.np, h1.np
     assert compare_values(h1, h2, atol=1.e-7, label=f"{name} analytic vs findif Hessian")
     assert compare_values(np.zeros((natom, 3, 3)), h2.reshape(natom, 3, natom, 3).sum(axis=2), atol=1.e-9,
                           label=f"{name} Hessian translational sum")
+
+    if not fixed_frame:
+        # QCSchema results: properties.nuclear_repulsion_energy came from the top-level (full-Z) molecule for findif
+        for dertype in [1, 0]:
+            atin = {
+                "molecule": mol.to_schema(dtype=2),
+                "driver": "gradient",
+                "model": {"method": "hf", "basis": "def2-svp"},
+                "keywords": {"scf_type": "pk", "e_convergence": 11, "d_convergence": 11, "points": 5,
+                             "fd_project": False, "disp_mass_weight": False, "function_kwargs": {"dertype": dertype}},
+            }
+            atres = psi4.schema_wrapper.run_qcschema(atin)
+            assert atres.success, atres.error.error_message
+            for store, val in [("properties", atres.properties.nuclear_repulsion_energy),
+                               ("qcvars", atres.extras["qcvars"]["NUCLEAR REPULSION ENERGY"])]:
+                assert compare_values(nre, float(val), atol=1.e-10,
+                                      label=f"{name} schema grd{dertype} {store} NUCLEAR REPULSION ENERGY")
+            assert compare_values(g1, np.asarray(atres.return_result).reshape(-1, 3), atol=1.e-8,
+                                  label=f"{name} schema grd{dertype} vs analytic gradient")

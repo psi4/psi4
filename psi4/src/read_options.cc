@@ -3162,12 +3162,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Number of points for finite-differences (3 or 5) -*/
         options.add_int("POINTS", 3);  // Can we error check integers?
         /*- Displacement size in au for finite-differences. -*/
+        /*- Displacement size for finite differences, in :math:`\mathrm{amu}^{1/2}\,a_0`
+        for mass-weighted coordinates or :math:`a_0` for Cartesian coordinates. See |findif__disp_mass_weight|. -*/
         options.add_double("DISP_SIZE", 0.005);
         /*- Do take |findif__disp_size| steps in mass-weighted coordinates? When true (default),
         an atom of mass :math:`m` is displaced by |findif__disp_size| :math:`/\sqrt{m}`, so heavy atoms
         take small Cartesian steps and noise in the energies is amplified by :math:`\sqrt{m}` in their
-        gradient components. When false, all atoms take Cartesian steps of |findif__disp_size|.
-        Presently only affects gradients by finite differences of energies. -*/
+        gradient components. When false, displacements are generated in non-mass-weighted symmetry-adapted
+        Cartesian coordinates along which steps are taken of |findif__disp_size|.
+        False presently only affects gradients by finite differences of energies. -*/
         options.add_bool("DISP_MASS_WEIGHT", true);
         /*- Do write a gradient output file?  If so, the filename will end in
         .grad, and the prefix is determined by |globals__writer_file_label|

@@ -769,8 +769,14 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         "calcinfo_natom": mol.geometry().shape[0],
         "nuclear_repulsion_energy": mol.nuclear_repulsion_energy(),  # use this b/c psivar is monomer for SAPT
     }
+    # for findif & cbs, the top-level mol hasn't seen the basis, so has full Z even with ECPs. their NRE psivar comes from
+    #   a component calc, which has seen the basis
+    if (set(['FINDIF NUMBER', 'CBS NUMBER']) & set(result_data["extras"]["qcvars"].keys())) and "NUCLEAR REPULSION ENERGY" in psi_props:
+        props["nuclear_repulsion_energy"] = float(psi_props["NUCLEAR REPULSION ENERGY"])
     props.update(_convert_variables(psi_props, context="generics", json=json_serialization))
-    if not list(set(['CBS NUMBER', 'NBODY NUMBER', 'FINDIF NUMBER']) & set(result_data["extras"]["qcvars"].keys())):
+    # SCF quantities are ill-defined for composite (CBS) and many-body results. For finite difference,
+    #   the qcvars are those of the reference-geometry computation plus findif-assembled derivatives.
+    if not list(set(['CBS NUMBER', 'NBODY NUMBER']) & set(result_data["extras"]["qcvars"].keys())):
         props.update(_convert_variables(psi_props, context="scf", json=json_serialization))
 
     # Write out post-SCF keywords
