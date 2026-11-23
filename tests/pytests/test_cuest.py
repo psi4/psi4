@@ -867,11 +867,10 @@ def test_cuest_grid_reports_its_size():
 def test_cuest_zero_omega_ignores_nonzero_beta():
     """Non-LRC SCF and omega=0 cuESTJK plans must not activate cuEST's LRC DF path.
 
-    SuperFunctional initializes x_beta_ = 1.0 even when x_omega_ == 0.0. Passing
-    lrc_exchange_fraction = 1.0 with lrc_exchange_omega = 0.0 into cuEST selects
-    the LRC DF path, introducing non-deterministic Coulomb noise across repeated
-    evaluations of the same fixed plan and shifting J/K away from the beta = 0
-    full-Coulomb plan.
+    Passing lrc_exchange_fraction != 0 with lrc_exchange_omega == 0 into cuEST
+    selects the LRC DF path, introducing non-deterministic Coulomb noise across
+    repeated evaluations of the same fixed plan and shifting J/K away from the
+    beta = 0 full-Coulomb plan.
     """
     psi4.core.clean()
     psi4.core.clean_options()
@@ -904,8 +903,10 @@ def test_cuest_zero_omega_ignores_nonzero_beta():
         "save_jk": True,
     })
 
-    # 1. Non-LRC SCF must initialize JK with omega == 0 and omega_beta == 0.
+    # 1. Non-LRC SCF must have x_beta == 0 on the functional and initialize JK
+    #    with omega == 0 and omega_beta == 0.
     _, wfn = psi4.energy("hf", molecule=benzene, return_wfn=True)
+    assert wfn.functional().x_beta() == 0.0
     assert wfn.jk().name() == "cuESTJK"
     assert wfn.jk().get_omega() == 0.0
     assert wfn.jk().get_omega_beta() == 0.0

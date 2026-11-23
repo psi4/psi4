@@ -799,7 +799,7 @@ Supported keywords include:
  - `xc_functionals`: dict, definition of a complete (X + C) functional based in LibXC name
  - `x_functionals`: dict, definition of exchange functionals using LibXC names
  - `c_functionals`: dict, definition of correlation functionals using LibXC names
- - `x_hf`: dict, parameters dealing with exact (HF) exchange settings for hybrid DFT
+ - `x_hf`: dict, parameters dealing with exact (HF) exchange settings for hybrid DFT (`alpha`, `beta`, and `omega` all default to `0.0`; custom range-separated functionals that set a nonzero `omega` must specify `beta` explicitly)
  - `c_mp2`: dict, parameters dealing with MP2 correlation for double hybrid DFT
  - `dispersion`: dict, definition of dispersion corrections
  - `citation`: string, citation for the method, for printing purposes
