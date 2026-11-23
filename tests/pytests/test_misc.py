@@ -3,6 +3,7 @@ from addons import uusing
 from utils import *
 
 import math
+import sys
 import time
 
 import numpy as np
@@ -149,6 +150,7 @@ print("timers usable after errors")
     assert "timers usable after errors" in proc.stdout
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="times() is a stub that returns 0 on Windows (psi4/times.h)")
 def test_timer_user_time_in_seconds():
     """A single-threaded busy loop costs about one CPU second per wall second.  User times were
     converted with a fixed 60 clock ticks per second, i.e. 100/60 too large on Linux."""
