@@ -513,7 +513,7 @@ def test_ecp_ghost_integral_identities():
     pytest.param("F+GhI"),
     pytest.param("I+GhF"),
     pytest.param("I+GhI"),
-    pytest.param("I+I"),
+    pytest.param("I+I", marks=pytest.mark.medlong),
     pytest.param("I+I-free"),
     pytest.param("IF+GhI", marks=pytest.mark.medlong),
 ])
@@ -576,11 +576,12 @@ def test_ecp_ghost_derivatives(name):
         # QCSchema results: properties.nuclear_repulsion_energy came from the top-level (full-Z) molecule for findif
         for dertype in [1, 0]:
             atin = {
-                "molecule": mol.to_schema(dtype=2),
-                "driver": "gradient",
-                "model": {"method": "hf", "basis": "def2-svp"},
-                "keywords": {"scf_type": "pk", "e_convergence": 11, "d_convergence": 11, "points": 5,
-                             "fd_project": False, "disp_mass_weight": False, "function_kwargs": {"dertype": dertype}},
+                "molecule": mol.to_schema(dtype=3),
+                "specification": {
+                    "driver": "gradient",
+                    "model": {"method": "hf", "basis": "def2-svp"},
+                    "keywords": {"scf_type": "pk", "e_convergence": 11, "d_convergence": 11, "points": 5,
+                                 "fd_project": False, "disp_mass_weight": False, "function_kwargs": {"dertype": dertype}}},
             }
             atres = psi4.schema_wrapper.run_qcschema(atin)
             assert atres.success, atres.error.error_message
