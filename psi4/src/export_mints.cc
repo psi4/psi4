@@ -864,9 +864,9 @@ void export_mints(py::module& m) {
         .def("set_geometry", matrix_set_geometry(&Molecule::set_geometry),
              "Sets the geometry, given a (Natom X 3) matrix arg0 of coordinates [a0] (excluding dummies)")
         .def("nuclear_dipole", nuclear_dipole1(&Molecule::nuclear_dipole),
-             "Gets the nuclear contribution to the dipole, with respect to a specified origin atg0")
+             "Gets the nuclear contribution to the dipole, with respect to a specified origin atg0."" With ECPs, uses the nuclear charges of the orbital basis last built on this molecule; see Z().")
         .def("nuclear_dipole", nuclear_dipole2(&Molecule::nuclear_dipole),
-             "Gets the nuclear contribution to the dipole, with respect to the origin")
+             "Gets the nuclear contribution to the dipole, with respect to the origin."" With ECPs, uses the nuclear charges of the orbital basis last built on this molecule; see Z().")
         .def("set_name", &Molecule::set_name, "Sets molecule name")
         .def("name", &Molecule::name, "Gets molecule name")
         .def("set_comment", &Molecule::set_comment, "Sets molecule comment")
@@ -892,7 +892,8 @@ void export_mints(py::module& m) {
         .def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)")
         .def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule")
         .def("set_nuclear_charge", &Molecule::set_nuclear_charge,
-             "Set the nuclear charge of the given atom arg0 to the value arg1 (primarily for ECP).")
+             "Set the nuclear charge of the given atom arg0 to the value arg1 (primarily for ECP). Building an "
+             "orbital basis calls this on every real atom, overwriting any value set here; see Z().")
         .def("basis_on_atom", &Molecule::basis_on_atom, py::return_value_policy::copy,
              "Gets the label of the orbital basis set on a given atom arg0")
         .def("print_in_input_format", &Molecule::print_in_input_format,
@@ -907,7 +908,12 @@ void export_mints(py::module& m) {
         .def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2")
         .def("Z", &Molecule::Z, py::return_value_policy::copy,
-             "Nuclear charge of atom arg0 (0-indexed without dummies)")
+             "Nuclear charge of atom arg0 (0-indexed without dummies). Note that with ECPs, values depend on history. "
+             "Every calculation builds an orbital basis on the molecule that for ECP-bearing centers sets real atoms' "
+             "Z to the element's atomic number minus that atom's ECP core electrons (ghosts stay 0). "
+             "So a molecule that hasn't built the basis of interest (freshly defined, or a clone() or "
+             "extract_subsets() of one that has, where ghosted atoms keep their pre-ghosting Z) may hold either value. "
+             "For a calculation's charges, read wfn.molecule(); for the element, use true_atomic_number().")
         .def("mass_number", &Molecule::mass_number, py::return_value_policy::copy,
              "Mass number (A) of atom if known, else -1")
         .def("x", &Molecule::x, "x position [Bohr] of atom arg0 (0-indexed without dummies)")
@@ -915,7 +921,7 @@ void export_mints(py::module& m) {
         .def("z", &Molecule::z, "z position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("xyz", vector_by_index(&Molecule::xyz), "Return the Vector3 for atom i (0-indexed without dummies)", "i"_a)
         .def("fZ", &Molecule::fZ, py::return_value_policy::copy,
-             "Nuclear charge of atom arg1 (0-indexed including dummies)")
+             "Nuclear charge of atom arg1 (0-indexed including dummies)."" With ECPs, uses the nuclear charges of the orbital basis last built on this molecule; see Z().")
         .def("fx", &Molecule::fx, "x position of atom arg0 (0-indexed including dummies in Bohr)")
         .def("fy", &Molecule::fy, "y position of atom arg0 (0-indexed including dummies in Bohr)")
         .def("fz", &Molecule::fz, "z position of atom arg0 (0-indexed including dummies in Bohr)")
@@ -1005,12 +1011,15 @@ void export_mints(py::module& m) {
         .def("print_rotational_constants", &Molecule::print_rotational_constants,
              "Print the rotational constants to output file")
         .def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy,
-             "dipole_field"_a = std::vector<double>(3, 0.0), "Computes nuclear repulsion energy")
+             "dipole_field"_a = std::vector<double>(3, 0.0),
+             "Computes nuclear repulsion energy. With ECPs, uses the nuclear charges of the orbital basis last built "
+             "on this molecule, so differs before and after a calculation; see Z(). For a calculation's value, use "
+             "its NUCLEAR REPULSION ENERGY variable or wfn.molecule().nuclear_repulsion_energy().")
         .def("nuclear_repulsion_energy_deriv1", &Molecule::nuclear_repulsion_energy_deriv1,
              "dipole_field"_a = std::vector<double>(3, 0.0),
-             "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)")
+             "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)."" With ECPs, uses the nuclear charges of the orbital basis last built on this molecule; see Z().")
         .def("nuclear_repulsion_energy_deriv2", &Molecule::nuclear_repulsion_energy_deriv2,
-             "Returns second derivative of nuclear repulsion energy as a matrix (natom X 3, natom X 3)")
+             "Returns second derivative of nuclear repulsion energy as a matrix (natom X 3, natom X 3)."" With ECPs, uses the nuclear charges of the orbital basis last built on this molecule; see Z().")
         .def("find_point_group", &Molecule::find_point_group, "tolerance"_a = DEFAULT_SYM_TOL,
              "Finds computational molecular point group, user can override this with the symmetry "
              "keyword")
@@ -1072,7 +1081,9 @@ void export_mints(py::module& m) {
              "for input_units_to_au.")
         .def("input_units_to_au", &Molecule::input_units_to_au, "Returns unit conversion to [a0] for geometry")
         .def("set_input_units_to_au", &Molecule::set_input_units_to_au, "Sets unit conversion to [a0] for geometry")
-        .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
+        .def("clone", &Molecule::clone,
+             "Returns a new Molecule identical to arg1, including nuclear charges, which with ECPs are those of the "
+             "orbital basis last built on arg1; see Z().")
         .def_static("from_dict", from_dict,
                     "Returns a new Molecule constructed from python dictionary. In progress: name and capabilities "
                     "should not be relied upon")
