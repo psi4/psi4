@@ -58,7 +58,8 @@ void SuperFunctional::common_init() {
     x_omega_ = 0.0;
     c_omega_ = 0.0;
     x_alpha_ = 0.0;
-    x_beta_ = 1.0;
+    x_beta_ = 0.0;
+    x_beta_set_ = false;
     c_alpha_ = 0.0;
     c_os_alpha_ = 0.0;
     c_ss_alpha_ = 0.0;
@@ -148,6 +149,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_polarized() {
     sup->c_omega_ = c_omega_;
     sup->x_alpha_ = x_alpha_;
     sup->x_beta_ = x_beta_;
+    sup->x_beta_set_ = x_beta_set_;
     sup->c_alpha_ = c_alpha_;
     sup->c_ss_alpha_ = c_ss_alpha_;
     sup->c_os_alpha_ = c_os_alpha_;
@@ -386,6 +388,7 @@ void SuperFunctional::set_x_alpha(double alpha) {
 void SuperFunctional::set_x_beta(double beta) {
     can_edit();
     x_beta_ = beta;
+    x_beta_set_ = true;
 }
 void SuperFunctional::set_c_alpha(double alpha) {
     can_edit();
@@ -516,6 +519,13 @@ bool SuperFunctional::is_unpolarized() const {
     }
 }
 void SuperFunctional::allocate() {
+    if (x_omega_ != 0.0 && !x_beta_set_) {
+        throw PSIEXCEPTION(
+            "SuperFunctional: x_omega is nonzero (" + std::to_string(x_omega_) +
+            ") but x_beta was not explicitly set. Call set_x_beta() explicitly "
+            "(the default x_beta is 0.0).");
+    }
+
     // Make sure were either polarized or not
     bool is_polar = !is_unpolarized();
     values_.clear();

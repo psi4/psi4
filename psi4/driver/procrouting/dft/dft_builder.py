@@ -52,9 +52,9 @@ dict = {
      },
 
            "x_hf":  {          definition of HF exchange for hybrid functionals
-               "alpha": 0.0,             coefficient for (global) HF exchange, by default none
-                "beta": 0.0,             coefficient for long range HF exchange
-               "omega": 0.0,             range separation parameters
+               "alpha": 0.0,             coefficient for (global) HF exchange, by default 0.0
+                "beta": 0.0,             coefficient for long-range HF exchange (default 0.0; required when omega != 0)
+               "omega": 0.0,             range-separation parameter, by default 0.0
            "use_libxc": "X_METHOD_NAME"  reads the above 3 values from specified X functional
      },
 
@@ -222,6 +222,20 @@ def check_consistency(func_dictionary):
     and func_dictionary["x_hf"]["use_libxc"] not in func_dictionary["x_functionals"]:
         raise ValidationError(
             "SCF: Libxc parameters requested for an exchange functional not defined as a component of %s." % (name))
+
+    # 2d) require explicit "beta" whenever a manual "x_hf" block sets nonzero "omega", and reject
+    #     nonzero "beta" when "omega" is zero/omitted (SuperFunctional defaults x_beta to 0.0)
+    if "x_hf" in func_dictionary and "use_libxc" not in func_dictionary["x_hf"]:
+        x_hf = func_dictionary["x_hf"]
+        omega = x_hf.get("omega", 0.0)
+        if omega != 0.0 and "beta" not in x_hf:
+            raise ValidationError(
+                "SCF: Custom functional '%s' specifies nonzero x_hf['omega'] (%s) without x_hf['beta']. "
+                "Specify 'beta' explicitly in 'x_hf' (default x_beta is 0.0)." % (name, omega))
+        if x_hf.get("beta", 0.0) != 0.0 and omega == 0.0:
+            raise ValidationError(
+                "SCF: Custom functional '%s' specifies nonzero x_hf['beta'] (%s) with zero/omitted x_hf['omega']. "
+                "Specify a nonzero 'omega' in 'x_hf' for range-separated exchange." % (name, x_hf["beta"]))
 
     # 3) checks would be caught at runtime or involve only formatting.
     #    included here to preempt driver definition problems, if specific fctl not in tests.

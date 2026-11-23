@@ -44,6 +44,7 @@
 #include "psi4/psi4-dec.h"
 
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <vector>
@@ -125,9 +126,12 @@ void cuESTJK::preiterations()
     CHECK_CUEST(cuestParametersCreate(CUEST_DFINTPLAN_PARAMETERS, reinterpret_cast<void**>(&dfint_params)));
     
     // Psi4 and cuEST both represent exact exchange as alpha / r + beta erf(omega r) / r.
+    // Guard degenerate combinations (omega == 0 with nonzero beta, or beta == 0 with nonzero
+    // omega): passing a nonzero LRC parameter into cuEST activates its LRC DF path even though
+    // beta * erf(omega r) / r == 0, introducing non-deterministic Coulomb noise on non-LRC plans.
     double exchange_fraction = omega_alpha_;
-    double lrc_exchange_fraction = omega_beta_;
-    double lr_exchange_omega = omega_;
+    double lrc_exchange_fraction = (omega_ == 0.0) ? 0.0 : omega_beta_;
+    double lr_exchange_omega = (lrc_exchange_fraction == 0.0 && std::isfinite(omega_)) ? 0.0 : omega_;
 
     //Set omega params if applicable 
     CHECK_CUEST(cuestParametersConfigure(

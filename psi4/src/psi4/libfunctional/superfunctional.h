@@ -46,14 +46,14 @@ class BlockOPoints;
  *
  * This class directly holds semilocal DFA objects
  * and sketches the definition of the generalized Kohn-Sham functional
- * via alpha and omega parameters for long-range and global hybrid
+ * via alpha, beta, and omega parameters for global and long-range hybrid
  * exact exchange mixing, and alpha and omega parameters for long-range
  * and global MP2-like correlation.
  *
  * A DFT functional is defined as:
  *
  * E_XC = E_X + E_C + E(-D)
- * E_X  = (1-\alpha_x) E_X^DFA [\omega_x] + \alpha_x E_X^HF + (1-\alpha_x) E_X^HF,LR
+ * E_X  = E_X^DFA [\omega_x] + \alpha_x E_X^HF + \beta_x E_X^HF,LR [\omega_x]
  * E_C  = E_C^DFA [\omega_c] + \alpha_c E_C^MP2
  *
  *
@@ -73,6 +73,7 @@ class SuperFunctional {
     std::vector<std::shared_ptr<Functional>> x_functionals_;
     double x_alpha_;
     double x_beta_;
+    bool x_beta_set_;
     double x_omega_;
 
     // => Correlation-side DFA functionals <= //
