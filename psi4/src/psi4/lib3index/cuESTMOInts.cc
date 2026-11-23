@@ -47,7 +47,7 @@ cuESTMOInts::cuESTMOInts(std::shared_ptr<BasisSet> primary, std::shared_ptr<Basi
     : primary_(primary), 
       auxiliary_(auxiliary), 
       pq_threshold_(1.0E-14), 
-      integral_direct_(integral_direct ? 1 : 0) 
+      integral_direct_(false)
 {
     if (!primary_ || !auxiliary_) {
         throw PSIEXCEPTION("cuESTMOInts: primary and auxiliary basis sets must be non-null.");
@@ -57,6 +57,7 @@ cuESTMOInts::cuESTMOInts(std::shared_ptr<BasisSet> primary, std::shared_ptr<Basi
     }
     
     pq_threshold_ = options.get_double("INTS_TOLERANCE");
+    integral_direct_ = options.get_bool("CUEST_INTS_DIRECT"); 
     common_init();
 }
 

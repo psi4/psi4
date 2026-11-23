@@ -73,8 +73,7 @@ class cuESTMOInts {
     void common_init();
 
    public:
-    cuESTMOInts(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options,
-                bool integral_direct = false);
+    cuESTMOInts(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options,);
     ~cuESTMOInts();
 
     cuESTMOInts(const cuESTMOInts&) = delete;
