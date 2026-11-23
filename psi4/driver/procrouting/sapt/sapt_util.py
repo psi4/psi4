@@ -26,9 +26,29 @@
 # @END LICENSE
 #
 
+import numpy as np
+
 from psi4 import core
 
 from ...constants import constants
+
+
+def intermonomer_nuclear_repulsion(mol_A: core.Molecule, mol_B: core.Molecule) -> float:
+    """Nuclear repulsion between the real atoms of `mol_A` and those of `mol_B`, each with the nuclear charges
+    its own (monomer) calculation set. Building a basis with ECPs lowers Z on the real atoms of the molecule it's
+    built on (ghosts untouched), so monomer molecules after their SCF carry ECP-reduced charges, while a dimer
+    molecule that never built the basis, or one re-extracted from a ghosted monomer, may not.
+
+    """
+    def real_atoms(mol):
+        Z = np.array([mol.Z(at) for at in range(mol.natom())])
+        real = Z > 0
+        return Z[real], np.asarray(mol.geometry())[real]
+
+    Z_A, R_A = real_atoms(mol_A)
+    Z_B, R_B = real_atoms(mol_B)
+    dist = np.linalg.norm(R_A[:, None, :] - R_B[None, :, :], axis=2)
+    return float(np.sum(np.outer(Z_A, Z_B) / dist))
 
 
 def print_sapt_var(name, value, short=False, start_spacer="    "):
