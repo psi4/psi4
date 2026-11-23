@@ -1689,9 +1689,18 @@ def vibanal_wfn(
         if mol.natom() != molecule.natom():
             raise ValidationError('Impostor molecule trying to be analyzed! natom {} != {}'.format(
                 mol.natom(), molecule.natom()))
-        if abs(mol.nuclear_repulsion_energy() - molecule.nuclear_repulsion_energy()) > 1.e-6:
+        # compare NRE from element charges, not mol.Z: building an ECP basis lowers Z on the molecule it's built on,
+        #   so wfn's molecule and a fresh `molecule` (e.g., an isotopologue) would otherwise differ for ECP atoms
+        def _element_nre(m):
+            Z = np.array([0.0 if m.Z(at) == 0 else qcelemental.periodictable.to_Z(m.symbol(at))
+                          for at in range(m.natom())])
+            R = np.asarray(m.geometry())
+            iu = np.triu_indices(len(Z), k=1)
+            return float(np.sum(np.outer(Z, Z)[iu] / np.linalg.norm(R[:, None] - R[None, :], axis=2)[iu]))
+
+        if abs(_element_nre(mol) - _element_nre(molecule)) > 1.e-6:
             raise ValidationError('Impostor molecule trying to be analyzed! NRE {} != {}'.format(
-                mol.nuclear_repulsion_energy(), molecule.nuclear_repulsion_energy()))
+                _element_nre(mol), _element_nre(molecule)))
         if not np.allclose(np.asarray(mol.geometry()), np.asarray(molecule.geometry()), atol=1.e-6):
             core.print_out(
                 'Warning: geometry center/orientation mismatch. Normal modes may not be in expected coordinate system.'

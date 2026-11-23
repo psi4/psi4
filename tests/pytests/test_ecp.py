@@ -590,3 +590,27 @@ def test_ecp_ghost_derivatives(name):
                                       label=f"{name} schema grd{dertype} {store} NUCLEAR REPULSION ENERGY")
             assert compare_values(g1, np.asarray(atres.return_result).reshape(-1, 3), atol=1.e-8,
                                   label=f"{name} schema grd{dertype} vs analytic gradient")
+
+
+@uusing("ecpint")
+@pytest.mark.d2ints
+def test_ecp_vibanal_isotopologue():
+    """vibanal_wfn with a separately defined molecule (isotope analysis) must accept a matching molecule though building
+    an ECP basis lowered Z on wfn's molecule (I: 53 -> 25), and still reject a different geometry. Its NRE check once
+    compared wfn's ECP-reduced NRE (8.217) with the fresh molecule's full-Z one (17.420) and raised for any ECP system."""
+    import psi4
+
+    hi = psi4.geometry("H 0 0 0\nI 0 0 1.61\nsymmetry c1\nno_com\nno_reorient\n", name="hi")
+    psi4.set_options({"basis": "def2-svp", "scf_type": "pk", "d_convergence": 10})
+    _, wfn = psi4.frequency("hf", molecule=hi, return_wfn=True)
+    omega_hi = wfn.frequencies().np[-1]
+
+    di = psi4.geometry("H@2.014101778 0 0 0\nI 0 0 1.61\nsymmetry c1\nno_com\nno_reorient\n", name="di")
+    omega_di = psi4.vibanal_wfn(wfn, molecule=di)["omega"].data[-1].real
+    m_H, m_D, m_I = 1.00782503223, 2.014101778, hi.mass(1)
+    ratio = np.sqrt((m_H * m_I / (m_H + m_I)) / (m_D * m_I / (m_D + m_I)))
+    assert compare_values(omega_hi * ratio, omega_di, atol=1.e-3, label="DI harmonic frequency from HI Hessian")
+
+    stretched = psi4.geometry("H 0 0 0\nI 0 0 1.71\nsymmetry c1\nno_com\nno_reorient\n", name="hi_stretched")
+    with pytest.raises(psi4.ValidationError, match="Impostor molecule"):
+        psi4.vibanal_wfn(wfn, molecule=stretched)
