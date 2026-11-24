@@ -63,6 +63,7 @@
 #include "mp2_kernels.h"
 #include "psi4/lib3index/cuESTMOInts.h"
 #include "psi4/libfock/cuESTCommon.h"
+#include "psi4/libfock/cuESTMemory.h"
 
 extern cudaStream_t stream_handle;
 extern cuestHandle_t cuest_handle;
@@ -853,26 +854,20 @@ void RDFMP2::print_header() {
 
 #ifdef USING_cuEST
     if (!use_cuest_) return;
-    
-    double scratch_estimate = (static_cast<double>(ribasis_->nbf()) * aocc * avir + 3.0 * avir * avir + avir + aocc) * sizeof(double) / (1024.0 * 1024.0 * 1024.0);
 
-    const char *cuest_str  = (options_.get_bool("CUEST_MIXED_PRECISION"))  ? "enabled"  : "disabled";
+    const char* cuest_emulation = options_.get_bool("CUEST_MIXED_PRECISION") ? "enabled" : "disabled";
+    const char* ints_mode = options_.get_bool("CUEST_INTS_DIRECT") ? "direct" : "default";
 
     outfile->Printf("\t -----------------------------\n");
-    outfile->Printf("\t    GPU-Accelerated DF-MP2    \n");
-    outfile->Printf("\t   w/ NVIDIA cuEST & cuBLAS   \n");
+    outfile->Printf("\t    GPU-Accelerated DF-MP2\n");
+    outfile->Printf("\t   w/ NVIDIA cuEST & cuBLAS\n");
     outfile->Printf("\t -----------------------------\n");
-    outfile->Printf("\t                              \n");
-    outfile->Printf("\t  Fixed-point emulation       \n");
-    outfile->Printf("\t  -------                     \n");
-    outfile->Printf("\t   cuEST: %-8s            \n", cuest_str);
-    outfile->Printf("\t   cuBLAS: disabled           \n");
-    outfile->Printf("\t                              \n");
-    outfile->Printf("\t  Form energy                 \n");
-    outfile->Printf("\t  -------                     \n");
-    outfile->Printf("\t   %6.2f GiB device scratch  \n", scratch_estimate);
-    outfile->Printf("\t -----------------------------\n");
-    outfile->Printf("\n");
+    outfile->Printf("\t  Fixed-point emulation\n");
+    outfile->Printf("\t    %-16s %8s\n", "cuEST:", cuest_emulation);
+    outfile->Printf("\t    %-16s %8s\n", "cuBLAS:", "disabled");
+    outfile->Printf("\t  3-index integrals\n");
+    outfile->Printf("\t    %-16s %8s\n", "Mode:", ints_mode);
+    outfile->Printf("\t -----------------------------\n\n");
 #endif
 }
 void RDFMP2::form_Aia() {
@@ -1035,10 +1030,12 @@ void RDFMP2::form_Bia_cuest() {
     size_t naux = ribasis_->nbf();
     size_t nao = basisset_->nbf();
 
+    cuest_common::print_memory_header();
+
     // Most likely to OOM here (DFIntPlanCreate) if NOT using integral direct
     cuESTMOInts mo_ints(basisset_, ribasis_, options_);
 
-    outfile->Printf("    Bia buffer:                   %8.3f GiB\n", sizeof(double) * naux * naocc * navir / (1024.0 * 1024.0 * 1024.0));
+    cuest_common::print_memory_row("Bia buffer", sizeof(double) * naux * naocc * navir, 0);
 
     // by this point the temporary DFIntPlan workspace has been freed
     CHECK_CUDA(cudaMalloc((void**) &Bia_, sizeof(double) * naux * naocc * navir));
@@ -1050,8 +1047,8 @@ void RDFMP2::form_Bia_cuest() {
     double* d_Caocc = nullptr;
     double* d_Cavir = nullptr;
 
-    outfile->Printf("    MO Coefficients:              %8.3f GiB\n", sizeof(double) * nao * (naocc + navir) / (1024.0 * 1024.0 * 1024.0));
-    
+    cuest_common::print_memory_row("MO coefficients", 0, sizeof(double) * nao * (naocc + navir));
+
     CHECK_CUDA(cudaMalloc((void**) &d_Caocc, sizeof(double) * naocc * nao));
     CHECK_CUDA(cudaMalloc((void**) &d_Cavir, sizeof(double) * navir * nao));
     CHECK_CUDA(cudaMemcpy(d_Caocc, CaoccT->pointer()[0], sizeof(double) * naocc * nao, cudaMemcpyHostToDevice));
@@ -1217,6 +1214,9 @@ void RDFMP2::form_energy_cuest() {
     
     int naocc2 = naocc * naocc;
     int navir2 = navir * navir;
+
+    cuest_common::print_memory_row("form energy scratch", 0, sizeof(double) * (3 * (size_t)navir2 + naocc + navir));
+    outfile->Printf("\n");
 
     // allocate scratch buffers on GPU
     double* iajb = nullptr;

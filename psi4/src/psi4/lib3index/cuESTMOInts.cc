@@ -33,6 +33,7 @@
 #include <cuda_runtime.h>
 
 #include "psi4/libfock/cuESTCommon.h"
+#include "psi4/libfock/cuESTMemory.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
@@ -108,9 +109,8 @@ void cuESTMOInts::common_init() {
         &temporaryWorkspaceDescriptor,
         nullptr));
 
-    outfile->Printf("    cuEST AO pair list workspace: %8.3f GiB persistent, %8.3f GiB temporary\n",
-                    persistentWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0),
-                    temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
+    cuest_common::print_memory_row("AO pair list", persistentWorkspaceDescriptor.deviceBufferSizeInBytes,
+                                   temporaryWorkspaceDescriptor.deviceBufferSizeInBytes);
 
     cuest_pair_list_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
     cuestWorkspace_t* temporaryPairListWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
@@ -154,9 +154,8 @@ void cuESTMOInts::common_init() {
         &temporaryWorkspaceDescriptor,
         nullptr));
 
-    outfile->Printf("    cuEST DF plan workspace:      %8.3f GiB persistent, %8.3f GiB temporary\n",
-                    persistentWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0),
-                    temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
+    cuest_common::print_memory_row("DF plan", persistentWorkspaceDescriptor.deviceBufferSizeInBytes,
+                                   temporaryWorkspaceDescriptor.deviceBufferSizeInBytes);
 
     // peak memory usage is bound by the allocation of these two workspaces if NOT using integral direct
     cuest_dfint_plan_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
@@ -217,8 +216,7 @@ void cuESTMOInts::compute_3c_ints(const std::vector<uint64_t>& nleft, const std:
         d_Cright,
         d_out));
 
-    outfile->Printf("    cuEST AO->MO workspace:       %8.3f GiB temporary\n",
-                    temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
+    cuest_common::print_memory_row("AO->MO transform", 0, temporaryWorkspaceDescriptor.deviceBufferSizeInBytes);
 
     // peak memory usage is bound by the allocation of this workspace + the size of the Bia & MO coefficient buffers if using integral direct
     cuestWorkspace_t* temporaryDFMOWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
