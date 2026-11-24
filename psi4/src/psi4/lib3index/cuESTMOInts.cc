@@ -158,7 +158,7 @@ void cuESTMOInts::common_init() {
                     persistentWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0),
                     temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
 
-    // peak memory usage is bound by the allocation of these two workspaces
+    // peak memory usage is bound by the allocation of these two workspaces if NOT using integral direct
     cuest_dfint_plan_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
     cuestWorkspace_t* temporaryDFIntPlanWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
     
@@ -220,6 +220,7 @@ void cuESTMOInts::compute_3c_ints(const std::vector<uint64_t>& nleft, const std:
     outfile->Printf("    cuEST AO->MO workspace:       %8.3f GiB temporary\n",
                     temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
 
+    // peak memory usage is bound by the allocation of this workspace + the size of the Bia & MO coefficient buffers if using integral direct
     cuestWorkspace_t* temporaryDFMOWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
 
     CHECK_CUEST(cuestDFMOIntegralsCompute(

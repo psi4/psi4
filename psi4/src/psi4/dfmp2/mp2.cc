@@ -1035,7 +1035,7 @@ void RDFMP2::form_Bia_cuest() {
     size_t naux = ribasis_->nbf();
     size_t nao = basisset_->nbf();
 
-    // Most likely to OOM here (on DFIntPlanCreate)
+    // Most likely to OOM here (DFIntPlanCreate) if NOT using integral direct
     cuESTMOInts mo_ints(basisset_, ribasis_, options_);
 
     outfile->Printf("    Bia buffer:                   %8.3f GiB\n", sizeof(double) * naux * naocc * navir / (1024.0 * 1024.0 * 1024.0));
@@ -1057,6 +1057,7 @@ void RDFMP2::form_Bia_cuest() {
     CHECK_CUDA(cudaMemcpy(d_Caocc, CaoccT->pointer()[0], sizeof(double) * naocc * nao, cudaMemcpyHostToDevice));
     CHECK_CUDA(cudaMemcpy(d_Cavir, CavirT->pointer()[0], sizeof(double) * navir * nao, cudaMemcpyHostToDevice));
 
+    // Most likely to OOM here (DFMOIntegralsCompute) if using integral direct
     mo_ints.compute_3c_ints({naocc}, {navir}, d_Caocc, d_Cavir, Bia_);
 
     CHECK_CUDA(cudaFree(d_Caocc));
