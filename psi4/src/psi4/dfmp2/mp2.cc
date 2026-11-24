@@ -1057,10 +1057,8 @@ void RDFMP2::form_Bia_cuest() {
     CHECK_CUDA(cudaMemcpy(d_Caocc, CaoccT->pointer()[0], sizeof(double) * naocc * nao, cudaMemcpyHostToDevice));
     CHECK_CUDA(cudaMemcpy(d_Cavir, CavirT->pointer()[0], sizeof(double) * navir * nao, cudaMemcpyHostToDevice));
 
-    // after this call, the persistent DFIntPlan workspace is freed
     mo_ints.compute_3c_ints({naocc}, {navir}, d_Caocc, d_Cavir, Bia_);
 
-    // at this point only the Bia buffer remains
     CHECK_CUDA(cudaFree(d_Caocc));
     CHECK_CUDA(cudaFree(d_Cavir));
 }
