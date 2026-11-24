@@ -1035,11 +1035,12 @@ void RDFMP2::form_Bia_cuest() {
     size_t naux = ribasis_->nbf();
     size_t nao = basisset_->nbf();
 
+    // Most likely to OOM here (on DFIntPlanCreate)
     cuESTMOInts mo_ints(basisset_, ribasis_, options_);
 
-    // print memory estimate here, most likely to OOM on the following call
     outfile->Printf("    Bia buffer:                   %8.3f GiB\n", sizeof(double) * naux * naocc * navir / (1024.0 * 1024.0 * 1024.0));
 
+    // by this point the temporary DFIntPlan workspace has been freed
     CHECK_CUDA(cudaMalloc((void**) &Bia_, sizeof(double) * naux * naocc * navir));
 
     // cuEST needs Cleft & Cright as [nmo, nao]
@@ -1049,14 +1050,17 @@ void RDFMP2::form_Bia_cuest() {
     double* d_Caocc = nullptr;
     double* d_Cavir = nullptr;
 
-    // TODO: add memory estimate for these calls
+    outfile->Printf("    MO Coefficients:              %8.3f GiB\n", sizeof(double) * nao * (naocc + navir) / (1024.0 * 1024.0 * 1024.0));
+    
     CHECK_CUDA(cudaMalloc((void**) &d_Caocc, sizeof(double) * naocc * nao));
     CHECK_CUDA(cudaMalloc((void**) &d_Cavir, sizeof(double) * navir * nao));
     CHECK_CUDA(cudaMemcpy(d_Caocc, CaoccT->pointer()[0], sizeof(double) * naocc * nao, cudaMemcpyHostToDevice));
     CHECK_CUDA(cudaMemcpy(d_Cavir, CavirT->pointer()[0], sizeof(double) * navir * nao, cudaMemcpyHostToDevice));
 
+    // after this call, the persistent DFIntPlan workspace is freed
     mo_ints.compute_3c_ints({naocc}, {navir}, d_Caocc, d_Cavir, Bia_);
 
+    // at this point only the Bia buffer remains
     CHECK_CUDA(cudaFree(d_Caocc));
     CHECK_CUDA(cudaFree(d_Cavir));
 }

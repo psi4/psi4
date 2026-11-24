@@ -158,9 +158,10 @@ void cuESTMOInts::common_init() {
                     persistentWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0),
                     temporaryWorkspaceDescriptor.deviceBufferSizeInBytes / (1024.0 * 1024.0 * 1024.0));
 
+    // peak memory usage is bound by the allocation of these two workspaces
     cuest_dfint_plan_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
     cuestWorkspace_t* temporaryDFIntPlanWorkspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
-
+    
     CHECK_CUEST(cuestDFIntPlanCreate(
         cuest_handle,
         cuest_primary_basis_,
