@@ -35,6 +35,7 @@
 #ifdef USING_cuEST
 
 #include <cuest.h>
+#include <cublas_v2.h>
 #include <cuda_runtime.h>
 
 #include "psi4/libmints/basisset.h"
@@ -53,6 +54,22 @@ namespace cuest_common {
 
 void ensure_cuest_initialized();
 
+inline void check_cuda(cudaError_t status, const char* func) {
+    if (status != cudaSuccess) {
+        std::ostringstream msg;
+        msg << "CUDA error in " << func << ":" << cudaGetErrorString(status) << " (status code " << static_cast<int>(status) << ")";
+        throw PsiException(msg.str(), __FILE__, __LINE__);
+    }
+}
+
+inline void check_cublas(cublasStatus_t status, const char* func) {
+    if (status != CUBLAS_STATUS_SUCCESS) {
+        std::ostringstream msg;
+        msg << "cuBLAS error in " << func << ":" << cublasGetStatusString(status) << " (status code " << static_cast<int>(status) << ")";
+        throw PsiException(msg.str(), __FILE__, __LINE__);
+    }
+}
+
 inline void check_cuest(cuestStatus_t status, const char* func) {
     if (status != CUEST_STATUS_SUCCESS) {
         std::ostringstream msg;
@@ -61,6 +78,8 @@ inline void check_cuest(cuestStatus_t status, const char* func) {
     }
 }
 
+#define CHECK_CUDA(call) ::psi::cuest_common::check_cuda((call), #call)
+#define CHECK_CUBLAS(call) ::psi::cuest_common::check_cublas((call), #call)
 #define CHECK_CUEST(call) ::psi::cuest_common::check_cuest((call), #call)
 
 inline cuestWorkspace_t* allocateWorkspace(const cuestWorkspaceDescriptor_t* workspaceDescriptor)

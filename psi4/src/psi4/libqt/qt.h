@@ -43,6 +43,11 @@
 #include <string>
 #include <vector>
 
+// cuBLAS routines (for use with cuEST)
+#ifdef USING_cuEST
+#include <cublas_v2.h>
+#endif
+
 #include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/dimension.h"
@@ -113,6 +118,11 @@ void C_DCOPY(size_t length, double* x, int inc_x, double* y, int inc_y);
 void C_DAXPY(size_t length, double a, const double* x, int inc_x, double* y, int inc_y);
 void C_DAXPBY(size_t length, double a, const double* x, int inc_x, double b, double* y, int inc_y);
 double C_DDOT(size_t n, const double* const X, int inc_x, const double* const Y, int inc_y);
+
+#ifdef USING_cuEST
+void C_DDOT_CUBLAS(cublasHandle_t handle, int n, const double* x, int offx, int incx, const double* y, int offy, int incy, double* result);
+#endif
+
 double C_DNRM2(size_t n, double* X, int inc_x);
 double C_DASUM(size_t n, double* X, int inc_x);
 size_t C_IDAMAX(size_t n, double* X, int inc_x);
@@ -145,6 +155,12 @@ void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double 
 PSI_API
 void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b, int ldb,
              double beta, double* c, int ldc);
+
+#ifdef USING_cuEST
+void C_DGEMM_CUBLAS(cublasHandle_t handle, bool transa, bool transb, int m, int n, int k, double alpha, const double* A, int offa, int lda, const double* B, int offb, int ldb, double beta, double* C, int ldc);
+void C_DGEAM_CUBLAS(cublasHandle_t handle, bool transa, bool transb, int m, int n, double alpha, const double* A, int lda, double beta, const double* B, int ldb, double* C, int ldc);
+#endif
+
 void C_DSYMM(char side, char uplo, int m, int n, double alpha, double* a, int lda, double* b, int ldb, double beta,
              double* c, int ldc);
 void C_DTRMM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b,
@@ -468,4 +484,5 @@ int C_DTRSYL(char trana, char tranb, int isgn, int m, int n, double* a, int lda,
 int C_DTRTRI(char uplo, char diag, int n, double* a, int lda);
 int C_DTRTRS(char uplo, char trans, char diag, int n, int nrhs, double* a, int lda, double* b, int ldb);
 int C_DTZRZF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
+
 }  // namespace psi

@@ -290,6 +290,7 @@ void cuest_init() {
         if (cublas_status != CUBLAS_STATUS_SUCCESS) {
             throw PSIEXCEPTION("cublasCreate failed in cuest_init");
         }
+
         cusolverStatus_t cusolver_status = cusolverDnCreate(&cusolver_handle);
         if (cusolver_status != CUSOLVER_STATUS_SUCCESS) {
             throw PSIEXCEPTION("cusolverDnCreate failed in cuest_init");
