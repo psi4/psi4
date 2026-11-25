@@ -129,7 +129,7 @@ def _chain_dot(*dot_list):
     return result
 
 
-def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
+def compute_sapt_sf(jk, wfn_A, wfn_B, do_print=True):
     """
     Computes Elst and Spin-Flip SAPT0 for ROHF wavefunctions
     """

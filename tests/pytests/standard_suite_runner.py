@@ -10,6 +10,10 @@ import psi4
 
 from utils import *
 
+# systems whose basis (def2-svp) puts def2 ECPs on I. key ECP handling on the system, not the basis name, so a future
+#   light-element def2-svp row doesn't inherit it
+ECP_SYSTEMS = {"ch2i2", "ch2i"}
+
 
 def runner_asserter(inp, subject, method, basis, tnm):
 
@@ -95,7 +99,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
         # Hartree--Fock doesn't need this b/c it does value sharing by variable so CONV-AE-CONV also stored at CONV-AE-DF
         corl_type = inp["keywords"].get("mp2_type", natural_ref_inv[scf_type])
 
-    is_ecp = basis in ["def2-svp"]  # ch2i2/ch2i with def2 ECPs on I
+    is_ecp = subject.name() in ECP_SYSTEMS
     if is_ecp and "cd" in [scf_type, corl_type]:
         # ECP (iodine) systems: default cholesky_tolerance leaves CD 0.6-1.4 mEh off CONV, so CD isn't covered
         pytest.skip(f"cd not tested for ECP basis {basis}")
@@ -182,7 +186,8 @@ def runner_asserter(inp, subject, method, basis, tnm):
         }
     )
     if is_ecp:
-        # ccenergy ccsd(t) gradient for ch2i2 exhausts the 500 MiB default (and 4 GiB) w/ dpd_block_matrix: No memory left
+        # ccenergy ccsd(t) gradient for ch2i2 exhausts the 500 MiB default (and 4 GiB) w/ dpd_block_matrix: No memory left.
+        #   conftest's per-test fixture restores memory afterwards
         psi4.set_memory("8 GiB" if (qc_module_in == "psi4-ccenergy" and driver == "gradient") else "2 GiB")
     extra_kwargs = inp["keywords"].pop("function_kwargs", {})
 

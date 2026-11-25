@@ -838,7 +838,7 @@ def run_sf_sapt(name, **kwargs):
     )
     core.print_out("\n")
 
-    sf_data = sapt_sf_terms.compute_sapt_sf(sapt_dimer, sapt_jk, wfn_A, wfn_B)
+    sf_data = sapt_sf_terms.compute_sapt_sf(sapt_jk, wfn_A, wfn_B)
 
     # Print the results
     core.print_out("   Spin-Flip SAPT Results\n")

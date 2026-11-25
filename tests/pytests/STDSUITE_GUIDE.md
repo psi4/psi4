@@ -27,7 +27,7 @@ Results also feed the capabilities tables in the docs (Sec. 9).
 | `tests/pytests/test_standard_suite.py` | psi4 | ~120 `test_<method>_<driver>_<type>` functions; all parametrization lives here |
 | `tests/pytests/standard_suite_runner.py` | psi4 | `runner_asserter()`: derives types, picks reference blocks, runs psi4, asserts, records |
 | `tests/pytests/standard_suite_ref_local.py` | psi4 | psi4-local *additions to existing* QCEngine blocks; psi4-local contracts (`contractual_mp2f12`, `contractual_current`) |
-| `tests/pytests/conftest.py` | psi4 | `--runnonroutine` option; per-test `clean_options()` |
+| `tests/pytests/conftest.py` | psi4 | `--runnonroutine` option; per-test `clean_options()` and memory restore |
 | `pytest.ini` | psi4 | marker registration (`stdsuite`, `nonroutine`, `findif`, `long`, `d2ints`, `ecp`, ...) |
 | `qcengine/programs/tests/standard_suite_ref.py` | QCEngine | `std_molecules`, `std_refs`, `_std_generics`, reference constants, `_std_suite` blocks, `compute_derived_qcvars`, `answer_hash` |
 | `qcengine/programs/tests/standard_suite_contracts.py` | QCEngine | `contractual_<method>()` generators: which QCVariables are expected, with per-program excusals |
@@ -105,7 +105,7 @@ See the ADVICE comment at the top of `test_standard_suite.py`. Short version:
   `--runnonroutine`). `hes2` usually carries `d2ints` (needs Libint2 second-derivative ERIs).
 * **Where keywords are set:** in `test_standard_suite.py`, never in the runner (beyond its always-on block of
   `points`/`fd_project`/... and the commented "reference generation" block). A keyword that belongs to one row goes in
-  that `pytest.param`. One that depends on a combination of axes (basis x method/row x dertype, e.g., a system's DFT
+  that `pytest.param`. One that depends on a combination of axes (system x method/row x dertype, e.g., a system's DFT
   grid, or tighter convergence for its CC gradients by energies) goes in `_system_keywords()`, with *why* and numbers in
   a comment. The runner keeps skips, tolerances, and memory. `_processor` hands the runner a fresh keywords dict,
   because a param's dict is shared by all of that row's basis/dertype instances (in-place edits leak between them).
@@ -143,9 +143,9 @@ pytest test_standard_suite.py -m "ecp" --runnonroutine -n 12
    dummy df corl type HF uses), DF-AE-DF, and CD-*-DF if CD is in scope. Correlated tests need FC twins.
 3. psi4: add the `basis, subjects` row to each `*_module` test you cover, with marks
    `[*using("<addon>"), pytest.mark.<topic>]` (+ `pytest.mark.long` where FD runs are routine and expensive).
-4. If the system needs special handling, comment *why* with numbers. Skips, tolerances, and memory: key them off one
-   flag in the runner (e.g., `is_ecp = basis in [...]`). Keywords (FD options, grids, convergence): add them to
-   `_system_keywords()` in `test_standard_suite.py` under the system's basis (Sec. 5).
+4. If the system needs special handling, comment *why* with numbers. Key it off one flag defined from the molecule
+   name, not the basis name (e.g., `is_ecp = subject.name() in ECP_SYSTEMS`). Skips, tolerances, and memory go in the
+   runner; keywords (FD options, grids, convergence) go in `_system_keywords()` in `test_standard_suite.py` (Sec. 5).
 5. Generate refs (7c), insert, run, triage (Sec. 8).
 
 ### 7c. Generating reference values
@@ -193,7 +193,3 @@ energies; force a common auxiliary basis across modules.
 Each non-`scftype` test appends a dict line to `stdsuite_psi4.txt` (in pytest's basetemp). The record has no
 system/basis, so all basis rows (including ECP) merge into the same capability entries. See
 `psi4/share/psi4/scripts/merge_stdsuite.py` for regenerating the tables.
-
-## 10. ECP coverage (ch2i2 / ch2i, def2-svp) and lessons
-
-<!-- ECP-STATUS -->

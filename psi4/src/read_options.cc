@@ -3161,7 +3161,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Number of points for finite-differences (3 or 5) -*/
         options.add_int("POINTS", 3);  // Can we error check integers?
-        /*- Displacement size in au for finite-differences. -*/
         /*- Displacement size for finite differences, in :math:`\mathrm{amu}^{1/2}\,a_0`
         for mass-weighted coordinates or :math:`a_0` for Cartesian coordinates. See |findif__disp_mass_weight|. -*/
         options.add_double("DISP_SIZE", 0.005);

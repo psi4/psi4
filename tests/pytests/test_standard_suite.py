@@ -4,7 +4,7 @@ from qcengine.programs.tests.standard_suite_ref import std_molecules, std_refs
 
 import psi4
 
-from standard_suite_runner import runner_asserter
+from standard_suite_runner import ECP_SYSTEMS, runner_asserter
 from addons import using, uusing
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.stdsuite]
@@ -6248,15 +6248,15 @@ def test_b2plyp_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, r
 #  <<<  Common functions
 
 
-def _system_keywords(basis, method, driver, dertype, keywords):
-    """Keywords a system needs that depend on more than one parametrize axis (basis x row x dertype), so can't be
+def _system_keywords(is_ecp, method, driver, dertype, keywords):
+    """Keywords a system needs that depend on more than one parametrize axis (system x row x dertype), so can't be
     written into a single pytest.param. Keyword *setting* belongs here (or in the params), not in the runner, which
     keeps only its always-on block and per-system memory/findif settings.
 
     """
     kw = {}
-    if basis == "def2-svp":
-        # ECP systems ch2i2/ch2i
+    if is_ecp:
+        # ECP systems ch2i2/ch2i (def2-svp)
         if driver == "gradient" and dertype == 0:
             # DF energies with I carry ~1e-9 Eh deterministic roughness (jkfit metric cond ~1e9), and mass-weighted steps
             #   move I only disp_size/sqrt(127), amplifying it ~11x more: rhf df grd0 2.2e-6 mass-weighted vs 1.6e-7 Cartesian
@@ -6301,7 +6301,8 @@ def _processor(inp, dertype, basis, subjects, clsd_open_pmols, request, method, 
         inpcopy["wrong"] = inp["wrong"][basis]
     if inp.get("marks", False) and inp["marks"].get(dertype, False):
         request.node.add_marker(inp["marks"][dertype])
-    if basis == "def2-svp" and method == "hf" and driver == "hessian" and dertype == 0 and "df" in inp["keywords"].get("scf_type", ""):
+    is_ecp = subject.name() in ECP_SYSTEMS
+    if is_ecp and method == "hf" and driver == "hessian" and dertype == 0 and "df" in inp["keywords"].get("scf_type", ""):
         # ECP systems ch2i2/ch2i: DF energies with I are rough at ~1e-9 Eh (jkfit metric cond ~1e9), and findif hessian
         #   steps on I are mass-weighted to 0.005/sqrt(127) bohr, so second differences land 1.3e-3 (uhf, rohf) to 6.7e-3
         #   (rhf) from analytic. tighter conv or ints_tolerance don't help; DISP_MASS_WEIGHT=false isn't available for hessians.
@@ -6316,7 +6317,7 @@ def _processor(inp, dertype, basis, subjects, clsd_open_pmols, request, method, 
     inpcopy["driver"] = driver
     inpcopy["call"] = method
     # fresh dict: the param's own keywords dict is shared by every basis/dertype instance of the row
-    inpcopy["keywords"] = {**inp["keywords"], **_system_keywords(basis, method, driver, dertype, inp["keywords"])}
+    inpcopy["keywords"] = {**inp["keywords"], **_system_keywords(is_ecp, method, driver, dertype, inp["keywords"])}
     inpcopy["keywords"]["basis"] = basis
     inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}
     # print("INP", inpcopy)

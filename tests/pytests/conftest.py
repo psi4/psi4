@@ -55,6 +55,11 @@ def set_up():
     psi4.core.clean_timers()
     psi4.core.clean_options()
     psi4.set_output_file("pytest_output.dat", True)
+    # clean_options() doesn't reset memory, so restore it after each test lest a test's set_memory() leak to later
+    #   tests on the same worker
+    memory = psi4.get_memory()
+    yield
+    psi4.set_memory(memory, quiet=True)
 
 
 def tear_down():
