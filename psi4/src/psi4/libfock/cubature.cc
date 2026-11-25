@@ -2066,18 +2066,15 @@ class RadialGridMgr {
     static void GolombWelsch(int n, double a[], double b[], double q[]);
 
     struct SchemeTable {
-        const char *name;
         void (*getRoots)(int n, double r[], double w[]);
         double (*rFn)(double x);
         double (*drdxFn)(double x);
     };
-    static SchemeTable radialschemes[];
+    static std::map<std::string, SchemeTable> radialschemes;
 
    public:
-    static int WhichScheme(const char *schemename);
-    static const char *SchemeName(int which) { return radialschemes[which].name; }
-    static int MuraKnowlesHack(int scheme, int Z);
-    static void makeRadialGrid(int n, int whichScheme, double r[], double w[], double Rparam);
+    static std::string MuraKnowlesHack(std::string scheme, int Z);
+    static void makeRadialGrid(int n, std::string schemeName, double r[], double w[], double Rparam);
     static bool isOutermostFirst(int n, const double r[]);
 };
 
@@ -2398,52 +2395,35 @@ void RadialGridMgr::getMultiExpRoots(int n, double r[], double w[]) {
 // Then `rFn' maps the nice interval to [0, \infty)
 // `drdxFn' is the derivative of rFn and is used to adjust the weights.
 // clang-format off
-RadialGridMgr::SchemeTable RadialGridMgr::radialschemes[] = {
-    {"LAGUERRE", getLaguerreRoots,       nullptr,       nullptr},   // nullptrs mean we skip the [0,\infty) correction
-    {"MULTIEXP", getMultiExpRoots,       multiexp_r, multiexp_dr},
-    {"AHLRICHS", getChebychevRootsKind2, ahlrichs_r, ahlrichs_dr},  // Also called "Treutler" or "Treutler-Ahlrichs"
-    {"TREUTLER", getChebychevRootsKind2, ahlrichs_r, ahlrichs_dr},
-    {"BECKE",    getChebychevRootsKind2, becke_r,    becke_dr},
-    {"MURA",     getTrapezoidalRoots,    mura5_r,    mura5_dr},     // Also called "Knowles" or "Mura-Knowles". Molpro calls this "LOG"
-    {"MURA7",    getTrapezoidalRoots,    mura7_r,    mura7_dr},     // This is a hack.
-    {"EM",       getTrapezoidalRoots,    em_r,       em_dr},        // "Euler-MacLaurin", also called "Handy"
+std::map<std::string, RadialGridMgr::SchemeTable> RadialGridMgr::radialschemes = {
+    {"LAGUERRE", {getLaguerreRoots,       nullptr,       nullptr}},   // nullptrs mean we skip the [0,\infty) correction
+    {"MULTIEXP", {getMultiExpRoots,       multiexp_r, multiexp_dr}},
+    {"AHLRICHS", {getChebychevRootsKind2, ahlrichs_r, ahlrichs_dr}},  // Also called "Treutler" or "Treutler-Ahlrichs"
+    {"TREUTLER", {getChebychevRootsKind2, ahlrichs_r, ahlrichs_dr}},
+    {"BECKE",    {getChebychevRootsKind2, becke_r,    becke_dr}},
+    {"MURA",     {getTrapezoidalRoots,    mura5_r,    mura5_dr}},     // Also called "Knowles" or "Mura-Knowles". Molpro calls this "LOG"
+    {"MURA7",    {getTrapezoidalRoots,    mura7_r,    mura7_dr}},     // This is a hack.
+    {"EM",       {getTrapezoidalRoots,    em_r,       em_dr}},        // "Euler-MacLaurin", also called "Handy"
 };
 // clang-format on
 
-// This `WhichScheme' system is a little silly, but the RadialGridMgr can't access the global Options object
-// directly because sometimes the scheme name is stored as "DFT_RADIAL_SCHEME" and other times it's in
-// "PS_RADIAL_SCHEME." So we need to extract those strings from the global options object. But where do we store them?
-// If we make copies, we're responsible for freeing the memory ourselves. If we don't, we have to worry about the
-// lifetimes of things that live in the global Options object. It's easier to just store the scheme as an integer index
-// into our table of schemes.
-//
-// I almost created an enumeration to keep track of the schemes, but if we do that the different scheme types end up
-// stored in several different places that must all get updated at once if someone adds a new radial grid type. With
-// the current system, you only have to add your new scheme to the RadialGridMgr::radialschemes table and you're done.
-int RadialGridMgr::WhichScheme(const char *schemename) {
-    for (size_t i = 0; i < sizeof(radialschemes) / sizeof(radialschemes[0]); i++)
-        if (strcmp(radialschemes[i].name, schemename) == 0) return i;
-    outfile->Printf("Unrecognized radial scheme %s!\n", schemename);
-    throw PSIEXCEPTION("Unrecognized radial scheme!");
-}
-
-int RadialGridMgr::MuraKnowlesHack(int scheme, int Z) {
+std::string RadialGridMgr::MuraKnowlesHack(std::string scheme, int Z) {
     // Darn you, Mura-Knowles...
-    if (strcmp(radialschemes[scheme].name, "MURA") == 0 && muraKnowlesAlphaIsReallySeven(Z))
-        return WhichScheme("MURA7");
+    if (scheme == "MURA" && muraKnowlesAlphaIsReallySeven(Z))
+        return "MURA7";
     else
         return scheme;
 }
 
-void RadialGridMgr::makeRadialGrid(int n, int whichScheme, double r[], double w[], double Rparam) {
-    assert(whichScheme >= 0 && (size_t)whichScheme < sizeof(radialschemes) / sizeof(radialschemes[0]));
+void RadialGridMgr::makeRadialGrid(int n, std::string schemeName, double r[], double w[], double Rparam) {
+    assert(radialschemes.contains(schemeName));
 
     // Get the polynomial roots in the "nice" interval.
-    radialschemes[whichScheme].getRoots(n, r, w);
+    radialschemes[schemeName].getRoots(n, r, w);
 
     // These are function pointers
-    double (*rFn)(double) = radialschemes[whichScheme].rFn;
-    double (*drdxFn)(double) = radialschemes[whichScheme].drdxFn;
+    double (*rFn)(double) = radialschemes[schemeName].rFn;
+    double (*drdxFn)(double) = radialschemes[schemeName].drdxFn;
     // So now `r' and `w' store the roots of some nice orthogonal basis.
     // Then we convert to spherical.
     if (rFn != nullptr) {  // LaguerreRoots has its own implementation of this that avoids overflow issues.
@@ -2500,7 +2480,7 @@ class StandardGridMgr {
         double rparam;  // Oftentimes the Bragg-Slater radius of the atom
     };
 
-    static void makeCubatureGridFromPruneSpec(PruneSpec const &spec, int radscheme, MassPoint *grid_out);
+    static void makeCubatureGridFromPruneSpec(PruneSpec const &spec, std::string radscheme, MassPoint *grid_out);
     static void Initialize_SG0();
     static void Initialize_SG1();
 
@@ -2571,7 +2551,7 @@ const MassPoint *StandardGridMgr::GetSG1grid(int Z) {
     return SG1_grids_[Z];
 }
 
-void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, int radscheme, MassPoint *grid_out) {
+void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, std::string radscheme, MassPoint *grid_out) {
     std::vector<double> r(spec.nrad), wr(spec.nrad);
     RadialGridMgr::makeRadialGrid(spec.nrad, radscheme, r.data(), wr.data(), spec.rparam);
 
@@ -2722,7 +2702,7 @@ void StandardGridMgr::Initialize_SG0() {
             }
 #endif
             MassPoint *grid = (MassPoint *)malloc(SG0specs[Z].npts * sizeof(MassPoint));
-            makeCubatureGridFromPruneSpec(SG0specs[Z], RadialGridMgr::WhichScheme("MULTIEXP"), grid);
+            makeCubatureGridFromPruneSpec(SG0specs[Z], "MULTIEXP", grid);
             SG0_grids_[Z] = grid;
             SG0_sizes_[Z] = SG0specs[Z].npts;
 #ifdef USING_BrianQC
@@ -2794,7 +2774,7 @@ void StandardGridMgr::Initialize_SG1() {
         spec.rparam = SG1radii[Z];
         // Make the grid
         MassPoint *grid = (MassPoint *)malloc(spec.npts * sizeof(MassPoint));
-        makeCubatureGridFromPruneSpec(spec, RadialGridMgr::WhichScheme("EM"), grid);
+        makeCubatureGridFromPruneSpec(spec, "EM", grid);
         SG1_grids_[Z] = grid;
         SG1_sizes_[Z] = spec.npts;
 #ifdef USING_BrianQC
@@ -4296,7 +4276,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     MolecularGridOptions opt;
     opt.bs_radius_alpha = full_float_options["DFT_BS_RADIUS_ALPHA"];
     opt.pruning_alpha = full_float_options["DFT_PRUNING_ALPHA"];
-    opt.radscheme = RadialGridMgr::WhichScheme(full_str_options["DFT_RADIAL_SCHEME"].c_str());
+    opt.radscheme = full_str_options["DFT_RADIAL_SCHEME"];
     opt.nucscheme = NuclearWeightMgr::WhichScheme(full_str_options["DFT_NUCLEAR_SCHEME"].c_str());
     opt.namedGrid = StandardGridMgr::WhichGrid(full_str_options["DFT_GRID_NAME"].c_str());
     opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
@@ -4366,7 +4346,7 @@ void PseudospectralGrid::buildGridFromOptions() {
     MolecularGridOptions opt;
     opt.bs_radius_alpha = options_.get_double("PS_BS_RADIUS_ALPHA");
     opt.pruning_alpha = options_.get_double("PS_PRUNING_ALPHA");
-    opt.radscheme = RadialGridMgr::WhichScheme(options_.get_str("PS_RADIAL_SCHEME").c_str());
+    opt.radscheme = options_.get_str("PS_RADIAL_SCHEME");
     opt.prunefunction = RadialPruneMgr::WhichPruneFunction(options_.get_str("PS_PRUNING_SCHEME").c_str());
     opt.nucscheme = NuclearWeightMgr::WhichScheme(options_.get_str("PS_NUCLEAR_SCHEME").c_str());
     opt.namedGrid = StandardGridMgr::WhichGrid(options_.get_str("PS_GRID_NAME").c_str());
@@ -4495,7 +4475,7 @@ void MolecularGrid::postProcess(std::shared_ptr<BasisExtents> extents, int max_p
 void MolecularGrid::print(std::string out, int /*print*/) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => Molecular Quadrature <=\n\n");
-    printer->Printf("    Radial Scheme          = %14s\n", RadialGridMgr::SchemeName(options_.radscheme));
+    printer->Printf("    Radial Scheme          = %14s\n", options_.radscheme.c_str());
     printer->Printf("    Pruning Scheme         = %14s\n", options_.prunescheme.c_str());
     if (options_.prunescheme != "NONE") {
         printer->Printf("    Pruning Type           = %14s\n", options_.prunetype.c_str());
