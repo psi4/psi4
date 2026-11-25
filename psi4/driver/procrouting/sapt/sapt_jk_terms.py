@@ -34,7 +34,7 @@ from psi4 import core
 
 from ...p4util import solvers
 from ...p4util.exceptions import *
-from .sapt_util import intermonomer_nuclear_repulsion, print_sapt_var
+from .sapt_util import print_sapt_var
 
 
 def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
@@ -112,7 +112,7 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
 
     # not dimer - monA - monB NREs: a dimer re-extracted from wfn_A's molecule (B ghosted there, so not ECP-reduced)
     #   had full Z on B's ECP atoms
-    cache["nuclear_repulsion_energy"] = intermonomer_nuclear_repulsion(wfn_A.molecule(), wfn_B.molecule())
+    cache["nuclear_repulsion_energy"] = wfn_A.molecule().pairwise_nuclear_repulsion_energy(wfn_B.molecule())
 
     return cache
 

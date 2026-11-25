@@ -1015,6 +1015,10 @@ void export_mints(py::module& m) {
              "Computes nuclear repulsion energy. With ECPs, uses the nuclear charges of the orbital basis last built "
              "on this molecule, so differs before and after a calculation; see Z(). For a calculation's value, use "
              "its NUCLEAR REPULSION ENERGY variable or wfn.molecule().nuclear_repulsion_energy().")
+        .def("pairwise_nuclear_repulsion_energy", &Molecule::pairwise_nuclear_repulsion_energy, "other"_a,
+             "Computes the nuclear repulsion energy between the atoms of this molecule and those of other (no "
+             "intramolecular terms). Atoms with zero charge (ghosts) on either side don't contribute. With ECPs, uses "
+             "each molecule's charges from the orbital basis last built on it; see Z().")
         .def("nuclear_repulsion_energy_deriv1", &Molecule::nuclear_repulsion_energy_deriv1,
              "dipole_field"_a = std::vector<double>(3, 0.0),
              "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)."" With ECPs, uses the nuclear charges of the orbital basis last built on this molecule; see Z().")

@@ -35,7 +35,6 @@ from psi4 import core
 from ...p4util import solvers
 from ...p4util.exceptions import *
 from .sapt_util import print_sapt_var
-from .sapt_util import intermonomer_nuclear_repulsion as intermonomer_nuclear_repulsion_AB
 
 __all__ = ["compute_sapt_sf"]
 
@@ -169,8 +168,9 @@ def compute_sapt_sf(jk, wfn_A, wfn_B, do_print=True):
     # Pull out generic quantities
     S = np.asarray(wfn_A.S())
 
-    # not dimer - monA - monB NREs: the dimer never builds the basis, so has full Z on ECP atoms
-    intermonomer_nuclear_repulsion = intermonomer_nuclear_repulsion_AB(wfn_A.molecule(), wfn_B.molecule())
+    # not dimer - monA - monB NREs: the dimer hasn't built the basis here, so has full Z on ECP atoms. each monomer's
+    #   molecule has its own ECP-reduced charges (and zero on the other's ghosts)
+    intermonomer_nuclear_repulsion = wfn_A.molecule().pairwise_nuclear_repulsion_energy(wfn_B.molecule())
 
     num_el_A = (2 * ndocc_A + nsocc_A)
     num_el_B = (2 * ndocc_B + nsocc_B)

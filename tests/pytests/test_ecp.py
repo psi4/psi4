@@ -615,3 +615,53 @@ def test_ecp_vibanal_isotopologue():
     stretched = psi4.geometry("H 0 0 0\nI 0 0 1.71\nsymmetry c1\nno_com\nno_reorient\n", name="hi_stretched")
     with pytest.raises(psi4.ValidationError, match="Impostor molecule"):
         psi4.vibanal_wfn(wfn, molecule=stretched)
+
+
+@uusing("ecpint")
+@pytest.mark.parametrize("method,kw", [
+    pytest.param("sapt0", {}, id="sapt0"),
+    pytest.param("sapt(dft)", {"sapt_dft_functional": "hf", "sapt_dft_grac_shift_a": 0.0,
+                               "sapt_dft_grac_shift_b": 0.0, "sapt_dft_do_dhf": False}, id="sapt(dft)"),
+    pytest.param("sf-sapt", {"reference": "rohf"}, id="sf-sapt"),
+])
+def test_ecp_sapt_qcschema_nre(method, kw):
+    """SAPT through QCSchema must report the dimer's ECP-reduced NRE (I: 53 -> 25) in properties. The top-level molecule
+    is split into dimer/monomers before any basis is built, so it once gave full Z (here 379.58 vs 96.79). Also checks
+    SF-SAPT's returned dimer wfn, once built on monomer A's basis (B ghosted), so its molecule kept full Z."""
+    import psi4
+
+    dimer = psi4.geometry("""
+0 1
+H 0.0 0.0 -3.0
+I 0.0 0.0 -1.39
+--
+0 1
+H 0.0 0.0 1.5
+I 0.0 0.0 3.11
+units angstrom
+symmetry c1
+no_com
+no_reorient
+""", name="hi2")
+    zeff = [1.0, 25.0, 1.0, 25.0]
+    geom = np.asarray(dimer.geometry())
+    nre = sum(zeff[i] * zeff[j] / np.linalg.norm(geom[i] - geom[j]) for i in range(4) for j in range(i + 1, 4))
+
+    atin = {
+        "molecule": dimer.to_schema(dtype=3),
+        "specification": {
+            "driver": "energy",
+            "model": {"method": method, "basis": "def2-svp"},
+            "keywords": {"scf_type": "df", "e_convergence": 8, "d_convergence": 8, **kw}},
+    }
+    atres = psi4.schema_wrapper.run_qcschema(atin)
+    assert atres.success, atres.error.error_message
+    assert compare_values(nre, atres.properties.nuclear_repulsion_energy, atol=1.e-8,
+                          label=f"{method} schema properties NUCLEAR REPULSION ENERGY")
+
+    if method == "sf-sapt":
+        psi4.set_options({"basis": "def2-svp", "scf_type": "df", **kw})
+        _, wfn = psi4.energy(method, molecule=dimer, return_wfn=True)
+        assert compare_values(nre, wfn.molecule().nuclear_repulsion_energy(), atol=1.e-8,
+                              label="sf-sapt dimer wfn molecule NRE")
+        assert wfn.basisset().n_ecp_core() == 56, "sf-sapt dimer wfn basis has both iodines' ECPs"

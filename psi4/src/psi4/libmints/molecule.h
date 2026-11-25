@@ -393,7 +393,8 @@ class PSI_API Molecule {
     Matrix nuclear_repulsion_energy_deriv2() const;
 
     /// Computes the nuclear repulsion energy between this and another Molecule
-    /// With ECPs, uses the nuclear charges of the orbital basis last built on this molecule; see Z().
+    /// (ghosts, Z == 0, on either side don't contribute). With ECPs, uses each molecule's charges from the orbital basis
+    /// last built on it; see Z().
     double pairwise_nuclear_repulsion_energy(std::shared_ptr<Molecule> other) const;
 
     /// Translates molecule by r
