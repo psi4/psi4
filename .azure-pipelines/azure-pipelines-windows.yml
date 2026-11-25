@@ -98,9 +98,13 @@ jobs:
       # Install Miniconda
       - script: |
           curl.exe -fL --retry 5 --retry-delay 10 ^
+            --connect-timeout 30 --max-time 600 --retry-max-time 1800 ^
+            --speed-limit 100000 --speed-time 60 ^
             -o "%TEMP%\Miniforge3.exe" ^
             https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
           if errorlevel 1 exit /b %errorlevel%
+
+          if exist "C:\tools\miniforge3\" rmdir /s /q "C:\tools\miniforge3"
 
           start /wait "" "%TEMP%\Miniforge3.exe" ^
             /InstallationType=JustMe /RegisterPython=0 /S /D=C:\tools\miniforge3
@@ -115,6 +119,7 @@ jobs:
           conda --version
           if errorlevel 1 exit /b %errorlevel%
         displayName: "Install Miniforge"
+        timeoutInMinutes: 20
         retryCountOnTaskFailure: 2
 
       # Configure Miniconda
