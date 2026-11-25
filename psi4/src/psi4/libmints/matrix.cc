@@ -2349,8 +2349,8 @@ Dimension Matrix::power(double alpha, double cutoff) {
 
         memcpy(static_cast<void *>(A1[0]), static_cast<void *>(A[0]), sizeof(double) * n * n);
 
-        // Eigendecomposition.  DSYEVR (MRRR) is many times faster than DSYEV for large n (e.g. DF
-        // fitting metrics) and, unlike DSYEVD, needs no O(n^2) workspace: eigenvectors go to A2.
+        // Eigendecomposition with DSYEVR (MRRR): the eigenvectors go to A2, and unlike DSYEVD it needs
+        // no O(n^2) workspace.
         int m;
         std::vector<int> isuppz(2 * static_cast<size_t>(n));
         double lwork;
