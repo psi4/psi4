@@ -121,8 +121,8 @@ typedef int omp_lock_t;
 #include "psi4/libqt/qt.h"
 
 namespace {
-/* Clock ticks per second of the times() counters (100 on Linux).  The former fixed guess of 60
-   overstated user and system times by 100/60.  The Windows stub of sysconf returns 0. */
+/* Clock ticks per second of the times() counters.  sysconf() returns -1 on failure, and the
+   Windows stub in psi4/times.h returns 0; 100 is used then. */
 double clock_ticks_per_second() {
     static const double ticks = [] {
         const long tck = sysconf(_SC_CLK_TCK);
