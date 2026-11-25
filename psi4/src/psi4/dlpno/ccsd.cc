@@ -3082,9 +3082,9 @@ void DLPNOCCSD::post_ccsd_correction(DLPNOCCSDPhase phase) {
     // triples override; here Lambda is solved only for a requested final result.
     if (!lambda_requested_ || phase == DLPNOCCSDPhase::InitialBrueckner) return;
 
-    // At a converged Brueckner point the orbital stationarity condition removes
-    // Lambda1; reference-orbital CCSD and OPDM calculations retain it.
-    solve_lambda(!brueckner_orbs_);
+    // This is kept for backwards compatibility with our DLPNO-BCCD(T)L2 method
+    bool compute_lambda1 = !brueckner_orbs_ || options_.get_bool("DLPNO_BRUECKNER_LAMBDA1");
+    solve_lambda(compute_lambda1);
     if (onepdm_requested_) compute_ao_opdm();
 }
 

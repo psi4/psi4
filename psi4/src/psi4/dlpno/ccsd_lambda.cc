@@ -1068,31 +1068,17 @@ void DLPNOCCSD::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::v
         }
     }
 
+    // + 2.0 F_{i a_{ii}} + 2.0 * (S^{a_{ii}}_{a_{in}} L_{in}^{a_{in}f_{in}} S^{f_{in}}_{f_{nn}}) T_{n}^{f_{nn}} =
+    // + 2.0 \overline{F}_{i a_{ii}}
     // \lambda_i^{e_ii}\widetilde{\widetilde{F}}_{e_ii a_ii} (Toth Eq. 58c)
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
         int ii = i_j_to_ij_[i][i];
 
-        L_ia[i] = linalg::doublet(F_vv_double_tilde_[ii], lambda_ia_[i], true, false); // (e, a) x (e, 1) -> (a, 1)
+        L_ia[i] = Fkc_[ii]->clone();
+        L_ia[i]->scale(2.0);
+        L_ia[i]->add(linalg::doublet(F_vv_double_tilde_[ii], lambda_ia_[i], true, false)); // (e, a) x (e, 1) -> (a, 1)
     } // end for
-
-    // + 2.0 * (S^{a_{ii}}_{a_{in}} L_{in}^{a_{in}f_{in}} S^{f_{in}}_{f_{nn}}) T_{n}^{f_{nn}}
-#pragma omp parallel for schedule(dynamic, 1)
-    for (int in = 0; in < n_lmo_pairs; ++in) {
-        auto &[i, n] = ij_to_i_j_[in];
-        int ii = i_j_to_ij_[i][i], nn = i_j_to_ij_[n][n];
-
-        int thread = 0;
-#ifdef _OPENMP
-        thread = omp_get_thread_num();
-#endif
-
-        auto L1_temp = linalg::triplet(L_iajb_[in], S_PNO(in, nn), T_ia_[n]);
-        L1_temp = linalg::doublet(S_PNO(ii, in), L1_temp);
-        L1_temp->scale(2.0);
-
-        L_ia_buffer[thread][i]->add(L1_temp);
-    } // end in
 
 #pragma omp parallel for schedule(dynamic, 1)
     for (int im = 0; im < n_lmo_pairs; ++im) {
@@ -1788,6 +1774,16 @@ void DLPNOCCSD::solve_lambda(bool include_singles) {
         // its conventional pseudoenergy as an inexpensive iteration diagnostic;
         // this value is not reported as a physical correlation energy.
         e_curr = 0.0;
+        if (include_singles) {
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_curr)
+            for (int i = 0; i < naocc; ++i) {
+                int ii = i_j_to_ij_[i][i];
+                auto F_ia = submatrix_rows_and_cols(*F_lmo_pao_, std::vector<int>(1, i), lmopair_to_paos_[ii]);
+                F_ia = linalg::doublet(F_ia, X_pno_[ii], false, false)->transpose();
+                e_curr += F_ia->vector_dot(lambda_ia_[i]);
+            }
+        }
+
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_curr)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             lambda_iajb_bar_[ij] = lambda_iajb_[ij]->clone();

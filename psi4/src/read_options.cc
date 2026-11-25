@@ -2710,6 +2710,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DLPNO_T1_DAMPING", 0.0);
         /*- How much to damp T2 updates in DLPNO-CCSD -*/
         options.add_double("DLPNO_T2_DAMPING", 0.0);
+        /*- Include L1 terms in DLPNO-BCCD(T)_L? !expert -*/
+        options.add_bool("DLPNO_BRUECKNER_LAMBDA1", true);
         /*- How much to damp the lambda updates, recommend 0.3 for hard to converge cases !expert -*/
         options.add_double("DLPNO_LAMBDA_DAMPING", 0.0);
         /*- Use Brueckner orbitals? -*/
