@@ -2461,9 +2461,22 @@ void RadialGridMgr::makeRadialGrid(int n, int whichScheme, double r[], double w[
     }
 }
 
-// Radial schemes don't agree on point ordering: TREUTLER and MULTIEXP emit the outermost shell first, while
-// BECKE, EM, and MURA emit the innermost first. Each maps sorted roots through a monotonic function, so a grid
-// is always strictly monotonic; anything else indicates a broken scheme. Returns true if r is decreasing.
+  /**
+   * @brief Report which direction a radial grid runs, and check that it is strictly monotonic.
+   *
+   * Radial schemes don't agree on point order: TREUTLER and MULTIEXP put the outermost shell first, while
+   * BECKE, EM and MURA put the innermost shell first. Each scheme maps sorted roots through a monotonic
+   * function, so a valid grid always runs in one direction. Callers that assign angular grids by position
+   * (named-grid partitions, region pruning) use this to read the direction from the radii themselves
+   * instead of assuming one per scheme.
+   *
+   * @param n  Number of radial points: the length of @p r.
+   * @param r  Radii as produced by makeRadialGrid(), in its native order (any units; only order is used).
+   * @return   true if @p r is strictly decreasing (outermost shell first); false if strictly increasing
+   *           (innermost shell first). Also false when n <= 1, where the direction is meaningless.
+   * @throws PSIEXCEPTION if @p r is not strictly monotonic, including repeated radii or NaN, which
+   *         means a radial scheme is broken.
+   */
 bool RadialGridMgr::isOutermostFirst(int n, const double r[]) {
     const bool desc = n > 1 && r[0] > r[n - 1];
     for (int i = 1; i < n; i++) {
