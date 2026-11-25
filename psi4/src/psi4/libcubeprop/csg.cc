@@ -704,9 +704,9 @@ std::string CubicScalarGrid::ecp_header() {
         std::stringstream ecp_atoms;
         std::stringstream ecp_ncore;
         for (int A = 0; A < mol_->natom(); A++) {
-            if (primary_->n_ecp_core(mol_->label(A)) > 0) {
+            if (primary_->n_ecp_core_on_center(A) > 0) {
                 ecp_atoms << A + 1 << "[" << mol_->symbol(A) << "], ";
-                ecp_ncore << primary_->n_ecp_core(mol_->label(A)) << ", ";
+                ecp_ncore << primary_->n_ecp_core_on_center(A) << ", ";
             }
         }
         ecp_head << ecp_atoms.str().substr(0, ecp_atoms.str().length() - 2) << ") electrons ("

@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pytest
 
@@ -339,6 +341,44 @@ def test_ecp_la2o3_grad_findif():
     findif = psi4.gradient("hf", dertype=0)
     assert compare_values(analytic, findif, 6, "La2O3 HF gradient: analytic vs findif")
     assert compare_values(-261.405809790, wfn.energy(), 6, "La2O3 HF energy")
+
+
+@uusing("ecpint")
+@pytest.mark.parametrize("order", ["I,Gh(I)", "Gh(I),I"])
+def test_ecp_ghost_beside_real_ncore_per_center(order, tmp_path):
+    """Per-atom ECP core counts for a ghost sharing a real atom's label. n_ecp_core(label) is per kind of atom (28 for
+    "I", ghost or not); n_ecp_core_on_center(A) is per atom of the basis set's molecule (0 for the ghost). Printing
+    once used the label form per atom, so the ghost's row showed 28 core electrons and an empty I-ECP block."""
+    import psi4
+
+    a1, a2 = order.split(",")
+    mol = psi4.geometry(f"""
+        0 1
+        {a1} 0.0 0.0 0.0
+        {a2} 0.0 0.0 2.7
+        H    0.0 0.0 -1.61
+        symmetry c1
+        no_com
+        no_reorient
+    """)
+    bs = psi4.core.BasisSet.build(mol, "ORBITAL", "def2-svp")
+    expected = [0, 28, 0] if a1.startswith("Gh") else [28, 0, 0]
+    assert [bs.n_ecp_core_on_center(A) for A in range(mol.natom())] == expected
+    assert bs.n_ecp_core("I") == 28
+    assert bs.n_ecp_core() == 28
+
+    out = tmp_path / "basis.out"
+    psi4.core.set_output_file(str(out), False)
+    try:
+        bs.print_detail_out()
+    finally:
+        psi4.core.close_outfile()
+        psi4.set_output_file("pytest_output.dat", True)
+    text = out.read_text()
+    assert text.count("I-ECP") == 1, text
+    # ECP "Contraction Scheme" rows: atom, type, #elec
+    ncore_rows = [int(m.group(1)) for m in re.finditer(r"^\s+\d+\s+I\s+(\d+)(?:\s|$)", text, re.MULTILINE)]
+    assert sorted(ncore_rows) == [0, 28], text
 
 
 @uusing("ecpint")

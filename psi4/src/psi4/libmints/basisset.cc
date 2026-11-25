@@ -178,10 +178,13 @@ void BasisSet::initialize_singletons() {
 
 std::shared_ptr<Molecule> BasisSet::molecule() const { return molecule_; }
 
+int BasisSet::n_ecp_core_on_center(int A) const {
+    return (has_ECP() && center_to_ecp_nshell_[A] > 0) ? n_ecp_core(molecule_->label(A)) : 0;
+}
+
 int BasisSet::n_ecp_core() const {
     int ncoreelectrons = 0;
-    for (int A = 0; A < molecule_->natom(); A++)
-        if (molecule_->Z(A) > 0) ncoreelectrons += n_ecp_core(molecule_->label(A));
+    for (int A = 0; A < molecule_->natom(); A++) ncoreelectrons += n_ecp_core_on_center(A);
     return ncoreelectrons;
 }
 
@@ -411,7 +414,7 @@ void BasisSet::print_summary(std::string out) const {
 
             int first_shell = center_to_ecp_shell_[A];
             int n_shell = center_to_ecp_nshell_[A];
-            int ncoreelectrons = n_ecp_core(molecule_->label(A));
+            int ncoreelectrons = n_ecp_core_on_center(A);
             printer->Printf("%2d   ", ncoreelectrons);
 
             if (ncoreelectrons) {
@@ -476,7 +479,7 @@ void BasisSet::print_detail(std::string out) const {
 
         for (int uA = 0; uA < molecule_->nunique(); uA++) {
             const int A = molecule_->unique(uA);
-            if (n_ecp_core(molecule_->label(A))) {
+            if (n_ecp_core_on_center(A)) {
                 int first_shell = center_to_ecp_shell_[A];
                 int n_shell = center_to_ecp_nshell_[A];
                 int shellam = 0;
@@ -485,7 +488,7 @@ void BasisSet::print_detail(std::string out) const {
                                                                               : shellam;
                 printer->Printf("   %2s %3d\n", molecule_->symbol(A).c_str(), A + 1);
                 printer->Printf("   %2s-ECP  %d %3d\n", molecule_->symbol(A).c_str(), shellam,
-                                n_ecp_core(molecule_->label(A)));
+                                n_ecp_core_on_center(A));
 
                 for (int Q = 0; Q < n_shell; Q++) ecp_shells_[Q + first_shell].print(out);
 

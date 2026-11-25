@@ -187,11 +187,12 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
                     vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns));
                 }
             }
-            basis_atom_ncore[name][atomlabel] = ncore;
+            // count only ECPs actually attached, so totalncore agrees with addecpforatom (all-ghost labels add none)
             if (addecpforatom) {
+                basis_atom_ncore[name][atomlabel] = ncore;
                 basis_atom_ecpshell[name][atomlabel] = vec_shellinfo;
+                totalncore += ncore;
             }
-            totalncore += ncore;
         }
     }
 
@@ -1239,10 +1240,19 @@ void export_mints(py::module& m) {
              ":term:`FREEZE_CORE <FREEZE_CORE (GLOBALS)>`, `(n_ecp_core()/2 + n_frozen_core()) = constant`.",
              "local"_a="", "molecule"_a=nullptr)
         .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core),
-             "Returns the total number of core electrons associated with all ECPs in this basis.")
+             "Returns the total number of ECP core electrons on this basis set's molecule (sum of "
+             "n_ecp_core_on_center over its atoms; ghosts contribute none).")
         .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core),
-             "Returns the number of core electrons associated with any ECP on the specified atom type for this basis "
-             "set.")
+             "Returns the number of ECP core electrons this basis set assigns to atoms with the given label, i.e., "
+             "what a *kind* of atom carries. Labels are shared by an atom and its ghost and survive between a dimer, "
+             "its ghosted monomers, and lone monomers, so use this to look up the ECP of an atom in a molecule other "
+             "than this basis set's, skipping ghosts yourself. For whether an atom of this basis set's own molecule "
+             "has an ECP, use n_ecp_core_on_center.", "label"_a)
+        .def("n_ecp_core_on_center", &BasisSet::n_ecp_core_on_center,
+             "Returns the number of ECP core electrons on center A of this basis set's own molecule: the labeled count "
+             "if the center carries ECP shells, else 0 (ghosts get no ECP shells). Use this when iterating over this "
+             "basis set's atoms. The index is meaningless for any other molecule (a dimer and its monomers number "
+             "atoms differently); use n_ecp_core(label) there.", "A"_a)
         .def("has_ECP", &BasisSet::has_ECP, "Whether this basis set object has an ECP associated with it.")
         .def("max_am", &BasisSet::max_am, "Returns maximum angular momentum used")
         .def("has_puream", &BasisSet::has_puream, "Spherical harmonics?")
