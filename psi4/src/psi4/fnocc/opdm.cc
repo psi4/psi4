@@ -37,13 +37,13 @@
 namespace psi {
 namespace fnocc {
 
-double Normalize(long int o, long int v, double* t1, double* t2, int cepa_level);
-void BuildD1(long int nfzc, long int o, long int v, long int nfzv, double* t1, double* ta, double* tb, double c0,
+double Normalize(int64_t o, int64_t v, double* t1, double* t2, int cepa_level);
+void BuildD1(int64_t nfzc, int64_t o, int64_t v, int64_t nfzv, double* t1, double* ta, double* tb, double c0,
              double* D1);
 
 void CoupledPair::OPDM() {
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     // if t2 was stored on disk, grab it.
     if (t2_on_disk) {
@@ -131,9 +131,9 @@ void CoupledPair::OPDM() {
 }
 
 // build the 1-electron density
-void BuildD1(long int nfzc, long int o, long int v, long int nfzv, double* t1, double* ta, double* tb, double c0,
+void BuildD1(int64_t nfzc, int64_t o, int64_t v, int64_t nfzv, double* t1, double* ta, double* tb, double c0,
              double* D1) {
-    long int id, i, j, k, a, b, c, sg, p, count, sg2, nmo = o + v + nfzc + nfzv;
+    int64_t id, i, j, k, a, b, c, sg, p, count, sg2, nmo = o + v + nfzc + nfzv;
     double sum;
     memset((void*)D1, '\0', nmo * nmo * sizeof(double));
     double* tempd = (double*)malloc(v * v * sizeof(double));
@@ -192,7 +192,7 @@ void BuildD1(long int nfzc, long int o, long int v, long int nfzv, double* t1, d
 }
 
 // normalize the wave function and return the leading coefficient
-double Normalize(long int o, long int v, double* t1, double* t2, int cepa_level) {
+double Normalize(int64_t o, int64_t v, double* t1, double* t2, int cepa_level) {
     if (cepa_level == 0) return 1.0;
 
     double nrm = 1.0;
@@ -202,7 +202,7 @@ double Normalize(long int o, long int v, double* t1, double* t2, int cepa_level)
     else if (cepa_level == -3)
         fac = 1.0 - (2.0 * o - 2.0) * (2.0 * o - 3.0) / (2.0 * o * (2.0 * o - 1.0));
 
-    long int i, j, a, b, id;
+    int64_t i, j, a, b, id;
     double dum, sum = 0.;
 
     for (a = 0, id = 0; a < v; a++) {

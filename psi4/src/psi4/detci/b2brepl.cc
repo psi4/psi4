@@ -173,10 +173,10 @@ void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, int **Jridx
     int cnt, ridx, norb;
     signed char sgn;
     int ras, hole, part, abshole, hops, iused;
-    int **ras_orbs[4], **ras_opi;
+    int **ras_orbs[4];
 
     for (i = 0; i < 4; i++) ras_orbs[i] = Cinfo->ras_orbs[i];
-    ras_opi = Cinfo->ras_opi;
+    auto& ras_opi = Cinfo->ras_opi;
     norb = Cinfo->num_ci_orbs;
 
     /* loop over strings */

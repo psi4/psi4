@@ -42,6 +42,8 @@ grad, wfn = gradient("mp2", return_wfn=True)
 compare_matrices(ref, grad, 7, "Analytic gradients, vs. 5 point numerical values") #TEST
 
 roles = wfn.module_roles()
-compare("dfmp2", wfn.module(), "primary")
-compare("dfmp2", roles.pop("qc_module"), "qc_module")
-compare(0, len(roles), "all modules asserted")
+print(f"{roles=}")
+compare("dfmp2", wfn.module(), "primary")  #TEST
+compare("dfmp2", roles.pop("qc_module"), "qc_module")  #TEST
+compare("internal", roles.pop("orbital_optimizer"), "orbital_optimizer")  #TEST
+compare(0, len(roles), "all modules asserted")  #TEST

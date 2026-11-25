@@ -34,6 +34,7 @@
     \brief Enter brief description of file here
 */
 
+#include <cstdint>
 #include <string>
 
 namespace psi {
@@ -44,7 +45,7 @@ struct Params {
     int maxiter;
     double convergence;
     int restart;
-    long int memory;
+    int64_t memory;
     int cachelev;
     int aobasis;
     std::string wfn;

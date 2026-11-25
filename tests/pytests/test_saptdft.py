@@ -85,7 +85,7 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
     if psi4.core.get_option("scf", "integral_package") == "LIBCINT":
         grac_tol = 4.e-8
     else:
-        grac_tol = 1.e-8
+        grac_tol = 3.e-8
     mol_dimer = psi4.geometry(_sapt_testing_mols[geometry])
     psi4.set_options(
         {

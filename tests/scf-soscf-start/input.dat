@@ -1,0 +1,47 @@
+#! UHF Cr atom, second-order SCF started early enough that the occupation is still moving.
+#! SOSCF_START governs the earliest iteration second-order may engage. Starting at 1 leaves
+#! the first-order iterations no room to settle the aufbau assignment, which a second-order
+#! step then holds fixed, so the optimizer can converge against one occupation and find the
+#! aufbau rule disagrees afterwards. The driver reconverges at the new occupation; all
+#! packages must still land on the same energy.
+
+oopkg  = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "internal"
+soopkg = "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+soscf  = bool(os.environ.get("_PSI4_USE_SOSCF") or os.environ.get("_PSI4_USE_OTRPKG"))
+psi4.set_options({"orbital_optimizer_package": oopkg,
+                  "second_order_orbital_optimizer_package": soopkg,
+                  "soscf": soscf})
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
+compare(soopkg.upper(), psi4.core.get_global_option("SECOND_ORDER_ORBITAL_OPTIMIZER_PACKAGE"), f"{soopkg=}")  #TEST
+
+ref_energy = -1043.192207629  #TEST
+
+molecule cr {
+0 7
+Cr
+}
+
+set {
+    basis            6-31g
+    scf_type         pk
+    reference        uhf
+    guess            core
+    maxiter          100
+    soscf_start      1
+    soscf_start_convergence  1.0e2
+}
+
+thisenergy, wfn = energy('scf', return_wfn=True)
+
+compare_values(ref_energy, thisenergy, 6, 'Cr SCF energy')                                   #TEST
+
+_eff = {"internal": "internal", "ooo": "openorbitaloptimizer", "otr": "opentrustregion"}     #TEST
+compare(_eff[oopkg], wfn.module_role("orbital_optimizer"), "effective 1st-order module")     #TEST
+compare(_eff[soopkg] if soscf else "", wfn.module_role("second_order_orbital_optimizer"),
+        "effective 2nd-order module")                                                        #TEST
+
+# The occupation OpenTrustRegion returns is the one it optimized, and the density, orbitals  #TEST
+# and energy all describe it. This is the state the occupation-restart path hands back.      #TEST
+# Cr carries symmetry, so compare per irrep rather than as a single block.                   #TEST
+for h, (D_h, C_h) in enumerate(zip(wfn.Da().nph, wfn.Ca_subset("SO", "OCC").nph)):           #TEST
+    compare_values(D_h, C_h @ C_h.T, 10, f'Da matches occupied Ca, irrep {h}')               #TEST

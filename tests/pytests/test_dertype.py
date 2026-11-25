@@ -1,7 +1,9 @@
+import numpy as np
 import pytest
 
 import psi4
 from psi4.driver.driver_util import negotiate_derivative_type
+from psi4.driver.p4util.util import libint2_supports
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
@@ -150,3 +152,48 @@ def test_negotiate_excessive_error(inp):
         negotiate_derivative_type(proc=mock_proc, *inp)
 
     assert 'excessive for target calculation' in str(e.value)
+
+
+@pytest.mark.quick
+@pytest.mark.parametrize("centers", [2, 3, 4])
+@pytest.mark.parametrize("der", [0, 1, 2])
+def test_libint2_supports_matches_components(der, centers):
+    """Valid queries agree with the raw component list and return bool."""
+    components = set(psi4.core._libint2_configuration().split(";"))
+    amstr = "spdfghiklmnoqrtuvwxyz"
+    for am in range(len(amstr)):
+        ans = libint2_supports(am, der=der, centers=centers)
+        assert isinstance(ans, bool)
+        if centers == 3:
+            assert ans == (f"eri_ss{amstr[am]}_d{der}" in components)
+        else:
+            assert ans == (f"eri_{amstr[am] * centers}_d{der}" in components)
+
+
+@pytest.mark.quick
+def test_libint2_supports_basics():
+    # every psi4 build has (ss|ss) energies; nothing is built to Z
+    assert libint2_supports(0) is True
+    assert libint2_supports(20) is False
+    # numpy integers are fine
+    assert libint2_supports(np.int64(0), der=np.int32(0), centers=np.int8(4)) is True
+
+
+@pytest.mark.quick
+@pytest.mark.parametrize("kwargs,match", [
+    pytest.param({"am": -1}, "am=-1 out of range", id="am_neg"),
+    pytest.param({"am": 21}, "am=21 out of range", id="am_high"),
+    pytest.param({"am": 2, "der": -1}, "der=-1 out of range", id="der_neg"),
+    pytest.param({"am": 2, "der": 3}, "der=3 out of range", id="der_high"),
+    pytest.param({"am": 2, "centers": 1}, "centers=1 out of range", id="centers_low"),
+    pytest.param({"am": 2, "centers": 5}, "centers=5 out of range", id="centers_high"),
+    pytest.param({"am": 2.0}, "am must be an integer", id="am_float"),
+    pytest.param({"am": "2"}, "am must be an integer", id="am_str"),
+    pytest.param({"am": True}, "am must be an integer", id="am_bool"),
+    pytest.param({"am": None}, "am must be an integer", id="am_none"),
+    pytest.param({"am": 2, "der": 1.0}, "der must be an integer", id="der_float"),
+    pytest.param({"am": 2, "centers": "4"}, "centers must be an integer", id="centers_str"),
+])
+def test_libint2_supports_invalid(kwargs, match):
+    with pytest.raises(psi4.ValidationError, match=match):
+        libint2_supports(**kwargs)

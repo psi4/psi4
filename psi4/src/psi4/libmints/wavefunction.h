@@ -34,6 +34,7 @@
 #include "psi4/libmints/dimension.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 #include <array>
 #include <memory>
@@ -124,7 +125,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     std::shared_ptr<Wavefunction> reference_wavefunction_;
 
     /// How much memory you have access to.
-    long int memory_;
+    int64_t memory_;
 
     /// Perturb the Hamiltonian?
     int perturb_h_;
@@ -409,6 +410,16 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
      * @param doccpi the new list of doubly occupied orbitals per irrep
      */
     void force_occpi(const Dimension& input_doccpi, const Dimension& input_soccpi);
+
+    /**
+     * @brief Expert specialized use only. Forces the alpha and beta occupations per irrep
+     * directly, the (alpha, beta) counterpart to force_occpi()'s (doubly, singly) occupied
+     * form and the shape HF::next_occupation() returns. Keeps nalphapi_/nbetapi_/nalpha_/nbeta_
+     * in step but makes no other array consistent, so caution is advised.
+     * @param input_nalphapi the new list of alpha electrons per irrep
+     * @param input_nbetapi the new list of beta electrons per irrep
+     */
+    void force_occupation(const Dimension& input_nalphapi, const Dimension& input_nbetapi);
 
     /// Sets the frozen virtual orbitals per irrep array.
     void set_frzvpi(const Dimension& frzvpi);
