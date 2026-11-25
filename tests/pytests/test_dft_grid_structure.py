@@ -257,8 +257,10 @@ def test_radial_pruning_grid(radial, pruning, element):
     assert g["angular"] == expected, f"angular grids misassigned for {radial} radial + {pruning} pruning"
 
 
-# Auxiliary grids (MBIS, DDX, VV10) have their own size options and must not inherit a named XC grid
-# from the global DFT_GRID_NAME. HF uses no XC grid, so with HF a named XC grid should change nothing.
+# Auxiliary grids (MBIS, DDX, VV10) must never be determined by the global DFT_GRID_NAME.
+# For calculations where they are the only grid (MBIS, DDX), test that DFT_GRID_NAME changes nothing.
+# When they are not the only grid (VV10), test that syncing the main XC grid and that grid yields
+# a different energy than only setting the main XC grid.
 
 _WATER = """
 O 0.000  0.000  0.117
