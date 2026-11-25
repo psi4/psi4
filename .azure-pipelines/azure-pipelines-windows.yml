@@ -97,13 +97,25 @@ jobs:
 
       # Install Miniconda
       - script: |
-          choco install miniforge3 --yes
-          set PATH=C:\tools\miniforge3\Scripts;C:\tools\miniforge3;C:\tools\miniforge3\Library\bin;C:\tools\miniforge3\Library\mingw-w64\bin;%PATH%
+          curl.exe -fL --retry 5 --retry-delay 10 ^
+            -o "%TEMP%\Miniforge3.exe" ^
+            https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
+          if errorlevel 1 exit /b %errorlevel%
+
+          start /wait "" "%TEMP%\Miniforge3.exe" ^
+            /InstallationType=JustMe /RegisterPython=0 /S /D=C:\tools\miniforge3
+          if errorlevel 1 exit /b %errorlevel%
+
+          set "PATH=C:\tools\miniforge3\Scripts;C:\tools\miniforge3;C:\tools\miniforge3\Library\bin;C:\tools\miniforge3\Library\mingw-w64\bin;%PATH%"
           echo ##vso[task.setvariable variable=PATH]%PATH%
-          set LIB=C:\tools\miniforge3\Library\lib;%LIB%
+
+          set "LIB=C:\tools\miniforge3\Library\lib;%LIB%"
           echo ##vso[task.setvariable variable=LIB]%LIB%
+
           conda --version
-        displayName: "Install Miniconda"
+          if errorlevel 1 exit /b %errorlevel%
+        displayName: "Install Miniforge"
+        retryCountOnTaskFailure: 2
 
       # Configure Miniconda
       #    conda config --append channels conda-forge
@@ -114,6 +126,9 @@ jobs:
       - script: |
           conda config --set always_yes yes
           conda config --set solver libmamba
+          conda config --set remote_max_retries 8
+          conda config --set remote_connect_timeout_secs 30
+          conda config --set remote_read_timeout_secs 120
           conda info
           conda list
         displayName: "Configure Miniconda"
@@ -152,6 +167,7 @@ jobs:
           which conda
           conda list
         displayName: "Install conda packages"
+        retryCountOnTaskFailure: 2
           #conda install --only-deps anaconda-client
           #pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
 
