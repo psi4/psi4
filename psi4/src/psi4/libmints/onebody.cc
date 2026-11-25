@@ -212,7 +212,12 @@ void OneBodyAOInt::pure_transform(const libint2::Shell &s1, const libint2::Shell
 
 void OneBodyAOInt::compute_pair(const libint2::Shell &s1, const libint2::Shell &s2) {
     engine0_->compute(s1, s2);
-    for (int chunk = 0; chunk < nchunk(); chunk++) {
+    // An object created for derivatives counts their chunks (6 or 21 for overlap); computing the integrals
+    // themselves gives only the engine's results. Operators without derivatives keep the count their
+    // constructor chose, which can be fewer than the engine computes (NablaInt keeps 3 of 6).
+    if (deriv_ > 0) set_chunks(static_cast<int>(engine0_->results().size()));
+    buffers_.resize(nchunk_);
+    for (int chunk = 0; chunk < nchunk_; chunk++) {
         buffers_[chunk] = engine0_->results()[chunk];
     }
     buffer_ = const_cast<double *>(buffers_[0]);

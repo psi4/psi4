@@ -1289,19 +1289,43 @@ void export_mints(py::module& m) {
         .def_property_readonly("nchunk", &OneBodyAOInt::nchunk,
                                "Number of chunks of integrals, e.g. derivative components, of the last computation")
         .def(
-            "shell_buffers",
-            [](OneBodyAOInt &self, int s1, int s2) {
-                // Shells s1 and s2 set the shape; the last compute_shell* call must have been for them.
+            "compute_shell_chunks",
+            [](OneBodyAOInt &self, int s1, int s2, int deriv) {
+                // Computing and copying in one call keeps the copy to the buffers, shells and chunk count of
+                // that computation.
+                if (s1 < 0 || s1 >= self.basis1()->nshell() || s2 < 0 || s2 >= self.basis2()->nshell())
+                    throw py::index_error("compute_shell_chunks: shell pair (" + std::to_string(s1) + ", " +
+                                          std::to_string(s2) + ") is out of range.");
+                switch (deriv) {
+                    case 0:
+                        self.compute_shell(s1, s2);
+                        break;
+                    case 1:
+                        self.compute_shell_deriv1(s1, s2);
+                        break;
+                    case 2:
+                        self.compute_shell_deriv2(s1, s2);
+                        break;
+                    default:
+                        throw py::value_error("compute_shell_chunks: deriv must be 0, 1, or 2.");
+                }
+                const auto &buffers = self.buffers();
+                if (buffers.size() != static_cast<size_t>(self.nchunk()))
+                    throw PSIEXCEPTION("compute_shell_chunks: " + std::to_string(buffers.size()) +
+                                       " buffers for " + std::to_string(self.nchunk()) + " chunks.");
                 const int n1 = self.basis1()->shell(s1).nfunction(), n2 = self.basis2()->shell(s2).nfunction();
                 std::vector<SharedMatrix> chunks;
-                for (const double *buf : self.buffers()) {
+                for (const double *buf : buffers) {
+                    if (buf == nullptr) throw PSIEXCEPTION("compute_shell_chunks: a chunk was not computed.");
                     auto M = std::make_shared<Matrix>(n1, n2);
                     std::copy(buf, buf + static_cast<size_t>(n1) * n2, M->pointer()[0]);
                     chunks.push_back(M);
                 }
                 return chunks;
             },
-            "Copies of the chunks of integrals the last compute_shell* call computed, for that call's shells s1 and s2")
+            "s1"_a, "s2"_a, "deriv"_a = 0,
+            "Computes the integrals (deriv 0) or their first or second derivatives over shells s1 and s2, and "
+            "returns a copy of each chunk as an (nbf(s1), nbf(s2)) matrix")
         .def("compute", vecmatrix_version(&OneBodyAOInt::compute),
              "Compute all integrals over both basis sets, and store them in the provided matrix")
         .def_property("origin", py::cpp_function(&OneBodyAOInt::origin), py::cpp_function(&OneBodyAOInt::set_origin),

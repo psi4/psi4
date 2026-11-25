@@ -666,6 +666,41 @@ def test_libcint_oei_deriv_order_checked(pkg, name):
 
 
 @uusing("cint")
+@pytest.mark.parametrize("pkg", ["libint2", "libcint"])
+@pytest.mark.parametrize("name", [n for n, _ in _OEI_FACTORIES])
+def test_libcint_oei_deriv_object_computes_integrals(pkg, name):
+    """An object created for derivatives also computes the integrals themselves, as one chunk equal to those
+    of an object created without derivatives, and its derivative chunks afterwards. (Libint2 objects once kept
+    the derivative chunk count there and pointed past the engine's single result.)"""
+    import psi4
+
+    fact, bas = _factory(pkg)
+    ref = getattr(fact, name)(0)
+    has_d2 = pkg == "libcint" or psi4.driver.p4util.libint2_configuration()["eri"][2] is not None
+    for deriv in [1, 2] if has_d2 else [1]:
+        obj = getattr(fact, name)(deriv)
+        for s1, s2 in [(0, 0), (3, 1), (9, 2)]:
+            chunks = obj.compute_shell_chunks(s1, s2)
+            assert obj.nchunk == 1 and len(chunks) == 1
+            assert compare_values(ref.compute_shell_chunks(s1, s2)[0], chunks[0], 14, f"{pkg} {name}({deriv}) ({s1}, {s2})")
+            assert len(obj.compute_shell_chunks(s1, s2, deriv)) == obj.nchunk > 1
+
+
+@uusing("cint")
+def test_libcint_compute_shell_chunks_checks_arguments():
+    """compute_shell_chunks refuses shells outside the basis and unknown derivative orders instead of reading
+    past the buffers."""
+    fact, bas = _factory("libint2")
+    S = fact.ao_overlap()
+    with pytest.raises(IndexError, match="out of range"):
+        S.compute_shell_chunks(bas.nshell(), 0)
+    with pytest.raises(IndexError, match="out of range"):
+        S.compute_shell_chunks(0, -1)
+    with pytest.raises(ValueError, match="deriv must be 0, 1, or 2"):
+        S.compute_shell_chunks(0, 0, 3)
+
+
+@uusing("cint")
 @pytest.mark.parametrize("deriv", [0, 1, 2])
 @pytest.mark.parametrize("puream", [True, False])
 def test_libcint_potential_charge_field_chunks(deriv, puream):
@@ -688,12 +723,10 @@ def test_libcint_potential_charge_field_chunks(deriv, puream):
         assert V.nchunk == nchunk(natom)
         V.set_charge_field(field)
         assert V.nchunk == nchunk(len(field))
-        compute = [V.compute_shell, V.compute_shell_deriv1, V.compute_shell_deriv2][deriv]
         results[pkg] = []
         for s1, s2 in pairs:
-            compute(s1, s2)
+            chunks = V.compute_shell_chunks(s1, s2, deriv)
             assert V.nchunk == nchunk(len(field))
-            chunks = V.shell_buffers(s1, s2)
             assert len(chunks) == V.nchunk
             results[pkg].append([c.np for c in chunks])
         assert len(V.charge_field) == len(field)
