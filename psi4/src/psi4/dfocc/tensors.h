@@ -103,10 +103,10 @@ class Tensor1d {
     // gemv: C(m) = \sum_{n} A(m,n) b(n)
     void gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, double alpha, double beta);
     void gemv(bool transa, const SharedTensor2d &a, const SharedTensor2d &b, double alpha, double beta);
-    void gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, int start_a, int start_b,
+    void gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, size_t start_a, size_t start_b,
               double alpha, double beta);
-    void gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, int start_a, int start_b,
-              int start_c, double alpha, double beta);
+    void gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, size_t start_a, size_t start_b,
+              size_t start_c, double alpha, double beta);
     // gbmv: This function may NOT working correctly!!!!
     void gbmv(bool transa, const SharedTensor2d &a, const SharedTensor1d &b, double alpha, double beta);
     // xay: return result of A1d_' * A * y
@@ -195,8 +195,10 @@ class Tensor2d {
     void axpy(double **a, double alpha);
     void axpy(const SharedTensor2d &a, double alpha);
     void axpy(size_t length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
-    void axpy(size_t length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
-    void axpy(size_t length, int start_a, int inc_a, const SharedTensor1d &A, int start_2d, int inc_2d, double alpha);
+    void axpy(size_t length, size_t start_a, int inc_a, const SharedTensor2d &A, size_t start_2d, int inc_2d,
+              double alpha);
+    void axpy(size_t length, size_t start_a, int inc_a, const SharedTensor1d &A, size_t start_2d, int inc_2d,
+              double alpha);
     double **transpose2();
     SharedTensor2d transpose();
     void trans(const SharedTensor2d &A);
@@ -241,9 +243,9 @@ class Tensor2d {
     void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d &a, const SharedTensor2d &b,
                   double alpha, double beta);
     void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d &a, const SharedTensor2d &b,
-                  int start_a, int start_b, double alpha, double beta);
+                  size_t start_a, size_t start_b, double alpha, double beta);
     void contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d &a, const SharedTensor2d &b,
-                  int start_a, int start_b, int start_c, double alpha, double beta);
+                  size_t start_a, size_t start_b, size_t start_c, double alpha, double beta);
     // contract323: C[Q](m,n) = \sum_{k} A[Q](m,k) * B(k,n). Note: contract332 should be called with beta=1.0
     void contract323(bool transa, bool transb, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b,
                      double alpha, double beta);

@@ -30,6 +30,7 @@
 #include <cstdio>
 #include <fstream>
 #include <cmath>
+#include <vector>
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
@@ -294,8 +295,8 @@ void Tensor1d::gemv(bool transa, const SharedTensor2d &a, const SharedTensor2d &
     }
 }  //
 
-void Tensor1d::gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, int start_a,
-                    int start_b, double alpha, double beta) {
+void Tensor1d::gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, size_t start_a,
+                    size_t start_b, double alpha, double beta) {
     char ta = transa ? 't' : 'n';
     int incx, incy, lda;
 
@@ -309,8 +310,8 @@ void Tensor1d::gemv(bool transa, int m, int n, const SharedTensor2d &a, const Sh
     }
 }  //
 
-void Tensor1d::gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, int start_a,
-                    int start_b, int start_c, double alpha, double beta) {
+void Tensor1d::gemv(bool transa, int m, int n, const SharedTensor2d &a, const SharedTensor2d &b, size_t start_a,
+                    size_t start_b, size_t start_c, double alpha, double beta) {
     char ta = transa ? 't' : 'n';
     int incx, incy, lda;
 
@@ -889,7 +890,7 @@ void Tensor2d::contract(bool transa, bool transb, int m, int n, int k, const Sha
 }  //
 
 void Tensor2d::contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d &a, const SharedTensor2d &b,
-                        int start_a, int start_b, double alpha, double beta) {
+                        size_t start_a, size_t start_b, double alpha, double beta) {
     char ta = transa ? 't' : 'n';
     char tb = transb ? 't' : 'n';
     int lda, ldb, ldc;
@@ -904,7 +905,7 @@ void Tensor2d::contract(bool transa, bool transb, int m, int n, int k, const Sha
 }  //
 
 void Tensor2d::contract(bool transa, bool transb, int m, int n, int k, const SharedTensor2d &a, const SharedTensor2d &b,
-                        int start_a, int start_b, int start_c, double alpha, double beta) {
+                        size_t start_a, size_t start_b, size_t start_c, double alpha, double beta) {
     char ta = transa ? 't' : 'n';
     char tb = transb ? 't' : 'n';
     int lda, ldb, ldc;
@@ -1589,12 +1590,12 @@ void Tensor2d::axpy(size_t length, int inc_a, const SharedTensor2d &a, int inc_2
     C_DAXPY(length, alpha, a->A2d_[0], inc_a, A2d_[0], inc_2d);
 }  //
 
-void Tensor2d::axpy(size_t length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d,
+void Tensor2d::axpy(size_t length, size_t start_a, int inc_a, const SharedTensor2d &A, size_t start_2d, int inc_2d,
                     double alpha) {
     C_DAXPY(length, alpha, A->A2d_[0] + start_a, inc_a, A2d_[0] + start_2d, inc_2d);
 }  //
 
-void Tensor2d::axpy(size_t length, int start_a, int inc_a, const SharedTensor1d &A, int start_2d, int inc_2d,
+void Tensor2d::axpy(size_t length, size_t start_a, int inc_a, const SharedTensor1d &A, size_t start_2d, int inc_2d,
                     double alpha) {
     C_DAXPY(length, alpha, A->A1d_ + start_a, inc_a, A2d_[0] + start_2d, inc_2d);
 }  //
@@ -2011,13 +2012,13 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const std::string &filenam
 
 void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     // Form Lower triangular part
-    int ntri_col = 0.5 * dim1_ * (dim1_ + 1);
-    SharedTensor1d temp = std::make_shared<Tensor1d>("temp", ntri_col);
+    size_t ntri_col = (size_t)dim1_ * (dim1_ + 1) / 2;
+    std::vector<double> temp(ntri_col);
 #pragma omp parallel for
     for (int p = 0; p < dim1_; p++) {
         for (int q = 0; q <= p; q++) {
-            int pq = index2(p, q);
-            temp->set(pq, A2d_[p][q]);
+            size_t pq = (size_t)p * (p + 1) / 2 + q;
+            temp[pq] = A2d_[p][q];
         }
     }
 
@@ -2027,9 +2028,8 @@ void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
         already_open = true;
     else
         psio->open(fileno, PSIO_OPEN_OLD);
-    psio->write_entry(fileno, const_cast<char *>(name_.c_str()), (char *)&(temp->A1d_[0]), sizeof(double) * ntri_col);
+    psio->write_entry(fileno, const_cast<char *>(name_.c_str()), (char *)temp.data(), sizeof(double) * ntri_col);
     if (!already_open) psio->close(fileno, 1);  // Close and keep
-    temp.reset();
 
 }  //
 
@@ -2182,8 +2182,8 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_i
 
 void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     // Form Lower triangular part
-    int ntri_col = 0.5 * dim1_ * (dim1_ + 1);
-    SharedTensor1d temp = std::make_shared<Tensor1d>("temp", ntri_col);
+    size_t ntri_col = (size_t)dim1_ * (dim1_ + 1) / 2;
+    std::vector<double> temp(ntri_col);
 
     // Check to see if the file is open
     bool already_open = false;
@@ -2191,18 +2191,17 @@ void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
         already_open = true;
     else
         psio->open(fileno, PSIO_OPEN_OLD);
-    psio->read_entry(fileno, const_cast<char *>(name_.c_str()), (char *)&(temp->A1d_[0]), sizeof(double) * ntri_col);
+    psio->read_entry(fileno, const_cast<char *>(name_.c_str()), (char *)temp.data(), sizeof(double) * ntri_col);
     if (!already_open) psio->close(fileno, 1);  // Close and keep
 
 #pragma omp parallel for
     for (int p = 0; p < dim1_; p++) {
         for (int q = 0; q <= p; q++) {
-            int pq = index2(p, q);
-            A2d_[p][q] = temp->get(pq);
-            A2d_[q][p] = temp->get(pq);
+            size_t pq = (size_t)p * (p + 1) / 2 + q;
+            A2d_[p][q] = temp[pq];
+            A2d_[q][p] = temp[pq];
         }
     }
-    temp.reset();
 }  //
 
 void Tensor2d::read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
@@ -2321,7 +2320,7 @@ void Tensor2d::mywrite(const std::string &filename) {
     // write binary data
     std::ofstream OutFile;
     OutFile.open(const_cast<char *>(filename.c_str()), std::ios::out | std::ios::binary);
-    OutFile.write((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    OutFile.write((char *)A2d_[0], (size_t)dim1_ * dim2_ * sizeof(double));
     OutFile.close();
 }  //
 
@@ -2335,7 +2334,7 @@ void Tensor2d::mywrite(std::shared_ptr<psi::PSIO> psio, int fileno) {
     // write binary data
     std::ofstream OutFile;
     OutFile.open(const_cast<char *>(fname.c_str()), std::ios::out | std::ios::binary);
-    OutFile.write((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    OutFile.write((char *)A2d_[0], (size_t)dim1_ * dim2_ * sizeof(double));
     OutFile.close();
 }  //
 
@@ -2350,7 +2349,7 @@ void Tensor2d::mywrite(std::shared_ptr<psi::PSIO> psio, int fileno, size_t start
     std::ofstream OutFile;
     OutFile.open(const_cast<char *>(fname.c_str()), std::ios::out | std::ios::binary | std::ios::in);
     OutFile.seekp(start, std::ios::beg);
-    OutFile.write((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    OutFile.write((char *)A2d_[0], (size_t)dim1_ * dim2_ * sizeof(double));
     OutFile.close();
 }  //
 
@@ -2367,7 +2366,7 @@ void Tensor2d::mywrite(std::shared_ptr<psi::PSIO> psio, int fileno, bool append)
         OutFile.open(const_cast<char *>(fname.c_str()), std::ios::out | std::ios::binary | std::ios::app);
     else
         OutFile.open(const_cast<char *>(fname.c_str()), std::ios::out | std::ios::binary);
-    OutFile.write((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    OutFile.write((char *)A2d_[0], (size_t)dim1_ * dim2_ * sizeof(double));
     OutFile.close();
 }  //
 
@@ -2375,7 +2374,7 @@ void Tensor2d::myread(const std::string &filename) {
     // read binary data
     std::ifstream InFile;
     InFile.open(const_cast<char *>(filename.c_str()), std::ios::in | std::ios::binary);
-    InFile.read((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    InFile.read((char *)A2d_[0], (size_t)dim1_ * dim2_ * sizeof(double));
     InFile.close();
 
 }  //
@@ -2390,7 +2389,7 @@ void Tensor2d::myread(std::shared_ptr<psi::PSIO> psio, int fileno) {
     // read binary data
     std::ifstream InFile;
     InFile.open(const_cast<char *>(fname.c_str()), std::ios::in | std::ios::binary);
-    InFile.read((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    InFile.read((char *)A2d_[0], (size_t)dim1_ * dim2_ * sizeof(double));
     InFile.close();
 
 }  //
@@ -2408,7 +2407,7 @@ void Tensor2d::myread(std::shared_ptr<psi::PSIO> psio, int fileno, bool append) 
         InFile.open(const_cast<char *>(fname.c_str()), std::ios::in | std::ios::binary | std::ios::app);
     else
         InFile.open(const_cast<char *>(fname.c_str()), std::ios::in | std::ios::binary);
-    InFile.read((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    InFile.read((char *)A2d_[0], (size_t)dim1_ * dim2_ * sizeof(double));
     InFile.close();
 
 }  //
@@ -2424,7 +2423,7 @@ void Tensor2d::myread(std::shared_ptr<psi::PSIO> psio, int fileno, size_t start)
     std::ifstream InFile;
     InFile.open(const_cast<char *>(fname.c_str()), std::ios::in | std::ios::binary);
     InFile.seekg(start, std::ios::beg);
-    InFile.read((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    InFile.read((char *)A2d_[0], (size_t)dim1_ * dim2_ * sizeof(double));
     InFile.close();
 
 }  //
@@ -3483,7 +3482,7 @@ double Tensor2d::rms() {
             summ += A2d_[i][j] * A2d_[i][j];
         }
     }
-    summ = std::sqrt(summ / (dim1_ * dim2_));
+    summ = std::sqrt(summ / ((double)dim1_ * dim2_));
 
     return summ;
 }  //
@@ -3496,7 +3495,7 @@ double Tensor2d::rms(const SharedTensor2d &a) {
             summ += (A2d_[i][j] - a->A2d_[i][j]) * (A2d_[i][j] - a->A2d_[i][j]);
         }
     }
-    summ = std::sqrt(summ / (dim1_ * dim2_));
+    summ = std::sqrt(summ / ((double)dim1_ * dim2_));
 
     return summ;
 }  //

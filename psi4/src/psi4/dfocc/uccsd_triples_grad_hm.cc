@@ -80,7 +80,7 @@ void DFOCC::uccsd_triples_grad_hm()
     for (long int i = 0; i < naoccA; i++) {
         bool flag = (i == 0) ? false : true;
         // [I](A|B>=C) = [I](A|Q) * (Q|A>=B)
-        Jc_I_ABC->contract(false, false, navirA, ntri_abAA, nQ, biaQA, bQabA_c, i * navirA * nQ, 0, 1.0, 0.0);
+        Jc_I_ABC->contract(false, false, navirA, ntri_abAA, nQ, biaQA, bQabA_c, (size_t)i * navirA * nQ, 0, 1.0, 0.0);
 
         // expand [I](A|B>=C) to [I](A|BC)
         // [I]<B||AC> = [I]<B|AC> - [I]<B|CA>
@@ -191,12 +191,12 @@ void DFOCC::uccsd_triples_grad_hm()
                 // X_AAA[IJK](A,CB) -= \sum(E) t_KJ^AE <IE||CB>         (2)
                 // X_AAA[IJK](A,CB) -= \sum(E) T[KJ](A,E) G[I](E,CB)
                 X_AAA->contract(false, false, navirA, navir2AA, navirA, t2AA, G_I_ABC,
-                        (k * naoccA * navir2AA) + (j * navir2AA), 0, -1.0, 0.0);
+                        ((size_t)k * naoccA * navir2AA) + ((size_t)j * navir2AA), 0, -1.0, 0.0);
 
                 // X_AAA[IJK](A,CB) -= \sum(E) t_IK^AE <JE||CB>         (3)
                 // X_AAA[IJK](A,CB) -= \sum(E) T[IK](A,E) G[J](E,CB)
                 X_AAA->contract(false, false, navirA, navir2AA, navirA, t2AA, G_J_ABC,
-                        (i * naoccA * navir2AA) + (k * navir2AA), 0, -1.0, 1.0);
+                        ((size_t)i * naoccA * navir2AA) + ((size_t)k * navir2AA), 0, -1.0, 1.0);
 
                 // read G[K](A,BC)
                 SharedTensor2d G_K_ABC = std::make_shared<Tensor2d>("G[I] <A||BC>", navirA, navirA, navirA);
@@ -205,7 +205,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // X_AAA[IJK](A,CB) = \sum(E) t_IJ^AE <KE||CB>          (1)
                 // X_AAA[IJK](A,CB) = \sum(E) T[IJ](A,E) G[K](E,CB)
                 X_AAA->contract(false, false, navirA, navir2AA, navirA, t2AA, G_K_ABC,
-                        (i * naoccA * navir2AA) + (j * navir2AA), 0, 1.0, 1.0);
+                        ((size_t)i * naoccA * navir2AA) + ((size_t)j * navir2AA), 0, 1.0, 1.0);
                 G_K_ABC.reset();
 
                 SharedTensor2d Y_AAA = std::make_shared<Tensor2d>("Y_AAA[IJK](C,AB)", navirA, navirA, navirA);
@@ -213,17 +213,17 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Y_AAA[IJK](C,AB) = - \sum(M) t_IM^AB <KJ||CM>        (4)
                 // Y_AAA[IJK](C,AB) = - \sum(M) G[KJ](C,M) T[I](M,AB)
                 Y_AAA->contract(false, false, navirA, navir2AA, naoccA, G_IJAK, t2AA,
-                        (k * naoccA * navirA * naoccA) + (j * navirA * naoccA), (i * naoccA * navir2AA), -1.0, 0.0);
+                        ((size_t)k * naoccA * navirA * naoccA) + ((size_t)j * navirA * naoccA), ((size_t)i * naoccA * navir2AA), -1.0, 0.0);
 
                 // Y_AAA[IJK](C,AB) += \sum(M) t_JM^AB <KI||CM>         (5)
                 // Y_AAA[IJK](C,AB) += \sum(M) G[KI](C,M) T[J](M,AB)
                 Y_AAA->contract(false, false, navirA, navir2AA, naoccA, G_IJAK, t2AA,
-                        (k * naoccA * navirA * naoccA) + (i * navirA * naoccA), (j * naoccA * navir2AA), 1.0, 1.0);
+                        ((size_t)k * naoccA * navirA * naoccA) + ((size_t)i * navirA * naoccA), ((size_t)j * naoccA * navir2AA), 1.0, 1.0);
 
                 // Y_AAA[IJK](C,AB) += \sum(M) t_KM^AB <IJ||CM>         (6)
                 // Y_AAA[IJK](C,AB) += \sum(M) G[IJ](C,M) T[K](M,AB)
                 Y_AAA->contract(false, false, navirA, navir2AA, naoccA, G_IJAK, t2AA,
-                        (i * naoccA * navirA * naoccA) + (j * navirA * naoccA), (k * naoccA * navir2AA), 1.0, 1.0);
+                        ((size_t)i * naoccA * navirA * naoccA) + ((size_t)j * navirA * naoccA), ((size_t)k * naoccA * navir2AA), 1.0, 1.0);
 
                 double Dijk = Dij + FockA->get(k + nfrzc, k + nfrzc);
 
@@ -320,7 +320,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm38(M,A) = (1/2) * -\sum(BC) T[K](M,BC)   * M[IJK](BC,A)
                 SharedTensor2d Mterm38 = std::make_shared<Tensor2d>("Mterm38", naoccA, navirA);
                 Mterm38->contract(false, false, naoccA, navirA, navir2AA, t2AA, Mtemp,
-                        (k * naoccA * navir2AA), 0, -0.5, 0.0);
+                        ((size_t)k * naoccA * navir2AA), 0, -0.5, 0.0);
                 Mtemp.reset();
 
                 SharedTensor2d Mterm38tr = std::make_shared<Tensor2d>("Mterm38tr", navirA, naoccA);
@@ -336,7 +336,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm39(AB) = \sum(C) Tc[IJK](AB,C) * T[K](C)
                 SharedTensor1d Mterm39 = std::make_shared<Tensor1d>("Mterm39", navir2AA);
                 Mterm39->gemv(false, navir2AA, navirA, Tc_AAA, t1A,
-                        0, (k * navirA), 1.0, 0.0);
+                        0, ((size_t)k * navirA), 1.0, 0.0);
 
                 // M_OOVV(IJ,AB) += \sum(K) Mterm39(AB)
                 SharedTensor2d M_OOVV = std::make_shared<Tensor2d>("M <IJ||AB>", naoccA, naoccA, navirA, navirA);
@@ -374,7 +374,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // lterm21(AB,L) = (1/2) * \sum(C) M[IJK](AB,C) <JK||CL>
                 // lterm21(AB,L) = (1/2) * \sum(C) M[IJK](AB,C) G[JK](C,L)
                 lterm21->contract(false, false, navir2AA, naoccA, navirA, Td_AAA, G_IJAK,
-                        0, (j * naoccA * navirA * naoccA) + (k * navirA * naoccA), 0.5, 0.0);
+                        0, ((size_t)j * naoccA * navirA * naoccA) + ((size_t)k * navirA * naoccA), 0.5, 0.0);
 
                 SharedTensor2d lterm21_t = std::make_shared<Tensor2d>("lterm21_t", naoccA, navir2AA);
                 lterm21_t->trans(lterm21);
@@ -404,7 +404,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm40(D,AB) = (1/2) * \sum(C) T[JK](D,C)   * M[IJK](C,AB)
                 SharedTensor2d Mterm40 = std::make_shared<Tensor2d>("Mterm40", navirA, navirA, navirA);
                 Mterm40->contract(false, false, navirA, navir2AA, navirA, t2AA, Mtemp,
-                        (j * naoccA * navir2AA) + (k * navir2AA), 0, 0.5, 0.0);
+                        ((size_t)j * naoccA * navir2AA) + ((size_t)k * navir2AA), 0, 0.5, 0.0);
                 Mtemp.reset();
 
                 Mterm40s->sort3a(231, navirA, navirA, navirA, Mterm40, 1.0, 1.0);
@@ -458,7 +458,7 @@ void DFOCC::uccsd_triples_grad_hm()
     for (long int i = 0; i < naoccB; i++) {
         bool flag = (i == 0) ? false : true;
         // [i](a|b>=c) = [i](a|Q) * (Q|a>=b)
-        Jc_i_abc->contract(false, false, navirB, ntri_abBB, nQ, biaQB, bQabB_c, i * navirB * nQ, 0, 1.0, 0.0);
+        Jc_i_abc->contract(false, false, navirB, ntri_abBB, nQ, biaQB, bQabB_c, (size_t)i * navirB * nQ, 0, 1.0, 0.0);
 
         // expand [i](a|b>=c) TO [i](a|bc)
         // [i]<b||ac> = [i]<b|ac> - [i]<b|ca>
@@ -571,35 +571,35 @@ void DFOCC::uccsd_triples_grad_hm()
                 // X_BBB[ijk](a,cb) = \sum(e) t_ij^ae <ke||cb>          (1)
                 // X_BBB[ijk](a,cb) = \sum(e) T[ij](a,e) G[k](e,cb)
                 X_BBB->contract(false, false, navirB, navir2BB, navirB, t2BB, G_k_abc,
-                        (i * naoccB * navir2BB) + (j * navir2BB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navir2BB) + ((size_t)j * navir2BB), 0, 1.0, 0.0);
                 G_k_abc.reset();
 
                 // X_BBB[ijk](a,cb) -= \sum(e) t_kj^ae <ie||cb>         (2)
                 // X_BBB[ijk](a,cb) -= \sum(e) T[kj](a,e) G[i](e,cb)
                 X_BBB->contract(false, false, navirB, navir2BB, navirB, t2BB, G_i_abc,
-                        (k * naoccB * navir2BB) + (j * navir2BB), 0, -1.0, 1.0);
+                        ((size_t)k * naoccB * navir2BB) + ((size_t)j * navir2BB), 0, -1.0, 1.0);
 
                 // X_BBB[ijk](a,cb) -= \sum(e) t_ik^ae <je||cb>         (3)
                 // X_BBB[ijk](a,cb) -= \sum(e) T[ik](a,e) G[j](e,cb)
                 X_BBB->contract(false, false, navirB, navir2BB, navirB, t2BB, G_j_abc,
-                        (i * naoccB * navir2BB) + (k * navir2BB), 0, -1.0, 1.0);
+                        ((size_t)i * naoccB * navir2BB) + ((size_t)k * navir2BB), 0, -1.0, 1.0);
 
                 SharedTensor2d Y_BBB = std::make_shared<Tensor2d>("Y[ijk](c,ab)", navirB, navirB, navirB);
 
                 // Y_BBB[ijk](c,ab) = - \sum(m) t_im^ab <kj||cm         (4)
                 // Y_BBB[ijk](c,ab) = - \sum(m) G[kj](c,m) T[i](m,ab)
                 Y_BBB->contract(false, false, navirB, navir2BB, naoccB, G_ijak, t2BB,
-                        (k * naoccB * navirB * naoccB) + (j * navirB * naoccB), (i * naoccB * navir2BB), -1.0, 0.0);
+                        ((size_t)k * naoccB * navirB * naoccB) + ((size_t)j * navirB * naoccB), ((size_t)i * naoccB * navir2BB), -1.0, 0.0);
 
                 // Y_BBB[ijk](c,ab) += \sum(m) t_jm^ab <ki||cm>         (5)
                 // Y_BBB[ijk](c,ab) += \sum(m) G[ki](c,m) T[j](m,ab)
                 Y_BBB->contract(false, false, navirB, navir2BB, naoccB, G_ijak, t2BB,
-                        (k * naoccB * navirB * naoccB) + (i * navirB * naoccB), (j * naoccB * navir2BB), 1.0, 1.0);
+                        ((size_t)k * naoccB * navirB * naoccB) + ((size_t)i * navirB * naoccB), ((size_t)j * naoccB * navir2BB), 1.0, 1.0);
 
                 // Y_BBB[ijk](c,ab) += \sum(m) t_km^ab <ij||cm>         (6)
                 // Y_BBB[ijk](c,ab) += \sum(m) G[ij](c,m) T[k](m,ab)
                 Y_BBB->contract(false, false, navirB, navir2BB, naoccB, G_ijak, t2BB,
-                        (i * naoccB * navirB * naoccB) + (j * navirB * naoccB), (k * naoccB * navir2BB), 1.0, 1.0);
+                        ((size_t)i * naoccB * navirB * naoccB) + ((size_t)j * navirB * naoccB), ((size_t)k * naoccB * navir2BB), 1.0, 1.0);
 
                 double Dijk = Dij + FockB->get(k + nfrzc, k + nfrzc);
 
@@ -696,7 +696,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm41(m,a) = (1/2) * -\sum(bc) T[k](m,bc)   * M[ijk](bc,a)
                 SharedTensor2d Mterm41 = std::make_shared<Tensor2d>("Mterm41", naoccB, navirB);
                 Mterm41->contract(false, false, naoccB, navirB, navir2BB, t2BB, Mtemp,
-                        (k * naoccB * navir2BB), 0, -0.5, 0.0);
+                        ((size_t)k * naoccB * navir2BB), 0, -0.5, 0.0);
                 Mtemp.reset();
 
                 SharedTensor2d Mterm41tr = std::make_shared<Tensor2d>("Mterm41tr", navirB, naoccB);
@@ -713,7 +713,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Checked (ijab)   <-->   (crawford T3_grad_UHF_BBB.cc Gijab) | 7
                 SharedTensor1d Mterm42 = std::make_shared<Tensor1d>("Mterm42", navir2BB);
                 Mterm42->gemv(false, navir2BB, navirB, Tc_BBB, t1B,
-                        0, (k * navirB), 1.0, 0.0);
+                        0, ((size_t)k * navirB), 1.0, 0.0);
 
                 // M_oovv(ij,ab) += \sum(k) Mterm42(ab)
                 SharedTensor2d M_oovv = std::make_shared<Tensor2d>("M <ij||ab>", naoccB, naoccB, navirB, navirB);
@@ -750,7 +750,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // lterm23(ab,l) = (1/2) * \sum(c) M[ijk](ab,c) <jk||cl>
                 // lterm23(ab,l) = (1/2) * \sum(c) M[ijk](ab,c) G[jk](c,l)
                 lterm23->contract(false, false, navir2BB, naoccB, navirB, Td_BBB, G_ijak,
-                        0, (j * naoccB * navirB * naoccB) + (k * navirB * naoccB), 0.5, 0.0);
+                        0, ((size_t)j * naoccB * navirB * naoccB) + ((size_t)k * navirB * naoccB), 0.5, 0.0);
 
                 SharedTensor2d lterm23_t = std::make_shared<Tensor2d>("lterm23_t", naoccB, navir2BB);
                 lterm23_t->trans(lterm23);
@@ -780,7 +780,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm43(d,ab) = (1/2) * \sum(c) T[jk](d,c)   * M[ijk](c,ab)
                 SharedTensor2d Mterm43 = std::make_shared<Tensor2d>("Mterm43", navirB, navirB, navirB);
                 Mterm43->contract(false, false, navirB, navir2BB, navirB, t2BB, Mtemp,
-                        (j * naoccB * navir2BB) + (k * navir2BB), 0, 0.5, 0.0);
+                        ((size_t)j * naoccB * navir2BB) + ((size_t)k * navir2BB), 0, 0.5, 0.0);
                 Mtemp.reset();
 
                 Mterm43s->sort3a(231, navirB, navirB, navirB, Mterm43, 1.0, 1.0);
@@ -829,7 +829,7 @@ void DFOCC::uccsd_triples_grad_hm()
     for (long int i = 0; i < naoccB; i++) {
         bool flag = (i == 0) ? false : true;
         // [i](a|B>=C) = [i](a|Q) * (Q|A>=B)
-        Jc_i_aBC->contract(false, false, navirB, ntri_abAA, nQ, biaQB, bQabA_c, i * navirB * nQ, 0, 1.0, 0.0);
+        Jc_i_aBC->contract(false, false, navirB, ntri_abAA, nQ, biaQB, bQabA_c, (size_t)i * navirB * nQ, 0, 1.0, 0.0);
 
         // expand [i](a|B>=C) to [i](a|BC)
         // [i]<A|bC> = sort 213 [i](a|BC)
@@ -862,7 +862,7 @@ void DFOCC::uccsd_triples_grad_hm()
     for (long int i = 0; i < naoccA; i++) {
         bool flag = (i == 0) ? false : true;
         // [I](A|b>=c) = [I](A|Q) * (Q|a>=b)
-        Jc_I_Abc->contract(false, false, navirA, ntri_abBB, nQ, biaQA, bQabB_c, i * navirA * nQ, 0, 1.0, 0.0);
+        Jc_I_Abc->contract(false, false, navirA, ntri_abBB, nQ, biaQA, bQabB_c, (size_t)i * navirA * nQ, 0, 1.0, 0.0);
 
         // expand [I](A|b>=c) to [I](A|bc)
         // [I]<a|Bc> = sort 213 [I](A|bc)
@@ -971,7 +971,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[IJk](A,cB) = \sum(E) t_IJ^AE <kE|cB>          (1)
                 // Waux[IJk](A,cB) = \sum(E) T[IJ](A,E) K[k](E,cB)
                 Waux->contract(false, false, navirA, navirB * navirA, navirA, t2AA, K_i_AbC,
-                        (i * naoccA * navir2AA) + (j * navir2AA), 0, 1.0, 0.0);
+                        ((size_t)i * naoccA * navir2AA) + ((size_t)j * navir2AA), 0, 1.0, 0.0);
                 K_i_AbC.reset();
 
                 W_AAB = std::make_shared<Tensor2d>("X[IJk](AB, c)", navirA * navirA, navirB);
@@ -990,7 +990,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[IJk](B,cA) = \sum(M) t_kM^cA <IJ||BM>         (2)
                 // Waux[IJk](B,cA) = \sum(M) G[IJ](B,M) T[k](M,cA)
                 Waux->contract(false, false, navirA, navirB * navirA, naoccA, G_IJAK, t2BA,
-                        (i * naoccA * navirA * naoccA) + (j * navirA * naoccA), (k * naoccA * navirB * navirA), 1.0, 0.0);
+                        ((size_t)i * naoccA * navirA * naoccA) + ((size_t)j * navirA * naoccA), ((size_t)k * naoccA * navirB * navirA), 1.0, 0.0);
 
                 // Waux(B,cA) sort 312 --> Waux(AB,c)
                 // Waux(B,cA) sort 132 --> Waux(BA,c)
@@ -1011,7 +1011,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // W_AAB[IJk](AB,c) = \sum(E) t_Jk^Ec <IE||AB>         (3)
                 // W_AAB[IJk](AB,c) = \sum(E) G[I](E,AB) T[Jk](E,c)
                 W_AAB->contract(true, false, navir2AA, navirB, navirA, G_I_ABC, t2AB,
-                        0, (j * naoccB * navirA * navirB) + (k * navirA * navirB), 1.0, 1.0);
+                        0, ((size_t)j * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 1.0, 1.0);
 
                 // read G[J](A,BC)
                 G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)j * navirA * navir2AA) * sizeof(double));
@@ -1019,18 +1019,18 @@ void DFOCC::uccsd_triples_grad_hm()
                 // W_AAB[IJk](AB,c) -= \sum(E) t_Ik^Ec <JE||AB>        (4)
                 // W_AAB[IJk](AB,c) -= \sum(E) G[J](E,AB) T[Ik](E,c)
                 W_AAB->contract(true, false, navir2AA, navirB, navirA, G_I_ABC, t2AB,
-                        0, (i * naoccB * navirA * navirB) + (k * navirA * navirB), -1.0, 1.0);
+                        0, ((size_t)i * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), -1.0, 1.0);
                 G_I_ABC.reset();
 
                 // W_AAB[IJk](AB,c) += \sum(M) t_JM^AB <Ik|Mc>         (5)
                 // W_AAB[IJk](AB,c) += \sum(M) T[J](M,AB) K[Ik](M,c)
                 W_AAB->contract(true, false, navir2AA, navirB, naoccA, t2AA, K_IjKa,
-                        (j * naoccA * navir2AA), (i * naoccB * naoccA * navirB) + (k * naoccA * navirB), 1.0, 1.0);
+                        ((size_t)j * naoccA * navir2AA), ((size_t)i * naoccB * naoccA * navirB) + ((size_t)k * naoccA * navirB), 1.0, 1.0);
 
                 // W_AAB[IJk](AB,c) -= \sum(M) t_IM^AB <Jk|Mc>         (6)
                 // W_AAB[IJk](AB,c) -= \sum(M) T[I](M,AB) K[Jk](M,c)
                 W_AAB->contract(true, false, navir2AA, navirB, naoccA, t2AA, K_IjKa,
-                        (i * naoccA * navir2AA), (j * naoccB * naoccA * navirB) + (k * naoccA * navirB), -1.0, 1.0);
+                        ((size_t)i * naoccA * navir2AA), ((size_t)j * naoccB * naoccA * navirB) + ((size_t)k * naoccA * navirB), -1.0, 1.0);
 
                 // read K[J](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
@@ -1041,7 +1041,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[IJk](A,Bc) = \sum(e) t_Ik^Ae <Je|Bc>          (7)
                 // Waux[IJk](A,Bc) = \sum(e) T[Ik](A,e) K[J](e,Bc)
                 Waux->contract(false, false, navirA, navirA * navirB, navirB, t2AB, K_I_aBc,
-                        (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[I](a,Bc)
                 K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
@@ -1049,18 +1049,18 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[IJk](A,Bc) -= \sum(e) t_Jk^Ae <Ie|Bc>         (8)
                 // Waux[IJk](A,Bc) -= \sum(e) T[Jk](A,e) K[I](e,Bc)
                 Waux->contract(false, false, navirA, navirA * navirB, navirB, t2AB, K_I_aBc,
-                        (j * naoccB * navirA * navirB) + (k * navirA * navirB), 0, -1.0, 1.0);
+                        ((size_t)j * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 0, -1.0, 1.0);
                 K_I_aBc.reset();
 
                 // Waux[IJk](A,Bc) += \sum(m) t_Im^Bc <Jk|Am>         (9)
                 // Waux[IJk](A,Bc) += \sum(m) K[Jk](A,m) T[I](m,Bc)
                 Waux->contract(false, false, navirA, navirA * navirB, naoccB, K_IjAk, t2AB,
-                        (j * naoccB * navirA * naoccB) + (k * navirA * naoccB), (i * naoccB * navirA * navirB), 1.0, 1.0);
+                        ((size_t)j * naoccB * navirA * naoccB) + ((size_t)k * navirA * naoccB), ((size_t)i * naoccB * navirA * navirB), 1.0, 1.0);
 
                 // Waux[IJk](A,Bc) -= \sum(m) t_Jm^Bc <Ik|Am>         (10)
                 // Waux[IJk](A,Bc) -= \sum(m) K[Ik](A,m) T[J](m,Bc)
                 Waux->contract(false, false, navirA, navirA * navirB, naoccB, K_IjAk, t2AB,
-                        (i * naoccB * navirA * naoccB) + (k * navirA * naoccB), (j * naoccB * navirA * navirB), -1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * naoccB) + ((size_t)k * navirA * naoccB), ((size_t)j * naoccB * navirA * navirB), -1.0, 1.0);
 
                 // W_AAB(AB,c) += Waux(AB,c)
                 W_AAB->axpy(Waux, 1.0);
@@ -1163,7 +1163,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm44(M,c) = (1/2) *  \sum(BA) T[I]M,AB)    * M[IJk](AB,c) 
                 SharedTensor2d Mterm44 = std::make_shared<Tensor2d>("Mterm44", naoccA, navirB);
                 Mterm44->contract(false, false, naoccA, navirB, navir2AA, t2AA, Td_AAB,
-                        (i * naoccA * navir2AA), 0, 0.5, 0.0);
+                        ((size_t)i * naoccA * navir2AA), 0, 0.5, 0.0);
 
                 SharedTensor2d Mterm44tr = std::make_shared<Tensor2d>("Mterm44tr(c,M)", navirB, naoccA);
                 Mterm44tr->trans(Mterm44);
@@ -1185,7 +1185,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm46(M,A) = \sum(Bc) T[k](M,Bc)   * M[IJk](Bc,A)
                 SharedTensor2d Mterm46 = std::make_shared<Tensor2d>("Mterm46", naoccA, navirA);
                 Mterm46->contract(false, false, naoccA, navirA, navirA * navirB, t2ABs, Mtemp,
-                        (k * naoccA * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)k * naoccA * navirA * navirB), 0, 1.0, 0.0);
                 Mtemp.reset();
                 t2ABs.reset();
 
@@ -1207,7 +1207,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm47(m,A) = \sum(Bc) T[J](m,Bc)   * M[IJk](Bc,A)
                 SharedTensor2d Mterm47 = std::make_shared<Tensor2d>("Mterm47(m,A)", naoccB, navirA);
                 Mterm47->contract(false, false, naoccB, navirA, navirA * navirB, t2AB, Mtemp,
-                        (j * naoccB * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)j * naoccB * navirA * navirB), 0, 1.0, 0.0);
                 Mtemp.reset();
 
                 SharedTensor2d Mterm47tr = std::make_shared<Tensor2d>("Mterm47tr(A,m)", navirA, naoccB);
@@ -1228,7 +1228,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm50(cA) = \sum(B) T[J](B)        * Tc[IJk](B,cA)
                 SharedTensor2d Mterm50 = std::make_shared<Tensor2d>("Mterm50(cA)", navirB, navirA);
                 Mterm50->contract(false, false, 1, navirB * navirA, navirA, t1A, Tc_AABtr,
-                        (j * navirA), 0, 1.0, 0.0);
+                        ((size_t)j * navirA), 0, 1.0, 0.0);
 
                 SharedTensor2d Mterm50t = std::make_shared<Tensor2d>("Mterm50t(A,c)", navirA, navirB);
                 Mterm50t->trans(Mterm50);
@@ -1247,7 +1247,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm51(AB)   = \sum(c) Tc[IJk](AB,c)   * T[k](c)
                 SharedTensor2d Mterm51 = std::make_shared<Tensor2d>("Mterm51(AB)", navirB, navirA);
                 Mterm51->contract(false, false, navirA * navirA, 1, navirB, Tc_AAB, t1B,
-                        0, (k * navirB), 1.0, 0.0);
+                        0, ((size_t)k * navirB), 1.0, 0.0);
 
                 // M_OOVV(IJAB) += \sum(k) Mterm51(AB)
                 SharedTensor2d M_OOVV = std::make_shared<Tensor2d>("M <IJ||AB>", naoccA, naoccA, navirA, navirA);
@@ -1289,7 +1289,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 SharedTensor2d lterm25 = std::make_shared<Tensor2d>("lterm25", navir2AA, naoccA);
                 // lterm25(AB,L) = -\sum(c) M[IJk](AB,c) K[Jk](c,L)
                 lterm25->contract(false, false, navir2AA, naoccA, navirB, Td_AAB, K_IjaK,
-                        0, (j * naoccB * naoccA * navirB) + (k * naoccA * navirB), -1.0, 0.0);
+                        0, ((size_t)j * naoccB * naoccA * navirB) + ((size_t)k * naoccA * navirB), -1.0, 0.0);
 
                 SharedTensor2d lterm25_t = std::make_shared<Tensor2d>("lterm25_t", naoccA, navir2AA);
                 lterm25_t->trans(lterm25);
@@ -1353,7 +1353,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //lterm28->contract(false, true, naoccB, navirB * navirA, navirA, K_IjkA, Td_AAB,
                 //        (j * naoccB * naoccB * navirA) + (k * naoccB * navirA), 0, -1.0, 0.0);
                 lterm28->contract(false, false, naoccB, navirB * navirA, navirA, K_IjkA, Mtemp,
-                        (j * naoccB * naoccB * navirA) + (k * naoccB * navirA), 0, -1.0, 0.0);
+                        ((size_t)j * naoccB * naoccB * navirA) + ((size_t)k * naoccB * navirA), 0, -1.0, 0.0);
                 K_IjkA.reset();
 
                 SharedTensor2d lterm28_s = std::make_shared<Tensor2d>("lterm28_s (l,Ac)", naoccB, navirA, navirB);
@@ -1377,7 +1377,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 //lterm29->contract(false, true, naoccA, navirB * navirA, navirA, G_IJKA, Td_AAB,
                 //        (i * naoccA * naoccA * navirA) + (j * naoccA * navirA), 0, -0.5, 0.0);
                 lterm29->contract(false, false, naoccA, navirB * navirA, navirA, G_IJKA, Mtemp,
-                        (i * naoccA * naoccA * navirA) + (j * naoccA * navirA), 0, -0.5, 0.0);
+                        ((size_t)i * naoccA * naoccA * navirA) + ((size_t)j * naoccA * navirA), 0, -0.5, 0.0);
                 G_IJKA.reset();
                 
                 // tL2AB(Lk,Ac) += \sum(IJ) lterm29(L,cA)
@@ -1402,7 +1402,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 SharedTensor2d Mterm48 = std::make_shared<Tensor2d>("Mterm48(AB,D)", navir2AA, navirA);
                 Mterm48->myread(psio_, PSIF_DFOCC_MIABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
                 Mterm48->contract(false, false, navir2AA, navirA, navirB, Td_AAB, t2BA,
-                        0, (k * naoccA * navirB * navirA) + (j * navirB * navirA), 1.0, 1.0);
+                        0, ((size_t)k * naoccA * navirB * navirA) + ((size_t)j * navirB * navirA), 1.0, 1.0);
 
                 Mterm48->mywrite(psio_, PSIF_DFOCC_MIABC_AAAA, ((size_t)i * navirA * navir2AA) * sizeof(double));
                 Mterm48.reset();
@@ -1416,7 +1416,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm49(d,cA) = \sum(B) T[kJ](d,B)    * M[IJk](B,cA)
                 SharedTensor2d Mterm49 = std::make_shared<Tensor2d>("Mterm49(d,cA)", navirB, navirB, navirA);
                 Mterm49->contract(false, false, navirB, navirB * navirA, navirA, t2BA, Mtemp,
-                        (k * naoccA * navirB * navirA) + (j * navirB * navirA), 0, 1.0, 0.0);
+                        ((size_t)k * naoccA * navirB * navirA) + ((size_t)j * navirB * navirA), 0, 1.0, 0.0);
                 Mtemp.reset();
 
                 Mterm49s->sort3a(321, navirB, navirB, navirA, Mterm49, 1.0, 1.0);
@@ -1429,7 +1429,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm45(D,Bc) = (1/2) * -\sum(A) T[IJ](D,A)     * M[IJk](A,Bc)
                 SharedTensor2d Mterm45 = std::make_shared<Tensor2d>("Mterm45", navirA, navirA, navirB);
                 Mterm45->contract(false, false, navirA, navirA * navirB, navirA, t2AA, Td_AAB,
-                        (i * naoccA * navir2AA) + (j * navir2AA), 0, -0.5, 0.0);
+                        ((size_t)i * naoccA * navir2AA) + ((size_t)j * navir2AA), 0, -0.5, 0.0);
 
                 SharedTensor2d Mterm45s = std::make_shared<Tensor2d>("Mterm45tr(c,BD)", navirB, navirA, navirA);
                 Mterm45s->myread(psio_, PSIF_DFOCC_MIABC_BBAA, ((size_t)k * navirB * navir2AA) * sizeof(double));
@@ -1511,25 +1511,25 @@ void DFOCC::uccsd_triples_grad_hm()
                 // W_ABB[Ijk](A,cb) = \sum(e) t_Ij^Ae <ke||cb>          (1)
                 // W_ABB[Ijk](A,cb) = T[Ij](A,e) G[k](e,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, navirB, t2AB, G_i_abc,
-                        (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read G[j](a,bc)
                 G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
                 // W_ABB[Ijk](A,cb) = \sum(e) t_Ik^Ae <je||cb>          (2)
                 // W_ABB[Ijk](A,cb) = T[Ik](A,e) G[j](e,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, navirB, t2AB, G_i_abc,
-                        (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, -1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 0, -1.0, 1.0);
                 G_i_abc.reset();
 
                 // W_ABB[Ijk](A,cb) = \sum(m) t_jm^cb <Ik|Am>           (3)
                 // W_ABB[Ijk](A,cb) = K[Ik](A,m) T[j](m,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, naoccB, K_IjAk, t2BB,
-                        (i * naoccB * navirA * naoccB) + (k * navirA * naoccB), (j * naoccB * navir2BB), 1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * naoccB) + ((size_t)k * navirA * naoccB), ((size_t)j * naoccB * navir2BB), 1.0, 1.0);
 
                 // W_ABB[Ijk](A,cb) = \sum(m) t_km^cb <Ij|Am>           (4)
                 // W_ABB[Ijk](A,cb) = K[Ij](A,m) T[k](m,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, naoccB, K_IjAk, t2BB,
-                        (i * naoccB * navirA * naoccB) + (j * navirA * naoccB), (k * naoccB * navir2BB), -1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * naoccB) + ((size_t)j * navirA * naoccB), ((size_t)k * naoccB * navir2BB), -1.0, 1.0);
 
 
                 Waux = std::make_shared<Tensor2d>("X[Ijk](a,Bc)", navirB, navirA, navirB);
@@ -1537,7 +1537,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[Ijk](b,Ac) = \sum(m) t_Im^Ac <kj||bm>       (5)
                 // Waux[Ijk](b,Ac) = G[kj](b,m) T[I](m,Ac)
                 Waux->contract(false, false, navirB, navirA * navirB, naoccB, G_ijak, t2AB,
-                        (k * naoccB * navirB * naoccB) + (j * navirB * naoccB), (i * naoccB * navirA * navirB), 1.0, 0.0);
+                        ((size_t)k * naoccB * navirB * naoccB) + ((size_t)j * navirB * naoccB), ((size_t)i * naoccB * navirA * navirB), 1.0, 0.0);
 
                 // Waux(b,Ac) sort 231 --> Waux(A,cb)
                 // Waux(b,Ac) sort 213 --> Waux(A,bc)
@@ -1557,7 +1557,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[Ijk](c,Ab) = \sum(e) t_kj^ce <Ie|Ab>        (6)
                 // Waux[Ijk](c,Ab) = T[kj](c,e) K[I](e,Ab)
                 Waux->contract(false, false, navirB, navirA * navirB, navirB, t2BB, K_I_aBc,
-                        (k * naoccB * navir2BB) + (j * navir2BB), 0, 1.0, 0.0);
+                        ((size_t)k * naoccB * navir2BB) + ((size_t)j * navir2BB), 0, 1.0, 0.0);
                 K_I_aBc.reset();
 
                 // Waux(c,Ab) sort 213 --> Waux(A,cb)
@@ -1581,7 +1581,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[Ijk](b,cA) = \sum(E) t_Ij^Eb <kE|cA>        (7)
                 // Waux[Ijk](b,cA) = T[Ij](E,b) K[k](E,cA)
                 Waux->contract(true, false, navirB, navirB * navirA, navirA, t2AB, K_i_AbC,
-                        (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[j](A,bC)
                 K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)j * navirB * navir2AA) * sizeof(double));
@@ -1589,7 +1589,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[Ijk](b,cA) = \sum(E) t_Ik^Eb <jE|cA>        (8)
                 // Waux[Ijk](b,cA) = T[Ik](E,b) K[j](E,cA)
                 Waux->contract(true, false, navirB, navirB * navirA, navirA, t2AB, K_i_AbC,
-                        (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, -1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 0, -1.0, 1.0);
                 K_i_AbC.reset();
 
                 // Waux(b,cA) sort 321 --> Waux(A,cb)
@@ -1606,12 +1606,12 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Waux[Ijk](c,bA) = \sum(M) t_kM^bA <Ij|Mc>        (9)
                 // Waux[Ijk](c,bA) = K[Ij](M,c) t[k](M,bA)
                 Waux->contract(true, false, navirB, navirB * navirA, naoccA, K_IjKa, t2BA,
-                        (i * naoccB * naoccA * navirB) + (j * naoccA * navirB), (k * naoccA * navirB * navirA), 1.0, 0.0);
+                        ((size_t)i * naoccB * naoccA * navirB) + ((size_t)j * naoccA * navirB), ((size_t)k * naoccA * navirB * navirA), 1.0, 0.0);
 
                 // Waux[Ijk](c,bA) = \sum(M) t_jM^bA <Ik|Mc>        (10)
                 // Waux[Ijk](c,bA) = K[Ik](M,c) t[j](M,bA)
                 Waux->contract(true, false, navirB, navirB * navirA, naoccA, K_IjKa, t2BA,
-                        (i * naoccB * naoccA * navirB) + (k * naoccA * navirB), (j * naoccA * navirB * navirA), -1.0, 1.0);
+                        ((size_t)i * naoccB * naoccA * navirB) + ((size_t)k * naoccA * navirB), ((size_t)j * naoccA * navirB * navirA), -1.0, 1.0);
 
                 // Waux(c,bA) sort 312 --> Waux(A,cb)
                 // Waux(c,bA) sort 321 --> Waux(A,bc)
@@ -1724,7 +1724,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm52(m,c) = \sum(Ab) T[I](m,Ab)   * M[Ijk](Ab,c) 
                 SharedTensor2d Mterm52 = std::make_shared<Tensor2d>("Mterm52", naoccB, navirB);
                 Mterm52->contract(false, false, naoccB, navirB, navirA * navirB, t2AB, Td_ABB,
-                        (i * naoccB * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navirA * navirB), 0, 1.0, 0.0);
 
                 SharedTensor2d Mterm52tr = std::make_shared<Tensor2d>("Mterm52tr(c,m)", navirB, naoccB);
                 Mterm52tr->trans(Mterm52);
@@ -1745,7 +1745,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm53(M,b) = -\sum(Ac) T[k](M,Ac)   * M[Ijk](Ac,b)
                 SharedTensor2d Mterm53 = std::make_shared<Tensor2d>("Mterm53", naoccA, navirB);
                 Mterm53->contract(false, false, naoccA, navirB, navirA * navirB, t2ABs, Td_ABB,
-                        (k * naoccA * navirA * navirB), 0, -1.0, 0.0);
+                        ((size_t)k * naoccA * navirA * navirB), 0, -1.0, 0.0);
                 t2ABs.reset();
 
                 SharedTensor2d Mterm53tr = std::make_shared<Tensor2d>("Mterm53tr(b,M)", navirB, naoccA);
@@ -1763,7 +1763,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm55(AbD)  = \sum(c) M[Ijk](Ab,c) * T[kI](c,D)
                 SharedTensor2d Mterm55 = std::make_shared<Tensor2d>("Mterm55(A,bD)", navirA, navirB, navirA);
                 Mterm55->contract(false, false, navirA * navirB, navirA, navirB, Td_ABB, t2BA,
-                        0, (k * naoccA * navirB * navirA) + (i * navirB * navirA), 1.0, 0.0);
+                        0, ((size_t)k * naoccA * navirB * navirA) + ((size_t)i * navirB * navirA), 1.0, 0.0);
 
                 SharedTensor2d Mterm55s = std::make_shared<Tensor2d>("Mterm55tr(b,AD)", navirB, navirA, navirA);
                 Mterm55s->myread(psio_, PSIF_DFOCC_MIABC_BBAA, ((size_t)j * navirB * navir2AA) * sizeof(double));
@@ -1779,7 +1779,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm56(m,A)   = (0.5) * -\sum(bc) T[k](m,bc)     * M[Ijk](bc,A)
                 SharedTensor2d Mterm56 = std::make_shared<Tensor2d>("Mterm56(m,A)", naoccB, navirA);
                 Mterm56->contract(false, true, naoccB, navirA, navir2BB, t2BB, Td_ABB,
-                        (k * naoccB * navir2BB), 0, -0.5, 0.0);
+                        ((size_t)k * naoccB * navir2BB), 0, -0.5, 0.0);
 
                 SharedTensor2d Mterm56tr = std::make_shared<Tensor2d>("Mterm56tr(A,m)", navirA, naoccB);
                 Mterm56tr->trans(Mterm56);
@@ -1797,7 +1797,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 SharedTensor2d Mterm57 = std::make_shared<Tensor2d>("Mterm57(Ab,d)", navirA, navirB, navirB);
                 Mterm57->myread(psio_, PSIF_DFOCC_MIABC_AABB,((size_t)i * navirA * navir2BB) * sizeof(double));
                 Mterm57->contract(false, false, navirA * navirB, navirB, navirB, Td_ABB, t2BB,
-                        0, (j * naoccB * navirB * navirB) + (k * navirB * navirB), -0.5, 1.0);
+                        0, ((size_t)j * naoccB * navirB * navirB) + ((size_t)k * navirB * navirB), -0.5, 1.0);
                 Mterm57->mywrite(psio_, PSIF_DFOCC_MIABC_AABB,((size_t)i * navirA * navir2BB) * sizeof(double));
                 Mterm57.reset();
 
@@ -1806,7 +1806,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm58(bc) = \sum(A) T[I](A) * Tc[Ijk](A,bc)
                 SharedTensor2d Mterm58 = std::make_shared<Tensor2d>("Mterm58", navirB, navirB);
                 Mterm58->contract(false, false, 1, navir2BB, navirA, t1A, Tc_ABB,
-                        (i * navirA), 0, 1.0, 0.0);
+                        ((size_t)i * navirA), 0, 1.0, 0.0);
 
                 SharedTensor2d Mterm58tr = std::make_shared<Tensor2d>("Mterm58tr(cb)", navirB, navirB);
                 Mterm58tr->trans(Mterm58);
@@ -1826,7 +1826,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm59(Ab)   = \sum(c) Tc[Ijk](Ab,c) * T[k](c) 
                 SharedTensor1d Mterm59 = std::make_shared<Tensor1d>("Mterm59(Ab)", navirA * navirB);
                 Mterm59->gemv(false, navirA * navirB, navirB, Tc_ABB, t1B,
-                        0, (k * navirB), 1.0, 0.0);
+                        0, ((size_t)k * navirB), 1.0, 0.0);
 
                 // M_OoVv(IjAb) += \sum(k) Mterm59(Ab)
                 SharedTensor2d M_OoVv = std::make_shared<Tensor2d>("M <Ij|Ab>", naoccA, naoccB, navirA, navirB);
@@ -1864,9 +1864,9 @@ void DFOCC::uccsd_triples_grad_hm()
                 SharedTensor2d Mtemp = std::make_shared<Tensor2d>("Mtemp <abC>", navirB, navirB, navirA);
                 Mtemp->sort3a(231, navirA, navirB, navirB, Td_ABB, 1.0, 0.0);
                 //lterm32->contract(true, false, navir2BB, naoccB, navirA, Td_ABB, K_IjAk,
-                //        0, (i * naoccB * navirA * naoccB) + (k * navirA * naoccB), -1.0, 0.0);
+                //        0, ((size_t)i * naoccB * navirA * naoccB) + ((size_t)k * navirA * naoccB), -1.0, 0.0);
                 lterm32->contract(false, false, navir2BB, naoccB, navirA, Mtemp, K_IjAk,
-                        0, (i * naoccB * navirA * naoccB) + (k * navirA * naoccB), -1.0, 0.0);
+                        0, ((size_t)i * naoccB * navirA * naoccB) + ((size_t)k * navirA * naoccB), -1.0, 0.0);
                 Mtemp.reset();
 
                 SharedTensor2d lterm32_t = std::make_shared<Tensor2d>("lterm32_t", naoccB, navir2BB);
@@ -1930,7 +1930,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // lterm34(Ab,l) = \sum(c) M[Ijk](Ab,c) <jk||cl>
                 // lterm34(Ab,l) = \sum(c) M[Ijk](Ab,c) G[jk](c,l)
                 lterm34->contract(false, false, navirA * navirB, naoccB, navirB, Td_ABB, G_ijak,
-                        0, j * naoccB * navirB * naoccB + k * navirB * naoccB, 0.5, 0.0);
+                        0, (size_t)j * naoccB * navirB * naoccB + (size_t)k * navirB * naoccB, 0.5, 0.0);
 
                 // (Ab,l) -> (l,Ab)
                 SharedTensor2d lterm34_t = std::make_shared<Tensor2d>("lterm34_t", naoccB, navirA, navirB);
@@ -1948,7 +1948,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // lterm35(Ab,L) = -\sum(c) M[Ijk](Ab,c) <Ik|Lc>
                 // lterm35(Ab,L) = -\sum(c) M[Ijk](Ab,c) [Ik](c,L)
                 lterm35->contract(false, false, navirA * navirB, naoccA, navirB, Td_ABB, K_IjaK,
-                        0, (i * naoccB * navirB * naoccA) + (k * navirB * naoccA), -1.0, 0.0);
+                        0, ((size_t)i * naoccB * navirB * naoccA) + ((size_t)k * navirB * naoccA), -1.0, 0.0);
 
                 // tL2AB(Lj,Ab) += \sum(Ik) lterm35(Ab,L)
                 for (int l = 0; l < naoccA; l++) {
@@ -1970,7 +1970,7 @@ void DFOCC::uccsd_triples_grad_hm()
                 // Mterm54(d,bc) = -\sum(A) T[kI](d,A)   * M[Ijk](A,bc)
                 SharedTensor2d Mterm54 = std::make_shared<Tensor2d>("Mterm54", navirB, navirB, navirB);
                 Mterm54->contract(false, false, navirB, navir2BB, navirA, t2BA, Td_ABB,
-                        (k * naoccA * navirB * navirA) + (i * navirB * navirA), 0, -1.0, 0.0);
+                        ((size_t)k * naoccA * navirB * navirA) + ((size_t)i * navirB * navirA), 0, -1.0, 0.0);
 
                 SharedTensor2d Mterm54s = std::make_shared<Tensor2d>("Mterm54tr(c,bd)", navirB, navirB, navirB);
                 Mterm54s->myread(psio_, PSIF_DFOCC_MIABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));

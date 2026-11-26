@@ -847,7 +847,7 @@ void DFOCC::ccdl_WabefL2() {
         int nb = a + 1;
 
         // Form J[a](bf,e) = \sum_{Q} B(bfQ)*B(aeQ) cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ, K, K, 0, a * navirA * nQ, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ, K, K, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
 // Form (+)V[a](b, e>=f)
 #pragma omp parallel for

@@ -80,7 +80,7 @@ void DFOCC::uccsd_triples_hm()
     for (long int i = 0; i < naoccA; i++) {
         bool flag = (i == 0) ? false : true;
         // [I](A|B>=C) = [I](A|Q) * (Q|A>=B)
-        Jc_I_ABC->contract(false, false, navirA, ntri_abAA, nQ, biaQA, bQabA_c, i * navirA * nQ, 0, 1.0, 0.0);
+        Jc_I_ABC->contract(false, false, navirA, ntri_abAA, nQ, biaQA, bQabA_c, (size_t)i * navirA * nQ, 0, 1.0, 0.0);
 
         // expand [I](A|B>=C) to [I](A|BC)
         // [I]<B||AC> = [I]<B|AC> - [I]<B|CA>
@@ -182,32 +182,32 @@ void DFOCC::uccsd_triples_hm()
                 // X_AAA[IJK](A,CB) = \sum(E) t_IJ^AE <KE||CB>          (1)
                 // X_AAA[IJK](A,CB) = \sum(E) T[IJ](A,E) G[K](E,CB)
                 X_AAA->contract(false, false, navirA, navir2AA, navirA, t2AA, G_K_ABC,
-                        (i * naoccA * navir2AA) + (j * navir2AA), 0, 1.0, 0.0);
+                        ((size_t)i * naoccA * navir2AA) + ((size_t)j * navir2AA), 0, 1.0, 0.0);
 
                 // X_AAA[IJK](A,CB) -= \sum(E) t_KJ^AE <IE||CB>         (2)
                 // X_AAA[IJK](A,CB) -= \sum(E) T[KJ](A,E) G[I](E,CB)
                 X_AAA->contract(false, false, navirA, navir2AA, navirA, t2AA, G_I_ABC,
-                        (k * naoccA * navir2AA) + (j * navir2AA), 0, -1.0, 1.0);
+                        ((size_t)k * naoccA * navir2AA) + ((size_t)j * navir2AA), 0, -1.0, 1.0);
 
                 // X_AAA[IJK](A,CB) -= \sum(E) t_IK^AE <JE||CB>         (3)
                 // X_AAA[IJK](A,CB) -= \sum(E) T[IK](A,E) G[J](E,CB)
                 X_AAA->contract(false, false, navirA, navir2AA, navirA, t2AA, G_J_ABC,
-                        (i * naoccA * navir2AA) + (k * navir2AA), 0, -1.0, 1.0);
+                        ((size_t)i * naoccA * navir2AA) + ((size_t)k * navir2AA), 0, -1.0, 1.0);
 
                 // Y_AAA[IJK](C,AB) = - \sum(M) t_IM^AB <KJ||CM         (4)
                 // Y_AAA[IJK](C,AB) = - \sum(M) G[KJ](C,M) T[I](M,AB)
                 Y_AAA->contract(false, false, navirA, navir2AA, naoccA, G_IJAK, t2AA,
-                        (k * naoccA * navirA * naoccA) + (j * navirA * naoccA), (i * naoccA * navir2AA), -1.0, 0.0);
+                        ((size_t)k * naoccA * navirA * naoccA) + ((size_t)j * navirA * naoccA), ((size_t)i * naoccA * navir2AA), -1.0, 0.0);
 
                 // Y_AAA[IJK](C,AB) += \sum(M) t_JM^AB <KI||CM>         (5)
                 // Y_AAA[IJK](C,AB) += \sum(M) G[KI](C,M) T[J](M,AB)
                 Y_AAA->contract(false, false, navirA, navir2AA, naoccA, G_IJAK, t2AA,
-                        (k * naoccA * navirA * naoccA) + (i * navirA * naoccA), (j * naoccA * navir2AA), 1.0, 1.0);
+                        ((size_t)k * naoccA * navirA * naoccA) + ((size_t)i * navirA * naoccA), ((size_t)j * naoccA * navir2AA), 1.0, 1.0);
 
                 // Y_AAA[IJK](C,AB) += \sum(M) t_KM^AB <IJ||CM>         (6)
                 // Y_AAA[IJK](C,AB) += \sum(M) G[IJ](C,M) T[K](M,AB)
                 Y_AAA->contract(false, false, navirA, navir2AA, naoccA, G_IJAK, t2AA,
-                        (i * naoccA * navirA * naoccA) + (j * navirA * naoccA), (k * naoccA * navir2AA), 1.0, 1.0);
+                        ((size_t)i * naoccA * navirA * naoccA) + ((size_t)j * navirA * naoccA), ((size_t)k * naoccA * navir2AA), 1.0, 1.0);
 
                 double Dijk = Dij + FockA->get(k + nfrzc, k + nfrzc);
 
@@ -300,7 +300,7 @@ void DFOCC::uccsd_triples_hm()
     for (long int i = 0; i < naoccB; i++) {
         bool flag = (i == 0) ? false : true;
         // [i](a|b>=c) = [i](a|Q) * (Q|a>=b)
-        Jc_i_abc->contract(false, false, navirB, ntri_abBB, nQ, biaQB, bQabB_c, i * navirB * nQ, 0, 1.0, 0.0);
+        Jc_i_abc->contract(false, false, navirB, ntri_abBB, nQ, biaQB, bQabB_c, (size_t)i * navirB * nQ, 0, 1.0, 0.0);
 
         // expand [i](a|b>=c) TO [i](a|bc)
         // [i]<b||ac> = [i]<b|ac> - [i]<b|ca>
@@ -400,32 +400,32 @@ void DFOCC::uccsd_triples_hm()
                 // X_BBB[ijk](a,cb) = \sum(e) t_ij^ae <ke||cb>          (1)
                 // X_BBB[ijk](a,cb) = \sum(e) T[ij](a,e) G[k](e,cb)
                 X_BBB->contract(false, false, navirB, navir2BB, navirB, t2BB, G_k_abc,
-                        (i * naoccB * navir2BB) + (j * navir2BB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navir2BB) + ((size_t)j * navir2BB), 0, 1.0, 0.0);
 
                 // X_BBB[ijk](a,cb) -= \sum(e) t_kj^ae <ie||cb>         (2)
                 // X_BBB[ijk](a,cb) -= \sum(e) T[kj](a,e) G[i](e,cb)
                 X_BBB->contract(false, false, navirB, navir2BB, navirB, t2BB, G_i_abc,
-                        (k * naoccB * navir2BB) + (j * navir2BB), 0, -1.0, 1.0);
+                        ((size_t)k * naoccB * navir2BB) + ((size_t)j * navir2BB), 0, -1.0, 1.0);
 
                 // X_BBB[ijk](a,cb) -= \sum(e) t_ik^ae <je||cb>         (3)
                 // X_BBB[ijk](a,cb) -= \sum(e) T[ik](a,e) G[j](e,cb)
                 X_BBB->contract(false, false, navirB, navir2BB, navirB, t2BB, G_j_abc,
-                        (i * naoccB * navir2BB) + (k * navir2BB), 0, -1.0, 1.0);
+                        ((size_t)i * naoccB * navir2BB) + ((size_t)k * navir2BB), 0, -1.0, 1.0);
 
                 // Y_BBB[ijk](c,ab) = - \sum(m) t_im^ab <kj||cm         (4)
                 // Y_BBB[ijk](c,ab) = - \sum(m) G[kj](c,m) T[i](m,ab)
                 Y_BBB->contract(false, false, navirB, navir2BB, naoccB, G_ijak, t2BB,
-                        (k * naoccB * navirB * naoccB) + (j * navirB * naoccB), (i * naoccB * navir2BB), -1.0, 0.0);
+                        ((size_t)k * naoccB * navirB * naoccB) + ((size_t)j * navirB * naoccB), ((size_t)i * naoccB * navir2BB), -1.0, 0.0);
 
                 // Y_BBB[ijk](c,ab) += \sum(m) t_jm^ab <ki||cm>         (5)
                 // Y_BBB[ijk](c,ab) += \sum(m) G[ki](c,m) T[j](m,ab)
                 Y_BBB->contract(false, false, navirB, navir2BB, naoccB, G_ijak, t2BB,
-                        (k * naoccB * navirB * naoccB) + (i * navirB * naoccB), (j * naoccB * navir2BB), 1.0, 1.0);
+                        ((size_t)k * naoccB * navirB * naoccB) + ((size_t)i * navirB * naoccB), ((size_t)j * naoccB * navir2BB), 1.0, 1.0);
 
                 // Y_BBB[ijk](c,ab) += \sum(m) t_km^ab <ij||cm>         (6)
                 // Y_BBB[ijk](c,ab) += \sum(m) G[ij](c,m) T[k](m,ab)
                 Y_BBB->contract(false, false, navirB, navir2BB, naoccB, G_ijak, t2BB,
-                        (i * naoccB * navirB * naoccB) + (j * navirB * naoccB), (k * naoccB * navir2BB), 1.0, 1.0);
+                        ((size_t)i * naoccB * navirB * naoccB) + ((size_t)j * navirB * naoccB), ((size_t)k * naoccB * navir2BB), 1.0, 1.0);
 
 
                 double Dijk = Dij + FockB->get(k + nfrzc, k + nfrzc);
@@ -514,7 +514,7 @@ void DFOCC::uccsd_triples_hm()
     for (long int i = 0; i < naoccB; i++) {
         bool flag = (i == 0) ? false : true;
         // [i](a|B>=C) = [i](a|Q) * (Q|A>=B)
-        Jc_i_aBC->contract(false, false, navirB, ntri_abAA, nQ, biaQB, bQabA_c, i * navirB * nQ, 0, 1.0, 0.0);
+        Jc_i_aBC->contract(false, false, navirB, ntri_abAA, nQ, biaQB, bQabA_c, (size_t)i * navirB * nQ, 0, 1.0, 0.0);
 
         // expand [i](a|B>=C) to [i](a|BC)
         // [i]<A|bC> = sort 213 [i](a|BC)
@@ -547,7 +547,7 @@ void DFOCC::uccsd_triples_hm()
     for (long int i = 0; i < naoccA; i++) {
         bool flag = (i == 0) ? false : true;
         // [I](A|b>=c) = [I](A|Q) * (Q|a>=b)
-        Jc_I_Abc->contract(false, false, navirA, ntri_abBB, nQ, biaQA, bQabB_c, i * navirA * nQ, 0, 1.0, 0.0);
+        Jc_I_Abc->contract(false, false, navirA, ntri_abBB, nQ, biaQA, bQabB_c, (size_t)i * navirA * nQ, 0, 1.0, 0.0);
 
         // expand [I](A|b>=c) to [I](A|bc)
         // [I]<a|Bc> = sort 213 [I](A|bc)
@@ -642,7 +642,7 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[IJk](A,cB) = \sum(E) t_IJ^AE <kE|cB>          (1)
                 // Waux[IJk](A,cB) = \sum(E) T[IJ](A,E) K[k](E,cB)
                 Waux->contract(false, false, navirA, navirB * navirA, navirA, t2AA, K_i_AbC,
-                        (i * naoccA * navir2AA) + (j * navir2AA), 0, 1.0, 0.0);
+                        ((size_t)i * naoccA * navir2AA) + ((size_t)j * navir2AA), 0, 1.0, 0.0);
                 K_i_AbC.reset();
 
                 W_AAB = std::make_shared<Tensor2d>("X[IJk](AB, c)", navirA * navirA, navirB);
@@ -661,7 +661,7 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[IJk](B,cA) = \sum(M) t_kM^cA <IJ||BM>         (2)
                 // Waux[IJk](B,cA) = \sum(M) G[IJ](B,M) T[k](M,cA)
                 Waux->contract(false, false, navirA, navirB * navirA, naoccA, G_IJAK, t2BA,
-                        (i * naoccA * navirA * naoccA) + (j * navirA * naoccA), (k * naoccA * navirB * navirA), 1.0, 0.0);
+                        ((size_t)i * naoccA * navirA * naoccA) + ((size_t)j * navirA * naoccA), ((size_t)k * naoccA * navirB * navirA), 1.0, 0.0);
 
                 // Waux(B,cA) sort 312 --> Waux(AB,c)
                 // Waux(B,cA) sort 132 --> Waux(BA,c)
@@ -682,7 +682,7 @@ void DFOCC::uccsd_triples_hm()
                 // W_AAB[IJk](AB,c) = \sum(E) t_Jk^Ec <IE||AB>         (3)
                 // W_AAB[IJk](AB,c) = \sum(E) G[I](E,AB) T[Jk](E,c)
                 W_AAB->contract(true, false, navir2AA, navirB, navirA, G_I_ABC, t2AB,
-                        0, (j * naoccB * navirA * navirB) + (k * navirA * navirB), 1.0, 1.0);
+                        0, ((size_t)j * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 1.0, 1.0);
 
                 // read G[J](A,BC)
                 G_I_ABC->myread(psio_, PSIF_DFOCC_IABC_AAAA, ((size_t)j * navirA * navir2AA) * sizeof(double));
@@ -690,18 +690,18 @@ void DFOCC::uccsd_triples_hm()
                 // W_AAB[IJk](AB,c) -= \sum(E) t_Ik^Ec <JE||AB>        (4)
                 // W_AAB[IJk](AB,c) -= \sum(E) G[J](E,AB) T[Ik](E,c)
                 W_AAB->contract(true, false, navir2AA, navirB, navirA, G_I_ABC, t2AB,
-                        0, (i * naoccB * navirA * navirB) + (k * navirA * navirB), -1.0, 1.0);
+                        0, ((size_t)i * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), -1.0, 1.0);
                 G_I_ABC.reset();
 
                 // W_AAB[IJk](AB,c) += \sum(M) t_JM^AB <Ik|Mc>         (5)
                 // W_AAB[IJk](AB,c) += \sum(M) T[J](M,AB) K[Ik](M,c)
                 W_AAB->contract(true, false, navir2AA, navirB, naoccA, t2AA, K_IjKa,
-                        (j * naoccA * navir2AA), (i * naoccB * naoccA * navirB) + (k * naoccA * navirB), 1.0, 1.0);
+                        ((size_t)j * naoccA * navir2AA), ((size_t)i * naoccB * naoccA * navirB) + ((size_t)k * naoccA * navirB), 1.0, 1.0);
 
                 // W_AAB[IJk](AB,c) -= \sum(M) t_IM^AB <Jk|Mc>         (6)
                 // W_AAB[IJk](AB,c) -= \sum(M) T[I](M,AB) K[Jk](M,c)
                 W_AAB->contract(true, false, navir2AA, navirB, naoccA, t2AA, K_IjKa,
-                        (i * naoccA * navir2AA), (j * naoccB * naoccA * navirB) + (k * naoccA * navirB), -1.0, 1.0);
+                        ((size_t)i * naoccA * navir2AA), ((size_t)j * naoccB * naoccA * navirB) + ((size_t)k * naoccA * navirB), -1.0, 1.0);
 
                 // read K[J](a,Bc)
                 K_I_aBc = std::make_shared<Tensor2d>("K[I] <a|Bc>", navirB, navirA, navirB);
@@ -712,7 +712,7 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[IJk](A,Bc) = \sum(e) t_Ik^Ae <Je|Bc>          (7)
                 // Waux[IJk](A,Bc) = \sum(e) T[Ik](A,e) K[J](e,Bc)
                 Waux->contract(false, false, navirA, navirA * navirB, navirB, t2AB, K_I_aBc,
-                        (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[I](a,Bc)
                 K_I_aBc->myread(psio_, PSIF_DFOCC_IABC_ABAB, ((size_t)i * navirB * navirA * navirB) * sizeof(double));
@@ -720,18 +720,18 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[IJk](A,Bc) -= \sum(e) t_Jk^Ae <Ie|Bc>         (8)
                 // Waux[IJk](A,Bc) -= \sum(e) T[Jk](A,e) K[I](e,Bc)
                 Waux->contract(false, false, navirA, navirA * navirB, navirB, t2AB, K_I_aBc,
-                        (j * naoccB * navirA * navirB) + (k * navirA * navirB), 0, -1.0, 1.0);
+                        ((size_t)j * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 0, -1.0, 1.0);
                 K_I_aBc.reset();
 
                 // Waux[IJk](A,Bc) += \sum(m) t_Im^Bc <Jk|Am>         (9)
                 // Waux[IJk](A,Bc) += \sum(m) K[Jk](A,m) T[I](m,Bc)
                 Waux->contract(false, false, navirA, navirA * navirB, naoccB, K_IjAk, t2AB,
-                        (j * naoccB * navirA * naoccB) + (k * navirA * naoccB), (i * naoccB * navirA * navirB), 1.0, 1.0);
+                        ((size_t)j * naoccB * navirA * naoccB) + ((size_t)k * navirA * naoccB), ((size_t)i * naoccB * navirA * navirB), 1.0, 1.0);
 
                 // Waux[IJk](A,Bc) -= \sum(m) t_Jm^Bc <Ik|Am>         (10)
                 // Waux[IJk](A,Bc) -= \sum(m) K[Ik](A,m) T[J](m,Bc)
                 Waux->contract(false, false, navirA, navirA * navirB, naoccB, K_IjAk, t2AB,
-                        (i * naoccB * navirA * naoccB) + (k * navirA * naoccB), (j * naoccB * navirA * navirB), -1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * naoccB) + ((size_t)k * navirA * naoccB), ((size_t)j * naoccB * navirA * navirB), -1.0, 1.0);
 
                 // W_AAB(AB,c) += Waux(AB,c)
                 W_AAB->axpy(Waux, 1.0);
@@ -852,25 +852,25 @@ void DFOCC::uccsd_triples_hm()
                 // W_ABB[Ijk](A,cb) = \sum(e) t_Ij^Ae <ke||cb>          (1)
                 // W_ABB[Ijk](A,cb) = T[Ij](A,e) G[k](e,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, navirB, t2AB, G_i_abc,
-                        (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read G[j](a,bc)
                 G_i_abc->myread(psio_, PSIF_DFOCC_IABC_BBBB, ((size_t)j * navirB * navir2BB) * sizeof(double));
                 // W_ABB[Ijk](A,cb) = \sum(e) t_Ik^Ae <je||cb>          (2)
                 // W_ABB[Ijk](A,cb) = T[Ik](A,e) G[j](e,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, navirB, t2AB, G_i_abc,
-                        (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, -1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 0, -1.0, 1.0);
                 G_i_abc.reset();
 
                 // W_ABB[Ijk](A,cb) = \sum(m) t_jm^cb <Ik|Am>           (3)
                 // W_ABB[Ijk](A,cb) = K[Ik](A,m) T[j](m,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, naoccB, K_IjAk, t2BB,
-                        (i * naoccB * navirA * naoccB) + (k * navirA * naoccB), (j * naoccB * navir2BB), 1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * naoccB) + ((size_t)k * navirA * naoccB), ((size_t)j * naoccB * navir2BB), 1.0, 1.0);
 
                 // W_ABB[Ijk](A,cb) = \sum(m) t_km^cb <Ij|Am>           (4)
                 // W_ABB[Ijk](A,cb) = K[Ij](A,m) T[k](m,cb)
                 W_ABB->contract(false, false, navirA, navir2BB, naoccB, K_IjAk, t2BB,
-                        (i * naoccB * navirA * naoccB) + (j * navirA * naoccB), (k * naoccB * navir2BB), -1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * naoccB) + ((size_t)j * navirA * naoccB), ((size_t)k * naoccB * navir2BB), -1.0, 1.0);
 
 
                 Waux = std::make_shared<Tensor2d>("X[Ijk](a,Bc)", navirB, navirA, navirB);
@@ -878,7 +878,7 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[Ijk](b,Ac) = \sum(m) t_Im^Ac <kj||bm>       (5)
                 // Waux[Ijk](b,Ac) = G[kj](b,m) T[I](m,Ac)
                 Waux->contract(false, false, navirB, navirA * navirB, naoccB, G_ijak, t2AB,
-                        (k * naoccB * navirB * naoccB) + (j * navirB * naoccB), (i * naoccB * navirA * navirB), 1.0, 0.0);
+                        ((size_t)k * naoccB * navirB * naoccB) + ((size_t)j * navirB * naoccB), ((size_t)i * naoccB * navirA * navirB), 1.0, 0.0);
 
                 // Waux(b,Ac) sort 231 --> Waux(A,cb)
                 // Waux(b,Ac) sort 213 --> Waux(A,bc)
@@ -898,7 +898,7 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[Ijk](c,Ab) = \sum(e) t_kj^ce <Ie|Ab>        (6)
                 // Waux[Ijk](c,Ab) = T[kj](c,e) K[I](e,Ab)
                 Waux->contract(false, false, navirB, navirA * navirB, navirB, t2BB, K_I_aBc,
-                        (k * naoccB * navir2BB) + (j * navir2BB), 0, 1.0, 0.0);
+                        ((size_t)k * naoccB * navir2BB) + ((size_t)j * navir2BB), 0, 1.0, 0.0);
                 K_I_aBc.reset();
 
                 // Waux(c,Ab) sort 213 --> Waux(A,cb)
@@ -922,7 +922,7 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[Ijk](b,cA) = \sum(E) t_Ij^Eb <kE|cA>        (7)
                 // Waux[Ijk](b,cA) = T[Ij](E,b) K[k](E,cA)
                 Waux->contract(true, false, navirB, navirB * navirA, navirA, t2AB, K_i_AbC,
-                        (i * naoccB * navirA * navirB) + (j * navirA * navirB), 0, 1.0, 0.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)j * navirA * navirB), 0, 1.0, 0.0);
 
                 // read K[j](A,bC)
                 K_i_AbC->myread(psio_, PSIF_DFOCC_IABC_BABA, ((size_t)j * navirB * navir2AA) * sizeof(double));
@@ -930,7 +930,7 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[Ijk](b,cA) = \sum(E) t_Ik^Eb <jE|cA>        (8)
                 // Waux[Ijk](b,cA) = T[Ik](E,b) K[j](E,cA)
                 Waux->contract(true, false, navirB, navirB * navirA, navirA, t2AB, K_i_AbC,
-                        (i * naoccB * navirA * navirB) + (k * navirA * navirB), 0, -1.0, 1.0);
+                        ((size_t)i * naoccB * navirA * navirB) + ((size_t)k * navirA * navirB), 0, -1.0, 1.0);
                 K_i_AbC.reset();
 
                 // Waux(b,cA) sort 321 --> Waux(A,cb)
@@ -947,12 +947,12 @@ void DFOCC::uccsd_triples_hm()
                 // Waux[Ijk](c,bA) = \sum(M) t_kM^bA <Ij|Mc>        (9)
                 // Waux[Ijk](c,bA) = K[Ij](M,c) t[k](M,bA)
                 Waux->contract(true, false, navirB, navirB * navirA, naoccA, K_IjKa, t2BA,
-                        (i * naoccB * naoccA * navirB) + (j * naoccA * navirB), (k * naoccA * navirB * navirA), 1.0, 0.0);
+                        ((size_t)i * naoccB * naoccA * navirB) + ((size_t)j * naoccA * navirB), ((size_t)k * naoccA * navirB * navirA), 1.0, 0.0);
 
                 // Waux[Ijk](c,bA) = \sum(M) t_jM^bA <Ik|Mc>        (10)
                 // Waux[Ijk](c,bA) = K[Ik](M,c) t[j](M,bA)
                 Waux->contract(true, false, navirB, navirB * navirA, naoccA, K_IjKa, t2BA,
-                        (i * naoccB * naoccA * navirB) + (k * naoccA * navirB), (j * naoccA * navirB * navirA), -1.0, 1.0);
+                        ((size_t)i * naoccB * naoccA * navirB) + ((size_t)k * naoccA * navirB), ((size_t)j * naoccA * navirB * navirA), -1.0, 1.0);
 
                 // Waux(c,bA) sort 312 --> Waux(A,cb)
                 // Waux(c,bA) sort 321 --> Waux(A,bc)
