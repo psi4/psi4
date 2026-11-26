@@ -65,8 +65,8 @@ class BrianQCBase : public DensityFunctionalIntegratorManager {
 
    public:
     BrianQCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : DensityFunctionalIntegratorManager(primary, options), functional_(functional) {
-        if (!options_.get_bool("BRIANQC_INTEGRATE")) {
-            throw PSIEXCEPTION("Brian integration not enabled!");
+        if (!options_.get_bool("BRIANQC_ENABLE")) {
+            throw PSIEXCEPTION("BrianQC not enabled!");
 	}
     };
     void initialize() override;

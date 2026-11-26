@@ -178,7 +178,7 @@ void DirectJK::compute_JK() {
         std::ranges::transform(integrator, integrator.begin(), [](unsigned char c){
             return std::toupper(c);
         });
-        if (do_wK_ and not integrator != "BRIANQC") {
+        if (do_wK_ and not integrator == "BRIANQC") {
             throw PSIEXCEPTION("Currently, BrianQC cannot compute range-separated exact exchange when Psi4 is handling the DFT terms");
         }
 
