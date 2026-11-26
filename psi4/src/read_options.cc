@@ -2021,17 +2021,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 #ifdef USING_gauxc
         /*- Load Balancer kernel for KS !expert -*/
         options.add_str("GAUXC_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
-        /*- Pruning scheme for KS grids !expert -*/
-        options.add_str("GAUXC_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
-        /*- Radial Scheme for KS grid. 
-        MURA is default here as it matches the GauXC default option -*/
-        options.add_str("GAUXC_RADIAL_SCHEME", "MURA", "MURA TREUTLER EM");
+        /*- Pruning scheme for KS grids. If not set, pulls from DFT_PRUNING_SCHEME, sending unsupported options to robust.
+	    The recommended scheme is robust. !expert -*/
+        options.add_str("GAUXC_PRUNING_SCHEME", "NONE", "ROBUST TREUTLER NONE");
+        /*- Radial Scheme for KS grid. If not explicitly set, taken from DFT_RADIAL_SCHEME, sending unsupport options to treutler. -*/
+        options.add_str("GAUXC_RADIAL_SCHEME", "TREUTLER", "MURA TREUTLER EM");
         /*- Maximum number of grid points per grid block for GauXC !expert -*/ 
         options.add_int("GAUXC_GRID_BATCH_SIZE", 512);
-        /*- Number of spherical points in GauXC grid. -*/
+        /*- Number of spherical points in GauXC grid. Pulls from DFT_SPHERICAL_POINTS if not explicitly set. !expert -*/
         options.add_int("GAUXC_SPHERICAL_POINTS", 302);
-        /*- Number of radial points in GauXC grid. -*/
-        options.add_int("GAUXC_RADIAL_POINTS", 70);
+        /*- Number of radial points in GauXC grid. Pulls from DFT_RADIAL_POINTS if not explicitly set. !expert -*/
+        options.add_int("GAUXC_RADIAL_POINTS", 75);
+        /*- Tolerance when evaluating GauXC basis functions. Pulls from DFT_BASIS_TOLERANCE if not explicitly set. !expert -*/
+        options.add_double("GAUXC_BASIS_TOLERANCE", 1e-12);
+        /*- Nuclear weights scheme. Pulls from DFT_NUCLEAR_SCHEME if not set, sending unsupported options to Stratmann.
+	    Stratmann is called SSF in GauXC. -*/
+        options.add_str("GAUXC_NUCLEAR_SCHEME", "STRATMANN", "BECKE STRATMANN");
         /*- Use GPU for GauXC? -*/
         options.add_bool("GAUXC_USE_GPU", false);
         /*- Proportion (in %) of available GPU memory to allocate to GauXC. !expert-*/

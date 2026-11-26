@@ -82,7 +82,7 @@ def test_rks_energy(inp, symmetry, basis, gauxc_exec):
 ])
 @pytest.mark.parametrize("basis", [
     pytest.param({'name': "sto-6g"}, id='sto6g'),
-    pytest.param({'name': "cc-pvdz"}, id='dz'),
+    pytest.param({'name': "cc-pvdz"}, id='dz', marks=pytest.mark.long),
 ])
 def test_rks_grad(inp, symmetry, basis, gauxc_exec):
     h2o = psi4.geometry("""
@@ -132,7 +132,7 @@ def test_rks_grad(inp, symmetry, basis, gauxc_exec):
 ])
 @pytest.mark.parametrize("basis", [
     pytest.param({'name': "sto-6g"}, id='sto6g'),
-    pytest.param({'name': "cc-pvdz"}, id='dz'),
+    pytest.param({'name': "cc-pvdz"}, id='dz', marks=pytest.mark.long),
 ])
 def test_rks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
     h2o = psi4.geometry("""
@@ -188,7 +188,7 @@ def test_rks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
 ])
 @pytest.mark.parametrize("basis", [
     pytest.param({'name': "sto-6g"}, id='sto6g'),
-    pytest.param({'name': "cc-pvdz"}, id='dz'),
+    pytest.param({'name': "cc-pvdz"}, id='dz', marks=pytest.mark.long),
 ])
 def test_uks_energy(inp, symmetry, basis, gauxc_exec):
     h2o = psi4.geometry("""
@@ -237,7 +237,7 @@ def test_uks_energy(inp, symmetry, basis, gauxc_exec):
 ])
 @pytest.mark.parametrize("basis", [
     pytest.param({'name': "sto-6g"}, id='sto6g'),
-    pytest.param({'name': "cc-pvdz"}, id='dz'),
+    pytest.param({'name': "cc-pvdz"}, id='dz', marks=pytest.mark.long),
 ])
 def test_uks_gradient(inp, symmetry, basis, gauxc_exec):
     h2o = psi4.geometry("""
@@ -289,7 +289,7 @@ def test_uks_gradient(inp, symmetry, basis, gauxc_exec):
 ])
 @pytest.mark.parametrize("basis", [
     pytest.param({'name': "sto-6g"}, id='sto6g'),
-    pytest.param({'name': "cc-pvdz"}, id='dz'),
+    pytest.param({'name': "cc-pvdz"}, id='dz', marks=pytest.mark.long),
 ])
 def test_uks_tdscf(inp, symmetry, tda, basis, gauxc_exec):
     h2o = psi4.geometry("""
@@ -443,4 +443,26 @@ def test_blocked_custom():
 
     assert any("does not support customized LibXC" in msg for code, msg in e.value.failures)
 
+def test_dft_grid_fallthrough():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
+
+    psi4.set_options({
+        "dft_xc_integrator_packages": ["gauxc"],
+        "r_convergence": 9
+    })
+
+    e1 = psi4.energy("b3lyp/cc-pvdz")
+    
+    psi4.set_options({
+        "dft_radial_points": 10,
+        "dft_spherical_points": 38
+    })
+
+    e2 = psi4.energy("b3lyp/cc-pvdz")
+
+    assert abs(e2 - e1) > 1e-3
 

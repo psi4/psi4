@@ -84,6 +84,12 @@ void GauXCBase::initialize() {
       {"TREUTLER", GauXC::PruningScheme::Treutler},
       {"NONE", GauXC::PruningScheme::Unpruned}
     };
+    if (!options_["GAUXC_PRUNING_SCHEME"].has_changed()) {
+	auto it = pruning_scheme_map.find(options_.get_str("GAUXC_PRUNING_SCHEME"));
+        std::string result = (it != pruning_scheme_map.end()) ? it->first : "ROBUST";
+	options_.set_str("SCF", "GAUXC_PRUNING_SCHEME", result);
+	options_.get("GAUXC_PRUNING_SCHEME").dechanged();
+    }
     auto pruning_scheme = options_.get_str("GAUXC_PRUNING_SCHEME");
 
     // generate map for radial quadrature schemes 
@@ -92,23 +98,56 @@ void GauXCBase::initialize() {
       {"MURA", GauXC::RadialQuad::MuraKnowles},
       {"EM", GauXC::RadialQuad::MurrayHandyLaming}
     };
+    if (!options_["GAUXC_RADIAL_SCHEME"].has_changed()) {
+	auto it = radial_scheme_map.find(options_.get_str("GAUXC_PRUNING_SCHEME"));
+        std::string result = (it != radial_scheme_map.end()) ? it->first : "TREUTLER";
+	options_.set_str("SCF", "GAUXC_RADIAL_SCHEME", result);
+	options_.get("GAUXC_RADIAL_SCHEME").dechanged();
+    }
     auto radial_scheme = options_.get_str("GAUXC_RADIAL_SCHEME");
+
+    // generate map for radial quadrature schemes 
+    std::unordered_map<std::string, GauXC::XCWeightAlg> nuclear_weight_scheme_map = { 
+      {"BECKE", GauXC::XCWeightAlg::Becke},
+      {"STRATMANN", GauXC::XCWeightAlg::SSF},
+    };
+    if (!options_["GAUXC_NUCLEAR_SCHEME"].has_changed()) {
+	auto it = nuclear_weight_scheme_map.find(options_.get_str("GAUXC_NUCLEAR_SCHEME"));
+        std::string result = (it != nuclear_weight_scheme_map.end()) ? it->first : "STRATMANN";
+	options_.set_str("SCF", "GAUXC_NUCLEAR_SCHEME", result);
+	options_.get("GAUXC_NUCLEAR_SCHEME").dechanged();
+    }
+    auto nuclear_scheme = options_.get_str("GAUXC_NUCLEAR_SCHEME");
+
     auto grid_batch_size = options_.get_int("GAUXC_GRID_BATCH_SIZE");
+    if (!options_["GAUXC_RADIAL_POINTS"].has_changed()) {
+	options_.set_int("SCF", "GAUXC_RADIAL_POINTS", options_.get_int("DFT_RADIAL_POINTS"));
+	options_.get("GAUXC_RADIAL_POINTS").dechanged();
+    }
+    if (!options_["GAUXC_SPHERICAL_POINTS"].has_changed()) {
+	options_.set_int("SCF", "GAUXC_SPHERICAL_POINTS", options_.get_int("DFT_SPHERICAL_POINTS"));
+	options_.get("GAUXC_SPHERICAL_POINTS").dechanged();
+    }
+    if (!options_["GAUXC_BASIS_TOLERANCE"].has_changed()) {
+	options_.set_double("SCF", "GAUXC_BASIS_TOLERANCE", options_.get_double("DFT_BASIS_TOLERANCE"));
+	options_.get("GAUXC_BASIS_TOLERANCE").dechanged();
+    }
     auto radial_points = options_.get_int("GAUXC_RADIAL_POINTS");
     auto spherical_points = options_.get_int("GAUXC_SPHERICAL_POINTS");
+    auto basis_tolerance = options_.get_double("GAUXC_BASIS_TOLERANCE");
 
     auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
         gauxc_mol, 
         pruning_scheme_map[pruning_scheme],
-        GauXC::BatchSize(grid_batch_size), // TODO: Value taken from MPQC. Experimental.
+        GauXC::BatchSize(grid_batch_size),
         radial_scheme_map[radial_scheme], 
         GauXC::RadialSize(radial_points),
         GauXC::AngularSize(spherical_points)
     );
-    auto gauxc_primary = primary_->to_gauxc_basisset<double>(1.0e-10, false); // TODO: Allow customization
+    auto gauxc_primary = primary_->to_gauxc_basisset<double>(basis_tolerance, false);
     auto load_balancer = lb_factory.get_shared_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
     GauXC::MolecularWeightsFactory mw_factory(gauxc_execspace, "Default",
-                                          GauXC::MolecularWeightsSettings{});
+                                          GauXC::MolecularWeightsSettings{nuclear_weight_scheme_map[nuclear_scheme], false});
     auto mw = mw_factory.get_instance();
     mw.modify_weights(*load_balancer);
 
@@ -153,10 +192,13 @@ void GauXCBase::print_header() const {
     outfile->Printf("    Execution Space        = %14s\n", use_gpu_ ? "Device (GPU)" : "Host (CPU)");
     outfile->Printf("    Radial Scheme          = %14s\n", options_.get_str("GAUXC_RADIAL_SCHEME").c_str());
     outfile->Printf("    Pruning Scheme         = %14s\n", options_.get_str("GAUXC_PRUNING_SCHEME").c_str());
+    outfile->Printf("    Nuclear Scheme         = %14s\n", options_.get_str("GAUXC_NUCLEAR_SCHEME").c_str());
     outfile->Printf("\n");
     outfile->Printf("    Radial Points          = %14d\n", options_.get_int("GAUXC_RADIAL_POINTS"));
     outfile->Printf("    Spherical Points       = %14d\n", options_.get_int("GAUXC_SPHERICAL_POINTS"));
     outfile->Printf("    Grid Batch Size        = %14d\n", options_.get_int("GAUXC_GRID_BATCH_SIZE"));
+    outfile->Printf("    Basis Tolerance        = %14.2e\n", options_.get_double("GAUXC_BASIS_TOLERANCE"));
+    outfile->Printf("\n");
     outfile->Printf("\n");
 
 }
