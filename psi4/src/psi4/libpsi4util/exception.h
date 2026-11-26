@@ -32,6 +32,7 @@
 #include <cstring>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 #if defined(__GNUC__) || (defined(__ICC) && (__ICC >= 600))
 #define PSI4_CURRENT_FUNCTION __PRETTY_FUNCTION__
@@ -362,6 +363,25 @@ class InputException : public PsiException {
     InputException(std::string msg, std::string param_name, const char *file, int line) noexcept;
 };
 
-}  // end namespace psi exception
+/**
+* List of exceptions, to be used only when a series of fallback
+* functions all fail.
+*/
+class CompositePsiException : public PsiException {
+   private:
+     std::vector<std::pair<std::string, std::string>> components_;
+   public:
+    /**
+    * Constructor
+    * @param msg A message descring why the input parameter is invalid
+    * @param file The file that threw the exception (use __FILE__ macro)
+    * @param line The line number that threw the exception (use __LINE__ macro)
+    * @param components An array of (fallback identifier, fallback error message)
+    */
+    CompositePsiException(std::string msg, const std::vector<std::pair<std::string, std::string>>& components, const char *file, int line) noexcept;
 
+    const std::vector<std::pair<std::string, std::string>>& components() const noexcept { return components_; }
+};
+
+}  // end namespace psi exception
 #endif

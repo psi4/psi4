@@ -37,20 +37,22 @@
 namespace psi {
 
 void DensityFunctionalIntegratorDispatcher::initialize() {
-  // Note the highly-irregular for loop.
-  for (auto it = managers_.begin(); it != managers_.end();) {
+  std::vector<std::pair<std::string, std::string>> msgs;
+
+  std::erase_if(managers_, [&](const auto& mgr) {
     try {
-        (*it)->initialize();
-        ++it;
+      mgr->initialize();
+      return false;
+    } catch (const std::exception& e) {
+      const auto& name = mgr->get_name();
+      outfile->Printf("Error in manager %s:\n%s", name.c_str(), e.what());
+      msgs.emplace_back(name, e.what());
+      return true;
     }
-    catch (const std::exception& e) {
-      outfile->Printf("Error in manager " + (*it)->get_name() + ":\n");
-      outfile->Printf("%s", e.what());
-      it = managers_.erase(it); // Erase returns the next valid iterator
-    }
-  }
+  });
+
   if (managers_.empty())
-      throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to initialize.");
+      throw CompositePsiException("No DensityFunctionalIntegratorManager managed to initialize.", msgs, __FILE__, __LINE__);
 }
 
 void DensityFunctionalIntegratorDispatcher::print_header() const {
@@ -65,21 +67,23 @@ void DensityFunctionalIntegratorDispatcher::set_D(std::vector<SharedMatrix> Dvec
 void DensityFunctionalIntegratorDispatcher::set_grac_shift(double shift) {
   // If the user requests GRAC, that's a change to the low-level numerical integration
   // that most codes don't support. Drop those that can't support it.
-  // Note the highly-irregular for loop.
-  for (auto it = managers_.begin(); it != managers_.end();) {
-    if (auto grac_manager = dynamic_pointer_cast<VBase>(*it)) {
+  std::vector<std::pair<std::string, std::string>> msgs;
+  std::erase_if(managers_, [&](const auto& mgr) {
+    if (auto grac_manager = dynamic_pointer_cast<VBase>(mgr)) {
       grac_manager->set_grac_shift(shift);
-      ++it;              // Move to the next element
+      return false;
     } else {
-      it = managers_.erase(it); // Erase returns the next valid iterator
+      return true;
     }
-  }
+  });
+
   if (managers_.empty())
-      throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to set_grac_shift.");
+      throw CompositePsiException("No DensityFunctionalIntegratorManager managed to set_grac_shift.", msgs, __FILE__, __LINE__);
 }
 
 std::map<std::string, double> DensityFunctionalIntegratorDispatcher::compute_V(std::vector<SharedMatrix> ret) {
   std::map<std::string, double> rmap;
+  std::vector<std::pair<std::string, std::string>> msgs;
   for (const auto& manager: managers_) {
     try {
       rmap = manager->compute_V(ret);
@@ -89,18 +93,20 @@ std::map<std::string, double> DensityFunctionalIntegratorDispatcher::compute_V(s
       }
     }
     catch (const std::exception& e) {
-      outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf("%s", e.what());
+      const auto& name = manager->get_name();
+      outfile->Printf("Error in manager %s:\n%s", name.c_str(), e.what());
+      msgs.emplace_back(name, e.what());
       timer_off(manager->get_timer_name() + ": Form V"); 
     }
     for (auto& vec: ret) { vec->zero(); }
   }
-  throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_V.");
+  throw CompositePsiException("No DensityFunctionalIntegratorManager managed to compute_V.", msgs, __FILE__, __LINE__);
 }
 
 SharedMatrix DensityFunctionalIntegratorDispatcher::compute_gradient() {
   bool computable = false;
   SharedMatrix grad;
+  std::vector<std::pair<std::string, std::string>> msgs;
   for (const auto& manager: managers_) {
     if (manager->can_compute_gradient()) computable = true;
     else continue;
@@ -108,20 +114,22 @@ SharedMatrix DensityFunctionalIntegratorDispatcher::compute_gradient() {
       grad = manager->compute_gradient();
     }
     catch (const std::exception& e) {
-      outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf("%s", e.what());
+      const auto& name = manager->get_name();
+      outfile->Printf("Error in manager %s:\n%s", name.c_str(), e.what());
+      msgs.emplace_back(name, e.what());
       timer_off(manager->get_timer_name() + ": Form gradient"); 
       continue;
     }
     if (grad != nullptr) return grad;
   }
   if (computable)
-    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_gradient.");
+    throw CompositePsiException("No DensityFunctionalIntegratorManager managed to compute_gradient.", msgs, __FILE__, __LINE__);
   else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_gradient defined.");
 }
 
 void DensityFunctionalIntegratorDispatcher::compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
   bool computable = false;
+  std::vector<std::pair<std::string, std::string>> msgs;
   for (const auto& manager: managers_) {
     if (manager->can_compute_Vx()) computable = true;
     else continue;
@@ -130,19 +138,21 @@ void DensityFunctionalIntegratorDispatcher::compute_Vx(const std::vector<SharedM
       return;
     }
     catch (const std::exception& e) {
-      outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf("%s", e.what());
+      const auto& name = manager->get_name();
+      outfile->Printf("Error in manager %s:\n%s", name.c_str(), e.what());
+      msgs.emplace_back(name, e.what());
       timer_off(manager->get_timer_name() + ": Form Vx");
       for (auto& vec: ret) { vec->zero(); }
     }
   }
   if (computable)
-    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_Vx.");
+    throw CompositePsiException("No DensityFunctionalIntegratorManager managed to compute_Vx.", msgs, __FILE__, __LINE__);
   else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_Vx defined.");
 }
 
 void DensityFunctionalIntegratorDispatcher::compute_Vx_triplet(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
   bool computable = false;
+  std::vector<std::pair<std::string, std::string>> msgs;
   for (const auto& manager: managers_) {
     if (manager->can_compute_Vx_triplet()) computable = true;
     else continue;
@@ -151,20 +161,22 @@ void DensityFunctionalIntegratorDispatcher::compute_Vx_triplet(const std::vector
       return;
     }
     catch (const std::exception& e) {
-      outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf("%s", e.what());
+      const auto& name = manager->get_name();
+      outfile->Printf("Error in manager %s:\n%s", name.c_str(), e.what());
+      msgs.emplace_back(name, e.what());
       timer_off(manager->get_timer_name() + ": Form Vx");
       for (auto& vec: ret) { vec->zero(); }
     }
   }
   if (computable)
-    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_Vx_triplet.");
+    throw CompositePsiException("No DensityFunctionalIntegratorManager managed to compute_Vx_triplet.", msgs, __FILE__, __LINE__);
   else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_Vx_triplet defined.");
 }
 
 SharedMatrix DensityFunctionalIntegratorDispatcher::compute_hessian() {
   bool computable = false;
   SharedMatrix hess;
+  std::vector<std::pair<std::string, std::string>> msgs;
   for (const auto& manager: managers_) {
     if (manager->can_compute_hessian()) computable = true;
     else continue;
@@ -172,21 +184,23 @@ SharedMatrix DensityFunctionalIntegratorDispatcher::compute_hessian() {
       hess = manager->compute_hessian();
     }
     catch (const std::exception& e) {
-      outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf("%s", e.what());
+      const auto& name = manager->get_name();
+      outfile->Printf("Error in manager %s:\n%s", name.c_str(), e.what());
+      msgs.emplace_back(name, e.what());
       timer_off(manager->get_timer_name() + ": Form hessian"); 
       continue;
     }
     if (hess != nullptr) return hess;
   }
   if (computable)
-    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_hessian.");
+    throw CompositePsiException("No DensityFunctionalIntegratorManager managed to compute_hessian.", msgs, __FILE__, __LINE__);
   else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_hessian.");
 }
 
 std::vector<SharedMatrix> DensityFunctionalIntegratorDispatcher::compute_fock_derivatives() {
   bool computable = false;
   std::vector<SharedMatrix> derivs;
+  std::vector<std::pair<std::string, std::string>> msgs;
   for (const auto& manager: managers_) {
     if (manager->can_compute_fock_derivatives()) computable = true;
     else continue;
@@ -194,15 +208,16 @@ std::vector<SharedMatrix> DensityFunctionalIntegratorDispatcher::compute_fock_de
       derivs = manager->compute_fock_derivatives();
     }
     catch (const std::exception& e) {
-      outfile->Printf("Error in manager " + manager->get_name() + ":\n");
-      outfile->Printf("%s", e.what());
+      const auto& name = manager->get_name();
+      outfile->Printf("Error in manager %s:\n%s", name.c_str(), e.what());
+      msgs.emplace_back(name, e.what());
       timer_off(manager->get_timer_name() + ": Form Fx"); 
       continue;
     }
     if (!derivs.empty()) return derivs;
   }
   if (computable)
-    throw PSIEXCEPTION("No DensityFunctionalIntegratorManager managed to compute_fock_derivatives.");
+    throw CompositePsiException("No DensityFunctionalIntegratorManager managed to compute_fock_derivatives.", msgs, __FILE__, __LINE__);
   else throw PSIEXCEPTION("No DensityFunctionalIntegratorManager has compute_fock_derivatives.");
 }
 
@@ -236,7 +251,7 @@ std::shared_ptr<SuperFunctional> DensityFunctionalIntegratorDispatcher::function
   for (const auto& manager: managers_) {
     auto current_functional = manager->functional();
     if (!first_functional) first_functional = current_functional;
-    else if (first_functional != current_functional) throw PSIEXCEPTION("DensityFunctionalIntegratorManagers have differnet functionals.");
+    else if (first_functional != current_functional) throw PSIEXCEPTION("DensityFunctionalIntegratorManagers have different functionals.");
   }
   return first_functional;
 }

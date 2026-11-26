@@ -19,10 +19,10 @@ def test_dft_grid_threaded_raise():
         "basis": "def2-TZVPPD",
     })
     
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(psi4.core.CompositePsiException) as e:
         ene = psi4.energy("wB97M-V")
 
-    assert "There is no SG-1 grid defined for the requested atomic number" in str(e.value)
+    assert any("There is no SG-1 grid defined for the requested atomic number" in msg for code, msg in e.value.failures)
 
 def test_cc_uhf_raise1():
     psi4.geometry("""

@@ -402,8 +402,10 @@ def test_blocked_vv10():
         "dft_xc_integrator_packages": ["gauxc"]
     })
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(psi4.core.CompositePsiException) as e:
         psi4.energy("wb97X-v/cc-pvdz")
+
+    assert any("does not support VV10" in msg for code, msg in e.value.failures)
 
 def test_blocked_custom_omega():
     h2o = psi4.geometry("""
@@ -417,8 +419,10 @@ def test_blocked_custom_omega():
         "dft_omega": 0.42
     })
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(psi4.core.CompositePsiException) as e:
         psi4.energy("wb97X/cc-pvdz")
+
+    assert any("does not support omega custom" in msg for code, msg in e.value.failures)
 
 def test_blocked_custom():
     h2o = psi4.geometry("""
@@ -434,7 +438,9 @@ def test_blocked_custom():
         "dft_xc_integrator_packages": ["gauxc"],
     })
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(psi4.core.CompositePsiException) as e:
         psi4.energy("scf/cc-pvdz", dft_functional = pbe_tweak)
+
+    assert any("does not support customized LibXC" in msg for code, msg in e.value.failures)
 
 

@@ -184,4 +184,8 @@ FeatureNotImplemented::FeatureNotImplemented(std::string module_name, std::strin
 }
 
 FeatureNotImplemented::~FeatureNotImplemented() throw() {}
+
+CompositePsiException::CompositePsiException(std::string msg, const std::vector<std::pair<std::string, std::string>>& components, const char *_file, int _line) throw()
+    : PsiException(msg, _file, _line), components_(components) {
+}
 }
