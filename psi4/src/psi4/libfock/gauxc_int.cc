@@ -51,6 +51,14 @@
 namespace psi {
 
 void GauXCBase::initialize() {
+    // No VV10 support: https://github.com/wavefunction91/GauXC/pull/210
+    if (functional_->needs_vv10())
+        throw PSIEXCEPTION("GauXC does not support VV10 just yet.");
+    if (functional_->needs_grac())
+        throw PSIEXCEPTION("GauXC does not support GRAC shifts.");
+    if (functional_->is_x_lrc() and options_["DFT_OMEGA"].has_changed())
+        throw PSIEXCEPTION("GauXC does not support omega customization.");
+
     use_gpu_ = options_.get_bool("GAUXC_USE_GPU");
 #ifndef GAUXC_HAS_DEVICE
     if (use_gpu_) {
@@ -108,14 +116,6 @@ void GauXCBase::initialize() {
     GauXC::XCIntegratorFactory<Eigen::MatrixXd> integrator_factory(
           gauxc_execspace, "Replicated", "Default", "Default", "Default");
     std::vector<std::pair<double, ExchCXX::XCKernel>> init_vec;
-
-    // No VV10 support: https://github.com/wavefunction91/GauXC/pull/210
-    if (functional_->needs_vv10())
-        throw PSIEXCEPTION("GauXC does not support VV10 just yet.");
-    if (functional_->needs_grac())
-        throw PSIEXCEPTION("GauXC does not support GRAC shifts.");
-    if (functional_->is_x_lrc() and options_["DFT_OMEGA"].has_changed())
-        throw PSIEXCEPTION("GauXC does not support omega customization.");
 
     for (const auto functionalComponent: functional_->x_functionals()) {
         auto xcfunc = dynamic_pointer_cast<LibXCFunctional>(functionalComponent);
