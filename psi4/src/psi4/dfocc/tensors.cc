@@ -3477,7 +3477,7 @@ double *Tensor2d::to_vector() {
 
 double Tensor2d::rms() {
     double summ = 0.0;
-#pragma omp parallel for
+#pragma omp parallel for reduction(+ : summ)
     for (int i = 0; i < dim1_; ++i) {
         for (int j = 0; j < dim2_; ++j) {
             summ += A2d_[i][j] * A2d_[i][j];
@@ -3490,7 +3490,7 @@ double Tensor2d::rms() {
 
 double Tensor2d::rms(const SharedTensor2d &a) {
     double summ = 0.0;
-#pragma omp parallel for
+#pragma omp parallel for reduction(+ : summ)
     for (int i = 0; i < dim1_; ++i) {
         for (int j = 0; j < dim2_; ++j) {
             summ += (A2d_[i][j] - a->A2d_[i][j]) * (A2d_[i][j] - a->A2d_[i][j]);
