@@ -68,8 +68,9 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     build_obtaining.rst libint.rst simint.rst gcp.rst
     index_tutorials.rst prog_faq.rst manage_index.rst manage_git.rst
     prog_style_c.rst prog_blas.rst add_tests.rst plugin_snsmp2.rst dftnl.rst
-    libxc.rst gau2grid.rst prog_conduct.rst prog_intro.rst prog_newcode.rst
-    prog_setup.rst prog_welcome.rst prog_ways_to_add.rst
+    libxc.rst gau2grid.rst prog_conduct.rst prog_intro.rst prog_lsp.rst
+    prog_newcode.rst prog_setup.rst prog_tools.rst prog_welcome.rst
+    prog_ways_to_add.rst
     prog_full_integration.rst prog_style_py.rst prog_help.rst
     prog_debug_profile.rst manage_release.rst plugin_psi4fockci.rst
     brianqc.rst tdscf.rst prog_integrals.rst prog_tour.rst mcscf.rst
