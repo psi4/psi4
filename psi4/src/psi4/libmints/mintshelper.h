@@ -218,6 +218,10 @@ class PSI_API MintsHelper {
                                             SharedMatrix C4);
     std::vector<SharedMatrix> ao_metric_deriv1(int atom, const std::string& aux_name);
     std::vector<SharedMatrix> ao_3center_deriv1(int atom, const std::string& aux_name);
+    /// Gradient (natom x 3) of sum_{PQ} (P|Q) G_PQ, G (naux x naux) in the aux_name basis
+    SharedMatrix ao_metric_deriv1_contracted(const std::string& aux_name, SharedMatrix G);
+    /// Gradient (natom x 3) of sum_{P,mn} (P|mn) G_{P,mn}, G (naux x nbf*nbf) in the layout of ao_3center_deriv1
+    SharedMatrix ao_3center_deriv1_contracted(const std::string& aux_name, SharedMatrix G);
 
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega, std::shared_ptr<IntegralFactory> = nullptr);

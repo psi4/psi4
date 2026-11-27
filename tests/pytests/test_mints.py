@@ -185,3 +185,33 @@ def test_export_ao_overlap_half_deriv():
 
             # Test (S_ij)^x = < i^x | j > + < i | j^x >
             assert compare_arrays(deriv1_np[map_key1] + deriv1_np[map_key2], deriv1_np[map_key3])
+
+
+@pytest.mark.parametrize("puream,screening", [(True, "csam"), (False, "csam"), (True, "none")])
+def test_contracted_df_deriv1(puream, screening):
+    """ao_3center_deriv1_contracted / ao_metric_deriv1_contracted equal the per-atom derivatives contracted with G."""
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+        symmetry c1
+    """)
+    psi4.set_options({"basis": "cc-pvdz", "puream": puream, "screening": screening})
+    orb = psi4.core.BasisSet.build(h2o, "ORBITAL", "cc-pvdz", puream=puream)
+    aux = psi4.core.BasisSet.build(h2o, "DF_BASIS_SCF", "cc-pvdz-jkfit", puream=puream)
+    mints = psi4.core.MintsHelper(orb)
+    mints.set_basisset("DF_BASIS_SCF", aux)
+    naux, nbf = aux.nbf(), orb.nbf()
+    rng = np.random.default_rng(7)
+    G3 = rng.standard_normal((naux, nbf * nbf))      # not symmetric in (m, n)
+    G2 = rng.standard_normal((naux, naux))
+    ref3 = np.array([[np.vdot(np.asarray(d).reshape(naux, -1), G3) for d in mints.ao_3center_deriv1(a, "DF_BASIS_SCF")]
+                     for a in range(h2o.natom())])
+    ref2 = np.array([[np.vdot(np.asarray(d), G2) for d in mints.ao_metric_deriv1(a, "DF_BASIS_SCF")]
+                     for a in range(h2o.natom())])
+    tst3 = mints.ao_3center_deriv1_contracted("DF_BASIS_SCF", psi4.core.Matrix.from_array(G3))
+    tst2 = mints.ao_metric_deriv1_contracted("DF_BASIS_SCF", psi4.core.Matrix.from_array(G2))
+    assert compare_arrays(ref3, np.asarray(tst3), 10, "contracted 3-center derivative")
+    assert compare_arrays(ref2, np.asarray(tst2), 10, "contracted metric derivative")
+    with pytest.raises(RuntimeError, match="must be naux x nbf"):
+        mints.ao_3center_deriv1_contracted("DF_BASIS_SCF", psi4.core.Matrix.from_array(G2))

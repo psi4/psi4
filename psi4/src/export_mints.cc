@@ -1609,6 +1609,13 @@ void export_mints(py::module& m) {
              "Gradient of AO basis metric integrals: returns 3 matrices", "atom"_a, "aux_name"_a)
         .def("ao_3center_deriv1", &MintsHelper::ao_3center_deriv1,
              "Gradient of AO basis 3-center, density-fitted integrals: returns 3 matrices", "atom"_a, "aux_name"_a)
+        .def("ao_metric_deriv1_contracted", &MintsHelper::ao_metric_deriv1_contracted,
+             "Gradient (natom x 3) of sum_PQ (P|Q) G_PQ for G (naux x naux) in the aux_name basis", "aux_name"_a,
+             "G"_a)
+        .def("ao_3center_deriv1_contracted", &MintsHelper::ao_3center_deriv1_contracted,
+             "Gradient (natom x 3) of sum_{P,mn} (P|mn) G_{P,mn} for G (naux x nbf*nbf, the layout of "
+             "ao_3center_deriv1) in the aux_name basis",
+             "aux_name"_a, "G"_a)
         .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1,
              "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices", "oei_type"_a, "atom"_a, "C1"_a,
              "C2"_a)
