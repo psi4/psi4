@@ -1334,6 +1334,11 @@ class PSI_API CompositeJK : public JK {
     std::string get_COSX_grid();
 
     /**
+    * Set whether to compute COSX gradients
+    */
+    void set_COSX_gradient(bool do_gradient);
+
+    /**
     * Get maximum AM for GauXC used for snLinK, if GauXC support is enabled
     * Throws if GauXC is not installed or if snLinK is not being used
     */
