@@ -39,7 +39,6 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/psi4-dec.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -58,7 +57,6 @@ namespace ccresponse {
 
 void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     int i, j, h, p, q, errcod, nactive, nirreps, nfzc, nfzv;
-    int *actpi, offset, act_offset;
     double **scf, ***C;
     psio_address next;
 

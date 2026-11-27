@@ -99,7 +99,7 @@ void IntegralTransform::process_spaces() {
 
     for (space = uniqueSpaces_.begin(); space != uniqueSpaces_.end(); ++space) {
         std::shared_ptr<MOSpace> moSpace = *space;
-        int *aOrbsPI = new int[nirreps_];
+        Dimension aOrbsPI(nirreps_, "aOrbsPI");
         int *aIndex;
         int *aOrbSym;
 
@@ -115,8 +115,8 @@ void IntegralTransform::process_spaces() {
         if (moSpace->label() == MOSPACE_FZC) {
             // This is the frozen occupied space
             int numAOcc = 0, aOccCount = 0;
+            aOrbsPI = frzcpi_;
             for (int h = 0; h < nirreps_; ++h) {
-                aOrbsPI[h] = frzcpi_[h];
                 numAOcc += aOrbsPI[h];
             }
             aOrbSym = new int[numAOcc];
@@ -218,8 +218,8 @@ void IntegralTransform::process_spaces() {
         } else if (moSpace->label() == MOSPACE_FZV) {
             // This is the frozen virtual space
             int numAVir = 0, aVirCount = 0;
+            aOrbsPI = frzvpi_;
             for (int h = 0; h < nirreps_; ++h) {
-                aOrbsPI[h] = frzvpi_[h];
                 numAVir += aOrbsPI[h];
             }
             aOrbSym = new int[numAVir];
@@ -242,7 +242,7 @@ void IntegralTransform::process_spaces() {
             // This is the dummy single-function-per-irrep space
             aOrbSym = new int[1];
             aIndex = new int[1];
-            for (int h = 0; h < nirreps_; ++h) aOrbsPI[h] = 0;
+            aOrbsPI.zero();
             aOrbsPI[0] = 1;
             aOrbSym[0] = 0;
             aIndex[0] = 0;
@@ -254,7 +254,6 @@ void IntegralTransform::process_spaces() {
             // Figure out how many orbitals per irrep, and group all orbitals by irrep
             int nAOrbs = aorbs.size();
             aOrbSym = new int[nAOrbs];
-            ::memset(aOrbsPI, '\0', nirreps_ * sizeof(int));
             aIndex = (aindex.empty() ? 0 : new int[nAOrbs]);
             for (int h = 0, count = 0; h < nirreps_; ++h) {
                 for (int n = 0; n < nAOrbs; ++n) {
@@ -289,8 +288,7 @@ void IntegralTransform::process_spaces() {
         }
 
         spacesUsed_.push_back(toupper(moSpace->label()));
-        spaceArray_.push_back(aOrbsPI);
-        spaceArray_.push_back(aOrbSym);
+        spaceArray_.emplace_back(aOrbsPI, aOrbSym);
         aOrbsPI_[moSpace->label()] = aOrbsPI;
         aIndices_[moSpace->label()] = aIndex;
         //        if(transformationType_ == TransformationType::Restricted){
@@ -307,16 +305,15 @@ void IntegralTransform::process_spaces() {
     if (transformationType_ != TransformationType::Restricted) {
         for (space = uniqueSpaces_.begin(); space != uniqueSpaces_.end(); ++space) {
             std::shared_ptr<MOSpace> moSpace = *space;
-            int *bOrbsPI = new int[nirreps_];
-            ;
+            Dimension bOrbsPI(nirreps_, "bOrbsPI");
             int *bIndex;
             int *bOrbSym;
 
             if (moSpace->label() == MOSPACE_FZC) {
                 // This is the frozen occupied space
                 int numBOcc = 0, bOccCount = 0;
+                bOrbsPI = frzcpi_;
                 for (int h = 0; h < nirreps_; ++h) {
-                    bOrbsPI[h] = frzcpi_[h];
                     numBOcc += bOrbsPI[h];
                 }
                 bOrbSym = new int[numBOcc];
@@ -440,7 +437,6 @@ void IntegralTransform::process_spaces() {
                 int nBOrbs = borbs.size();
                 bOrbSym = new int[nBOrbs];
                 bIndex = (bindex.empty() ? 0 : new int[nBOrbs]);
-                ::memset(bOrbsPI, '\0', nirreps_ * sizeof(int));
                 for (int h = 0, count = 0; h < nirreps_; ++h) {
                     for (int n = 0; n < nBOrbs; ++n) {
                         int orb = borbs[n];
@@ -473,8 +469,7 @@ void IntegralTransform::process_spaces() {
             }
 
             spacesUsed_.push_back(tolower(moSpace->label()));
-            spaceArray_.push_back(bOrbsPI);
-            spaceArray_.push_back(bOrbSym);
+            spaceArray_.emplace_back(bOrbsPI, bOrbSym);
             bOrbsPI_[moSpace->label()] = bOrbsPI;
             bIndices_[moSpace->label()] = bIndex;
         }  // End loop over spaces
@@ -483,16 +478,9 @@ void IntegralTransform::process_spaces() {
     // End by adding the AO orbital space - this is always needed
     spacesUsed_.push_back(MOSPACE_NIL);
 
-    int *sopi_data = new int[sopi_.n()];
-
-    for(int i = 0; i < sopi_.n(); i++) {
-        sopi_data[i] = sopi_.get(i);
-    }
-
-    spaceArray_.push_back(sopi_data);
-    spaceArray_.push_back(sosym_);
-    aOrbsPI_[MOSPACE_NIL] = sopi_data;
-    bOrbsPI_[MOSPACE_NIL] = sopi_data;
+    spaceArray_.emplace_back(sopi_, sosym_);
+    aOrbsPI_[MOSPACE_NIL] = sopi_;
+    bOrbsPI_[MOSPACE_NIL] = sopi_;
 
     /* Populate the DPD indexing map.  The string class is used instead of a char*
      * because I can't be bothered to roll my own char* container with comparison
@@ -645,7 +633,7 @@ void IntegralTransform::process_eigenvectors() {
             int nBOrbs = borbs.size();
             std::string name("Alpha orbitals for space ");
             name += label;
-            Ca = std::make_shared<Matrix>(name, nirreps_, sopi_, aOrbsPI_[label]);
+            Ca = std::make_shared<Matrix>(name, sopi_, aOrbsPI_[label]);
             int mo_offsets[8];
             mo_offsets[0] = 0;
             for (int h = 1; h < nirreps_; ++h) mo_offsets[h] = mo_offsets[h - 1] + mopi_[h - 1];
@@ -664,7 +652,7 @@ void IntegralTransform::process_eigenvectors() {
             }
             if (transformationType_ != TransformationType::Restricted) {
                 name = "Beta orbitals for space " + std::string(1, label);
-                Cb = std::make_shared<Matrix>(name, nirreps_, sopi_, bOrbsPI_[label]);
+                Cb = std::make_shared<Matrix>(name, sopi_, bOrbsPI_[label]);
                 for (int h = 0; h < nirreps_; ++h) {
                     int count = 0;
                     for (int n = 0; n < nBOrbs; ++n) {

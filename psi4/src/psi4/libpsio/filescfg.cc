@@ -65,7 +65,7 @@ void PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int unit, const char
     files_keywords_[fkwd] = kwdval;
 }
 
-const std::string& PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int unit) {
+const std::string& PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int unit) const {
     static std::string nullstr;
 
     const std::string fkwd = fullkwd(kwdgrp, kwd, unit);

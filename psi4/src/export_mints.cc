@@ -54,6 +54,9 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/multipolesymmetry.h"
 #include "psi4/libmints/eri.h"
+#ifdef USING_cint
+#include "psi4/libmints/libcinteri.h"
+#endif
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/potential_erf.h"
@@ -585,6 +588,8 @@ void export_mints(py::module& m) {
         .def("absmax", &Matrix::absmax, "Returns the absolute maximum value")
         .def("scale_row", &Matrix::scale_row, "Scales row m of irrep h by a", "h"_a, "m"_a, "a"_a)
         .def("scale_column", &Matrix::scale_column, "Scales column n of irrep h by a", "h"_a, "n"_a, "a"_a)
+        .def("swap_columns", &Matrix::swap_columns, "Swaps columns i and j in irrep h", "h"_a, "i"_a, "j"_a)
+        .def("sort_cols", &Matrix::sort_cols, "Permutes the columns of each irrep by sortvec", "sortvec"_a)
         .def("transform", matrix_one(&Matrix::transform), "Transform this matrix with transformer", "transformer"_a)
         .def("transform", matrix_two(&Matrix::transform), "Transform A with transformer", "a"_a, "transformer"_a)
         .def("back_transform", matrix_one(&Matrix::back_transform), "Backtransform this with transformer",
@@ -1330,6 +1335,16 @@ void export_mints(py::module& m) {
 
     py::class_<Libint2ERI, std::unique_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
                                                         "Computes normal two electron repulsion integrals");
+#ifdef USING_cint
+    // IntegralFactory returns these as std::unique_ptr<TwoBodyAOInt>; pybind11 needs the concrete types
+    // registered with a matching unique_ptr holder (TwoBodyAOInt's is shared_ptr).
+    py::class_<LibcintERI, std::unique_ptr<LibcintERI>>(m, "LibcintERI", pyTwoBodyAOInt,
+                                                        "Computes two-electron repulsion integrals with libcint");
+    py::class_<LibcintErfERI, std::unique_ptr<LibcintErfERI>>(m, "LibcintErfERI", pyTwoBodyAOInt,
+                                                              "Computes erf two-electron integrals with libcint");
+    py::class_<LibcintErfComplementERI, std::unique_ptr<LibcintErfComplementERI>>(
+        m, "LibcintErfComplementERI", pyTwoBodyAOInt, "Computes erfc two-electron integrals with libcint");
+#endif
 
     py::class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>>(m,
                                                                                           "AOShellCombinationsIterator")
@@ -1642,8 +1657,10 @@ void export_mints(py::module& m) {
                     "Given combined basis sets, it constructs an orthogonalized \
                     space with the same span. Linearly dependent orbitals are thrown out. \
                     The first argument, combined, is the two basis sets together but unorthogonalized \
-                    The second argument, lindep_tol, is the tolerance for linear dependencies",
-                    "combined"_a, "lindep_tol"_a = 1.e-6);
+                    The second argument, lindep_tol, is the tolerance for linear dependencies \
+                    The third argument, cholesky_tol, is the tolerance for the partial Cholesky decomposition \
+                    used when the overlap is too ill conditioned for canonical orthogonalization",
+                    "combined"_a, "lindep_tol"_a = 1.e-6, "cholesky_tol"_a = 1.e-8);
 
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")
@@ -1760,11 +1777,10 @@ void export_mints(py::module& m) {
     m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
        "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
 
-    // when L2 is pure cmake
-    // m.def("libint2_citation", []() {
-    //        const std::string cit = "    Version " + libint2::libint_version_string(true) + "\n    " +
-    //            "Edward F. Valeev, http://libint.valeyev.net/" + " (" + libint2::libint_reference_doi() + ")";
-    //        return cit;
-    //    },
-    //    "Citation blurb for Libint2");
+    m.def("libint2_citation", []() {
+           const std::string cit = "    Version " + libint2::libint_version_string(true) + "\n    " +
+               "Edward F. Valeev, http://libint.valeyev.net/" + " (" + libint2::libint_reference_doi() + ")";
+           return cit;
+       },
+       "Citation blurb for Libint2");
 }

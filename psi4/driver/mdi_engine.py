@@ -63,6 +63,19 @@ try:
     from mpi4py import MPI
     use_mpi4py = True
 except ImportError:
+    # mpi4py is optional and only used for MDI runs; not being installed is fine.
+    use_mpi4py = False
+except Exception as exc:
+    # mpi4py is installed but failed to import -- e.g. mpi4py >= 4 dlopens libmpi
+    # at import time to probe the MPI ABI and raises RuntimeError (not
+    # ImportError) when no MPI runtime is present. Don't abort "import psi4",
+    # but do warn, since a present-but-broken mpi4py failing silently is a
+    # frustrating surprise.
+    import warnings
+    warnings.warn(
+        f"psi4: mpi4py is installed but could not be imported ({exc!r}); "
+        "MDI runs will proceed without MPI support."
+    )
     use_mpi4py = False
 
 

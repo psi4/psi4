@@ -357,7 +357,8 @@ def highest_analytic_derivative_available(method: str,
     if dertype == '(auto)':
         raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
-    if dertype == 2 and p4util.libint2_configuration()["eri"][2] is None and p4util.libint2_configuration()["eri"][0] is not None:
+    l2_cfg = p4util.libint2_configuration()
+    if dertype == 2 and any(l2_cfg[k][2] is None for k in ("eri", "eri3", "eri2")) and l2_cfg["eri"][0] is not None:
         # If psi4 is build against a Libint without Hessian ERI integrals (["eri"][2] is None), that's
         #   ok, fall back to finite difference. This is the current state of Windows packages from
         #   conda-forge, due to the 6h build limit. But, don't leap to finite difference just because

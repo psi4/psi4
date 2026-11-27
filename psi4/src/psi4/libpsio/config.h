@@ -40,14 +40,13 @@ inline constexpr int PSIO_OPEN_NEW = 0;
 inline constexpr int PSIO_OPEN_OLD = 1;
 
 inline constexpr int PSIO_KEYLEN = 80;
-inline constexpr int PSIO_MAXVOL = 8;
 inline constexpr int PSIO_MAXUNIT = 500;
 inline constexpr int PSIO_PAGELEN = 65536;
 
 inline constexpr int PSIO_ERROR_INIT = 1;
 inline constexpr int PSIO_ERROR_DONE = 2;
-inline constexpr int PSIO_ERROR_MAXVOL = 3;
-inline constexpr int PSIO_ERROR_NOVOLPATH = 4;
+// Values 3 (MAXVOL) and 4 (NOVOLPATH) are retired with multi-volume striping;
+// the gap is left so the remaining public error-code values are unchanged.
 inline constexpr int PSIO_ERROR_OPEN = 5;
 inline constexpr int PSIO_ERROR_REOPEN = 6;
 inline constexpr int PSIO_ERROR_CLOSE = 7;
@@ -62,7 +61,7 @@ inline constexpr int PSIO_ERROR_KEYLEN = 15;
 inline constexpr int PSIO_ERROR_BLKSIZ = 16;
 inline constexpr int PSIO_ERROR_BLKSTART = 17;
 inline constexpr int PSIO_ERROR_BLKEND = 18;
-inline constexpr int PSIO_ERROR_IDENTVOLPATH = 19;
+// Value 19 (IDENTVOLPATH) is retired with multi-volume striping.
 inline constexpr int PSIO_ERROR_MAXUNIT = 20;
 inline constexpr int PSIO_ERROR_UNOPENED = 21;
 
@@ -78,6 +77,9 @@ struct psio_vol {
     int stream;
 };
 
+// Historically a PSIO unit could be striped across several files ("volumes").
+// That feature was removed: each unit is now backed by a single file.
+
 typedef struct psio_entry {
     char key[PSIO_KEYLEN];
     psio_address sadd;
@@ -87,8 +89,7 @@ typedef struct psio_entry {
 } psio_tocentry;
 
 struct psio_ud {
-    size_t numvols;
-    psio_vol vol[PSIO_MAXVOL];
+    psio_vol vol;
     size_t toclen;
     psio_tocentry *toc;
 };

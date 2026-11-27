@@ -33,6 +33,7 @@
 #include <cstdio>
 #include <cstring>
 #include "psi4/libdpd/dpd.h"
+#include "psi4/libmints/matrix.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

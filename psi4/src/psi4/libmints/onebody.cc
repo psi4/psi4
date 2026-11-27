@@ -195,6 +195,12 @@ void OneBodyAOInt::pure_transform(const libint2::Shell &s1, const libint2::Shell
         const int ncart2 = s2.cartesian_size();
         const int nbf2 = s2.size();
 
+        // spherical_transforms_ only reaches IntegralFactory::init_spherical_harmonics's max_am
+        const int max_pure_am = static_cast<int>(spherical_transforms_.size()) - 1;
+        if ((is_pure1 && am1 > max_pure_am) || (is_pure2 && am2 > max_pure_am))
+            throw PSIEXCEPTION("OneBodyAOInt: pure (spherical) angular momentum " + std::to_string(std::max(am1, am2)) +
+                               " exceeds the supported maximum of " + std::to_string(max_pure_am));
+
         int ncart12 = ncart1 * ncart2;
         int nbf12 = nbf1 * nbf2;
 

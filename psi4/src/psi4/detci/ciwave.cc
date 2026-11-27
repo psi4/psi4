@@ -120,7 +120,7 @@ void CIWavefunction::common_init() {
     if (Parameters_->bendazzoli) form_ov();
 
     name_ = "CIWavefunction";
-    module_ = "detci";
+    set_module("detci");
 
     // Init H0 block
     H0block_init(CIblks_->vectlen);
@@ -475,7 +475,6 @@ void CIWavefunction::cleanup_ci() {
         delete H0block_;
 
         // CalcInfo free
-        free_int_matrix(CalcInfo_->ras_opi);
         for (int i = 0; i < 4; i++) {
             free_int_matrix(CalcInfo_->ras_orbs[i]);
         };
@@ -685,7 +684,6 @@ void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec, Sha
 
     // Figure out phase
     if (!Parameters_->Ms0) {
-        int phase = 1;
     } else {
         int phase = ((int)Parameters_->S % 2) ? -1 : 1;
     }

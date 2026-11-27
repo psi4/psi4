@@ -32,7 +32,7 @@
 #include "sparse.h"
 
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"

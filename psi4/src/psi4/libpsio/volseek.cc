@@ -43,7 +43,7 @@ namespace psi {
  **
  ** \ingroup PSIO
  */
-void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const size_t numvols, const size_t unit) {
+void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const size_t unit) {
     const int stream = vol->stream;
 
     // Set file pointer to beginning of file
@@ -55,8 +55,7 @@ void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const s
     }
 
     // lseek() through large chunks of the file to avoid offset overflows
-    const size_t bignum = PSIO_BIGNUM * numvols;
-    for (; page > bignum; page -= bignum) {
+    for (; page > PSIO_BIGNUM; page -= PSIO_BIGNUM) {
         if (SYSTEM_LSEEK(stream, PSIO_BIGNUM * PSIO_PAGELEN, SEEK_CUR) == -1) {
             const int saved_errno = errno;
             const std::string errmsg =
@@ -66,7 +65,7 @@ void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const s
     }
 
     // Now compute the final offset including the page-relative term
-    const size_t final_offset = (page / numvols) * PSIO_PAGELEN + offset;
+    const size_t final_offset = page * PSIO_PAGELEN + offset;
     if (SYSTEM_LSEEK(stream, final_offset, SEEK_CUR) == -1) {
         const int saved_errno = errno;
         const std::string errmsg =

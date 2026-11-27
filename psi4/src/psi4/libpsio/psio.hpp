@@ -32,7 +32,6 @@
 #include <string>
 #include <map>
 #include <set>
-#include <queue>
 #include <memory>
 
 #include "psi4/libpsio/config.h"
@@ -188,8 +187,6 @@ class PSI_API PSIOManager {
    Each instance can be configured using filecfg_kwd().
    The following example best demonstrates how to configure a PSIO instance Lib:
    Lib->filecfg_kwd("DEFAULT","NAME",-1,"newwfn")      // all modules will set filename prefix to newwfn for all units
-   Lib->filecfg_kwd("DEFAULT","NVOLUME",34,"2")        // all modules will stripe unit 34 over 2 volumes
-   Lib->filecfg_kwd("CINTS","VOLUME1",-1,"/scratch1/") // module CINTS will access volume 1 of all units under /scratch
    etc.
 
    */
@@ -199,7 +196,7 @@ class PSI_API PSIO {
     ~PSIO();
 
     /// return 1 if activated
-    int state() { return state_; }
+    int state() const { return state_; }
     /**
        set keyword kwd describing some aspect of configuration of PSIO file unit
        to value kwdval. kwdgrp specifies the keyword group (useful values are: "DEFAULT", "PSI", and the name of
@@ -207,31 +204,29 @@ class PSI_API PSIO {
        can be further overridden for some units). To specify a keyword that works for a specific unit, set unit to the
        appropriate number between 0 to PSIO_MAXUNIT.
 
-       PSIO understands the following keywords: "name" (specifies the prefix for the filename,
-       i.e. if name is set to "psi" then unit 35 will be named "psi.35"), "nvolume" (number of files over which
-       to stripe this unit, cannot be greater than PSIO_MAXVOL), "volumeX", where X is a positive integer less than or
-       equal to the value of "nvolume".
+       PSIO understands the following keyword: "name" (specifies the prefix for the filename,
+       i.e. if name is set to "psi" then unit 35 will be named "psi.35").
        */
     void filecfg_kwd(const char *kwdgrp, const char *kwd, int unit, const char *kwdval);
     /// returns the keyword value. If not defined, returns empty string.
-    const std::string &filecfg_kwd(const char *kwdgrp, const char *kwd, int unit);
+    const std::string &filecfg_kwd(const char *kwdgrp, const char *kwd, int unit) const;
 
     /// moves a file from old_unit to new_unit
     void rename_file(size_t old_unit, size_t new_unit);
 
     /// check if a psi unit already exists or not
-    bool exists(size_t unit);
+    bool exists(size_t unit) const;
     /// open unit. status can be PSIO_OPEN_OLD (if existing file is to be opened) or PSIO_OPEN_NEW if new file should be
     /// open
     void open(size_t unit, int status);
     /// close unit. if keep == 0, will remove the file, else keep it
     void close(size_t unit, int keep);
     /// lookup process id
-    std::string getpid();
+    std::string getpid() const;
     /// sync up the object to the file on disk by closing and opening the file, if necessary
     void rehash(size_t unit);
     /// return 1 if unit is open
-    int open_check(size_t unit);
+    int open_check(size_t unit) const;
     /** Reads data from within a TOC entry from a PSI file.
      **
      **  \param unit   = The PSI unit number used to identify the file to all
@@ -311,11 +306,11 @@ class PSI_API PSIO {
     /// Return the global shared object
     static std::shared_ptr<PSIO> shared_object();
 
-    void rewind_toclen(const size_t unit);  // Seek the stream of the vol[0] of a unit to its beginning.
+    void rewind_toclen(const size_t unit);  // Seek the stream of the file backing a unit to its beginning.
     size_t rd_toclen(size_t unit);          // Read the length of the TOC for a given unit directly from the file.
 
     /// grab the filename of unit and strdup into name.
-    void get_filename(size_t unit, char **name, bool remove_namespace = false);
+    void get_filename(size_t unit, char **name, bool remove_namespace = false) const;
 
     /// delete a specific TOC entry (only deletes entry, not data)
     bool tocdel(size_t unit, const char *key);
@@ -341,14 +336,13 @@ class PSI_API PSIO {
 
     /// Library state variable
     int state_;
-    /// return the number of volumes over which unit will be striped
-    size_t get_numvols(size_t unit);
-    /// grab the path to volume of unit and strdup into path.
-    void get_volpath(size_t unit, size_t volume, char **path);
     /// return the last TOC entry
     psio_tocentry *toclast(size_t unit);
 
-    size_t toclen(size_t unit);  // Compute the length of the TOC for a given unit using the in-core TOC list.
+    /// Compose the full on-disk path for a unit: <path><name>.<unit>.
+    std::string get_unit_filename(size_t unit) const;
+
+    size_t toclen(size_t unit) const;  // Compute the length of the TOC for a given unit using the in-core TOC list.
     void wt_toclen(size_t unit, size_t toclen);  // Write the length of the TOC for a given unit directly to the file.
 
     /// Read the table of contents for file number 'unit'.

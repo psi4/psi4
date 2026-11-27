@@ -90,6 +90,10 @@ class PSI_API Dimension {
     /// @brief Get a const reference to the std::vector storing the block numbers inside the Dimension object.
     const std::vector<int>& blocks() const { return blocks_; }
 
+    /// @brief Copy the block data
+    void copy(const std::vector<int>& blocks) { blocks_ = blocks; }
+    void copy(const Dimension& other) { copy(other.blocks()); }
+
     /// @brief Casting operator to int*
     PSI_DEPRECATED(
         "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.10 may be the "
@@ -115,6 +119,14 @@ class PSI_API Dimension {
     void fill(int v);
 
     void print() const;
+
+    // Forward underlying vector's iterators
+    // This allows for range-based for loops:
+    //    for (auto h : nsopi_) { ... }
+    auto begin() noexcept { return blocks_.begin(); }
+    auto end() noexcept { return blocks_.end(); }
+    auto begin() const noexcept { return blocks_.begin(); }
+    auto end() const noexcept { return blocks_.end(); }
 
     // Only used for python
     const int& get(size_t i) const { return blocks_[i]; }

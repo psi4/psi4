@@ -531,8 +531,8 @@ class PSI_API IntegralFactory {
     /// Initializes spherical harmonic transformations
     virtual void init_spherical_harmonics(int max_am);
 
-    /// Return spherical transform object for am
-    const SphericalTransform* spherical_transform(int am) const { return &(spherical_transforms_[am]); }
+    /// Return spherical transform object for am (throws if am exceeds init_spherical_harmonics's max_am)
+    const SphericalTransform* spherical_transform(int am) const;
 
     // Return spherical transform object for am
     std::vector<SphericalTransform>& spherical_transform() { return spherical_transforms_; }

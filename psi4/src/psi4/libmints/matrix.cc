@@ -89,6 +89,8 @@ Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
 }
 
 Matrix &Matrix::operator=(const Matrix &c) {
+    if (this == &c) return *this;
+
     release();
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
@@ -400,43 +402,6 @@ void Matrix::copy_to_row(int h, int row, double const *const data) {
 void Matrix::copy(const Matrix &cp) { copy(&cp); }
 
 void Matrix::copy(const SharedMatrix &cp) { copy(cp.get()); }
-
-// produces an Eigen::Map object mapping to the matrix data buffer
-// of a matrix with a single irrep
-Eigen::Map<Eigen::MatrixXd> Matrix::eigen_map() {
-    // this function only works with matrices with a single irrep
-    if (nirrep() != 1) {
-        std::string message = "Matrix::eigen_map() called, but matrix only has one irrep! ";
-        message += "Use Matrix::eigen_maps() instead.";
-
-        throw PSIEXCEPTION(message);
-    }
-
-    // create Eigen matrix "map" using Psi4 matrix data array directly
-    return std::move(
-        Eigen::Map<Eigen::MatrixXd>(
-            get_pointer(), nrow(), ncol()
-        )
-    );
-}
-
-// produces Eigen::Maps object mapping to the matrix data buffer
-// of a matrix with multiple irreps
-// NOTE: this impl for mapping Psi4 matrices to Eigen maps
-// is currently experimental, as it is unused in the code
-// currently
-std::vector<Eigen::Map<Eigen::MatrixXd>> Matrix::eigen_maps() {
-    std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps;
-    eigen_maps.reserve(nirrep());
-
-    // create Eigen matrix "map"s for each irrep,
-    // using Psi4 matrix data array directly
-    for (int h = 0; h != nirrep(); ++h) {
-        eigen_maps.emplace_back(get_pointer(h), rowdim(h), coldim(h));
-    }
-
-    return eigen_maps;
-}
 
 #ifdef USING_OpenOrbitalOptimizer
 arma::mat Matrix::to_armadillo_matrix(int h) {

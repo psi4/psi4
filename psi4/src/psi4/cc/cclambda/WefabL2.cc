@@ -115,7 +115,6 @@ void WefabL2(int L_irr) {
     dpdbuf4 tau_a, tau_s, tau;
     dpdbuf4 B_a, B_s;
     dpdbuf4 S, A;
-    int h;
     double **B_diag, **tau_diag;
     int ij, Gc, C, c, cc;
     int nbuckets, rows_per_bucket, rows_left, m, row_start, ab, cd, dc, d;
@@ -183,8 +182,9 @@ void WefabL2(int L_irr) {
             global_dpd_->buf4_mat_irrep_init(&S, 0);
             global_dpd_->buf4_mat_irrep_rd(&S, 0);
 
-            rows_per_bucket = dpd_memfree() / (B_s.params->coltot[0] + moinfo.nvirt);
-            if (rows_per_bucket > B_s.params->rowtot[0]) rows_per_bucket = B_s.params->rowtot[0];
+            rows_per_bucket =
+                dpd_rows_per_bucket(dpd_memfree(), B_s.params->coltot[0] + moinfo.nvirt,
+                                    B_s.params->rowtot[0]);
             nbuckets = (int)ceil((double)B_s.params->rowtot[0] / (double)rows_per_bucket);
             rows_left = B_s.params->rowtot[0] % rows_per_bucket;
 

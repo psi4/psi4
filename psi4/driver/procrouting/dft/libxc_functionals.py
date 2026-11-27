@@ -29,6 +29,8 @@
 List of XC functionals
 """
 
+from psi4 import core
+
 funcs = []
 
 # yapf: disable
@@ -61,7 +63,13 @@ funcs.append({"name": "mPWLYP1W"       , "xc_functionals": {"GGA_XC_MPWLYP1W"   
 funcs.append({"name": "PBELYP1W"       , "xc_functionals": {"GGA_XC_PBELYP1W"           : {}}})
 funcs.append({"name": "MOHLYP"         , "xc_functionals": {"GGA_XC_MOHLYP"             : {}}})
 funcs.append({"name": "MOHLYP2"        , "xc_functionals": {"GGA_XC_MOHLYP2"            : {}}})
-funcs.append({"name": "TH-FL"          , "xc_functionals": {"GGA_XC_TH_FL"              : {}}})
+# TH-FL was reclassified from GGA_XC_TH_FL to LDA_XC_TH_FL in Libxc 7.1. List
+# both spellings and register whichever the linked Libxc provides (the runtime
+# availability gate drops the absent one), so TH-FL works on either version.
+for _th_fl in ("LDA_XC_TH_FL", "GGA_XC_TH_FL"):
+    if core.LibXCFunctional.available("XC_" + _th_fl):
+        funcs.append({"name": "TH-FL"      , "xc_functionals": {_th_fl                    : {}}})
+        break
 funcs.append({"name": "TH-FC"          , "xc_functionals": {"GGA_XC_TH_FC"              : {}}})
 funcs.append({"name": "TH-FCFO"        , "xc_functionals": {"GGA_XC_TH_FCFO"            : {}}})
 funcs.append({"name": "TH-FCO"         , "xc_functionals": {"GGA_XC_TH_FCO"             : {}}})
@@ -135,7 +143,8 @@ funcs.append({"name": "PWB6K"          , "xc_functionals": {"HYB_MGGA_XC_PWB6K" 
 funcs.append({"name": "TPSSh"          , "xc_functionals": {"HYB_MGGA_XC_TPSSH"         : {}}, "alias": ["TPSS0"]})
 funcs.append({"name": "revTPSSh"       , "xc_functionals": {"HYB_MGGA_XC_REVTPSSH"      : {}}})
 funcs.append({"name": "wB97M-V"        , "xc_functionals": {"HYB_MGGA_XC_WB97M_V"       : {}}, "alias": ["WB97MV"]})
-funcs.append({"name": "ZLP"            , "xc_functionals": {"MGGA_XC_ZLP"               : {}}})
+# MGGA_XC_ZLP (eq. 21) is shadowing the LDA (eq. 20) fctl of the same name. plus, it needs Laplacian that Psi4 can't supply
+# funcs.append({"name": "ZLP"            , "xc_functionals": {"MGGA_XC_ZLP"               : {}}})
 funcs.append({"name": "OTPSS-D"        , "xc_functionals": {"MGGA_XC_OTPSS_D"           : {}}, "dispersion": {"type": "d2", "params": {'s6': 1.0,  'alpha6': 20.0, 'sr6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010\n'}, 'alias': ['OTPSS-D2']})
 funcs.append({"name": "TPSSLYP1W"      , "xc_functionals": {"MGGA_XC_TPSSLYP1W"         : {}}})
 funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"            : {}}})

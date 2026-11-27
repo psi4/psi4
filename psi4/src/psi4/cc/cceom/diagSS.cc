@@ -61,16 +61,12 @@ double norm_C1_rhf(dpdfile2 *C1A);
 void scm_C1(dpdfile2 *C1A, dpdfile2 *C1B, double a);
 
 void diagSS(int C_irr) {
-    dpdfile2 Fmi, FMI, Fae, FAE, Fme, FME;
     dpdfile2 CME, Cme, C, SIA, Sia, RIA, Ria;
-    dpdbuf4 CMNEF, Cmnef, CMnEf, W;
     char lbl[32], lbl2[32];
-    int lwork, info, get_right_ev = 1, get_left_ev = 0;
     int L, h, i, j, k, a, C_index, errcod, keep_going = 1, numCs, iter = 0;
     double norm, tval, *lambda, *lambda_old, zero = 0.0;
     double **G, *work, *evals_complex, **alpha, **evectors_left;
     int nirreps, range;
-    Dimension aoccpi, avirtpi, boccpi, bvirtpi;
     int *converged, num_converged, num_roots;
     int begin_occ, begin_virt, end_virt, dim_SS = 0;
     int pf, cnt, irr_occ, irr_virt;
@@ -79,13 +75,6 @@ void diagSS(int C_irr) {
     const auto& openpi = moinfo.openpi;
     const auto& occpi = moinfo.occpi;
     const auto& virtpi = moinfo.virtpi;
-
-    if (params.eom_ref == 2) { /* UHF */
-        aoccpi = moinfo.aoccpi;
-        boccpi = moinfo.boccpi;
-        avirtpi = moinfo.avirtpi;
-        bvirtpi = moinfo.bvirtpi;
-    }
 
     range = eom_params.excitation_range;
     pf = eom_params.print_singles;
@@ -206,6 +195,8 @@ void diagSS(int C_irr) {
                     }
             } else { /* UHF */
                 /* alpha excitations */
+                const Dimension& aoccpi = moinfo.aoccpi;
+                const Dimension& avirtpi = moinfo.avirtpi;
                 begin_occ = MAX(aoccpi[irr_occ] - range, 0);
                 end_virt = MIN(avirtpi[irr_virt], range);
                 for (i = begin_occ; i < aoccpi[irr_occ]; ++i)
@@ -222,6 +213,8 @@ void diagSS(int C_irr) {
                         global_dpd_->file2_mat_wrt(&Cme);
                         global_dpd_->file2_close(&Cme);
                     }
+                const Dimension& boccpi = moinfo.boccpi;
+                const Dimension& bvirtpi = moinfo.bvirtpi;
                 begin_occ = MAX(boccpi[irr_occ] - range, 0);
                 end_virt = MIN(bvirtpi[irr_virt], range);
                 for (i = begin_occ; i < boccpi[irr_occ]; ++i)
@@ -734,7 +727,6 @@ void restart_SS(double **alpha, int L, int num, int C_irr) {
     int i, j, I;
     char lbl[20];
     dpdfile2 C1, CME, Cme, CME2, Cme2;
-    dpdbuf4 C2, CMNEF, Cmnef, CMnEf;
     double norm, dotval;
 
     for (I = 1; I < num; ++I) {

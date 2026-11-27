@@ -548,7 +548,6 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
         size_t oQ = basisset_->shell(Q).function_index();
         size_t aQ = basisset_->shell(Q).ncenter();
 
-        size_t offset = nP * nQ;
         double perm = (P == Q ? 1.0 : 2.0);
 
         // Px
@@ -2438,7 +2437,6 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         int aQ = auxiliary->shell(Q).ncenter();
         int oQ = auxiliary->shell(Q).function_index();
 
-        int ncart = cP * cQ;
         const double *Px = buffers[0];
         const double *Py = buffers[1];
         const double *Pz = buffers[2];
@@ -2500,9 +2498,12 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
     double **Gp = ret->pointer();
     double **Dp = D->pointer();
 
-    FILE* input = fopen("EMBPOT", "r");
+    std::unique_ptr<FILE, decltype(&fclose)> input(fopen("EMBPOT", "r"), &fclose);
+    if (input == nullptr) {
+        throw PSIEXCEPTION("MintsHelper::embpot_grad error: could not open EMBPOT file for reading");
+    }
     size_t npoints;
-    int statusvalue = fscanf(input, "%zu", &npoints);
+    int statusvalue = fscanf(input.get(), "%zu", &npoints);
     if (statusvalue != 1) {
         throw PSIEXCEPTION("MintsHelper::embpot_grad error: EOF or wrong number of inputs read from EMBPOT header, return=" +
                            std::to_string(statusvalue) + " (expected 1)");
@@ -2518,7 +2519,7 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
 
     // Pull out data
     for (size_t k = 0; k < npoints; k++) {
-        statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+        statusvalue = fscanf(input.get(), "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
         if (statusvalue != 5) {
             throw PSIEXCEPTION("MintsHelper::embpot_grad error: EOF or wrong number of inputs read from EMBPOT, return=" +
                                std::to_string(statusvalue) + " (expected 5)");
@@ -2599,7 +2600,6 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
             }
         }
     }
-    fclose(input);
     return ret;
 }
 
@@ -2720,7 +2720,6 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string &aux_name, const std:
             int aN = primary->shell(N).ncenter();
             int oN = primary->shell(N).function_index();
 
-            int ncart = cP * cM * cN;
             const double *Px = buffers[0];
             const double *Py = buffers[1];
             const double *Pz = buffers[2];
@@ -3016,7 +3015,6 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
 
         GInt->compute_shell_deriv1(P, Q);
         const auto &buffers = GInt->buffers();
-        int offset = 0;
         if (aP == atom && half_der_side == "LEFT") {
             // Px
             for (int p = 0; p < nP; p++) {
@@ -3544,10 +3542,9 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
 
     std::vector<SharedMatrix> grad;
     for (int p = 0; p < 3; p++) {
-        std::stringstream sstream;
-        sstream << "ao_mu" << cartcomp[p] << "_deriv1_";
         for (int q = 0; q < 3; q++) {
-            sstream << atom << cartcomp[q];
+            std::stringstream sstream;
+            sstream << "ao_mu" << cartcomp[p] << "_deriv1_" << atom << cartcomp[q];
             grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1, nbf2));
         }
     }
@@ -4344,12 +4341,15 @@ std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix
     int nbf2 = ao_grad[0]->coldim();
 
     std::vector<SharedMatrix> mo_grad;
-    for (int p = 0; p < 9; p++) {
-        std::stringstream sstream;
-        sstream << "mo_elec_dip_deriv1_" << atom << cartcomp[p];
-        auto temp = std::make_shared<Matrix>(sstream.str(), nbf1, nbf2);
-        temp->transform(C1, ao_grad[p], C2);
-        mo_grad.push_back(temp);
+    for (int mu_cart = 0; mu_cart < 3; mu_cart++) {
+        for (int atom_cart = 0; atom_cart < 3; atom_cart++) {
+            int p = 3 * mu_cart + atom_cart;
+            std::stringstream sstream;
+            sstream << "mo_mu" << cartcomp[mu_cart] << "_deriv1_" << atom << cartcomp[atom_cart];
+            auto temp = std::make_shared<Matrix>(sstream.str(), nbf1, nbf2);
+            temp->transform(C1, ao_grad[p], C2);
+            mo_grad.push_back(temp);
+        }
     }
 
     return mo_grad;

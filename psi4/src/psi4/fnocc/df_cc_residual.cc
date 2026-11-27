@@ -31,7 +31,6 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libqt/qt.h"
@@ -52,8 +51,8 @@ namespace fnocc {
 
 void DFCoupledCluster::CCResidual() {
     bool timer = options_.get_bool("CC_TIMINGS");
-    long int o = ndoccact;
-    long int v = nvirt;
+    int64_t o = ndoccact;
+    int64_t v = nvirt;
 
     double start;
 

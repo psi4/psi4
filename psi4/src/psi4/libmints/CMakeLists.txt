@@ -18,7 +18,6 @@ list(APPEND sources
   basisset.cc
   wavefunction.cc
   irrep.cc
-  fjt.cc
   chartab.cc
   corrtab.cc
   symop.cc
@@ -38,6 +37,7 @@ list(APPEND sources
   numinthelper.cc
   coordentry.cc
   matrix.cc
+  matrix_eigen.cc
   gshell.cc
   integraliter.cc
   pointgrp.cc
@@ -102,19 +102,56 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
    endif()
 endif()
 
-# limit to avoid OOM errors with Ninja parallelism
-# * finer control than `CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build`
-cmake_host_system_information(RESULT _memfree QUERY AVAILABLE_PHYSICAL_MEMORY)
-cmake_host_system_information(RESULT _numcore QUERY NUMBER_OF_PHYSICAL_CORES)
-math(EXPR _memrat "${_memfree} / ${_numcore}")
-message("AVAILABLE_PHYSICAL_MEMORY ${_memfree} / NUMBER_OF_PHYSICAL_CORES ${_numcore} = ${_memrat}")
-if(_numcore LESS 5)
-    if (UNIX AND NOT APPLE)
-        set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE one_job)
-    endif()
-else()
-    set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
+# Limit l2intf compile memory to avoid OOM, esp. Ninja on CI/cloud runners.
+# Measured (GCC 14, -O3, L2 2.14): every l2intf file that includes libint2/engine.h peaks at 5.7-7.5 GB
+#   by itself, while one unity TU of all 19 files peaks at 7.6 GB in ~200 s -- no more memory or time than
+#   a single heavy file, vs. 3 x 7.5 GB (and ~3x the CPU) for 8-file batches.
+#   clang 20 has the same pattern at ~4.0-4.4 GB per TU (single file or all 19), with similar times.
+# (1) Compile l2intf as unity TUs of psi4_l2intf_UNITY_BUILD_BATCH_SIZE files, independent of CMAKE_UNITY_BUILD
+#   and CMAKE_UNITY_BUILD_BATCH_SIZE. Default 0 = no limit, i.e. one TU for all files: least memory and CPU,
+#   right for CI and one-shot builds, but editing any l2intf file recompiles all of them (~3.5 min).
+#   Developers editing these files can set 1 (per-file TUs; ~1 min to rebuild one file, mostly engine.h).
+if(NOT DEFINED psi4_l2intf_UNITY_BUILD_BATCH_SIZE)
+    set(psi4_l2intf_UNITY_BUILD_BATCH_SIZE 0)
 endif()
+if(NOT psi4_l2intf_UNITY_BUILD_BATCH_SIZE MATCHES "^[0-9]+$")
+    message(FATAL_ERROR "psi4_l2intf_UNITY_BUILD_BATCH_SIZE must be a non-negative integer, not '${psi4_l2intf_UNITY_BUILD_BATCH_SIZE}'")
+endif()
+set_property(TARGET l2intf PROPERTY UNITY_BUILD ON)
+set_property(TARGET l2intf PROPERTY UNITY_BUILD_BATCH_SIZE ${psi4_l2intf_UNITY_BUILD_BATCH_SIZE})
+message(STATUS "l2intf unity batch size: ${psi4_l2intf_UNITY_BUILD_BATCH_SIZE} (0 = one TU)")
+
+# (2) With unity build off (or Makefile generators, which ignore pools), each l2intf file is its own 6-8 GB job.
+#   For Ninja, cap concurrent l2intf compiles by memory: one job per ~8 GB available, at least one.
+#   Use the container's cgroup limit if it's tighter than the host memory CMake reports.
+#   The pool is shared by all compiles that include libint2/engine.h: l2intf here, fock_l2engine
+#   (libfock/snLinK.cc), and the pybind11 core module (core.cc, export_mints.cc; psi4/src/CMakeLists.txt).
+cmake_host_system_information(RESULT _l2intf_mem QUERY AVAILABLE_PHYSICAL_MEMORY)  # MiB
+foreach(_cg_max _cg_cur IN ZIP_LISTS
+        "/sys/fs/cgroup/memory.max;/sys/fs/cgroup/memory/memory.limit_in_bytes"
+        "/sys/fs/cgroup/memory.current;/sys/fs/cgroup/memory/memory.usage_in_bytes")
+    if(EXISTS "${_cg_max}" AND EXISTS "${_cg_cur}")
+        file(READ "${_cg_max}" _cg_max_val)
+        file(READ "${_cg_cur}" _cg_cur_val)
+        string(STRIP "${_cg_max_val}" _cg_max_val)
+        string(STRIP "${_cg_cur_val}" _cg_cur_val)
+        # "max" (v2) means unlimited; v1 unlimited is a huge number that the comparison below discards
+        if(_cg_max_val MATCHES "^[0-9]+$" AND _cg_cur_val MATCHES "^[0-9]+$")
+            math(EXPR _cg_avail "(${_cg_max_val} - ${_cg_cur_val}) / 1048576")
+            if(_cg_avail LESS _l2intf_mem)
+                set(_l2intf_mem ${_cg_avail})
+            endif()
+        endif()
+        break()
+    endif()
+endforeach()
+math(EXPR _l2intf_jobs "${_l2intf_mem} / 8192")
+if(_l2intf_jobs LESS 1)
+    set(_l2intf_jobs 1)
+endif()
+set_property(GLOBAL APPEND PROPERTY JOB_POOLS libint2_engine_pool=${_l2intf_jobs})
+set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE libint2_engine_pool)
+message(STATUS "libint2_engine_pool: ${_l2intf_mem} MiB available -> compile job pool depth ${_l2intf_jobs}")
 
 # Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
@@ -128,6 +165,13 @@ if(TARGET simint::simint)
   target_sources(l2intf
     PRIVATE
       siminteri.cc
+    )
+endif()
+
+if(TARGET cint::cint)
+  target_sources(mints
+    PRIVATE
+      libcinteri.cc
     )
 endif()
 

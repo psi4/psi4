@@ -26,6 +26,10 @@
  * @END LICENSE
  */
 #include "psi4/libmints/integral.h"
+
+#include <mutex>
+#include <set>
+#include <string>
 #include "psi4/libmints/shellrotation.h"
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/rel_potential.h"
@@ -56,6 +60,10 @@
 #include "psi4/libmints/siminteri.h"
 #endif
 
+#ifdef USING_cint
+#include "psi4/libmints/libcinteri.h"
+#endif
+
 using namespace psi;
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
@@ -82,8 +90,8 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     bs3_ = bs3;
     bs4_ = bs4;
 
-    // Use the max am from libint
-    init_spherical_harmonics(8);
+    // Use the max am that the integral libraries will produce, but >14 won't fit in the type
+    init_spherical_harmonics(14);
 }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_overlap(int deriv) {
@@ -209,36 +217,74 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::electric_field(int deriv) {
     return  std::make_unique<ElectricFieldInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
-    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+namespace {
 
+/// Stop unless INTEGRAL_PACKAGE names an engine compiled into this build. LIBINT2 always is.
+void require_compiled_in(const std::string &package) {
+    bool compiled = package == "LIBINT2";
 #ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return  std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
+    compiled |= package == "SIMINT";
 #endif
-    if (integral_package == "LIBINT2") return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
-    if (deriv > 0 && integral_package != "LIBINT2")
-        outfile->Printf("ERI derivative integrals only available using Libint");
-    if (integral_package == "SIMINT")
-        outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable.\nRecompile with `-D ENABLE_simint=ON`.\nFalling back to Libint");
-    throw PSIEXCEPTION("No ERI object to return.");
+#ifdef USING_cint
+    compiled |= package == "LIBCINT";
+#endif
+    if (compiled) return;
+    const std::string option = package == "LIBCINT" ? "cint" : "simint";  // the CMake ENABLE_<option>
+    throw PSIEXCEPTION("INTEGRAL_PACKAGE " + package + " was requested, but Psi4 was built without it. " +
+                       "Rebuild with `-D ENABLE_" + option + "=ON`.");
+}
+
+/// INTEGRAL_PACKAGE's engine provides no integrals of this kind, so Libint2 supplies them. Announce each such
+/// substitution once per process, not once per (per-thread) integral object.
+void note_libint2_fallback(const std::string &package, const std::string &missing) {
+    if (package == "LIBINT2") return;
+    static std::mutex lock;
+    static std::set<std::string> announced;
+    std::lock_guard<std::mutex> guard(lock);
+    if (!announced.insert(package + missing).second) return;
+    outfile->Printf("  INTEGRAL_PACKAGE %s: provides no %s; using Libint2 instead.\n", package.c_str(),
+                    missing.c_str());
+}
+
+}  // namespace
+
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
+    const auto package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    const auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    require_compiled_in(package);
+#ifdef USING_cint
+    if (package == "LIBCINT") return std::make_unique<LibcintERI>(this, deriv, use_shell_pairs, needs_exchange);
+#endif
+#ifdef USING_simint
+    if (package == "SIMINT" && deriv == 0)
+        return std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
+#endif
+    note_libint2_fallback(package, "derivative integrals");
+    return std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
-    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2")
-        return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
-    throw PSIEXCEPTION("No ERI object to return.");
+    const auto package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    const auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    require_compiled_in(package);
+#ifdef USING_cint
+    if (package == "LIBCINT")
+        return std::make_unique<LibcintErfERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+#endif
+    note_libint2_fallback(package, "range-separated (erf) integrals");
+    return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
-    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2")
-        return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
-    throw PSIEXCEPTION("No ERI object to return.");
+    const auto package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    const auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    require_compiled_in(package);
+#ifdef USING_cint
+    if (package == "LIBCINT")
+        return std::make_unique<LibcintErfComplementERI>(omega, this, deriv, use_shell_pairs, needs_exchange);
+#endif
+    note_libint2_fallback(package, "range-separated (erfc) integrals");
+    return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
@@ -300,11 +346,26 @@ ShellRotation IntegralFactory::shell_rotation(int am, SymmetryOperation& so, int
     return r;
 }
 
+namespace {
+// Bounds-checked lookup: an out-of-range am (e.g., a pure l=15 shell from libcint) must not read past the end.
+template <class T>
+const T& checked_transform(const std::vector<T>& transforms, int am) {
+    if (am < 0 || am >= static_cast<int>(transforms.size()))
+        throw PSIEXCEPTION("IntegralFactory: pure (spherical) angular momentum " + std::to_string(am) +
+                           " exceeds the supported maximum of " + std::to_string(static_cast<int>(transforms.size()) - 1));
+    return transforms[am];
+}
+}  // namespace
+
+const SphericalTransform* IntegralFactory::spherical_transform(int am) const {
+    return &checked_transform(spherical_transforms_, am);
+}
+
 SphericalTransformIter* IntegralFactory::spherical_transform_iter(int am, int inv, int subl) const {
     if (subl != -1) throw NOT_IMPLEMENTED_EXCEPTION();
 
     if (inv) {
-        return new SphericalTransformIter(ispherical_transforms_[am]);
+        return new SphericalTransformIter(checked_transform(ispherical_transforms_, am));
     }
-    return new SphericalTransformIter(spherical_transforms_[am]);
+    return new SphericalTransformIter(checked_transform(spherical_transforms_, am));
 }

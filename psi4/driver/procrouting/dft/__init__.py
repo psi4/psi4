@@ -26,5 +26,5 @@
 # @END LICENSE
 #
 
-from .dft_builder import build_superfunctional_from_dictionary, dashcoeff_supplement, functionals
+from .dft_builder import build_superfunctional_from_dictionary, dashcoeff_supplement, functional_available, functionals
 from .superfunctionals import build_superfunctional

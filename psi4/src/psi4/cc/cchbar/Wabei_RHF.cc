@@ -61,7 +61,6 @@ void ZFW(dpdbuf4 *Z, dpdbuf4 *F, dpdbuf4 *W, double alpha, double beta);
 void Wabei_RHF() {
     dpdfile2 Fme, T1;
     dpdbuf4 F, W, T2, B, Z, Z1, Z2, D, T, C, F1, F2, W1, W2, Tau;
-    double value;
     int Gef, Gei, Gab, Ge, Gi, Gf, Gmi, Gm, nrows, ncols, nlinks, EE, e, row, Gnm;
     int Gma, ma, m, a, Ga, Gb, I, i, mi, E, ei, ab, ba, b, BB, fb, bf, fe, ef, mb, am;
     double ***WW1, ***WW2;
@@ -620,8 +619,8 @@ void ZFW(dpdbuf4 *Z, dpdbuf4 *F, dpdbuf4 *W, double alpha, double beta) {
         global_dpd_->buf4_mat_irrep_rd(Z, Gib);
 
         /* how many rows of F/W can we store in half the remaining core? */
-        rows_per_bucket = dpd_memfree() / (2 * F->params->coltot[Gea]);
-        if (rows_per_bucket > F->params->rowtot[Gib]) rows_per_bucket = F->params->rowtot[Gib];
+        rows_per_bucket =
+            dpd_rows_per_bucket(dpd_memfree(), 2LL * F->params->coltot[Gea], F->params->rowtot[Gib]);
         nbuckets = (int)ceil((double)F->params->rowtot[Gib] / (double)rows_per_bucket);
         rows_left = F->params->rowtot[Gib] % rows_per_bucket;
 

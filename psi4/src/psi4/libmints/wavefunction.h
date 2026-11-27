@@ -34,6 +34,7 @@
 #include "psi4/libmints/dimension.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 #include <array>
 #include <memory>
@@ -88,8 +89,11 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Name of the wavefunction
     std::string name_;
 
-    /// Module name for CURRENT ENERGY
-    std::string module_;
+    /// Which module filled each named role. The role "qc_module" is the level-of-theory
+    /// module responsible for CURRENT ENERGY, i.e. what set_module()/module() get and set
+    /// and what |globals__qc_module| selects; the rest record which package did a
+    /// particular job along the way, e.g. which one optimized the orbitals.
+    std::map<std::string, std::string> module_roles_;
 
     /// The ORBITAL basis
     std::shared_ptr<BasisSet> basisset_;
@@ -121,7 +125,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     std::shared_ptr<Wavefunction> reference_wavefunction_;
 
     /// How much memory you have access to.
-    long int memory_;
+    int64_t memory_;
 
     /// Perturb the Hamiltonian?
     int perturb_h_;
@@ -407,6 +411,16 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
      */
     void force_occpi(const Dimension& input_doccpi, const Dimension& input_soccpi);
 
+    /**
+     * @brief Expert specialized use only. Forces the alpha and beta occupations per irrep
+     * directly, the (alpha, beta) counterpart to force_occpi()'s (doubly, singly) occupied
+     * form and the shape HF::next_occupation() returns. Keeps nalphapi_/nbetapi_/nalpha_/nbeta_
+     * in step but makes no other array consistent, so caution is advised.
+     * @param input_nalphapi the new list of alpha electrons per irrep
+     * @param input_nbetapi the new list of beta electrons per irrep
+     */
+    void force_occupation(const Dimension& input_nalphapi, const Dimension& input_nbetapi);
+
     /// Sets the frozen virtual orbitals per irrep array.
     void set_frzvpi(const Dimension& frzvpi);
 
@@ -633,11 +647,26 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Returns the wavefunction name
     const std::string& name() const { return name_; }
 
-    /// Set the module name (e.g. "OCC", "CCENERGY", "CCT3")
-    void set_module(const std::string& module) { module_ = module; }
+    /// Set the module name (e.g. "OCC", "CCENERGY", "CCT3"); the "qc_module" role
+    void set_module(const std::string& module) { set_module_role("qc_module", module); }
 
-    /// Returns the module name
-    const std::string& module() const { return module_; }
+    /// Returns the module name; the "qc_module" role, or "" if it was never set
+    const std::string& module() const { return module_role("qc_module"); }
+
+    /// Record which module filled a named role (e.g. "orbital_optimizer")
+    void set_module_role(const std::string& role, const std::string& module) {
+        module_roles_[role] = module;
+    }
+
+    /// Returns the module that filled a named role, or "" if that role was never filled
+    const std::string& module_role(const std::string& role) const {
+        static const std::string empty;
+        auto it = module_roles_.find(role);
+        return it == module_roles_.end() ? empty : it->second;
+    }
+
+    /// Returns the modules that filled named roles, keyed by role
+    const std::map<std::string, std::string>& module_roles() const { return module_roles_; }
 
     // Set the print flag level
     void set_print(size_t print) { print_ = print; }

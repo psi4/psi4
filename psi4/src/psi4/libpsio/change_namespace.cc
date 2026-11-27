@@ -45,7 +45,6 @@ void PSIO::change_file_namespace(size_t unit, const std::string& ns1, const std:
     char *old_name, *new_name, *old_fullpath, *new_fullpath;
     _default_psio_lib_->get_filename(unit, &old_name, true);
     _default_psio_lib_->get_filename(unit, &new_name, true);
-    //_default_psio_lib_->get_volpath(unit, 0, &path);
     std::string tpath = PSIOManager::shared_object()->get_file_path(unit);
     const char* path = tpath.c_str();
 

@@ -48,7 +48,7 @@ void PSIO::close(size_t unit, int keep) {
     this_unit = &(psio_unit[unit]);
 
     /* First check to see if this unit is already closed */
-    if (this_unit->vol[0].stream == -1) psio_error(unit, PSIO_ERROR_RECLOSE);
+    if (this_unit->vol.stream == -1) psio_error(unit, PSIO_ERROR_RECLOSE);
 
     /* Dump all DPD cached entries for this file.  */
     global_dpd_->file4_cache_del_filenum(unit);
@@ -64,24 +64,18 @@ void PSIO::close(size_t unit, int keep) {
         this_entry = next_entry;
     }
 
-    /* Close each volume (remove if necessary) and free the path */
-    for (i = 0; i < this_unit->numvols; i++) {
-        int errcod;
+    /* Close the file (remove if necessary) and free the path */
+    int errcod = SYSTEM_CLOSE(this_unit->vol.stream);
+    if (errcod == -1) psio_error(unit, PSIO_ERROR_CLOSE);
+    /* Delete the file completely if requested */
+    if (!keep) SYSTEM_UNLINK(this_unit->vol.path);
+    PSIOManager::shared_object()->close_file(std::string(this_unit->vol.path), unit, (keep ? true : false));
 
-        errcod = SYSTEM_CLOSE(this_unit->vol[i].stream);
-
-        if (errcod == -1) psio_error(unit, PSIO_ERROR_CLOSE);
-        /* Delete the file completely if requested */
-        if (!keep) SYSTEM_UNLINK(this_unit->vol[i].path);
-        PSIOManager::shared_object()->close_file(std::string(this_unit->vol[i].path), unit, (keep ? true : false));
-
-        free(this_unit->vol[i].path);
-        this_unit->vol[i].path = nullptr;
-        this_unit->vol[i].stream = -1;
-    }
+    free(this_unit->vol.path);
+    this_unit->vol.path = nullptr;
+    this_unit->vol.stream = -1;
 
     /* Reset the global page stats to zero */
-    this_unit->numvols = 0;
     this_unit->toclen = 0;
     this_unit->toc = nullptr;
 }

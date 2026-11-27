@@ -78,7 +78,6 @@ double ET_RHF() {
     double ET, *ET_array;
     dpdfile2 fIJ, fAB, fIA, T1;
     dpdbuf4 T2, Eints, Dints, *Fints_array;
-    FILE *ijkfile;
 
     timer_on("ET_RHF");
 
@@ -90,15 +89,16 @@ double ET_RHF() {
 
     nthreads = params.nthreads;
 
-    long int mem_avail = dpd_memfree();
+    int64_t mem_avail = dpd_memfree();
     // Find the size of 4 abc-blocks of the largest irrep
-    long int max_a = 0;
+    int64_t max_a = 0;
     for (h = 0; h < nirreps; ++h)
         if (virtpi[h] > max_a) max_a = virtpi[h];
-    long int thread_mem_estimate = 4 * max_a * max_a * max_a;
+    int64_t thread_mem_estimate = 4 * max_a * max_a * max_a;
 
-    outfile->Printf("    Memory available in words               : %15ld\n", mem_avail);
-    outfile->Printf("    Approx. words needed per explicit thread: %15ld\n", thread_mem_estimate);
+    outfile->Printf("    Memory available in words               : %15lld\n", static_cast<long long>(mem_avail));
+    outfile->Printf("    Approx. words needed per explicit thread: %15lld\n",
+                    static_cast<long long>(thread_mem_estimate));
 
     // subtract at least 1/2 for non-abc quantities (mainly 2 ijab's + other buffers)
     double tval = (double)mem_avail / (double)thread_mem_estimate;
@@ -284,7 +284,6 @@ double ET_RHF() {
 
 void ET_RHF_thread(ET_RHF_thread_data *data) {
     int h, nirreps, cnt_ijk;
-    int Gp, p, nump;
     int nrows, ncols, nlinks;
     int Gijk, Gid, Gkd, Gjd, Gil, Gkl, Gjl;
     int Gab, Gba, Gbc, Gcb, Gac, Gca;

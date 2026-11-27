@@ -34,18 +34,73 @@ __all__ = [
     "get_memory",
     "libint2_configuration",
     "libint2_print_out",
+    "libint2_supports",
     "oeprop",
+    "safe_writer_file_path",
     "set_memory",
 ]
 
+import hashlib
+import numbers
 import os
 import re
+import warnings
+from pathlib import Path
 from typing import Dict, List, Union
 
 from psi4 import core
 
 from .exceptions import ValidationError
 from .prop_util import *
+
+
+def _truncate_utf8_to_nbytes(text: str, max_bytes: int) -> str:
+    """Return the longest prefix of *text* that fits in *max_bytes* bytes."""
+    if max_bytes <= 0:
+        return ""
+    return text.encode("utf-8")[:max_bytes].decode("utf-8", "ignore")
+
+
+def _name_max_for_parent(parent: Path) -> int:
+    """Fetch NAME_MAX for *parent* or use POSIX-safe fallback."""
+    try:
+        return int(os.pathconf(parent, "PC_NAME_MAX"))
+    except (AttributeError, OSError, ValueError):
+        return 255
+
+
+def safe_writer_file_path(prefix: str, suffix: str, warning_context: str | None = None) -> str:
+    """Build a writer file path and truncate overly long basenames with a hash suffix.
+
+    The resulting file basename retains *suffix* and appends ``-<hash>`` before
+    the suffix when truncation is needed.
+    """
+    path = Path(prefix + suffix)
+    max_name_bytes = _name_max_for_parent(path.parent)
+    if len(os.fsencode(path.name)) <= max_name_bytes:
+        return str(path)
+
+    trailer = f"-{hashlib.sha1(os.fsencode(path.name)).hexdigest()[:12]}{suffix}"
+    keep_bytes = max_name_bytes - len(trailer.encode("utf-8"))
+    if keep_bytes <= 0:
+        return str(path)
+
+    truncated_prefix = _truncate_utf8_to_nbytes(Path(prefix).name, keep_bytes)
+    if not truncated_prefix:
+        # No basename prefix can fit with minimum hash length
+        # Using original filename and allowing filesystem handling.
+        return str(path)
+
+    truncated = path.with_name(f"{truncated_prefix}{trailer}")
+
+    if warning_context is not None:
+        msg = (
+            f"{warning_context}: basename exceeded filesystem NAME_MAX={max_name_bytes}. "
+            f"Using truncated filename '{truncated.name}'."
+        )
+        warnings.warn(msg, RuntimeWarning, stacklevel=2)
+        core.print_out(f"\n  Warning: {msg}\n")
+    return str(truncated)
 
 
 def oeprop(wfn: core.Wavefunction, *args: List[str], **kwargs):
@@ -346,15 +401,8 @@ def libint2_configuration() -> Dict[str, List[int]]:
         `{'eri': [5, 4, 3], 'eri2': [6, 5, 4], 'eri3': [6, 5, 4], 'onebody': [6, 5, 4]}`
 
     """
-    if "eri_c4_d0_l2" in core._libint2_configuration():
-        return _l2_config_style_eri_c4()
-    elif "eri_dddd_d0" in core._libint2_configuration():
-        return _l2_config_style_eri_llll()
-
-
-def _l2_config_style_eri_llll():
     skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
-    skel_re = {"onebody_": r"onebody_\w_d\d", "eri_c4_": r"eri_\w..._d\d", "eri_c3_":  r"eri_\w.._d\d", "eri_c2_": r"eri_\w._d\d"}
+    skel_re = {"onebody_": r"onebody_\w._d\d", "eri_c4_": r"\beri_\w..._d\d\b", "eri_c3_":  r"\beri_\w.._d\d\b", "eri_c2_": r"\beri_\w._d\d\b"}
 
     amstr = "SPDFGHIKLMNOQRTUVWXYZ"
     libint2_configuration = core._libint2_configuration()
@@ -381,36 +429,10 @@ def _l2_config_style_eri_llll():
     return skel
 
 
-def _l2_config_style_eri_c4():
-    skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
-
-    for itm in core._libint2_configuration().split(";"):
-        for cat in list(skel.keys()):
-            if itm.startswith(cat):
-                skel[cat].append(itm[len(cat):])
-
-    for cat in list(skel.keys()):
-        der_max_store = []
-        for der in ["d0_l", "d1_l", "d2_l"]:
-            lmax = -1
-            for itm2 in skel[cat]:
-                if itm2.startswith(der):
-                    lmax = max(int(itm2[len(der):]), lmax)
-            der_max_store.append(None if lmax == -1 else lmax)
-        skel[cat] = der_max_store
-
-    # rename keys from components
-    skel["onebody"] = skel.pop("onebody_")
-    skel["eri"] = skel.pop("eri_c4_")
-    skel["eri3"] = skel.pop("eri_c3_")
-    skel["eri2"] = skel.pop("eri_c2_")
-    return skel
-
-
 def libint2_print_out() -> None:
     ams = libint2_configuration()
     core.print_out("   => Libint2 <=\n\n");
-    # when L2 is pure cmake core.print_out(core.libint2_citation());
+    core.print_out(core.libint2_citation() + "\n");
 
     core.print_out(f"    Primary   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri'])}\n")
     core.print_out(f"    Auxiliary basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri3'])}\n")
@@ -418,3 +440,48 @@ def libint2_print_out() -> None:
     # excluding sph_emultipole
     core.print_out(f"    Solid Harmonics ordering:            {core.libint2_solid_harmonics_ordering()}\n")
 
+
+def libint2_supports(am: int, der: int = 0, centers: int = 4) -> bool:
+    """Does the linked Libint2 support 2-, 3-, or 4-*centers* ERIs of angular momentum *am* and derivative *der*.
+
+    Parameters
+    ----------
+    am
+        Angular momentum of every center, ``0`` (s) through ``20`` (z).
+    der
+        Derivative order, ``0`` (energy), ``1`` (gradient), or ``2`` (Hessian).
+    centers
+        Number of centers in the ERI: ``2``, ``3``, or ``4``.
+        Note that for 3-center, this probes the single auxiliary AM, not the
+        paired AO indices. For finer control, use `psi4.core.libint2_supports` directly.
+
+    Returns
+    -------
+    bool
+        Whether the linked Libint2 was built with that integral class.
+        ``False`` means *unsupported by this build*, never *invalid query*.
+
+    Raises
+    ------
+    ValidationError
+        If any argument is not an integer or is out of range.
+
+    """
+    amstr = "SPDFGHIKLMNOQRTUVWXYZ"
+
+    for label, val, allowed in [
+        ("am", am, range(len(amstr))),
+        ("der", der, range(3)),  # expand this to allow arbitrary order deriv (plausible from L2)
+        ("centers", centers, range(2, 5)),
+    ]:
+        if isinstance(val, bool) or not isinstance(val, numbers.Integral):
+            raise ValidationError(f"libint2_supports: {label} must be an integer, not {type(val).__name__}: {val!r}")
+        if val not in allowed:
+            raise ValidationError(
+                f"libint2_supports: {label}={val} out of range; must be in [{allowed.start}, {allowed.stop - 1}]")
+
+    if centers == 3:
+        amcode = "ss" + amstr[am].lower()
+    else:
+        amcode = amstr[am].lower() * centers
+    return core.libint2_supports(f"eri_{amcode}_d{der}")
