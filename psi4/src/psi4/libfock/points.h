@@ -279,17 +279,6 @@ class UKSFunctions : public PointFunctions {
     /// Allocate registers
     void allocate() override;
 
-    // => Orbital Collocation <= //
-
-    /// Orbital coefficients, AO
-    SharedMatrix Ca_AO_;
-    /// Orbital coefficients, AO
-    SharedMatrix Cb_AO_;
-    /// Orbital coefficients, local AO
-    SharedMatrix Ca_local_;
-    /// Orbital coefficients, local AO
-    SharedMatrix Cb_local_;
-
    public:
     UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     ~UKSFunctions() override;
