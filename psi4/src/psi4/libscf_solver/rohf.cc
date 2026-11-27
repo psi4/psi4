@@ -1273,7 +1273,7 @@ bool ROHF::stability_analysis() {
             // `evals` has only `rank` entries; if the user asked for more
             // SOLVER_N_ROOT eigenvalues than the algorithm produced, copy
             // what we have and zero-pad the rest.
-            int nsave_h = std::min(nsave, rank);
+            int nsave_h = static_cast<int>(std::min<size_t>(nsave, rank));
             for (int i = 0; i < nsave_h; ++i) pEvals[i][0] = evals[i];
             for (int i = nsave_h; i < nsave; ++i) pEvals[i][0] = 0.0;
 
