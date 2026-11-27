@@ -528,7 +528,7 @@ double DLPNOCCSD::compute_mp2_singles_energy(int i, const SharedMatrix& X_virtua
         const double denominator = F_lmo_->get(i, i) - epsilon_virtual->get(a);
         if (std::fabs(denominator) > 1.0e-12) {
             const double fia = Fia->get(0, a);
-            energy += fia * fia / denominator;
+            energy += 2.0 * fia * fia / denominator;
         }
     }
     return energy;
@@ -2884,9 +2884,19 @@ void DLPNOCCSD::lccsd_iterations() {
         e_prev = e_curr;
 
         // Compute LCCSD energy (Jiang Eq. 45)
-        // E_{CCSD} = (t_{ij}^{ab} + t_{i}^{a}t_{j}^{b}) L_{ij}^{ab}
+        // E_{CCSD} = 2.0 * f_{ia} * t_{ia} + (t_{ij}^{ab} + t_{i}^{a}t_{j}^{b}) L_{ij}^{ab}
         // Note, the singles contribution to weak pairs is still computed!!!
         e_curr = 0.0, e_weak = 0.0;
+
+        // Computes the Brillion terms for singles amplitudes (zero for a HF-reference, non-zero for KS or Brueckner)
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_curr)
+        for (int i = 0; i < naocc; ++i) {
+            int ii = i_j_to_ij_[i][i];
+            auto F_ia = submatrix_rows_and_cols(*F_lmo_pao_, std::vector<int>(1, i), lmopair_to_paos_[ii]);
+            F_ia = linalg::doublet(F_ia, X_pno_[ii], false, false)->transpose();
+            e_curr += 2.0 * F_ia->vector_dot(T_ia_[i]);
+        }
+
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_curr, e_weak)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];

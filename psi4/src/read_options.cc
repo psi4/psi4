@@ -1928,7 +1928,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The convergence on the orbital localization procedure -*/
         options.add_double("LOCAL_CONVERGENCE", 1E-12);
         /*- Maximum orbital-gradient component for Boys, generalized Pipek--Mezey, and IBO localization -*/
-        options.add_double("LOCAL_GRADIENT_CONVERGENCE", 1E-8);
+        options.add_double("LOCAL_GRADIENT_CONVERGENCE", 1E-2);
         /*- The maxiter on the orbital localization procedure -*/
         options.add_int("LOCAL_MAXITER", 200);
         /*- Use trust-region augmented-Hessian steps and explicit saddle checks in Boys/PM/IBO/ER localization -*/
@@ -1936,11 +1936,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- First localization iteration on which the augmented Hessian is used !expert -*/
         options.add_int("LOCAL_AH_START", 3);
         /*- Maximum number of independent rotations for a dense localization Hessian !expert -*/
-        options.add_int("LOCAL_AH_MAX_ROTATIONS", 512);
+        options.add_int("LOCAL_AH_MAX_ROTATIONS", 16384);
         /*- Maximum Davidson subspace dimension for a matrix-free localization augmented Hessian !expert -*/
         options.add_int("LOCAL_AH_MAX_SUBSPACE", 20);
         /*- Initial Euclidean trust radius for augmented-Hessian localization rotations !expert -*/
-        options.add_double("LOCAL_AH_TRUST_RADIUS", 0.25);
+        options.add_double("LOCAL_AH_TRUST_RADIUS", 0.15);
         /*- Positive-curvature threshold for rejecting a localization saddle !expert -*/
         options.add_double("LOCAL_SADDLE_TOLERANCE", 1E-8);
         /*- The number of NOONs to print in a UHF calc -*/
