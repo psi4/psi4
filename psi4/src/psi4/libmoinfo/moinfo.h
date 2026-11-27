@@ -74,7 +74,6 @@ class MOInfo : public MOInfoBase {
        public:
         typedef std::bitset<2048> bitdet;  // adjust based on "size det"?
         SlaterDeterminant(const MOInfo*);
-        ~SlaterDeterminant();
         void set(int n) { bits.set(n); }
         bool test(int n) const { return (bits.test(n)); }
         bool is_closed_shell();
@@ -243,7 +242,6 @@ class MOInfo : public MOInfoBase {
     // Mapping arrays
     intvec all_to_mo;
     intvec mo_to_all;
-    intvec orbs_to_mo;
     intvec focc_to_mo;
     intvec docc_to_mo;
     intvec actv_to_mo;
@@ -251,8 +249,6 @@ class MOInfo : public MOInfoBase {
     intvec fvir_to_mo;
     intvec occ_to_mo;
     intvec vir_to_mo;
-    intvec mo_to_occ_act;
-    intvec mo_to_act_vir;
     intvec occ_to_vir;
     intvec all_to_occ;
     intvec all_to_vir;
@@ -260,8 +256,7 @@ class MOInfo : public MOInfoBase {
     intvec actv_to_vir;
     intvec occ_to_actv;
     intvec vir_to_actv;
-    intvec occ_to_all;
-    intvec extr_to_all;
+    //intvec occ_to_all; //only used in inactive code in moinfo.cc
     boolvec is_actv_in_occ;
     boolvec is_actv_in_vir;
 

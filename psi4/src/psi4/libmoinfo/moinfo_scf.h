@@ -41,7 +41,6 @@ namespace psi {
 class MOInfoSCF : public MOInfoBase {
    public:
     MOInfoSCF(Wavefunction& ref_wfn_, Options& options_);
-    ~MOInfoSCF();
 
    private:
     void read_mo_spaces();
