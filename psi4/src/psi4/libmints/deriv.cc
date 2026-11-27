@@ -231,9 +231,9 @@ SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::strin
     // In einsum notation i,ijk -> jk
     auto st = cdsalcs_.matrix();
     auto B = st->pointer(0);
-    auto *cart = new double[3 * natom_];
-    C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, Xcont.data(), cdsalcs_.ncd(), B[0], 3 * natom_, 0.0, cart,
-            3 * natom_);
+    std::vector<double> cart(3 * natom_);
+    C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, Xcont.data(), cdsalcs_.ncd(), B[0], 3 * natom_, 0.0,
+            cart.data(), 3 * natom_);
     auto x_contr = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     for (int a = 0; a < natom_; ++a)
         for (int xyz = 0; xyz < 3; ++xyz) x_contr->set(a, xyz, cart[3 * a + xyz]);
@@ -402,36 +402,36 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     // Transform the SALCs back to cartesian space
     auto st = cdsalcs_.matrix();
     auto B = st->pointer(0);
-    auto *cart = new double[3 * natom_];
+    std::vector<double> cart(3 * natom_);
 
     if (TPDM_ref_cont) {
         // B^t g_q^t = g_x^t -> g_q B = g_x
         C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, TPDM_ref_cont, cdsalcs_.ncd(), B[0], 3 * natom_, 0.0,
-                cart, 3 * natom_);
+                cart.data(), 3 * natom_);
 
         for (int a = 0; a < natom_; ++a)
             for (int xyz = 0; xyz < 3; ++xyz) tpdm_ref_contr_->set(a, xyz, cart[3 * a + xyz]);
     } else {
         // B^t g_q^t = g_x^t -> g_q B = g_x
-        C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, TPDMcont, cdsalcs_.ncd(), B[0], 3 * natom_, 0.0, cart,
-                3 * natom_);
+        C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, TPDMcont, cdsalcs_.ncd(), B[0], 3 * natom_, 0.0,
+                cart.data(), 3 * natom_);
 
         for (int a = 0; a < natom_; ++a)
             for (int xyz = 0; xyz < 3; ++xyz) tpdm_contr_->set(a, xyz, cart[3 * a + xyz]);
     }
 
     // B^t g_q^t = g_x^t -> g_q B = g_x
-    C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, Xcont, cdsalcs_.ncd(), B[0], 3 * natom_, 0.0, cart,
-            3 * natom_);
-    
+    C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, Xcont, cdsalcs_.ncd(), B[0], 3 * natom_, 0.0,
+            cart.data(), 3 * natom_);
+
     auto x_contr = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     for (int a = 0; a < natom_; ++a)
         for (int xyz = 0; xyz < 3; ++xyz) x_contr->set(a, xyz, cart[3 * a + xyz]);
 
     if (X_ref_cont) {
         // B^t g_q^t = g_x^t -> g_q B = g_x
-        C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, X_ref_cont, cdsalcs_.ncd(), B[0], 3 * natom_, 0.0, cart,
-                3 * natom_);
+        C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, X_ref_cont, cdsalcs_.ncd(), B[0], 3 * natom_, 0.0,
+                cart.data(), 3 * natom_);
 
         for (int a = 0; a < natom_; ++a)
             for (int xyz = 0; xyz < 3; ++xyz) x_ref_contr_->set(a, xyz, cart[3 * a + xyz]);

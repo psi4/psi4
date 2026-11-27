@@ -525,7 +525,7 @@ void DFOCC::uccsd_tpdm()
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         G2 = std::make_shared<Tensor2d>("G[I] (Q|A)", nQ, navirA);
         for (int i = 0; i < naoccA; i++) {
-            U->myread(psio_, PSIF_DFOCC_MIABC_AAAA, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+            U->myread(psio_, PSIF_DFOCC_MIABC_AAAA, ((size_t)i * navirA * navirA * navirA) * sizeof(double));
             G2->gemm(false, true, K, U, 0.5, 0.0);
             for (int Q = 0; Q < nQ; Q++) {
                 for (int a = 0; a < navirA; a++) {
@@ -571,7 +571,7 @@ void DFOCC::uccsd_tpdm()
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         G2 = std::make_shared<Tensor2d>("G[I] (Q|A)", nQ, navirA);
         for (int i = 0; i < naoccA; i++) {
-            U->myread(psio_, PSIF_DFOCC_MIABC_AABB, (size_t)(i * navirA * navirB * navirB) * sizeof(double));
+            U->myread(psio_, PSIF_DFOCC_MIABC_AABB, ((size_t)i * navirA * navirB * navirB) * sizeof(double));
             G2->gemm(false, true, K, U, 0.5, 0.0);
             for (int Q = 0; Q < nQ; Q++) {
                 for (int a = 0; a < navirA; a++) {
@@ -829,7 +829,7 @@ void DFOCC::uccsd_tpdm()
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         G2 = std::make_shared<Tensor2d>("G[I] (Q|a)", nQ, navirB);
         for (int i = 0; i < naoccB; i++) {
-            U->myread(psio_, PSIF_DFOCC_MIABC_BBAA, (size_t)(i * navirB * navirA * navirA) * sizeof(double));
+            U->myread(psio_, PSIF_DFOCC_MIABC_BBAA, ((size_t)i * navirB * navirA * navirA) * sizeof(double));
             G2->gemm(false, true, K, U, 0.5, 0.0);
             for (int Q = 0; Q < nQ; Q++) {
                 for (int a = 0; a < navirB; a++) {
@@ -875,7 +875,7 @@ void DFOCC::uccsd_tpdm()
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         G2 = std::make_shared<Tensor2d>("G[i] (Q|a)", nQ, navirB);
         for (int i = 0; i < naoccB; i++) {
-            U->myread(psio_, PSIF_DFOCC_MIABC_BBBB, (size_t)(i * navirB * navirB * navirB) * sizeof(double));
+            U->myread(psio_, PSIF_DFOCC_MIABC_BBBB, ((size_t)i * navirB * navirB * navirB) * sizeof(double));
             G2->gemm(false, true, K, U, 0.5, 0.0);
             for (int Q = 0; Q < nQ; Q++) {
                 for (int a = 0; a < navirB; a++) {
@@ -996,7 +996,7 @@ void DFOCC::uccsd_tpdm()
         K->read(psio_, PSIF_DFOCC_INTS);
         T = std::make_shared<Tensor2d>("B[I] (Q|A)", nQ, navirA);
         for (int i = 0; i < naoccA; i++) {
-            U->myread(psio_, PSIF_DFOCC_MIABC_AAAA, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+            U->myread(psio_, PSIF_DFOCC_MIABC_AAAA, ((size_t)i * navirA * navirA * navirA) * sizeof(double));
             for (int Q = 0; Q < nQ; Q++) {
                 for (int c = 0; c < navirA; c++) {
                     int ic = ia_idxAA->get(i, c);
@@ -1015,7 +1015,7 @@ void DFOCC::uccsd_tpdm()
         K->read(psio_, PSIF_DFOCC_INTS);
         T = std::make_shared<Tensor2d>("B[i] (Q|a)", nQ, navirB);
         for (int i = 0; i < naoccB; i++) {
-            U->myread(psio_, PSIF_DFOCC_MIABC_BBAA, (size_t)(i * navirB * navirA * navirA) * sizeof(double));
+            U->myread(psio_, PSIF_DFOCC_MIABC_BBAA, ((size_t)i * navirB * navirA * navirA) * sizeof(double));
             for (int Q = 0; Q < nQ; Q++) {
                 for (int c = 0; c < navirB; c++) {
                     int ic = ia_idxBB->get(i, c);
@@ -1109,7 +1109,7 @@ void DFOCC::uccsd_tpdm()
         K->read(psio_, PSIF_DFOCC_INTS);
         T = std::make_shared<Tensor2d>("B[i] (Q|a)", nQ, navirB);
         for (int i = 0; i < naoccB; i++) {
-            U->myread(psio_, PSIF_DFOCC_MIABC_BBBB, (size_t)(i * navirB * navirB * navirB) * sizeof(double));
+            U->myread(psio_, PSIF_DFOCC_MIABC_BBBB, ((size_t)i * navirB * navirB * navirB) * sizeof(double));
             for (int Q = 0; Q < nQ; Q++) {
                 for (int c = 0; c < navirB; c++) {
                     int ic = ia_idxBB->get(i, c);
@@ -1128,7 +1128,7 @@ void DFOCC::uccsd_tpdm()
         K->read(psio_, PSIF_DFOCC_INTS);
         T = std::make_shared<Tensor2d>("B[I] (Q|A)", nQ, navirA);
         for (int i = 0; i < naoccA; i++) {
-            U->myread(psio_, PSIF_DFOCC_MIABC_AABB, (size_t)(i * navirA * navirB * navirB) * sizeof(double));
+            U->myread(psio_, PSIF_DFOCC_MIABC_AABB, ((size_t)i * navirA * navirB * navirB) * sizeof(double));
             for (int Q = 0; Q < nQ; Q++) {
                 for (int c = 0; c < navirA; c++) {
                     int ic = ia_idxAA->get(i, c);
