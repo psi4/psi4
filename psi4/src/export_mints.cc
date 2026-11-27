@@ -1348,7 +1348,7 @@ void export_mints(py::module& m) {
             batched_potential_contract_density(bs1, bs2, *D, *points, V->pointer());
             return V;
         },
-        "sum_{mu nu} D_{mu nu} (mu| 1/|r - C_k| |nu) at each point C_k [Bohr] of an npoints x 3 matrix, for mu in "
+        "``sum_{mu nu} D_{mu nu} (mu| 1/|r - C_k| |nu)`` at each point ``C_k`` [Bohr] of an npoints x 3 matrix, for mu in "
         "bs1 and nu in bs2",
         "bs1"_a, "bs2"_a, "D"_a, "points"_a);
     m.def(
@@ -1360,7 +1360,8 @@ void export_mints(py::module& m) {
             batched_potential_contract_charges(bs1, bs2, q->pointer(), *points, *F);
             return F;
         },
-        "sum_k q_k (mu| 1/|r - C_k| |nu) for point charges q_k at the points C_k [Bohr] of an npoints x 3 matrix, "
+        "``sum_k q_k (mu| 1/|r - C_k| |nu)`` for point charges ``q_k`` at the points ``C_k`` [Bohr] of an npoints x 3 "
+        "matrix, "
         "for mu in bs1 and nu in bs2",
         "bs1"_a, "bs2"_a, "q"_a, "points"_a);
     py::class_<AngularMomentumInt, std::shared_ptr<AngularMomentumInt>>(m, "AngularMomentumInt", pyOneBodyAOInt,
