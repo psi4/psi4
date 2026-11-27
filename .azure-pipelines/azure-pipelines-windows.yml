@@ -144,7 +144,6 @@ jobs:
                         libint-cxx-devel ^
                         qcelemental ^
                         qcengine ^
-                        qcmanybody ^
                         pydantic ^
                         optking ^
                         scipy || exit /b 1
