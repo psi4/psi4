@@ -1330,6 +1330,10 @@ class FiniteDifferenceComputer(BaseComputer):
         task = results_list["reference"]
         response = task.return_result
         reference["module"] = getattr(task.provenance, "module", None)
+        # roles (e.g., orbital_optimizer) consolidated over reference and all displacements
+        reference["module_roles"] = p4util.merge_module_roles(t.provenance for t in results_list.values())
+        if reference["module"]:
+            reference["module_roles"]["qc_module"] = reference["module"]
 
         if task.input_data.specification.driver == 'energy':
             reference['energy'] = response
@@ -1466,7 +1470,8 @@ class FiniteDifferenceComputer(BaseComputer):
                 },
                 'molecule': self.molecule.to_schema(dtype=3, quiet=True),
                 'properties': properties,
-                'provenance': p4util.provenance_stamp(__name__, module=self.findifrec["reference"]["module"]),
+                'provenance': p4util.provenance_stamp(__name__, module=self.findifrec["reference"].get("module_roles")
+                                                                       or self.findifrec["reference"]["module"]),
                 'extras': {
                     'qcvars': qcvars,
                     'findif_record': copy.deepcopy(self.findifrec),
@@ -1531,8 +1536,7 @@ def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
         sbasis = "def2-svp"
     basis = core.BasisSet.build(mol, "ORBITAL", sbasis, quiet=True)
     wfn = core.Wavefunction(mol, basis)
-    if hasattr(findif_model.provenance, "module"):
-        wfn.set_module(findif_model.provenance.module)
+    p4util.set_wfn_module_roles(wfn, findif_model.provenance)
 
     # setting CURRENT E/G/H on wfn below catches Wfn.energy_, gradient_, hessian_
     # setting CURRENT E/G/H on core below is authoritative P::e record

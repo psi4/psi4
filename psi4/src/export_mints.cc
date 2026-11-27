@@ -1364,6 +1364,10 @@ void export_mints(py::module& m) {
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                       std::shared_ptr<BasisSet>>())
         .def(py::init<std::shared_ptr<BasisSet>>())
+        .def_static("reset_coulomb_eri_engines", &IntegralFactory::reset_coulomb_eri_engines,
+                    "Forget which engines eri() has built")
+        .def_static("coulomb_eri_engines", &IntegralFactory::coulomb_eri_engines,
+                    "Engines eri() has built since the last reset, as 'simint>libint2>libcint' (those present), or ''")
         // def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
         // py::return_value_policy<manage_new_object>(), "docstring").
         .def("shells_iterator", &IntegralFactory::shells_iterator_ptr,

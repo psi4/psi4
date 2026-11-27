@@ -20,33 +20,65 @@ ans = -76.0266327341067125
 largs_old = {"protocols": {"stdout": False}, "tag": "test1", "priority": 2}
 largs = {"protocols": {"stdout": False}, "compute_tag": "test1", "compute_priority": "low"}
 
-energy('scf', **largs)
+e_wfn = energy('scf', return_wfn=True, **largs)[1]
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
 
-gradient('scf', **largs)
+# module roles (e.g., which orbital optimizer and integral engine ran) must survive consolidation
+#   onto the returned wfn for analytic, findif, and CBS paths, with qc_module still from set_module
+ref_oo = e_wfn.module_role("orbital_optimizer")
+ref_eri = e_wfn.module_role("coulomb_eri_integrals")
+compare(True, ref_oo != "", "SCF energy: orbital_optimizer role recorded")  #TEST
+compare(psi4.core.get_global_option("INTEGRAL_PACKAGE").lower(), ref_eri, "SCF energy: coulomb_eri_integrals role recorded")  #TEST
+def check_roles(wfn, label):
+    compare(ref_oo, wfn.module_role("orbital_optimizer"), f"{label}: orbital_optimizer role")  #TEST
+    compare(ref_eri, wfn.module_role("coulomb_eri_integrals"), f"{label}: coulomb_eri_integrals role")  #TEST
+    compare("scf", wfn.module(), f"{label}: qc_module")  #TEST
+
+wfn = gradient('scf', return_wfn=True, **largs)[1]
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient')  #TEST
+check_roles(wfn, "SCF gradient")
 
 if distributed:
     # check old tags/priority are passing through and QCF's warnings show
     plan = gradient('scf', dertype=0, return_plan=True, **largs_old)
     plan.compute(client)
     snowflake.await_results()
-    plan.get_psi_results(client)
+    wfn = plan.get_psi_results(client, return_wfn=True)[1]
 else:
-    gradient('scf', dertype=0, **largs)
+    wfn = gradient('scf', dertype=0, return_wfn=True, **largs)[1]
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient by energy')  #TEST
+check_roles(wfn, "SCF gradient by energy")
 
-hessian('scf', **largs)
+wfn = hessian('scf', return_wfn=True, **largs)[1]
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF hessian')  #TEST
+check_roles(wfn, "SCF hessian")
 
 if distributed:
     plan = hessian('scf', dertype=1, return_plan=True, **largs)
     plan.compute(client)
     snowflake.await_results()
-    plan.get_psi_results(client)
+    wfn = plan.get_psi_results(client, return_wfn=True)[1]
 else:
-    hessian('scf', dertype=1, **largs)
+    wfn = hessian('scf', dertype=1, return_wfn=True, **largs)[1]
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF hessian by gradient')  #TEST
+check_roles(wfn, "SCF hessian by gradient")
+
+if not distributed:
+    # CBS (two SCF stages) and CBS-within-findif consolidate roles too
+    wfn = energy('scf/cc-pv[dt]z', return_wfn=True)[1]
+    check_roles(wfn, "SCF/cc-pV[DT]Z energy")
+    wfn = gradient('scf/cc-pv[dt]z', dertype=0, return_wfn=True)[1]
+    check_roles(wfn, "SCF/cc-pV[DT]Z gradient by energy")
+    # CBS with a per-stage option (SOSCF on the delta stage only) records the second-order optimizer role
+    wfn = energy('cbs', cbs_metadata=[
+        {'wfn': 'hf', 'basis': 'cc-pvdz'},
+        {'wfn': 'mp2', 'basis': 'cc-pvdz'},
+        {'wfn': 'mp2', 'basis': 'sto-3g', 'options': {'soscf': True}},
+    ], return_wfn=True)[1]
+    compare('dfmp2', wfn.module(), 'CBS with stage options: qc_module')  #TEST
+    compare(ref_oo, wfn.module_role('orbital_optimizer'), 'CBS with stage options: orbital_optimizer')  #TEST
+    compare(ref_eri, wfn.module_role('coulomb_eri_integrals'), 'CBS with stage options: coulomb_eri_integrals')  #TEST
+    compare(True, wfn.module_role('second_order_orbital_optimizer') != '', 'CBS with stage options: second_order_orbital_optimizer')  #TEST
 
 #if distributed:
 #    plan = hessian('scf', dertype=0, return_plan=True)
