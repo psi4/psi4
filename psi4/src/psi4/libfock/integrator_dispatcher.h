@@ -49,6 +49,9 @@ class VBase;
 /// the electric dipole is also a valid density functional.
 /// Ultimately, this technology should probably replace NumIntHelper.
 
+// Whether psi4 was compiled against a GauXC with device (GPU) support. Defined in gauxc_int.cc.
+bool gauxc_has_device();
+
 class DensityFunctionalIntegratorDispatcher {
   private:
     std::vector<std::shared_ptr<DensityFunctionalIntegratorManager>> managers_; 

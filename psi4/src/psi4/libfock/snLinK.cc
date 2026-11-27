@@ -28,6 +28,7 @@
 
 #include "jk.h"
 #include "SplitJK.h"
+#include "gauxc_device.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
@@ -124,12 +125,17 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // define runtime environment and execution space
     use_gpu_ = options_.get_bool("SNLINK_USE_GPU"); 
+    device_desc_ = use_gpu_ ? gauxc_device::check("SNLINK_USE_GPU") : std::string();
+    // Device setup and the first kernel launches happen below; run them so failures get explained
+    auto on_device = [this](auto&& step) { return gauxc_device::run(use_gpu_, "SNLINK_USE_GPU", device_desc_, step); };
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
 
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
 #ifdef GAUXC_HAS_DEVICE 
     if (use_gpu_) {
-        rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("SNLINK_GPU_MEM"));
+        on_device([&] {
+            rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("SNLINK_GPU_MEM"));
+        });
     } else { 
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
     }
@@ -287,13 +293,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // construct load balancer
     //const size_t quad_pad_value = 1;
     //auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
-    auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
-    
-    // construct weights module
-    auto gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
+    auto gauxc_load_balancer = on_device([&] {
+        auto load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
 
-    // apply partition weights
-    gauxc_mol_weights.modify_weights(gauxc_load_balancer);
+        // construct weights module
+        auto gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
+
+        // apply partition weights
+        gauxc_mol_weights.modify_weights(load_balancer);
+        return load_balancer;
+    });
 
     // construct dummy functional
     // note that the snLinK used by the eventually-called eval_exx function is agnostic to the input functional!
@@ -335,6 +344,7 @@ void snLinK::print_header() const {
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
         
         outfile->Printf("    K Execution Space: %s\n", (use_gpu_) ? "Device (GPU)" : "Host (CPU)");
+        if (use_gpu_ && !device_desc_.empty()) outfile->Printf("    K GPU Device: %s\n", device_desc_.c_str());
         outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
         outfile->Printf("    K Grid Spherical/Angular Points: %i\n\n", spherical_points_);
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");

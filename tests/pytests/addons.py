@@ -134,6 +134,7 @@ _programs = {
     "einsums": psi4.addons("einsums"),
     "pyeinsums": which_import("einsums", return_bool=True),
     "gauxc": psi4.addons("gauxc"),
+    "gauxc_cpu": psi4.addons("gauxc"),
     "gauxc_gpu": psi4.addons("gauxc_gpu"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
@@ -178,6 +179,8 @@ def _using(program: str) -> None:
 
         if program == "qcmanybody":
             all_marks = (skip, general, particular, getattr(pytest.mark, "nbody"))
+        elif program in ["gauxc_cpu", "gauxc_gpu"]:
+            all_marks = (skip, general, particular, getattr(pytest.mark, "gauxc"))
         else:
             all_marks = (skip, general, particular)
         _using_cache[program] = [_compose_decos(all_marks), all_marks]

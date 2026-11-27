@@ -12,7 +12,7 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
 # snLinK executes on either the host or a GPU, selected by SNLINK_USE_GPU. The
 # other composite K algorithms (LINK, COSX) are CPU-only, so only the snLinK
 # cases carry an execution-space axis.
-SNLINK_CPU_MARKS = [*using("gauxc")]
+SNLINK_CPU_MARKS = [*using("gauxc_cpu")]
 SNLINK_GPU_MARKS = [*using("gauxc_gpu"), *using("cuda")]
 
 # Shared by every snLinK case in test_seminum: the spherical and cartesian paths
@@ -440,7 +440,7 @@ def test_dfdirj(functional, scf_type, snlink_use_gpu, mols):
     [ 
         pytest.param("LINK"),
         pytest.param("COSX"),
-        pytest.param("SNLINK", marks=using('gauxc')),
+        pytest.param("SNLINK", marks=using('gauxc_cpu')),
     ]
 ) 
 @pytest.mark.parametrize("df_basis_scf", [ "CC-PVDZ-JKFIT", "DEF2-UNIVERSAL-JFIT" ]) #to be extended in the future

@@ -51,7 +51,7 @@ here are the list of compile-time options provided.
 
 * :makevar:`gauxc_DIR`: Location of the external GauXC install to compile Psi4 with, if using an external GauXC instance.
 
-* :makevar:`gauxc_ENABLE_GPU`: Enable GPU support for the Psi4-GauXC interface class. When building GauXC internally within Psi4, this keyword controls whether to enable GPU support on the internally-built GauXC instance. When using an external GauXC build, this keyword must align with the GPU capabilities of the external GauXC install.  
+* :makevar:`gauxc_ENABLE_GPU`: Enable GPU support for the Psi4-GauXC interface class. When building GauXC internally within Psi4, this keyword controls whether to enable GPU support on the internally-built GauXC instance. When using an external GauXC build, this keyword must match the install: ``ON`` requires a GPU-enabled GauXC and ``OFF`` a CPU-only one, and configuration fails on a mismatch. With ``ON``, Psi4 also locates the CUDA Toolkit that GauXC links against (no CUDA compiler is needed); hint it with :makevar:`CUDAToolkit_ROOT` if necessary. Whether the compiled Psi4 has GPU-capable GauXC can be checked at runtime with ``psi4.addons("gauxc_gpu")``.
 
 Seminumerical Linear Exchange
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

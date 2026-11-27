@@ -42,6 +42,8 @@ class GauXCBase : public DensityFunctionalIntegratorManager {
     /// Integrator object for GauXC based integration
     std::shared_ptr<GauXC::XCIntegrator<Eigen::MatrixXd>> integrator_;
     bool use_gpu_ = false;
+    /// Model, index, and compute capability of the GPU in use, when use_gpu_ and known
+    std::string device_desc_;
 
    public:
     GauXCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : DensityFunctionalIntegratorManager(primary, options), functional_(functional) {};

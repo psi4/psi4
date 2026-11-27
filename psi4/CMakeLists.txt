@@ -158,19 +158,29 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
 
 if(${ENABLE_gauxc})
-    if(NOT "${gauxc_DIR}" STREQUAL "")
-        if("${IntegratorXX_DIR}" STREQUAL "")
-            set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
-        endif()
-        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
-    endif()
-
+    # gauxc_DIR, ExchCXX_DIR, IntegratorXX_DIR arrive as the superbuild found them
     get_property(BLAS_LIBRARIES TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
+
+    if(gauxc_ENABLE_GPU)
+        # psi4 only links CUDA libs (through gauxc::gauxc), so a toolkit suffices; no CUDA compiler needed
+        find_package(CUDAToolkit REQUIRED)
+    endif()
 
     find_package(gauxc CONFIG REQUIRED COMPONENTS IntegratorXX ExchCXX)  # edit in codedeps
     get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
-    message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION})")
+
+    # superbuild already required GauXC v1.1+, which exports GAUXC_HAS_DEVICE as TRUE or FALSE
+    get_property(_gauxc_has_device TARGET gauxc::gauxc PROPERTY GAUXC_HAS_DEVICE)
+    # GauXC variant (cpu|gpu) must be the one gauxc_ENABLE_GPU asks for
+    if(gauxc_ENABLE_GPU AND NOT _gauxc_has_device)
+        message(FATAL_ERROR "gauxc_ENABLE_GPU=ON, but ${_loc} is built without GPU support. "
+                            "Point gauxc_DIR at a GPU-enabled GauXC, or set gauxc_ENABLE_GPU=OFF.")
+    elseif(NOT gauxc_ENABLE_GPU AND _gauxc_has_device)
+        message(FATAL_ERROR "gauxc_ENABLE_GPU=OFF, but ${_loc} is built with GPU support. "
+                            "Set gauxc_ENABLE_GPU=ON (plus CUDA hints like CUDAToolkit_ROOT as needed), or point gauxc_DIR at a CPU-only GauXC.")
+    endif()
+    message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION}, device ${_gauxc_has_device})")
 else()
     message(STATUS "Disabled GauXC ${gauxc_DIR}")
 endif()
