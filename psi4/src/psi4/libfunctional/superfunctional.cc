@@ -930,21 +930,13 @@ void accumulate_vv10_tile(VV10LeftPoint& lp, size_t count, const double* r_x, co
 
 void accumulate_vv10_right_block(std::vector<VV10LeftPoint>& active_left, size_t r_npoints, const double* r_x,
                                  const double* r_y, const double* r_z, const double* r_W0, const double* r_kappa,
-                                 const double* r_pref_in, const double* r_w, const double* r_rho,
-                                 bool do_grad) noexcept {
+                                 const double* r_w, const double* r_rho, bool do_grad) noexcept {
     alignas(64) double r_pref_tile[kVV10TileSize];
     for (size_t j0 = 0; j0 < r_npoints; j0 += kVV10TileSize) {
         const size_t count = std::min(kVV10TileSize, r_npoints - j0);
-        if (r_pref_in != nullptr) {
 #pragma omp simd
-            for (size_t t = 0; t < count; ++t) {
-                r_pref_tile[t] = -r_pref_in[j0 + t];
-            }
-        } else {
-#pragma omp simd
-            for (size_t t = 0; t < count; ++t) {
-                r_pref_tile[t] = 1.5 * r_w[j0 + t] * r_rho[j0 + t];
-            }
+        for (size_t t = 0; t < count; ++t) {
+            r_pref_tile[t] = 1.5 * r_w[j0 + t] * r_rho[j0 + t];
         }
 
         const double* tx = r_x + j0;
@@ -1111,12 +1103,10 @@ double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVe
         const double* r_W0 = r_block.at("W0")->pointer();
         const double* r_kappa = r_block.at("KAPPA")->pointer();
 
-        const auto it_pref = r_block.find("PREF");
-        const double* r_pref = (it_pref != r_block.end()) ? it_pref->second->pointer() : nullptr;
-        const double* r_w = (r_pref == nullptr) ? r_block.at("W")->pointer() : nullptr;
-        const double* r_rho = (r_pref == nullptr) ? r_block.at("RHO")->pointer() : nullptr;
+        const double* r_w = r_block.at("W")->pointer();
+        const double* r_rho = r_block.at("RHO")->pointer();
 
-        accumulate_vv10_right_block(active_left, r_npoints, r_x, r_y, r_z, r_W0, r_kappa, r_pref, r_w, r_rho, do_grad);
+        accumulate_vv10_right_block(active_left, r_npoints, r_x, r_y, r_z, r_W0, r_kappa, r_w, r_rho, do_grad);
     }
 
     for (const auto& lp : active_left) {
