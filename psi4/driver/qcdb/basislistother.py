@@ -38,11 +38,17 @@ from .basislist import *
 def load_basfam_other():
 
     # Pople
+    basis_sto2g = BasisFamily('STO-2G', zeta=1)
     basis_sto3g = BasisFamily('STO-3G', zeta=1)
+    basis_sto4g = BasisFamily('STO-4G', zeta=1)
+    basis_sto5g = BasisFamily('STO-5G', zeta=1)
     basis_sto6g = BasisFamily('STO-6G', zeta=1)
     basis_321g = BasisFamily('3-21G', zeta=1)
 
+    basisfamily_list.append(basis_sto2g)
     basisfamily_list.append(basis_sto3g)
+    basisfamily_list.append(basis_sto4g)
+    basisfamily_list.append(basis_sto5g)
     basisfamily_list.append(basis_sto6g)
     basisfamily_list.append(basis_321g)
 
@@ -444,11 +450,17 @@ def load_basfam_other():
     # Here lie practical (non-validated) fitting bases for
     # Pople orbital basis sets
 
+    basis_sto2g.add_jkfit('def2-universal-jkfit')
+    basis_sto2g.add_rifit('def2-svp-ri')
     basis_sto3g.add_jkfit('def2-universal-jkfit')
     basis_sto3g.add_rifit('def2-svp-ri')
+    basis_sto4g.add_jkfit('def2-universal-jkfit')
+    basis_sto4g.add_rifit('def2-svp-ri')
+    basis_sto5g.add_jkfit('def2-universal-jkfit')
+    basis_sto5g.add_rifit('def2-svp-ri')
     basis_sto6g.add_jkfit('def2-universal-jkfit')
     basis_sto6g.add_rifit('def2-svp-ri')
-    # sto3g too small for add_guess
+    # sto-ng too small for add_guess
     basis_321g.add_jkfit('def2-universal-jkfit')
     basis_321g.add_rifit('def2-svp-ri')
     # 321g too small for add_guess
