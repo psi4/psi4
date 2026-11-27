@@ -773,6 +773,11 @@ Vector3 OEProp::get_origin_from_environment() const {
         } else {
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
+    } else {
+        // Default behavior: use nuclear charge center instead of coordinate origin
+        std::vector<double> property(natoms);
+        for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->charge(atom);
+        origin = compute_center(property.data());
     }
     outfile->Printf("\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f [a0]\n", origin[0], origin[1],
                     origin[2]);
