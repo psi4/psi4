@@ -348,7 +348,7 @@ void DFOCC::ccsd_WijamT2() {
     // Main loop
     for (int m = 0; m < naoccA; ++m) {
         // Form V[m](ae,f) = \sum_{Q} b(Q,ae) B(mfQ)
-        I->contract(true, true, navirA * navirA, navirA, nQ, bQabA, L, 0, m * navirA * nQ, 1.0, 0.0);
+        I->contract(true, true, navirA * navirA, navirA, nQ, bQabA, L, 0, (size_t)m * navirA * nQ, 1.0, 0.0);
 
 // Form (+)V[m](a, e>=f)
 #pragma omp parallel for
@@ -621,7 +621,7 @@ void DFOCC::ccsd_WabefT2() {
         int nb = a + 1;
 
         // Form V[a](bf,e) = \sum_{Q} B(bfQ)*B(aeQ) cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ, K, K, 0, a * navirA * nQ, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ, K, K, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
 // Form (+)V[a](b, e>=f)
 #pragma omp parallel for
@@ -777,10 +777,10 @@ void DFOCC::ccsd_Wabef2T2() {
         int nb = a + 1;
 
         // Form J[a](bf,e) = \sum_{Q} B(bfQ)*[B(aeQ)-T(aeQ)] cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, a * navirA * nQ, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
         // Form J[a](mf,e) = \sum_{Q} B(mfQ)*B(aeQ) cost = OV^3N
-        J->contract(false, true, navirA * naoccA, navirA, nQ, L, K, 0, a * navirA * nQ, 1.0, 0.0);
+        J->contract(false, true, navirA * naoccA, navirA, nQ, L, K, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
         // J[a](b,fe) -= \sum_{m} t(b,m) * J[a](m,fe)
         I->contract(false, false, nb, navirA * navirA, naoccA, T1, J, -1.0, 1.0);
@@ -1063,7 +1063,7 @@ void DFOCC::ccsd_WabefT2_cd() {
         int nb = a + 1;
 
         // Form V[a](bf,e) = \sum_{Q} B(bfQ)*B(aeQ) cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ_cd, K, K, 0, a * navirA * nQ_cd, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ_cd, K, K, 0, (size_t)a * navirA * nQ_cd, 1.0, 0.0);
 
 // Form (+)V[a](b, e>=f)
 #pragma omp parallel for
@@ -1257,10 +1257,10 @@ void DFOCC::ccsd_Wabef2T2AA() {
         int nb = a + 1;
 
         // Form J[a](bf,e) = \sum_{Q} B(bfQ)*[B(aeQ)-T(aeQ)] cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, a * navirA * nQ, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
         // Form J[a](mf,e) = \sum_{Q} B(mfQ)*B(aeQ) cost = OV^3N
-        J->contract(false, true, navirA * naoccA, navirA, nQ, L, K, 0, a * navirA * nQ, 1.0, 0.0);
+        J->contract(false, true, navirA * naoccA, navirA, nQ, L, K, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
         // J[a](b,fe) -= \sum_{m} t(b,m) * J[a](m,fe)
         I->contract(false, false, nb, navirA * navirA, naoccA, T1, J, -1.0, 1.0);
@@ -1411,10 +1411,10 @@ void DFOCC::ccsd_Wabef2T2BB() {
         int nb = a + 1;
 
         // Form J[a](bf,e) = \sum_{Q} B(bfQ)*[B(aeQ)-T(aeQ)] cost = V^4N/2
-        I->contract(false, true, navirB * nb, navirB, nQ, K, X, 0, a * navirB * nQ, 1.0, 0.0);
+        I->contract(false, true, navirB * nb, navirB, nQ, K, X, 0, (size_t)a * navirB * nQ, 1.0, 0.0);
 
         // Form J[a](mf,e) = \sum_{Q} B(mfQ)*B(aeQ) cost = OV^3N
-        J->contract(false, true, navirB * naoccB, navirB, nQ, L, K, 0, a * navirB * nQ, 1.0, 0.0);
+        J->contract(false, true, navirB * naoccB, navirB, nQ, L, K, 0, (size_t)a * navirB * nQ, 1.0, 0.0);
 
         // J[a](b,fe) -= \sum_{m} t(b,m) * J[a](m,fe)
         I->contract(false, false, nb, navirB * navirB, naoccB, T1, J, -1.0, 1.0);
@@ -1718,7 +1718,7 @@ void DFOCC::ccsd_WabefT2_ao_basis()
                         double Gaebf = tau_max * G->get(a,e) * G->get(b,f);
                         if (std::fabs(Gaebf) > int_cutoff_) {
                               ndf_nz++;
-                              J->contract(false, true, 1, 1, nQ, K, K, ae*nQ, bf*nQ, 1.0, 0.0);
+                              J->contract(false, true, 1, 1, nQ, K, K, (size_t)ae*nQ, (size_t)bf*nQ, 1.0, 0.0);
                               I->set(bf, e, J->get(0,0));
                         }// end if
                         else I->set(bf, e, 0.0);
@@ -1894,7 +1894,7 @@ void DFOCC::ccsd_WabefT2_ao_basis()
                         //double Gmlns = Sso->get(m,l) * Sso->get(n,s) / tau_max;
                         if (std::fabs(Gmlns) > int_cutoff_) {
                             ndf_nz++;
-                            J->contract(false, true, 1, 1, nQ, K, K, ml*nQ, ns*nQ, 1.0, 0.0);
+                            J->contract(false, true, 1, 1, nQ, K, K, (size_t)ml*nQ, (size_t)ns*nQ, 1.0, 0.0);
                             Jmlns = J->get(0,0);
 
                             // adressing

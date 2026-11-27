@@ -703,7 +703,7 @@ void DFOCC::ccsdl_Wmbij() {
     // Main loop
     for (int m = 0; m < naoccA; ++m) {
         // Form V[m](af,e) = \sum_{Q} b(Q,af) B(meQ)
-        I->contract(true, true, navirA * navirA, navirA, nQ, bQabA, L, 0, m * navirA * nQ, 1.0, 0.0);
+        I->contract(true, true, navirA * navirA, navirA, nQ, bQabA, L, 0, (size_t)m * navirA * nQ, 1.0, 0.0);
 
 // Form (+)V[m](a, e>=f)
 #pragma omp parallel for
@@ -1010,10 +1010,10 @@ void DFOCC::ccsdl_WabefL2() {
         int nb = a + 1;
 
         // Form J[a](bf,e) = \sum_{Q} B(bfQ)*[B(aeQ)-T(eaQ)] cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, a * navirA * nQ, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
         // Form J[a](bm,e) = \sum_{Q} B(bmQ)*B(aeQ) cost = OV^3N
-        J->contract(false, true, nb * naoccA, navirA, nQ, L, K, 0, a * navirA * nQ, 1.0, 0.0);
+        J->contract(false, true, nb * naoccA, navirA, nQ, L, K, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
         // J[a](be,m) = J[a](bm,e)
         J2->sort3b(132, navirA, naoccA, navirA, J, 1.0, 0.0);
@@ -1347,10 +1347,10 @@ void DFOCC::ccsdl_WabefL2AA() {
         int nb = a + 1;
 
         // Form J[a](bf,e) = \sum_{Q} B(bfQ)*[B(aeQ)-T(eaQ)] cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, a * navirA * nQ, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
         // Form J[a](bm,e) = \sum_{Q} B(bmQ)*B(aeQ) cost = OV^3N
-        J->contract(false, true, nb * naoccA, navirA, nQ, L, K, 0, a * navirA * nQ, 1.0, 0.0);
+        J->contract(false, true, nb * naoccA, navirA, nQ, L, K, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
         // J[a](be,m) = J[a](bm,e)
         J2->sort3b(132, navirA, naoccA, navirA, J, 1.0, 0.0);
@@ -1506,10 +1506,10 @@ void DFOCC::ccsdl_WabefL2BB() {
         int nb = a + 1;
 
         // Form J[a](bf,e) = \sum_{Q} B(bfQ)*[B(aeQ)-T(eaQ)] cost = V^4N/2
-        I->contract(false, true, navirB * nb, navirB, nQ, K, X, 0, a * navirB * nQ, 1.0, 0.0);
+        I->contract(false, true, navirB * nb, navirB, nQ, K, X, 0, (size_t)a * navirB * nQ, 1.0, 0.0);
 
         // Form J[a](bm,e) = \sum_{Q} B(bmQ)*B(aeQ) cost = OV^3N
-        J->contract(false, true, nb * naoccB, navirB, nQ, L, K, 0, a * navirB * nQ, 1.0, 0.0);
+        J->contract(false, true, nb * naoccB, navirB, nQ, L, K, 0, (size_t)a * navirB * nQ, 1.0, 0.0);
 
         // J[a](be,m) = J[a](bm,e)
         J2->sort3b(132, navirB, naoccB, navirB, J, 1.0, 0.0);

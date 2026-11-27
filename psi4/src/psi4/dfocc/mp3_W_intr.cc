@@ -669,7 +669,7 @@ void DFOCC::mp3_WabefT2() {
         int nb = a + 1;
 
         // Form V[a](bf,e) = \sum_{Q} B(bfQ)*B(aeQ) cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ, K, K, 0, a * navirA * nQ, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ, K, K, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
 // Form (+)V[a](b, e>=f)
 #pragma omp parallel for
@@ -776,7 +776,7 @@ void DFOCC::mp3_WabefT2AA() {
         int nb = a + 1;
 
         // Form V[a](bf,e) = \sum_{Q} B(bfQ)*B(aeQ) cost = V^4N/2
-        I->contract(false, true, navirA * nb, navirA, nQ, K, K, 0, a * navirA * nQ, 1.0, 0.0);
+        I->contract(false, true, navirA * nb, navirA, nQ, K, K, 0, (size_t)a * navirA * nQ, 1.0, 0.0);
 
 // Form (+)V[a](b, e>=f)
 #pragma omp parallel for
@@ -875,7 +875,7 @@ void DFOCC::mp3_WabefT2BB() {
         int nb = a + 1;
 
         // Form V[a](bf,e) = \sum_{Q} B(bfQ)*B(aeQ) cost = V^4N/2
-        I->contract(false, true, navirB * nb, navirB, nQ, K, K, 0, a * navirB * nQ, 1.0, 0.0);
+        I->contract(false, true, navirB * nb, navirB, nQ, K, K, 0, (size_t)a * navirB * nQ, 1.0, 0.0);
 
 // Form (+)V[a](b, e>=f)
 #pragma omp parallel for
