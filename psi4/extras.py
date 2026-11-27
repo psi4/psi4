@@ -183,6 +183,7 @@ _addons_ = {
     "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),
     "qcmanybody": which_import("qcmanybody", return_bool=True),
     "otr": _CMake_to_Py_boolean("@ENABLE_OpenTrustRegion@"),
+    "molsym": which_import("molsym", return_bool=True),
 }
 
 

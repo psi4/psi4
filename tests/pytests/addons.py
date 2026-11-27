@@ -106,6 +106,7 @@ _programs = {
     "pandas": which_import("pandas", return_bool=True),
     "otr": psi4.addons("otr"),
     "cint": psi4.addons("cint"),
+    "molsym": which_import("molsym", return_bool=True),
 }
 
 

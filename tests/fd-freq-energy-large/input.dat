@@ -56,6 +56,8 @@ set {
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
     psi4.set_options({"d_convergence": 1e-9})
 
+# MolSym's C2v B1/B2 labels can differ from psi4's, and these tests check irrep= by psi4's labels
+set findif salc_package internal
 set findif {print 3}
 
 scf_e, scf_wfn = frequencies('scf', irrep=1, dertype=0,  return_wfn=True)
