@@ -264,8 +264,10 @@ jobs:
         grep INTEGRAL_PACKAGE psi4/src/read_options.cc
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           sed -E -i.bak 's;(options\.add_str\("INTEGRAL_PACKAGE", ")LIBINT2(", "LIBINT2 SIMINT LIBCINT");\1LIBCINT\2;' psi4/src/read_options.cc
+          sed -E -i.bak 's;(options\.add_str\("ONE_ELECTRON_INTEGRAL_PACKAGE", ")LIBINT2(", "LIBINT2 LIBCINT");\1LIBCINT\2;' psi4/src/read_options.cc
         else
           sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 SIMINT LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
+          sed -i 's;\(options\.add_str("ONE_ELECTRON_INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
         fi
         grep INTEGRAL_PACKAGE psi4/src/read_options.cc
 

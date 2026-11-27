@@ -494,7 +494,9 @@ L=8 1 1.0
 
     psi4.driver.qcdb.libmintsbasisset.basishorde["TOOHI"] = basisspec_psi4_yo__anonymous1234
 
-    psi4.set_options({"scf_type": "pk", "basis": "toohi"})
+    # Libint2's limit is the point: libcint, the default on a CI lane, handles L=8
+    psi4.set_options({"scf_type": "pk", "basis": "toohi", "integral_package": "libint2",
+                      "one_electron_integral_package": "libint2"})
     with pytest.raises(RuntimeError) as e:
         psi4.gradient("hf", molecule=h2)
 

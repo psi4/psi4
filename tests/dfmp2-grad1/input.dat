@@ -1,7 +1,7 @@
 #! DF-MP2 cc-pVDZ gradients for the H2O molecule.
 
 if os.environ.get("_PSI4_USE_LIBCINT"):
-    psi4.set_options({"integral_package": "libcint"})
+    psi4.set_options({"integral_package": "libcint", "one_electron_integral_package": "libcint"})
 
 ref = psi4.Matrix.from_list([                                        #TEST
         [  0.000000000000,     0.000000000000,     0.012063494061],  #TEST
