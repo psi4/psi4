@@ -94,14 +94,14 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     sup->set_description(xc_func->description());
     sup->set_citation(xc_func->citation());
     sup->set_xclib_description(xc_func->xclib_description());
-    sup->set_x_omega(xc_func->omega());
-    sup->set_x_alpha(xc_func->global_exchange());
-    sup->set_x_beta(xc_func->lr_exchange());
 
-    // User tweakers
+    // User tweakers, applied before reading exact-exchange parameters a tweak may change
     if (tweakers_.value().size()) {
         xc_func->set_tweak(tweakers_.value(), true);
     }
+    sup->set_x_omega(xc_func->omega());
+    sup->set_x_alpha(xc_func->global_exchange());
+    sup->set_x_beta(xc_func->lr_exchange());
 
     if (xc_func->needs_vv10()) {
         sup->set_vv10_b(xc_func->vv10_b());
