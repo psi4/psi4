@@ -485,11 +485,7 @@ Basic FNOCC Keywords
 Advanced FNOCC Keywords
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. include:: /autodir_options_c/fnocc__scs_mp2.rst
-.. include:: /autodir_options_c/fnocc__mp2_scale_os.rst
-.. include:: /autodir_options_c/fnocc__mp2_scale_ss.rst
 .. include:: /autodir_options_c/fnocc__scs_ccsd.rst
-.. include:: /autodir_options_c/fnocc__cc_scale_os.rst
-.. include:: /autodir_options_c/fnocc__cc_scale_ss.rst
 .. include:: /autodir_options_c/fnocc__run_mp2.rst
 .. include:: /autodir_options_c/fnocc__run_mp3.rst
 .. include:: /autodir_options_c/fnocc__run_mp4.rst
