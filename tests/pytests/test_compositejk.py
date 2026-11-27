@@ -360,3 +360,30 @@ def test_j_algo_bp86(j_algo, k_algo, df_basis_scf, mols):
     energy_composite = psi4.energy("bp86", molecule=molecule) 
  
     assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')
+
+
+def test_dfdirj_without_k_algorithm(mols):
+    """SCF_TYPE DFDIRJ alone has no K algorithm. A JK built directly keeps do_K at its default (True):
+    initialize() must print its header and compute() must raise instead of dereferencing the missing
+    K algorithm; J-only use works."""
+
+    molecule = mols["h2o"]
+    psi4.set_options({"scf_type": "dfdirj", "basis": "cc-pvdz"})
+    basis = psi4.core.BasisSet.build(molecule, "ORBITAL", "CC-PVDZ")
+    aux = psi4.core.BasisSet.build(molecule, "DF_BASIS_SCF", "", "JKFIT", "CC-PVDZ")
+    C = psi4.core.Matrix(basis.nbf(), 5)
+    for i in range(5):
+        C.set(i, i, 1.0)
+
+    jk = psi4.core.JK.build(basis, aux)
+    jk.set_memory(int(1e8))
+    jk.initialize()
+    jk.C_left_add(C)
+    with pytest.raises(RuntimeError, match="No composite K build algorithm"):
+        jk.compute()
+
+    # the failed compute() leaves the "JK: JK" timer on; reset the timers before the next compute()
+    psi4.core.clean_timers()
+    jk.set_do_K(False)
+    jk.compute()
+    assert compare(basis.nbf(), jk.J()[0].rows(), "J built without a K algorithm")

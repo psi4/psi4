@@ -208,7 +208,7 @@ void CompositeJK::print_header() const {
         outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         if (do_J_) outfile->Printf("    J algorithm:       %11s\n", j_algo_->name().c_str());
         outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        if (do_K_) outfile->Printf("    K algorithm:       %11s\n", k_algo_->name().c_str());
+        if (do_K_ && k_algo_) outfile->Printf("    K algorithm:       %11s\n", k_algo_->name().c_str());
         outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
         outfile->Printf("    Integrals threads: %11d\n", nthreads_);
@@ -219,7 +219,7 @@ void CompositeJK::print_header() const {
         if (do_J_) {
             j_algo_->print_header();
         }
-        if (do_K_) {
+        if (do_K_ && k_algo_) {
             k_algo_->print_header();
         }
         outfile->Printf("\n");
@@ -262,6 +262,13 @@ void CompositeJK::compute_JK() {
     // wK not supported in CompositeJK yet
     // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
     if (do_wK_) throw PSIEXCEPTION("CompositeJK algorithms do not support wK integrals yet!");
+
+    // do_K_ defaults to true without passing set_do_K(), so K may be requested without a K algorithm
+    if (do_K_ && !k_algo_) {
+        throw PSIEXCEPTION("No composite K build algorithm was specified, but K matrix is required for current method! "
+                           "Please specify a composite K build algorithm by setting SCF_TYPE to " + j_algo_->name() +
+                           "+{K_ALGO}, or call set_do_K(false).");
+    }
 
     // set compute()-specific parameters
     j_algo_->set_lr_symmetric(lr_symmetric_);
