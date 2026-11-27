@@ -1,4 +1,4 @@
-#! Geometry optimization for ethane with sto-3g, b3lyp with sg1 grid
+#! Geometry optimization for ethane with sto-3g, b3lyp
 
 refenergy = -78.8859025838061001
 
