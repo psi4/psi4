@@ -1,0 +1,40 @@
+[build-system]
+requires = [
+    "scikit-build-core>=1.0",
+    "numpy",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "psi4"
+dynamic = ["version"]
+description = "Open-source quantum chemistry software"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "COPYING.LESSER"}
+dependencies = [
+    "networkx>=2.4",
+    "numpy",
+    "optking>=0.5.0",
+    "pydantic>=2.11,<3",
+    "qcelemental>=0.50.4",
+    "qcengine>=0.50.0",
+    "scipy",
+    "msgpack",
+]
+
+[project.scripts]
+psi4 = "psi4.run_psi4:main"
+
+[[tool.dynamic-metadata]]
+field = "version"
+provider = {path = "psi4", module = "versioner:Provider"}
+
+[tool.scikit-build]
+# Keep a persistent CMake tree so editable installs can be rebuilt
+# incrementally. Use one build directory per Python/architecture as needed.
+build-dir = "objdir_pyproject"
+wheel.packages = ["objdir_pyproject/stage/lib/psi4"]
+
+[tool.scikit-build.cmake]
+version = ">=3.19"
