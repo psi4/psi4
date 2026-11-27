@@ -321,15 +321,10 @@ Advanced OCC Keywords
 
 .. include:: /autodir_options_c/occ__opt_method.rst
 .. include:: /autodir_options_c/occ__orth_type.rst
-.. include:: /autodir_options_c/occ__mp2_os_scale.rst
-.. include:: /autodir_options_c/occ__mp2_ss_scale.rst
-.. include:: /autodir_options_c/occ__mp2_sos_scale.rst
-.. include:: /autodir_options_c/occ__mp2_sos_scale2.rst
 .. include:: /autodir_options_c/occ__nat_orbs.rst
 .. include:: /autodir_options_c/occ__occ_orbs_print.rst
 .. include:: /autodir_options_c/occ__tpdm_abcd_type.rst
 .. include:: /autodir_options_c/occ__do_diis.rst
-.. include:: /autodir_options_c/occ__do_level_shift.rst
 
 Basic DFOCC Keywords
 ~~~~~~~~~~~~~~~~~~~~
