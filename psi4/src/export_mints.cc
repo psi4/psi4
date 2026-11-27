@@ -1317,7 +1317,7 @@ void export_mints(py::module& m) {
 
     py::class_<BatchedPotentialInt, std::shared_ptr<BatchedPotentialInt>>(
         m, "BatchedPotentialInt",
-        "Potential integrals (mu| 1/|r - C_k| |nu) of a shell pair over a batch of points C_k")
+        "Potential integrals ``(mu| 1/|r - C_k| |nu)`` of a shell pair over a batch of points ``C_k``")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(), "bs1"_a, "bs2"_a)
         .def(
             "compute_shell",
