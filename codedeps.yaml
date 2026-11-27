@@ -1680,7 +1680,8 @@ data:
       githttps: true
     cmake:
       name: molsym
-      constraint: "ATLEAST 1.3.1"
+      constraint: "1.3.1"
+      constraint_note: "Does not store version so avoid ATLEAST"
       enable: "ENABLE_molsym"
       target: null
     conda:

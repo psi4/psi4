@@ -1,7 +1,7 @@
 if(${ENABLE_molsym})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_molsym}))
         include(FindPythonModule)
-        find_python_module(molsym ATLEAST 1.3.1 QUIET)  # edit in codedeps
+        find_python_module(molsym 1.3.1 QUIET)  # edit in codedeps
     endif()
 
     if(${molsym_FOUND})
