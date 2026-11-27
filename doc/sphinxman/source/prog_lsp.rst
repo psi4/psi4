@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2025 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -246,8 +246,8 @@ execute it to extract system include paths:
 
    "--query-driver=/usr/bin/g++," .. os.getenv("CONDA_PREFIX") .. "/bin/x86_64-conda-linux-gnu-c++",
 
-This is a fallback. Adding ``--query-driver`` changes nothing with the
-target-prefixed conda compiler in the database.
+This is a fallback for conda users. Adding ``--query-driver`` changes nothing
+with the target-prefixed conda compiler in the database.
 
 **clangd crashes or fails to start inside an activated conda environment.** A
 system clangd will load conda's LLVM if ``LD_LIBRARY_PATH`` points into the
@@ -349,4 +349,3 @@ standalone script and its default output directory.
 
 Enable ``basedpyright`` in Neovim alongside ``clangd``. Restart the Python LSP
 after a rebuild (``:LspRestart``) so it re-reads the regenerated interface.
-
