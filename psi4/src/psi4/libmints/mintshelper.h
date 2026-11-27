@@ -33,7 +33,9 @@
 #include "psi4/libmints/multipolesymmetry.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <utility>
 #include <vector>
+
 
 namespace psi {
 
@@ -342,6 +344,19 @@ class PSI_API MintsHelper {
 #endif
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
+    /// SO two-electron integrals (pq|rs), chemists' notation, as symmetry-allowed
+    /// irrep-quadruple blocks: ([hp, hq, hr, hs], block) pairs in lexicographic
+    /// order. Each block is a dense row-major (d1*d2, d3*d4) Matrix over the
+    /// within-irrep compound indices (all eight permutations scattered). Neutral
+    /// psi4 types by design: assemble into the tensor library of your choice on
+    /// the Python side.
+    std::vector<std::pair<std::vector<int>, SharedMatrix>> so_eri_blocked();
+    /// Integral-direct first-half (bra) MO transform, chemists' notation:
+    /// (pq|ls) = sum_{mn} C1[m,p] C2[n,q] (mn|ls). Returns the rank-4
+    /// (n1, n2, nbf, nbf) row-major array flattened to a (n1*n2, nbf*nbf)
+    /// Matrix. Schwarz-screened and OpenMP-parallel; the N^4 AO tensor is never
+    /// materialized. Assumes C1/C2 are single-irrep (C1 symmetry).
+    SharedMatrix mo_bra_half_transform(SharedMatrix C1, SharedMatrix C2);
     /// Vector SO Dipole Integrals
     std::vector<SharedMatrix> so_dipole() const;
     /// Vector SO Nabla Integrals

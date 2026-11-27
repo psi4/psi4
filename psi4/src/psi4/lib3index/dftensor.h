@@ -186,6 +186,16 @@ class PSI_API DFTensor {
 
     SharedMatrix Imo();
     SharedMatrix Idfmo();
+
+    /// Dimensions of the three-index blocks (needed to reshape the flat
+    /// (naux x d2*d3) matrices into proper rank-3 tensors). naux: auxiliary
+    /// functions; nbf: primary AO functions; nmo: MO functions; naocc/navir:
+    /// active occupied / virtual MO counts.
+    int naux() const { return naux_; }
+    int nbf() const { return nbf_; }
+    int nmo() const { return nmo_; }
+    int naocc() const { return naocc_; }
+    int navir() const { return navir_; }
 };
 }
 #endif
