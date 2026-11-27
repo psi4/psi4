@@ -125,6 +125,9 @@ if(NOT WIN32)
     add_subdirectory(libpsio)
     add_subdirectory(libiwl)
 endif()
+# Links no psi4 library (see psi4/src/psi4/dlpno/test/CMakeLists.txt), so it is
+# built on Windows too.
+add_subdirectory(dlpno)
 
 if(ENABLE_pasture)
   add_subdirectory(pasture-ccsorttransqt2)
