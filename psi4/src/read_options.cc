@@ -358,7 +358,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     if (name == "PCM" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable continuum model (PCM) computations. -*/
 
-        /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
+        /*- Use total or separate potentials and charges in the PCM-SCF step. -*/
         options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
         /*- Name of the PCMSolver input file (case sensitive) as parsed by pcmsolver.py !expert -*/
         options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
