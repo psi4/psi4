@@ -36,5 +36,6 @@ Introduction to Programming in |PSIfour|
    prog_welcome
    prog_conduct
    prog_setup
+   prog_tools
    prog_tour
    prog_help 
