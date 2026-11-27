@@ -126,8 +126,6 @@ jobs:
           conda install cmake ^
                         conda-build ^
                         m2-sed ^
-                        eigen ^
-                        libboost-headers ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^
                         msgpack-python ^
@@ -143,13 +141,13 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        libint ^
+                        libint-cxx-devel ^
                         qcelemental ^
                         qcengine ^
                         qcmanybody ^
                         pydantic ^
                         optking ^
-                        scipy
+                        scipy || exit /b 1
           if %errorlevel% neq 0 exit /b %errorlevel%
           which conda
           conda list

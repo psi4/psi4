@@ -34,12 +34,14 @@ __all__ = [
     "get_memory",
     "libint2_configuration",
     "libint2_print_out",
+    "libint2_supports",
     "oeprop",
     "safe_writer_file_path",
     "set_memory",
 ]
 
 import hashlib
+import numbers
 import os
 import re
 import warnings
@@ -399,15 +401,8 @@ def libint2_configuration() -> Dict[str, List[int]]:
         `{'eri': [5, 4, 3], 'eri2': [6, 5, 4], 'eri3': [6, 5, 4], 'onebody': [6, 5, 4]}`
 
     """
-    if "eri_c4_d0_l2" in core._libint2_configuration():
-        return _l2_config_style_eri_c4()
-    elif "eri_dddd_d0" in core._libint2_configuration():
-        return _l2_config_style_eri_llll()
-
-
-def _l2_config_style_eri_llll():
     skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
-    skel_re = {"onebody_": r"onebody_\w_d\d", "eri_c4_": r"eri_\w..._d\d", "eri_c3_":  r"eri_\w.._d\d", "eri_c2_": r"eri_\w._d\d"}
+    skel_re = {"onebody_": r"onebody_\w._d\d", "eri_c4_": r"\beri_\w..._d\d\b", "eri_c3_":  r"\beri_\w.._d\d\b", "eri_c2_": r"\beri_\w._d\d\b"}
 
     amstr = "SPDFGHIKLMNOQRTUVWXYZ"
     libint2_configuration = core._libint2_configuration()
@@ -434,36 +429,10 @@ def _l2_config_style_eri_llll():
     return skel
 
 
-def _l2_config_style_eri_c4():
-    skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
-
-    for itm in core._libint2_configuration().split(";"):
-        for cat in list(skel.keys()):
-            if itm.startswith(cat):
-                skel[cat].append(itm[len(cat):])
-
-    for cat in list(skel.keys()):
-        der_max_store = []
-        for der in ["d0_l", "d1_l", "d2_l"]:
-            lmax = -1
-            for itm2 in skel[cat]:
-                if itm2.startswith(der):
-                    lmax = max(int(itm2[len(der):]), lmax)
-            der_max_store.append(None if lmax == -1 else lmax)
-        skel[cat] = der_max_store
-
-    # rename keys from components
-    skel["onebody"] = skel.pop("onebody_")
-    skel["eri"] = skel.pop("eri_c4_")
-    skel["eri3"] = skel.pop("eri_c3_")
-    skel["eri2"] = skel.pop("eri_c2_")
-    return skel
-
-
 def libint2_print_out() -> None:
     ams = libint2_configuration()
     core.print_out("   => Libint2 <=\n\n");
-    # when L2 is pure cmake core.print_out(core.libint2_citation());
+    core.print_out(core.libint2_citation() + "\n");
 
     core.print_out(f"    Primary   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri'])}\n")
     core.print_out(f"    Auxiliary basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri3'])}\n")
@@ -471,3 +440,48 @@ def libint2_print_out() -> None:
     # excluding sph_emultipole
     core.print_out(f"    Solid Harmonics ordering:            {core.libint2_solid_harmonics_ordering()}\n")
 
+
+def libint2_supports(am: int, der: int = 0, centers: int = 4) -> bool:
+    """Does the linked Libint2 support 2-, 3-, or 4-*centers* ERIs of angular momentum *am* and derivative *der*.
+
+    Parameters
+    ----------
+    am
+        Angular momentum of every center, ``0`` (s) through ``20`` (z).
+    der
+        Derivative order, ``0`` (energy), ``1`` (gradient), or ``2`` (Hessian).
+    centers
+        Number of centers in the ERI: ``2``, ``3``, or ``4``.
+        Note that for 3-center, this probes the single auxiliary AM, not the
+        paired AO indices. For finer control, use `psi4.core.libint2_supports` directly.
+
+    Returns
+    -------
+    bool
+        Whether the linked Libint2 was built with that integral class.
+        ``False`` means *unsupported by this build*, never *invalid query*.
+
+    Raises
+    ------
+    ValidationError
+        If any argument is not an integer or is out of range.
+
+    """
+    amstr = "SPDFGHIKLMNOQRTUVWXYZ"
+
+    for label, val, allowed in [
+        ("am", am, range(len(amstr))),
+        ("der", der, range(3)),  # expand this to allow arbitrary order deriv (plausible from L2)
+        ("centers", centers, range(2, 5)),
+    ]:
+        if isinstance(val, bool) or not isinstance(val, numbers.Integral):
+            raise ValidationError(f"libint2_supports: {label} must be an integer, not {type(val).__name__}: {val!r}")
+        if val not in allowed:
+            raise ValidationError(
+                f"libint2_supports: {label}={val} out of range; must be in [{allowed.start}, {allowed.stop - 1}]")
+
+    if centers == 3:
+        amcode = "ss" + amstr[am].lower()
+    else:
+        amcode = amstr[am].lower() * centers
+    return core.libint2_supports(f"eri_{amcode}_d{der}")

@@ -186,20 +186,18 @@ else()
     message(STATUS "Disabled gdma ${gdma_DIR} (deferrable to runtime)")
 endif()
 
-find_package(Libint2 2.8.1 CONFIG REQUIRED  # edit in codedeps
-#  COMPONENTS
-#    sss
-#    CXX_ho
-#    impure_sh
-#    "eri_c4_d0_l${MAX_AM_ERI}" eri_c3_d0_l4 eri_c2_d0_l4 onebody_d0_l4
-#     eri_c4_d1_l2              eri_c3_d1_l3 eri_c2_d1_l3 onebody_d1_l3
-#                                                         onebody_d2_l3
-#  OPTIONAL_COMPONENTS
-#     eri_c4_d2_l2              eri_c3_d2_l3 eri_c2_d2_l3
+include(custom_util)
+am_to_shell(${MAX_AM_ERI} 4 amchar)
+find_package(Libint2 2.13.1 COMPONENTS ss eri_${amchar}_d0 eri_dddd_d1 eri_ggg_d0 eri_fff_d1 eri_gg_d0 eri_ff_d1 onebody_gg_d0 onebody_ff_d1 onebody_ff_d2 CONFIG REQUIRED  # edit in codedeps
+  # REQUIRED COMPONENTS: ss; 2-, 3-, & 4-center E & G, onebody E, G, & H
+  OPTIONAL_COMPONENTS
+    eri_dddd_d2
+    eri_fff_d2
+    eri_ff_d2
   )
 get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
-# defer until upstream provides full-dress targets get_property(Libint2_VERSION TARGET Libint2::int2 PROPERTY Libint2_VERSION)
-# defer until upstream provides full-dress targets get_property(Libint2_MAX_AM_ERI TARGET Libint2::int2 PROPERTY Libint2_MAX_AM_ERI)
+get_property(Libint2_VERSION TARGET Libint2::int2 PROPERTY Libint2_VERSION)
+get_property(Libint2_MAX_AM_ERI TARGET Libint2::int2 PROPERTY Libint2_MAX_AM_ERI)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
 
@@ -219,6 +217,15 @@ if(${ENABLE_OpenOrbitalOptimizer})
     message(STATUS "${Cyan}Using OpenOrbitalOptimizer${ColourReset}: ${_loc} (version ${OpenOrbitalOptimizer_VERSION})")
 else()
     message(STATUS "Disabled OpenOrbitalOptimizer ${OpenOrbitalOptimizer_DIR}")
+endif()
+
+if(${ENABLE_OpenTrustRegion})
+    find_package(OpenTrustRegion 3.0.0 COMPONENTS int32 CONFIG REQUIRED)  # edit in codedeps
+    get_property(_loc TARGET OpenTrustRegion::OpenTrustRegion PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using OpenTrustRegion${ColourReset}: ${_loc} (version ${OpenTrustRegion_VERSION})")
+else()
+    message(STATUS "Disabled OpenTrustRegion ${OpenTrustRegion_DIR}")
 endif ()
 
 if(${ENABLE_PCMSolver})
@@ -237,6 +244,15 @@ if(${ENABLE_simint})
     message(STATUS "${Cyan}Using simint ${simint_MAXAM}${ColourReset}: ${_loc} (version ${simint_VERSION}; vectorization ${simint_VECTOR})")
 else()
     message(STATUS "Disabled simint ${simint_DIR}")
+endif()
+
+if(${ENABLE_cint})
+    find_package(cint 6.1.2 CONFIG REQUIRED)  # edit in codedeps
+    get_property(_loc TARGET cint::cint PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using cint${ColourReset}: ${_loc} (version ${cint_VERSION})")
+else()
+    message(STATUS "Disabled cint ${cint_DIR}")
 endif()
 
 if(${ENABLE_BrianQC})

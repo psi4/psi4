@@ -83,7 +83,11 @@ def test_qcschema_gradient(result_data_fixture, schema_versions, request):
         pytest.skip("Py314 and v1.AtomicResult object incompatible.")
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        result_data_fixture["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+        tighten = {"e_convergence": 9, "d_convergence": 5e-9}
+        if from_v2(request.node.name):
+            result_data_fixture["specification"]["keywords"].update(tighten)
+        else:
+            result_data_fixture["keywords"].update(tighten)
 
     if from_v2(request.node.name):
         result_data_fixture["specification"]["driver"] = "gradient"

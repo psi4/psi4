@@ -702,7 +702,7 @@ void DFOCC::ccsd_canonic_triples_disk() {
         // Read J[i](a,bc)
         // psio_address addr1 = psio_get_address(PSIO_ZERO,(size_t)(i*navirA*navirA*navirA)*sizeof(double));
         // J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
-        J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+        J1->myread(psio_, PSIF_DFOCC_IABC, ((size_t)i * navirA * navirA * navirA) * sizeof(double));
 
         for (long int j = 0; j <= i; ++j) {
              long int ij = ij_idxAA->get(i, j);
@@ -711,7 +711,7 @@ void DFOCC::ccsd_canonic_triples_disk() {
             // Read J[j](a,bc)
             // psio_address addr2 = psio_get_address(PSIO_ZERO,(size_t)(j*navirA*navirA*navirA)*sizeof(double));
             // J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
-            J2->myread(psio_, PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
+            J2->myread(psio_, PSIF_DFOCC_IABC, ((size_t)j * navirA * navirA * navirA) * sizeof(double));
 
             for (long int k = 0; k <= j; ++k) {
                  long int ik = ij_idxAA->get(i, k);
@@ -719,7 +719,7 @@ void DFOCC::ccsd_canonic_triples_disk() {
                 // Read J[k](a,bc)
                 // psio_address addr3 = psio_get_address(PSIO_ZERO,(size_t)(k*navirA*navirA*navirA)*sizeof(double));
                 // J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
-                J3->myread(psio_, PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
+                J3->myread(psio_, PSIF_DFOCC_IABC, ((size_t)k * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -1024,7 +1024,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
                 long int jk = ij_idxAA->get(j, k);
 
                 // Read J[i](a,bc)
-                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, ((size_t)i * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+):123
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -1054,7 +1054,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
                 }
 
                 // Read J[j](a,bc)
-                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, ((size_t)j * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ba,c) = \sum(e) t_ik^ec (jb|ae) (3+):213
                 // W[ijk](ba,c) = \sum(e) J[j](ba,e) T[ik](ec)
@@ -1091,7 +1091,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
                 }
 
                 // Read J[k](a,bc)
-                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, ((size_t)k * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ca,b) = \sum(e) t_ij^eb (kc|ae) (5+):312
                 // W[ijk](ca,b) = \sum(e) J[k](ca,e) T[ij](eb)
@@ -1835,7 +1835,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                 long int jk = ij_idxAA->get(j, k);
 
                 // Read J[i](a,bc)
-                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, ((size_t)i * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+):123
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -1865,7 +1865,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                 }
 
                 // Read J[j](a,bc)
-                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, ((size_t)j * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ba,c) = \sum(e) t_ik^ec (jb|ae) (3+):213
                 // W[ijk](ba,c) = \sum(e) J[j](ba,e) T[ik](ec)
@@ -1902,7 +1902,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                 }
 
                 // Read J[k](a,bc)
-                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, ((size_t)k * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ca,b) = \sum(e) t_ij^eb (kc|ae) (5+):312
                 // W[ijk](ca,b) = \sum(e) J[k](ca,e) T[ij](eb)
@@ -2372,7 +2372,7 @@ void DFOCC::ccsdl_canonic_triples_disk() {
         // Read J[i](a,bc)
         // psio_address addr1 = psio_get_address(PSIO_ZERO,(size_t)(i*navirA*navirA*navirA)*sizeof(double));
         // J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
-        J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+        J1->myread(psio_, PSIF_DFOCC_IABC, ((size_t)i * navirA * navirA * navirA) * sizeof(double));
 
         for (long int j = 0; j <= i; ++j) {
             long int ij = ij_idxAA->get(i, j);
@@ -2381,7 +2381,7 @@ void DFOCC::ccsdl_canonic_triples_disk() {
             // Read J[j](a,bc)
             // psio_address addr2 = psio_get_address(PSIO_ZERO,(size_t)(j*navirA*navirA*navirA)*sizeof(double));
             // J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
-            J2->myread(psio_, PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
+            J2->myread(psio_, PSIF_DFOCC_IABC, ((size_t)j * navirA * navirA * navirA) * sizeof(double));
 
             for (long int k = 0; k <= j; ++k) {
                  long int ik = ij_idxAA->get(i, k);
@@ -2389,7 +2389,7 @@ void DFOCC::ccsdl_canonic_triples_disk() {
                 // Read J[k](a,bc)
                 // psio_address addr3 = psio_get_address(PSIO_ZERO,(size_t)(k*navirA*navirA*navirA)*sizeof(double));
                 // J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
-                J3->myread(psio_, PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
+                J3->myread(psio_, PSIF_DFOCC_IABC, ((size_t)k * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)

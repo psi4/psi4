@@ -46,7 +46,7 @@ foreach(test_name aediis-1
                   dct10 dct11 dct12 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp
                   dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1
                   dfccsd-t-grad1
-                  dfccsdt1 dfccsdat1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-5 dfmp2-freq1 dfmp2-freq2
+                  dfccsdt1 dfccsdat1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-5 dfmp2-fc dfmp2-freq1 dfmp2-freq2
                   dfccsd-grad2 dfccsd-t-grad2 dfccsdat2 dfccsdt2
                   dfmp2-grad1 dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
@@ -88,14 +88,14 @@ foreach(test_name aediis-1
                   pywrap-cbs1 pywrap-checkrun-convcrit pywrap-checkrun-rhf
                   pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1
                   pywrap-db3
-                  pywrap-molecule rasci-c2-active rasci-h2o
+                  pywrap-molecule rasci-c2-active rasci-h2o rasci-h2o+
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc
                   remp-energy1 remp-energy2
                   sapt-exch-disp-inf sapt-exch-ind-inf sapt-exch-ind30-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-guess scf-guess-read1 scf-upcast-custom-basis
                   scf-guess-read2 scf-guess-read3 scf1 scf-occ scf2 scf3 scf4 scf5 scf6
                   scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
-                  scf-property soscf-large soscf-ref
+                  scf-property soscf-large soscf-ref scf-soscf-start
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 stability3 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-response3
                   scf-cholesky-basis scf-auto-cholesky
@@ -305,7 +305,6 @@ if(ENABLE_qcmanybody)
     add_subdirectory(cbs-xtpl-nbody)
     add_subdirectory(ddd-function-kwargs)
     add_subdirectory(dfmp2-1)
-    add_subdirectory(dfmp2-fc)
     add_subdirectory(dft-custom-dhdf)
     add_subdirectory(dlpnocc-3)
     add_subdirectory(mp2-def2)

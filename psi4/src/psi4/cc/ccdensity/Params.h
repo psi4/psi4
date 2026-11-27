@@ -34,6 +34,7 @@
     \brief Enter brief description of file here
 */
 
+#include <cstdint>
 #include <string>
 
 namespace psi {
@@ -42,7 +43,7 @@ namespace ccdensity {
 /* Input parameters for cclambda */
 struct Params {
     double tolerance;
-    long int memory;
+    int64_t memory;
     int cachelev;
     int aobasis;
     int ref;

@@ -1,6 +1,6 @@
-#! Kr--Kr nocp energies with all-electron basis set to check frozen core
+#! Kr--Kr no-counterpoise DF-MP2 interaction energies with an all-electron basis set to check frozen core
 
-molecule {
+molecule kr2 {
 0 1
 Kr 0 0 0
 --
@@ -27,23 +27,44 @@ if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP
 else:
     tol = 2.e-8
 
+# Each monomer in its own basis and in the dimer frame (no_com, no_reorient)
+kr_a = kr2.extract_subsets(1)
+kr_b = kr2.extract_subsets(2)
+
+# NoCP interaction energy E(Kr2) - E(Kr_a) - E(Kr_b), computed explicitly rather than through
+#   energy(..., bsse_type="nocp") so that this frozen-core test does not need QCManyBody.
+#   Also returns the number of frozen orbitals in the dimer and in each monomer.
+def nocp_ie():
+    ie = 0.0
+    nfrzc = []
+    for mol, coef in [(kr2, 1.0), (kr_a, -1.0), (kr_b, -1.0)]:
+        e, wfn = energy('mp2/def2-svp', molecule=mol, return_wfn=True)
+        ie += coef * e
+        nfrzc.append(wfn.nfrzc())
+        clean()
+    return ie, nfrzc
+
 set freeze_core 0
-E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_0, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core 0  ") #TEST
+E, nfrzc = nocp_ie()
+compare_values(ref_0, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core 0  ")  #TEST
+compare([0, 0, 0], nfrzc, "Kr2, Kr, Kr frozen orbitals, freeze_core 0  ")             #TEST
 
 set freeze_core 1
-E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_1, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core 1  ") #TEST
+E, nfrzc = nocp_ie()
+compare_values(ref_1, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core 1  ")  #TEST
+compare([18, 9, 9], nfrzc, "Kr2, Kr, Kr frozen orbitals, freeze_core 1  ")            #TEST
 
 set freeze_core -1
-E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_1, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core -1 ") #TEST
+E, nfrzc = nocp_ie()
+compare_values(ref_1, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core -1 ")  #TEST
+compare([18, 9, 9], nfrzc, "Kr2, Kr, Kr frozen orbitals, freeze_core -1 ")            #TEST
 
 set freeze_core -2
-E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_2, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core -2 ") #TEST
+E, nfrzc = nocp_ie()
+compare_values(ref_2, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core -2 ")  #TEST
+compare([10, 5, 5], nfrzc, "Kr2, Kr, Kr frozen orbitals, freeze_core -2 ")            #TEST
 
 set freeze_core -3
-E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_3, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core -3 ") #TEST
-
+E, nfrzc = nocp_ie()
+compare_values(ref_3, E, tol, "Kr--Kr nocp MP2 interaction energy, freeze_core -3 ")  #TEST
+compare([2, 1, 1], nfrzc, "Kr2, Kr, Kr frozen orbitals, freeze_core -3 ")             #TEST

@@ -449,39 +449,37 @@ data:
       host: github
       account: evaleev
       name: libint
-      commit: v2.8.1
+      commit: v2.14.1
     cmake:
       name: Libint2
-      constraint: 2.8.1
+      constraint: 2.13.1
+      constraint_note: "Minimum the libmints src strictly needs is v2.8.0 to provide rt-switchable solid harmonics ordering. Minimum to work with the src and buildsys unchanged is v2.13.0 to provide CMake codes and C++ functions to introspect supported integrals. It is possible to use >=2.8.1,<2.13.0 with Psi4 provided you revert the find_package() and interface sugar (e.g., libint2_citation) added by https://github.com/psi4/psi4/pull/3353 ."
       target: Libint2::cxx
-    #  components:
-    #    - gss
-    #    - CXX_ho
-    #    - impure_sh
-    #    - "eri_c4_d0_l${MAX_AM_ERI}"
-    #    - eri_c4_d1_l2
-    #    - eri_c4_d2_l2
-    #    - eri_c3_d0_l4
-    #    - eri_c3_d1_l3
-    #    - eri_c3_d2_l3
-    #    - eri_c2_d0_l4
-    #    - eri_c2_d1_l3
-    #    - eri_c2_d2_l3
-    #    - onebody_d0_l4
-    #    - onebody_d1_l3
-    #    - onebody_d2_l3
+      components:
+        - ss
+        - "eri_${amchar}_d0"
+        - eri_dddd_d1
+        - eri_ggg_d0
+        - eri_fff_d1
+        - eri_gg_d0
+        - eri_ff_d1
+        - onebody_gg_d0
+        - onebody_ff_d1
+        - onebody_ff_d2
     conda:
       channel: conda-forge
       name: libint
-      name_note: "On the psi4 channel, libint/libint2 were used c.2021-23 to distinguish v1/v2. c-f always used libint as the package name. Starting with the v2.8 reunification with upstream, the supplementary 'bigAM' packages published on the psi4 channel will use the name libint for consistency with c-f."
+      name_note: "On the psi4 channel, libint/libint2 were used c.2021-23 to distinguish v1/v2. c-f always used libint as the package name. Starting with the v2.8 reunification with upstream, the supplementary 'bigAM' packages published on the psi4 channel will use the name libint for consistency with c-f. With libcint taking over routine high-AM supplementary roles, no psi4 channel packages are presently useable w/o moderate cmake workarounds."
       constraint: null
-      constraint_note: "v2.8.0 provides rt-switchable ordering (src) and derivative integrals (build)."
+      constraint_note: "v2.13.1 provides introspection of supported integrals (cmake+cmake)."
       aux_build_names:
-        - //psi4::libint
-        - libboost-headers
-        - eigen
+        - libint-cxx-devel
+        - "//libint<2.14"
+        - "//libint-cxx-devel=*=lite*"
       aux_build_names_note:
-        "//psi4::libint": "Optionally for linux-64, an AM=7 build is available here."
+        libint-cxx-devel: "Required to bring libboost-headers and eigen to compile against."
+        "//libint<2.14": "Optionally, use libint=2.13.1 but add libboost-headers and eigen, too."
+        "//libint-cxx-devel=*=lite*": "Optionally for linux-64, use a low-AM libint to be supplemented with libcint. Needs `-DMAX_AM_ERI=4`"
       cmake:
         BOOST_ROOT:
           unix: ${CONDA_PREFIX}
@@ -743,7 +741,7 @@ data:
       host: github
       account: pybind
       name: pybind11
-      commit: v2.13.1
+      commit: v2.13.6
     cmake:
       name: pybind11  # detect Python before pybind11
       constraint: 2.12.0
@@ -1203,17 +1201,17 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.50.0
+      commit: v0.52.0
       githttps: true
     cmake:
       name: qcengine
-      constraint: ATLEAST 0.50.0
+      constraint: ATLEAST 0.52.0
       target:
     conda:
       channel: conda-forge
       name: qcengine
-      constraint: ">=0.50.0"
-      constraint_note: "v0.50 needed for QCSchema v2. v0.34.2/v0.50.0 have SAPT*-D4 parameters"
+      constraint: ">=0.52.0"
+      constraint_note: "v0.50 needed for QCSchema v2 and SAPT*-D4 parameters. v0.52 for dftd3 hessians."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true
@@ -1551,7 +1549,7 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
-      
+
   - project: openorbitaloptimizer
     use:
       added: "1.10"
@@ -1601,3 +1599,67 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
+
+  - project: opentrustregion
+    use:
+      added: 1.12
+      required: false
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: eriksen-lab
+      name: opentrustregion
+      commit: v3.0.0
+    cmake:
+      name: OpenTrustRegion
+      constraint: "3.0.0"
+      components:
+        - int32
+      target: OpenTrustRegion::OpenTrustRegion
+    conda:
+      channel: conda-forge
+      name: opentrustregion
+      constraint: null
+      cmake:
+        ENABLE_OpenTrustRegion: true
+        OpenTrustRegion_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/OpenTrustRegion
+          win-64: ${CONDA_PREFIX}/Library/OpenTrustRegion/CMake
+        //CMAKE_INSIST_FIND_PACKAGE_OpenTrustRegion: true
+        //CMAKE_DISABLE_FIND_PACKAGE_OpenTrustRegion: true
+
+  - project: libcint
+    use:
+      added: 1.12
+      required: false
+      required_note: "Allows using the libcint two-electron integral library."
+      buildable: true
+      buildtime: true
+      cms: true
+      doi: "10.1002/jcc.23981"
+    repository:
+      host: github
+      account: sunqm
+      name: libcint
+      name_note: "sunqm/qcint repo is also usable (note GPL)"
+      commit: v6.2.0
+    cmake:
+      name: cint
+      constraint: "6.1.2"
+      constraint_note: "v6.2.0 installs a CMake config and correctly screens integrals of diffuse high-l primitives. For v6.1.x, psi4 synthesizes the config from LIBCINT_LIBRARY and LIBCINT_INCLUDE_DIR and works around the screening at run time. Building from source gets v6.2.0."
+      target: cint::cint
+    conda:
+      channel: conda-forge
+      name: libcint
+      constraint: ">=6.1.2"
+      cmake:
+        ENABLE_cint: true
+        cint_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/cint
+          win-64: ${CONDA_PREFIX}/Library/lib/cmake/cint
+        //cint_LIBRARY: null
+        //cint_INCLUDE_DIR: null
+        //CMAKE_INSIST_FIND_PACKAGE_cint: true
+        //CMAKE_DISABLE_FIND_PACKAGE_cint: true

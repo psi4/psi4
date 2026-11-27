@@ -24,11 +24,10 @@ df_basis_sapt def2-qzvpp-ri  # not a recommendation. present to compensate for c
 }
 
 ref_321g = -0.09561567760757009
-ref_lanl = -0.1039198611537151
+ref_lanl = -0.1039198330806006  # libecpint >=1.1 (stock 1.0.7 gave -0.1039198611537151; v1.1 HF dimer matches NWChem to 2e-9, stock 3e-8 off)
 
 E = energy('sapt0/3-21g')
 compare_values(ref_321g, E, 8, "SAPT0 energy with Ca2+, without ECP")                               #TEST
 E = energy('sapt0/lanl2dz')
 compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")                                  #TEST
-
 

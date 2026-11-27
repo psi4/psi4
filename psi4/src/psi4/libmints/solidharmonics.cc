@@ -30,6 +30,7 @@
 #include <cstring>
 #include <cmath>
 #include <cstdint>
+#include <numeric>
 
 #include <libint2/config.h>
 
@@ -85,24 +86,14 @@ uint64_t factfact(int n) {
     return result;
 }
 
+// Reduce num/den to lowest terms. Same result as the former trial-division loop
+// (which was O(min(num,den)) and dominated SphericalTransform setup at high l),
+// including leaving a zero numerator/denominator untouched.
 void reduce(uint64_t &num, uint64_t &den) {
-    if (num > den) {
-        for (uint64_t i = 2; i <= den;) {
-            if (num % i == 0UL && den % i == 0UL) {
-                num /= i;
-                den /= i;
-            } else
-                i++;
-        }
-    } else {
-        for (uint64_t i = 2; i <= num;) {
-            if (num % i == 0UL && den % i == 0UL) {
-                num /= i;
-                den /= i;
-            } else
-                i++;
-        }
-    }
+    if (num == 0 || den == 0) return;
+    const uint64_t g = std::gcd(num, den);
+    num /= g;
+    den /= g;
 }
 
 uint64_t powll(uint64_t n, size_t p) {

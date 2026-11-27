@@ -5,7 +5,11 @@ jobs:
   timeoutInMinutes: 120
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
-    MKL_CBWR: AUTO
+    # This no longer seems to be necessary for the current test suite to pass.
+    # If tighter test tolerances are required, or some tests become flaky due to changes in
+    # CI runner hardware, MKL version, phase of the moon, etc., this may be re-enabled.
+    # Cholesky tests are known to be particularly sensitive.
+    # MKL_CBWR: AUTO
   strategy:
     maxParallel: 8
     matrix:
@@ -16,43 +20,48 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-11 g++-11'
-        vmImage: 'ubuntu-22.04'
-        PYTEST_MARKER_EXPR: "quick"
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: "(quick and not memory_profiler)"
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
         CMARGS: ""
-        CM_GENERATOR: "Unix Makefiles"
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
       gcc_latest:
-        CXX_COMPILER: 'g++'
+        # pinned to GCC 14 (not the image's default GCC 15): GCC 15 needs ~15 GB just to preprocess
+        #   libint2 2.14 engine.h (vs 5.5 GB for GCC 14), beyond the 8 GB runner + swap.
+        #   prone to OOM-abandoned, esp. L2 >=2.14 and GCC>=15
+        CXX_COMPILER: 'g++-14'
         PYTHON_VER: '3.14'
-        C_COMPILER: 'gcc'
+        C_COMPILER: 'gcc-14'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran'
+        APT_INSTALL: 'gfortran gcc-14 g++-14'
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
+        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long or memory_profiler)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        CMARGS: >-
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
+          -DCMAKE_CXX_FLAGS_RELEASE:STRING='-O2 -DNDEBUG'
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
       clang_latest:
-        CXX_COMPILER: 'clang++-15'
+        CXX_COMPILER: 'clang++-21'
         PYTHON_VER: '3.11'
-        C_COMPILER: 'clang-15'
+        C_COMPILER: 'clang-21'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-15 clang++-15'
+        APT_INSTALL: 'gfortran clang-21 clang++-21'
         # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
-        vmImage: 'ubuntu-22.04'
-        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long or memory_profiler)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
@@ -61,9 +70,13 @@ jobs:
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
           -DOpenMP_C_LIB_NAMES=omp
           -DOpenMP_CXX_LIB_NAMES=omp
-          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
-          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
-        CM_GENERATOR: "Ninja"
+          -DOpenMP_omp_LIBRARY=/home/runner/miniforge3/envs/p4env/lib/libomp.so
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
+        # Makefiles + unity + non-PCH: generator coverage. (Non-unity took ~50 min to build; standalone header
+        #   parsing is the "Header Check" step instead.)
+        CM_GENERATOR: "Unix Makefiles"
+        # set ON once headers are self-contained (devtools/scripts/ci_header_check.py)
+        HEADER_CHECK: "OFF"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -75,7 +88,7 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-17 clang++-17'
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: 'quick'
+        PYTEST_MARKER_EXPR: '(quick and not memory_profiler)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
@@ -84,7 +97,8 @@ jobs:
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
           -DOpenMP_C_LIB_NAMES=omp
           -DOpenMP_CXX_LIB_NAMES=omp
-          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
+          -DOpenMP_omp_LIBRARY=/home/runner/miniforge3/envs/p4env/lib/libomp.so
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -104,7 +118,6 @@ jobs:
         ENABLE_GAUXC: "OFF"
         CMARGS: >-
           -DENABLE_XHOST=OFF
-          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: "--compiler IntelLLVM"
         ADVISOR_DISABLE_ARGS: ""
@@ -125,6 +138,9 @@ jobs:
 
       echo "" && echo "Uname:"
       uname -a
+
+      echo "" && echo "Processors:"
+      nproc
 
       echo "" && echo "Free:"
       free -m
@@ -152,11 +168,20 @@ jobs:
     displayName: "Setup Information"
 
   - bash: |
-        echo "##vso[task.prependpath]$CONDA/bin"
-        conda config --set always_yes yes
-        conda config --set solver libmamba
-        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+      set -e
+      if [[ -z "${CONDA:-}" || ! -x "$CONDA/bin/conda" ]]; then
+        export CONDA="$HOME/miniforge3"
+        curl -fsSL -o miniforge.sh \
+          https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+        bash miniforge.sh -b -p "$CONDA"
+        rm -vf miniforge.sh
+      fi
+      export PATH="$CONDA/bin:$PATH"
+      echo "##vso[task.setvariable variable=CONDA]$CONDA"
+      echo "##vso[task.prependpath]$CONDA/bin"
+      conda --version
+      conda config --set always_yes yes
+      # conda config --set solver libmamba
     displayName: "Add Conda to PATH"
 
   - bash: |
@@ -165,7 +190,16 @@ jobs:
         sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
       fi
       grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+    condition: false
     displayName: "Special Operation: test OpenOrbitalOptimizer"
+
+  - bash: |
+      grep '"INTEGRAL_PACKAGE"' psi4/src/read_options.cc
+      if [[ "$(Agent.JobName)" == "Linux Builds gcc_11" ]]; then
+        sed -i 's;\(options\.add_str("INTEGRAL_PACKAGE", "\)LIBINT2\(", "LIBINT2 SIMINT LIBCINT"\);\1LIBCINT\2;' psi4/src/read_options.cc
+      fi
+      grep '"INTEGRAL_PACKAGE"' psi4/src/read_options.cc
+    displayName: "Special Operation: test libcint as default integral package"
 
   - bash: |
       conda install pyyaml -c conda-forge
@@ -177,24 +211,20 @@ jobs:
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       # test some alternative packages
-      if [[ "${PYTHON_VER}" != "3.12" ]]; then
-        echo "  - psi4::gcp" >> env_p4env.yaml
-        echo "  - psi4::dftd3" >> env_p4env.yaml
-      fi
       if [[ "$(Agent.JobName)" == "Linux Builds icpx_conda" ]]; then
         sed -i "s;#- dpcpp;- dpcpp;g" env_p4env.yaml
         sed -i "s;#- ifx;- ifx;g" env_p4env.yaml
       fi
-      sed -i "s;- libint;#- libint;g" env_p4env.yaml
-      sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
       echo "  - einsums>=1.0.6" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
       echo "  - armadillo" >> env_p4env.yaml
       echo "  - openorbitaloptimizer" >> env_p4env.yaml
+      echo "  - libcint" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
+      conda clean --tarballs
       source activate p4env
       conda info
       conda list
@@ -223,7 +253,7 @@ jobs:
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc="${ENABLE_GAUXC}" \
-        -D ENABLE_OpenOrbitalOptimizer=ON \
+        -D ENABLE_cint=ON \
         -D FORCE_PEDANTIC=ON \
         $(CMARGS) \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
@@ -231,13 +261,51 @@ jobs:
 
     # conda remove qcengine --force || true
     # conda remove optking --force || true
+    # Hosted agents are ~8 GB RAM + a 3 GB /swapfile; with libint2 >=2.14, each TU including libint2/engine.h
+    #   peaks at 5.6-7.6 GB with GCC, so give GCC lanes a bit more swap rather than have the OOM killer take
+    #   out the agent. Clang/icpx lanes don't need it. /mnt is NOT a separate disk on these agents -- swap
+    #   comes out of the ~13 GB free on /, which the build also needs, so keep it small and skip if tight.
+  - bash: |
+      df -h /
+      if [[ "${CXX_COMPILER}" != g++* ]]; then
+        echo "Not a GCC lane (${CXX_COMPILER}); no extra swap"
+        exit 0
+      fi
+      SWAP_GB=4
+      AVAIL_GB=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
+      if (( AVAIL_GB < SWAP_GB + 6 )); then
+        echo "Only ${AVAIL_GB} GB free on /; skipping extra swap to leave room for the build"
+        exit 0
+      fi
+      sudo fallocate -l ${SWAP_GB}G /mnt/swapfile
+      sudo chmod 600 /mnt/swapfile
+      sudo mkswap /mnt/swapfile
+      sudo swapon /mnt/swapfile
+      swapon --show
+      free -m
+      df -h /
+    displayName: 'Add Swap'
+    continueOnError: true
+
+    # Ninja defaults to nproc+2 jobs, Make to 1. Use 2 for both (hosted agents are 2 vCPU, ~8 GB): little speed lost, and fewer
+    #   compiles sharing memory with the 6-8 GB libint2/engine.h TUs (whose own pool only limits each other).
+    #   CMAKE_BUILD_PARALLEL_LEVEL is inherited by the nested `cmake --build` of psi4-core (ExternalProject),
+    #   which an outer `-j` does not reach.
   - bash: |
       cd build
       source activate p4env
-      cmake --build . -- -j 2
+      export CMAKE_BUILD_PARALLEL_LEVEL=2
+      cmake --build .
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
+
+    # Parse each psi4 header on its own (unity builds hide missing includes). ~3 min at -j2.
+  - bash: |
+      source activate p4env
+      python devtools/scripts/ci_header_check.py build/psi4-core-prefix/src/psi4-core-build psi4/src/psi4 -j2
+    displayName: 'Header Check'
+    condition: and(succeeded(), eq(variables['HEADER_CHECK'], 'ON'))
 
   - bash: |
       cd build
@@ -248,7 +316,7 @@ jobs:
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
       python -c 'import qcengine as q; print(q.__version__, q.__file__)'
       qcengine info
-      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
     displayName: 'Spot Test'
 
   - bash: |
@@ -262,7 +330,7 @@ jobs:
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
       python -c 'import qcengine as q; print(q.__version__, q.__file__)'
-      ./stage/bin/psi4 ../tests/ddd-deriv/input.dat
+      ./stage/bin/psi4 ../tests/ddd-deriv/input.dat -o stdout
     displayName: 'Spot Test 2'
 
   - bash: |
@@ -305,12 +373,22 @@ jobs:
     displayName: 'Psi4 Path Setup Diagnostics'
     # when "psi4 not found", use this to figure out what's wrong with QCEngine detection
 
+  # example with PLUGIN
   #- bash: |
   #    cd build
   #    source activate p4env
   #    PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
+  #    cmake --build . --target plugin_skeleton --verbose
+  #    ls -lR tests/plugins/skeleton/
   #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
-  #  displayName: 'Spot Test 2'
+  #  displayName: 'Spot Test 3'
+
+  # example with COPY
+  #- bash: |
+  #    cd build/../tests/fcidump
+  #    source activate p4env
+  #    ./../../build/stage/bin/psi4 -o stdout
+  #  displayName: 'Spot Test 3'
 
   - bash: |
       cd build
