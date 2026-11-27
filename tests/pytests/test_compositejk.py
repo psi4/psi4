@@ -360,3 +360,29 @@ def test_j_algo_bp86(j_algo, k_algo, df_basis_scf, mols):
     energy_composite = psi4.energy("bp86", molecule=molecule) 
  
     assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')
+
+
+def test_jk_compute_after_failed_compute(mols):
+    """A JK build that raises must turn its "JK: JK" timer off: the next compute() on the same object then
+    works instead of failing with "Timer JK: JK is already on."."""
+
+    molecule = mols["h2o"]
+    psi4.set_options({"scf_type": "dfdirj+cosx", "basis": "cc-pvdz"})
+    basis = psi4.core.BasisSet.build(molecule, "ORBITAL", "CC-PVDZ")
+    aux = psi4.core.BasisSet.build(molecule, "DF_BASIS_SCF", "", "JKFIT", "CC-PVDZ")
+    C = psi4.core.Matrix(basis.nbf(), 5)
+    for i in range(5):
+        C.set(i, i, 1.0)
+
+    jk = psi4.core.JK.build(basis, aux)
+    jk.set_memory(int(1e8))
+    jk.set_do_wK(True)
+    jk.set_omega(0.3)
+    jk.initialize()
+    jk.C_left_add(C)
+    with pytest.raises(RuntimeError, match="do not support wK"):
+        jk.compute()
+
+    jk.set_do_wK(False)
+    jk.compute()
+    assert compare(basis.nbf(), jk.K()[0].rows(), "K built after a failed compute")
