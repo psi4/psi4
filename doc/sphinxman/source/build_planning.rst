@@ -1791,7 +1791,7 @@ generally sufficient to verify an installation.
 
 Output looks something like the below. ``PASSED`` in green is good
 (means test ran correctly); ``SKIPPED`` in yellow is good (means that
-not all software required for test is available); ``XPASS`` or ``XFAIL``
+not all software or network access required for test is available); ``XPASS`` or ``XFAIL``
 in yellow is fine (unexpected pass or expected fail happens when we
 include tests that need particular conditions (*e.g.*, multiple cores)
 to run correctly); ``FAILED`` in red is bad. ::
