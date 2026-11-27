@@ -84,6 +84,12 @@ def select_scf_gradient(name, **kwargs):
         # manifestation of `"""No analytic derivatives for SCF_TYPE CD."""`.
         #   here, only hits upon `gradient("scf")` so above message also present in driver.py to catch e.g., mp2 gradient atop a cd reference.
         func = None
+    elif core.get_option('SCF', 'DFT_VV10_POSTSCF') and name.lower() not in ['hf', 'scf'] and \
+            dft.build_superfunctional(name, reference in ['RHF', 'RKS'])[0].vv10_b() > 0.0:
+        # A VV10 energy added after the SCF is not stationary in the orbitals, so its gradient would need their
+        #   response. Finite differences of energies are taken instead.
+        func = None
+        type_var, mtd_type = 'DFT_VV10_POSTSCF', 'TRUE'
     else:
         func = run_scf_gradient
 

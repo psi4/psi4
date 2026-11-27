@@ -73,3 +73,59 @@ def test_gradient_ref():
         psi4.gradient("scf", ref_wfn=mp2_wfn)
     scf_wfn = psi4.energy("scf", return_wfn=True)[1]
     psi4.gradient("scf", ref_wfn=scf_wfn)
+
+
+# Distorted, non-planar, no symmetry, so all twelve gradient components are independent and nonzero
+_vv10_molecules = {
+    "nh3": """0 1
+        N  0.000  0.000  0.120
+        H  0.000  0.980 -0.270
+        H  0.870 -0.450 -0.330
+        H -0.820 -0.520 -0.250
+        symmetry c1
+        no_reorient
+        no_com""",
+    "ch3": """0 2
+        C  0.000  0.000  0.060
+        H  0.000  1.120 -0.090
+        H  0.950 -0.540 -0.160
+        H -0.930 -0.560 -0.110
+        symmetry c1
+        no_reorient
+        no_com""",
+}
+
+
+@pytest.mark.findif
+@pytest.mark.slow
+@pytest.mark.parametrize("mol,reference,functional,grid,atol", [
+    pytest.param("nh3", "rks", "wb97x-v", {}, 3.e-5, id="nh3-rks-wb97x-v"),
+    pytest.param("ch3", "uks", "wb97x-v", {}, 3.e-5, id="ch3-uks-wb97x-v"),
+    # B97M-V's meta-GGA is grid sensitive: on the default local grid analytic and findif differ by 1.3e-3 here
+    pytest.param("nh3", "rks", "b97m-v", {"dft_radial_points": 99, "dft_spherical_points": 590}, 2.e-4,
+                 id="nh3-rks-b97m-v", marks=pytest.mark.medlong),
+])
+def test_vv10_gradient(mol, reference, functional, grid, atol):
+    """Analytic gradients with VV10 nonlocal correlation against 3-point finite differences of energies. As for the
+    local XC terms, the analytic gradient holds the grid fixed, so the tolerances are its error on these
+    grids (observed: 9.6e-6, 3.5e-6, 6.6e-5), which plain PBE shares (6.5e-5 for this NH3)."""
+    psi4.geometry(_vv10_molecules[mol])
+    psi4.set_options({"basis": "def2-svp", "scf_type": "pk", "reference": reference, "e_convergence": 11,
+                      "d_convergence": 9, "maxiter": 300, **grid})
+
+    analytic = psi4.gradient(functional, dertype=1).np
+    findif = psi4.gradient(functional, dertype=0).np
+
+    assert compare_values(findif, analytic, atol=atol, label=f"{functional} analytic vs. findif gradient")
+
+
+def test_vv10_postscf_gradient_by_findif():
+    """A VV10 energy added after the SCF (DFT_VV10_POSTSCF) is not stationary in the orbitals, so its gradient
+    is taken by finite differences, whereas the self-consistent one is analytic."""
+    from psi4.driver.driver_util import negotiate_derivative_type
+
+    psi4.geometry(_vv10_molecules["nh3"])
+    assert negotiate_derivative_type("gradient", "wb97x-v", None) == (1, 1)
+    psi4.set_options({"dft_vv10_postscf": True})
+    assert negotiate_derivative_type("gradient", "wb97x-v", None) == (1, 0)
+    assert negotiate_derivative_type("gradient", "pbe", None) == (1, 1)
