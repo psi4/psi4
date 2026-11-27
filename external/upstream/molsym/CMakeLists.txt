@@ -1,7 +1,7 @@
 if(${ENABLE_molsym})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_molsym}))
         include(FindPythonModule)
-        find_python_module(molsym ATLEAST 1.2.0 QUIET)
+        find_python_module(molsym ATLEAST 1.3.1 QUIET)  # edit in codedeps
     endif()
 
     if(${molsym_FOUND})
@@ -29,7 +29,7 @@ if(${ENABLE_molsym})
             BUILD_COMMAND ""
             BUILD_IN_SOURCE 1
             # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/NASymmetry/MolSym.git#egg=proj
-            INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/NASymmetry/MolSym.git@v1.2.0#egg=proj  # edit in codedeps
+            INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/NASymmetry/MolSym.git@v1.3.1#egg=proj  # edit in codedeps
                                                           --target=${_install_lib}
                                                           --no-deps
             )
