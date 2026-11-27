@@ -1,5 +1,8 @@
+import functools
 import os
+import re
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 from typing import List
 
@@ -12,6 +15,7 @@ import psi4
 
 __all__ = [
     "hardware_nvidia_gpu",
+    "requires_pubchem",
     "using",
     "uusing",
     "ctest_labeler",
@@ -205,6 +209,51 @@ def ctest_labeler(labels: str):
 hardware_nvidia_gpu = pytest.mark.skipif(
     True,  #is_nvidia_gpu_present() is False,
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
+
+
+@functools.lru_cache(maxsize=None)
+def is_pubchem_reachable() -> bool:
+    """Probe PubChem's REST service with the same query QCElemental's tests use. Cached, and only called
+    from inside a PubChem test, so a session (or each xdist worker) probes at most once, and not at all
+    unless such a test is selected.
+
+    """
+    from urllib.request import urlopen
+
+    url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/241/property/IUPACName/JSON"
+    try:
+        with urlopen(url, timeout=5):
+            return True
+    except OSError:
+        # URLError (DNS, refused, proxy), HTTPError (e.g., 503 PUGREST.ServerBusy), and timeouts
+        return False
+
+
+def _is_pubchem_outage(report: str) -> bool:
+    """Whether a failed run's ``report`` shows a PubChem lookup that failed for want of the server: HTTP 503
+    (PUGREST.ServerBusy, PubChem's throttle) or 504 (PUGREST.Timeout), or no connection at all. QCElemental's
+    lookup errors quote the url, which pins the failure on PubChem. Other codes are still failures, like a 404
+    for a compound no longer found, or a 500 or 501 that a malformed request can draw.
+
+    """
+    return "pubchem.ncbi.nlm.nih.gov" in report and re.search(r"HTTP Error 50[34]|urlopen error", report) is not None
+
+
+@contextmanager
+def requires_pubchem():
+    """Guard the body of a test that fetches a geometry from PubChem, after QCElemental's ``using_web`` and
+    ``xfail_on_pubchem_busy``. Skips if PubChem can't be reached beforehand. Xfails if PubChem was reached
+    but the run then fails on a PubChem outage. Any other failure is reported as usual.
+
+    """
+    if not is_pubchem_reachable():
+        pytest.skip("Could not connect to PubChem")
+    try:
+        yield
+    except AssertionError as e:
+        if _is_pubchem_outage(str(e)):
+            pytest.xfail("PubChem became unavailable during the test")
+        raise
 
 
 #: The six meaningful combinations of orbital optimizer packages. ORBITAL_OPTIMIZER_PACKAGE
