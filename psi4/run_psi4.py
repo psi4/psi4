@@ -373,6 +373,10 @@ atexit.register(psi4.extras.exit_printing, start_time=start_time)
 # Run the program!
 try:
     exec(content)
+    try:
+        psi4.driver.p4util.write_timer_json("timer.json")
+    except Exception as timer_exception:
+        psi4.core.print_out(f"\nTimer JSON export failed: {timer_exception}\n")
     psi4.extras._success_flag_ = True
 
 # Capture _any_ python error message
