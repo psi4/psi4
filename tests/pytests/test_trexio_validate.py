@@ -192,7 +192,10 @@ def test_trexio_validate(tmp_path, cid, geometry, options, method, eri, what):
     if options.get("basis") == "mixed_h2o":
         psi4.basis_helper("assign cc-pvdz\nassign H sto-3g", name="mixed_h2o")
         options.pop("basis")
-    psi4.set_options({"scf_type": "pk", "e_convergence": 10, "d_convergence": 10, **options})
+    # Only the HF energy is rebuilt from the file (below), to 1e-8 Eh; what trexio-validate checks does not
+    #   depend on how tightly the orbitals are converged, and Kohn-Sham SCFs need not reach 1e-10 on the grid.
+    conv = 10 if method == "hf" else 8
+    psi4.set_options({"scf_type": "pk", "e_convergence": conv, "d_convergence": conv, **options})
 
     try:
         energy, wfn = psi4.energy(method, return_wfn=True)
