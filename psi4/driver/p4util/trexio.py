@@ -216,7 +216,7 @@ def trexio(
     ci_vector, determinants
         Optional CI expansion. ``determinants`` is a ``(ndet, 2*nint)`` int64
         array of bitfield occupations (alpha then beta), as produced by
-        :func:`trexio.to_bitfield_list`. ``ci_vector`` is the matching list of
+        ``trexio.to_bitfield_list()``. ``ci_vector`` is the matching list of
         coefficients.
     back_end
         ``trexio.TREXIO_HDF5`` (default) or ``trexio.TREXIO_TEXT``.
