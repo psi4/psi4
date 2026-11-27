@@ -444,7 +444,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     /* Save the SO EWDM to the wavefunction as Lagrangian_.
      * All other EWDM processing operations are then redundant, but it's what deriv.cc:compute expects...
      */
-    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
+    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nsopi_, nsopi_);
     Lagrangian_->back_transform(aW, *Ca_);
     Lagrangian_->scale(-2.0);  // Doubling is equivalent to adding beta spin case
 
