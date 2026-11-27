@@ -91,9 +91,9 @@ metadata.out.py
 metadata.out.cmake
 
 # Compilation directories that people use
-obj*
-*objdir
-build*
+obj*/
+*objdir/
+build*/
 debug
 debug_latest
 *.sh
