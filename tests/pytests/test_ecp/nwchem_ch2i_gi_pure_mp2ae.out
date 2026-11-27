@@ -1,0 +1,718 @@
+ argument  1 = ch2i_gi_pure_mp2ae.nw
+                                         
+                                         
+
+
+             Northwest Computational Chemistry Package (NWChem) 7.2.3
+             --------------------------------------------------------
+
+
+                    Environmental Molecular Sciences Laboratory
+                       Pacific Northwest National Laboratory
+                                Richland, WA 99352
+
+                              Copyright (c) 1994-2022
+                       Pacific Northwest National Laboratory
+                            Battelle Memorial Institute
+
+             NWChem is an open-source computational chemistry package
+                        distributed under the terms of the
+                      Educational Community License (ECL) 2.0
+             A copy of the license is included with this distribution
+                              in the LICENSE.TXT file
+
+                                  ACKNOWLEDGMENT
+                                  --------------
+
+            This software and its documentation were developed at the
+            EMSL at Pacific Northwest National Laboratory, a multiprogram
+            national laboratory, operated for the U.S. Department of Energy
+            by Battelle under Contract Number DE-AC05-76RL01830. Support
+            for this work was provided by the Department of Energy Office
+            of Biological and Environmental Research, Office of Basic
+            Energy Sciences, and the Office of Advanced Scientific Computing.
+
+
+           Job information
+           ---------------
+
+    hostname        = cos-4a12268.cos.gatech.edu
+    program         = /psi/toolchainconda/envs/py313/bin/nwchem
+    date            = Thu Oct  8 05:27:28 2026
+
+    compiled        = Thu_Oct_31_08:06:29_2024
+    source          = /home/conda/feedstock_root/build_artifacts/nwchem_1730356027455/work
+    nwchem branch   = 7.2.3
+    nwchem revision = c400b04
+    ga revision     = 5.8.0
+    use scalapack   = T
+    input           = ch2i_gi_pure_mp2ae.nw
+    prefix          = ch2i_gi_pure_mp2ae.
+    data base       = ./ch2i_gi_pure_mp2ae.db
+    status          = startup
+    nproc           =        1
+    time left       =     -1s
+
+
+
+           Memory information
+           ------------------
+
+    heap     =   65535994 doubles =    500.0 Mbytes
+    stack    =   65535999 doubles =    500.0 Mbytes
+    global   =  131072000 doubles =   1000.0 Mbytes (distinct from heap & stack)
+    total    =  262143993 doubles =   2000.0 Mbytes
+    verify   = yes
+    hardfail = no 
+
+
+           Directory information
+           ---------------------
+
+  0 permanent = .
+  0 scratch   = ./scr_ch2i_gi_pure_mp2ae
+
+
+
+
+                                NWChem Input Module
+                                -------------------
+
+
+
+
+                             Geometry "geometry" -> ""
+                             -------------------------
+
+ Output coordinates in a.u. (scale by  1.000000000 to convert to a.u.)
+
+  No.       Tag          Charge          X              Y              Z
+ ---- ---------------- ---------- -------------- -------------- --------------
+    1 C                    6.0000     1.79205820     1.20875852     0.00000000
+    2 I                   53.0000     1.79205820    -2.85415265     0.00000000
+    3 bqI                  0.0000    -1.97500744     2.73075183     0.00000000
+    4 H                    1.0000     0.84954145     0.57302294    -1.71763925
+    5 H                    1.0000     0.84954145     0.57302294     1.71763925
+
+      Atomic Mass 
+      ----------- 
+
+      C                 12.000000
+      I                126.900400
+      H                  1.007825
+
+
+ Effective nuclear repulsion energy (a.u.)     111.2371359436
+
+            Nuclear Dipole moment (a.u.) 
+            ----------------------------
+        X                 Y               Z
+ ---------------- ---------------- ----------------
+   107.4305166804  -142.8714935262     0.0000000000
+
+
+            XYZ format geometry
+            -------------------
+     5
+ geometry
+ C                     0.94831643     0.63964751     0.00000000
+ I                     0.94831643    -1.51035265     0.00000000
+ bqI                  -1.04512900     1.44505174     0.00000000
+ H                     0.44955801     0.30323071    -0.90893561
+ H                     0.44955801     0.30323071     0.90893561
+
+ ==============================================================================
+                                internuclear distances
+ ------------------------------------------------------------------------------
+       center one      |      center two      | atomic units |       a.u.
+ ------------------------------------------------------------------------------
+    2 I                |   1 C                |     4.06291  |     4.06291
+    3 bqI              |   1 C                |     4.06291  |     4.06291
+    3 bqI              |   2 I                |     6.73661  |     6.73661
+    4 H                |   1 C                |     2.05980  |     2.05980
+    4 H                |   3 bqI              |     3.94768  |     3.94768
+    5 H                |   1 C                |     2.05980  |     2.05980
+    5 H                |   3 bqI              |     3.94768  |     3.94768
+ ------------------------------------------------------------------------------
+                         number of included internuclear distances:          7
+ ==============================================================================
+
+
+
+ ==============================================================================
+                                 internuclear angles
+ ------------------------------------------------------------------------------
+        center 1       |       center 2       |       center 3       |  degrees
+ ------------------------------------------------------------------------------
+    2 I                |   1 C                |   3 bqI              |   112.00
+    2 I                |   1 C                |   4 H                |    72.02
+    2 I                |   1 C                |   5 H                |    72.02
+    1 C                |   4 H                |   3 bqI              |    78.22
+    1 C                |   5 H                |   3 bqI              |    78.22
+    4 H                |   1 C                |   5 H                |   113.00
+    2 I                |   1 C                |   3 bqI              |   112.00
+    3 bqI              |   1 C                |   2 I                |   112.00
+    3 bqI              |   4 H                |   1 C                |    78.22
+    3 bqI              |   5 H                |   1 C                |    78.22
+    2 I                |   3 bqI              |   4 H                |    31.43
+    2 I                |   3 bqI              |   5 H                |    31.43
+    4 H                |   3 bqI              |   5 H                |    51.58
+    1 C                |   4 H                |   3 bqI              |    78.22
+    1 C                |   5 H                |   3 bqI              |    78.22
+ ------------------------------------------------------------------------------
+                            number of included internuclear angles:         15
+ ==============================================================================
+
+
+
+  library name resolved from: environment
+  library file name is: </psi/toolchainconda/envs/py313/share/nwchem/libraries/>
+  
+                      Basis "ao basis" -> "" (spherical)
+                      -----
+  C (Carbon)
+  ----------
+            Exponent  Coefficients 
+       -------------- ---------------------------------------------------------
+  1 S  1.23840169E+03  0.005457
+  1 S  1.86290050E+02  0.040638
+  1 S  4.22511763E+01  0.180256
+  1 S  1.16765579E+01  0.463151
+  1 S  3.59305065E+00  0.440872
+
+  2 S  4.02451474E-01  1.000000
+
+  3 S  1.30901827E-01  1.000000
+
+  4 P  9.46809706E+00  0.038388
+  4 P  2.01035451E+00  0.211170
+  4 P  5.47710047E-01  0.513282
+
+  5 P  1.52686138E-01  1.000000
+
+  6 D  8.00000000E-01  1.000000
+
+  H (Hydrogen)
+  ------------
+            Exponent  Coefficients 
+       -------------- ---------------------------------------------------------
+  1 S  1.30107010E+01  0.019682
+  1 S  1.96225720E+00  0.137965
+  1 S  4.44537960E-01  0.478319
+
+  2 S  1.21949620E-01  1.000000
+
+  3 P  8.00000000E-01  1.000000
+
+  I (Iodine)
+  ----------
+            Exponent  Coefficients 
+       -------------- ---------------------------------------------------------
+  1 S  4.45904892E+02  0.002004
+  1 S  2.33368424E+01 -0.149894
+  1 S  1.95834461E+01  0.364365
+  1 S  8.51120892E+00 -0.755381
+  1 S  2.19961619E+00  0.828164
+  1 S  1.06689705E+00  0.421610
+
+  2 S  1.17205476E+01 -0.016160
+  2 S  1.76259864E+00  0.352715
+
+  3 S  2.86974763E-01  1.000000
+
+  4 S  1.12276096E-01  1.000000
+
+  5 P  2.04990273E+01  0.077159
+  5 P  1.05587546E+01 -0.383704
+  5 P  1.50158955E+00  0.835542
+  5 P  6.45971731E-01  0.167873
+
+  6 P  3.02886568E+00  1.000000
+
+  7 P  3.45065918E-01  1.000000
+
+  8 P  1.11345138E-01  1.000000
+
+  9 D  5.12353549E+01  0.004035
+  9 D  1.56162395E+01 -0.005077
+  9 D  4.52660021E+00  0.291511
+  9 D  2.05298088E+00  0.511458
+  9 D  8.76402816E-01  0.312320
+
+ 10 D  3.09000000E-01  1.000000
+
+  bqI
+  ---
+            Exponent  Coefficients 
+       -------------- ---------------------------------------------------------
+  1 S  4.45904892E+02  0.002004
+  1 S  2.33368424E+01 -0.149894
+  1 S  1.95834461E+01  0.364365
+  1 S  8.51120892E+00 -0.755381
+  1 S  2.19961619E+00  0.828164
+  1 S  1.06689705E+00  0.421610
+
+  2 S  1.17205476E+01 -0.016160
+  2 S  1.76259864E+00  0.352715
+
+  3 S  2.86974763E-01  1.000000
+
+  4 S  1.12276096E-01  1.000000
+
+  5 P  2.04990273E+01  0.077159
+  5 P  1.05587546E+01 -0.383704
+  5 P  1.50158955E+00  0.835542
+  5 P  6.45971731E-01  0.167873
+
+  6 P  3.02886568E+00  1.000000
+
+  7 P  3.45065918E-01  1.000000
+
+  8 P  1.11345138E-01  1.000000
+
+  9 D  5.12353549E+01  0.004035
+  9 D  1.56162395E+01 -0.005077
+  9 D  4.52660021E+00  0.291511
+  9 D  2.05298088E+00  0.511458
+  9 D  8.76402816E-01  0.312320
+
+ 10 D  3.09000000E-01  1.000000
+
+
+
+ Summary of "ao basis" -> "" (spherical)
+ ------------------------------------------------------------------------------
+       Tag                 Description            Shells   Functions and Types
+ ---------------- ------------------------------  ------  ---------------------
+ C                          def2-svp                 6       14   3s2p1d
+ H                          def2-svp                 3        5   2s1p
+ I                          def2-svp                10       26   4s4p2d
+ bqI                        def2-svp                10       26   4s4p2d
+
+
+  library name resolved from: environment
+  library file name is: </psi/toolchainconda/envs/py313/share/nwchem/libraries/>
+  
+                 ECP       "ecp basis" -> "" (cartesian)
+                -----
+  I (Iodine) Replaces    28 electrons
+  -----------------------------------
+             Channel    R-exponent     Exponent     Coefficients
+         ------------ ---------------------------------------------------------
+  1 U L       Both         2.00       19.458609     -21.842040
+  1 U L       Both         2.00       19.349260     -28.468191
+  1 U L       Both         2.00        4.823767      -0.243713
+  1 U L       Both         2.00        4.884315      -0.320804
+
+  2 U-s       Both         2.00       40.015835      49.994293
+  2 U-s       Both         2.00       17.429747     281.025317
+  2 U-s       Both         2.00        9.005484      61.573326
+  2 U-s       Both         2.00       19.458609      21.842040
+  2 U-s       Both         2.00       19.349260      28.468191
+  2 U-s       Both         2.00        4.823767       0.243713
+  2 U-s       Both         2.00        4.884315       0.320804
+
+  3 U-p       Both         2.00       15.355466      67.442841
+  3 U-p       Both         2.00       14.971833     134.881137
+  3 U-p       Both         2.00        8.960164      14.675051
+  3 U-p       Both         2.00        8.259096      29.375666
+  3 U-p       Both         2.00       19.458609      21.842040
+  3 U-p       Both         2.00       19.349260      28.468191
+  3 U-p       Both         2.00        4.823767       0.243713
+  3 U-p       Both         2.00        4.884315       0.320804
+
+  4 U-d       Both         2.00       15.068908      35.439529
+  4 U-d       Both         2.00       14.555322      53.176057
+  4 U-d       Both         2.00        6.718647       9.067195
+  4 U-d       Both         2.00        6.456393      13.206937
+  4 U-d       Both         2.00        1.191779       0.089335
+  4 U-d       Both         2.00        1.291157       0.052380
+  4 U-d       Both         2.00       19.458609      21.842040
+  4 U-d       Both         2.00       19.349260      28.468191
+  4 U-d       Both         2.00        4.823767       0.243713
+  4 U-d       Both         2.00        4.884315       0.320804
+
+                                 NWChem SCF Module
+                                 -----------------
+
+
+
+  ao basis        = "ao basis"
+  functions       =    76
+  atoms           =     5
+  alpha electrons =    17
+  beta  electrons =    16
+  charge          =   0.00
+  wavefunction    = UHF 
+  input vectors   = atomic
+  output vectors  = ./ch2i_gi_pure_mp2ae.movecs
+  use symmetry    = F
+  symmetry adapt  = F
+
+
+ Summary of "ao basis" -> "ao basis" (spherical)
+ ------------------------------------------------------------------------------
+       Tag                 Description            Shells   Functions and Types
+ ---------------- ------------------------------  ------  ---------------------
+ C                          def2-svp                 6       14   3s2p1d
+ H                          def2-svp                 3        5   2s1p
+ I                          def2-svp                10       26   4s4p2d
+ bqI                        def2-svp                10       26   4s4p2d
+
+
+
+ Forming initial guess at       0.4s
+
+
+      Superposition of Atomic Density Guess
+      -------------------------------------
+
+ Sum of atomic energies:        -385.75048842
+
+      Non-variational initial energy
+      ------------------------------
+
+ Total energy =    -335.822208
+ 1-e energy   =    -679.508094
+ 2-e energy   =     287.983968
+ HOMO         =      -0.194220
+ LUMO         =       0.001447
+
+
+ Starting SCF solution at       1.0s
+
+
+
+ ----------------------------------------------
+         Quadratically convergent UHF
+
+ Convergence threshold     :          1.000E-10
+ Maximum no. of iterations :          300
+ Integral*density screening:          1.000E-12
+ ----------------------------------------------
+
+
+              iter       energy          gnorm     gmax       time
+             ----- ------------------- --------- --------- --------
+                 1     -335.4571977113  3.40D-01  7.61D-02      2.6
+  ga_iter_lsolve: convergence stagnant ... aborting solve
+
+ Disabled NR: increased maxiter to 310
+
+                 2     -335.4818563826  1.44D-01  6.01D-02      9.0
+                 3     -335.4892998181  8.99D-02  2.74D-02     11.1
+                 4     -335.4921979310  6.94D-02  1.75D-02     13.3
+                 5     -335.4939866349  4.10D-02  8.75D-03     15.4
+                 6     -335.4947429388  3.69D-02  8.37D-03     17.6
+                 7     -335.4952010664  2.73D-02  9.27D-03     19.8
+                 8     -335.4954631844  2.16D-02  3.34D-03     21.9
+                 9     -335.4955530902  1.10D-02  2.24D-03     24.1
+                10     -335.4955825005  6.27D-03  1.18D-03     26.3
+                11     -335.4955938228  2.96D-03  5.21D-04     28.4
+                12     -335.4955958938  9.49D-04  1.85D-04     30.6
+                13     -335.4955960922  3.70D-04  1.21D-04     32.7
+                14     -335.4955961282  2.01D-04  3.92D-05     34.9
+                15     -335.4955961371  1.02D-04  3.59D-05     37.0
+                16     -335.4955961402  5.87D-05  1.49D-05     39.2
+                17     -335.4955961414  4.87D-05  1.07D-05     41.4
+                18     -335.4955961421  2.90D-05  5.48D-06     43.5
+                19     -335.4955961423  1.84D-05  3.14D-06     45.7
+                20     -335.4955961424  6.33D-06  1.27D-06     47.9
+                21     -335.4955961424  4.59D-06  1.31D-06     50.4
+                22     -335.4955961424  2.33D-06  7.61D-07     52.7
+                23     -335.4955961424  1.22D-06  2.46D-07     53.8
+                24     -335.4955961424  8.50D-07  1.61D-07     56.1
+                25     -335.4955961424  5.02D-07  1.12D-07     58.2
+                26     -335.4955961424  4.72D-07  9.77D-08     60.3
+                27     -335.4955961424  2.49D-07  5.53D-08     62.4
+                28     -335.4955961424  1.69D-07  3.75D-08     64.6
+                29     -335.4955961424  7.66D-08  1.16D-08     66.7
+                30     -335.4955961424  3.35D-08  5.17D-09     68.9
+                31     -335.4955961424  1.53D-08  2.66D-09     71.0
+                32     -335.4955961424  7.92D-09  2.82D-09     73.1
+                33     -335.4955961424  6.55D-09  1.51D-09     75.2
+                34     -335.4955961424  3.69D-09  8.66D-10     77.4
+                35     -335.4955961424  2.16D-09  3.58D-10     79.5
+                36     -335.4955961424  1.28D-09  4.13D-10     81.7
+                37     -335.4955961424  7.31D-10  1.65D-10     83.8
+                38     -335.4955961424  4.05D-10  9.34D-11     86.0
+                39     -335.4955961424  3.12D-10  6.43D-11     88.1
+                40     -335.4955961424  1.62D-10  3.60D-11     90.2
+                41     -335.4955961424  1.01D-10  2.33D-11     91.3
+                42     -335.4955961424  5.94D-11  1.32D-11     93.4
+
+
+       Final UHF  results 
+       ------------------ 
+
+         Total SCF energy =   -335.495596142434
+      One electron energy =   -680.120025985333
+      Two electron energy =    288.922512165444
+ Nuclear repulsion energy =     55.701917677455
+
+                       Sz =      0.5000
+                 Sz(Sz+1) =      0.7500
+                      S^2 =      0.8430
+
+        Time for solution =     91.9s
+
+
+          [trimmed: eigenvalues, MO analysis, center of mass, moments of inertia, Mulliken analysis]
+
+       Multipole analysis of the density wrt the origin
+       ------------------------------------------------
+
+     L   x y z        total         alpha         beta         nuclear
+     -   - - -        -----         -----         ----         -------
+     0   0 0 0      0.000000    -17.000000    -16.000000     33.000000
+
+     1   1 0 0     -0.231935    -29.922912    -27.561910     57.252887
+     1   0 1 0      0.296105     30.551448     32.699876    -62.955219
+     1   0 0 1     -0.000000     -0.000000     -0.000000      0.000000
+
+     2   2 0 0    -26.803569    -67.436358    -60.366303    100.999092
+     2   1 1 0      0.845173     54.993307     59.751451   -113.899584
+     2   1 0 1     -0.000000     -0.000000     -0.000000      0.000000
+     2   0 2 0    -26.488471   -120.558993   -119.007456    213.077977
+     2   0 1 1     -0.000000     -0.000000     -0.000000      0.000000
+     2   0 0 2    -25.129891    -15.725588    -15.304872      5.900569
+
+                   NWChem MP2 Semi-direct Energy/Gradient Module
+                   ---------------------------------------------
+
+
+  Basis functions       =     76
+  Molecular orbitals    =     76
+  Frozen core           =      0
+  Frozen virtuals       =      0
+  Active alpha occupied =     17
+  Active beta occupied  =     16
+  Active alpha virtual  =     59
+  Active beta virtual   =     60
+  Use MO symmetry       = F
+  Use skeleton AO sym   = F
+
+  AO/Fock/Back tols     =   1.0D-11  1.0D-11  1.0D-11
+
+ GA uses MA = F    GA memory limited = T
+
+ Available: 
+  local mem=  1.15D+08
+ global mem=  1.31D+08
+ local disk=  0.00D+00
+  mp2_memr nvloc                    59
+  nvloc new                    59
+   1 passes of  17:        5242880                     215166                  15453799.
+   1 passes of  17: M    114678721           G      131041270           F     109435841.
+
+ Semi-direct pass number   1 of   1  for UHF alpha       at       93.0s
+  vrange nnbf                  2902
+  mp2_eaftype                    37  avail_ma_in_mb                   999
+ EAF : mp2_eaftype filesize          37    4953178.
+  mp2_eaf for mointskh                     37
+Node 0 wrote     23.3 Mb in      0.0 s     Agg I/O rate:  2521.5 Mb/s
+ Done moints_semi at       96.0s
+  mp2_eaftype                    37  avail_ma_in_mb                   962
+ EAF : mp2_eaftype filesize          37    4953178.
+  mp2_eaf for kh                    37
+  mp2_eaftype                    15  avail_ma_in_mb                   962
+ EAF : mp2_eaftype filesize          15    1968889.
+  mp2_eaf for ta tb                    15
+  mp2_eaf for ta                     15
+  mp2_eaf for tb                     15
+ Done maket at       96.2s
+ Done pijab at       96.3s
+ Done wijab at       96.3s
+ Done lai at       96.5s
+  mp2_eaftype                    50  avail_ma_in_mb                   932
+ EAF : mp2_eaftype filesize          50    6562843.
+  mp2_eaf for 2pdm                     50
+ Done nonsep at      105.1s
+ Done multipass loop at      105.1s
+
+ GA uses MA = F    GA memory limited = T
+
+ Available: 
+  local mem=  1.15D+08
+ global mem=  1.31D+08
+ local disk=  0.00D+00
+  mp2_memr nvloc                    60
+  nvloc new                    60
+   1 passes of  16:        5242880                     218214                  14686795.
+   1 passes of  16: M    114678721           G      131041270           F     109435841.
+
+ Semi-direct pass number   1 of   1  for UHF beta        at      105.1s
+  vrange nnbf                  2902
+  mp2_eaftype                    36  avail_ma_in_mb                   999
+ EAF : mp2_eaftype filesize          36    4741042.
+  mp2_eaf for mointskh                     36
+Node 0 wrote     22.3 Mb in      0.0 s     Agg I/O rate:  1000.6 Mb/s
+ Done moints_semi at      108.1s
+  mp2_eaftype                    36  avail_ma_in_mb                   963
+ EAF : mp2_eaftype filesize          36    4741042.
+  mp2_eaf for kh                    36
+  mp2_eaftype                    14  avail_ma_in_mb                   963
+ EAF : mp2_eaftype filesize          14    1884480.
+  mp2_eaf for ta tb                    14
+  mp2_eaf for ta                     14
+  mp2_eaf for tb                     14
+ Done maket at      108.4s
+ Done pijab at      108.4s
+ Done wijab at      108.4s
+ Done lai at      108.6s
+  mp2_eaftype                    47  avail_ma_in_mb                   935
+ EAF : mp2_eaftype filesize          47    6176794.
+  mp2_eaf for 2pdm                     47
+ Done nonsep at      117.2s
+ Done multipass loop at      117.2s
+
+
+          -------------------------------------------
+          SCF energy                -335.495596142434
+          Correlation energy          -0.267184113311
+          Singlet pairs                0.000000000000
+          Triplet pairs                0.000000000000
+          Total MP2 energy          -335.762780255744
+          -------------------------------------------
+
+
+
+          ---------------------------------------------------
+                    Spin Component Scaled (SCS) MP2
+          Same spin pairs                     -0.073425263448
+          Same spin scaling factor             0.333333333333
+          Opposite spin pairs                 -0.193758849862
+          Opposite spin scaling fact.          1.200000000000
+          SCS-MP2 correlation energy          -0.256985707651
+          Total SCS-MP2 energy              -335.752581850085
+          ---------------------------------------------------
+
+ Start laifock at      117.2s
+ Done laifock at      118.2s
+                                NWChem CPHF Module
+                                ------------------
+
+
+    scftype = UHF 
+     nalpha =   17
+      nbeta =   16
+  variables =     1963
+  tolerance =   1.0D-06
+  max. iter =  100
+
+ SCF residual:    5.9372003052872542E-011
+
+            ----- linear solve (tol: 1.0E-06 prod-acc: 1.6E-14) -----
+
+               iter nbas    rnorm     rnorm-scal   ratio     time
+               ---- ---- ----------- ----------- --------- -------
+                  1    1  3.3905E-02  4.7755E-01    0.0000   120.8
+                  2    2  2.0894E-02  2.9430E-01    0.6163   121.9
+                  3    3  1.4947E-02  2.1053E-01    0.7154   123.0
+                  4    4  9.4097E-03  1.3254E-01    0.6295   124.2
+                  5    5  4.6730E-03  6.5820E-02    0.4966   125.3
+                  6    6  1.9051E-03  2.6834E-02    0.4077   126.3
+                  7    7  6.9908E-04  9.8467E-03    0.3669   127.3
+                  8    8  2.1876E-04  3.0813E-03    0.3129   128.3
+                  9    9  9.0074E-05  1.2687E-03    0.4117   129.3
+                 10   10  3.6353E-05  5.1204E-04    0.4036   130.3
+                 11   11  1.3955E-05  1.9656E-04    0.3839   131.2
+                 12   12  5.0067E-06  7.0520E-05    0.3588   132.2
+                 13   13  1.8568E-06  2.6153E-05    0.3709   133.1
+                 14   14  7.1163E-07  1.0023E-05    0.3833   134.1
+                 15   15  2.9126E-07  4.1025E-06    0.4093   135.0
+                 16   16  1.1772E-07  1.6581E-06    0.4042   135.9
+                 17   17  3.9382E-08  5.5471E-07    0.3345   136.7
+
+ CPHF converged to   5.5D-07 in   17 iters
+
+ Start make_tot_dens at      136.4s
+ Done make_tot_dens at      136.4s
+                Dipole Moments (a.u.)
+                --------------
+         Nuclear       SCF       SCF+MP2
+       ----------- ----------- -----------
+ X      57.252887   -0.231935   -0.259008
+ Y     -62.955219    0.296105    0.006353
+ Z       0.000000   -0.000000   -0.000000
+
+
+  [trimmed: MP2 alpha and beta natural orbital occupation numbers]
+
+  MP2 natural orbitals output to ./ch2i_gi_pure_mp2ae.mp2nos
+
+
+
+                         mp2 ENERGY GRADIENTS
+
+    atom               coordinates                        gradient
+                 x          y          z           x          y          z
+   1 C       1.792058   1.208759   0.000000    0.011159   0.058749  -0.000000
+   2 I       1.792058  -2.854153   0.000000   -0.026022   0.042160  -0.000000
+   3 bqI    -1.975007   2.730752   0.000000   -0.002514   0.001507  -0.000000
+   4 H       0.849541   0.573023  -1.717639    0.008688  -0.051208   0.020881
+   5 H       0.849541   0.573023   1.717639    0.008688  -0.051208  -0.020881
+
+                 ----------------------------------------
+                 |  Time  |  1-e(secs)   |  2-e(secs)   |
+                 ----------------------------------------
+                 |  CPU   |       0.06   |       8.40   |
+                 ----------------------------------------
+                 |  WALL  |       0.06   |       8.40   |
+                 ----------------------------------------
+ -----------------------
+ Performance information
+ -----------------------
+
+ Timer overhead =  1.27D-07 seconds/call
+
+               Nr. of calls         CPU time (s)                 Wall time (s)                GFlops
+             ---------------    -------------------     ------------------------------   -------------------
+Name         Min   Avg   Max    Min     Avg     Max     Min     Avg     Max   Mx/calls   Min     Max     Sum
+mp2: moin     2     2     2    6.0     6.0     6.0      6.1     6.1     6.1     3.0      0.0     0.0     0.0   
+mp2: make     2     2     2   0.46    0.46    0.46     0.47    0.47    0.47    0.23      0.0     0.0     0.0   
+mp2: pija     2     2     2   3.51E-2 3.51E-2 3.51E-2  3.51E-2 3.51E-2 3.51E-2 1.75E-2   0.0     0.0     0.0   
+mp2: wija     2     2     2   3.86E-2 3.86E-2 3.86E-2  3.87E-2 3.87E-2 3.87E-2 1.93E-2   0.0     0.0     0.0   
+mp2: lai      2     2     2   0.34    0.34    0.34     0.34    0.34    0.34    0.17      0.0     0.0     0.0   
+mp2: back     2     2     2   0.38    0.38    0.38     0.40    0.40    0.40    0.20      0.0     0.0     0.0   
+mp2: nons     2     2     2    17.     17.     17.      17.     17.     17.     8.4      0.0     0.0     0.0   
+mp2: laif     1     1     1    1.0     1.0     1.0      1.0     1.0     1.0     1.0      0.0     0.0     0.0   
+mp2: cphf     1     1     1    18.     18.     18.      18.     18.     18.     18.      0.0     0.0     0.0   
+mp2: wijf     1     1     1   0.96    0.96    0.96     0.96    0.96    0.96    0.96      0.0     0.0     0.0   
+mp2: sep      1     1     1    8.5     8.5     8.5      8.5     8.5     8.5     8.5      0.0     0.0     0.0   
+mp2: tota     1     1     1    53.     53.     53.      53.     53.     53.     53.      0.0     0.0     0.0   
+
+ The average no. of pstat calls per process was 1.90D+01
+ with a timing overhead of 2.42D-06s
+
+
+ Task  times  cpu:      145.3s     wall:      145.7s
+ Summary of allocated global arrays
+-----------------------------------
+  No active global arrays
+
+
+MA_summarize_allocated_blocks: starting scan ...
+MA_summarize_allocated_blocks: scan completed: 0 heap blocks, 0 stack blocks
+MA usage statistics:
+
+	allocation statistics:
+					      heap	     stack
+					      ----	     -----
+	current number of blocks	         0	         0
+	maximum number of blocks	        44	        47
+	current total bytes		         0	         0
+	maximum total bytes		  83965984	  26138456
+	maximum total K-bytes		     83966	     26139
+	maximum total M-bytes		        84	        27
+
+
+                                NWChem Input Module
+                                -------------------
+
+
+
+
+  [trimmed: citation and authors]
+
+ Total times  cpu:      145.3s     wall:      145.9s

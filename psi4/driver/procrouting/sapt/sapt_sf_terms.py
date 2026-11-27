@@ -128,7 +128,7 @@ def _chain_dot(*dot_list):
     return result
 
 
-def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
+def compute_sapt_sf(jk, wfn_A, wfn_B, do_print=True):
     """
     Computes Elst and Spin-Flip SAPT0 for ROHF wavefunctions
     """
@@ -168,9 +168,9 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
     # Pull out generic quantities
     S = np.asarray(wfn_A.S())
 
-    intermonomer_nuclear_repulsion = dimer.nuclear_repulsion_energy()
-    intermonomer_nuclear_repulsion -= wfn_A.molecule().nuclear_repulsion_energy()
-    intermonomer_nuclear_repulsion -= wfn_B.molecule().nuclear_repulsion_energy()
+    # not dimer - monA - monB NREs: the dimer hasn't built the basis here, so has full Z on ECP atoms. each monomer's
+    #   molecule has its own ECP-reduced charges (and zero on the other's ghosts)
+    intermonomer_nuclear_repulsion = wfn_A.molecule().pairwise_nuclear_repulsion_energy(wfn_B.molecule())
 
     num_el_A = (2 * ndocc_A + nsocc_A)
     num_el_B = (2 * ndocc_B + nsocc_B)

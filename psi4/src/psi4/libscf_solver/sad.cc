@@ -335,7 +335,7 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
     for (int A = 0; A < molecule_->natom(); A++) {
         int Z = std::round(molecule_->Z(A));
         // Number of ECP electrons on center
-        int ECP = basis_->n_ecp_core(molecule_->label(A));
+        int ECP = basis_->n_ecp_core_on_center(A);
         // Assuming neutral atoms for now
         nelec[A] = Z;
 

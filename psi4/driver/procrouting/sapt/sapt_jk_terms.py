@@ -110,11 +110,9 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     cache["K_O"] = jk.K()[2].clone()
     cache["K_O"].transpose_this()
 
-    monA_nr = wfn_A.molecule().nuclear_repulsion_energy()
-    monB_nr = wfn_B.molecule().nuclear_repulsion_energy()
-    dimer_nr = wfn_A.molecule().extract_subsets([1, 2]).nuclear_repulsion_energy()
-
-    cache["nuclear_repulsion_energy"] = dimer_nr - monA_nr - monB_nr
+    # not dimer - monA - monB NREs: a dimer re-extracted from wfn_A's molecule (B ghosted there, so not ECP-reduced)
+    #   had full Z on B's ECP atoms
+    cache["nuclear_repulsion_energy"] = wfn_A.molecule().pairwise_nuclear_repulsion_energy(wfn_B.molecule())
 
     return cache
 

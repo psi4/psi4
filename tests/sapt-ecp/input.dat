@@ -30,4 +30,19 @@ E = energy('sapt0/3-21g')
 compare_values(ref_321g, E, 8, "SAPT0 energy with Ca2+, without ECP")                               #TEST
 E = energy('sapt0/lanl2dz')
 compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")                                  #TEST
+elst_sapt0 = variable("SAPT ELST ENERGY")
+
+# SAPT(DFT) w/ HF functional and SF-SAPT share SAPT0's Elst10,r (agree to ~1e-8 here). Their intermonomer nuclear
+#   repulsion once came from molecules that hadn't built the basis (full Z on monomer B's Ca), giving Elst +21.3 Eh
+#   pre-fix: SAPT(DFT) Elst 21.3474515665, SF-SAPT Elst 21.3474515664; SAPT0 Elst -0.0980459593 (all Eh)
+set sapt_dft_functional hf
+set sapt_dft_grac_shift_a 0.0
+set sapt_dft_grac_shift_b 0.0
+set sapt_dft_do_dhf false
+energy('sapt(dft)/lanl2dz')
+compare_values(elst_sapt0, variable("SAPT ELST ENERGY"), 6, "SAPT(DFT) Elst with ECP on monomer B v. SAPT0")  #TEST
+
+set reference rohf
+energy('sf-sapt/lanl2dz')
+compare_values(elst_sapt0, variable("SAPT ELST ENERGY"), 6, "SF-SAPT Elst with ECP on monomer B v. SAPT0")    #TEST
 

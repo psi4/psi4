@@ -298,10 +298,20 @@ class PSI_API BasisSet {
      */
     const GaussianShell &shell(int center, int si) const;
 
-    /// Return the number of core electrons associated with this (ECP) basisset, for the specified label.
+    /// Return the number of ECP core electrons this basis set assigns to atoms with the given label, i.e., what a
+    /// *kind* of atom carries. Labels are shared by an atom and its ghost, and survive between a dimer, its ghosted
+    /// monomers, and lone monomers, so use this to look up the ECP of an atom in a different molecule than this basis
+    /// set's (as n_frozen_core does), skipping ghosts yourself. For whether an atom of *this* basis set's molecule
+    /// actually has an ECP, use n_ecp_core_on_center(), since a ghost shares its real twin's label.
     int n_ecp_core(const std::string &label) const { return ncore_.count(label) ? ncore_.at(label) : 0; }
 
-    /// Return the total number of core electrons assocated with this (ECP) basisset.
+    /// Return the number of ECP core electrons on center A of this basis set's own molecule: the labeled count if
+    /// the center carries ECP shells, else 0 (ghosts get no ECP shells). Use this when iterating over this basis
+    /// set's atoms (printing, per-atom guesses, file headers). The index is meaningless for any other molecule (a
+    /// dimer and its monomers number atoms differently); use n_ecp_core(label) there.
+    int n_ecp_core_on_center(int A) const;
+
+    /// Return the total number of ECP core electrons on this basis set's molecule (sum of n_ecp_core_on_center()).
     int n_ecp_core() const;
 
     /// Set the number of electrons associated with the given atom label, for an ECP basis set.

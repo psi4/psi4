@@ -838,7 +838,7 @@ def run_sf_sapt(name, **kwargs):
     )
     core.print_out("\n")
 
-    sf_data = sapt_sf_terms.compute_sapt_sf(sapt_dimer, sapt_jk, wfn_A, wfn_B)
+    sf_data = sapt_sf_terms.compute_sapt_sf(sapt_jk, wfn_A, wfn_B)
 
     # Print the results
     core.print_out("   Spin-Flip SAPT Results\n")
@@ -858,7 +858,9 @@ def run_sf_sapt(name, **kwargs):
         core.print_out(string)
     core.print_out("  " + "-" * 103 + "\n\n")
 
-    dimer_wfn = core.Wavefunction.build(sapt_dimer, wfn_A.basisset())
+    # build the dimer's own orbital basis (not wfn_A's, where B is ghosted), which also sets sapt_dimer's ECP-reduced
+    #   charges, as for SAPT(DFT)
+    dimer_wfn = core.Wavefunction.build(sapt_dimer, core.get_global_option("BASIS"))
 
     # Set variables
     psivar_tanslator = {
