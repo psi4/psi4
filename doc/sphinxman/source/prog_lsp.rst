@@ -47,10 +47,9 @@ complexity of |Psifour| can be overwhelming for certain editors.
 
 Developers who find many common IDEs insufficient may turn to Neovim. In this
 guide, we cover setting up the ``clangd`` language server with Neovim for C++
-development of |Psifour|. We also show how to generate Python stub files so
-that Python language servers can find definitions of functions and classes
-exported from pybind11. This provides a crucial missing link between C++ and
-Python development workflows.
+development of |Psifour|. We also show how to generate optional Python stub files
+with pybind11-stubgen so that Python language servers can see ``psi4.core``.
+This provides a crucial missing link between C++ and Python development workflows.
 
 Verified on Arch Linux, Neovim 0.11.6, clangd 22.1.8.
 
@@ -276,66 +275,58 @@ clangd does not cover the pybind11 extension: ``psi4.core`` is a shared object,
 so a Python language server sees no methods, signatures, or docstrings for it.
 The fix is a set of Python stubs (``*.pyi``) generated from the built extension.
 
-Build the stubs as part of the build (preferred)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Generate stubs with pybind11-stubgen
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Build ``psi4-core`` first so ``<objdir>/stage/lib/psi4/core*.so`` exists. Use the
+same Python interpreter CMake selected for the build, then install:
 
 .. code:: bash
 
    python -m pip install pybind11-stubgen basedpyright
-   cmake -S . -B objdir -DENABLE_PYTHON_STUBS=ON
-   cmake --build objdir
 
-``ENABLE_PYTHON_STUBS`` adds a ``psi4-core-stubs`` target that depends on
-``psi4-core`` and writes ``core.pyi`` beside the staged extension in
-``<objdir>/stage/lib/psi4/``. Generation takes well under a second and is
-deterministic, so it re-runs on every build and the interface cannot drift from
-the compiled module. Because the stub lands inside the staged package, any tool
-that already resolves that package picks it up with no further configuration,
-and the existing install rule carries it to the install prefix. Configure fails
-immediately with a ``pip install`` hint if ``pybind11-stubgen`` is missing from
-the interpreter CMake selected as ``Python_EXECUTABLE``.
-
-To refresh only the stubs after a build:
+``pybind11-stubgen`` runs ``import psi4.core``, which loads the full ``psi4``
+package and needs the staged tree on ``PYTHONPATH``. The usual shortcut matches
+:ref:`faq:add_tests`:
 
 .. code:: bash
 
-   cmake --build objdir --target psi4-core-stubs
+   eval $(<objdir>/stage/bin/psi4 --psiapi)
 
-Or run the generator directly
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For a tree configured without the option:
+If import fails with a datadir error, set ``PSIDATADIR`` explicitly:
 
 .. code:: bash
 
-   python devtools/scripts/generate_psi4_core_stubs.py --stage-lib "<objdir>/stage/lib"
+   export PSIDATADIR="<objdir>/stage/share/psi4"
 
-Replace ``<objdir>`` with the CMake build directory. The script writes
-``.typings/psi4/core.pyi`` by default; pass ``--output-dir`` to place the stub
-elsewhere.
+Generate the stubs and place them beside the extension. Type checkers pick up
+``core.pyi`` automatically when ``extraPaths`` includes ``stage/lib``, with no
+separate ``stubPath``. **Re-run** after changing any C++ bindings.
 
-What the generator covers
-~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code:: bash
 
-It deliberately loads only the extension, so generation does not depend on all
-of Psi4's Python driver dependencies importing successfully. It also adds a
-typed overlay for the global and ``Wavefunction`` QCVariable helpers
-(``variable``, ``set_variable``, ``has_variable``, ``del_variable``, and
-``variables``) that ``python_helpers.py`` attaches dynamically after import.
-The overlay also covers the APIs installed by ``molutil.py``, ``writer.py``,
-``cubeprop.py``, ``fisapt_proc.py``, and the SCF driver, as well as the NumPy
-helpers attached to ``Matrix``, ``Vector``, ``Dimension``, and ``CIVector``.
-The inventory currently covers all 96 unique ``psi4.core`` attributes that
-local Python code installs dynamically. Some existing bindings expose raw C++
-names such as ``psi::Matrix`` in their runtime signatures; the generator
-replaces those particular annotations with an unknown type while preserving the
-rest of each signature and its docstring.
+   pybind11-stubgen -o "<objdir>/stage/lib" psi4.core
+
+That writes ``<objdir>/stage/lib/psi4/core.pyi``. **Alternatively**, keep stubs
+out of the build tree and also set basedpyright ``"stubPath": ".typings"``.
+
+.. code:: bash
+
+   pybind11-stubgen -o .typings psi4.core
+
+Limitations
+~~~~~~~~~~~
+
+For anything monkey-patched to pybind modules (common in ``python_helpers.py`` and
+NumPy helpers on ``Matrix``), stock ``pybind11-stubgen`` **will not** document
+that extra typing. Stubs only describe the pybind11-exported API from the ``.so``
+file. There are many unique ``psi4.core`` attributes that are patched dynamically.
 
 Point the Python language server at it
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With the CMake target, the stub is already inside the staged package, so the
-staged path is the only thing basedpyright needs:
+When the stub is already inside the staged package, the staged path is all that
+basedpyright needs:
 
 .. code:: json
 
@@ -344,8 +335,7 @@ staged path is the only thing basedpyright needs:
      "typeCheckingMode": "basic"
    }
 
-Add ``"stubPath": ".typings"`` as well if you generated stubs with the
-standalone script and its default output directory.
+Add ``"stubPath": ".typings"`` when stubs live under ``.typings/`` rather than beside the extension.
 
 Enable ``basedpyright`` in Neovim alongside ``clangd``. Restart the Python LSP
 after a rebuild (``:LspRestart``) so it re-reads the regenerated interface.
