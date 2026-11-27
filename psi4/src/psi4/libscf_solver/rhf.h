@@ -73,6 +73,7 @@ class RHF : public HF {
     void form_G() override;
     void form_V() override;
     double compute_E() override;
+    std::map<std::string, double> evaluate_fixed_density_dft_energy(std::shared_ptr<SuperFunctional> functional) override;
     void finalize() override;
 
     bool openorbital_scf() override;
