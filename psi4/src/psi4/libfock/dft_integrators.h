@@ -254,7 +254,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
     }
 
     // ==> GGA Contribution (Term 1) <== //
-    if (fworker->is_gga()) {
+    if (ansatz >= 1) {
         auto rho_ax = pworker->point_value("RHO_AX")->pointer();
         auto rho_ay = pworker->point_value("RHO_AY")->pointer();
         auto rho_az = pworker->point_value("RHO_AZ")->pointer();
@@ -283,7 +283,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
     }
 
     // => GGA Contribution (Term 2) <= //
-    if (fworker->is_gga()) {
+    if (ansatz >= 1) {
         double** phi_xx = pworker->basis_value("PHI_XX")->pointer();
         double** phi_xy = pworker->basis_value("PHI_XY")->pointer();
         double** phi_xz = pworker->basis_value("PHI_XZ")->pointer();
@@ -336,7 +336,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
     }
 
     // => Meta Contribution <= //
-    if (fworker->is_meta()) {
+    if (ansatz >= 2) {
         double** phi_xx = pworker->basis_value("PHI_XX")->pointer();
         double** phi_xy = pworker->basis_value("PHI_XY")->pointer();
         double** phi_xz = pworker->basis_value("PHI_XZ")->pointer();
