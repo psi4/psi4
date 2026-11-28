@@ -943,7 +943,7 @@ In contrast, sn-LinK only uses a single-grid scheme, simply converging the SCF o
 As another example, while the COSX grid defaults are selected to emphasize speed over accuracy, 
 the defaults for sn-LinK are selected to achieve higher accuracy (~0.1 kcal/mol error for interaction/conformer energies).
 
-To control compilation and linking of the optional GauXC dependency required for the sn-LinK algorithm, see `sec:gauxc`.
+To control compilation and linking of the optional GauXC dependency required for the sn-LinK algorithm, see :ref:`sec:gauxc`.
 
 To control the sn-LinK algorithm, here are the list of options provided.
   

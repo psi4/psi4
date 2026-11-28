@@ -2024,7 +2024,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Pruning scheme for KS grids. If not set, pulls from DFT_PRUNING_SCHEME, sending unsupported options to robust.
 	    The recommended scheme is robust. !expert -*/
         options.add_str("GAUXC_PRUNING_SCHEME", "NONE", "ROBUST TREUTLER NONE");
-        /*- Radial Scheme for KS grid. If not explicitly set, taken from DFT_RADIAL_SCHEME, sending unsupport options to treutler. -*/
+        /*- Radial Scheme for KS grid. If not explicitly set, taken from DFT_RADIAL_SCHEME, sending unsupported options to treutler. -*/
         options.add_str("GAUXC_RADIAL_SCHEME", "TREUTLER", "MURA TREUTLER EM");
         /*- Maximum number of grid points per grid block for GauXC !expert -*/ 
         options.add_int("GAUXC_GRID_BATCH_SIZE", 512);

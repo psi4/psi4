@@ -36,7 +36,7 @@ Bibliography
 .. [Gonthier:2016:134106]
    "Density-fitted open-shell symmetry-adapted perturbation theory and application to :math:`\pi`-stacking in benzene dimer cation and ionized DNA base pair steps",
    J. F. Gonthier and C. D. Sherrill,
-   *J. Chem. Phys.* **145**, 134106 (2016).
+   *J. Chem. Phys.* **145**,A134106 (2016).
    https://doi.org/10.1063/1.4963385
 
 .. [Parrish:2015:051103]
@@ -1160,12 +1160,12 @@ Bibliography
 
 .. [Petrone:2018:169]
    "An Efficient Implementation of Two-Component Relativistic Density Functional Theory with Torque-Free Auxiliary Variables",
-   A. Petrone, D. B. Williams-Young, S. Sun, T. F. Stetina, and X. Li
+   A. Petrone, D. B. Williams-Young, S. Sun, T. F. Stetina, and X. Li,
    *Eur. Phys. J. B* **91**, 169 (2018).
    https://doi.org/10.1140/epjb/e2018-90170-1
 
 .. [Lehtola:2018:1]
-   "Recent Developments in LibXC-a comprehensive library of functionals for density functional theory",
-   S. Lehtola, C. Steigemann, M. J. T. Oliveria, and M. A. L. Marques
+   "Recent developments in libxc — A comprehensive library of functionals for density functional theory",
+   S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques
    *SoftwareX* **7** 1-5 (2018).
-   https://10.1016/j.softx.2017.11.002 
+   https://doi.org/10.1016/j.softx.2017.11.002 
