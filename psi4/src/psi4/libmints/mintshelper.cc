@@ -3935,6 +3935,136 @@ std::vector<SharedMatrix> MintsHelper::ao_3center_deriv1(int atom, const std::st
     return grad;
 }
 
+SharedMatrix MintsHelper::ao_metric_deriv1_contracted(const std::string &aux_name, SharedMatrix G) {
+    auto aux = get_basisset(aux_name);
+    const int naux = aux->nbf();
+    const int natom = basisset_->molecule()->natom();
+    if (G->nirrep() != 1 || G->rowdim() != naux || G->coldim() != naux)
+        throw PSIEXCEPTION("MintsHelper::ao_metric_deriv1_contracted: G must be naux x naux in the aux_name basis");
+
+    auto factory =
+        std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), aux, BasisSet::zero_ao_basis_set());
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints(nthread_);
+    ints[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri(1));
+    for (int t = 1; t < nthread_; t++) ints[t] = std::shared_ptr<TwoBodyAOInt>(ints[0]->clone());
+    std::vector<SharedMatrix> grads;
+    for (int t = 0; t < nthread_; t++) grads.push_back(std::make_shared<Matrix>(natom, 3));
+    double **Gp = G->pointer();
+
+    // (P|Q) = (Q|P): each pair P > Q once, contracted with G_PQ + G_QP; pairs on one center add nothing
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
+    for (int P = 0; P < aux->nshell(); P++) {
+        int rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        const auto &buffers = ints[rank]->buffers();
+        double **gp = grads[rank]->pointer();
+        const int Psize = aux->shell(P).nfunction();
+        const int Poff = aux->shell(P).function_index();
+        const int Pcenter = aux->shell(P).ncenter();
+        for (int Q = 0; Q < P; Q++) {
+            const int Qcenter = aux->shell(Q).ncenter();
+            if (Pcenter == Qcenter) continue;
+            const int Qsize = aux->shell(Q).nfunction();
+            const int Qoff = aux->shell(Q).function_index();
+            ints[rank]->compute_shell_deriv1(P, 0, Q, 0);
+            double s[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+            size_t delta = 0;
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++, delta++) {
+                    const double g = Gp[Poff + p][Qoff + q] + Gp[Qoff + q][Poff + p];
+                    for (int k = 0; k < 6; k++) s[k] += buffers[k][delta] * g;
+                }
+            }
+            for (int k = 0; k < 3; k++) {
+                gp[Pcenter][k] += s[k];
+                gp[Qcenter][k] += s[3 + k];
+            }
+        }
+    }
+
+    auto grad = std::make_shared<Matrix>("ao_metric_deriv1_contracted", natom, 3);
+    for (const auto &g : grads) grad->add(g);
+    return grad;
+}
+
+SharedMatrix MintsHelper::ao_3center_deriv1_contracted(const std::string &aux_name, SharedMatrix G) {
+    auto aux = get_basisset(aux_name);
+    const int naux = aux->nbf();
+    const size_t nbf = basisset_->nbf();
+    const int natom = basisset_->molecule()->natom();
+    if (G->nirrep() != 1 || G->rowdim() != naux || static_cast<size_t>(G->coldim()) != nbf * nbf)
+        throw PSIEXCEPTION("MintsHelper::ao_3center_deriv1_contracted: G must be naux x nbf*nbf in the aux_name basis");
+
+    auto factory = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints(nthread_);
+    ints[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri(1));
+    for (int t = 1; t < nthread_; t++) ints[t] = std::shared_ptr<TwoBodyAOInt>(ints[0]->clone());
+    std::vector<SharedMatrix> grads;
+    for (int t = 0; t < nthread_; t++) grads.push_back(std::make_shared<Matrix>(natom, 3));
+    double **Gp = G->pointer();
+
+    // significant (M, N) pairs with N <= M; (P|MN) = (P|NM), so M != N is contracted with G_mn + G_nm.
+    // Triples on one center add nothing (the three center derivatives sum to zero).
+    // Without a sieve (SCREENING NONE) the integral object has no pair list: all pairs are used.
+    auto shell_pairs = ints[0]->shell_pairs();
+    if (!ints[0]->sieve_initialized()) {
+        for (int M = 0; M < basisset_->nshell(); M++)
+            for (int N = 0; N <= M; N++) shell_pairs.emplace_back(M, N);
+    }
+    const long npairs = shell_pairs.size();
+    const long nP = aux->nshell();
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
+    for (long PMN = 0L; PMN < nP * npairs; PMN++) {
+        int rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        const int P = PMN / npairs;
+        const int M = shell_pairs[PMN % npairs].first;
+        const int N = shell_pairs[PMN % npairs].second;
+        const int Pcenter = aux->shell(P).ncenter();
+        const int Mcenter = basisset_->shell(M).ncenter();
+        const int Ncenter = basisset_->shell(N).ncenter();
+        if (Pcenter == Mcenter && Mcenter == Ncenter) continue;
+
+        const int Psize = aux->shell(P).nfunction();
+        const int Msize = basisset_->shell(M).nfunction();
+        const int Nsize = basisset_->shell(N).nfunction();
+        const int Poff = aux->shell(P).function_index();
+        const size_t Moff = basisset_->shell(M).function_index();
+        const size_t Noff = basisset_->shell(N).function_index();
+
+        ints[rank]->compute_shell_deriv1(P, 0, M, N);
+        const auto &buffers = ints[rank]->buffers();
+        double s[9] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        size_t delta = 0;
+        for (int p = 0; p < Psize; p++) {
+            const double *Grow = Gp[Poff + p];
+            for (int m = 0; m < Msize; m++) {
+                for (int n = 0; n < Nsize; n++, delta++) {
+                    const size_t mn = (Moff + m) * nbf + Noff + n;
+                    const size_t nm = (Noff + n) * nbf + Moff + m;
+                    const double g = (M == N) ? Grow[mn] : Grow[mn] + Grow[nm];
+                    for (int k = 0; k < 9; k++) s[k] += buffers[k][delta] * g;
+                }
+            }
+        }
+        double **gp = grads[rank]->pointer();
+        for (int k = 0; k < 3; k++) {
+            gp[Pcenter][k] += s[k];
+            gp[Mcenter][k] += s[3 + k];
+            gp[Ncenter][k] += s[6 + k];
+        }
+    }
+
+    auto grad = std::make_shared<Matrix>("ao_3center_deriv1_contracted", natom, 3);
+    for (const auto &g : grads) grad->add(g);
+    return grad;
+}
+
 std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2) {
     /* NOTE: the x, y, and z in this vector must remain lowercase for this function */
     std::array<std::string, 3> cartcomp{{"x", "y", "z"}};
