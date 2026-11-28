@@ -1,8 +1,4 @@
-find_package(Libxc 7.0.0 COMPONENTS C CONFIG QUIET)  # edit in codedeps
-if(NOT ${Libxc_FOUND})
-    # LibxcConfig.cmake encodes searching only within major version, so need two calls to allow v6 or v7
-    find_package( Libxc 6.1.0 COMPONENTS C CONFIG QUIET)
-endif()
+find_package(Libxc 7.1.2 COMPONENTS C CONFIG QUIET)  # edit in codedeps
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
@@ -25,8 +21,8 @@ else()
         # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
         #GIT_REPOSITORY https://gitlab.com/ libxc/libxc.git
-        #GIT_TAG 5.1.5
-        URL https://gitlab.com/libxc/libxc/-/archive/7.0.0/libxc-7.0.0.tar.gz  # edit in codedeps
+        #GIT_TAG 7.1.2
+        URL https://gitlab.com/libxc/libxc/-/archive/7.1.2/libxc-7.1.2.tar.gz  # edit in codedeps
         #UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
