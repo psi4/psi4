@@ -1753,6 +1753,79 @@ PSI Variables by Alpha
    to improve the accuracy by correctly describing the electron density
    at long-range.
 
+.. psivar:: SAPT MONOMER A prop
+   SAPT MONOMER B prop
+
+   The one-electron property *prop* [a.u.] of monomer A or B, in the
+   dimer-centered basis and with its nuclear part, from a SAPT
+   interaction-induced properties computation. *prop* is the name of the
+   property as one-electron properties have it (``DIPOLE``, ``QUADRUPOLE``,
+   ``ESP AT CENTER n``, ``MULLIKEN CHARGES``, ...), and so is the
+   shape. See :ref:`sec:saptprop`.
+
+.. psivar:: SAPT POL10,R prop
+   SAPT POL10,R prop - A
+   SAPT POL10,R prop - B
+   SAPT EXCH10(S^2) prop
+   SAPT EXCH10(S^2) prop - A
+   SAPT EXCH10(S^2) prop - B
+   SAPT EXCH10 prop
+   SAPT EXCH10 prop - A
+   SAPT EXCH10 prop - B
+   SAPT POL1,R prop
+   SAPT POL1,R prop - A
+   SAPT POL1,R prop - B
+   SAPT EXCH1(S^2) prop
+   SAPT EXCH1(S^2) prop - A
+   SAPT EXCH1(S^2) prop - B
+   SAPT EXCH1 prop
+   SAPT EXCH1 prop - A
+   SAPT EXCH1 prop - B
+
+   A first-order SAPT interaction-induced property term [a.u.] of the
+   property *prop* (see :psivar:`SAPT MONOMER A prop`), the derivative of the
+   electrostatics or exchange energy term, for SAPT0 (``10``) or SAPT(DFT)
+   (``1``). The ``- A`` and ``- B`` parts come from the density changes of
+   monomers A and B and sum to the term. See :ref:`sec:saptprop`.
+
+.. psivar:: SAPT IND20,R prop
+   SAPT IND20,R prop - A
+   SAPT IND20,R prop - B
+   SAPT IND20,U prop
+   SAPT IND20,U prop - A
+   SAPT IND20,U prop - B
+   SAPT EXCH-IND20,R(S^2) prop
+   SAPT EXCH-IND20,U(S^2) prop
+   SAPT EXCH-IND20,R(S^INF) prop
+   SAPT EXCH-IND20,U(S^INF) prop
+
+   An induction-classified SAPT0 interaction-induced property term [a.u.] of
+   the property *prop* (see :psivar:`SAPT MONOMER A prop`), the derivative of
+   the coupled (``,R``) or uncoupled (``,U``) induction or exchange-induction
+   energy. The ``- A`` and ``- B`` parts come from the density changes of
+   monomers A and B and sum to the term. See :ref:`sec:saptprop`.
+
+.. psivar:: SAPT DISP20,U prop
+   SAPT DISP20,U prop - A
+   SAPT DISP20,U prop - B
+   SAPT EXCH-DISP20,U(S^2) prop
+
+   A dispersion-classified SAPT0 interaction-induced property term [a.u.] of
+   the property *prop* (see :psivar:`SAPT MONOMER A prop`), the derivative of
+   the uncoupled dispersion or exchange-dispersion energy. The ``- A`` and
+   ``- B`` parts come from the density changes of monomers A and B and sum to
+   the term. See :ref:`sec:saptprop`.
+
+.. psivar:: SAPT IND prop
+   SAPT DISP prop
+   SAPT TOTAL prop
+
+   The induction and dispersion components and the total of the SAPT0
+   interaction-induced property *prop* [a.u.] (see
+   :psivar:`SAPT MONOMER A prop`). The total is the sum of the induction and
+   dispersion components and of :psivar:`SAPT POL10,R prop` and
+   :psivar:`SAPT EXCH10 prop`. See :ref:`sec:saptprop`.
+
 
 .. psivar:: SCF ITERATIONS
    ADC ITERATIONS

@@ -1075,7 +1075,10 @@ def plump_qcvar(
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         reshaper = tuple([3] * _multipole_order.index(p[0]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in [
+            "MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS",
+            "SCF TOTAL ENERGIES"
+    ] or _is_atomic_charges(key):
         reshaper = (-1, )
     elif "GRADIENT" in key.upper():
         reshaper = (-1, 3)
@@ -1091,6 +1094,14 @@ def plump_qcvar(
 _multipole_order = ["dummy", "dummy", "QUADRUPOLE", "OCTUPOLE", "HEXADECAPOLE"]
 for order in range(5, 10):
     _multipole_order.append(f"{int(2**order)}-POLE")
+
+_atomic_charges = ["MULLIKEN CHARGES", "LOWDIN CHARGES"]
+
+
+def _is_atomic_charges(key: str) -> bool:
+    """Whether `key` names a per-atom population charges array with a prefix or a
+    suffix, e.g., "SAPT POL10,R MULLIKEN CHARGES" or "... MULLIKEN CHARGES - A"."""
+    return any((key.upper().endswith(" " + c) or f"{c} -" in key.upper()) for c in _atomic_charges)
 
 
 def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
@@ -1121,7 +1132,10 @@ def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         val = _multipole_compressor(val, _multipole_order.index(p[0]))
         reshaper = (1, -1)
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in [
+            "MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS",
+            "SCF TOTAL ENERGIES"
+    ] or _is_atomic_charges(key):
         reshaper = (1, -1)
 
     if reshaper:
@@ -1157,7 +1171,10 @@ def _qcvar_reshape_get(key: str, val: core.Matrix) -> Union[core.Matrix, np.ndar
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(p[0]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in [
+            "MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS",
+            "SCF TOTAL ENERGIES"
+    ] or _is_atomic_charges(key):
         reshaper = (-1, )
     if reshaper:
         return val.np.reshape(reshaper)

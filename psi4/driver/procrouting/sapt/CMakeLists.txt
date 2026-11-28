@@ -4,6 +4,13 @@ list(APPEND sources
   sapt_jk_terms
   sapt_mp2_terms
   sapt_proc
+  sapt_prop_cache
+  sapt_prop_exch_disp
+  sapt_prop_exch_ind
+  sapt_prop_exch_ind_sinf
+  sapt_prop_operators
+  sapt_prop_proc
+  sapt_prop_terms
   sapt_sf_terms
   sapt_util
 )

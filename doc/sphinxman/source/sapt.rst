@@ -1053,3 +1053,180 @@ integration with existing FSAPT functionality is also available simply by callin
 ``energy("fsapt0-d3mbj")`` or ``energy("fsapt0-d4bj2b")`` (alias to ``energy("fsapt0-d4bjeeqtwo")``). See :ref:`FSAPT
 <sec:fisapt>` documentation for more details on using FSAPT for functional
 group analyses.
+
+.. index::
+   pair: SAPT; properties
+
+.. _`sec:saptprop`:
+
+Interaction-Induced Properties
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The interaction between two molecules changes their electron densities, and
+with them every one-electron property of the complex, such as its dipole
+moment. SAPT decomposes this interaction-induced change into the same terms
+as the interaction energy [Tyrcha:2025:4562]_ [Tyrcha:2026:arXiv]_. Each
+property term is the derivative of a SAPT energy correction with respect to
+the strength :math:`\lambda` of a field coupled to the property operator
+:math:`\hat{X}`,
+
+.. math:: X_{\rm term} = \left. \frac{\partial E_{\rm term}(\lambda)}{\partial \lambda} \right|_{\lambda=0},
+   \qquad \hat{H}(\lambda) = \hat{H} + \lambda \hat{X},
+
+with the monomers relaxed in the field. |PSIfour| evaluates the derivatives
+analytically, with the response of the monomer orbitals from coupled-perturbed
+Hartree--Fock (or Kohn--Sham) equations, so one computation gives all
+components of all requested properties. The property of the complex is then
+approximated by the sum of the properties of the monomers and the
+interaction-induced terms.
+Publications resulting from the use of SAPT properties should cite
+[Tyrcha:2025:4562]_ and [Tyrcha:2026:arXiv]_.
+
+A computation takes a dimer, specified as for SAPT energies, and the
+properties to compute. For example, the SAPT0 dipole and quadrupole of the
+water dimer (see :srcsample:`sapt-prop1`)::
+
+    molecule dimer {
+    0 1
+    O   -1.41606479    0.00000000    0.00000000
+    H   -0.52004811    0.00000000   -0.08624091
+    H   -1.81884655    0.00000000   -0.89989100
+    --
+    0 1
+    O    1.41606479    0.00000000    0.00000000
+    H    1.71179607   -0.76501221    0.50083629
+    H    1.71179607    0.76501221    0.50083629
+    symmetry c1
+    no_com
+    no_reorient
+    }
+
+    set basis cc-pvdz
+    properties('sapt0', properties=['dipole', 'quadrupole'])
+
+``properties('sapt(dft)', ...)`` works the same way, with the functional and
+the GRAC shifts set as for :ref:`SAPT(DFT) energies <sec:saptdft>`. The
+monomers are computed in the dimer-centered basis. The same run computes the
+SAPT interaction energy from these monomers, which ``properties()`` returns:
+that of ``energy('sapt(dft)')`` with |sapt__sapt_dft_do_dhf| false (and, for
+SAPT0, |sapt__sapt_dft_functional| ``HF``).
+
+The supported properties are those linear in the one-particle density:
+``dipole``, ``quadrupole``, ``multipole(n)``, ``esp_at_nuclei``,
+``mulliken_charges`` and ``lowdin_charges``, as defined for
+:ref:`one-electron properties <sec:oeprop>`. The multipoles refer to the origin
+set by |globals__properties_origin|. The values are in atomic units, with the
+names and shapes that one-electron properties have. The properties evaluated
+on a grid, and the interaction-induced density matrices, are not available yet.
+
+The terms are set as QCVariables ``SAPT <TERM> <PROPERTY>``, e.g.,
+``SAPT IND20,R DIPOLE``. ``<PROPERTY>`` is the name of the one-electron property:
+``DIPOLE``, ``QUADRUPOLE``, ``OCTUPOLE``, ...,
+``ESP AT CENTER n``, ``MULLIKEN CHARGES`` or ``LOWDIN CHARGES``. The terms
+marked in the table below are also split into the parts from the density
+changes of monomers A and B, ``SAPT <TERM> <PROPERTY> - A`` and ``- B``, which
+sum to the term. The
+properties of the monomers, in the dimer-centered basis and with their nuclear
+parts, are ``SAPT MONOMER A <PROPERTY>`` and ``SAPT MONOMER B <PROPERTY>``.
+The terms, as named for SAPT0, are:
+
+.. list-table:: Interaction-induced property terms of SAPT0
+   :header-rows: 1
+   :widths: 30 40 10 20
+
+   * - ``<TERM>``
+     - Derivative of, or sum
+     - A/B parts
+     - Computed
+   * - ``POL10,R``
+     - :math:`E^{(10)}_{elst,resp}`
+     - yes
+     - always
+   * - ``EXCH10(S^2)``
+     - :math:`E^{(10)}_{exch}(S^2)`
+     - yes
+     - always
+   * - ``EXCH10``
+     - :math:`E^{(10)}_{exch}`
+     - yes
+     - always
+   * - ``IND20,R``
+     - :math:`E^{(20)}_{ind,resp}`
+     - yes
+     - unless |sapt__coupled_induction| is false
+   * - ``IND20,U``
+     - :math:`E^{(20)}_{ind}`
+     - yes
+     - always
+   * - ``EXCH-IND20,R(S^2)``
+     - :math:`E^{(20)}_{exch-ind,resp}(S^2)`
+     - no
+     - unless |sapt__coupled_induction| is false
+   * - ``EXCH-IND20,U(S^2)``
+     - :math:`E^{(20)}_{exch-ind}(S^2)`
+     - no
+     - always
+   * - ``EXCH-IND20,R(S^INF)``
+     - :math:`E^{(20)}_{exch-ind,resp}` (see :ref:`sec:saptinf`)
+     - no
+     - with |sapt__do_ind_exch_sinf|, unless |sapt__coupled_induction| is false
+   * - ``EXCH-IND20,U(S^INF)``
+     - :math:`E^{(20)}_{exch-ind}` (see :ref:`sec:saptinf`)
+     - no
+     - with |sapt__do_ind_exch_sinf|
+   * - ``DISP20,U``
+     - :math:`E^{(20)}_{disp}`
+     - yes
+     - always
+   * - ``EXCH-DISP20,U(S^2)``
+     - :math:`E^{(20)}_{exch-disp}(S^2)`
+     - no
+     - always
+   * - ``IND``
+     - ``IND20,R`` + ``EXCH-IND20,R(S^2)``, or with the ``,U`` terms if
+       |sapt__coupled_induction| is false
+     - no
+     - always
+   * - ``DISP``
+     - ``DISP20,U`` + ``EXCH-DISP20,U(S^2)``
+     - no
+     - always
+   * - ``TOTAL``
+     - ``POL10,R`` + ``EXCH10`` + ``IND`` + ``DISP``
+     - no
+     - always
+
+The first-order term is named POL rather than ELST: it is the derivative of
+the electrostatic energy, but as a property it is the polarization of the
+monomer densities by each other. The dispersion terms are uncoupled, as in
+SAPT0 energies. The exchange-dispersion term without the :math:`S^2`
+approximation is not available.
+
+For SAPT(DFT), only the monomer properties and the first-order terms are
+computed, named without the intramonomer order: ``POL1,R``, ``EXCH1(S^2)`` and
+``EXCH1``. The second-order expressions of [Tyrcha:2026:arXiv]_ take the change
+of the monomer Fock operators in the field with the Hartree--Fock kernel. For
+Kohn--Sham monomers, that misses the derivatives of the induction and
+dispersion energies, by about 1% for PBE0 against finite differences.
+
+SAPT properties need closed-shell monomers, RHF for SAPT0 and RKS for
+SAPT(DFT), and all electrons: |globals__freeze_core| must be false. The
+first-order terms and the coupled-perturbed equations use the J/K algorithm of
+the monomer SCF computations (|globals__scf_type|, ``DF`` by default). The
+coupled-perturbed equations are converged to |sapt__cphf_r_convergence|, which
+for properties defaults to :math:`10^{-10}`, since their error enters the
+properties linearly. The second-order terms use three-index integrals fitted
+in |sapt__df_basis_sapt| and keep them in memory for both monomers, together
+with the dispersion amplitudes and their denominators and one more array of
+the same size. The output prints these
+sizes, and the computation stops if they exceed the memory given to |PSIfour|.
+
+Keywords for SAPT Properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: autodir_options_c/sapt__cphf_r_convergence.rst
+.. include:: autodir_options_c/sapt__maxiter.rst
+.. include:: autodir_options_c/sapt__df_basis_sapt.rst
+.. include:: autodir_options_c/sapt__coupled_induction.rst
+.. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
+.. include:: autodir_options_c/globals__properties_origin.rst

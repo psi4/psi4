@@ -951,6 +951,18 @@ Bibliography
    *J. Chem. Phys.* **154**, 024103 (2021).
    https://doi.org/10.1063/5.0035050
 
+.. [Tyrcha:2025:4562]
+   "Analytical Derivatives of Symmetry-Adapted Perturbation Theory Corrections for Interaction-Induced Properties",
+   B. Tyrcha, T. Gupta, K. Patkowski, and P. S. Żuchowski,
+   *J. Chem. Theory Comput.* **21**, 4562 (2025).
+   https://doi.org/10.1021/acs.jctc.5c00238
+
+.. [Tyrcha:2026:arXiv]
+   "Direct calculation of dipole moment surfaces through second-order symmetry-adapted perturbation theory for properties",
+   B. Tyrcha, M. Stachowiak, K. Patkowski, and P. S. Żuchowski,
+   arXiv:2611.07993 (2026).
+   https://doi.org/10.48550/arXiv.2611.07993
+
 .. [Ochsenfeld:1998:1663]
    "Linear and sublinear scaling formation of Hartree–Fock-type exchange matrices",
    C. Ochsenfeld, C. A. White, and M. Head-Gordon,
