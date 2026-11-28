@@ -1,22 +1,30 @@
 #! Decane chain at different pno convergences (databases/bench12.py)
 memory 16 GB
 
+# The dipole correction is additive and does not change the amplitudes.
+# Relative to output.ref, halve each old dipole correction and shift all
+# CCSD/CCSD(T) correlation and total references by minus half the old value.
+ref_dipole_loose         =      -0.0000007324775           #TEST
+ref_dipole_normal        =      -0.0000007324775           #TEST
+ref_dipole_tight         =      -0.000000135279            #TEST
+ref_dipole_vtight        =       0.000000000000            #TEST
+
 ref_scf                  =    -391.231691174187             #TEST
 
-ref_ccsd_corl_loose      =      -1.584233242090             #TEST
-ref_ccsd_tot_loose       =    -392.815924416277             #TEST
-ref_ccsd_t_corl_loose    =      -1.621212635630             #TEST
-ref_ccsd_t_tot_loose     =    -392.852903809817             #TEST
+ref_ccsd_corl_loose      =      -1.584232509613             #TEST
+ref_ccsd_tot_loose       =    -392.815923683800             #TEST
+ref_ccsd_t_corl_loose    =      -1.621211903153             #TEST
+ref_ccsd_t_tot_loose     =    -392.852903077340             #TEST
 
-ref_ccsd_corl_normal     =      -1.582425532072             #TEST
-ref_ccsd_tot_normal      =    -392.814116707135             #TEST
-ref_ccsd_t_corl_normal   =      -1.628517828763             #TEST
-ref_ccsd_t_tot_normal    =    -392.860209003826             #TEST
+ref_ccsd_corl_normal     =      -1.582424799595             #TEST
+ref_ccsd_tot_normal      =    -392.814115974658             #TEST
+ref_ccsd_t_corl_normal   =      -1.628517096286             #TEST
+ref_ccsd_t_tot_normal    =    -392.860208271349             #TEST
 
-ref_ccsd_corl_tight      =      -1.582627562127             #TEST
-ref_ccsd_tot_tight       =    -392.814318736864             #TEST
-ref_ccsd_t_corl_tight    =      -1.629986501510             #TEST
-ref_ccsd_t_tot_tight     =    -392.861677676247             #TEST
+ref_ccsd_corl_tight      =      -1.582627426848             #TEST
+ref_ccsd_tot_tight       =    -392.814318601585             #TEST
+ref_ccsd_t_corl_tight    =      -1.629986366231             #TEST
+ref_ccsd_t_tot_tight     =    -392.861677540968             #TEST
 
 ref_ccsd_corl_vtight     =      -1.582786356344             #TEST
 ref_ccsd_tot_vtight      =    -392.814477531228             #TEST
@@ -82,6 +90,7 @@ set pno_convergence loose
 val = energy('dlpno-ccsd(t)')
 
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_dipole_loose, variable('DLPNO DIPOLE ENERGY'), 9, 'dipole correction')       #TEST
 compare_values(ref_ccsd_corl_loose, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')           #TEST
 compare_values(ref_ccsd_tot_loose, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                   #TEST
 compare_values(ref_ccsd_t_corl_loose, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')   #TEST
@@ -97,6 +106,7 @@ set pno_convergence normal
 val = energy('dlpno-ccsd(t)')
 
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_dipole_normal, variable('DLPNO DIPOLE ENERGY'), 9, 'dipole correction')      #TEST
 compare_values(ref_ccsd_corl_normal, variable('CCSD CORRELATION ENERGY'), tol, 'ccsd corl')          #TEST
 compare_values(ref_ccsd_tot_normal, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
 compare_values(ref_ccsd_t_corl_normal, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
@@ -112,6 +122,7 @@ set pno_convergence tight
 val = energy('dlpno-ccsd(t)')
 
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_dipole_tight, variable('DLPNO DIPOLE ENERGY'), 9, 'dipole correction')       #TEST
 compare_values(ref_ccsd_corl_tight, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')           #TEST
 compare_values(ref_ccsd_tot_tight, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                   #TEST
 compare_values(ref_ccsd_t_corl_tight, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')   #TEST
@@ -127,6 +138,7 @@ set pno_convergence very_tight
 val = energy('dlpno-ccsd(t)')
 
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_dipole_vtight, variable('DLPNO DIPOLE ENERGY'), 9, 'dipole correction')      #TEST
 compare_values(ref_ccsd_corl_vtight, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')          #TEST
 compare_values(ref_ccsd_tot_vtight, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
 compare_values(ref_ccsd_t_corl_vtight, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST

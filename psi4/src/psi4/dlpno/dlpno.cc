@@ -726,7 +726,10 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
                     ij_to_i_j_.push_back(std::make_pair(i, j));
                     ij++;
                 } else {
-                    de_dipole_ += dipole_pair_e_->get(i, j);
+                    // The -4 dipole estimate includes both (i,j) and (j,i).
+                    // This loop visits both, so add half per ordered pair.
+                    // Diagonal pairs are always retained above.
+                    de_dipole_ += 0.5 * dipole_pair_e_->get(i, j);
                     i_j_to_ij_[i].push_back(-1);
                 }
             }
