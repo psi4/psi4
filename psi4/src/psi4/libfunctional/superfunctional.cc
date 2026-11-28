@@ -38,6 +38,7 @@
 #include "functional.h"
 #include "LibXCfunctional.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 
@@ -828,19 +829,148 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
 
     return values_;
 }
+namespace {
+
+// Process right-grid points in L1D-resident tiles (6 * 512 * 8 B = 24 KB) across all active left
+// points in a block so right coordinates and intermediates stay hot in cache.
+constexpr size_t kVV10TileSize = 512;
+
+struct VV10LeftPoint {
+    size_t index;
+    double x;
+    double y;
+    double z;
+    double w0;
+    double kappa;
+    double phi = 0.0;
+    double u = 0.0;
+    double w = 0.0;
+    double xc = 0.0;
+    double yc = 0.0;
+    double zc = 0.0;
+};
+
+// Accumulate VV10 pair-kernel sums for one active left point over a right-grid tile.
+// Uses a single reciprocal per pair via the identities (with gs = g + gp, inv = 1 / (g * gp * gs)):
+//   1/g + 1/gs                       = gp * (gs + g) * inv
+//   w0/g + w0'/gp + (w0 + w0')/gs    = (w0 * gp * (gs + g) + w0' * g * (gs + gp)) * inv
+// Positive prefactor r_pref[t] = +1.5 * w * rho avoids per-pair sign flips (phi subtracts).
+template <bool DoGrad>
+void accumulate_vv10_tile(VV10LeftPoint& lp, size_t count, const double* r_x, const double* r_y, const double* r_z,
+                          const double* r_W0, const double* r_kappa, const double* r_pref) noexcept {
+    const double lx = lp.x;
+    const double ly = lp.y;
+    const double lz = lp.z;
+    const double lw0 = lp.w0;
+    const double lkappa = lp.kappa;
+
+    double phi_neg = 0.0;
+    double u = 0.0;
+    double w = 0.0;
+
+    if constexpr (DoGrad) {
+        double xc = 0.0;
+        double yc = 0.0;
+        double zc = 0.0;
+#pragma omp simd reduction(+ : phi_neg, u, w, xc, yc, zc)
+        for (size_t t = 0; t < count; ++t) {
+            const double dx = lx - r_x[t];
+            const double dy = ly - r_y[t];
+            const double dz = lz - r_z[t];
+            const double R2 = dx * dx + dy * dy + dz * dz;
+
+            const double g = lw0 * R2 + lkappa;
+            const double gp = r_W0[t] * R2 + r_kappa[t];
+            const double gs = g + gp;
+            const double inv = 1.0 / (g * gp * gs);
+
+            const double pk = r_pref[t] * inv;
+            const double pk_inv = pk * inv;
+            const double t_left = gp * (gs + g);
+            const double t_right = g * (gs + gp);
+            const double tmp_u = pk_inv * t_left;
+            const double q = 2.0 * pk_inv * (lw0 * t_left + r_W0[t] * t_right);
+
+            phi_neg += pk;
+            u += tmp_u;
+            w += tmp_u * R2;
+            xc += q * dx;
+            yc += q * dy;
+            zc += q * dz;
+        }
+        lp.xc += xc;
+        lp.yc += yc;
+        lp.zc += zc;
+    } else {
+#pragma omp simd reduction(+ : phi_neg, u, w)
+        for (size_t t = 0; t < count; ++t) {
+            const double dx = lx - r_x[t];
+            const double dy = ly - r_y[t];
+            const double dz = lz - r_z[t];
+            const double R2 = dx * dx + dy * dy + dz * dz;
+
+            const double g = lw0 * R2 + lkappa;
+            const double gp = r_W0[t] * R2 + r_kappa[t];
+            const double gs = g + gp;
+            const double inv = 1.0 / (g * gp * gs);
+
+            const double pk = r_pref[t] * inv;
+            const double tmp_u = (pk * (gp * (gs + g))) * inv;
+
+            phi_neg += pk;
+            u += tmp_u;
+            w += tmp_u * R2;
+        }
+    }
+
+    lp.phi -= phi_neg;
+    lp.u += u;
+    lp.w += w;
+}
+
+void accumulate_vv10_right_block(std::vector<VV10LeftPoint>& active_left, size_t r_npoints, const double* r_x,
+                                 const double* r_y, const double* r_z, const double* r_W0, const double* r_kappa,
+                                 const double* r_w, const double* r_rho, bool do_grad) noexcept {
+    alignas(64) double r_pref_tile[kVV10TileSize];
+    for (size_t j0 = 0; j0 < r_npoints; j0 += kVV10TileSize) {
+        const size_t count = std::min(kVV10TileSize, r_npoints - j0);
+#pragma omp simd
+        for (size_t t = 0; t < count; ++t) {
+            r_pref_tile[t] = 1.5 * r_w[j0 + t] * r_rho[j0 + t];
+        }
+
+        const double* tx = r_x + j0;
+        const double* ty = r_y + j0;
+        const double* tz = r_z + j0;
+        const double* tw0 = r_W0 + j0;
+        const double* tkappa = r_kappa + j0;
+
+        if (do_grad) {
+            for (auto& lp : active_left) {
+                accumulate_vv10_tile<true>(lp, count, tx, ty, tz, tw0, tkappa, r_pref_tile);
+            }
+        } else {
+            for (auto& lp : active_left) {
+                accumulate_vv10_tile<false>(lp, count, tx, ty, tz, tw0, tkappa, r_pref_tile);
+            }
+        }
+    }
+}
+
+}  // namespace
+
 std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const std::map<std::string, SharedVector>& vals,
                                                                         std::shared_ptr<BlockOPoints> block,
                                                                         double rho_thresh, int npoints, bool internal) {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
+    const size_t npts = static_cast<size_t>(npoints);
 
-    // Precompute prefactors
+    // Precompute prefactors (cbrt(sqrt(x)) == x^(1/6))
     const double Wp_pref = (4.0 / 3.0) * M_PI;
     const double Wg_pref = vv10_c_;
-    const double kappa_pref = (1.5 * vv10_b_ * M_PI) / std::pow(9.0 * M_PI, 1.0 / 6.0);
-    const double kappa_pow = 1.0 / 6.0;
+    const double kappa_pref = (1.5 * vv10_b_ * M_PI) / std::cbrt(std::sqrt(9.0 * M_PI));
 
     size_t nact = 0;
-    // rho_thresh = 0.0;
 
     // Zero out the vectors
     vv_values_["W0"]->zero();
@@ -851,18 +981,16 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
     double* rhop = vals.find("RHO_A")->second->pointer();
     double* gammap = vals.find("GAMMA_AA")->second->pointer();
 
-    // Eh, worth a shot
-    // clang 10 on Mac objects at runtime: #pragma omp simd
-    for (size_t i = 0; i < npoints; i++) {
-        if (rhop[i] < rho_thresh) continue;
+    for (size_t i = 0; i < npts; i++) {
+        const double rho = rhop[i];
+        if (rho < rho_thresh) continue;
 
-        double Wp = Wp_pref * rhop[i];
-
-        double Wg_tmp = gammap[i] / (rhop[i] * rhop[i]);
-        double Wg = Wg_pref * Wg_tmp * Wg_tmp;
+        const double Wp = Wp_pref * rho;
+        const double Wg_tmp = gammap[i] / (rho * rho);
+        const double Wg = Wg_pref * Wg_tmp * Wg_tmp;
 
         w0p[i] = std::sqrt(Wp + Wg);
-        kappap[i] = kappa_pref * std::pow(rhop[i], kappa_pow);
+        kappap[i] = kappa_pref * std::cbrt(std::sqrt(rho));
         nact++;
     }
 
@@ -870,7 +998,6 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
         return vv_values_;
     }
 
-    // printf("Nact/Ntot %zu / %d\n", nact, npoints);
     // Sieve the results
     auto w_vec = std::make_shared<Vector>("W Grid points", nact);
     auto x_vec = std::make_shared<Vector>("X Grid points", nact);
@@ -889,7 +1016,7 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
     double* kappa_vecp = kappa_vec->pointer();
 
     size_t sieve_pos = 0;
-    for (size_t i = 0; i < npoints; i++) {
+    for (size_t i = 0; i < npts; i++) {
         if (rhop[i] < rho_thresh) continue;
 
         w_vecp[sieve_pos] = block->w()[i];
@@ -941,117 +1068,70 @@ double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVe
     const double vv10_beta = vv10_beta_;
 
     // Get left points
-    const auto l_x = block->x();
-    const auto l_y = block->y();
-    const auto l_z = block->z();
-    const auto l_w = block->w();
-    const auto l_rho = vals.find("RHO_A")->second->pointer();
-    const auto l_gamma = vals.find("GAMMA_AA")->second->pointer();
-    const auto l_W0 = vv_values_["W0"]->pointer();
-    const auto l_kappa = vv_values_["KAPPA"]->pointer();
+    const double* l_x = block->x();
+    const double* l_y = block->y();
+    const double* l_z = block->z();
+    const double* l_w = block->w();
+    const double* l_rho = vals.find("RHO_A")->second->pointer();
+    const double* l_gamma = vals.find("GAMMA_AA")->second->pointer();
+    const double* l_W0 = vv_values_["W0"]->pointer();
+    const double* l_kappa = vv_values_["KAPPA"]->pointer();
 
+    // Initialize local terms and gather active left points above the density threshold
+    std::vector<VV10LeftPoint> active_left;
+    active_left.reserve(l_npoints);
     for (size_t i = 0; i < l_npoints; i++) {
-        // Add Phi agnostic quantities
         vv10_e += l_w[i] * l_rho[i] * vv10_beta;
         v_rho[i] = vv10_beta;
         v_gamma[i] = 0.0;
-
-        if (l_rho[i] < l_thresh) continue;
-
-        // Compute interior kernel
-        double phi = 0.0;
-        double U = 0.0;
-        double W = 0.0;
-        double xc = 0.0;
-        double yc = 0.0;
-        double zc = 0.0;
-        for (auto r_block : vv10_cache) {
-            // Get right points
-            const auto r_x = r_block["X"]->pointer();
-            const auto r_y = r_block["Y"]->pointer();
-            const auto r_z = r_block["Z"]->pointer();
-            const auto r_w = r_block["W"]->pointer();
-            const auto r_rho = r_block["RHO"]->pointer();
-            const auto r_W0 = r_block["W0"]->pointer();
-            const auto r_kappa = r_block["KAPPA"]->pointer();
-
-            const size_t r_npoints = r_block["KAPPA"]->dimpi()[0];
-
-            // Interior Kernel
-            if (do_grad) {
-#pragma omp simd reduction(+ : phi, U, W, xc, yc, zc)
-                for (size_t j = 0; j < r_npoints; j++) {
-                    // Distance between grid points
-                    const double d_x = l_x[i] - r_x[j];
-                    const double d_y = l_y[i] - r_y[j];
-                    const double d_z = l_z[i] - r_z[j];
-                    const double R2 = d_x * d_x + d_y * d_y + d_z * d_z;
-
-                    // g/gp values
-                    const double g = l_W0[i] * R2 + l_kappa[i];
-                    const double gp = r_W0[j] * R2 + r_kappa[j];
-                    const double gs = g + gp;
-
-                    // Sum the kernel
-                    const double phi_kernel = (-1.5 * r_w[j] * r_rho[j]) / (g * gp * gs);
-
-                    // Dumb question, does FMA do subtraction?
-                    phi += phi_kernel;
-                    const double tmp_U = -1.0 * phi_kernel * ((1.0 / g) + (1.0 / gs));
-                    U += tmp_U;
-                    W += tmp_U * R2;
-
-                    // Grid contribution
-                    const double Q = -2.0 * phi_kernel * (l_W0[i] / g + r_W0[j] / gp + (l_W0[i] + r_W0[j]) / gs);
-                    xc += Q * d_x;
-                    yc += Q * d_y;
-                    zc += Q * d_z;
-                }
-
-            } else {
-#pragma omp simd reduction(+ : phi, U, W)
-                for (size_t j = 0; j < r_npoints; j++) {
-                    // Distance between grid points
-                    const double d_x = l_x[i] - r_x[j];
-                    const double d_y = l_y[i] - r_y[j];
-                    const double d_z = l_z[i] - r_z[j];
-                    const double R2 = d_x * d_x + d_y * d_y + d_z * d_z;
-
-                    // g/gp values
-                    const double g = l_W0[i] * R2 + l_kappa[i];
-                    const double gp = r_W0[j] * R2 + r_kappa[j];
-                    const double gs = g + gp;
-
-                    // Sum the kernel
-                    const double phi_kernel = (-1.5 * r_w[j] * r_rho[j]) / (g * gp * gs);
-
-                    // Dumb question, does FMA do subtraction?
-                    phi += phi_kernel;
-                    const double tmp_U = -1.0 * phi_kernel * ((1.0 / g) + (1.0 / gs));
-                    U += tmp_U;
-                    W += tmp_U * R2;
-                }
-            }
-
-        }  // End r blocks
-        // Mathematica for the win
-        const double kappa_dn = l_kappa[i] / (6.0 * l_rho[i]);
-        const double w0_dgamma = vv10_c_ * l_gamma[i] / (l_W0[i] * std::pow(l_rho[i], 4.0));
-        const double w0_drho =
-            2.0 / l_W0[i] * (M_PI / 3.0 - vv10_c_ * (l_gamma[i] * l_gamma[i]) / std::pow(l_rho[i], 5.0));
-
-        // Sum it all together
-        vv10_e += 0.5 * l_w[i] * l_rho[i] * phi;
-        v_rho[i] += phi + l_rho[i] * (kappa_dn * U + w0_drho * W);
-        v_gamma[i] += l_rho[i] * w0_dgamma * W;
-        if (do_grad) {
-            x_grid[i] += l_rho[i] * l_w[i] * xc;
-            y_grid[i] += l_rho[i] * l_w[i] * yc;
-            z_grid[i] += l_rho[i] * l_w[i] * zc;
+        if (l_rho[i] >= l_thresh) {
+            active_left.push_back({i, l_x[i], l_y[i], l_z[i], l_W0[i], l_kappa[i]});
         }
     }
 
-    // printf("Nact/Ntot Ext %zu / %zu\n", nact, l_npoints);
+    if (active_left.empty()) {
+        return vv10_e;
+    }
+
+    for (const auto& r_block : vv10_cache) {
+        const size_t r_npoints = r_block.at("KAPPA")->dimpi()[0];
+        if (r_npoints == 0) continue;
+
+        const double* r_x = r_block.at("X")->pointer();
+        const double* r_y = r_block.at("Y")->pointer();
+        const double* r_z = r_block.at("Z")->pointer();
+        const double* r_W0 = r_block.at("W0")->pointer();
+        const double* r_kappa = r_block.at("KAPPA")->pointer();
+
+        const double* r_w = r_block.at("W")->pointer();
+        const double* r_rho = r_block.at("RHO")->pointer();
+
+        accumulate_vv10_right_block(active_left, r_npoints, r_x, r_y, r_z, r_W0, r_kappa, r_w, r_rho, do_grad);
+    }
+
+    for (const auto& lp : active_left) {
+        const size_t i = lp.index;
+        const double rho = l_rho[i];
+        const double r2 = rho * rho;
+        const double r4 = r2 * r2;
+        const double r5 = r4 * rho;
+        const double inv_lW0 = 1.0 / l_W0[i];
+        const double gam = l_gamma[i];
+        const double kappa_dn = l_kappa[i] / (6.0 * rho);
+        const double w0_dgamma = vv10_c_ * gam * inv_lW0 / r4;
+        const double w0_drho = 2.0 * inv_lW0 * (M_PI / 3.0 - vv10_c_ * (gam * gam) / r5);
+
+        vv10_e += 0.5 * l_w[i] * rho * lp.phi;
+        v_rho[i] += lp.phi + rho * (kappa_dn * lp.u + w0_drho * lp.w);
+        v_gamma[i] += rho * w0_dgamma * lp.w;
+        if (do_grad) {
+            const double rw = rho * l_w[i];
+            x_grid[i] += rw * lp.xc;
+            y_grid[i] += rw * lp.yc;
+            z_grid[i] += rw * lp.zc;
+        }
+    }
+
     return vv10_e;
 }
 void SuperFunctional::test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa,
