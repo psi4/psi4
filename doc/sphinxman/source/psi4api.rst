@@ -49,6 +49,7 @@
    :skip:SCFConvergenceError
    :skip:TDSCFConvergenceError
    :skip:TestComparisonError
+   :skip:TrexIOError
    :skip:UpgradeHelper
    :skip:ValidationError
 
