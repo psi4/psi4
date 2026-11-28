@@ -62,7 +62,8 @@ def scf_compute_energy(self):
     returns the SCF energy computed by finalize_energy().
 
     """
-    if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
+    if (core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT')
+            and core.get_option('SCF', 'MAXITER') > 0):
         # speed up DIRECT algorithm (recomputes full (non-DF) integrals
         #   each iter) by first converging via fast DF iterations, then
         #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
@@ -100,7 +101,10 @@ def scf_compute_energy(self):
         else:
             core.print_out("  Energy and/or wave function did not converge, but proceeding anyway.\n\n")
     else:
-        core.print_out("  Energy and wave function converged.\n\n")
+        if core.get_option('SCF', 'MAXITER') == 0:
+            core.print_out("  No SCF iterations (MAXITER 0); the energy is that of the guess orbitals.\n\n")
+        else:
+            core.print_out("  Energy and wave function converged.\n\n")
 
     scf_energy = self.finalize_energy()
     return scf_energy
@@ -260,8 +264,9 @@ def scf_initialize(self):
         self.functional().set_lock(True)
 
     # Print iteration header. The column header comes later, from scf_iterate, once the
-    # orbital optimizer that will actually run is known.
-    core.print_out("  ==> Iterations <==\n\n")
+    # orbital optimizer that will actually run is known. With MAXITER 0 there are none.
+    if core.get_option('SCF', 'MAXITER') > 0:
+        core.print_out("  ==> Iterations <==\n\n")
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
@@ -306,6 +311,103 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     potentials = _python_applied_potentials(self)
     efp_enabled = potentials["efp"]
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
+
+    def form_fock():
+        """Builds the Fock matrix of the current density with all its contributions, and returns the
+        energy of that density and whether the J/K build was incremental."""
+        if efp_enabled:
+            # EFP: Add efp contribution to Fock matrix
+            self.H().copy(self.Horig)
+            global mints_psi4_yo
+            mints_psi4_yo = core.MintsHelper(self.basisset())
+            Vefp = modify_Fock_induced(self.molecule().EFP, mints_psi4_yo, verbose=verbose - 1)
+            Vefp = core.Matrix.from_array(Vefp)
+            self.H().add(Vefp)
+
+        SCFE = 0.0
+        self.clear_external_potentials()
+
+        # Two-electron contribution to Fock matrix from self.jk()
+        core.timer_on("HF: Form G")
+        self.form_G()
+        core.timer_off("HF: Form G")
+
+        # Check if special J/K construction algorithms were used
+        incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
+        upcm = 0.0
+        if core.get_option('SCF', 'PCM'):
+            calc_type = core.PCM.CalcType.Total
+            if core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
+                calc_type = core.PCM.CalcType.NucAndEle
+            Dt = self.Da().clone()
+            Dt.add(self.Db())
+            upcm, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
+            SCFE += upcm
+            self.push_back_external_potential(Vpcm)
+        self.set_variable("PCM POLARIZATION ENERGY", upcm)  # P::e PCM
+        self.set_energies("PCM Polarization", upcm)
+
+        uddx = 0.0
+        if core.get_option('SCF', 'DDX'):
+            Dt = self.Da().clone()
+            Dt.add(self.Db())
+            uddx, Vddx, self.ddx_state = self.ddx.get_solvation_contributions(Dt, self.ddx_state)
+            SCFE += uddx
+            self.push_back_external_potential(Vddx)
+        self.set_variable("DD SOLVATION ENERGY", uddx)  # P::e DDX
+        self.set_energies("DD Solvation Energy", uddx)
+
+        upe = 0.0
+        if core.get_option('SCF', 'PE'):
+            Dt = self.Da().clone()
+            Dt.add(self.Db())
+            upe, Vpe = self.pe_state.get_pe_contribution(
+                Dt, elec_only=False
+            )
+            SCFE += upe
+            self.push_back_external_potential(Vpe)
+        self.set_variable("PE ENERGY", upe)  # P::e PE
+        self.set_energies("PE Energy", upe)
+
+        core.timer_on("HF: Form F")
+        # SAD: since we don't have orbitals yet, we might not be able
+        # to form the real Fock matrix. Instead, build an initial one
+        if (self.iteration_ == 0) and self.sad_:
+            self.form_initial_F()
+        else:
+            self.form_F()
+        core.timer_off("HF: Form F")
+
+        if verbose > 3:
+            self.Fa().print_out()
+            self.Fb().print_out()
+
+        SCFE += self.compute_E()
+        if efp_enabled:
+            global efp_Dt_psi4_yo
+
+            # EFP: Add efp contribution to energy
+            efp_Dt_psi4_yo = self.Da().clone()
+            efp_Dt_psi4_yo.add(self.Db())
+            SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
+
+        self.set_energies("Total Energy", SCFE)
+        core.set_variable("SCF ITERATION ENERGY", SCFE)
+        self.iteration_energies.append(SCFE)
+        return SCFE, incfock_performed
+
+    if core.get_option('SCF', 'MAXITER') == 0:
+        # No SCF iterations: the energy of the guess orbitals (e.g., those read with GUESS READ from a calculation
+        #   with another method), which are kept as they are. This is the first iteration of the loop below, up to
+        #   the energy; no Fock matrix is diagonalized.
+        core.print_out("  ==> Single-Shot Energy <==\n\n")
+        core.print_out("  MAXITER is 0: the energy of the guess orbitals, without SCF iterations.\n\n")
+        self.iteration_ += 1
+        self.save_density_and_energy()
+        SCFE, _ = form_fock()
+        core.print_out("   @%s%s single-shot energy: %20.14f\n\n" % ("DF-" if is_dfjk else "", reference, SCFE))
+        return
+
     ooo_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OOO", "OPENORBITALOPTIMIZER"]
     if ooo_scf:
         pcm_enabled, ddx_enabled, pe_enabled = potentials["pcm"], potentials["ddx"], potentials["pe"]
@@ -442,85 +544,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.save_density_and_energy()
 
-        if efp_enabled:
-            # EFP: Add efp contribution to Fock matrix
-            self.H().copy(self.Horig)
-            global mints_psi4_yo
-            mints_psi4_yo = core.MintsHelper(self.basisset())
-            Vefp = modify_Fock_induced(self.molecule().EFP, mints_psi4_yo, verbose=verbose - 1)
-            Vefp = core.Matrix.from_array(Vefp)
-            self.H().add(Vefp)
-
-        SCFE = 0.0
-        self.clear_external_potentials()
-
-        # Two-electron contribution to Fock matrix from self.jk()
-        core.timer_on("HF: Form G")
-        self.form_G()
-        core.timer_off("HF: Form G")
-
-        # Check if special J/K construction algorithms were used
-        incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
-        upcm = 0.0
-        if core.get_option('SCF', 'PCM'):
-            calc_type = core.PCM.CalcType.Total
-            if core.get_option("PCM", "PCM_SCF_TYPE") == "SEPARATE":
-                calc_type = core.PCM.CalcType.NucAndEle
-            Dt = self.Da().clone()
-            Dt.add(self.Db())
-            upcm, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
-            SCFE += upcm
-            self.push_back_external_potential(Vpcm)
-        self.set_variable("PCM POLARIZATION ENERGY", upcm)  # P::e PCM
-        self.set_energies("PCM Polarization", upcm)
-
-        uddx = 0.0
-        if core.get_option('SCF', 'DDX'):
-            Dt = self.Da().clone()
-            Dt.add(self.Db())
-            uddx, Vddx, self.ddx_state = self.ddx.get_solvation_contributions(Dt, self.ddx_state)
-            SCFE += uddx
-            self.push_back_external_potential(Vddx)
-        self.set_variable("DD SOLVATION ENERGY", uddx)  # P::e DDX
-        self.set_energies("DD Solvation Energy", uddx)
-
-        upe = 0.0
-        if core.get_option('SCF', 'PE'):
-            Dt = self.Da().clone()
-            Dt.add(self.Db())
-            upe, Vpe = self.pe_state.get_pe_contribution(
-                Dt, elec_only=False
-            )
-            SCFE += upe
-            self.push_back_external_potential(Vpe)
-        self.set_variable("PE ENERGY", upe)  # P::e PE
-        self.set_energies("PE Energy", upe)
-
-        core.timer_on("HF: Form F")
-        # SAD: since we don't have orbitals yet, we might not be able
-        # to form the real Fock matrix. Instead, build an initial one
-        if (self.iteration_ == 0) and self.sad_:
-            self.form_initial_F()
-        else:
-            self.form_F()
-        core.timer_off("HF: Form F")
-
-        if verbose > 3:
-            self.Fa().print_out()
-            self.Fb().print_out()
-
-        SCFE += self.compute_E()
-        if efp_enabled:
-            global efp_Dt_psi4_yo
-
-            # EFP: Add efp contribution to energy
-            efp_Dt_psi4_yo = self.Da().clone()
-            efp_Dt_psi4_yo.add(self.Db())
-            SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
-
-        self.set_energies("Total Energy", SCFE)
-        core.set_variable("SCF ITERATION ENERGY", SCFE)
-        self.iteration_energies.append(SCFE)
+        SCFE, incfock_performed = form_fock()
 
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE

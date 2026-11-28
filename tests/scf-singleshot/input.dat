@@ -1,0 +1,52 @@
+#! Single-shot energies (MAXITER 0): PBE and B3LYP on the HF orbitals, and HF and B3LYP on the PBE orbitals
+
+refE_HF_minimum    = -128.53512305098488 # TEST
+refE_PBE_posthf    = -128.84964605542933 # TEST
+refE_B3LYP_posthf  = -128.96563772408325 # TEST
+
+refE_PBE_minimum   = -128.85678143975528 # TEST
+refE_HF_postpbe    = -128.52753581159715 # TEST
+refE_B3LYP_postpbe = -128.97135507457710 # TEST
+
+molecule {
+ 0 1
+ Ne
+}
+
+set basis pcseg-2
+set scf_type pk
+set df_scf_guess false
+set dft_radial_points 250
+set dft_spherical_points 974
+set dft_pruning_scheme none
+set d_convergence 1e-9
+set e_convergence 1e-9
+
+# Hartree-Fock
+set maxiter 100
+E_HF_minimum = energy('scf')
+compare_values(refE_HF_minimum, E_HF_minimum, 8, "HF energy")                       # TEST
+
+# HF on its own orbitals, without iterations, is the HF energy
+set guess read
+set maxiter 0
+compare_values(E_HF_minimum, energy('scf'), 8, "HF energy, single-shot on HF orbitals")  # TEST
+compare_integers(0, int(variable("SCF ITERATIONS")), "no SCF iterations")              # TEST
+
+# PBE and B3LYP on the HF orbitals
+E_PBE_posthf = energy('pbe')
+compare_values(refE_PBE_posthf, E_PBE_posthf, 8, "PBE energy, post-HF")             # TEST
+E_B3LYP_posthf = energy('b3lyp')
+compare_values(refE_B3LYP_posthf, E_B3LYP_posthf, 8, "B3LYP energy, post-HF")       # TEST
+
+# PBE
+set maxiter 100
+E_PBE_minimum = energy('pbe')
+compare_values(refE_PBE_minimum, E_PBE_minimum, 8, "PBE energy")                    # TEST
+
+# HF and B3LYP on the PBE orbitals
+set maxiter 0
+E_HF_postpbe = energy('scf')
+compare_values(refE_HF_postpbe, E_HF_postpbe, 8, "HF energy, post-PBE")             # TEST
+E_B3LYP_postpbe = energy('b3lyp')
+compare_values(refE_B3LYP_postpbe, E_B3LYP_postpbe, 8, "B3LYP energy, post-PBE")    # TEST
