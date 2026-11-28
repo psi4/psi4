@@ -1,0 +1,63 @@
+#! Water/aug-cc-pVDZ with near-linear dependencies removed from the basis (S_TOLERANCE 1e-2,
+#! so nmo < nso), RHF and UHF: the scfresponse module's static dipole polarizability must
+#! match Psi4's built-in CPSCF solver. The virtual space must be sized by nmo, not nso.
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis aug-cc-pvdz
+  scf_type pk
+  s_tolerance 1e-2
+  e_convergence 1e-10
+  d_convergence 1e-10
+  solver_convergence 1e-10
+}
+
+import numpy as np
+
+XYZ = "XYZ"
+
+
+def wavelength_label(omega):
+    """Wavelength label used in the result names: nearest nm, or INF NM for a static field."""
+    if abs(omega) < 1.e-14:
+        return "INF NM"
+    c = psi4.constants
+    return f"{round(c.c * c.h * 1.e9 / (c.hartree2J * abs(omega)))}NM"
+
+
+def alpha_tensor(omega):
+    """SCF dipole polarizability tensor (3 x 3) at frequency omega (au)."""
+    return np.asarray(variable(f"SCF DIPOLE POLARIZABILITY TENSOR @ {wavelength_label(omega)}"))
+
+
+def beta_tensor(kind, omega=0.0):
+    """SCF first hyperpolarizability tensor (3 x 3 x 3): kind STATIC, SHG, OR, or POCKELS."""
+    names = {"STATIC": "SCF DIPOLE HYPERPOLARIZABILITY TENSOR",
+             "SHG": "SCF SHG HYPERPOLARIZABILITY TENSOR",
+             "OR": "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR",
+             "POCKELS": "SCF POCKELS HYPERPOLARIZABILITY TENSOR"}
+    name = names[kind] if kind == "STATIC" else f"{names[kind]} @ {wavelength_label(omega)}"
+    return np.asarray(variable(name))
+for ref in ["rhf", "uhf"]:
+    set_options({"reference": ref})
+    core.revoke_global_option_changed("OMEGA")
+
+    # static polarizability from the built-in CPSCF solver
+    wfn = properties('scf', properties=['DIPOLE_POLARIZABILITIES'], return_wfn=True)[1]
+    compare(1, int(wfn.nmo() < wfn.nso()), f"{ref}: nmo < nso")  #TEST
+    builtin = {p + q: variable(f"DIPOLE POLARIZABILITY {p}{q}") for p in XYZ for q in XYZ}
+
+    # the same quantity from the scfresponse module (OMEGA set, zero frequency)
+    set_options({"omega": [0.0]})
+    properties('scf', properties=['DIPOLE_POLARIZABILITIES'])
+    for i, p in enumerate(XYZ):
+        for q in XYZ[i:]:
+            compare_values(builtin[p + q], alpha_tensor(0.0)[XYZ.index(p), XYZ.index(q)], 1.e-8, f"{ref}: alpha {p}{q} vs built-in CPSCF")  #TEST

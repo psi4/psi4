@@ -1,0 +1,77 @@
+#! Open-shell UHF/cc-pVDZ CH3 radical: static alpha, alpha(omega), static beta, and SHG beta at
+#! omega = 0.05 au. The response solver's DIIS must keep converging once its subspace is full; with
+#! largest-error replacement it stalled for this system. Static alpha is checked against Psi4's
+#! built-in CPSCF solver, the rest against an independent reference (TDHF response code on PySCF 2.14).
+
+molecule {
+0 2
+C   0.000000   0.000000   0.000000
+H   0.000000   1.078000   0.000000
+H   0.933575  -0.539000   0.000000
+H  -0.933575  -0.539000   0.000000
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  scf_type pk
+  reference uhf
+  e_convergence 1e-10
+  d_convergence 1e-10
+  solver_convergence 1e-10
+}
+
+import numpy as np
+
+XYZ = "XYZ"
+
+
+def wavelength_label(omega):
+    """Wavelength label used in the result names: nearest nm, or INF NM for a static field."""
+    if abs(omega) < 1.e-14:
+        return "INF NM"
+    c = psi4.constants
+    return f"{round(c.c * c.h * 1.e9 / (c.hartree2J * abs(omega)))}NM"
+
+
+def alpha_tensor(omega):
+    """SCF dipole polarizability tensor (3 x 3) at frequency omega (au)."""
+    return np.asarray(variable(f"SCF DIPOLE POLARIZABILITY TENSOR @ {wavelength_label(omega)}"))
+
+
+def beta_tensor(kind, omega=0.0):
+    """SCF first hyperpolarizability tensor (3 x 3 x 3): kind STATIC, SHG, OR, or POCKELS."""
+    names = {"STATIC": "SCF DIPOLE HYPERPOLARIZABILITY TENSOR",
+             "SHG": "SCF SHG HYPERPOLARIZABILITY TENSOR",
+             "OR": "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR",
+             "POCKELS": "SCF POCKELS HYPERPOLARIZABILITY TENSOR"}
+    name = names[kind] if kind == "STATIC" else f"{names[kind]} @ {wavelength_label(omega)}"
+    return np.asarray(variable(name))
+ref_alpha_static = {'XX': 11.980417488121759, 'XY': 1.833903076274861e-14, 'XZ': -6.462690393511741e-16, 'YY': 11.980423851887856, 'YZ': 1.350643838081032e-15, 'ZZ': 6.610516505728583}  #TEST
+ref_alpha = {'XX': 12.064538734633176, 'XY': 1.8916496774825753e-14, 'XZ': -6.876638175487768e-16, 'YY': 12.064545183722057, 'YZ': 1.384678365667251e-15, 'ZZ': 6.64765663957154}  #TEST
+ref_beta_static = {'XXX': 2.387621886834692e-13, 'XXY': 27.762390309433734, 'XXZ': 9.742878844533721e-15, 'XYX': 27.762390309433734, 'XYY': 7.737712546734437e-14, 'XYZ': -1.0407626368329344e-14, 'XZX': 9.74287884453372e-15, 'XZY': -1.040762636832934e-14, 'XZZ': -3.2572900226086263e-15, 'YXX': 27.76239030943368, 'YXY': 1.3975459706852696e-13, 'YXZ': -1.0407626368329363e-14, 'YYX': 1.3975459691614155e-13, 'YYY': -27.76239990217615, 'YYZ': -6.3689666471178135e-15, 'YZX': -1.0407626368329363e-14, 'YZY': -6.368966647117812e-15, 'YZZ': 3.4801516241274658e-06, 'ZXX': 9.742878844533695e-15, 'ZXY': -1.040762636832928e-14, 'ZXZ': 3.2053769224283416e-15, 'ZYX': -1.0407626368329278e-14, 'ZYY': -6.3689666471177946e-15, 'ZYZ': 3.4801516283525152e-06, 'ZZX': 3.205376922842134e-15, 'ZZY': 3.4801516283629185e-06, 'ZZZ': -7.591429475109905e-16}  #TEST
+ref_beta_shg = {'XXX': 1.3524301586987672e-13, 'XXY': 29.344046076737538, 'XXZ': 1.070349736379403e-14, 'XYX': 29.344046076737538, 'XYY': 7.988203229683977e-14, 'XYZ': -1.1601541760291873e-14, 'XZX': 1.0703497363794032e-14, 'XZY': -1.1601541760291873e-14, 'XZZ': 3.0724702689295015e-15, 'YXX': 29.34404598103474, 'YXY': 9.816408360092211e-14, 'YXZ': -1.1311226075503914e-14, 'YYX': 9.8164083652133e-14, 'YYY': -29.344056431491694, 'YYZ': -6.748354351639298e-15, 'YZX': -1.1311226075503912e-14, 'YZY': -6.748354351639296e-15, 'YZZ': 3.562170292608171e-06, 'ZXX': 1.2328083256609978e-14, 'ZXY': -1.3006247410961068e-14, 'ZXZ': 1.6307227431950504e-14, 'ZYX': -1.3006247410961072e-14, 'ZYY': -6.7049897843883245e-15, 'ZYZ': 4.22520568053339e-06, 'ZZX': 1.6307227431950554e-14, 'ZZY': 4.225205680509097e-06, 'ZZZ': -8.20361007511789e-16}  #TEST
+
+# static polarizability: built-in CPSCF solver vs the scfresponse module
+properties('scf', properties=['DIPOLE_POLARIZABILITIES'])
+builtin = {p + q: variable(f"DIPOLE POLARIZABILITY {p}{q}") for p in XYZ for q in XYZ}
+set omega [0.0]
+properties('scf', properties=['DIPOLE_POLARIZABILITIES'])
+for pq, value in ref_alpha_static.items():  #TEST
+    compare_values(builtin[pq], alpha_tensor(0.0)[XYZ.index(pq[0]), XYZ.index(pq[1])], 1.e-8, f"static alpha {pq} vs built-in CPSCF")  #TEST
+    compare_values(value, alpha_tensor(0.0)[XYZ.index(pq[0]), XYZ.index(pq[1])], 1.e-6, f"static alpha {pq} vs reference")  #TEST
+
+properties('scf', properties=['SCF_DIPOLE_HYPERPOLARIZABILITY'])
+for pqr, value in ref_beta_static.items():  #TEST
+    compare_values(value, beta_tensor("STATIC")[tuple(XYZ.index(c) for c in pqr)], 1.e-5, f"static beta {pqr} vs reference")  #TEST
+
+set omega [0.05]
+properties('scf', properties=['DIPOLE_POLARIZABILITIES'])
+for pq, value in ref_alpha.items():  #TEST
+    compare_values(value, alpha_tensor(0.05)[XYZ.index(pq[0]), XYZ.index(pq[1])], 1.e-6, f"alpha(0.05) {pq} vs reference")  #TEST
+
+properties('scf', properties=['SCF_SHG'])
+for pqr, value in ref_beta_shg.items():  #TEST
+    compare_values(value, beta_tensor("SHG", 0.05)[tuple(XYZ.index(c) for c in pqr)], 1.e-5, f"SHG beta(0.05) {pqr} vs reference")  #TEST

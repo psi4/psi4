@@ -1,0 +1,68 @@
+#! Water/cc-pVDZ, RKS CAM-B3LYP (range-separated hybrid with x_alpha + x_beta != 1): the long-range
+#! exact exchange in the response kernel must be scaled by the functional's x_beta, as in the SCF.
+#! Static alpha is checked against Psi4's built-in CPKS solver; alpha(omega = 0.1 au) against an
+#! independent reference (TDDFT response code on PySCF 2.14, grid level 6; agreement ~3e-8 relative).
+#! The module computes both frequencies in one properties() call (OMEGA [0.0, 0.1, au]; see scf-response-multi).
+
+molecule {
+O  0.00000   0.00000   0.11572
+H  0.00000   0.74879  -0.46288
+H  0.00000  -0.74879  -0.46288
+nocom
+no_reorient
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  scf_type pk
+  reference rks
+  dft_radial_points 99
+  dft_spherical_points 590
+  e_convergence 1e-10
+  d_convergence 1e-10
+  solver_convergence 1e-10
+}
+
+import numpy as np
+
+XYZ = "XYZ"
+
+
+def wavelength_label(omega):
+    """Wavelength label used in the result names: nearest nm, or INF NM for a static field."""
+    if abs(omega) < 1.e-14:
+        return "INF NM"
+    c = psi4.constants
+    return f"{round(c.c * c.h * 1.e9 / (c.hartree2J * abs(omega)))}NM"
+
+
+def alpha_tensor(omega):
+    """SCF dipole polarizability tensor (3 x 3) at frequency omega (au)."""
+    return np.asarray(variable(f"SCF DIPOLE POLARIZABILITY TENSOR @ {wavelength_label(omega)}"))
+
+
+def beta_tensor(kind, omega=0.0):
+    """SCF first hyperpolarizability tensor (3 x 3 x 3): kind STATIC, SHG, OR, or POCKELS."""
+    names = {"STATIC": "SCF DIPOLE HYPERPOLARIZABILITY TENSOR",
+             "SHG": "SCF SHG HYPERPOLARIZABILITY TENSOR",
+             "OR": "SCF OPTICAL RECTIFICATION HYPERPOLARIZABILITY TENSOR",
+             "POCKELS": "SCF POCKELS HYPERPOLARIZABILITY TENSOR"}
+    name = names[kind] if kind == "STATIC" else f"{names[kind]} @ {wavelength_label(omega)}"
+    return np.asarray(variable(name))
+
+# static polarizability from Psi4's built-in CPKS solver (OMEGA unset)
+properties('cam-b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
+builtin = {p + q: variable(f"DIPOLE POLARIZABILITY {p}{q}") for p in XYZ for q in XYZ}
+
+# scfresponse module: static and omega = 0.1 au in one call
+set omega [0.0, 0.1, au]
+properties('cam-b3lyp', properties=['DIPOLE_POLARIZABILITIES'])
+for i, p in enumerate(XYZ):
+    for q in XYZ[i:]:
+        compare_values(builtin[p + q], alpha_tensor(0.0)[XYZ.index(p), XYZ.index(q)], 1.e-8, f"static alpha {p}{q} vs built-in CPKS")  #TEST
+
+# frequency-dependent polarizability vs an independent reference
+ref_alpha = {'XX': 3.315434328379144, 'XY': -3.909678404039402e-15, 'XZ': -1.6703974968154878e-15, 'YY': 7.135440077862648, 'YZ': -3.9073936158961246e-15, 'ZZ': 5.388574572102372}  #TEST
+for pq, value in ref_alpha.items():  #TEST
+    compare_values(value, alpha_tensor(0.1)[XYZ.index(pq[0]), XYZ.index(pq[1])], 1.e-6, f"alpha(0.1) {pq} vs reference")  #TEST
