@@ -37,7 +37,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/cc/ccwave.h"
@@ -45,23 +45,20 @@
 namespace psi {
 namespace ccenergy {
 
-int CCEnergyWavefunction::AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO) {
+int CCEnergyWavefunction::AO_contribute(IWLReader &eri, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO) {
     int p, q, r, s;
     double value = 0.0;
     int Gp, Gq, Gr, Gs, Gpr, Gps, Gqr, Gqs, Grp, Gsp, Grq, Gsq;
     int pr, ps, qr, qs, rp, rq, sp, sq, pq, rs;
     int count = 0;
 
-    auto lblptr = InBuf->labels;
-    auto valptr = InBuf->values;
+    for (const auto &integral : eri) {
+        p = std::abs(integral.p);
+        q = integral.q;
+        r = integral.r;
+        s = integral.s;
 
-    for (int idx = 4 * InBuf->idx; InBuf->idx < InBuf->inbuf; InBuf->idx++) {
-        p = std::abs((int)lblptr[idx++]);
-        q = (int)lblptr[idx++];
-        r = (int)lblptr[idx++];
-        s = (int)lblptr[idx++];
-
-        value = (double)valptr[InBuf->idx];
+        value = integral.value;
         count++;
 
         Gp = tau1_AO->params->psym[p];
