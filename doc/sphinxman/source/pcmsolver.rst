@@ -186,7 +186,6 @@ Keywords for PCMSolver
 
 .. include:: autodir_options_c/globals__pcm.rst
 .. include:: autodir_options_c/pcm__pcm_scf_type.rst
-.. include:: autodir_options_c/pcm__pcm_cc_type.rst
 
 .. _`cmake:pcmsolver`:
 
