@@ -43,7 +43,6 @@
 namespace psi {
 class BasisSet;
 class Options;
-class PCMPotentialInt;
 
 class PCM final {
    public:
@@ -67,6 +66,8 @@ class PCM final {
     Dimension tesspi_;
     /// Charges and {x,y,z} coordinates of the cavity points
     SharedMatrix tess_Zxyz_;
+    /// The {x,y,z} coordinates (in bohr) of each tessera, ntess x 3
+    SharedMatrix tess_xyz_;
     /// Nucler MEP at cavity points
     SharedVector MEP_n_;
     /// Computes electronic MEP at cavity points
@@ -87,7 +88,6 @@ class PCM final {
     std::shared_ptr<BasisSet> basisset_;
 
     /// Factory for the electrostatic integrals
-    PCMPotentialInt *potential_int_;
 
     /// Handle to stuff provided by PCMSolver
     std::shared_ptr<pcmsolver_context_t> context_;

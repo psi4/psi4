@@ -46,7 +46,7 @@
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/3coverlap.h"
-#include "psi4/libmints/potentialint.h"
+#include "psi4/libmints/batchedpotential.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/psi4-dec.h"
@@ -1850,18 +1850,12 @@ SharedVector MintsHelper::electrostatic_potential_value(SharedVector charges, Sh
         throw PSIEXCEPTION("Dimension mismatch charges and coordinates.");
     }
 
-    auto potential_integrals_ = std::unique_ptr<PCMPotentialInt>(static_cast<PCMPotentialInt *>(integral_->pcm_potentialint().release()));
-    std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
-    for (size_t i = 0; i < coords->nrow(); ++i) {
-        Zxyz.push_back({charges->pointer()[i], {coords->pointer()[i][0],
-                                                coords->pointer()[i][1],
-                                                coords->pointer()[i][2]}});
-    }
-    potential_integrals_->set_charge_field(Zxyz);
-
+    // The potential of the electrons, -sum_{mu nu} D_{mu nu} (mu| 1/|r - C_k| |nu), at each point, times its charge
     SharedVector potvalues = std::make_shared<Vector>("potential values", coords->nrow());
-    ContractOverDensityFunctor contract_density_functor(potvalues->dim(), potvalues->pointer(), D);
-    potential_integrals_->compute(contract_density_functor);
+    double *V = potvalues->pointer();
+    batched_potential_contract_density(basisset_, basisset_, *D, *coords, V);
+    const double *q = charges->pointer();
+    for (size_t k = 0; k < coords->nrow(); ++k) V[k] *= -q[k];
     return potvalues;
 }
 

@@ -36,7 +36,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/potentialint.h"
+#include "psi4/libmints/batchedpotential.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
@@ -143,10 +143,6 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
 
     std::shared_ptr<Molecule> molecule = basisset_->molecule();
 
-    auto integrals = std::make_shared<IntegralFactory>(basisset, basisset, basisset, basisset);
-
-    potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint().release());
-
     context_ = detail::init_PCMSolver(pcmsolver_parsed_fname_, molecule);
     outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
     pcmsolver_citation(detail::host_writer);
@@ -162,6 +158,9 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
     double **ptess_Zxyz = tess_Zxyz_->pointer();
     // Set the tesserae's coordinates (note the loop bounds; this function is 1-based)
     for (int tess = 1; tess <= ntess_; ++tess) pcmsolver_get_center(context_.get(), tess, &(ptess_Zxyz[tess - 1][1]));
+    tess_xyz_ = std::make_shared<Matrix>("Tess xyz", ntess_, 3);
+    for (int tess = 0; tess < ntess_; ++tess)
+        for (int x = 0; x < 3; ++x) tess_xyz_->set(tess, x, ptess_Zxyz[tess][1 + x]);
 
     int natom = molecule->natom();
     std::vector<double> charges(natom), coordinates(3 * natom);
@@ -203,25 +202,19 @@ PCM::PCM(const PCM *other) {
     ntessirr_ = other->ntessirr_;
     tesspi_ = other->tesspi_;
     tess_Zxyz_ = other->tess_Zxyz_->clone();
+    tess_xyz_ = other->tess_xyz_->clone();
     MEP_n_ = std::make_shared<Vector>(std::move(other->MEP_n_->clone()));
     basisset_ = other->basisset_;
-    potential_int_ = other->potential_int_;
     context_ = detail::init_PCMSolver(other->pcmsolver_parsed_fname_, basisset_->molecule());
     pcm_print_ = other->pcm_print_;
 }
 
 SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
-    double **pZxyz = tess_Zxyz_->pointer();
-    std::vector<std::pair<double, std::array<double, 3>>> field;
-    for (int tess = 0; tess < ntess_; ++tess) {
-        field.push_back({1.0, {pZxyz[tess][1], pZxyz[tess][2], pZxyz[tess][3]}});
-    }
-    potential_int_->set_charge_field(field);
-
     auto MEP = std::make_shared<Vector>(tesspi_);
-    ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D);
-    // Add in the electronic contribution to the potential at each tessera
-    potential_int_->compute(contract_density_functor);
+    // The electronic contribution to the potential at each tessera, -sum_{mu nu} D_{mu nu} (mu| 1/|r - C| |nu)
+    double *mep = MEP->pointer(0);
+    batched_potential_contract_density(basisset_, basisset_, *D, *tess_xyz_, mep);
+    for (int tess = 0; tess < ntess_; ++tess) mep[tess] = -mep[tess];
 
     // A little debug info
     if (pcm_print_ > 2) {
@@ -365,9 +358,10 @@ double PCM::compute_E_electronic(const SharedVector &MEP_e) const {
 }
 
 SharedMatrix PCM::compute_Vpcm(const SharedVector &ASC) const {
+    // The potential of the apparent surface charges q: -sum_tess q_tess (mu| 1/|r - C_tess| |nu)
     auto V_pcm = std::make_shared<Matrix>("PCM potential cart", basisset_->nbf(), basisset_->nbf());
-    ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm);
-    potential_int_->compute(contract_charges_functor);
+    batched_potential_contract_charges(basisset_, basisset_, ASC->pointer(0), *tess_xyz_, *V_pcm);
+    V_pcm->scale(-1.0);
     return V_pcm;
 }
 }  // namespace psi

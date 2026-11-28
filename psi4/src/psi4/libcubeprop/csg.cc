@@ -43,7 +43,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/potential.h"
+#include "psi4/libmints/batchedpotential.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -431,32 +431,18 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     // => Electronic Part <= //
 
-    std::shared_ptr<IntegralFactory> Vfact = std::make_shared<IntegralFactory>(
-        auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
-    std::vector<std::shared_ptr<Matrix>> VtempT;
-    std::vector<std::shared_ptr<PotentialInt>> VintT;
-    for (int thread = 0; thread < nthreads; thread++) {
-        VtempT.push_back(std::make_shared<Matrix>("Vtemp", naux, 1));
-        VintT.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential().release())));
-    }
-
-#pragma omp parallel for schedule(dynamic)
+    // -sum_A d_A (A| 1/|r - C_P| |1) at all the points at once, with the fitted density d on the auxiliary basis
+    Matrix points("Grid points", npoints_, 3);
     for (int P = 0; P < npoints_; P++) {
-        // Thread info
-        int thread = 0;
-#ifdef _OPENMP
-        thread = omp_get_thread_num();
-#endif
-        double** VtempTp = VtempT[thread]->pointer();
-
-        // Integrals
-        VtempT[thread]->zero();
-        VintT[thread]->set_charge_field({{1.0, {x_[P], y_[P], z_[P]}}});
-        VintT[thread]->compute(VtempT[thread]);
-
-        // Contraction
-        v[P] += C_DDOT(naux, dp, 1, VtempTp[0], 1);  // Potential integrals are negative definite already
+        points.set(P, 0, x_[P]);
+        points.set(P, 1, y_[P]);
+        points.set(P, 2, z_[P]);
     }
+    std::vector<double> Velec(npoints_, 0.0);
+    Matrix dmat("d", naux, 1);
+    for (int A = 0; A < naux; A++) dmat.set(A, 0, dp[A]);
+    batched_potential_contract_density(auxiliary_, BasisSet::zero_ao_basis_set(), dmat, points, Velec.data());
+    for (int P = 0; P < npoints_; P++) v[P] -= Velec[P];
 
     // => Nuclear Part <= //
 
