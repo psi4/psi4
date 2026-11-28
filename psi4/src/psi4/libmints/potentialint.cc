@@ -34,7 +34,7 @@ namespace psi {
 
 PCMPotentialInt::PCMPotentialInt(std::vector<SphericalTransform>& trans, std::shared_ptr<BasisSet> bs1,
                                  std::shared_ptr<BasisSet> /* bs2 */, int /* deriv */)
-    : PotentialInt(trans, bs1, bs1) {
+    : Libint2PotentialInt(trans, bs1, bs1) {
 
     int max_am = std::max(basis1()->max_am(), basis2()->max_am());
     int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());

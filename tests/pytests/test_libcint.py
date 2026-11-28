@@ -1,10 +1,10 @@
 """Cross-check the optional libcint integral backend against the default Libint2.
 
-libcint (INTEGRAL_PACKAGE=LIBCINT) is an experimental alternative two-electron
-integral engine. Every quantity it produces should match Libint2 to numerical
-precision: 4-center ERIs, range-separated erf ERIs, the density-fitting 2-/3-
-center integrals, and the resulting SCF/MP2 energies -- for both spherical and
-cartesian bases.
+libcint (INTEGRAL_PACKAGE=LIBCINT) is an experimental alternative integral
+engine. Every quantity it produces should match Libint2 to numerical precision:
+4-center ERIs, range-separated erf ERIs, the density-fitting 2-/3-center
+integrals, the overlap, kinetic, and potential integrals, their derivatives, and
+the resulting SCF/MP2 energies -- for both spherical and cartesian bases.
 """
 
 import numpy as np
@@ -14,6 +14,13 @@ from addons import has_program, uusing
 from utils import compare_values
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+
+def _use_package(pkg):
+    """Selects `pkg` for the two-electron and the one-electron integrals alike."""
+    import psi4
+
+    psi4.set_options({"integral_package": pkg, "one_electron_integral_package": pkg})
 
 
 def _skip_without_libint2_hessian_ints():
@@ -57,7 +64,7 @@ def test_libcint_ao_eri(basis, puream):
     psi4.set_options({"basis": basis, "puream": puream})
 
     def ao_eri(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         wfn = psi4.core.Wavefunction.build(mol, psi4.core.get_global_option("BASIS"))
         return np.asarray(psi4.core.MintsHelper(wfn.basisset()).ao_eri())
 
@@ -76,7 +83,7 @@ def test_libcint_erf_eri():
     psi4.set_options({"basis": "cc-pvdz", "puream": True})
 
     def erf(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         wfn = psi4.core.Wavefunction.build(mol, psi4.core.get_global_option("BASIS"))
         return np.asarray(psi4.core.MintsHelper(wfn.basisset()).ao_erf_eri(0.3))
 
@@ -97,7 +104,7 @@ def test_libcint_df_integrals(puream):
     aux = psi4.core.BasisSet.build(mol, "DF_BASIS_SCF", "cc-pvdz-jkfit", puream=puream)
 
     def tensors(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         m = psi4.core.MintsHelper(prim)
         metric = np.asarray(m.ao_eri(aux, zero, aux, zero))    # (Q|P)
         three = np.asarray(m.ao_eri(aux, zero, prim, prim))    # (Q|mn)
@@ -122,7 +129,7 @@ def test_libcint_df_integrals_mixed(prim_puream, aux_puream):
     aux = psi4.core.BasisSet.build(mol, "DF_BASIS_MP2", "cc-pvdz-ri", puream=aux_puream)
 
     def tensors(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         m = psi4.core.MintsHelper(prim)
         return np.asarray(m.ao_eri(aux, zero, aux, zero)), np.asarray(m.ao_eri(aux, zero, prim, prim))
 
@@ -146,7 +153,7 @@ def test_libcint_threaded_df_mp2(basis):
     })
 
     def energy(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         psi4.core.clean()
         return psi4.energy("mp2")
 
@@ -171,7 +178,7 @@ def test_libcint_screening_none():
     })
 
     def energy(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         psi4.core.clean()
         return psi4.energy("mp2")
 
@@ -185,7 +192,8 @@ def test_libcint_python_factory_eri():
 
     psi4.core.clean()
     mol = _water()
-    psi4.set_options({"basis": "cc-pvdz", "integral_package": "libcint"})
+    psi4.set_options({"basis": "cc-pvdz"})
+    _use_package("libcint")
     bas = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pvdz")
     eri = psi4.core.IntegralFactory(bas).eri(0)
     assert eri.shell_significant(0, 0, 0, 0)
@@ -213,7 +221,7 @@ def test_libcint_bases_on_different_molecules():
     zero = psi4.core.BasisSet.zero_ao_basis_set()
 
     def eri(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         return np.asarray(psi4.core.MintsHelper(bs1).ao_eri(bs2, zero, bs1, bs1))
 
     ref = eri("libint2")
@@ -236,7 +244,7 @@ def test_libcint_sapgau_guess():
                       "fail_on_maxiter": False})
 
     def energy(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         psi4.core.clean()
         return psi4.energy("scf")
 
@@ -256,11 +264,18 @@ def test_libcint_diffuse_external_charge():
     external = [None, [[0.5, [1.5, 0.5, 0.0], 0.8], [-0.5, [-1.0, 1.0, 1.0], 2.0]]]
 
     def energy(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         psi4.core.clean()
         return psi4.energy("scf", external_potentials=external)
 
     assert compare_values(energy("libint2"), energy("libcint"), 9, "SCF with diffuse external charges")
+
+    def gradient(pkg):
+        _use_package(pkg)
+        psi4.core.clean()
+        return np.asarray(psi4.gradient("scf", external_potentials=external))
+
+    assert compare_values(gradient("libint2"), gradient("libcint"), 8, "SCF gradient with diffuse external charges")
 
 
 @uusing("cint")
@@ -278,7 +293,7 @@ def test_libcint_scf_conventional(puream):
     })
 
     def scf(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         psi4.core.clean()
         return psi4.energy("scf")
 
@@ -299,7 +314,7 @@ def test_libcint_df_energies(method):
     })
 
     def energy(pkg):
-        psi4.set_options({"integral_package": pkg})
+        _use_package(pkg)
         psi4.core.clean()
         return psi4.energy(method)
 
@@ -380,7 +395,7 @@ def _deriv_setup(basis, puream):
 def _mints(pkg, mol):
     import psi4
 
-    psi4.set_options({"integral_package": pkg})
+    _use_package(pkg)
     wfn = psi4.core.Wavefunction.build(mol, psi4.core.get_global_option("BASIS"))
     return psi4.core.MintsHelper(wfn.basisset())
 
@@ -447,7 +462,7 @@ def _property(pkg, driver, method, options):
     psi4.set_options({"basis": "cc-pvdz", "e_convergence": 1e-10, "d_convergence": 1e-10,
                       "orbital_optimizer_package": "internal"})
     psi4.set_options(options)
-    psi4.set_options({"integral_package": pkg})
+    _use_package(pkg)
     return np.asarray(driver(method))
 
 
@@ -511,3 +526,242 @@ def test_libcint_not_compiled_in(method):
     psi4.set_options({"basis": "cc-pvdz", "scf_type": "pk", "integral_package": "libcint"})
     with pytest.raises(RuntimeError, match=r"INTEGRAL_PACKAGE LIBCINT.*built without it.*ENABLE_cint=ON"):
         psi4.energy(method)
+    psi4.set_options({"integral_package": "libint2", "one_electron_integral_package": "libcint"})
+    with pytest.raises(RuntimeError,
+                       match=r"ONE_ELECTRON_INTEGRAL_PACKAGE LIBCINT.*built without it.*ENABLE_cint=ON"):
+        psi4.energy(method)
+
+
+def _oei_bases(mol, puream1, puream2):
+    import psi4
+
+    bs1 = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pvtz", puream=puream1)
+    bs2 = psi4.core.BasisSet.build(mol, "ORBITAL", "6-31G*", puream=puream2)
+    return bs1, bs2
+
+
+@uusing("cint")
+@pytest.mark.parametrize("puream1,puream2", [(True, True), (False, False), (True, False), (False, True)])
+def test_libcint_oei(puream1, puream2):
+    """Overlap, kinetic, and potential integrals match Libint2, within a basis and between two, cartesian,
+    spherical, or one of each."""
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    bs1, bs2 = _oei_bases(mol, puream1, puream2)
+
+    def oei(pkg, name, *bases):
+        _use_package(pkg)
+        return np.asarray(getattr(psi4.core.MintsHelper(bs1), name)(*bases))
+
+    for name in ("ao_overlap", "ao_kinetic", "ao_potential"):
+        for bases in [(), (bs1, bs2), (bs2, bs1)]:
+            ref, tst = oei("libint2", name, *bases), oei("libcint", name, *bases)
+            assert compare_values(ref, tst, 12, f"{name} {len(bases)} bases, puream {puream1}/{puream2}")
+
+
+@uusing("cint")
+@pytest.mark.parametrize("basis,puream", [("cc-pvtz", True), ("cc-pvdz", False)])
+@pytest.mark.parametrize("oei_type", ["OVERLAP", "KINETIC", "POTENTIAL"])
+def test_libcint_oei_deriv(oei_type, basis, puream):
+    """First and second nuclear derivatives of the one-electron integrals match Libint2, atom by atom."""
+    mol = _deriv_setup(basis, puream)
+    for atom in range(mol.natom()):
+        ref = [np.asarray(m) for m in _mints("libint2", mol).ao_oei_deriv1(oei_type, atom)]
+        tst = [np.asarray(m) for m in _mints("libcint", mol).ao_oei_deriv1(oei_type, atom)]
+        for xyz, (r, t) in enumerate(zip(ref, tst)):
+            assert compare_values(r, t, 11, f"d{oei_type}/d{'xyz'[xyz]}{atom} {basis} puream={puream}")
+
+    _skip_without_libint2_hessian_ints()
+    for atom1, atom2 in [(0, 0), (0, 1), (1, 2)]:
+        ref = [np.asarray(m) for m in _mints("libint2", mol).ao_oei_deriv2(oei_type, atom1, atom2)]
+        tst = [np.asarray(m) for m in _mints("libcint", mol).ao_oei_deriv2(oei_type, atom1, atom2)]
+        for k, (r, t) in enumerate(zip(ref, tst)):
+            assert compare_values(r, t, 10, f"d2{oei_type}/d{atom1}d{atom2} [{k}] {basis} puream={puream}")
+
+
+@uusing("cint")
+@pytest.mark.parametrize("puream", [True, False])
+def test_libcint_external_charges(puream):
+    """Potential integrals of point charges, fractional and negative ones included, and their gradients on
+    the atoms and on the charges match Libint2."""
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    psi4.set_options({"basis": "cc-pvdz", "puream": puream})
+    wfn = psi4.core.Wavefunction.build(mol, "cc-pvdz")
+    basis = wfn.basisset()
+    rng = np.random.default_rng(7)
+    D = rng.standard_normal((basis.nbf(), basis.nbf()))
+    D = psi4.core.Matrix.from_array(D + D.T)
+
+    def potential(pkg):
+        _use_package(pkg)
+        ext = psi4.core.ExternalPotential()
+        ext.addCharge(0.417, 2.0, 1.0, 0.5)
+        ext.addCharge(-0.834, -1.5, 2.5, -1.0)
+        ext.addCharge(0.0, 0.5, -2.0, 1.5)
+        V = np.asarray(ext.computePotentialMatrix(basis))
+        grad = np.asarray(ext.computePotentialGradients(basis, D))
+        return V, grad, np.asarray(ext.gradient_on_charges())
+
+    for label, ref, tst in zip(["matrix", "gradient on atoms", "gradient on charges"], potential("libint2"),
+                               potential("libcint")):
+        assert compare_values(ref, tst, 11, f"external charges: {label}, puream={puream}")
+
+
+@uusing("cint")
+@pytest.mark.parametrize("puream", [True, False])
+def test_libcint_oei_diffuse_high_l(puream):
+    """Diffuse high-l functions on two centers match Libint2 in the one-electron integrals, which libcint
+    screens apart from the two-electron ones."""
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    psi4.basis_helper(_diffuse_basis("G", "1.0e-4", "3.0e-4", puream), name="diffuse")
+    psi4.set_options({"puream": puream})
+    for name in ("ao_overlap", "ao_kinetic", "ao_potential"):
+        ref = np.asarray(getattr(_mints("libint2", mol), name)())
+        tst = np.asarray(getattr(_mints("libcint", mol), name)())
+        assert compare_values(ref, tst, 12, f"diffuse G {name} puream={puream}")
+
+
+_OEI_FACTORIES = [("ao_overlap", "OverlapInt"), ("ao_kinetic", "KineticInt"), ("ao_potential", "PotentialInt")]
+
+
+def _factory(pkg, basis="cc-pvdz", puream=True):
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    _use_package(pkg)
+    bas = psi4.core.BasisSet.build(mol, "ORBITAL", basis, puream=puream)
+    return psi4.core.IntegralFactory(bas), bas
+
+
+@uusing("cint")
+@pytest.mark.parametrize("name,semantic", _OEI_FACTORIES)
+def test_libcint_python_factory_oei(name, semantic):
+    """IntegralFactory's one-electron objects are the semantic Python types, whichever library computes
+    them, and compute the same matrices."""
+    import psi4
+
+    mats = {}
+    for pkg, library in [("libint2", "Libint2"), ("libcint", "Libcint")]:
+        fact, bas = _factory(pkg)
+        obj = getattr(fact, name)()
+        assert isinstance(obj, getattr(psi4.core, semantic)), f"{pkg} {name} is a {type(obj).__name__}"
+        assert type(obj).__name__ == library + semantic
+        M = psi4.core.Matrix(bas.nbf(), bas.nbf())
+        obj.compute([M])
+        mats[pkg] = M.np
+    assert np.abs(mats["libint2"]).max() > 1.e-1
+    assert compare_values(mats["libint2"], mats["libcint"], 12, f"factory {name}")
+
+
+@uusing("cint")
+@pytest.mark.parametrize("eri_pkg,oei_pkg", [("libcint", "libint2"), ("libint2", "libcint")])
+def test_libcint_packages_independent(eri_pkg, oei_pkg):
+    """INTEGRAL_PACKAGE picks the library of the ERIs and ONE_ELECTRON_INTEGRAL_PACKAGE that of the overlap,
+    kinetic and potential integrals, each without changing the other."""
+    import psi4
+
+    psi4.core.clean()
+    mol = _water()
+    psi4.set_options({"integral_package": eri_pkg, "one_electron_integral_package": oei_pkg})
+    fact = psi4.core.IntegralFactory(psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pvdz"))
+    library = {"libint2": "Libint2", "libcint": "Libcint"}
+    for name, semantic in _OEI_FACTORIES:
+        assert type(getattr(fact, name)()).__name__ == library[oei_pkg] + semantic
+    eri = type(fact.eri(0)).__name__
+    assert eri.startswith("Libcint") == (eri_pkg == "libcint"), eri
+
+
+@uusing("cint")
+@pytest.mark.parametrize("pkg", ["libint2", "libcint"])
+@pytest.mark.parametrize("name", [n for n, _ in _OEI_FACTORIES])
+def test_libcint_oei_deriv_order_checked(pkg, name):
+    """Asking an integral object for derivatives of a higher order than it was created for raises, rather
+    than writing past the blocks it allocated."""
+    fact, _ = _factory(pkg)
+    with pytest.raises(Exception, match="created for derivatives of order 0, not 1"):
+        getattr(fact, name)(0).compute_shell_deriv1(1, 0)
+    with pytest.raises(Exception, match="created for derivatives of order 1, not 2"):
+        getattr(fact, name)(1).compute_shell_deriv2(1, 0)
+    with pytest.raises(Exception, match=r"derivative order 3 is not in \[0, 2\]"):
+        getattr(fact, name)(3)
+
+
+@uusing("cint")
+@pytest.mark.parametrize("pkg", ["libint2", "libcint"])
+@pytest.mark.parametrize("name", [n for n, _ in _OEI_FACTORIES])
+def test_libcint_oei_deriv_object_computes_integrals(pkg, name):
+    """An object created for derivatives also computes the integrals themselves, as one chunk equal to those
+    of an object created without derivatives, and its derivative chunks afterwards. (Libint2 objects once kept
+    the derivative chunk count there and pointed past the engine's single result.)"""
+    import psi4
+
+    fact, bas = _factory(pkg)
+    ref = getattr(fact, name)(0)
+    has_d2 = pkg == "libcint" or psi4.driver.p4util.libint2_configuration()["eri"][2] is not None
+    for deriv in [1, 2] if has_d2 else [1]:
+        obj = getattr(fact, name)(deriv)
+        for s1, s2 in [(0, 0), (3, 1), (9, 2)]:
+            chunks = obj.compute_shell_chunks(s1, s2)
+            assert obj.nchunk == 1 and len(chunks) == 1
+            assert compare_values(ref.compute_shell_chunks(s1, s2)[0], chunks[0], 14, f"{pkg} {name}({deriv}) ({s1}, {s2})")
+            assert len(obj.compute_shell_chunks(s1, s2, deriv)) == obj.nchunk > 1
+
+
+@uusing("cint")
+def test_libcint_compute_shell_chunks_checks_arguments():
+    """compute_shell_chunks refuses shells outside the basis and unknown derivative orders instead of reading
+    past the buffers."""
+    fact, bas = _factory("libint2")
+    S = fact.ao_overlap()
+    with pytest.raises(IndexError, match="out of range"):
+        S.compute_shell_chunks(bas.nshell(), 0)
+    with pytest.raises(IndexError, match="out of range"):
+        S.compute_shell_chunks(0, -1)
+    with pytest.raises(ValueError, match="deriv must be 0, 1, or 2"):
+        S.compute_shell_chunks(0, 0, 3)
+
+
+@uusing("cint")
+@pytest.mark.parametrize("deriv", [0, 1, 2])
+@pytest.mark.parametrize("puream", [True, False])
+def test_libcint_potential_charge_field_chunks(deriv, puream):
+    """The number of chunks follows the charge field, before and after a computation, and both libraries
+    give the same derivative integrals for a field of another size than the nuclei."""
+    if deriv == 2:
+        _skip_without_libint2_hessian_ints()
+
+    def nchunk(ncharge):
+        ncoord = 3 * (2 + ncharge)
+        return [1, ncoord, ncoord * (ncoord + 1) // 2][deriv]
+
+    field = [(0.417, (2.0, 1.0, 0.5)), (-0.834, (-1.5, 2.5, -1.0))]
+    pairs = [(0, 0), (3, 1), (5, 4), (9, 2)]
+    results = {}
+    for pkg in ["libint2", "libcint"]:
+        fact, bas = _factory(pkg, puream=puream)
+        V = fact.ao_potential(deriv)
+        natom = bas.molecule().natom()
+        assert V.nchunk == nchunk(natom)
+        V.set_charge_field(field)
+        assert V.nchunk == nchunk(len(field))
+        results[pkg] = []
+        for s1, s2 in pairs:
+            chunks = V.compute_shell_chunks(s1, s2, deriv)
+            assert V.nchunk == nchunk(len(field))
+            assert len(chunks) == V.nchunk
+            results[pkg].append([c.np for c in chunks])
+        assert len(V.charge_field) == len(field)
+        V.set_charge_field(field + [(1.0, (0.0, 0.0, 3.0))])
+        assert V.nchunk == nchunk(len(field) + 1)
+    for (s1, s2), ref, tst in zip(pairs, results["libint2"], results["libcint"]):
+        for k, (r, t) in enumerate(zip(ref, tst)):
+            assert compare_values(r, t, 11, f"deriv {deriv} chunk {k} of shells ({s1}, {s2}), puream={puream}")

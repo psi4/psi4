@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <stdexcept>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/integral.h"
@@ -39,30 +38,22 @@ using namespace psi;
 OverlapInt::OverlapInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1,
                        std::shared_ptr<BasisSet> bs2, int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv) {
-    if (deriv > 2) {
-        throw std::runtime_error("OverlapInt: does not support 3rd order derivatives and higher.");
-    }
+    require_deriv_range("OverlapInt", 2);
+    set_two_center_chunks();
+}
 
+OverlapInt::~OverlapInt() {}
+
+Libint2OverlapInt::Libint2OverlapInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1,
+                                     std::shared_ptr<BasisSet> bs2, int deriv)
+    : OverlapInt(st, bs1, bs2, deriv) {
     int max_am = std::max(basis1()->max_am(), basis2()->max_am());
     int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
 
     engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::overlap, max_nprim, max_am, 0);
-
-    if (deriv == 1) {
-        // We set chunk count for normalize_am and pure_transform
-        set_chunks(6);
-
-        engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::overlap, max_nprim, max_am, 1);
-    } else if (deriv == 2) {
-        set_chunks(21);
-
-        engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::overlap, max_nprim, max_am, 1);
-        engine2_ = std::make_unique<libint2::Engine>(libint2::Operator::overlap, max_nprim, max_am, 2);
-    }
-
-    buffer_ = nullptr;
-    buffers_.resize(nchunk_);
+    if (deriv >= 1) engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::overlap, max_nprim, max_am, 1);
+    if (deriv == 2) engine2_ = std::make_unique<libint2::Engine>(libint2::Operator::overlap, max_nprim, max_am, 2);
 }
 
-OverlapInt::~OverlapInt() {}
+Libint2OverlapInt::~Libint2OverlapInt() {}
 

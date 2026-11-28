@@ -56,6 +56,7 @@
 #include "psi4/libmints/eri.h"
 #ifdef USING_cint
 #include "psi4/libmints/libcinteri.h"
+#include "psi4/libmints/libcintonebody.h"
 #endif
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/3coverlap.h"
@@ -328,6 +329,16 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 
     if (!unsettled) mol->update_geometry();
     return mol;
+}
+
+/// Bind an IntegralFactory method that returns a std::unique_ptr as one that returns a std::shared_ptr. The integral
+/// classes are registered with std::shared_ptr holders, and pybind11 does not turn a returned std::unique_ptr into
+/// such a holder: the Python object it makes crashes on its first method call.
+template <typename R, typename... Args>
+auto shared_from_factory(std::unique_ptr<R> (IntegralFactory::*method)(Args...)) {
+    return [method](IntegralFactory &factory, Args... args) {
+        return std::shared_ptr<R>((factory.*method)(std::forward<Args>(args)...));
+    };
 }
 
 void export_mints(py::module& m) {
@@ -1271,6 +1282,50 @@ void export_mints(py::module& m) {
     pyOneBodyAOInt
         .def("compute_shell", &OneBodyAOInt::compute_shell,
              "Compute integrals between basis functions in the given shell pair")
+        .def("compute_shell_deriv1", &OneBodyAOInt::compute_shell_deriv1,
+             "Compute first derivative integrals between basis functions in the given shell pair")
+        .def("compute_shell_deriv2", &OneBodyAOInt::compute_shell_deriv2,
+             "Compute second derivative integrals between basis functions in the given shell pair")
+        .def_property_readonly("nchunk", &OneBodyAOInt::nchunk,
+                               "Number of chunks of integrals, e.g. derivative components, of the last computation")
+        .def(
+            "compute_shell_chunks",
+            [](OneBodyAOInt &self, int s1, int s2, int deriv) {
+                // Computing and copying in one call keeps the copy to the buffers, shells and chunk count of
+                // that computation.
+                if (s1 < 0 || s1 >= self.basis1()->nshell() || s2 < 0 || s2 >= self.basis2()->nshell())
+                    throw py::index_error("compute_shell_chunks: shell pair (" + std::to_string(s1) + ", " +
+                                          std::to_string(s2) + ") is out of range.");
+                switch (deriv) {
+                    case 0:
+                        self.compute_shell(s1, s2);
+                        break;
+                    case 1:
+                        self.compute_shell_deriv1(s1, s2);
+                        break;
+                    case 2:
+                        self.compute_shell_deriv2(s1, s2);
+                        break;
+                    default:
+                        throw py::value_error("compute_shell_chunks: deriv must be 0, 1, or 2.");
+                }
+                const auto &buffers = self.buffers();
+                if (buffers.size() != static_cast<size_t>(self.nchunk()))
+                    throw PSIEXCEPTION("compute_shell_chunks: " + std::to_string(buffers.size()) +
+                                       " buffers for " + std::to_string(self.nchunk()) + " chunks.");
+                const int n1 = self.basis1()->shell(s1).nfunction(), n2 = self.basis2()->shell(s2).nfunction();
+                std::vector<SharedMatrix> chunks;
+                for (const double *buf : buffers) {
+                    if (buf == nullptr) throw PSIEXCEPTION("compute_shell_chunks: a chunk was not computed.");
+                    auto M = std::make_shared<Matrix>(n1, n2);
+                    std::copy(buf, buf + static_cast<size_t>(n1) * n2, M->pointer()[0]);
+                    chunks.push_back(M);
+                }
+                return chunks;
+            },
+            "s1"_a, "s2"_a, "deriv"_a = 0,
+            "Computes the integrals (deriv 0) or their first or second derivatives over shells s1 and s2, and "
+            "returns a copy of each chunk as an (nbf(s1), nbf(s2)) matrix")
         .def("compute", vecmatrix_version(&OneBodyAOInt::compute),
              "Compute all integrals over both basis sets, and store them in the provided matrix")
         .def_property("origin", py::cpp_function(&OneBodyAOInt::origin), py::cpp_function(&OneBodyAOInt::set_origin),
@@ -1297,7 +1352,12 @@ void export_mints(py::module& m) {
     //        add_property("basis1", &OneBodySOInt::basis1, "The basis set on center one").
     //        add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
 
-    py::class_<OverlapInt, std::shared_ptr<OverlapInt>>(m, "OverlapInt", pyOneBodyAOInt, "Computes overlap integrals");
+    // IntegralFactory returns the concrete classes behind std::unique_ptr<OneBodyAOInt>; they are registered so
+    // that Python sees them as the semantic types (OverlapInt, KineticInt, PotentialInt) they derive from.
+    py::class_<OverlapInt, std::shared_ptr<OverlapInt>> pyOverlapInt(m, "OverlapInt", pyOneBodyAOInt,
+                                                                    "Computes overlap integrals");
+    py::class_<Libint2OverlapInt, std::shared_ptr<Libint2OverlapInt>>(m, "Libint2OverlapInt", pyOverlapInt,
+                                                                      "Computes overlap integrals with Libint2");
     py::class_<DipoleInt, std::shared_ptr<DipoleInt>>(m, "DipoleInt", pyOneBodyAOInt, "Computes dipole integrals");
     py::class_<QuadrupoleInt, std::shared_ptr<QuadrupoleInt>>(m, "QuadrupoleInt", pyOneBodyAOInt,
                                                               "Computes quadrupole integrals");
@@ -1307,9 +1367,27 @@ void export_mints(py::module& m) {
         m, "TracelessQuadrupoleInt", pyOneBodyAOInt, "Computes traceless quadrupole integrals");
     py::class_<ElectricFieldInt, std::shared_ptr<ElectricFieldInt>>(m, "ElectricFieldInt", pyOneBodyAOInt,
                                                                     "Computes electric field integrals");
-    py::class_<KineticInt, std::shared_ptr<KineticInt>>(m, "KineticInt", pyOneBodyAOInt, "Computes kinetic integrals");
-    py::class_<PotentialInt, std::shared_ptr<PotentialInt>>(m, "PotentialInt", pyOneBodyAOInt,
-                                                            "Computes potential integrals");
+    py::class_<KineticInt, std::shared_ptr<KineticInt>> pyKineticInt(m, "KineticInt", pyOneBodyAOInt,
+                                                                    "Computes kinetic integrals");
+    py::class_<Libint2KineticInt, std::shared_ptr<Libint2KineticInt>>(m, "Libint2KineticInt", pyKineticInt,
+                                                                      "Computes kinetic integrals with Libint2");
+    py::class_<PotentialInt, std::shared_ptr<PotentialInt>> pyPotentialInt(m, "PotentialInt", pyOneBodyAOInt,
+                                                                          "Computes potential integrals");
+    pyPotentialInt
+        .def("set_charge_field", &PotentialInt::set_charge_field,
+             "Set the field of point charges, a list of (charge, (x, y, z)); its size sets the number of chunks of "
+             "derivative integrals")
+        .def_property_readonly("charge_field", &PotentialInt::charge_field, "The field of point charges");
+    py::class_<Libint2PotentialInt, std::shared_ptr<Libint2PotentialInt>>(m, "Libint2PotentialInt", pyPotentialInt,
+                                                                          "Computes potential integrals with Libint2");
+#ifdef USING_cint
+    py::class_<LibcintOverlapInt, std::shared_ptr<LibcintOverlapInt>>(m, "LibcintOverlapInt", pyOverlapInt,
+                                                                      "Computes overlap integrals with libcint");
+    py::class_<LibcintKineticInt, std::shared_ptr<LibcintKineticInt>>(m, "LibcintKineticInt", pyKineticInt,
+                                                                      "Computes kinetic integrals with libcint");
+    py::class_<LibcintPotentialInt, std::shared_ptr<LibcintPotentialInt>>(
+        m, "LibcintPotentialInt", pyPotentialInt, "Computes potential integrals with libcint");
+#endif
     py::class_<ElectrostaticInt, std::shared_ptr<ElectrostaticInt>>(m, "ElectrostaticInt", pyOneBodyAOInt,
                                                                     "Computes electrostatic integrals");
     py::class_<NablaInt, std::shared_ptr<NablaInt>>(m, "NablaInt", pyOneBodyAOInt, "Computes nabla integrals");
@@ -1383,49 +1461,49 @@ void export_mints(py::module& m) {
         .def("erf_complement_eri", &IntegralFactory::erf_complement_eri,
              "Returns an erf complement ERI integral object (omega integral)", "omega"_a, "deriv"_a = 0,
              "use_shell_pairs"_a = true, "needs_exchange"_a = false)
-        .def("ao_overlap", &IntegralFactory::ao_overlap, "Returns a OneBodyInt that computes the AO overlap integrals",
+        .def("ao_overlap", shared_from_factory(&IntegralFactory::ao_overlap), "Returns a OneBodyInt that computes the AO overlap integrals",
              "deriv"_a = 0)
-        .def("so_overlap", &IntegralFactory::so_overlap, "Returns a OneBodyInt that computes the SO overlap integrals",
+        .def("so_overlap", shared_from_factory(&IntegralFactory::so_overlap), "Returns a OneBodyInt that computes the SO overlap integrals",
              "deriv"_a = 0)
-        .def("ao_dipole", &IntegralFactory::ao_dipole, "Returns a OneBodyInt that computes the AO dipole integrals",
+        .def("ao_dipole", shared_from_factory(&IntegralFactory::ao_dipole), "Returns a OneBodyInt that computes the AO dipole integrals",
              "deriv"_a = 0)
-        .def("so_dipole", &IntegralFactory::so_dipole, "Returns a OneBodyInt that computes the SO dipole integrals",
+        .def("so_dipole", shared_from_factory(&IntegralFactory::so_dipole), "Returns a OneBodyInt that computes the SO dipole integrals",
              "deriv"_a = 0)
-        .def("ao_kinetic", &IntegralFactory::ao_kinetic, "Returns a OneBodyInt that computes the AO kinetic integrals",
+        .def("ao_kinetic", shared_from_factory(&IntegralFactory::ao_kinetic), "Returns a OneBodyInt that computes the AO kinetic integrals",
              "deriv"_a = 0)
-        .def("so_kinetic", &IntegralFactory::so_kinetic, "Returns a OneBodyInt that computes the SO kinetic integrals",
+        .def("so_kinetic", shared_from_factory(&IntegralFactory::so_kinetic), "Returns a OneBodyInt that computes the SO kinetic integrals",
              "deriv"_a = 0)
-        .def("ao_potential", &IntegralFactory::ao_potential,
+        .def("ao_potential", shared_from_factory(&IntegralFactory::ao_potential),
              "Returns a OneBodyInt that computes the AO nuclear attraction integral", "deriv"_a = 0)
-        .def("so_potential", &IntegralFactory::so_potential,
+        .def("so_potential", shared_from_factory(&IntegralFactory::so_potential),
              "Returns a OneBodyInt that computes the SO nuclear attraction integral", "deriv"_a = 0)
-        .def("ao_nabla", &IntegralFactory::ao_nabla, "Returns a OneBodyInt that computes the AO nabla integral",
+        .def("ao_nabla", shared_from_factory(&IntegralFactory::ao_nabla), "Returns a OneBodyInt that computes the AO nabla integral",
              "deriv"_a = 0)
-        .def("so_nabla", &IntegralFactory::so_nabla, "Returns a OneBodyInt that computes the SO nabla integral",
+        .def("so_nabla", shared_from_factory(&IntegralFactory::so_nabla), "Returns a OneBodyInt that computes the SO nabla integral",
              "deriv"_a = 0)
-        .def("ao_angular_momentum", &IntegralFactory::ao_angular_momentum,
+        .def("ao_angular_momentum", shared_from_factory(&IntegralFactory::ao_angular_momentum),
              "Returns a OneBodyInt that computes the AO angular momentum integral", "deriv"_a = 0)
-        .def("so_angular_momentum", &IntegralFactory::so_angular_momentum,
+        .def("so_angular_momentum", shared_from_factory(&IntegralFactory::so_angular_momentum),
              "Returns a OneBodyInt that computes the SO angular momentum integral", "deriv"_a = 0)
-        .def("ao_quadrupole", &IntegralFactory::ao_quadrupole,
+        .def("ao_quadrupole", shared_from_factory(&IntegralFactory::ao_quadrupole),
              "Returns a OneBodyInt that computes AO the quadrupole integral")
-        .def("so_quadrupole", &IntegralFactory::so_quadrupole,
+        .def("so_quadrupole", shared_from_factory(&IntegralFactory::so_quadrupole),
              "Returns a OneBodyInt that computes SO the quadrupole integral")
-        .def("ao_multipoles", &IntegralFactory::ao_multipoles,
+        .def("ao_multipoles", shared_from_factory(&IntegralFactory::ao_multipoles),
              "Returns a OneBodyInt that computes arbitrary-order AO multipole integrals", "order"_a, "deriv"_a = 0)
-        .def("so_multipoles", &IntegralFactory::so_multipoles,
+        .def("so_multipoles", shared_from_factory(&IntegralFactory::so_multipoles),
           "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a, "deriv"_a = 0)
-        .def("ao_multipole_potential", &IntegralFactory::ao_multipole_potential,
+        .def("ao_multipole_potential", shared_from_factory(&IntegralFactory::ao_multipole_potential),
              "Returns a OneBodyInt that computes arbitrary-order AO multipole potential integrals", "order"_a, "deriv"_a = 0)
-        .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole,
+        .def("ao_traceless_quadrupole", shared_from_factory(&IntegralFactory::ao_traceless_quadrupole),
              "Returns a OneBodyInt that computes the traceless AO quadrupole integral")
-        .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole,
+        .def("so_traceless_quadrupole", shared_from_factory(&IntegralFactory::so_traceless_quadrupole),
              "Returns a OneBodyInt that computes the traceless SO quadrupole integral")
-        .def("electric_field", &IntegralFactory::electric_field,
+        .def("electric_field", shared_from_factory(&IntegralFactory::electric_field),
              "Returns a OneBodyInt that computes the electric field")
-        .def("electrostatic", &IntegralFactory::electrostatic,
+        .def("electrostatic", shared_from_factory(&IntegralFactory::electrostatic),
              "Returns a OneBodyInt that computes the point electrostatic potential")
-        .def("overlap_3c", &IntegralFactory::overlap_3c,
+        .def("overlap_3c", shared_from_factory(&IntegralFactory::overlap_3c),
              "Returns a OneBodyInt that computes the 3 center overlap integral");
 
     typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;

@@ -3,7 +3,7 @@
 #! MP2 convergence requires that e_conv and d_conv are 1e-10
 
 if os.environ.get("_PSI4_USE_LIBCINT"):
-    psi4.set_options({"integral_package": "libcint"})
+    psi4.set_options({"integral_package": "libcint", "one_electron_integral_package": "libcint"})
 
 ref_df_scf            =  -76.059551121528784      # TEST
 ref_df_mp2_corl       =  -0.24110853689574918     # TEST

@@ -95,6 +95,13 @@ class PSI_API OneBodyAOInt {
     OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                  int deriv = 0);
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
+    /// Throw unless 0 <= deriv_ <= max_deriv.
+    void require_deriv_range(const char *name, int max_deriv) const;
+    /// Throw unless the object was created for derivatives of the given order.
+    void require_deriv(int order) const;
+    /// For operators of the bra and ket centers alone: 1, 6, or 21 chunks for deriv_ 0, 1, or 2, and as many
+    /// buffers.
+    void set_two_center_chunks();
     void pure_transform(const libint2::Shell &s1, const libint2::Shell &s2, int nchunks = 1);
 
     /// Compute integrals for a given shell pair
@@ -166,11 +173,10 @@ class PSI_API OneBodyAOInt {
 
 typedef std::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
 
-/// For a pair of basis sets, provides a list of integer pairs that index all significant (i.e. whose overlap is
-/// above the threshold) pairs that exist.  If the basis sets are different, the full Cartesian product is considered
-/// but if they are the same, only the lower triangular significant pairs are returned.
+/// For a pair of basis sets, the list of shell pairs (s1, s2): if the basis sets are different, their full
+/// Cartesian product, and if they are the same, the lower triangle s2 <= s1. No pair is screened out.
 std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr<BasisSet> bs1,
-                                                                 std::shared_ptr<BasisSet> bs2, double threshold);
+                                                                 std::shared_ptr<BasisSet> bs2);
 
 }  // namespace psi
 

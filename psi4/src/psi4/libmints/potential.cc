@@ -44,59 +44,48 @@ using namespace psi;
 PotentialInt::PotentialInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv) {
-    // When computing potential integrals with different bra and ket basis, the atom definition is taken from the bra basis.
-
-    int max_am = std::max(basis1()->max_am(), basis2()->max_am());
-    int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
-
-    // Setup the initial field of partial charges
+    require_deriv_range("PotentialInt", 2);
+    // When computing potential integrals with different bra and ket basis, the atom definition is taken from the
+    // bra basis.
+    const auto mol = bs1_->molecule();
     std::vector<std::pair<double, std::array<double, 3>>> params;
-    for (int A = 0; A < bs1_->molecule()->natom(); A++) {
-        params.push_back({
-            (double)bs1_->molecule()->Z(A),
-            {bs1_->molecule()->x(A), bs1_->molecule()->y(A), bs1_->molecule()->z(A)}});
-    }
-
-    engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 0);
-    engine0_->set_params(params);
-
-    if (deriv == 1) {
-        const auto nresults = 3 * (2 + bs1_->molecule()->natom());
-
-        set_chunks(nresults);
-
-        engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 1);
-        engine1_->set_params(params);
-
-    } else if (deriv == 2) {
-        constexpr auto nopers = libint2::operator_traits<libint2::Operator::nuclear>::nopers;
-        const auto nresults = nopers * libint2::num_geometrical_derivatives(bs1_->molecule()->natom(), 2);
-
-        set_chunks(nresults);
-
-        engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 1);
-        engine1_->set_params(params);
-        engine2_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 2);
-        engine2_->set_params(params);
-    } else if (deriv > 2) {
-        throw PSIEXCEPTION("PotentialInt only supports derivatives <= 2.");
-    }
-
-    buffer_ = nullptr;
-    buffers_.resize(nchunk_);
+    for (int A = 0; A < mol->natom(); A++) params.push_back({(double)mol->Z(A), {mol->x(A), mol->y(A), mol->z(A)}});
+    PotentialInt::set_charge_field(params);
 }
 
 PotentialInt::~PotentialInt() {}
 
-
-
-void PotentialInt::set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz) {
-    engine0_->set_params(Zxyz);
-    if (engine1_) engine1_->set_params(Zxyz);
-    if (engine2_) engine2_->set_params(Zxyz);
-    Zxyz_ = Zxyz;
+int PotentialInt::field_chunks() const {
+    const int ncoord = 3 * (2 + static_cast<int>(Zxyz_.size()));
+    return deriv_ == 2 ? ncoord * (ncoord + 1) / 2 : (deriv_ == 1 ? ncoord : 1);
 }
 
+void PotentialInt::set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>> &Zxyz) {
+    Zxyz_ = Zxyz;
+    set_chunks(field_chunks());
+    buffers_.assign(nchunk_, nullptr);
+}
+
+Libint2PotentialInt::Libint2PotentialInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1,
+                                         std::shared_ptr<BasisSet> bs2, int deriv)
+    : PotentialInt(st, bs1, bs2, deriv) {
+    int max_am = std::max(basis1()->max_am(), basis2()->max_am());
+    int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
+
+    engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 0);
+    if (deriv >= 1) engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 1);
+    if (deriv == 2) engine2_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 2);
+    Libint2PotentialInt::set_charge_field(Zxyz_);
+}
+
+Libint2PotentialInt::~Libint2PotentialInt() {}
+
+void Libint2PotentialInt::set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>> &Zxyz) {
+    PotentialInt::set_charge_field(Zxyz);
+    engine0_->set_params(Zxyz_);
+    if (engine1_) engine1_->set_params(Zxyz_);
+    if (engine2_) engine2_->set_params(Zxyz_);
+}
 
 PotentialSOInt::PotentialSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const std::shared_ptr<IntegralFactory> &fact)
     : OneBodySOInt(aoint, fact) {

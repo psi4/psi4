@@ -17,7 +17,7 @@
 #! expressions.
 
 if os.environ.get("_PSI4_USE_LIBCINT"):
-    psi4.set_options({"integral_package": "libcint"})
+    psi4.set_options({"integral_package": "libcint", "one_electron_integral_package": "libcint"})
 
 molecule hydrogen {
   0 2

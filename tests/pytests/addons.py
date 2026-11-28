@@ -171,8 +171,8 @@ def using(program: str) -> List:
     return _using_cache[program][1]
 
 
-#: For ctests that cross-check an alternate two-electron integral package against the default. The default case
-#: leaves INTEGRAL_PACKAGE alone, so a CI lane that changes the default still tests it.
+#: For ctests that cross-check an alternate integral package against the default. The default case leaves
+#: INTEGRAL_PACKAGE and ONE_ELECTRON_INTEGRAL_PACKAGE alone, so a CI lane that changes the defaults still tests them.
 integral_package_combinations = pytest.mark.parametrize("intpkg", [
     pytest.param(None, id="default"),
     pytest.param("libcint", id="libcint", marks=using("cint")),

@@ -62,6 +62,7 @@
 
 #ifdef USING_cint
 #include "psi4/libmints/libcinteri.h"
+#include "psi4/libmints/libcintonebody.h"
 #endif
 
 using namespace psi;
@@ -94,8 +95,30 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     init_spherical_harmonics(14);
 }
 
+namespace {
+void require_compiled_in(const std::string &package, const std::string &option = "INTEGRAL_PACKAGE");
+
+/// Whether ONE_ELECTRON_INTEGRAL_PACKAGE asks for libcint for the overlap, kinetic, and potential integrals.
+/// Stops if it does in a build without libcint. Says once per process which package computes them, if not Libint2.
+bool libcint_requested() {
+    const auto package = Process::environment.options.get_str("ONE_ELECTRON_INTEGRAL_PACKAGE");
+    require_compiled_in(package, "ONE_ELECTRON_INTEGRAL_PACKAGE");
+    if (package == "LIBINT2") return false;
+    static std::once_flag announced;
+    std::call_once(announced, [] {
+        outfile->Printf("  ONE_ELECTRON_INTEGRAL_PACKAGE LIBCINT: overlap, kinetic, and potential integrals from libcint.\n");
+    });
+    return true;
+}
+}  // namespace
+
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_overlap(int deriv) {
-    return std::make_unique<OverlapInt>(spherical_transforms_, bs1_, bs2_, deriv);
+    if (libcint_requested()) {
+#ifdef USING_cint
+        return std::make_unique<LibcintOverlapInt>(spherical_transforms_, bs1_, bs2_, deriv);
+#endif
+    }
+    return std::make_unique<Libint2OverlapInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 std::unique_ptr<OneBodySOInt> IntegralFactory::so_overlap(int deriv) {
@@ -106,7 +129,12 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_overlap(int deriv) {
 std::unique_ptr<ThreeCenterOverlapInt> IntegralFactory::overlap_3c() { return std::make_unique<ThreeCenterOverlapInt>(bs1_, bs2_, bs3_); }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_kinetic(int deriv) {
-    return std::make_unique<KineticInt>(spherical_transforms_, bs1_, bs2_, deriv);
+    if (libcint_requested()) {
+#ifdef USING_cint
+        return std::make_unique<LibcintKineticInt>(spherical_transforms_, bs1_, bs2_, deriv);
+#endif
+    }
+    return std::make_unique<Libint2KineticInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 std::unique_ptr<OneBodySOInt> IntegralFactory::so_kinetic(int deriv) {
@@ -115,7 +143,12 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_kinetic(int deriv) {
 }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_potential(int deriv) {
-    return std::make_unique<PotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
+    if (libcint_requested()) {
+#ifdef USING_cint
+        return std::make_unique<LibcintPotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
+#endif
+    }
+    return std::make_unique<Libint2PotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
 std::unique_ptr<OneBodySOInt> IntegralFactory::so_potential(int deriv) {
@@ -219,8 +252,8 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::electric_field(int deriv) {
 
 namespace {
 
-/// Stop unless INTEGRAL_PACKAGE names an engine compiled into this build. LIBINT2 always is.
-void require_compiled_in(const std::string &package) {
+/// Stop unless the package that `option` names is compiled into this build. LIBINT2 always is.
+void require_compiled_in(const std::string &package, const std::string &option) {
     bool compiled = package == "LIBINT2";
 #ifdef USING_simint
     compiled |= package == "SIMINT";
@@ -229,9 +262,9 @@ void require_compiled_in(const std::string &package) {
     compiled |= package == "LIBCINT";
 #endif
     if (compiled) return;
-    const std::string option = package == "LIBCINT" ? "cint" : "simint";  // the CMake ENABLE_<option>
-    throw PSIEXCEPTION("INTEGRAL_PACKAGE " + package + " was requested, but Psi4 was built without it. " +
-                       "Rebuild with `-D ENABLE_" + option + "=ON`.");
+    const std::string cmake = package == "LIBCINT" ? "cint" : "simint";  // the CMake ENABLE_<cmake>
+    throw PSIEXCEPTION(option + " " + package + " was requested, but Psi4 was built without it. " +
+                       "Rebuild with `-D ENABLE_" + cmake + "=ON`.");
 }
 
 /// INTEGRAL_PACKAGE's engine provides no integrals of this kind, so Libint2 supplies them. Announce each such
