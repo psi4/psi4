@@ -500,12 +500,25 @@ std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bo
         potential_->compute_Vx_full(Dx, Vx, singlet);
     }
 
+    // External CPSCF perturbations (PCM, PE, DDX, ...) respond to the perturbed charge density: one summed potential
+    // per vector.  A triplet perturbation leaves the charge density unchanged (as for J, zeroed below).
     std::vector<SharedMatrix> V_ext_pert;
-    for (const auto& pert : external_cpscf_perturbations_) {
-        if (print_ > 1) outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
-        for (size_t i = 0; i < x_vec.size(); i++) {
+    if (singlet) {
+        for (const auto& pert : external_cpscf_perturbations_) {
+            if (print_ > 1) outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
+        }
+        for (size_t i = 0; i < x_vec.size() && !external_cpscf_perturbations_.empty(); i++) {
             auto Dx = linalg::doublet(Cl[i], Cr[i], false, true);
-            V_ext_pert.push_back(pert.second(Dx));
+            SharedMatrix V;
+            for (const auto& pert : external_cpscf_perturbations_) {
+                auto Vp = pert.second(Dx);
+                if (V) {
+                    V->add(Vp);
+                } else {
+                    V = Vp->clone();
+                }
+            }
+            V_ext_pert.push_back(V);
         }
     }
 
