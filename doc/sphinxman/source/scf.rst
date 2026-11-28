@@ -996,7 +996,7 @@ the microiterations typically results in the overall cost being greater for
 SOSCF than for gradient-based methods. Therefore, SOSCF should only be used if
 it is difficult to locate a stable minimum.
 
-SOSCF is available for all HF and DFT references except those listed below, meta-GGA
+SOSCF is available for all HF and DFT references except those listed below, VV10
 functionals among them. To enable, set the option |scf__soscf| to ``true``.
 Additional options to modify the number of microiterations taken are as
 follows:
@@ -1076,8 +1076,8 @@ trial densities it needs. |PSIfour| raises for these rather than returning a
 converged but wrong answer:
 
 * a ``CUHF`` reference, for which no orbital Hessian is implemented,
-* meta-GGA and VV10 functionals, whose exchange-correlation kernel cannot supply the
-  rotated potential the Hessian needs,
+* VV10 functionals, whose exchange-correlation kernel cannot supply the rotated
+  potential the Hessian needs,
 * fractional occupation (|scf__frac_start|), which varies the occupation during the
   SCF where a second-order step is taken at fixed occupation,
 * incremental Fock builds (|scf__incfock|), which accumulate against the SCF's own

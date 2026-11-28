@@ -235,6 +235,10 @@ void export_functional(py::module &m) {
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
 
     py::class_<MolecularGrid, std::shared_ptr<MolecularGrid>>(m, "MolecularGrid", "docstring")
+        .def("compute_weight_gradient", &MolecularGrid::compute_weight_gradient,
+             "Total nuclear derivative of the quadrature weights of an atomic block (3*natom x npoints).")
+        .def("compute_weight_hessian", &MolecularGrid::compute_weight_hessian,
+             "Accumulate the second nuclear derivative of the quadrature weights of a block, contracted with a per-point scalar, into a (3 natom, 3 natom) matrix")
         .def("print", &MolecularGrid::print, "Prints grid information.")
         .def("orientation", &MolecularGrid::orientation, "Returns the orientation of the grid.")
         .def("npoints", &MolecularGrid::npoints, "Returns the number of grid points.")
@@ -275,8 +279,18 @@ void export_functional(py::module &m) {
         .def("Dao", &VBase::set_D, "Returns internal AO density.")
         .def("compute_V", &VBase::compute_V, "doctsring")
         .def("compute_Vx", &VBase::compute_Vx, "doctsring")
+        .def(
+            "compute_Vx_full",
+            [](VBase& v, std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret, bool singlet) {
+                auto* rv = dynamic_cast<RV*>(&v);
+                if (!rv) throw PSIEXCEPTION("compute_Vx_full: only available for restricted (RV) potentials.");
+                rv->compute_Vx_full(Dx, ret, singlet);
+            },
+            "Computes the Vx contraction with singlet/triplet spin adaptation. Restricted potentials only.")
         .def("compute_gradient", &VBase::compute_gradient, "Compute the DFT nuclear gradient contribution.")
-        .def("compute_hessain", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.")
+        .def("compute_hessian", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.")
+        .def("compute_fock_derivatives", &VBase::compute_fock_derivatives,
+             "Compute the derivatives of the XC potential matrix with respect to nuclear displacements, at fixed density and grid.")
 
         .def("set_print", &VBase::set_print, "Sets the print level of the object.")
         .def("set_debug", &VBase::set_debug, "Sets the debug level of the object.")

@@ -328,7 +328,7 @@ def selected(wfn, soscf_enabled, potentials):
     applied per-iteration from Python (EFP/PCM/DDX/PE) or through find_occupation (MOM) would
     stop being applied thereafter. The GRAC shift splices its potential into V_xc outside the
     kernel cphf_Hx differentiates, so the Hessian never sees it. Second-order SCF in general
-    is refused for CUHF, meta/VV10 and FRAC by _validate_soscf, and for sn-LinK and IncFock
+    is refused for CUHF, VV10 and FRAC by _validate_soscf, and for sn-LinK and IncFock
     in proc.scf_helper.
     """
     if not (soscf_enabled

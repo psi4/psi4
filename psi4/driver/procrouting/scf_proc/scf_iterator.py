@@ -289,11 +289,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             raise ValidationError(
                 "Second-order SCF: no orbital Hessian is implemented for a CUHF reference.\n"
                 "     Please set SOSCF to false")
-        if self.functional().needs_xc() and (self.functional().is_meta()
-                                             or self.functional().needs_vv10()):
-            kind = "meta-GGA" if self.functional().is_meta() else "VV10"
+        if self.functional().needs_xc() and self.functional().needs_vv10():
             raise ValidationError(
-                f"Second-order SCF: the {kind} exchange-correlation kernel cannot supply the\n"
+                "Second-order SCF: the VV10 exchange-correlation kernel cannot supply the\n"
                 "     rotated potential the orbital Hessian needs.\n"
                 "     Please set SOSCF to false")
         if frac_enabled:
