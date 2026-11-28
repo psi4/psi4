@@ -19,6 +19,12 @@ if(TARGET gauxc::gauxc)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_gauxc)
 endif()
 
+# CUDA runtime arrives through a GPU-using addon (e.g., device-enabled GauXC); enables libpsi4util/cuda_diagnostics
+if(TARGET CUDA::cudart)
+  target_link_libraries(psi4_optional_deps INTERFACE CUDA::cudart)
+  target_compile_definitions(psi4_optional_deps INTERFACE PSI4_HAS_CUDA_RUNTIME)
+endif()
+
 if(TARGET ECPINT::ecpint)
   target_link_libraries(psi4_optional_deps INTERFACE ECPINT::ecpint)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_ecpint)

@@ -28,17 +28,18 @@
 
 #include "jk.h"
 #include "SplitJK.h"
+#include "gauxc_device.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/eigen_interface.h"
 #include "psi4/libmints/electrostatic.h"
+#include "psi4/libmints/integral.h"
 #include "psi4/libmints/mintshelper.h"
-#include "psi4/libmints/matrix_eigen.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -89,93 +90,6 @@ std::tuple<
     return std::make_tuple(pruning_scheme_map, radial_scheme_map);
 }
 
-// constructs a permutation matrix for converting matrices to and from GauXC's integral ordering standard 
-Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(
-    const std::shared_ptr<BasisSet> psi4_basisset) {
-
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
-
-    // general array for how to reorder integrals
-    std::vector<int> cca_integral_order(2*gauxc_max_am_ + 1, 0);
-   
-    // p shells or larger
-    for (size_t l = 1, idx = 1; l != gauxc_max_am_; idx += 2, ++l) {
-        cca_integral_order[idx] = l;
-        cca_integral_order[idx + 1] = -l;
-    }
-
-    // actually construct permutation matrix
-    for (int ish = 0, ibf = 0; ish != psi4_basisset->nshell(); ++ish) {
-        auto& sh = psi4_basisset->shell(ish);
-        auto am = sh.am();
-  
-        auto ibf_base = ibf;
-        for (int ishbf = 0; ishbf != 2*am + 1; ++ishbf, ++ibf) {
-            permutation_matrix.indices()[ibf] = ibf_base + cca_integral_order[ishbf] + am;
-        }
-    }
-   
-    // we are done
-    return permutation_matrix;
-}
-
-// converts a Psi4::Molecule object to a GauXC::Molecule object
-GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
-    GauXC::Molecule gauxc_molecule;
-
-    for (size_t iatom = 0; iatom != psi4_molecule->natom(); ++iatom) {
-        auto atomic_number = psi4_molecule->true_atomic_number(iatom);
-        auto x_coord = psi4_molecule->x(iatom);
-        auto y_coord = psi4_molecule->y(iatom);
-        auto z_coord = psi4_molecule->z(iatom);
-        
-        gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
-    }
-
-    return gauxc_molecule;
-}
-
-// converts a Psi4::BasisSet object to a GauXC::BasisSet object
-template <typename T>
-GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol, bool force_cartesian) {
-    using prim_array = typename GauXC::Shell<T>::prim_array;
-    using cart_array = typename GauXC::Shell<T>::cart_array;
-
-    GauXC::BasisSet<T> gauxc_basisset(psi4_basisset->nshell());
- 
-    for (size_t ishell = 0; ishell != psi4_basisset->nshell(); ++ishell) {
-        auto psi4_shell = psi4_basisset->shell(ishell);
-       
-        const auto nprim = GauXC::PrimSize(psi4_shell.nprimitive());
-        prim_array alpha; 
-        prim_array coeff;
-
-        for (size_t iprim = 0; iprim != psi4_shell.nprimitive(); ++iprim) {
-            alpha.at(iprim) = psi4_shell.exp(iprim);
-            coeff.at(iprim) = psi4_shell.coef(iprim);
-        }
-
-        auto psi4_shell_center = psi4_shell.center();
-        cart_array center = { psi4_shell_center[0], psi4_shell_center[1], psi4_shell_center[2] };
-
-        gauxc_basisset[ishell] = GauXC::Shell(
-            nprim,
-            GauXC::AngularMomentum(psi4_shell.am()), 
-            (force_cartesian ? GauXC::SphericalType(false) : GauXC::SphericalType( !(psi4_shell.is_cartesian()) ) ),
-            alpha,
-            coeff,
-            center,
-            false // do not normalize shell via GauXC; it is normalized via Psi4
-        );
-    }
-    
-    for (auto& sh : gauxc_basisset) {
-        sh.set_shell_tolerance(basis_tol); 
-    }
-
-    return gauxc_basisset;
-}
-
 #endif 
 
 // ==> SplitJK-inherited functions go here <== //
@@ -211,12 +125,17 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // define runtime environment and execution space
     use_gpu_ = options_.get_bool("SNLINK_USE_GPU"); 
+    device_desc_ = use_gpu_ ? gauxc_device::check("SNLINK_USE_GPU") : std::string();
+    // Device setup and the first kernel launches happen below; run them so failures get explained
+    auto on_device = [this](auto&& step) { return gauxc_device::run(use_gpu_, "SNLINK_USE_GPU", device_desc_, step); };
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
 
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
 #ifdef GAUXC_HAS_DEVICE 
     if (use_gpu_) {
-        rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("SNLINK_GPU_MEM"));
+        on_device([&] {
+            rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("SNLINK_GPU_MEM"));
+        });
     } else { 
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
     }
@@ -271,9 +190,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // create ERI ordering permutation matrix to handle integral ordering
     if (!is_cca_ && primary_->has_puream()) {
-        permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(
-            generate_permutation_matrix(primary_)
-        );
+        permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(linalg::generate_permutation_to_cca(*primary_));
     } else {
         permutation_matrix_ = std::nullopt;
     }
@@ -350,8 +267,8 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
 
     // convert Psi4 fundamental quantities to GauXC 
-    auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
-    auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_, basis_tol_, force_cartesian);
+    auto gauxc_mol = primary_->molecule()->to_gauxc_molecule();
+    auto gauxc_primary = primary_->to_gauxc_basisset<double>(basis_tol_, force_cartesian);
 
     // create snLinK grid for GauXC
     auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
@@ -376,13 +293,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // construct load balancer
     //const size_t quad_pad_value = 1;
     //auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
-    auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
-    
-    // construct weights module
-    auto gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
+    auto gauxc_load_balancer = on_device([&] {
+        auto load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
 
-    // apply partition weights
-    gauxc_mol_weights.modify_weights(gauxc_load_balancer);
+        // construct weights module
+        auto gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
+
+        // apply partition weights
+        gauxc_mol_weights.modify_weights(load_balancer);
+        return load_balancer;
+    });
 
     // construct dummy functional
     // note that the snLinK used by the eventually-called eval_exx function is agnostic to the input functional!
@@ -424,6 +344,7 @@ void snLinK::print_header() const {
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
         
         outfile->Printf("    K Execution Space: %s\n", (use_gpu_) ? "Device (GPU)" : "Host (CPU)");
+        if (use_gpu_ && !device_desc_.empty()) outfile->Printf("    K GPU Device: %s\n", device_desc_.c_str());
         outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
         outfile->Printf("    K Grid Spherical/Angular Points: %i\n\n", spherical_points_);
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");

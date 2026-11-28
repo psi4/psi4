@@ -346,12 +346,12 @@ class PSI_API snLinK : public SplitJK {
     bool is_cca_;
 
     std::optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> > permutation_matrix_;
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(
-        const std::shared_ptr<BasisSet> psi4_basisset);
 
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
     bool use_gpu_; 
+    // model, index, and compute capability of the GPU in use, when use_gpu_ and known
+    std::string device_desc_;
     // what grid pruning scheme is being used?
     std::string pruning_scheme_;
     // what radial quadrature scheme is being used?
@@ -374,10 +374,6 @@ class PSI_API snLinK : public SplitJK {
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
     std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
   
-    // => Psi4 -> GauXC conversion functions <= // 
-    GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
-    template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol, bool force_cartesian);
-
     // => Psi4 -> GauXC enum mappings <= //
     std::tuple<
         std::unordered_map<std::string, GauXC::PruningScheme>, 

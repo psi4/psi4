@@ -34,7 +34,7 @@ def mols():
     }
 
 @uusing("h5py")
-@uusing("gauxc")
+@uusing("gauxc_cpu")
 @pytest.mark.parametrize( 
     "inp",
     [

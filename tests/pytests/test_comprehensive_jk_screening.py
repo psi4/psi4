@@ -28,7 +28,7 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
 
         pytest.param("DFDIRJ+COSX", "AUTO"),
 
-        pytest.param("DFDIRJ+SNLINK", "AUTO", marks=using('gauxc')),
+        pytest.param("DFDIRJ+SNLINK", "AUTO", marks=using('gauxc_cpu')),
     ]
 )
 @pytest.mark.parametrize("screening", [ "SCHWARZ", "DENSITY", "CSAM", "NONE" ])

@@ -237,6 +237,10 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 set(Python_ADDITIONAL_VERSIONS 3.15 3.14 3.13 3.12 3.11)  # adjust with CMake minimum FindPythonInterp
 find_package(Python 3.11 COMPONENTS Interpreter Development NumPy REQUIRED)
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION}; NumPy version: ${Python_NumPy_VERSION})")
+if(${gauxc_ENABLE_GPU})
+    # psi4 only links CUDA libs (through gauxc::gauxc), so a toolkit suffices; no CUDA compiler needed
+    find_package(CUDAToolkit REQUIRED)
+endif()
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
@@ -249,6 +253,14 @@ include(custom_static_library)
 ################################  Main Project  ################################
 # On W, var may come in in native, and w/cmake v4, the psi4-core cache protests, so normalize path
 file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
+
+set(_psi4_core_device_args)
+    # Only forward what's set as empty CMAKE_CUDA_ARCHITECTURES is an error and FindMAGMA skips its pkg-config lookup whenever MAGMA_ROOT_DIR is defined, even empty
+foreach(_var CMAKE_CUDA_HOST_COMPILER CMAKE_CUDA_ARCHITECTURES MAGMA_ROOT_DIR)
+    if(NOT "${${_var}}" STREQUAL "")
+        list(APPEND _psi4_core_device_args "-D${_var}:STRING=${${_var}}")
+    endif()
+endforeach()
 
 include(ExternalProject)
 ExternalProject_Add(psi4-core
@@ -333,6 +345,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_IntegratorXX=${ENABLE_IntegratorXX}
               -DENABLE_gauxc=${ENABLE_gauxc}
+              -Dgauxc_ENABLE_GPU=${gauxc_ENABLE_GPU}
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
@@ -363,6 +376,7 @@ ExternalProject_Add(psi4-core
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
+              -DExchCXX_DIR=${ExchCXX_DIR}
               -Dgauxc_DIR=${gauxc_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
@@ -381,10 +395,16 @@ ExternalProject_Add(psi4-core
               -DOpenMP_iomp5_LIBRARY=${OpenMP_iomp5_LIBRARY}
               -DOpenMP_libiomp5md_LIBRARY=${OpenMP_libiomp5md_LIBRARY}
               -DOpenMP_pthread_LIBRARY=${OpenMP_pthread_LIBRARY}
+              -DCUDAToolkit_ROOT=${CUDAToolkit_ROOT}
+              -DCUDAToolkit_rt_LIBRARY=${CUDAToolkit_rt_LIBRARY}
+              -DMAGMA_INCLUDE_DIR=${MAGMA_INCLUDE_DIR}
+              -DMAGMA_LIBRARY=${MAGMA_LIBRARY}
+              -DCMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
               -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${_cmake_CMAKE_PREFIX_PATH}
+              ${_psi4_core_device_args}
               -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
               -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
               -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}

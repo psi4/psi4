@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import List
@@ -12,6 +13,7 @@ import psi4
 
 __all__ = [
     "hardware_nvidia_gpu",
+    "nvidia_compute_capability",
     "using",
     "uusing",
     "ctest_labeler",
@@ -50,7 +52,10 @@ def is_nvidia_gpu_present():
             # who knows?
             return False
         else:
-            return gpu_dfcc.cudaGetDeviceCount() > 0
+            try:
+                return gpu_dfcc.cudaGetDeviceCount() > 0
+            except AttributeError:
+                return False
     else:
         try:
             ngpu = len(GPUtil.getGPUs())
@@ -59,6 +64,33 @@ def is_nvidia_gpu_present():
             return False
         else:
             return ngpu > 0
+
+
+def nvidia_compute_capability():
+    """Return the min/max visible NVIDIA GPU compute capabilities, or None."""
+    try:
+        completed = subprocess.run(
+            ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+
+    capabilities = []
+    for line in completed.stdout.splitlines():
+        try:
+            major, minor = line.strip().split(".", maxsplit=1)
+            capabilities.append((int(major), int(minor)))
+        except ValueError:
+            pass
+
+    if not capabilities:
+        return None
+
+    return min(capabilities), max(capabilities)
 
 
 # Figure out what is imported
@@ -102,10 +134,14 @@ _programs = {
     "einsums": psi4.addons("einsums"),
     "pyeinsums": which_import("einsums", return_bool=True),
     "gauxc": psi4.addons("gauxc"),
+    "gauxc_cpu": psi4.addons("gauxc"),
+    "gauxc_gpu": psi4.addons("gauxc_gpu"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
     "otr": psi4.addons("otr"),
     "cint": psi4.addons("cint"),
+    "cuda_cc8": (cc := nvidia_compute_capability()) is not None and cc[1] >= (8, 0),
+    "cuda": (cc := nvidia_compute_capability()) is not None,
 }
 
 
@@ -131,13 +167,20 @@ _using_cache = {}
 def _using(program: str) -> None:
 
     if program not in _using_cache:
-        import_message = f"Not detecting module {program}. Install package if necessary to enable tests."
+        if program == "cuda_cc8":
+            import_message = f"Not detecting Nvidia GPU (8.0). Switch hardware to enable tests."
+        elif program == "cuda":
+            import_message = f"Not detecting Nvidia GPU. Switch hardware to enable tests."
+        else:
+            import_message = f"Not detecting module {program}. Install package if necessary to enable tests."
         skip = pytest.mark.skipif(has_program(program) is False, reason=import_message)
         general = pytest.mark.addon
         particular = getattr(pytest.mark, program)
 
         if program == "qcmanybody":
             all_marks = (skip, general, particular, getattr(pytest.mark, "nbody"))
+        elif program in ["gauxc_cpu", "gauxc_gpu"]:
+            all_marks = (skip, general, particular, getattr(pytest.mark, "gauxc"))
         else:
             all_marks = (skip, general, particular)
         _using_cache[program] = [_compose_decos(all_marks), all_marks]
@@ -169,6 +212,20 @@ def using(program: str) -> List:
     """
     _using(program)
     return _using_cache[program][1]
+
+
+def using_gauxc_gpu(min_compute_capability=None):
+    """Marks for tests requiring GPU-enabled GauXC and a visible Nvidia GPU."""
+    compute_capability = nvidia_compute_capability()
+    has_gpu = compute_capability is not None or is_nvidia_gpu_present()
+    has_capability = min_compute_capability is None or (
+        compute_capability is not None and compute_capability >= min_compute_capability
+    )
+    skip = pytest.mark.skipif(
+        not has_program("gauxc_gpu") or not has_gpu or not has_capability,
+        reason="GauXC GPU tests require GPU-enabled GauXC and a suitable Nvidia GPU",
+    )
+    return (*using("gauxc"), skip, pytest.mark.gauxc_gpu)
 
 
 #: For ctests that cross-check an alternate two-electron integral package against the default. The default case

@@ -34,7 +34,7 @@
 #include "hf.h"
 
 namespace psi {
-class VBase;
+class IntegratorDispatcher;
 namespace scf {
 
 class ROHF : public HF {
@@ -106,7 +106,7 @@ class ROHF : public HF {
     double otr_orbital_gradient() override;
 #endif
 
-    std::shared_ptr<VBase> V_potential() const override { return nullptr; };
+    std::shared_ptr<DensityFunctionalIntegratorDispatcher> V_potential() const override { return nullptr; };
 
     std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };

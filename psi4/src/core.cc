@@ -85,7 +85,6 @@ bool brianEnableEnvValue = false;
 BrianCookie brianCookie = 0;
 
 bool brianEnable = false;
-bool brianEnableDFT = true;
 brianInt brianRestrictionType = 0;
 bool brianCPHFFlag = false;
 bool brianCPHFLeftSideFlag = false;
@@ -1142,9 +1141,6 @@ bool psi4_python_module_initialize() {
             brianInit();
         }
     }
-
-    const char* brianEnableDFTEnv = getenv("BRIANQC_ENABLE_DFT");
-    brianEnableDFT = brianEnableDFTEnv ? (bool)atoi(brianEnableDFTEnv) : true;
 #endif
 
     initialized = true;
@@ -1436,6 +1432,26 @@ PYBIND11_MODULE(core, core) {
     core.def("get_output_file", []() { return outfile_name; }, "Returns output file name (stem + suffix, no directory). 'stdout'.");
     core.def("set_psi_file_prefix", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.set_psi_file_prefix removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");
         // [](std::string fprefix) { psi_file_prefix = strdup(fprefix.c_str()); });  // doesn't always work
+
+    // Set exception handling
+    PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> exc_storage;
+        exc_storage.call_once_and_store_result([&]() {
+        return py::exception<psi::CompositePsiException>(core, "CompositePsiException", PyExc_RuntimeError);
+    });
+    py::register_exception_translator([](std::exception_ptr p) {
+        try {
+            if (p) std::rethrow_exception(p);
+        } catch (const CompositePsiException& e) {
+            py::list failure_list;
+            for (const auto& [code_name, msg] : e.components()) {
+                failure_list.append(py::make_tuple(code_name, msg));
+            }
+            py::handle exc_type = exc_storage.get_stored();
+            py::object exc_instance = exc_type(e.what());
+            exc_instance.attr("failures") = failure_list;
+            py::set_error(exc_type, exc_instance);
+        }
+    });
 
     // ??
     // py::class_<Process::Environment>(core, "Environment")

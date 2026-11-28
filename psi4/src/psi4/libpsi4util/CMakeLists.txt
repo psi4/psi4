@@ -1,6 +1,7 @@
 list(APPEND sources
   PsiOutStream.cc
   combinations.cc
+  cuda_diagnostics.cc
   exception.cc
   memory_manager.cc
   process.cc
