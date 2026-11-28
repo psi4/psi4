@@ -27,6 +27,7 @@
  */
 
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libmints/matrix.h"
 #include "occwave.h"
@@ -145,47 +146,35 @@ void OCCWave::gfock() {
         }  // end if (wfn_type_ == "OMP2" && incore_iabc_ == 1)
 
         else if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
-            IWL ERIIN(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
-            int ilsti, nbuf, index, fi;
-            double value = 0.0;
             double summ = 0.0;
 
-            do {
-                ilsti = ERIIN.last_buffer();
-                nbuf = ERIIN.buffer_count();
+            IWLReader eri(psio_, PSIF_OCC_IABC);
+            for (const auto &integral : eri) {
+                int i = std::abs(integral.p);
+                int e = integral.q;
+                int a = integral.r;
+                int f = integral.s;
+                double value = integral.value;
 
-                fi = 0;
-                for (int idx = 0; idx < nbuf; idx++) {
-                    int i = ERIIN.labels()[fi];
-                    i = std::abs(i);
-                    int e = ERIIN.labels()[fi + 1];
-                    int a = ERIIN.labels()[fi + 2];
-                    int f = ERIIN.labels()[fi + 3];
-                    value = ERIIN.values()[idx];
-                    fi += 4;
+                int i_pitzer = qt2pitzerA[i];
+                int e_pitzer = qt2pitzerA[e];
+                int a_pitzer = qt2pitzerA[a];
+                int f_pitzer = qt2pitzerA[f];
 
-                    int i_pitzer = qt2pitzerA[i];
-                    int e_pitzer = qt2pitzerA[e];
-                    int a_pitzer = qt2pitzerA[a];
-                    int f_pitzer = qt2pitzerA[f];
+                int hi = mosym[i_pitzer];
+                int ha = mosym[a_pitzer];
+                int he = mosym[e_pitzer];
+                int hf = mosym[f_pitzer];
 
-                    int hi = mosym[i_pitzer];
-                    int ha = mosym[a_pitzer];
-                    int he = mosym[e_pitzer];
-                    int hf = mosym[f_pitzer];
-
-                    if (hi == ha && he == hf) {
-                        int ii = pitzer2symblk[i_pitzer];
-                        int ee = pitzer2symblk[e_pitzer];
-                        int aa = pitzer2symblk[a_pitzer];
-                        int ff = pitzer2symblk[f_pitzer];
-                        summ = 2.0 * value * gamma1corr->get(he, ee, ff);
-                        GFock->add(ha, aa, ii, summ);
-                    }
+                if (hi == ha && he == hf) {
+                    int ii = pitzer2symblk[i_pitzer];
+                    int ee = pitzer2symblk[e_pitzer];
+                    int aa = pitzer2symblk[a_pitzer];
+                    int ff = pitzer2symblk[f_pitzer];
+                    summ = 2.0 * value * gamma1corr->get(he, ee, ff);
+                    GFock->add(ha, aa, ii, summ);
                 }
-                if (!ilsti) ERIIN.fetch();
-
-            } while (!ilsti);
+            }
         }  // end else if (wfn_type_ == "OMP2" && incore_iabc_ == 0)
 
         else if (wfn_type_ != "OMP2") {
@@ -201,10 +190,6 @@ void OCCWave::gfock() {
 
         if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
             // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief
-            IWL ERIIN(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
-            int ilsti, nbuf, index, fi;
-            double value = 0;
-
             SymBlockMatrix *Goovv = new SymBlockMatrix("TPDM <OO|VV>", nirrep_, oo_pairpiAA, vv_pairpiAA);
             Goovv->zero();
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
@@ -212,19 +197,14 @@ void OCCWave::gfock() {
             Goovv->set(G);
             global_dpd_->buf4_close(&G);
 
-            do {
-                ilsti = ERIIN.last_buffer();
-                nbuf = ERIIN.buffer_count();
-
-                fi = 0;
-                for (int idx = 0; idx < nbuf; idx++) {
-                    int m = ERIIN.labels()[fi];
-                    m = std::abs(m);
-                    int a = ERIIN.labels()[fi + 1];
-                    int e = ERIIN.labels()[fi + 2];
-                    int f = ERIIN.labels()[fi + 3];
-                    value = ERIIN.values()[idx];
-                    fi += 4;
+            IWLReader eri(psio_, PSIF_OCC_IABC);
+            for (const auto &integral : eri) {
+                {
+                    int m = std::abs(integral.p);
+                    int a = integral.q;
+                    int e = integral.r;
+                    int f = integral.s;
+                    double value = integral.value;
 
                     int m_pitzer = qt2pitzerA[m];
                     int a_pitzer = qt2pitzerA[a];
@@ -254,9 +234,7 @@ void OCCWave::gfock() {
                         }
                     }
                 }
-                if (!ilsti) ERIIN.fetch();
-
-            } while (!ilsti);
+            }
             delete Goovv;
 
         }  // end if (wfn_type_ == "OMP2" && incore_iabc_ == 0)

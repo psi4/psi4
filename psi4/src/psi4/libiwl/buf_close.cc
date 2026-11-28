@@ -32,9 +32,8 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "iwl.h"
 #include "iwl.hpp"
 
@@ -42,10 +41,53 @@ namespace psi {
 
 IWL::~IWL() { close(); }
 
+IWL::IWL(IWL &&o) noexcept
+    : itap_(o.itap_),
+      bufpos_(o.bufpos_),
+      ints_per_buf_(o.ints_per_buf_),
+      bufszc_(o.bufszc_),
+      cutoff_(o.cutoff_),
+      lastbuf_(o.lastbuf_),
+      inbuf_(o.inbuf_),
+      idx_(o.idx_),
+      labels_(o.labels_),
+      values_(o.values_),
+      psio_(o.psio_),
+      keep_(o.keep_) {
+    // Leave the moved-from object inert: no storage to free, no unit to close.
+    o.labels_ = nullptr;
+    o.values_ = nullptr;
+    o.psio_ = nullptr;
+    o.itap_ = -1;
+}
+
+IWL &IWL::operator=(IWL &&o) noexcept {
+    if (this != &o) {
+        close();
+        itap_ = o.itap_;
+        bufpos_ = o.bufpos_;
+        ints_per_buf_ = o.ints_per_buf_;
+        bufszc_ = o.bufszc_;
+        cutoff_ = o.cutoff_;
+        lastbuf_ = o.lastbuf_;
+        inbuf_ = o.inbuf_;
+        idx_ = o.idx_;
+        labels_ = o.labels_;
+        values_ = o.values_;
+        psio_ = o.psio_;
+        keep_ = o.keep_;
+        o.labels_ = nullptr;
+        o.values_ = nullptr;
+        o.psio_ = nullptr;
+        o.itap_ = -1;
+    }
+    return *this;
+}
+
 void IWL::close() {
     if (psio_ != nullptr && psio_->open_check(itap_)) psio_->close(itap_, keep_);
-    if (labels_) delete[](labels_);
-    if (values_) delete[](values_);
+    delete[] labels_;
+    delete[] values_;
     labels_ = nullptr;
     values_ = nullptr;
 }
@@ -61,7 +103,9 @@ void IWL::close() {
 */
 void PSI_API iwl_buf_close(struct iwlbuf *Buf, int keep) {
     psio_close(Buf->itap, keep ? 1 : 0);
-    free(Buf->labels);
-    free(Buf->values);
+    delete[] Buf->labels;
+    delete[] Buf->values;
+    Buf->labels = nullptr;
+    Buf->values = nullptr;
 }
 }
