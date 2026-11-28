@@ -335,3 +335,25 @@ def test_transpose():
             transposed_mat.set(0, k, j, i)
             i += 1
     assert psi4.compare_matrices(mat.transpose(), transposed_mat)
+
+
+
+@pytest.mark.parametrize("alpha", [-0.5, -1.0, 0.5, 2.0])
+def test_power(alpha):
+    """Matrix.power against numpy per irrep; for alpha < 0 the eigenvalues below cutoff * max are dropped."""
+    rng = np.random.default_rng(7)
+    blocks = []
+    for n, n_null in ((1, 0), (7, 0), (40, 5)):
+        Q, _ = np.linalg.qr(rng.standard_normal((n, n)))
+        evals = np.concatenate([np.full(n_null, 1.0e-15), np.geomspace(1.0e-6, 10.0, n - n_null)])
+        blocks.append((Q * evals) @ Q.T)
+
+    mat = Matrix.from_array(blocks)
+    remaining = mat.power(alpha, 1.0e-12)
+
+    for h, A in enumerate(blocks):
+        w, V = np.linalg.eigh(A)
+        keep = w > 1.0e-10 if alpha < 0 else np.ones_like(w, dtype=bool)
+        ref = (V[:, keep] * np.abs(w[keep])**alpha) @ V[:, keep].T
+        assert remaining[h] == keep.sum()
+        assert np.allclose(mat.nph[h], ref, rtol=0, atol=1.0e-8 * np.abs(ref).max())
