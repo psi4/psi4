@@ -30,28 +30,34 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
 #include <cmath>
 #include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/libpsi4util/PsiOutStream.h"
+
 namespace psi {
+
+namespace {
+
+void read_one_impl(PSIO *psio, int itap, const char *label, double *ints, int ntri, int erase, int printflg,
+                   const std::string &out) {
+    psio->open(itap, PSIO_OPEN_OLD);
+    psio->read_entry(itap, label, reinterpret_cast<char *>(ints), ntri * sizeof(double));
+    psio->close(itap, erase ? 0 : 1);
+
+    if (printflg) {
+        const int nmo = static_cast<int>(std::sqrt(static_cast<double>(1 + 8 * ntri)) - 1) / 2;
+        print_array(ints, nmo, out);
+    }
+}
+
+}  // namespace
 
 void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints, int ntri, int erase, int printflg,
                    std::string out) {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    int nmo;
-
-    psio->open(itap, PSIO_OPEN_OLD);
-    psio->read_entry(itap, label, (char *)ints, ntri * sizeof(double));
-    psio->close(itap, !erase);
-
-    if (printflg) {
-        nmo = (int)(sqrt((double)(1 + 8 * ntri)) - 1) / 2;
-        print_array(ints, nmo, out);
-    }
+    read_one_impl(psio, itap, label, ints, ntri, erase, printflg, out);
 }
 
 /*!
@@ -78,18 +84,7 @@ void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints, int nt
 ** \ingroup IWL
 */
 int iwl_rdone(int itap, const char *label, double *ints, int ntri, int erase, int printflg, std::string out) {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    int nmo;
-
-    psio_open(itap, PSIO_OPEN_OLD);
-    psio_read_entry(itap, label, (char *)ints, ntri * sizeof(double));
-    psio_close(itap, !erase);
-
-    if (printflg) {
-        nmo = (int)(sqrt((double)(1 + 8 * ntri)) - 1) / 2;
-        print_array(ints, nmo, out);
-    }
-
-    return (1);
+    read_one_impl(_default_psio_lib_.get(), itap, label, ints, ntri, erase, printflg, out);
+    return 1;
 }
 }
