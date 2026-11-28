@@ -67,7 +67,8 @@ nabla.cc
 onebody.cc
 overlap.cc
 potential.cc
-potentialint.cc
+batchedpotential.cc   # includes <libint2/boys.h>
+snk/snk_kernels.cc
 potential_erf.cc
 quadrupole.cc
 rel_potential.cc
