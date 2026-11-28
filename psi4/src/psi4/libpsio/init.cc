@@ -68,8 +68,8 @@ PSIO::PSIO() {
 #ifdef PSIO_STATS
         psio_readlen[i] = psio_writlen[i] = 0;
 #endif
-        psio_unit[i].vol.path = nullptr;
-        psio_unit[i].vol.stream = -1;
+        psio_unit[i].path = nullptr;
+        psio_unit[i].stream = -1;
         psio_unit[i].toclen = 0;
         psio_unit[i].toc = nullptr;
     }
