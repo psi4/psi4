@@ -92,6 +92,12 @@ void DLPNO::common_init() {
         algorithm_ = DLPNOMethod::CCSD;
     } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
         algorithm_ = DLPNOMethod::CCSD_T;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSDT") {
+        algorithm_ = DLPNOMethod::CCSDT;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSDT(Q)") {
+        algorithm_ = DLPNOMethod::CCSDT_Q;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSDTQ") {
+        algorithm_ = DLPNOMethod::CCSDTQ;
     } else {
         throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
     }
@@ -109,7 +115,8 @@ void DLPNO::common_init() {
     const bool T_CUT_PAIRS_changed = options_["T_CUT_PAIRS"].has_changed();
     const bool T_CUT_PRE_changed = options_["T_CUT_PRE"].has_changed();
 
-    // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
+    // If not, DLPNO-MP2, DLPNO-CCSD, and DLPNO-CCSD(T) take their values from the user-friendly
+    // "PNO_CONVERGENCE" preset. DLPNO-CCSDT and higher methods ignore PNO_CONVERGENCE (see below).
     if (algorithm_ == DLPNOMethod::MP2) {
         if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
@@ -128,7 +135,7 @@ void DLPNO::common_init() {
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
         }
-    } else { // Coupled-cluster defaults
+    } else if (!is_post_ccsd_t()) { // DLPNO-CCSD and DLPNO-CCSD(T) defaults
         if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-6;
             if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.9;
@@ -181,12 +188,38 @@ void DLPNO::common_init() {
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
         }
-        if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
+    } else { // DLPNO-CCSDT, DLPNO-CCSDT(Q), and DLPNO-CCSDTQ defaults
+        // Higher-order DLPNO methods are intended for benchmark-quality work, so every
+        // post-CCSD(T) computation starts from the same thresholds regardless of
+        // PNO_CONVERGENCE. Advanced users can still tighten (or loosen) any of them by
+        // setting the corresponding expert option explicitly.
+        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
+        if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
+        if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
+        if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-8;
+        if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
+
+        if (!T_CUT_PNO_MP2_changed) T_CUT_PNO_MP2_ = 1e-10;
+        if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
+        if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
+
+        if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+        if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+
+        // Post-CCSD(T) methods do not retain a separate weak-pair category. Collapsing the
+        // strong/weak and weak/semicanonical boundaries onto the same value removes it.
+        T_CUT_PAIRS_MP2_ = T_CUT_PAIRS_;
     }
 
-    // TODO: Is this reasonable?
-    // Answer: Yes, this is what they do in ORCA
-    if (!options_["T_CUT_PAIRS_MP2"].has_changed()) T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
+    if (!is_post_ccsd_t() && !options_["T_CUT_PAIRS_MP2"].has_changed()) {
+        T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
+    }
+
+    // Derive dipole prescreening from the final pair cutoff. In particular,
+    // the post-CCSD(T) defaults use a much tighter T_CUT_PAIRS than the presets.
+    if (algorithm_ != DLPNOMethod::MP2 && !T_CUT_PRE_changed) {
+        T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
+    }
 
     name_ = "DLPNO";
     set_module("dlpno");
@@ -198,6 +231,14 @@ void DLPNO::common_init() {
 
     memory_ = Process::environment.get_memory();
     toggle_memory_ = options_.get_bool("DLPNO_TOGGLE_MEMORY");
+}
+
+void DLPNO::print_pno_convergence() {
+    if (is_post_ccsd_t()) {
+        outfile->Printf("  DLPNO convergence set to post-CCSD(T) defaults (PNO_CONVERGENCE is not used).\n\n");
+    } else {
+        outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
+    }
 }
 
 /* Utility function for making C_DGESV calls
@@ -227,6 +268,55 @@ void DLPNO::C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
     for (int n = 0; n < N; n++) {
         for (int m = 0; m < M; m++) {
             B->set(n, m, B_fortran[m * N + n]);
+        }
+    }
+}
+
+void DLPNO::C_DGESV_shared_factorization(
+    SharedMatrix A, const std::vector<SharedMatrix>& rhs_blocks) {
+    const int n = A->nrow();
+    if (n == 0) return;
+    if (A->ncol() != n) {
+        throw PSIEXCEPTION("The DLPNO density-fitting metric must be square.");
+    }
+
+    std::vector<int> ipiv(n);
+    const int factor_info = C_DGETRF(n, n, A->pointer()[0], n, ipiv.data());
+    if (factor_info != 0) {
+        throw PSIEXCEPTION("LU factorization of a DLPNO density-fitting metric failed.");
+    }
+
+    // Psi4 Matrix uses C ordering, whereas DGETRS expects each RHS column in
+    // Fortran ordering. Pack only the current block: the LU factors above are
+    // reused, while peak scratch remains n * max(ncol(B)).
+    for (const auto& B : rhs_blocks) {
+        if (!B) continue;
+        const int nrhs = B->ncol();
+        if (B->nrow() != n) {
+            throw PSIEXCEPTION("A DLPNO metric RHS has an incompatible row dimension.");
+        }
+        if (nrhs == 0) continue;
+
+        std::vector<double> B_fortran(static_cast<size_t>(n) * nrhs);
+        for (int row = 0; row < n; ++row) {
+            for (int col = 0; col < nrhs; ++col) {
+                B_fortran[static_cast<size_t>(col) * n + row] = B->get(row, col);
+            }
+        }
+
+        // Matrix stores A in row-major order, so LAPACK factorized A^T.  Solve
+        // with the transpose flag to recover A X = B without relying on the
+        // metric's mathematical symmetry.
+        const int solve_info =
+            C_DGETRS('T', n, nrhs, A->pointer()[0], n, ipiv.data(), B_fortran.data(), n);
+        if (solve_info != 0) {
+            throw PSIEXCEPTION("Solve with a factorized DLPNO density-fitting metric failed.");
+        }
+
+        for (int row = 0; row < n; ++row) {
+            for (int col = 0; col < nrhs; ++col) {
+                B->set(row, col, B_fortran[static_cast<size_t>(col) * n + row]);
+            }
         }
     }
 }
@@ -668,8 +758,13 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
                     // off-diag pops (p_uv) split between u and v prop to diag pops
                     double p_uv = P_i->get(u, v);
-                    mkn_pop[centerU] += p_uv * ((p_uu) / (p_uu + p_vv));
-                    mkn_pop[centerV] += p_uv * ((p_vv) / (p_uu + p_vv));
+                    double p_diag_sum = p_uu + p_vv;
+                    // Symmetry-exact orbitals can have C_ui = C_vi = 0. In that
+                    // case p_uv is also zero and the limiting contribution is
+                    // zero; avoid contaminating the atomic population with 0/0.
+                    if (p_diag_sum == 0.0) continue;
+                    mkn_pop[centerU] += p_uv * (p_uu / p_diag_sum);
+                    mkn_pop[centerV] += p_uv * (p_vv / p_diag_sum);
                 }
             }
 
