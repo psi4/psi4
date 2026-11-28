@@ -1,5 +1,7 @@
 import os
+import re
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 from typing import List
 
@@ -12,6 +14,7 @@ import psi4
 
 __all__ = [
     "hardware_nvidia_gpu",
+    "xfail_on_pubchem_unavailable",
     "using",
     "uusing",
     "ctest_labeler",
@@ -205,6 +208,21 @@ def ctest_labeler(labels: str):
 hardware_nvidia_gpu = pytest.mark.skipif(
     True,  #is_nvidia_gpu_present() is False,
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
+
+
+@contextmanager
+def xfail_on_pubchem_unavailable():
+    """Xfail, rather than fail, a test whose PubChem lookup didn't get through: PubChem busy (HTTP 503,
+    PUGREST.ServerBusy), timed out (HTTP 504), or not reachable at all. Any other failure still fails.
+    After QCElemental's ``xfail_on_pubchem_busy``, but reading the psi4 output that ``ctest_runner`` reports.
+
+    """
+    try:
+        yield
+    except AssertionError as e:
+        if re.search(r"HTTP Error 50[34]|urlopen error", str(e)):
+            pytest.xfail("PubChem unavailable")
+        raise
 
 
 #: The six meaningful combinations of orbital optimizer packages. ORBITAL_OPTIMIZER_PACKAGE

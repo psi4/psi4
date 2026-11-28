@@ -194,6 +194,18 @@ This uses QCEngine machinery to execute ``python psi4 input.dat``.
 If additional input files are needed from the test directory, their names can be added to the the second argument list as shown above.
 Those additional input files *do* need to be registered in :source:`psi4/CMakeLists.txt`.
 
+A test that fetches a geometry from PubChem (a ``pubchem:`` line in the molecule) should wrap the runner line in ``with xfail_on_pubchem_unavailable():``, as in :source:`tests/pubchem1/test_input.py` ::
+
+    from addons import *
+
+    @ctest_labeler("misc;cart")
+    def test_pubchem1():
+        with xfail_on_pubchem_unavailable():
+            ctest_runner(__file__)
+
+The test then xfails rather than fails if PubChem is busy (HTTP 503), times out (HTTP 504), or can't be reached, so an outage doesn't show up as a failure.
+Any other error still fails the test.
+
 Finally, the label string passed to CTest is here handed to pytest, with a few changes:
 
 * ``psi`` added automatically, so exclude it when copying from CTest ``CMakeLists.txt``
