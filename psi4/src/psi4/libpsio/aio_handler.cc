@@ -41,6 +41,7 @@
 #include <memory>
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 namespace psi {
 
@@ -407,15 +408,19 @@ void AIOHandler::call_aio() {
 
             lock.unlock();
 
-            double *buf = new double[col_length];
-            memset(static_cast<void *>(buf), '\0', col_length * sizeof(double));
+            // each row is written in pieces of at most 2^24 doubles, so the buffer does not grow with col_length
+            const size_t chunk = std::max<size_t>(1, std::min<size_t>(col_length, size_t(1) << 24));
+            std::vector<double> buf(chunk, 0.0);
 
             psio_address next_psio = PSIO_ZERO;
-            for (int i = 0; i < row_length; i++) {
-                psio_->write(unit, key, (char *)(buf), sizeof(double) * col_length, next_psio, &next_psio);
+            for (size_t i = 0; i < row_length; i++) {
+                size_t done = 0;
+                do {
+                    const size_t n = std::min(chunk, col_length - done);
+                    psio_->write(unit, key, (char *)(buf.data()), sizeof(double) * n, next_psio, &next_psio);
+                    done += n;
+                } while (done < col_length);
             }
-
-            delete[] buf;
         } else if (jobtype == 8) {
             lock.lock();
 
