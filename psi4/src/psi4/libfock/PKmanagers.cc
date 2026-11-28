@@ -488,7 +488,6 @@ void PKManager::get_results(std::vector<SharedMatrix> J, std::string exch) {
                 }
             }
             J[N]->copy_lower_to_upper();
-            delete[] JK_vec_[N];
             // Non-symmetric density matrix: result is already in the target
             // TODO: if we store the triangle only, change that.
         } else if (exch == "") {
@@ -497,6 +496,16 @@ void PKManager::get_results(std::vector<SharedMatrix> J, std::string exch) {
                 Jp[p][p] *= 0.5;
             }
         }
+    }
+    // make_J_vec allocates a triangle buffer for every symmetric density (and
+    // pushes nullptr for non-symmetric ones), regardless of `exch`. The branch
+    // above only uses the buffer for J/K with sym density; the wK+sym case
+    // writes its result directly into the target matrix and never reads from
+    // JK_vec_[N]. Free unconditionally here so wK with symmetric density does
+    // not leak. `delete[] nullptr` is a no-op so the asymmetric entries are
+    // safe.
+    for (auto* p : JK_vec_) {
+        delete[] p;
     }
     JK_vec_.clear();
 }
@@ -555,7 +564,10 @@ void PKMgrDisk::batch_sizing() {
     size_t nintpq = 0;
     size_t nintbatch = 0;
     size_t pq = 0;
-    size_t pb, qb, rb, sb;
+    // Initialized to zero so that the post-loop INDEX{2,4} calls at
+    // batch_index_max_ / batch_pq_max_ are defined even if the iterator
+    // produces no quartets (e.g. an empty basis set).
+    size_t pb = 0, qb = 0, rb = 0, sb = 0;
     int batch = 0;
 
     outfile->Printf("  Sizing the integral batches needed.\n");
