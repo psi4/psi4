@@ -117,7 +117,7 @@ class MolecularGrid {
     struct MolecularGridOptions {
         double bs_radius_alpha;
         double pruning_alpha;
-        short radscheme;  // Effectively an enumeration
+        std::string radscheme;  // Effectively an enumeration
         short prunefunction;
         short nucscheme;
         short namedGrid;  // -1 = None, 0 = SG-0, 1 = SG-1

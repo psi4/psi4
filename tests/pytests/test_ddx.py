@@ -281,19 +281,19 @@ def test_ddx_rhf_reference(inp):
         "geom": __geoms["h2o"],
         "basis": "cc-pvdz",
         "ddx": {"model": "cosmo", "solvent": "water", "radii_set": "bondi", },
-        "ref": -76.0346355428018,
+        "ref": -76.03463712141466,
     }, id='h2o-cosmo'),
     pytest.param({
         "geom": __geoms["fcm"],
         "basis": "cc-pvdz",
         "ddx": {"model": "pcm", "solvent": "water", "radii_set": "uff", },
-        "ref": -597.9718943192062,
+        "ref": -597.9718855668184,
     }, id='fcm-pcm'),
     pytest.param({
         "geom": __geoms["nh3"],
         "basis": "cc-pvdz",
         "ddx": {"model": "lpb", "solvent": "water", "radii_set": "uff", "solvent_kappa": 0.11},
-        "ref": -56.1988043810054,
+        "ref": -56.198808589732685,
     }, id='nh3-lpb'),
 ])
 def test_ddx_rhf_consistency(inp):
@@ -330,7 +330,7 @@ def test_ddx_eri_algorithms(scf_type):
     else:
         tol = 9
 
-    ref = -56.171546236617495
+    ref = -56.171543771305245
     scf_e = psi4.energy('SCF')
     assert compare_values(ref, scf_e, tol, "Total SCF energy with DDX versus reference data")
 
@@ -388,7 +388,9 @@ def test_ddx_tdscf_pcmsolver():
     for i in range(5):
         e_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
         f_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A TRANSITION'))
-    assert compare_arrays(exc_energies, e_calc, 0.0005, 'PCM EXCITATION ENERGY ')
+    # With a converged DDX integration grid, roots 3-5 differ from PCMSolver by 5.0-5.3e-4 Eh (a model difference,
+    # not grid error); 5e-4 only passed before the BECKE/ROBUST pruning-order fix in cubature.cc by grid-error luck.
+    assert compare_arrays(exc_energies, e_calc, 0.0006, 'PCM EXCITATION ENERGY ')
     assert compare_arrays(osc_strengths, f_calc, 0.0005, 'PCM OSCILLATOR STRENGTH ')
 
 
