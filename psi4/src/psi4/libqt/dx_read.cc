@@ -63,9 +63,10 @@ namespace psi {
 ** \param nso      = # of symmetry orbitals
 ** \param u = transformation matrix
 */
-void dx_read(double **V_eff, double *phi_ao, double *phi_so, int nao, int nso, double **u) {
+void dx_read(std::shared_ptr<BasisSet> basis, double **V_eff, double *phi_ao, double *phi_so, int nao, int nso,
+             double **u) {
+    if (!basis) throw PSIEXCEPTION("dx_read: null basis set passed.");
     int delta_count = 0;
-    std::shared_ptr<BasisSet> basis;
     bool data_ready = false;
     int data_read = 0;
     double xstep, ystep, zstep;
